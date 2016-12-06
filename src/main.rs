@@ -3,10 +3,24 @@
 
 #[macro_use] extern crate clap;
 #[macro_use] extern crate error_chain;
+extern crate toml;
 
 mod config;
 mod errors;
 mod cmd;
+
+use config::Config;
+
+
+fn get_config() -> Config {
+    match Config::from_file("config.toml") {
+        Ok(c) => c,
+        Err(e) => {
+            println!("Error: {}", e);
+            ::std::process::exit(1);
+        }
+    }
+}
 
 
 fn main() {
