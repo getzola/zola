@@ -1,6 +1,6 @@
 
 use config:: Config;
-use errors::{Result, ErrorKind};
+use errors::{Result};
 
 
 pub fn build(config: Config) -> Result<()> {

@@ -8,6 +8,7 @@ extern crate toml;
 extern crate walkdir;
 extern crate pulldown_cmark;
 extern crate regex;
+extern crate tera;
 
 mod config;
 mod errors;
