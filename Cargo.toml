@@ -1,0 +1,25 @@
+[package]
+name = "gutenberg"
+version = "0.1.0"
+authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+license = "MIT"
+readme = "README.md"
+description = "Static site generator"
+homepage = "https://github.com/Keats/gutenberg"
+repository = "https://github.com/Keats/gutenberg"
+keywords = ["static", "site", "generator", "blog"]
+
+[dependencies]
+error-chain = "0.7"
+clap = "2.19"
+clippy = {version = "~0.0.103", optional = true}
+
+[dependencies.toml]
+version = "0.2"
+default-features = false
+features = ["serde"]
+
+[features]
+default = []
+dev = ["clippy"]
+
