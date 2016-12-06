@@ -12,6 +12,8 @@ use errors::{Result, ErrorKind};
 pub struct Config {
     pub title: String,
     pub base_url: String,
+
+    pub favicon: Option<String>,
 }
 
 impl Default for Config {
@@ -19,6 +21,8 @@ impl Default for Config {
         Config {
             title: "".to_string(),
             base_url: "".to_string(),
+
+            favicon: None,
         }
     }
 }
@@ -33,9 +37,10 @@ impl Config {
             for (key, value) in value.iter() {
                 if key == "title" {
                     config.title = value.as_str().ok_or(ErrorKind::InvalidConfig)?.to_string();
-                }
-                if key == "base_url" {
+                } else if key == "base_url" {
                     config.base_url = value.as_str().ok_or(ErrorKind::InvalidConfig)?.to_string();
+                } else if key == "favicon" {
+                    config.favicon = Some(value.as_str().ok_or(ErrorKind::InvalidConfig)?.to_string());
                 }
             }
 

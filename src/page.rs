@@ -5,10 +5,11 @@ use std::default::Default;
 // use pulldown_cmark as cmark;
 use regex::Regex;
 use toml::{Parser, Value as TomlValue};
-use tera::{Value, to_value};
+use tera::{Tera, Value, to_value, Context};
 
 use errors::{Result};
 use errors::ErrorKind::InvalidFrontMatter;
+use config::Config;
 
 
 lazy_static! {
@@ -178,6 +179,10 @@ impl Page {
 
         Ok(page)
     }
+
+//    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
+//
+//    }
 }
 
 
