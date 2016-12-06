@@ -41,6 +41,7 @@ impl Config {
 
             return Ok(config);
         } else {
+            // TODO: handle error in parsing TOML
             println!("parse errors: {:?}", parser.errors);
         }
 

@@ -12,6 +12,10 @@ keywords = ["static", "site", "generator", "blog"]
 [dependencies]
 error-chain = "0.7"
 clap = "2.19"
+walkdir = "1"
+pulldown-cmark = "0"
+regex = "0.1"
+lazy_static = "0.2"
 clippy = {version = "~0.0.103", optional = true}
 
 [dependencies.toml]
