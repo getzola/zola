@@ -16,7 +16,7 @@ pub fn create_new_project<P: AsRef<Path>>(name: P) -> Result<()> {
     let path = name.as_ref();
     // Better error message than the rust default
     if path.exists() && path.is_dir() {
-        return Err(ErrorKind::FolderExists(path.to_string_lossy().to_string()).into());
+        bail!("Folder `{}` already exists", path.to_string_lossy().to_string());
     }
 
     // main folder
