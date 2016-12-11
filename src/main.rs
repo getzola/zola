@@ -1,19 +1,24 @@
-// `error_chain!` can recurse deeply
-#![recursion_limit = "1024"]
+#![feature(proc_macro)]
+
 
 #[macro_use] extern crate clap;
 #[macro_use] extern crate error_chain;
 #[macro_use] extern crate lazy_static;
+#[macro_use] extern crate serde_derive;
 extern crate toml;
 extern crate walkdir;
 extern crate pulldown_cmark;
 extern crate regex;
 extern crate tera;
+extern crate glob;
+
 
 mod config;
 mod errors;
 mod cmd;
 mod page;
+mod front_matter;
+
 
 use config::Config;
 
@@ -58,13 +63,13 @@ fn main() {
                 },
             };
         },
-        ("build", None) => {
+        ("build", Some(_)) => {
             match cmd::build(get_config()) {
                 Ok(()) => {
                     println!("Project built");
                 },
                 Err(e) => {
-                    println!("Error: {}", e);
+                    println!("Error: {}", e.iter().nth(1).unwrap().description());
                     ::std::process::exit(1);
                 },
             };

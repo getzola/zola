@@ -3,7 +3,7 @@ use std::io::prelude::*;
 use std::fs::{create_dir, File};
 use std::path::Path;
 
-use errors::{Result, ErrorKind};
+use errors::Result;
 
 
 const CONFIG: &'static str = r#"

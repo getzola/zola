@@ -5,13 +5,14 @@ use std::path::Path;
 
 use toml::Parser;
 
-use errors::{Result, ErrorKind};
+use errors::{Result, ErrorKind, ResultExt};
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     pub title: String,
     pub base_url: String,
+    pub theme: String,
 
     pub favicon: Option<String>,
 }
@@ -21,6 +22,7 @@ impl Default for Config {
         Config {
             title: "".to_string(),
             base_url: "".to_string(),
+            theme: "".to_string(),
 
             favicon: None,
         }
@@ -55,11 +57,14 @@ impl Config {
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let mut content = String::new();
-        File::open(path)?.read_to_string(&mut content)?;
+        File::open(path)
+            .chain_err(|| "Failed to load config.toml. Are you in the right directory?")?
+            .read_to_string(&mut content)?;
 
         Config::from_str(&content)
     }
 }
+
 
 #[cfg(test)]
 mod tests {
