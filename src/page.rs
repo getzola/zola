@@ -20,23 +20,27 @@ lazy_static! {
 }
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Page {
     // .md filepath, excluding the content/ bit
+    #[serde(skip_serializing)]
     pub filepath: String,
     // the name of the .md file
+    #[serde(skip_serializing)]
     pub filename: String,
     // the directories above our .md file are called sections
     // for example a file at content/kb/solutions/blabla.md will have 2 sections:
     // `kb` and `solutions`
+    #[serde(skip_serializing)]
     pub sections: Vec<String>,
+    // the actual content of the page, in markdown
+    #[serde(skip_serializing)]
+    pub raw_content: String,
 
     // <title> of the page
     pub title: String,
     // The page slug
     pub slug: String,
-    // the actual content of the page
-    pub raw_content: String,
     // the HTML rendered of the page
     pub content: String,
 
@@ -55,6 +59,7 @@ pub struct Page {
     // optional date if we want to order pages (ie blog post)
     pub date: Option<String>,
     // optional layout, if we want to specify which tpl to render for that page
+    #[serde(skip_serializing)]
     pub layout: Option<String>,
     // description that appears when linked, e.g. on twitter
     pub description: Option<String>,
@@ -155,6 +160,12 @@ impl Page {
         tera.render(&tpl, context)
             .chain_err(|| "Error while rendering template")
     }
+}
+
+
+// Order pages by date, no-op for now
+pub fn order_pages(pages: Vec<Page>) -> Vec<Page> {
+    pages
 }
 
 
