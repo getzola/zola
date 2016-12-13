@@ -50,7 +50,11 @@ pub fn build(config: Config) -> Result<()> {
 
         }
 
-        current_path.push(&page.filename);
+        if page.slug != "" {
+            current_path.push(&page.slug);
+        } else {
+            current_path.push(&page.url);
+        }
         create_dir(&current_path)?;
         create_file(current_path.join("index.html"), &page.render_html(&tera, &config)?)?;
         pages.push(page);
@@ -59,6 +63,12 @@ pub fn build(config: Config) -> Result<()> {
     for (section, pages) in sections {
         render_section_index(section, pages, &tera, &config)?;
     }
+
+    // and now the index page
+    let mut context = Context::new();
+    context.add("pages", &order_pages(pages));
+    context.add("config", &config);
+    create_file(public.join("index.html"), &tera.render("index.html", context)?)?;
 
 
     Ok(())

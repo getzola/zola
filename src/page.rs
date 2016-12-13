@@ -41,6 +41,9 @@ pub struct Page {
     pub title: String,
     // The page slug
     pub slug: String,
+    // the url the page appears at, overrides the slug if set in the frontmatter
+    // otherwise is set after parsing front matter and sections
+    pub url: String,
     // the HTML rendered of the page
     pub content: String,
 
@@ -52,8 +55,6 @@ pub struct Page {
     // it will be passed to the template context
     pub extra: HashMap<String, Value>,
 
-    // the url the page appears at, overrides the slug if set
-    pub url: Option<String>,
     // only one category allowed
     pub category: Option<String>,
     // optional date if we want to order pages (ie blog post)
@@ -75,13 +76,13 @@ impl Default for Page {
 
             title: "".to_string(),
             slug: "".to_string(),
+            url: "".to_string(),
             raw_content: "".to_string(),
             content: "".to_string(),
             tags: vec![],
             is_draft: false,
             extra: HashMap::new(),
 
-            url: None,
             category: None,
             date: None,
             layout: None,
@@ -109,14 +110,6 @@ impl Page {
         // 2. create our page, parse front matter and assign all of that
         let mut page = Page::default();
         page.filepath = filepath.to_string();
-        let path = Path::new(filepath);
-        page.filename = path.file_stem().expect("Couldn't get file stem").to_string_lossy().to_string();
-
-        // find out if we have sections
-        for section in path.parent().unwrap().components() {
-            page.sections.push(section.as_ref().to_string_lossy().to_string());
-        }
-
         page.raw_content = content.to_string();
         parse_front_matter(front_matter, &mut page)
             .chain_err(|| format!("Error when parsing front matter of file `{}`", filepath))?;
@@ -127,6 +120,26 @@ impl Page {
             cmark::html::push_html(&mut html, parser);
             html
         };
+
+        // next find sections
+        // Pages with custom urls exists outside of sections
+        if page.url == "" {
+            let path = Path::new(filepath);
+            page.filename = path.file_stem().expect("Couldn't get file stem").to_string_lossy().to_string();
+
+            // find out if we have sections
+            for section in path.parent().unwrap().components() {
+                page.sections.push(section.as_ref().to_string_lossy().to_string());
+            }
+
+            // now the url
+            // it's either set in the front matter OR we get it from a combination of sections + slug
+            if page.sections.len() > 0 {
+                page.url = format!("/{}/{}", page.sections.join("/"), page.slug);
+            } else {
+                page.url = format!("/{}", page.slug);
+            };
+        }
 
         Ok(page)
     }
@@ -205,7 +218,7 @@ Hello world"#;
     }
 
     #[test]
-    fn test_can_find_multiplie_parent_directories() {
+    fn test_can_find_multiple_parent_directories() {
         let content = r#"
 title = "Hello"
 slug = "hello-world"
@@ -217,4 +230,29 @@ Hello world"#;
         assert_eq!(page.sections, vec!["posts".to_string(), "intro".to_string()]);
     }
 
+    #[test]
+    fn test_can_make_url_from_sections_and_slug() {
+        let content = r#"
+title = "Hello"
+slug = "hello-world"
++++
+Hello world"#;
+        let res = Page::from_str("posts/intro/start.md", content);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.url, "/posts/intro/hello-world");
+    }
+
+    #[test]
+    fn test_can_make_url_from_sections_and_slug_root() {
+        let content = r#"
+title = "Hello"
+slug = "hello-world"
++++
+Hello world"#;
+        let res = Page::from_str("start.md", content);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.url, "/hello-world");
+    }
 }

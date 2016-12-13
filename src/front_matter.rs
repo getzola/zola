@@ -44,7 +44,7 @@ pub fn parse_front_matter(front_matter: &str, page: &mut Page) -> Result<()> {
                         } else if key == "slug" {
                             page.slug = s.to_string();
                         } else if key == "url" {
-                            page.url = Some(s.to_string());
+                            page.url = s.to_string();
                         } else if key == "category" {
                             page.category = Some(s.to_string());
                         } else if key == "layout" {
@@ -86,8 +86,8 @@ pub fn parse_front_matter(front_matter: &str, page: &mut Page) -> Result<()> {
         bail!("Errors parsing front matter: {:?}", parser.errors);
     }
 
-    if page.title == "" || page.slug == "" {
-        bail!("Front matter is missing required fields (title, slug or both)");
+    if page.title == "" || (page.slug == "" && page.url == "") {
+        bail!("Front matter is missing required fields (title, slug/url or both)");
     }
 
     Ok(())
@@ -149,7 +149,19 @@ authors = ["Bob", "Alice"]"#;
     }
 
     #[test]
-    fn test_ignores_pages_with_empty_front_matter() {
+    fn test_is_ok_with_url_instead_of_slug() {
+        let content = r#"
+title = "Hello"
+url = "hello-world""#;
+        let mut page = Page::default();
+        let res = parse_front_matter(content, &mut page);
+        assert!(res.is_ok());
+        assert_eq!(page.slug, "".to_string());
+        assert_eq!(page.url, "hello-world".to_string());
+    }
+
+    #[test]
+    fn test_errors_with_empty_front_matter() {
         let content = r#"  "#;
         let mut page = Page::default();
         let res = parse_front_matter(content, &mut page);
