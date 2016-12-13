@@ -12,7 +12,6 @@ use errors::{Result, ErrorKind, ResultExt};
 pub struct Config {
     pub title: String,
     pub base_url: String,
-    pub theme: String,
 
     pub favicon: Option<String>,
 }
@@ -22,7 +21,6 @@ impl Default for Config {
         Config {
             title: "".to_string(),
             base_url: "".to_string(),
-            theme: "".to_string(),
 
             favicon: None,
         }
@@ -48,11 +46,8 @@ impl Config {
 
             return Ok(config);
         } else {
-            // TODO: handle error in parsing TOML
-            println!("parse errors: {:?}", parser.errors);
+            bail!("Errors parsing front matter: {:?}", parser.errors);
         }
-
-        unreachable!()
     }
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {

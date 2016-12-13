@@ -1,9 +1,9 @@
 
-use std::io::prelude::*;
-use std::fs::{create_dir, File};
+use std::fs::{create_dir};
 use std::path::Path;
 
 use errors::Result;
+use utils::create_file;
 
 
 const CONFIG: &'static str = r#"
@@ -31,11 +31,5 @@ pub fn create_new_project<P: AsRef<Path>>(name: P) -> Result<()> {
 
     create_dir(path.join("static"))?;
 
-    Ok(())
-}
-
-fn create_file<P: AsRef<Path>>(path: P, content: &str) -> Result<()> {
-    let mut file = File::create(&path)?;
-    file.write_all(content.as_bytes())?;
     Ok(())
 }

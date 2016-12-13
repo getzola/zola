@@ -13,6 +13,7 @@ extern crate tera;
 extern crate glob;
 
 
+mod utils;
 mod config;
 mod errors;
 mod cmd;
@@ -56,6 +57,7 @@ fn main() {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
                 Ok(()) => {
                     println!("Project created");
+                    println!("You will now need to set a theme in `config.toml`");
                 },
                 Err(e) => {
                     println!("Error: {}", e);
@@ -66,10 +68,14 @@ fn main() {
         ("build", Some(_)) => {
             match cmd::build(get_config()) {
                 Ok(()) => {
-                    println!("Project built");
+                    println!("Project built.");
                 },
                 Err(e) => {
-                    println!("Error: {}", e.iter().nth(1).unwrap().description());
+                    println!("Failed to build the site");
+                    println!("Error: {}", e);
+                    for e in e.iter().skip(1) {
+                        println!("Reason: {}", e)
+                    }
                     ::std::process::exit(1);
                 },
             };
