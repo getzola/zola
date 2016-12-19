@@ -20,15 +20,11 @@ glob = "0.2"
 serde = "0.8"
 serde_json = "0.8"
 serde_derive = "0.8"
-tera = { git = "https://github.com/Keats/tera.git", branch = "v0.5" }
-clippy = {version = "~0.0.103", optional = true}
+tera = "0.5"
 
 [dependencies.toml]
 version = "0.2"
 default-features = false
 features = ["serde"]
 
-[features]
-default = []
-dev = ["clippy"]
 

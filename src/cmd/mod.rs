@@ -1,5 +1,5 @@
-mod new;
+mod init;
 mod build;
 
-pub use self::new::create_new_project;
+pub use self::init::create_new_project;
 pub use self::build::build;

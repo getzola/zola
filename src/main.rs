@@ -53,7 +53,7 @@ fn main() {
     ).get_matches();
 
     match matches.subcommand() {
-        ("new", Some(matches)) => {
+        ("init", Some(matches)) => {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
                 Ok(()) => {
                     println!("Project created");
