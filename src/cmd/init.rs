@@ -8,12 +8,17 @@ use utils::create_file;
 
 const CONFIG: &'static str = r#"
 title = "My site"
-base_url = "https://replace-this-with-your-url.com"
+# replace the url below with yours
+base_url = "https://example.com"
+
+[extra]
+# Put all your custom variables here
 "#;
 
 
 pub fn create_new_project<P: AsRef<Path>>(name: P) -> Result<()> {
     let path = name.as_ref();
+
     // Better error message than the rust default
     if path.exists() && path.is_dir() {
         bail!("Folder `{}` already exists", path.to_string_lossy().to_string());
@@ -27,7 +32,7 @@ pub fn create_new_project<P: AsRef<Path>>(name: P) -> Result<()> {
     create_dir(path.join("content"))?;
 
     // layouts folder
-    create_dir(path.join("layouts"))?;
+    create_dir(path.join("templates"))?;
 
     create_dir(path.join("static"))?;
 

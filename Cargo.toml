@@ -10,20 +10,21 @@ repository = "https://github.com/Keats/gutenberg"
 keywords = ["static", "site", "generator", "blog"]
 
 [dependencies]
-error-chain = "0.7"
+error-chain = "0.9"
 clap = "2.19"
 walkdir = "1"
 pulldown-cmark = "0"
-regex = "0.1"
+regex = "0.2"
 lazy_static = "0.2"
 glob = "0.2"
-serde = "0.8"
-serde_json = "0.8"
-serde_derive = "0.8"
-tera = "0.5"
+serde = "0.9"
+serde_json = "0.9"
+serde_derive = "0.9"
+tera = { git = "https://github.com/Keats/tera", branch = "next" }
+syntect = "1"
 
 [dependencies.toml]
-version = "0.2"
+version = "0.3"
 default-features = false
 features = ["serde"]
 

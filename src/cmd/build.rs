@@ -18,7 +18,7 @@ pub fn build(config: Config) -> Result<()> {
         remove_dir_all("public").chain_err(|| "Couldn't delete `public` directory")?;
     }
 
-    let tera = Tera::new("layouts/**/*").chain_err(|| "Error parsing templates")?;
+    let tera = Tera::new("templates/**/*").chain_err(|| "Error parsing templates")?;
 
     // ok we got all the pages HTML, time to write them down to disk
     create_dir("public")?;
@@ -32,7 +32,7 @@ pub fn build(config: Config) -> Result<()> {
         let path = entry.as_path();
         let mut page = Page::from_file(&path)?;
 
-        let mut current_path = public.clone().to_path_buf();
+        let mut current_path = public.to_path_buf();
 
         for section in &page.sections {
             current_path.push(section);
@@ -42,19 +42,17 @@ pub fn build(config: Config) -> Result<()> {
             }
 
             let str_path = current_path.as_path().to_string_lossy().to_string();
-            if sections.contains_key(&str_path) {
-                sections.get_mut(&str_path).unwrap().push(page.clone());
-            } else {
-                sections.insert(str_path, vec![page.clone()]);
-            }
-
+            sections.entry(str_path).or_insert_with(|| vec![page.clone()]);
         }
 
-        if page.slug != "" {
-            current_path.push(&page.slug);
+        if let Some(ref url) = page.meta.url {
+            println!("URL: {:?}", url);
+            current_path.push(url);
         } else {
-            current_path.push(&page.url);
+            println!("REMOVE ME IF YOU DONT SEE ME");
+            current_path.push(&page.get_slug());
         }
+
         create_dir(&current_path)?;
         create_file(current_path.join("index.html"), &page.render_html(&tera, &config)?)?;
         pages.push(page);
@@ -68,8 +66,7 @@ pub fn build(config: Config) -> Result<()> {
     let mut context = Context::new();
     context.add("pages", &order_pages(pages));
     context.add("config", &config);
-    create_file(public.join("index.html"), &tera.render("index.html", context)?)?;
-
+    create_file(public.join("index.html"), &tera.render("index.html", &context)?)?;
 
     Ok(())
 }
@@ -86,5 +83,5 @@ fn render_section_index(section: String, pages: Vec<Page>, tera: &Tera, config: 
         None => bail!("Couldn't find a section name in {:?}", path.display())
     };
 
-    create_file(path.join("index.html"), &tera.render(&format!("{}.html", section_name), context)?)
+    create_file(path.join("index.html"), &tera.render(&format!("{}.html", section_name), &context)?)
 }

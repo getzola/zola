@@ -1,62 +1,52 @@
-use std::default::Default;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::collections::HashMap;
 
-use toml::Parser;
+use toml::{Value as Toml, self};
 
-use errors::{Result, ErrorKind, ResultExt};
+use errors::{Result, ResultExt};
 
-
+// TODO: disable tag(s)/category(ies) page generation
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
+    /// Title of the site
     pub title: String,
+    /// Base URL of the site
     pub base_url: String,
-
-    pub favicon: Option<String>,
-}
-
-impl Default for Config {
-    fn default() -> Config {
-        Config {
-            title: "".to_string(),
-            base_url: "".to_string(),
-
-            favicon: None,
-        }
-    }
+    /// Description of the site
+    pub description: Option<String>,
+    /// The language used in the site. Defaults to "en"
+    pub language_code: Option<String>,
+    /// Whether to disable RSS generation, defaults to None (== generate RSS)
+    pub disable_rss: Option<bool>,
+    /// All user params set in [extra] in the config
+    pub extra: Option<HashMap<String, Toml>>,
 }
 
 impl Config {
-    pub fn from_str(content: &str) -> Result<Config> {
-        let mut parser = Parser::new(&content);
-
-        if let Some(value) = parser.parse() {
-            let mut config = Config::default();
-
-            for (key, value) in value.iter() {
-                if key == "title" {
-                    config.title = value.as_str().ok_or(ErrorKind::InvalidConfig)?.to_string();
-                } else if key == "base_url" {
-                    config.base_url = value.as_str().ok_or(ErrorKind::InvalidConfig)?.to_string();
-                } else if key == "favicon" {
-                    config.favicon = Some(value.as_str().ok_or(ErrorKind::InvalidConfig)?.to_string());
-                }
-            }
-
-            return Ok(config);
-        } else {
-            bail!("Errors parsing front matter: {:?}", parser.errors);
+    /// Parses a string containing TOML to our Config struct
+    /// Any extra parameter will end up in the extra field
+    pub fn parse(content: &str) -> Result<Config> {
+        let mut config: Config = match toml::from_str(content) {
+            Ok(c) => c,
+            Err(e) => bail!(e)
+        };
+        if config.language_code.is_none() {
+            config.language_code = Some("en".to_string());
         }
+
+        Ok(config)
     }
 
+    /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let mut content = String::new();
         File::open(path)
-            .chain_err(|| "Failed to load config.toml. Are you in the right directory?")?
+            .chain_err(|| "No `config.toml` file found. Are you in the right directory?")?
             .read_to_string(&mut content)?;
 
-        Config::from_str(&content)
+        Config::parse(&content)
     }
 }
 
@@ -72,7 +62,7 @@ title = "My site"
 base_url = "https://replace-this-with-your-url.com"
         "#;
 
-        let config = Config::from_str(config).unwrap();
+        let config = Config::parse(config).unwrap();
         assert_eq!(config.title, "My site".to_string());
     }
 
@@ -83,7 +73,44 @@ title = 1
 base_url = "https://replace-this-with-your-url.com"
         "#;
 
-        let config = Config::from_str(config);
+        let config = Config::parse(config);
         assert!(config.is_err());
+    }
+
+    #[test]
+    fn test_errors_when_missing_required_field() {
+        let config = r#"
+title = ""
+        "#;
+
+        let config = Config::parse(config);
+        assert!(config.is_err());
+    }
+
+    #[test]
+    fn test_can_add_extra_values() {
+        let config = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+
+[extra]
+hello = "world"
+        "#;
+
+        let config = Config::parse(config);
+        assert!(config.is_ok());
+        assert_eq!(config.unwrap().extra.unwrap().get("hello").unwrap().as_str().unwrap(), "world");
+    }
+
+    #[test]
+    fn test_language_defaults_to_en() {
+        let config = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com""#;
+
+        let config = Config::parse(config);
+        assert!(config.is_ok());
+        let config = config.unwrap();
+        assert_eq!(config.language_code.unwrap(), "en");
     }
 }

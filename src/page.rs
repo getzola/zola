@@ -1,119 +1,98 @@
 /// A page, can be a blog post or a basic page
-use std::collections::HashMap;
-use std::default::Default;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::result::Result as StdResult;
 
 
 use pulldown_cmark as cmark;
 use regex::Regex;
-use tera::{Tera, Value, Context};
+use tera::{Tera, Context};
+use serde::ser::{SerializeStruct, self};
 
 use errors::{Result, ResultExt};
 use config::Config;
-use front_matter::parse_front_matter;
+use front_matter::{FrontMatter};
 
 
 lazy_static! {
-    static ref DELIM_RE: Regex = Regex::new(r"\+\+\+\s*\r?\n").unwrap();
+    static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n((?s).*(?-s))$").unwrap();
 }
 
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize)]
 pub struct Page {
-    // .md filepath, excluding the content/ bit
+    /// .md filepath, excluding the content/ bit
     #[serde(skip_serializing)]
     pub filepath: String,
-    // the name of the .md file
+    /// The name of the .md file
     #[serde(skip_serializing)]
     pub filename: String,
-    // the directories above our .md file are called sections
-    // for example a file at content/kb/solutions/blabla.md will have 2 sections:
-    // `kb` and `solutions`
+    /// The directories above our .md file are called sections
+    /// for example a file at content/kb/solutions/blabla.md will have 2 sections:
+    /// `kb` and `solutions`
     #[serde(skip_serializing)]
     pub sections: Vec<String>,
-    // the actual content of the page, in markdown
+    /// The actual content of the page, in markdown
     #[serde(skip_serializing)]
     pub raw_content: String,
-
-    // <title> of the page
-    pub title: String,
-    // The page slug
-    pub slug: String,
-    // the url the page appears at, overrides the slug if set in the frontmatter
-    // otherwise is set after parsing front matter and sections
-    pub url: String,
-    // the HTML rendered of the page
+    /// The HTML rendered of the page
     pub content: String,
-
-    // tags, not to be confused with categories
-    pub tags: Vec<String>,
-    // whether this page should be public or not
-    pub is_draft: bool,
-    // any extra parameter present in the front matter
-    // it will be passed to the template context
-    pub extra: HashMap<String, Value>,
-
-    // only one category allowed
-    pub category: Option<String>,
-    // optional date if we want to order pages (ie blog post)
-    pub date: Option<String>,
-    // optional layout, if we want to specify which tpl to render for that page
-    #[serde(skip_serializing)]
-    pub layout: Option<String>,
-    // description that appears when linked, e.g. on twitter
-    pub description: Option<String>,
-}
-
-
-impl Default for Page {
-    fn default() -> Page {
-        Page {
-            filepath: "".to_string(),
-            filename: "".to_string(),
-            sections: vec![],
-
-            title: "".to_string(),
-            slug: "".to_string(),
-            url: "".to_string(),
-            raw_content: "".to_string(),
-            content: "".to_string(),
-            tags: vec![],
-            is_draft: false,
-            extra: HashMap::new(),
-
-            category: None,
-            date: None,
-            layout: None,
-            description: None,
-        }
-    }
+    /// The front matter meta-data
+    pub meta: FrontMatter,
+    /// The previous page, by date
+    pub previous: Option<Box<Page>>,
+    /// The next page, by date
+    pub next: Option<Box<Page>>,
 }
 
 
 impl Page {
+    pub fn new(meta: FrontMatter) -> Page {
+        Page {
+            filepath: "".to_string(),
+            filename: "".to_string(),
+            sections: vec![],
+            raw_content: "".to_string(),
+            content: "".to_string(),
+            meta: meta,
+            previous: None,
+            next: None,
+        }
+    }
+
+    /// Get the slug for the page.
+    /// First tries to find the slug in the meta and defaults to filename otherwise
+    pub fn get_slug(&self) -> String {
+        if let Some(ref slug) = self.meta.slug {
+            slug.to_string()
+        } else {
+            self.filename.clone()
+        }
+    }
+
     // Parse a page given the content of the .md file
     // Files without front matter or with invalid front matter are considered
     // erroneous
-    pub fn from_str(filepath: &str, content: &str) -> Result<Page> {
+    pub fn parse(filepath: &str, content: &str) -> Result<Page> {
         // 1. separate front matter from content
-        if !DELIM_RE.is_match(content) {
+        if !PAGE_RE.is_match(content) {
             bail!("Couldn't find front matter in `{}`. Did you forget to add `+++`?", filepath);
         }
 
         // 2. extract the front matter and the content
-        let splits: Vec<&str> = DELIM_RE.splitn(content, 2).collect();
-        let front_matter = splits[0];
-        let content = splits[1];
+        let caps = PAGE_RE.captures(content).unwrap();
+        // caps[0] is the full match
+        let front_matter = &caps[1];
+        let content = &caps[2];
 
-        // 2. create our page, parse front matter and assign all of that
-        let mut page = Page::default();
-        page.filepath = filepath.to_string();
-        page.raw_content = content.to_string();
-        parse_front_matter(front_matter, &mut page)
+        // 3. create our page, parse front matter and assign all of that
+        let meta = FrontMatter::parse(&front_matter)
             .chain_err(|| format!("Error when parsing front matter of file `{}`", filepath))?;
 
+        let mut page = Page::new(meta);
+        page.filepath = filepath.to_string();
+        page.raw_content = content.to_string();
         page.content = {
             let mut html = String::new();
             let parser = cmark::Parser::new(&page.raw_content);
@@ -121,11 +100,11 @@ impl Page {
             html
         };
 
-        // next find sections
+        // 4. Find sections
         // Pages with custom urls exists outside of sections
-        if page.url == "" {
+        if page.meta.url.is_none() {
             let path = Path::new(filepath);
-            page.filename = path.file_stem().expect("Couldn't get file stem").to_string_lossy().to_string();
+            page.filename = path.file_stem().expect("Couldn't get filename").to_string_lossy().to_string();
 
             // find out if we have sections
             for section in path.parent().unwrap().components() {
@@ -133,11 +112,11 @@ impl Page {
             }
 
             // now the url
-            // it's either set in the front matter OR we get it from a combination of sections + slug
-            if page.sections.len() > 0 {
-                page.url = format!("/{}/{}", page.sections.join("/"), page.slug);
+            // We get it from a combination of sections + slug
+            if !page.sections.is_empty() {
+                page.meta.url = Some(format!("/{}/{}", page.sections.join("/"), page.get_slug()));
             } else {
-                page.url = format!("/{}", page.slug);
+                page.meta.url = Some(format!("/{}", page.get_slug()));
             };
         }
 
@@ -154,13 +133,13 @@ impl Page {
 
         // Remove the content string from name
         // Maybe get a path as an arg instead and use strip_prefix?
-        Page::from_str(&path.strip_prefix("content").unwrap().to_string_lossy(), &content)
+        Page::parse(&path.strip_prefix("content").unwrap().to_string_lossy(), &content)
     }
 
     fn get_layout_name(&self) -> String {
-        match self.layout {
+        match self.meta.layout {
             Some(ref l) => l.to_string(),
-            None => "single.html".to_string()
+            None => "page.html".to_string()
         }
     }
 
@@ -170,13 +149,30 @@ impl Page {
         context.add("site", config);
         context.add("page", self);
 
-        tera.render(&tpl, context)
+        tera.render(&tpl, &context)
             .chain_err(|| "Error while rendering template")
     }
 }
 
+impl ser::Serialize for Page {
+    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
+        let mut state = serializer.serialize_struct("page", 10)?;
+        state.serialize_field("content", &self.content)?;
+        state.serialize_field("title", &self.meta.title)?;
+        state.serialize_field("description", &self.meta.description)?;
+        state.serialize_field("date", &self.meta.date)?;
+        state.serialize_field("slug", &self.meta.slug)?;
+        state.serialize_field("url", &self.meta.url)?;
+        state.serialize_field("tags", &self.meta.tags)?;
+        state.serialize_field("draft", &self.meta.draft)?;
+        state.serialize_field("category", &self.meta.category)?;
+        state.serialize_field("extra", &self.meta.extra)?;
+        state.end()
+    }
+}
 
 // Order pages by date, no-op for now
+// TODO: impl PartialOrd on Vec<Page> so we can use sort()?
 pub fn order_pages(pages: Vec<Page>) -> Vec<Page> {
     pages
 }
@@ -190,16 +186,18 @@ mod tests {
     #[test]
     fn test_can_parse_a_valid_page() {
         let content = r#"
++++
 title = "Hello"
+description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::from_str("post.md", content);
+        let res = Page::parse("post.md", content);
         assert!(res.is_ok());
         let page = res.unwrap();
 
-        assert_eq!(page.title, "Hello".to_string());
-        assert_eq!(page.slug, "hello-world".to_string());
+        assert_eq!(page.meta.title, "Hello".to_string());
+        assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
         assert_eq!(page.raw_content, "Hello world".to_string());
         assert_eq!(page.content, "<p>Hello world</p>\n".to_string());
     }
@@ -207,11 +205,13 @@ Hello world"#;
     #[test]
     fn test_can_find_one_parent_directory() {
         let content = r#"
++++
 title = "Hello"
+description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::from_str("posts/intro.md", content);
+        let res = Page::parse("posts/intro.md", content);
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.sections, vec!["posts".to_string()]);
@@ -220,11 +220,13 @@ Hello world"#;
     #[test]
     fn test_can_find_multiple_parent_directories() {
         let content = r#"
++++
 title = "Hello"
+description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::from_str("posts/intro/start.md", content);
+        let res = Page::parse("posts/intro/start.md", content);
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.sections, vec!["posts".to_string(), "intro".to_string()]);
@@ -233,26 +235,42 @@ Hello world"#;
     #[test]
     fn test_can_make_url_from_sections_and_slug() {
         let content = r#"
++++
 title = "Hello"
+description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::from_str("posts/intro/start.md", content);
+        let res = Page::parse("posts/intro/start.md", content);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.url, "/posts/intro/hello-world");
+        assert_eq!(page.meta.url.unwrap(), "/posts/intro/hello-world");
     }
 
     #[test]
     fn test_can_make_url_from_sections_and_slug_root() {
         let content = r#"
++++
 title = "Hello"
+description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::from_str("start.md", content);
+        let res = Page::parse("start.md", content);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.url, "/hello-world");
+        assert_eq!(page.meta.url.unwrap(), "/hello-world");
+    }
+
+    #[test]
+    fn test_errors_on_invalid_front_matter_format() {
+        let content = r#"
+title = "Hello"
+description = "hey there"
+slug = "hello-world"
++++
+Hello world"#;
+        let res = Page::parse("start.md", content);
+        assert!(res.is_err());
     }
 }

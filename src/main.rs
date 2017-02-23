@@ -1,16 +1,19 @@
-#![feature(proc_macro)]
-
-
-#[macro_use] extern crate clap;
-#[macro_use] extern crate error_chain;
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate clap;
+#[macro_use]
+extern crate error_chain;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
 extern crate toml;
 extern crate walkdir;
 extern crate pulldown_cmark;
 extern crate regex;
 extern crate tera;
 extern crate glob;
+extern crate syntect;
 
 
 mod utils;
@@ -30,7 +33,11 @@ fn get_config() -> Config {
     match Config::from_file("config.toml") {
         Ok(c) => c,
         Err(e) => {
+            println!("Failed to load config.toml");
             println!("Error: {}", e);
+            for e in e.iter().skip(1) {
+                println!("Reason: {}", e)
+            }
             ::std::process::exit(1);
         }
     }
@@ -38,12 +45,12 @@ fn get_config() -> Config {
 
 
 fn main() {
-    let matches = clap_app!(myapp =>
+    let matches = clap_app!(Gutenberg =>
         (version: crate_version!())
         (author: "Vincent Prouillet")
         (about: "Static site generator")
         (@setting SubcommandRequiredElseHelp)
-        (@subcommand new =>
+        (@subcommand init =>
             (about: "Create a new Gutenberg project")
             (@arg name: +required "Name of the project. Will create a directory with that name in the current directory")
         )

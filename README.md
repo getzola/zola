@@ -31,5 +31,9 @@ Get all .md files in content, remove the `content/` prefix to their path
 Split the file between front matter and content
 Parse the front matter
 markdown -> HTML for the content
-TO THINK OF: create list pages for folders, can be done while globbing I guess?
-Render templates
+
+# TODO:
+
+- syntax highlighting
+- pass a --config arg to the CLI to change from `config.toml`
+- have verbosity levels with a `verbosity` config variable with a default
