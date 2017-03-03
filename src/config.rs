@@ -14,11 +14,13 @@ pub struct Config {
     pub title: String,
     /// Base URL of the site
     pub base_url: String,
+    /// Whether to highlight all code found in markdown files. Defaults to true
+    pub highlight_code: Option<bool>,
     /// Description of the site
     pub description: Option<String>,
     /// The language used in the site. Defaults to "en"
     pub language_code: Option<String>,
-    /// Whether to disable RSS generation, defaults to None (== generate RSS)
+    /// Whether to disable RSS generation, defaults to false (== generate RSS)
     pub disable_rss: Option<bool>,
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
@@ -32,8 +34,17 @@ impl Config {
             Ok(c) => c,
             Err(e) => bail!(e)
         };
+
         if config.language_code.is_none() {
             config.language_code = Some("en".to_string());
+        }
+
+        if config.highlight_code.is_none() {
+            config.highlight_code = Some(true);
+        }
+
+        if config.disable_rss.is_none() {
+            config.disable_rss = Some(false);
         }
 
         Ok(config)
@@ -47,6 +58,20 @@ impl Config {
             .read_to_string(&mut content)?;
 
         Config::parse(&content)
+    }
+}
+
+
+/// Get and parse the config.
+/// If it doesn't succeed, exit
+pub fn get_config() -> Config {
+    match Config::from_file("config.toml") {
+        Ok(c) => c,
+        Err(e) => {
+            println!("Failed to load config.toml");
+            println!("Error: {}", e);
+            ::std::process::exit(1);
+        }
     }
 }
 

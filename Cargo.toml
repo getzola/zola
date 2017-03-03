@@ -10,7 +10,7 @@ repository = "https://github.com/Keats/gutenberg"
 keywords = ["static", "site", "generator", "blog"]
 
 [dependencies]
-error-chain = "0.9"
+error-chain = "0.10"
 clap = "2.19"
 walkdir = "1"
 pulldown-cmark = "0"
@@ -20,7 +20,9 @@ glob = "0.2"
 serde = "0.9"
 serde_json = "0.9"
 serde_derive = "0.9"
-tera = { git = "https://github.com/Keats/tera", branch = "next" }
+# tera = { git = "https://github.com/Keats/tera", branch = "next" }
+tera = "0.8"
+slug = "0.1"
 syntect = "1"
 
 [dependencies.toml]

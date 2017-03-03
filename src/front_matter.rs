@@ -11,10 +11,14 @@ use errors::{Result};
 /// The front matter of every page
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FrontMatter {
-    // <title> of the page
+    // Mandatory fields
+
+    /// <title> of the page
     pub title: String,
     /// Description that appears when linked, e.g. on twitter
     pub description: String,
+
+    // Optional stuff
 
     /// Date if we want to order pages (ie blog post)
     pub date: Option<String>,
@@ -44,7 +48,7 @@ impl FrontMatter {
             bail!("Front matter of file is missing");
         }
 
-        let mut f: FrontMatter = match toml::from_str(toml) {
+        let f: FrontMatter = match toml::from_str(toml) {
             Ok(d) => d,
             Err(e) => bail!(e),
         };

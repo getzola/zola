@@ -14,7 +14,10 @@ extern crate regex;
 extern crate tera;
 extern crate glob;
 extern crate syntect;
+extern crate slug;
 
+
+use std::time::Instant;
 
 mod utils;
 mod config;
@@ -22,26 +25,7 @@ mod errors;
 mod cmd;
 mod page;
 mod front_matter;
-
-
-use config::Config;
-
-
-// Get and parse the config.
-// If it doesn't succeed, exit
-fn get_config() -> Config {
-    match Config::from_file("config.toml") {
-        Ok(c) => c,
-        Err(e) => {
-            println!("Failed to load config.toml");
-            println!("Error: {}", e);
-            for e in e.iter().skip(1) {
-                println!("Reason: {}", e)
-            }
-            ::std::process::exit(1);
-        }
-    }
-}
+mod site;
 
 
 fn main() {
@@ -57,6 +41,11 @@ fn main() {
         (@subcommand build =>
             (about: "Builds the site")
         )
+        (@subcommand serve =>
+            (about: "Serve the site. Rebuild and reload on change automatically")
+            (@arg interface: "Interface to bind on (default to 127.0.0.1)")
+            (@arg port: "Which port to use (default to 1111)")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -64,7 +53,6 @@ fn main() {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
                 Ok(()) => {
                     println!("Project created");
-                    println!("You will now need to set a theme in `config.toml`");
                 },
                 Err(e) => {
                     println!("Error: {}", e);
@@ -73,9 +61,11 @@ fn main() {
             };
         },
         ("build", Some(_)) => {
-            match cmd::build(get_config()) {
+            let start = Instant::now();
+            match cmd::build() {
                 Ok(()) => {
-                    println!("Project built.");
+                    let duration = start.elapsed();
+                    println!("Site built in {}s.", duration.as_secs());
                 },
                 Err(e) => {
                     println!("Failed to build the site");
@@ -83,6 +73,20 @@ fn main() {
                     for e in e.iter().skip(1) {
                         println!("Reason: {}", e)
                     }
+                    ::std::process::exit(1);
+                },
+            };
+        },
+        ("serve", Some(matches)) => {
+            let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
+            let port = matches.value_of("port").unwrap_or("1111");
+            match cmd::serve(interface, port) {
+                Ok(()) => {
+                    println!("Project created");
+                    println!("You will now need to set a theme in `config.toml`");
+                },
+                Err(e) => {
+                    println!("Error: {}", e);
                     ::std::process::exit(1);
                 },
             };

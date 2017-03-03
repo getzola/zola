@@ -9,6 +9,7 @@ use pulldown_cmark as cmark;
 use regex::Regex;
 use tera::{Tera, Context};
 use serde::ser::{SerializeStruct, self};
+use slug::slugify;
 
 use errors::{Result, ResultExt};
 use config::Config;
@@ -67,8 +68,20 @@ impl Page {
         if let Some(ref slug) = self.meta.slug {
             slug.to_string()
         } else {
-            self.filename.clone()
+            slugify(self.filename.clone())
         }
+    }
+
+    pub fn get_url(&self) -> String {
+        if let Some(ref u) = self.meta.url {
+            return u.to_string();
+        }
+
+        if !self.sections.is_empty() {
+            return format!("/{}/{}", self.sections.join("/"), self.get_slug());
+        }
+
+        format!("/{}", self.get_slug())
     }
 
     // Parse a page given the content of the .md file
@@ -110,14 +123,6 @@ impl Page {
             for section in path.parent().unwrap().components() {
                 page.sections.push(section.as_ref().to_string_lossy().to_string());
             }
-
-            // now the url
-            // We get it from a combination of sections + slug
-            if !page.sections.is_empty() {
-                page.meta.url = Some(format!("/{}/{}", page.sections.join("/"), page.get_slug()));
-            } else {
-                page.meta.url = Some(format!("/{}", page.get_slug()));
-            };
         }
 
         Ok(page)
@@ -143,7 +148,7 @@ impl Page {
         }
     }
 
-    pub fn render_html(&mut self, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
         let tpl = self.get_layout_name();
         let mut context = Context::new();
         context.add("site", config);
@@ -161,8 +166,8 @@ impl ser::Serialize for Page {
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
-        state.serialize_field("slug", &self.meta.slug)?;
-        state.serialize_field("url", &self.meta.url)?;
+        state.serialize_field("slug", &self.get_slug())?;
+        state.serialize_field("url", &self.get_url())?;
         state.serialize_field("tags", &self.meta.tags)?;
         state.serialize_field("draft", &self.meta.draft)?;
         state.serialize_field("category", &self.meta.category)?;
@@ -244,7 +249,7 @@ Hello world"#;
         let res = Page::parse("posts/intro/start.md", content);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.meta.url.unwrap(), "/posts/intro/hello-world");
+        assert_eq!(page.get_url(), "/posts/intro/hello-world");
     }
 
     #[test]
@@ -259,7 +264,7 @@ Hello world"#;
         let res = Page::parse("start.md", content);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.meta.url.unwrap(), "/hello-world");
+        assert_eq!(page.get_url(), "/hello-world");
     }
 
     #[test]
@@ -272,5 +277,19 @@ slug = "hello-world"
 Hello world"#;
         let res = Page::parse("start.md", content);
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_can_make_slug_from_non_slug_filename() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
++++
+Hello world"#;
+        let res = Page::parse("file with space.md", content);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.get_slug(), "file-with-space");
     }
 }
