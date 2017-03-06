@@ -42,6 +42,15 @@ pub struct Page {
     pub content: String,
     /// The front matter meta-data
     pub meta: FrontMatter,
+
+    /// The slug of that page.
+    /// First tries to find the slug in the meta and defaults to filename otherwise
+    pub slug: String,
+    /// The relative URL of the page
+    pub url: String,
+    /// The full URL for that page
+    pub permalink: String,
+
     /// The previous page, by date
     pub previous: Option<Box<Page>>,
     /// The next page, by date
@@ -57,33 +66,13 @@ impl Page {
             sections: vec![],
             raw_content: "".to_string(),
             content: "".to_string(),
+            slug: "".to_string(),
+            url: "".to_string(),
+            permalink: "".to_string(),
             meta: meta,
             previous: None,
             next: None,
         }
-    }
-
-    /// Get the slug for the page.
-    /// First tries to find the slug in the meta and defaults to filename otherwise
-    pub fn get_slug(&self) -> String {
-        if let Some(ref slug) = self.meta.slug {
-            slug.to_string()
-        } else {
-            slugify(self.filename.clone())
-        }
-    }
-
-    /// Get the URL (without the base URL) to that page
-    pub fn get_url(&self) -> String {
-        if let Some(ref u) = self.meta.url {
-            return u.to_string();
-        }
-
-        if !self.sections.is_empty() {
-            return format!("/{}/{}", self.sections.join("/"), self.get_slug());
-        }
-
-        format!("/{}", self.get_slug())
     }
 
     // Get word count and estimated reading time
@@ -99,7 +88,7 @@ impl Page {
     // Parse a page given the content of the .md file
     // Files without front matter or with invalid front matter are considered
     // erroneous
-    pub fn parse(filepath: &str, content: &str) -> Result<Page> {
+    pub fn parse(filepath: &str, content: &str, config: &Config) -> Result<Page> {
         // 1. separate front matter from content
         if !PAGE_RE.is_match(content) {
             bail!("Couldn't find front matter in `{}`. Did you forget to add `+++`?", filepath);
@@ -124,23 +113,43 @@ impl Page {
             cmark::html::push_html(&mut html, parser);
             html
         };
+        let path = Path::new(filepath);
+        page.filename = path.file_stem().expect("Couldn't get filename").to_string_lossy().to_string();
+        page.slug = {
+            if let Some(ref slug) = page.meta.slug {
+                slug.to_string()
+            } else {
+                slugify(page.filename.clone())
+            }
+        };
+
 
         // 4. Find sections
         // Pages with custom urls exists outside of sections
-        if page.meta.url.is_none() {
-            let path = Path::new(filepath);
-            page.filename = path.file_stem().expect("Couldn't get filename").to_string_lossy().to_string();
-
+        if let Some(ref u) = page.meta.url {
+            page.url = u.to_string();
+        } else {
             // find out if we have sections
             for section in path.parent().unwrap().components() {
                 page.sections.push(section.as_ref().to_string_lossy().to_string());
             }
+
+            if !page.sections.is_empty() {
+                page.url = format!("{}/{}", page.sections.join("/"), page.slug);
+            } else {
+                page.url = format!("{}", page.slug);
+            }
         }
+        page.permalink = if config.base_url.ends_with("/") {
+            format!("{}{}", config.base_url, page.url)
+        } else {
+            format!("{}/{}", config.base_url, page.url)
+        };
 
         Ok(page)
     }
 
-    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Page> {
+    pub fn from_file<P: AsRef<Path>>(path: P, config: &Config) -> Result<Page> {
         let path = path.as_ref();
 
         let mut content = String::new();
@@ -150,7 +159,7 @@ impl Page {
 
         // Remove the content string from name
         // Maybe get a path as an arg instead and use strip_prefix?
-        Page::parse(&path.strip_prefix("content").unwrap().to_string_lossy(), &content)
+        Page::parse(&path.strip_prefix("content").unwrap().to_string_lossy(), &content, config)
     }
 
     fn get_layout_name(&self) -> String {
@@ -174,13 +183,14 @@ impl Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 12)?;
+        let mut state = serializer.serialize_struct("page", 13)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
-        state.serialize_field("slug", &self.get_slug())?;
-        state.serialize_field("url", &self.get_url())?;
+        state.serialize_field("slug", &self.slug)?;
+        state.serialize_field("url", &format!("/{}", self.url))?;
+        state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("tags", &self.meta.tags)?;
         state.serialize_field("draft", &self.meta.draft)?;
         state.serialize_field("category", &self.meta.category)?;
@@ -222,6 +232,7 @@ impl PartialOrd for Page {
 #[cfg(test)]
 mod tests {
     use super::{Page};
+    use config::Config;
 
 
     #[test]
@@ -233,7 +244,7 @@ description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::parse("post.md", content);
+        let res = Page::parse("post.md", content, &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
 
@@ -252,7 +263,7 @@ description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::parse("posts/intro.md", content);
+        let res = Page::parse("posts/intro.md", content, &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.sections, vec!["posts".to_string()]);
@@ -267,7 +278,7 @@ description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::parse("posts/intro/start.md", content);
+        let res = Page::parse("posts/intro/start.md", content, &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.sections, vec!["posts".to_string(), "intro".to_string()]);
@@ -282,14 +293,17 @@ description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::parse("posts/intro/start.md", content);
+        let mut conf = Config::default();
+        conf.base_url = "http://hello.com/".to_string();
+        let res = Page::parse("posts/intro/start.md", content, &conf);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.get_url(), "/posts/intro/hello-world");
+        assert_eq!(page.url, "posts/intro/hello-world");
+        assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world");
     }
 
     #[test]
-    fn test_can_make_url_from_sections_and_slug_root() {
+    fn test_can_make_permalink_with_non_trailing_slash_base_url() {
         let content = r#"
 +++
 title = "Hello"
@@ -297,10 +311,30 @@ description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::parse("start.md", content);
+        let mut conf = Config::default();
+        conf.base_url = "http://hello.com".to_string();
+        let res = Page::parse("posts/intro/start.md", content, &conf);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.get_url(), "/hello-world");
+        assert_eq!(page.url, "posts/intro/hello-world");
+        println!("{}", page.permalink);
+        assert_eq!(page.permalink, format!("{}{}", conf.base_url, "/posts/intro/hello-world"));
+    }
+
+    #[test]
+    fn test_can_make_url_from_slug_only() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
+slug = "hello-world"
++++
+Hello world"#;
+        let res = Page::parse("start.md", content, &Config::default());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.url, "hello-world");
+        assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "hello-world"));
     }
 
     #[test]
@@ -311,7 +345,7 @@ description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::parse("start.md", content);
+        let res = Page::parse("start.md", content, &Config::default());
         assert!(res.is_err());
     }
 
@@ -323,10 +357,11 @@ title = "Hello"
 description = "hey there"
 +++
 Hello world"#;
-        let res = Page::parse("file with space.md", content);
+        let res = Page::parse("file with space.md", content, &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.get_slug(), "file-with-space");
+        assert_eq!(page.slug, "file-with-space");
+        assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "file-with-space"));
     }
 
     #[test]
@@ -337,7 +372,7 @@ title = "Hello"
 description = "hey there"
 +++
 Hello world"#;
-        let res = Page::parse("file with space.md", content);
+        let res = Page::parse("file with space.md", content, &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
         let (word_count, reading_time) = page.get_reading_analytics();
@@ -356,7 +391,7 @@ Hello world"#.to_string();
         for _ in 0..1000 {
             content.push_str(" Hello world");
         }
-        let res = Page::parse("hello.md", &content);
+        let res = Page::parse("hello.md", &content, &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
         let (word_count, reading_time) = page.get_reading_analytics();

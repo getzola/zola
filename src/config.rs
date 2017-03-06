@@ -61,6 +61,21 @@ impl Config {
     }
 }
 
+impl Default for Config {
+    /// Exists for testing purposes
+    fn default() -> Config {
+        Config {
+            title: "".to_string(),
+            base_url: "http://a-website.com/".to_string(),
+            highlight_code: Some(true),
+            description: None,
+            language_code: Some("en".to_string()),
+            disable_rss: Some(false),
+            extra: None,
+        }
+    }
+}
+
 
 /// Get and parse the config.
 /// If it doesn't succeed, exit

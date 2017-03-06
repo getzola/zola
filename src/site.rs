@@ -41,13 +41,13 @@ impl Site {
         // First step: do all the articles and group article by sections
         // hardcoded pattern so can't error
         for entry in glob("content/**/*.md").unwrap().filter_map(|e| e.ok()) {
-            let page = Page::from_file(&entry.as_path())?;
+            let page = Page::from_file(&entry.as_path(), &self.config)?;
 
             for section in &page.sections {
-                self.sections.entry(section.clone()).or_insert(vec![]).push(page.get_slug());
+                self.sections.entry(section.clone()).or_insert(vec![]).push(page.slug.clone());
             }
 
-            self.pages.insert(page.get_slug(), page);
+            self.pages.insert(page.slug.clone(), page);
         }
 
         Ok(())
@@ -65,6 +65,8 @@ impl Site {
         html
     }
 
+    /// Re-parse and re-generate the site
+    /// Very dumb for now, ideally it would only rebuild what changed
     pub fn rebuild(&mut self) -> Result<()> {
         self.parse_site()?;
         self.build()
@@ -123,6 +125,20 @@ impl Site {
         context.add("config", &self.config);
         let index = self.templates.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
+
+        self.render_sitemap()?;
+
+        Ok(())
+    }
+
+    pub fn render_sitemap(&self) -> Result<()> {
+        let tpl = String::from_utf8(include_bytes!("templates/sitemap.xml").to_vec()).unwrap();
+        let mut context = Context::new();
+        context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
+        let sitemap = Tera::one_off(&tpl, &context, false)?;
+
+        let public = Path::new("public");
+        create_file(public.join("sitemap.xml"), &sitemap)?;
 
         Ok(())
     }
