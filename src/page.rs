@@ -1,4 +1,5 @@
 /// A page, can be a blog post or a basic page
+use std::cmp::Ordering;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -176,10 +177,30 @@ impl ser::Serialize for Page {
     }
 }
 
-// Order pages by date, no-op for now
-// TODO: impl PartialOrd on Vec<Page> so we can use sort()?
-pub fn order_pages(pages: Vec<Page>) -> Vec<Page> {
-    pages
+impl PartialOrd for Page {
+    fn partial_cmp(&self, other: &Page) -> Option<Ordering> {
+        if self.meta.date.is_none() {
+            println!("No self data");
+            return Some(Ordering::Less);
+        }
+
+        if other.meta.date.is_none() {
+            println!("No other date");
+            return Some(Ordering::Greater);
+        }
+
+        let this_date = self.meta.parse_date().unwrap();
+        let other_date = other.meta.parse_date().unwrap();
+
+        if this_date > other_date {
+            return Some(Ordering::Less);
+        }
+        if this_date < other_date {
+            return Some(Ordering::Greater);
+        }
+
+        Some(Ordering::Equal)
+    }
 }
 
 

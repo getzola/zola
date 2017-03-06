@@ -15,6 +15,7 @@ extern crate tera;
 extern crate glob;
 extern crate syntect;
 extern crate slug;
+extern crate chrono;
 
 extern crate staticfile;
 extern crate iron;

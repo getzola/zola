@@ -24,6 +24,7 @@ serde_derive = "0.9"
 tera = "0.8"
 slug = "0.1"
 syntect = "1"
+chrono = "0.3"
 
 # Below is for the serve cmd
 staticfile = "0.4"

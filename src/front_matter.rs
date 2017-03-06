@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 use toml;
 use tera::Value;
+use chrono::prelude::*;
 
 
 use errors::{Result};
@@ -66,6 +67,19 @@ impl FrontMatter {
         }
 
         Ok(f)
+    }
+
+    pub fn parse_date(&self) -> Option<NaiveDateTime> {
+        match self.date {
+            Some(ref d) => {
+                if d.contains("T") {
+                    DateTime::parse_from_rfc3339(d).ok().and_then(|s| Some(s.naive_local()))
+                } else {
+                    NaiveDate::parse_from_str(d, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0,0,0)))
+                }
+            },
+            None => None,
+        }
     }
 }
 
@@ -183,6 +197,7 @@ slug = """#;
         let res = FrontMatter::parse(content);
         assert!(res.is_err());
     }
+
     #[test]
     fn test_errors_on_present_but_empty_url() {
         let content = r#"
@@ -191,5 +206,35 @@ description = "hey there"
 url = """#;
         let res = FrontMatter::parse(content);
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_parse_date_yyyy_mm_dd() {
+        let content = r#"
+title = "Hello"
+description = "hey there"
+date = "2016-10-10""#;
+        let res = FrontMatter::parse(content).unwrap();
+        assert!(res.parse_date().is_some());
+    }
+
+    #[test]
+    fn test_parse_date_rfc3339() {
+        let content = r#"
+title = "Hello"
+description = "hey there"
+date = "2002-10-02T15:00:00Z""#;
+        let res = FrontMatter::parse(content).unwrap();
+        assert!(res.parse_date().is_some());
+    }
+
+    #[test]
+    fn test_cant_parse_random_date_format() {
+        let content = r#"
+title = "Hello"
+description = "hey there"
+date = "2002/10/12""#;
+        let res = FrontMatter::parse(content).unwrap();
+        assert!(res.parse_date().is_none());
     }
 }

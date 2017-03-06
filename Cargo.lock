@@ -2,6 +2,7 @@
 name = "gutenberg"
 version = "0.1.0"
 dependencies = [
+ "chrono 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.20.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glob 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -5,7 +5,6 @@ use std::time::Duration;
 use std::thread;
 
 use iron::{Iron, Request, IronResult, Response, status};
-use iron::modifiers::Header;
 use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
@@ -17,7 +16,7 @@ use errors::{Result};
 const LIVE_RELOAD: &'static [u8; 37809] = include_bytes!("livereload.js");
 
 
-fn livereload_handler(req: &mut Request) -> IronResult<Response> {
+fn livereload_handler(_: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, String::from_utf8(LIVE_RELOAD.to_vec()).unwrap())))
 }
 

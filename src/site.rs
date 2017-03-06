@@ -118,6 +118,7 @@ impl Site {
 
         // And finally the index page
         let mut context = Context::new();
+        pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
         context.add("pages", &pages);
         context.add("config", &self.config);
         let index = self.templates.render("index.html", &context)?;
