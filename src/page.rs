@@ -73,6 +73,7 @@ impl Page {
         }
     }
 
+    /// Get the URL (without the base URL) to that page
     pub fn get_url(&self) -> String {
         if let Some(ref u) = self.meta.url {
             return u.to_string();
@@ -83,6 +84,16 @@ impl Page {
         }
 
         format!("/{}", self.get_slug())
+    }
+
+    // Get word count and estimated reading time
+    pub fn get_reading_analytics(&self) -> (usize, usize) {
+        // Only works for latin language but good enough for a start
+        let word_count: usize = self.raw_content.split_whitespace().count();
+
+        // https://help.medium.com/hc/en-us/articles/214991667-Read-time
+        // 275 seems a bit too high though
+        (word_count, (word_count / 200))
     }
 
     // Parse a page given the content of the .md file
@@ -149,6 +160,7 @@ impl Page {
         }
     }
 
+    /// Renders the page using the default layout, unless specified in front-matter
     pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
         let tpl = self.get_layout_name();
         let mut context = Context::new();
@@ -162,7 +174,7 @@ impl Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 10)?;
+        let mut state = serializer.serialize_struct("page", 12)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
@@ -173,6 +185,9 @@ impl ser::Serialize for Page {
         state.serialize_field("draft", &self.meta.draft)?;
         state.serialize_field("category", &self.meta.category)?;
         state.serialize_field("extra", &self.meta.extra)?;
+        let (word_count, reading_time) = self.get_reading_analytics();
+        state.serialize_field("word_count", &word_count)?;
+        state.serialize_field("reading_time", &reading_time)?;
         state.end()
     }
 }
@@ -312,5 +327,40 @@ Hello world"#;
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.get_slug(), "file-with-space");
+    }
+
+    #[test]
+    fn test_reading_analytics_short() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
++++
+Hello world"#;
+        let res = Page::parse("file with space.md", content);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        let (word_count, reading_time) = page.get_reading_analytics();
+        assert_eq!(word_count, 2);
+        assert_eq!(reading_time, 0);
+    }
+
+    #[test]
+    fn test_reading_analytics_long() {
+        let mut content = r#"
++++
+title = "Hello"
+description = "hey there"
++++
+Hello world"#.to_string();
+        for _ in 0..1000 {
+            content.push_str(" Hello world");
+        }
+        let res = Page::parse("hello.md", &content);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        let (word_count, reading_time) = page.get_reading_analytics();
+        assert_eq!(word_count, 2002);
+        assert_eq!(reading_time, 10);
     }
 }
