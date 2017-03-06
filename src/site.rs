@@ -17,16 +17,18 @@ pub struct Site {
     pages: HashMap<String, Page>,
     sections: HashMap<String, Vec<String>>,
     templates: Tera,
+    live_reload: bool,
 }
 
 impl Site {
-    pub fn new() -> Result<Site> {
+    pub fn new(livereload: bool) -> Result<Site> {
         let tera = Tera::new("templates/**/*").chain_err(|| "Error parsing templates")?;
         let mut site = Site {
             config: get_config(),
             pages: HashMap::new(),
             sections: HashMap::new(),
             templates: tera,
+            live_reload: livereload,
         };
         site.parse_site()?;
 
@@ -49,6 +51,23 @@ impl Site {
         }
 
         Ok(())
+    }
+
+    // Inject live reload script tag if in live reload mode
+    fn inject_livereload(&self, html: String) -> String {
+        if self.live_reload {
+            return html.replace(
+                "</body>",
+                r#"<script src="/livereload.js?port=1112&mindelay=10"></script></body>"#
+            );
+        }
+
+        html
+    }
+
+    pub fn rebuild(&mut self) -> Result<()> {
+        self.parse_site()?;
+        self.build()
     }
 
     /// Builds the site to the `public` directory after deleting it
@@ -85,8 +104,9 @@ impl Site {
             // Make sure the folder exists
             create_dir(&current_path)?;
             // Finally, create a index.html file there with the page rendered
+
             let output = page.render_html(&self.templates, &self.config)?;
-            create_file(current_path.join("index.html"), &output)?;
+            create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
             pages.push(page);
         }
 
@@ -100,7 +120,8 @@ impl Site {
         let mut context = Context::new();
         context.add("pages", &pages);
         context.add("config", &self.config);
-        create_file(public.join("index.html"), &self.templates.render("index.html", &context)?)?;
+        let index = self.templates.render("index.html", &context)?;
+        create_file(public.join("index.html"), &self.inject_livereload(index))?;
 
         Ok(())
     }

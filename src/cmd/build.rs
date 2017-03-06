@@ -3,5 +3,5 @@ use site::Site;
 
 
 pub fn build() -> Result<()> {
-    Site::new()?.build()
+    Site::new(false)?.build()
 }

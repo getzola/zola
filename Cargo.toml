@@ -25,6 +25,13 @@ tera = "0.8"
 slug = "0.1"
 syntect = "1"
 
+# Below is for the serve cmd
+staticfile = "0.4"
+iron = "0.5"
+mount = "0.3"
+notify = "4"
+ws = "0.6"
+
 [dependencies.toml]
 version = "0.3"
 default-features = false

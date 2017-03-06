@@ -16,6 +16,12 @@ extern crate glob;
 extern crate syntect;
 extern crate slug;
 
+extern crate staticfile;
+extern crate iron;
+extern crate mount;
+extern crate notify;
+extern crate ws;
+
 
 use std::time::Instant;
 
@@ -81,10 +87,7 @@ fn main() {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let port = matches.value_of("port").unwrap_or("1111");
             match cmd::serve(interface, port) {
-                Ok(()) => {
-                    println!("Project created");
-                    println!("You will now need to set a theme in `config.toml`");
-                },
+                Ok(()) => (),
                 Err(e) => {
                     println!("Error: {}", e);
                     ::std::process::exit(1);
