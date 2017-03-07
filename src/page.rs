@@ -19,6 +19,14 @@ use front_matter::{FrontMatter};
 
 lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n((?s).*(?-s))$").unwrap();
+    static ref SUMMARY_RE: Regex = Regex::new(r"<!-- more -->").unwrap();
+}
+
+fn markdown_to_html(content: &str) -> String {
+    let mut html = String::new();
+    let parser = cmark::Parser::new(content);
+    cmark::html::push_html(&mut html, parser);
+    html
 }
 
 
@@ -50,6 +58,10 @@ pub struct Page {
     pub url: String,
     /// The full URL for that page
     pub permalink: String,
+    /// The summary for the article, defaults to empty string
+    /// When <!-- more --> is found in the text, will take the content up to that part
+    /// as summary
+    pub summary: String,
 
     /// The previous page, by date
     pub previous: Option<Box<Page>>,
@@ -69,6 +81,7 @@ impl Page {
             slug: "".to_string(),
             url: "".to_string(),
             permalink: "".to_string(),
+            summary: "".to_string(),
             meta: meta,
             previous: None,
             next: None,
@@ -107,12 +120,16 @@ impl Page {
         let mut page = Page::new(meta);
         page.filepath = filepath.to_string();
         page.raw_content = content.to_string();
-        page.content = {
-            let mut html = String::new();
-            let parser = cmark::Parser::new(&page.raw_content);
-            cmark::html::push_html(&mut html, parser);
-            html
-        };
+        page.content = markdown_to_html(&page.raw_content);
+
+
+        if page.raw_content.contains("<!-- more -->") {
+            page.summary = {
+                let summary = SUMMARY_RE.split(&page.raw_content).collect::<Vec<&str>>()[0];
+                markdown_to_html(summary)
+            }
+        }
+
         let path = Path::new(filepath);
         page.filename = path.file_stem().expect("Couldn't get filename").to_string_lossy().to_string();
         page.slug = {
@@ -397,5 +414,35 @@ Hello world"#.to_string();
         let (word_count, reading_time) = page.get_reading_analytics();
         assert_eq!(word_count, 2002);
         assert_eq!(reading_time, 10);
+    }
+
+    #[test]
+    fn test_automatic_summary_is_empty_string() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
++++
+Hello world"#.to_string();
+        let res = Page::parse("hello.md", &content, &Config::default());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.summary, "");
+    }
+
+    #[test]
+    fn test_can_specify_summary() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
++++
+Hello world
+<!-- more -->
+"#.to_string();
+        let res = Page::parse("hello.md", &content, &Config::default());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.summary, "<p>Hello world</p>\n");
     }
 }
