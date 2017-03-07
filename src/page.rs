@@ -134,7 +134,7 @@ impl Page {
         page.filename = path.file_stem().expect("Couldn't get filename").to_string_lossy().to_string();
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                slug.to_string()
+                slug.trim().to_string()
             } else {
                 slugify(page.filename.clone())
             }
@@ -144,7 +144,7 @@ impl Page {
         // 4. Find sections
         // Pages with custom urls exists outside of sections
         if let Some(ref u) = page.meta.url {
-            page.url = u.to_string();
+            page.url = u.trim().to_string();
         } else {
             // find out if we have sections
             for section in path.parent().unwrap().components() {
@@ -375,6 +375,21 @@ description = "hey there"
 +++
 Hello world"#;
         let res = Page::parse("file with space.md", content, &Config::default());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.slug, "file-with-space");
+        assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "file-with-space"));
+    }
+
+    #[test]
+    fn test_trim_slug_if_needed() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
++++
+Hello world"#;
+        let res = Page::parse(" file with space.md", content, &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.slug, "file-with-space");

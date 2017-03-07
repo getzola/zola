@@ -153,6 +153,9 @@ impl Site {
         self.render_categories_and_tags(RenderList::Categories, &category_pages)?;
         self.render_categories_and_tags(RenderList::Tags, &tag_pages)?;
 
+        self.render_sitemap()?;
+        self.render_rss_feed()?;
+
         // And finally the index page
         let mut context = Context::new();
         pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -161,8 +164,6 @@ impl Site {
         let index = self.templates.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
 
-        self.render_sitemap()?;
-        // TODO: render rss feed
 
         Ok(())
     }
@@ -218,7 +219,7 @@ impl Site {
         Ok(())
     }
 
-    pub fn render_sitemap(&self) -> Result<()> {
+    fn render_sitemap(&self) -> Result<()> {
         let tpl = String::from_utf8(include_bytes!("templates/sitemap.xml").to_vec()).unwrap();
         let mut context = Context::new();
         context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
@@ -226,6 +227,40 @@ impl Site {
 
         let public = Path::new("public");
         create_file(public.join("sitemap.xml"), &sitemap)?;
+
+        Ok(())
+    }
+
+    fn get_rss_feed_url(&self) -> String {
+        if self.config.base_url.ends_with("/") {
+            format!("{}{}", self.config.base_url, "feed.xml")
+        } else {
+            format!("{}/{}", self.config.base_url, "feed.xml")
+        }
+    }
+
+    fn render_rss_feed(&self) -> Result<()> {
+        let tpl = String::from_utf8(include_bytes!("templates/rss.xml").to_vec()).unwrap();
+        let mut context = Context::new();
+        let mut pages = self.pages.values()
+            .filter(|p| p.meta.date.is_some())
+            .take(15) // limit to the last 15 elements
+            .collect::<Vec<&Page>>();
+
+        // Don't generate a RSS feed if none of the pages has a date
+        if pages.is_empty() {
+            return Ok(());
+        }
+        pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        context.add("pages", &pages);
+        context.add("last_build_date", &pages[0].meta.date);
+        context.add("config", &self.config);
+        context.add("feed_url", &self.get_rss_feed_url());
+
+        let sitemap = Tera::one_off(&tpl, &context, false)?;
+
+        let public = Path::new("public");
+        create_file(public.join("rss.xml"), &sitemap)?;
 
         Ok(())
     }
