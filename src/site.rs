@@ -1,14 +1,41 @@
 use std::collections::HashMap;
+use std::iter::FromIterator;
 use std::fs::{create_dir, remove_dir_all};
 use std::path::Path;
 
 use glob::glob;
 use tera::{Tera, Context};
+use slug::slugify;
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use page::Page;
 use utils::create_file;
+
+
+#[derive(Debug, PartialEq)]
+enum RenderList {
+    Tags,
+    Categories,
+}
+
+/// A tag or category
+#[derive(Debug, Serialize, PartialEq)]
+struct ListItem {
+    name: String,
+    slug: String,
+    count: usize,
+}
+
+impl ListItem {
+    pub fn new(name: &str, count: usize) -> ListItem {
+        ListItem {
+            name: name.to_string(),
+            slug: slugify(name),
+            count: count,
+        }
+    }
+}
 
 
 #[derive(Debug)]
@@ -84,6 +111,8 @@ impl Site {
         let public = Path::new("public");
 
         let mut pages = vec![];
+        let mut category_pages: HashMap<String, Vec<&Page>> = HashMap::new();
+        let mut tag_pages: HashMap<String, Vec<&Page>> = HashMap::new();
         // First we render the pages themselves
         for page in self.pages.values() {
             // Copy the nesting of the content directory if we have sections for that page
@@ -106,17 +135,23 @@ impl Site {
             // Make sure the folder exists
             create_dir(&current_path)?;
             // Finally, create a index.html file there with the page rendered
-
             let output = page.render_html(&self.templates, &self.config)?;
             create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
             pages.push(page);
+
+            if let Some(ref category) = page.meta.category {
+                category_pages.entry(category.to_string()).or_insert(vec![]).push(page);
+            }
+            if let Some(ref tags) = page.meta.tags {
+                for tag in tags {
+                    tag_pages.entry(tag.to_string()).or_insert(vec![]).push(page);
+                }
+            }
         }
 
-        // Then the section pages
-        // The folders have already been created in the page loop so no need to `create_dir` here
-//        for (section, slugs) in &self.sections {
-//            // TODO
-//        }
+        // Outputting categories and pages
+        self.render_categories_and_tags(RenderList::Categories, &category_pages)?;
+        self.render_categories_and_tags(RenderList::Tags, &tag_pages)?;
 
         // And finally the index page
         let mut context = Context::new();
@@ -127,6 +162,58 @@ impl Site {
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
 
         self.render_sitemap()?;
+        // TODO: render rss feed
+
+        Ok(())
+    }
+    /// Render the /{categories, list} pages and each individual category/tag page
+    fn render_categories_and_tags(&self, kind: RenderList, container: &HashMap<String, Vec<&Page>>) -> Result<()> {
+        if container.is_empty() {
+            return Ok(());
+        }
+
+        let (name, list_tpl_name, single_tpl_name, var_name) = if kind == RenderList::Categories {
+            ("categories", "categories.html", "category.html", "category")
+        } else {
+            ("tags", "tags.html", "tag.html", "tag")
+        };
+
+        let public = Path::new("public");
+        let mut output_path = public.to_path_buf();
+        output_path.push(name);
+        create_dir(&output_path)?;
+
+        // First we render the list of categories/tags page
+        let mut sorted_container = vec![];
+        for (item, count) in Vec::from_iter(container).into_iter().map(|(a, b)| (a, b.len())) {
+            sorted_container.push(ListItem::new(item, count));
+        }
+        sorted_container.sort_by(|a, b| b.count.cmp(&a.count));
+
+        let mut context = Context::new();
+        context.add(name, &sorted_container);
+        context.add("config", &self.config);
+
+        let list_output = self.templates.render(list_tpl_name, &context)?;
+        create_file(output_path.join("index.html"), &self.inject_livereload(list_output))?;
+
+        // and then each individual item
+        for (item_name, mut pages) in container.clone() {
+            let mut context = Context::new();
+            pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            let slug = slugify(&item_name);
+            context.add(var_name, &item_name);
+            context.add(&format!("{}_slug", var_name), &slug);
+            context.add("pages", &pages);
+            context.add("config", &self.config);
+            let single_output = self.templates.render(single_tpl_name, &context)?;
+
+            create_dir(&output_path.join(&slug))?;
+            create_file(
+                output_path.join(&slug).join("index.html"),
+                &self.inject_livereload(single_output)
+            )?;
+        }
 
         Ok(())
     }
