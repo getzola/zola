@@ -33,6 +33,7 @@ mod cmd;
 mod page;
 mod front_matter;
 mod site;
+mod markdown;
 
 
 fn main() {

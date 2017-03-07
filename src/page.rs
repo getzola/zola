@@ -6,7 +6,6 @@ use std::path::Path;
 use std::result::Result as StdResult;
 
 
-use pulldown_cmark as cmark;
 use regex::Regex;
 use tera::{Tera, Context};
 use serde::ser::{SerializeStruct, self};
@@ -15,18 +14,12 @@ use slug::slugify;
 use errors::{Result, ResultExt};
 use config::Config;
 use front_matter::{FrontMatter};
+use markdown::markdown_to_html;
 
 
 lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n((?s).*(?-s))$").unwrap();
     static ref SUMMARY_RE: Regex = Regex::new(r"<!-- more -->").unwrap();
-}
-
-fn markdown_to_html(content: &str) -> String {
-    let mut html = String::new();
-    let parser = cmark::Parser::new(content);
-    cmark::html::push_html(&mut html, parser);
-    html
 }
 
 
@@ -120,13 +113,13 @@ impl Page {
         let mut page = Page::new(meta);
         page.filepath = filepath.to_string();
         page.raw_content = content.to_string();
-        page.content = markdown_to_html(&page.raw_content);
+        page.content = markdown_to_html(&page.raw_content, config.highlight_code.unwrap());
 
 
         if page.raw_content.contains("<!-- more -->") {
             page.summary = {
                 let summary = SUMMARY_RE.split(&page.raw_content).collect::<Vec<&str>>()[0];
-                markdown_to_html(summary)
+                markdown_to_html(summary, config.highlight_code.unwrap())
             }
         }
 

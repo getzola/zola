@@ -33,7 +33,9 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("public/")));
     mount.mount("/livereload.js", livereload_handler);
-    let server = Iron::new(mount).http(address.clone()).unwrap();
+    // Starts with a _ to not trigger the unused lint
+    // we need to assign to a variable otherwise it will block
+    let _iron = Iron::new(mount).http(address.clone()).unwrap();
     println!("Web server is available at http://{}", address);
     println!("Press CTRL+C to stop");
 

@@ -7,7 +7,7 @@ use toml::{Value as Toml, self};
 
 use errors::{Result, ResultExt};
 
-// TODO: disable tag(s)/category(ies) page generation
+
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// Title of the site
