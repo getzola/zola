@@ -32,6 +32,9 @@ Split the file between front matter and content
 Parse the front matter
 markdown -> HTML for the content
 
+### Themes
+Gallery at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark
+
 # TODO:
 
 - syntax highlighting

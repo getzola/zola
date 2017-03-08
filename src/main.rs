@@ -2,20 +2,7 @@
 extern crate clap;
 #[macro_use]
 extern crate error_chain;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate toml;
-extern crate walkdir;
-extern crate pulldown_cmark;
-extern crate regex;
-extern crate tera;
-extern crate glob;
-extern crate syntect;
-extern crate slug;
-extern crate chrono;
+extern crate gutenberg;
 
 extern crate staticfile;
 extern crate iron;
@@ -26,14 +13,7 @@ extern crate ws;
 
 use std::time::Instant;
 
-mod utils;
-mod config;
-mod errors;
 mod cmd;
-mod page;
-mod front_matter;
-mod site;
-mod markdown;
 
 
 fn main() {

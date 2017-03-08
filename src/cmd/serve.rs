@@ -10,8 +10,8 @@ use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket};
 
-use site::Site;
-use errors::{Result};
+use gutenberg::Site;
+use gutenberg::errors::{Result};
 
 const LIVE_RELOAD: &'static [u8; 37809] = include_bytes!("livereload.js");
 
