@@ -3,6 +3,7 @@ extern crate clap;
 #[macro_use]
 extern crate error_chain;
 extern crate gutenberg;
+extern crate chrono;
 
 extern crate staticfile;
 extern crate iron;
@@ -12,8 +13,16 @@ extern crate ws;
 
 
 use std::time::Instant;
+use chrono::Duration;
 
 mod cmd;
+
+
+// Print the time elapsed rounded to 1 decimal
+fn time_elapsed(instant: Instant) -> f64 {
+    let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64 / 1000.0;
+    (duration_ms * 10.0).round() / 10.0
+}
 
 
 fn main() {
@@ -52,8 +61,7 @@ fn main() {
             let start = Instant::now();
             match cmd::build() {
                 Ok(()) => {
-                    let duration = start.elapsed();
-                    println!("Site built in {}s.", duration.as_secs());
+                    println!("Site built in {:.1}s.", time_elapsed(start));
                 },
                 Err(e) => {
                     println!("Failed to build the site");

@@ -92,6 +92,16 @@ impl Site {
         html
     }
 
+    /// Reload the Tera templates
+    pub fn reload_templates(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    /// Copy the content of the `static` folder into the `public` folder
+    pub fn copy_static_files(&self) -> Result<()> {
+        Ok(())
+    }
+
     /// Re-parse and re-generate the site
     /// Very dumb for now, ideally it would only rebuild what changed
     pub fn rebuild(&mut self) -> Result<()> {

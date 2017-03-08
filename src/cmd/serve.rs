@@ -1,7 +1,7 @@
 use std::env;
 use std::path::Path;
 use std::sync::mpsc::channel;
-use std::time::Duration;
+use std::time::{Instant, Duration};
 use std::thread;
 
 use iron::{Iron, Request, IronResult, Response, status};
@@ -9,15 +9,25 @@ use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket};
-
 use gutenberg::Site;
 use gutenberg::errors::{Result};
 
-const LIVE_RELOAD: &'static [u8; 37809] = include_bytes!("livereload.js");
+
+use ::time_elapsed;
+
+
+#[derive(Debug, PartialEq)]
+enum ChangeKind {
+    Content,
+    Templates,
+    StaticFiles,
+}
+
+const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
 
 fn livereload_handler(_: &mut Request) -> IronResult<Response> {
-    Ok(Response::with((status::Ok, String::from_utf8(LIVE_RELOAD.to_vec()).unwrap())))
+    Ok(Response::with((status::Ok, LIVE_RELOAD.to_string())))
 }
 
 
@@ -37,7 +47,6 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
     // we need to assign to a variable otherwise it will block
     let _iron = Iron::new(mount).http(address.clone()).unwrap();
     println!("Web server is available at http://{}", address);
-    println!("Press CTRL+C to stop");
 
     // The websocket for livereload
     let ws_server = WebSocket::new(|_| {
@@ -56,8 +65,9 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
     watcher.watch("content/", RecursiveMode::Recursive).unwrap();
     watcher.watch("static/", RecursiveMode::Recursive).unwrap();
     watcher.watch("templates/", RecursiveMode::Recursive).unwrap();
-    let pwd = env::current_dir().unwrap();
-    println!("Listening for changes in {}/{{content, static, templates}}", pwd.display());
+    let pwd = format!("{}", env::current_dir().unwrap().display());
+    println!("Listening for changes in {}/{{content, static, templates}}", pwd);
+    println!("Press CTRL+C to stop");
 
     use notify::DebouncedEvent::*;
 
@@ -65,27 +75,36 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
         // See https://github.com/spf13/hugo/blob/master/commands/hugo.go
         // for a more complete version of that
         match rx.recv() {
-            Ok(event) => match event {
-                NoticeWrite(path) |
-                NoticeRemove(path) |
-                Create(path) |
-                Write(path) |
-                Remove(path) |
-                Rename(_, path) => {
-                    if !is_temp_file(&path) {
-                        println!("Change detected in {}", path.display());
+            Ok(event) => {
+                match event {
+                    Create(path) |
+                    Write(path) |
+                    Remove(path) |
+                    Rename(_, path) => {
+                        if is_temp_file(&path) {
+                            continue;
+                        }
+
+                        println!("Change detected, rebuilding site");
+                        let what_changed = detect_change_kind(&pwd, &path);
+                        match what_changed {
+                            ChangeKind::Content => println!("Content changed {}", path.display()),
+                            ChangeKind::Templates => println!("Template changed {}", path.display()),
+                            ChangeKind::StaticFiles => println!("Static file changes detected {}", path.display()),
+                        };
+                        let start = Instant::now();
                         match site.rebuild() {
                             Ok(_) => {
-                                println!("Site rebuilt");
+                                println!("Done in {:.1}s.", time_elapsed(start));
                                 broadcaster.send(r#"
-                                {
-                                    "command": "reload",
-                                    "path": "",
-                                    "originalPath": "",
-                                    "liveCSS": true,
-                                    "liveImg": true,
-                                    "protocol": ["http://livereload.com/protocols/official-7"]
-                                }"#).unwrap();
+                            {
+                                "command": "reload",
+                                "path": "",
+                                "originalPath": "",
+                                "liveCSS": true,
+                                "liveImg": true,
+                                "protocol": ["http://livereload.com/protocols/official-7"]
+                            }"#).unwrap();
                             },
                             Err(e) => {
                                 println!("Failed to build the site");
@@ -95,9 +114,10 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
                                 }
                             }
                         }
+
                     }
+                    _ => {}
                 }
-                _ => {}
             },
             Err(e) => println!("Watch error: {:?}", e),
         };
@@ -116,10 +136,8 @@ fn is_temp_file(path: &Path) -> bool {
             x if x.ends_with("jb_old___") => true,
             x if x.ends_with("jb_tmp___") => true,
             x if x.ends_with("jb_bak___") => true,
-            // byword
-            x if x.starts_with("sb-") => true,
-            // gnome
-            x if x.starts_with(".gooutputstream") => true,
+            // vim
+            x if x.ends_with("~") => true,
             _ => {
                 if let Some(filename) = path.file_stem() {
                     // emacs
@@ -129,6 +147,75 @@ fn is_temp_file(path: &Path) -> bool {
                 }
             }
         },
-        None => false,
+        None => {
+            if path.ends_with(".DS_STORE") {
+                true
+            } else {
+                false
+            }
+        },
     }
+}
+
+
+/// Detect what changed from the given path so we have an idea what needs
+/// to be reloaded
+fn detect_change_kind(pwd: &str, path: &Path) -> ChangeKind {
+    let path_str = format!("{}", path.display())
+        .replace(pwd, "")
+        .replace("\\", "/");
+    let change_kind = if path_str.starts_with("/templates") {
+        ChangeKind::Templates
+    } else if path_str.starts_with("/content") {
+        ChangeKind::Content
+    } else if path_str.starts_with("/static") {
+        ChangeKind::StaticFiles
+    } else {
+        panic!("Got a change in an unexpected path: {}", path_str);
+    };
+
+    change_kind
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::{is_temp_file, detect_change_kind, ChangeKind};
+
+    #[test]
+    fn test_can_recognize_temp_files() {
+        let testcases = vec![
+            Path::new("hello.swp"),
+            Path::new("hello.swx"),
+            Path::new(".DS_STORE"),
+            Path::new("hello.tmp"),
+            Path::new("hello.html.__jb_old___"),
+            Path::new("hello.html.__jb_tmp___"),
+            Path::new("hello.html.__jb_bak___"),
+            Path::new("hello.html~"),
+            Path::new("#hello.html"),
+        ];
+
+        for t in testcases {
+            println!("{:?}", t.display());
+            assert!(is_temp_file(&t));
+        }
+    }
+
+    #[test]
+    fn test_can_detect_kind_of_changes() {
+        let testcases = vec![
+            (ChangeKind::Templates, "/home/vincent/site", Path::new("/home/vincent/site/templates/hello.html")),
+            (ChangeKind::StaticFiles, "/home/vincent/site", Path::new("/home/vincent/site/static/site.css")),
+            (ChangeKind::Content, "/home/vincent/site", Path::new("/home/vincent/site/content/posts/hello.md")),
+        ];
+
+        for (expected, pwd, path) in testcases {
+            println!("{:?}", path.display());
+            assert_eq!(expected, detect_change_kind(&pwd, &path));
+        }
+    }
+
+
 }
