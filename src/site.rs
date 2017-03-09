@@ -14,6 +14,18 @@ use page::Page;
 use utils::create_file;
 
 
+lazy_static! {
+    static ref GUTENBERG_TERA: Tera = {
+        let mut tera = Tera::default();
+        tera.add_raw_templates(vec![
+            ("rss.xml", include_str!("templates/rss.xml")),
+            ("sitemap.xml", include_str!("templates/sitemap.xml")),
+        ]).unwrap();
+        tera
+    };
+}
+
+
 #[derive(Debug, PartialEq)]
 enum RenderList {
     Tags,
@@ -50,7 +62,10 @@ pub struct Site {
 
 impl Site {
     pub fn new(livereload: bool) -> Result<Site> {
-        let tera = Tera::new("templates/**/*").chain_err(|| "Error parsing templates")?;
+        let mut tera = Tera::new("templates/**/*")
+            .chain_err(|| "Error parsing templates")?;
+        tera.extend(&GUTENBERG_TERA)?;
+
         let mut site = Site {
             config: get_config(),
             pages: HashMap::new(),
@@ -258,10 +273,9 @@ impl Site {
     }
 
     fn render_sitemap(&self) -> Result<()> {
-        let tpl = String::from_utf8(include_bytes!("templates/sitemap.xml").to_vec()).unwrap();
         let mut context = Context::new();
         context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
-        let sitemap = Tera::one_off(&tpl, &context, false)?;
+        let sitemap = self.templates.render("sitemap.xml", &context)?;
 
         let public = Path::new("public");
         create_file(public.join("sitemap.xml"), &sitemap)?;
@@ -278,7 +292,6 @@ impl Site {
     }
 
     fn render_rss_feed(&self) -> Result<()> {
-        let tpl = String::from_utf8(include_bytes!("templates/rss.xml").to_vec()).unwrap();
         let mut context = Context::new();
         let mut pages = self.pages.values()
             .filter(|p| p.meta.date.is_some())
@@ -295,7 +308,7 @@ impl Site {
         context.add("config", &self.config);
         context.add("feed_url", &self.get_rss_feed_url());
 
-        let sitemap = Tera::one_off(&tpl, &context, false)?;
+        let sitemap = self.templates.render("rss.xml", &context)?;
 
         let public = Path::new("public");
         create_file(public.join("rss.xml"), &sitemap)?;
