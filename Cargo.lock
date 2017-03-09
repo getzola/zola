@@ -18,7 +18,7 @@ dependencies = [
  "slug 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "staticfile 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "syntect 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "tera 0.8.0 (git+https://github.com/Keats/tera)",
+ "tera 0.8.0 (git+https://github.com/Keats/tera?branch=reload)",
  "toml 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "ws 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -774,7 +774,7 @@ dependencies = [
 [[package]]
 name = "tera"
 version = "0.8.0"
-source = "git+https://github.com/Keats/tera#2eb55de231e08da50ca32a443499fbce8d9003e0"
+source = "git+https://github.com/Keats/tera?branch=reload#31f8bd8238e3e6bdef9ecf4468079c535609b5eb"
 dependencies = [
  "chrono 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1095,7 +1095,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum syn 0.11.9 (registry+https://github.com/rust-lang/crates.io-index)" = "480c834701caba3548aa991e54677281be3a5414a9d09ddbdf4ed74a569a9d19"
 "checksum synom 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a393066ed9010ebaed60b9eafa373d4b1baac186dd7e008555b0f702b51945b6"
 "checksum syntect 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3f79be04af68d5fa09e71b3274159a955a25f25a5cbfba9a6ff64139b71d848a"
-"checksum tera 0.8.0 (git+https://github.com/Keats/tera)" = "<none>"
+"checksum tera 0.8.0 (git+https://github.com/Keats/tera?branch=reload)" = "<none>"
 "checksum term_size 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "07b6c1ac5b3fffd75073276bca1ceed01f67a28537097a2a9539e116e50fb21a"
 "checksum thread-id 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4437c97558c70d129e40629a5b385b3fb1ffac301e63941335e4d354081ec14a"
 "checksum thread_local 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "c85048c6260d17cf486ceae3282d9fb6b90be220bf5b28c400f5485ffc29f0c7"

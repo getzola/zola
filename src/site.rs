@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use std::iter::FromIterator;
-use std::fs::{create_dir, remove_dir_all};
+use std::fs::{create_dir, remove_dir_all, copy, remove_file};
 use std::path::Path;
 
 use glob::glob;
 use tera::{Tera, Context};
 use slug::slugify;
+use walkdir::WalkDir;
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
@@ -98,7 +99,32 @@ impl Site {
     }
 
     /// Copy the content of the `static` folder into the `public` folder
-    pub fn copy_static_files(&self) -> Result<()> {
+    ///
+    /// TODO: only copy one file if possible because that would be a waster
+    /// to do re-copy the whole thing
+    pub fn copy_static_directory(&self) -> Result<()> {
+        let from = Path::new("static");
+        let target = Path::new("public");
+
+        for entry in WalkDir::new(from).into_iter().filter_map(|e| e.ok()) {
+            let relative_path = entry.path().strip_prefix(&from).unwrap();
+            let target_path = {
+                let mut target_path = target.to_path_buf();
+                target_path.push(relative_path);
+                target_path
+            };
+
+            if entry.path().is_dir() {
+                if !target_path.exists() {
+                    create_dir(&target_path)?;
+                }
+            } else {
+                if target_path.exists() {
+                    remove_file(&target_path)?;
+                }
+                copy(entry.path(), &target_path)?;
+            }
+        }
         Ok(())
     }
 
@@ -106,6 +132,7 @@ impl Site {
     /// Very dumb for now, ideally it would only rebuild what changed
     pub fn rebuild(&mut self) -> Result<()> {
         self.parse_site()?;
+        self.templates.full_reload()?;
         self.build()
     }
 
@@ -174,6 +201,7 @@ impl Site {
         let index = self.templates.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
 
+        self.copy_static_directory()?;
 
         Ok(())
     }

@@ -87,24 +87,29 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
 
                         println!("Change detected, rebuilding site");
                         let what_changed = detect_change_kind(&pwd, &path);
+                        let mut reload_path = String::new();
                         match what_changed {
-                            ChangeKind::Content => println!("Content changed {}", path.display()),
-                            ChangeKind::Templates => println!("Template changed {}", path.display()),
-                            ChangeKind::StaticFiles => println!("Static file changes detected {}", path.display()),
+                            (ChangeKind::Content, _) => println!("Content changed {}", path.display()),
+                            (ChangeKind::Templates, _) => println!("Template changed {}", path.display()),
+                            (ChangeKind::StaticFiles, p) => {
+                                reload_path = p;
+                                println!("Static file changes detected {}", path.display());
+                            },
                         };
+                        println!("Reloading {}", reload_path);
                         let start = Instant::now();
                         match site.rebuild() {
                             Ok(_) => {
-                                println!("Done in {:.1}s.", time_elapsed(start));
-                                broadcaster.send(r#"
-                            {
+                                println!("Done in {:.1}s.\n", time_elapsed(start));
+                                broadcaster.send(format!(r#"
+                            {{
                                 "command": "reload",
-                                "path": "",
+                                "path": "{}",
                                 "originalPath": "",
                                 "liveCSS": true,
                                 "liveImg": true,
                                 "protocol": ["http://livereload.com/protocols/official-7"]
-                            }"#).unwrap();
+                            }}"#, reload_path)).unwrap();
                             },
                             Err(e) => {
                                 println!("Failed to build the site");
@@ -160,7 +165,7 @@ fn is_temp_file(path: &Path) -> bool {
 
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
-fn detect_change_kind(pwd: &str, path: &Path) -> ChangeKind {
+fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
     let path_str = format!("{}", path.display())
         .replace(pwd, "")
         .replace("\\", "/");
@@ -174,7 +179,7 @@ fn detect_change_kind(pwd: &str, path: &Path) -> ChangeKind {
         panic!("Got a change in an unexpected path: {}", path_str);
     };
 
-    change_kind
+    (change_kind, path_str)
 }
 
 #[cfg(test)]
@@ -206,9 +211,18 @@ mod tests {
     #[test]
     fn test_can_detect_kind_of_changes() {
         let testcases = vec![
-            (ChangeKind::Templates, "/home/vincent/site", Path::new("/home/vincent/site/templates/hello.html")),
-            (ChangeKind::StaticFiles, "/home/vincent/site", Path::new("/home/vincent/site/static/site.css")),
-            (ChangeKind::Content, "/home/vincent/site", Path::new("/home/vincent/site/content/posts/hello.md")),
+            (
+                (ChangeKind::Templates, "/templates/hello.html".to_string()),
+                "/home/vincent/site", Path::new("/home/vincent/site/templates/hello.html")
+            ),
+            (
+                (ChangeKind::StaticFiles, "/static/site.css".to_string()),
+                "/home/vincent/site", Path::new("/home/vincent/site/static/site.css")
+            ),
+            (
+                (ChangeKind::Content, "/content/posts/hello.md".to_string()),
+                "/home/vincent/site", Path::new("/home/vincent/site/content/posts/hello.md")
+            ),
         ];
 
         for (expected, pwd, path) in testcases {
