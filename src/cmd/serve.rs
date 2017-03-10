@@ -4,16 +4,17 @@ use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
 use std::thread;
 
+use chrono::prelude::*;
 use iron::{Iron, Request, IronResult, Response, status};
 use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
-use ws::{WebSocket};
+use ws::{WebSocket, Sender};
 use gutenberg::Site;
 use gutenberg::errors::{Result};
 
 
-use ::time_elapsed;
+use ::report_elapsed_time;
 
 
 #[derive(Debug, PartialEq)]
@@ -31,10 +32,38 @@ fn livereload_handler(_: &mut Request) -> IronResult<Response> {
 }
 
 
+fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
+    match res {
+        Ok(_) => {
+            broadcaster.send(format!(r#"
+                {{
+                    "command": "reload",
+                    "path": "{}",
+                    "originalPath": "",
+                    "liveCSS": true,
+                    "liveImg": true,
+                    "protocol": ["http://livereload.com/protocols/official-7"]
+                }}"#, reload_path)
+            ).unwrap();
+        },
+        Err(e) => {
+            println!("Failed to build the site");
+            println!("Error: {}", e);
+            for e in e.iter().skip(1) {
+                println!("Reason: {}", e)
+            }
+        }
+    }
+}
+
+
 // Most of it taken from mdbook
 pub fn serve(interface: &str, port: &str) -> Result<()> {
+    println!("Building site...");
+    let start = Instant::now();
     let mut site = Site::new(true)?;
     site.build()?;
+    report_elapsed_time(start);
 
     let address = format!("{}:{}", interface, port);
     let ws_address = format!("{}:{}", interface, "1112");
@@ -67,7 +96,7 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
     watcher.watch("templates/", RecursiveMode::Recursive).unwrap();
     let pwd = format!("{}", env::current_dir().unwrap().display());
     println!("Listening for changes in {}/{{content, static, templates}}", pwd);
-    println!("Press CTRL+C to stop");
+    println!("Press CTRL+C to stop\n");
 
     use notify::DebouncedEvent::*;
 
@@ -85,41 +114,23 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
                             continue;
                         }
 
-                        println!("Change detected, rebuilding site");
-                        let what_changed = detect_change_kind(&pwd, &path);
-                        let mut reload_path = String::new();
-                        match what_changed {
-                            (ChangeKind::Content, _) => println!("Content changed {}", path.display()),
-                            (ChangeKind::Templates, _) => println!("Template changed {}", path.display()),
+                        println!("Change detected @ {}", Local::now().format("%Y-%m-%d %H:%M:%S").to_string());
+                        let start = Instant::now();
+                        match detect_change_kind(&pwd, &path) {
+                            (ChangeKind::Content, _) => {
+                                println!("-> Content changed {}", path.display());
+                                rebuild_done_handling(&broadcaster, site.rebuild(), "");
+                            },
+                            (ChangeKind::Templates, _) => {
+                                println!("-> Template changed {}", path.display());
+                                rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(), "");
+                            },
                             (ChangeKind::StaticFiles, p) => {
-                                reload_path = p;
-                                println!("Static file changes detected {}", path.display());
+                                println!("-> Static file changes detected {}", path.display());
+                                rebuild_done_handling(&broadcaster, site.copy_static_directory(), &p);
                             },
                         };
-                        println!("Reloading {}", reload_path);
-                        let start = Instant::now();
-                        match site.rebuild() {
-                            Ok(_) => {
-                                println!("Done in {:.1}s.\n", time_elapsed(start));
-                                broadcaster.send(format!(r#"
-                            {{
-                                "command": "reload",
-                                "path": "{}",
-                                "originalPath": "",
-                                "liveCSS": true,
-                                "liveImg": true,
-                                "protocol": ["http://livereload.com/protocols/official-7"]
-                            }}"#, reload_path)).unwrap();
-                            },
-                            Err(e) => {
-                                println!("Failed to build the site");
-                                println!("Error: {}", e);
-                                for e in e.iter().skip(1) {
-                                    println!("Reason: {}", e)
-                                }
-                            }
-                        }
-
+                        report_elapsed_time(start);
                     }
                     _ => {}
                 }

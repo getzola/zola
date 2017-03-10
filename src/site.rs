@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::iter::FromIterator;
-use std::fs::{create_dir, remove_dir_all, copy, remove_file};
+use std::fs::{remove_dir_all, copy, remove_file};
 use std::path::Path;
 
 use glob::glob;
@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use page::Page;
-use utils::create_file;
+use utils::{create_file, create_directory};
 
 
 lazy_static! {
@@ -108,10 +108,6 @@ impl Site {
         html
     }
 
-    /// Reload the Tera templates
-    pub fn reload_templates(&mut self) -> Result<()> {
-        Ok(())
-    }
 
     /// Copy the content of the `static` folder into the `public` folder
     ///
@@ -131,7 +127,7 @@ impl Site {
 
             if entry.path().is_dir() {
                 if !target_path.exists() {
-                    create_dir(&target_path)?;
+                    create_directory(&target_path)?;
                 }
             } else {
                 if target_path.exists() {
@@ -143,24 +139,34 @@ impl Site {
         Ok(())
     }
 
-    /// Re-parse and re-generate the site
-    /// Very dumb for now, ideally it would only rebuild what changed
-    pub fn rebuild(&mut self) -> Result<()> {
-        self.parse_site()?;
-        self.templates.full_reload()?;
-        self.build()
-    }
-
-    /// Builds the site to the `public` directory after deleting it
-    pub fn build(&self) -> Result<()> {
+    /// Deletes the `public` directory if it exists
+    pub fn clean(&self) -> Result<()> {
         if Path::new("public").exists() {
             // Delete current `public` directory so we can start fresh
             remove_dir_all("public").chain_err(|| "Couldn't delete `public` directory")?;
         }
 
-        // Start from scratch
-        create_dir("public")?;
+        Ok(())
+    }
+
+    /// Re-parse and re-generate the site
+    /// Very dumb for now, ideally it would only rebuild what changed
+    pub fn rebuild(&mut self) -> Result<()> {
+        self.parse_site()?;
+        self.build()
+    }
+
+    pub fn rebuild_after_template_change(&mut self) -> Result<()> {
+        self.templates.full_reload()?;
+        println!("Reloaded templates");
+        self.build_pages()
+    }
+
+    pub fn build_pages(&self) -> Result<()> {
         let public = Path::new("public");
+        if !public.exists() {
+            create_directory(&public)?;
+        }
 
         let mut pages = vec![];
         let mut category_pages: HashMap<String, Vec<&Page>> = HashMap::new();
@@ -175,7 +181,7 @@ impl Site {
                 current_path.push(section);
 
                 if !current_path.exists() {
-                    create_dir(&current_path)?;
+                    create_directory(&current_path)?;
                 }
             }
 
@@ -185,7 +191,7 @@ impl Site {
             }
 
             // Make sure the folder exists
-            create_dir(&current_path)?;
+            create_directory(&current_path)?;
             // Finally, create a index.html file there with the page rendered
             let output = page.render_html(&self.templates, &self.config)?;
             create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
@@ -205,9 +211,6 @@ impl Site {
         self.render_categories_and_tags(RenderList::Categories, &category_pages)?;
         self.render_categories_and_tags(RenderList::Tags, &tag_pages)?;
 
-        self.render_sitemap()?;
-        self.render_rss_feed()?;
-
         // And finally the index page
         let mut context = Context::new();
         pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -216,10 +219,18 @@ impl Site {
         let index = self.templates.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
 
-        self.copy_static_directory()?;
-
         Ok(())
     }
+
+    /// Builds the site to the `public` directory after deleting it
+    pub fn build(&self) -> Result<()> {
+        self.clean()?;
+        self.build_pages()?;
+        self.render_sitemap()?;
+        self.render_rss_feed()?;
+        self.copy_static_directory()
+    }
+
     /// Render the /{categories, list} pages and each individual category/tag page
     fn render_categories_and_tags(&self, kind: RenderList, container: &HashMap<String, Vec<&Page>>) -> Result<()> {
         if container.is_empty() {
@@ -235,7 +246,7 @@ impl Site {
         let public = Path::new("public");
         let mut output_path = public.to_path_buf();
         output_path.push(name);
-        create_dir(&output_path)?;
+        create_directory(&output_path)?;
 
         // First we render the list of categories/tags page
         let mut sorted_container = vec![];
@@ -262,7 +273,7 @@ impl Site {
             context.add("config", &self.config);
             let single_output = self.templates.render(single_tpl_name, &context)?;
 
-            create_dir(&output_path.join(&slug))?;
+            create_directory(&output_path.join(&slug))?;
             create_file(
                 output_path.join(&slug).join("index.html"),
                 &self.inject_livereload(single_output)
@@ -283,14 +294,6 @@ impl Site {
         Ok(())
     }
 
-    fn get_rss_feed_url(&self) -> String {
-        if self.config.base_url.ends_with("/") {
-            format!("{}{}", self.config.base_url, "feed.xml")
-        } else {
-            format!("{}/{}", self.config.base_url, "feed.xml")
-        }
-    }
-
     fn render_rss_feed(&self) -> Result<()> {
         let mut context = Context::new();
         let mut pages = self.pages.values()
@@ -306,7 +309,13 @@ impl Site {
         context.add("pages", &pages);
         context.add("last_build_date", &pages[0].meta.date);
         context.add("config", &self.config);
-        context.add("feed_url", &self.get_rss_feed_url());
+
+        let rss_feed_url = if self.config.base_url.ends_with("/") {
+            format!("{}{}", self.config.base_url, "feed.xml")
+        } else {
+            format!("{}/{}", self.config.base_url, "feed.xml")
+        };
+        context.add("feed_url", &rss_feed_url);
 
         let sitemap = self.templates.render("rss.xml", &context)?;
 

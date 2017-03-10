@@ -14,6 +14,7 @@ pub struct Config {
     pub title: String,
     /// Base URL of the site
     pub base_url: String,
+
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: Option<bool>,
     /// Description of the site

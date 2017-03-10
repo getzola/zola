@@ -19,9 +19,15 @@ mod cmd;
 
 
 // Print the time elapsed rounded to 1 decimal
-fn time_elapsed(instant: Instant) -> f64 {
-    let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64 / 1000.0;
-    (duration_ms * 10.0).round() / 10.0
+fn report_elapsed_time(instant: Instant) {
+    let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64;
+
+    if duration_ms < 1000.0 {
+        println!("Done in {}ms.\n", duration_ms);
+    } else {
+        let duration_sec = duration_ms / 1000.0;
+        println!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0));
+    }
 }
 
 
@@ -58,10 +64,11 @@ fn main() {
             };
         },
         ("build", Some(_)) => {
+            println!("Building site");
             let start = Instant::now();
             match cmd::build() {
                 Ok(()) => {
-                    println!("Site built in {:.1}s.", time_elapsed(start));
+                    report_elapsed_time(start);
                 },
                 Err(e) => {
                     println!("Failed to build the site");
