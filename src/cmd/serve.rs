@@ -74,7 +74,7 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
     mount.mount("/livereload.js", livereload_handler);
     // Starts with a _ to not trigger the unused lint
     // we need to assign to a variable otherwise it will block
-    let _iron = Iron::new(mount).http(address.clone()).unwrap();
+    let _iron = Iron::new(mount).http(address.as_str()).unwrap();
     println!("Web server is available at http://{}", address);
 
     // The websocket for livereload
