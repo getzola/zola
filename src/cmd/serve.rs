@@ -119,11 +119,13 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
                         match detect_change_kind(&pwd, &path) {
                             (ChangeKind::Content, _) => {
                                 println!("-> Content changed {}", path.display());
-                                rebuild_done_handling(&broadcaster, site.rebuild(), "");
+                                // Force refresh
+                                rebuild_done_handling(&broadcaster, site.rebuild_after_content_change(), "/x.js");
                             },
                             (ChangeKind::Templates, _) => {
                                 println!("-> Template changed {}", path.display());
-                                rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(), "");
+                                // Force refresh
+                                rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(), "/x.js");
                             },
                             (ChangeKind::StaticFiles, p) => {
                                 println!("-> Static file changes detected {}", path.display());

@@ -36,9 +36,9 @@ pub struct FrontMatter {
     pub draft: Option<bool>,
     /// Only one category allowed
     pub category: Option<String>,
-    /// Optional layout, if we want to specify which tpl to render for that page
+    /// Optional template, if we want to specify which template to render for that page
     #[serde(skip_serializing)]
-    pub layout: Option<String>,
+    pub template: Option<String>,
     /// Any extra parameter present in the front matter
     pub extra: Option<HashMap<String, Value>>,
 }
@@ -69,6 +69,7 @@ impl FrontMatter {
         Ok(f)
     }
 
+    /// Converts the date in the front matter, which can be in 2 formats, into a NaiveDateTime
     pub fn parse_date(&self) -> Option<NaiveDateTime> {
         match self.date {
             Some(ref d) => {

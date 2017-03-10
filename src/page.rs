@@ -182,22 +182,20 @@ impl Page {
         Page::parse(&path.strip_prefix("content").unwrap().to_string_lossy(), &content, config)
     }
 
-    fn get_layout_name(&self) -> String {
-        match self.meta.layout {
-            Some(ref l) => l.to_string(),
-            None => "page.html".to_string()
-        }
-    }
-
     /// Renders the page using the default layout, unless specified in front-matter
     pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
-        let tpl = self.get_layout_name();
+        let tpl_name = match self.meta.template {
+            Some(ref l) => l.to_string(),
+            None => "page.html".to_string()
+        };
+        // TODO: create a helper to create context to ensure all contexts
+        // have the same names
         let mut context = Context::new();
-        context.add("site", config);
+        context.add("config", config);
         context.add("page", self);
 
-        tera.render(&tpl, &context)
-            .chain_err(|| "Error while rendering template")
+        tera.render(&tpl_name, &context)
+            .chain_err(|| format!("Failed to render page '{}'", self.filename))
     }
 }
 
@@ -225,12 +223,10 @@ impl ser::Serialize for Page {
 impl PartialOrd for Page {
     fn partial_cmp(&self, other: &Page) -> Option<Ordering> {
         if self.meta.date.is_none() {
-            println!("No self data");
             return Some(Ordering::Less);
         }
 
         if other.meta.date.is_none() {
-            println!("No other date");
             return Some(Ordering::Greater);
         }
 
@@ -337,7 +333,6 @@ Hello world"#;
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.url, "posts/intro/hello-world");
-        println!("{}", page.permalink);
         assert_eq!(page.permalink, format!("{}{}", conf.base_url, "/posts/intro/hello-world"));
     }
 

@@ -149,16 +149,13 @@ impl Site {
         Ok(())
     }
 
-    /// Re-parse and re-generate the site
-    /// Very dumb for now, ideally it would only rebuild what changed
-    pub fn rebuild(&mut self) -> Result<()> {
+    pub fn rebuild_after_content_change(&mut self) -> Result<()> {
         self.parse_site()?;
         self.build()
     }
 
     pub fn rebuild_after_template_change(&mut self) -> Result<()> {
         self.templates.full_reload()?;
-        println!("Reloaded templates");
         self.build_pages()
     }
 

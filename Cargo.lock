@@ -1,6 +1,6 @@
 [root]
 name = "gutenberg"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "chrono 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.20.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -774,7 +774,7 @@ dependencies = [
 [[package]]
 name = "tera"
 version = "0.8.0"
-source = "git+https://github.com/Keats/tera?branch=reload#31f8bd8238e3e6bdef9ecf4468079c535609b5eb"
+source = "git+https://github.com/Keats/tera?branch=reload#ee038a6f3519ac35e1878ca9b29ec739a8f84a15"
 dependencies = [
  "chrono 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",

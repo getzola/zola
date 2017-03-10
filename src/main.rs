@@ -87,6 +87,9 @@ fn main() {
                 Ok(()) => (),
                 Err(e) => {
                     println!("Error: {}", e);
+                    for e in e.iter().skip(1) {
+                        println!("Reason: {}", e)
+                    }
                     ::std::process::exit(1);
                 },
             };
