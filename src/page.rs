@@ -20,6 +20,7 @@ use markdown::markdown_to_html;
 lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n((?s).*(?-s))$").unwrap();
     static ref SUMMARY_RE: Regex = Regex::new(r"<!-- more -->").unwrap();
+    static ref CODE_BLOCK_RE: Regex = Regex::new(r"```").unwrap();
 }
 
 
@@ -113,13 +114,22 @@ impl Page {
         let mut page = Page::new(meta);
         page.filepath = filepath.to_string();
         page.raw_content = content.to_string();
-        page.content = markdown_to_html(&page.raw_content, config.highlight_code.unwrap());
 
+        // We try to be smart about highlighting code as it can be time-consuming
+        // If the global config disables it, then we do nothing. However,
+        // if we see a code block in the content, we assume that this page needs
+        // to be highlighted. It could potentially have false positive if the content
+        // has ``` in it but that seems kind of unlikely
+        let mut should_highlight = config.highlight_code.unwrap();
+        if should_highlight {
+            should_highlight = CODE_BLOCK_RE.is_match(&page.raw_content);
+        }
+        page.content = markdown_to_html(&page.raw_content, should_highlight);
 
         if page.raw_content.contains("<!-- more -->") {
             page.summary = {
                 let summary = SUMMARY_RE.split(&page.raw_content).collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, config.highlight_code.unwrap())
+                markdown_to_html(summary, should_highlight)
             }
         }
 
@@ -452,5 +462,25 @@ Hello world
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.summary, "<p>Hello world</p>\n");
+    }
+
+    #[test]
+    fn test_can_auto_detect_when_highlighting_needed() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
++++
+```
+Hey there
+```
+"#.to_string();
+        let mut config = Config::default();
+        config.highlight_code = Some(true);
+        let res = Page::parse("hello.md", &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert!(page.content.starts_with("<pre"));
+
     }
 }

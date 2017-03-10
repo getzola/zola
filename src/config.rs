@@ -14,7 +14,7 @@ pub struct Config {
     pub title: String,
     /// Base URL of the site
     pub base_url: String,
-    /// Whether to highlight all code found in markdown files. Defaults to true
+    /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: Option<bool>,
     /// Description of the site
     pub description: Option<String>,
@@ -40,7 +40,7 @@ impl Config {
         }
 
         if config.highlight_code.is_none() {
-            config.highlight_code = Some(true);
+            config.highlight_code = Some(false);
         }
 
         if config.disable_rss.is_none() {
