@@ -87,7 +87,7 @@ impl Site {
             let page = Page::from_file(&entry.as_path(), &self.config)?;
 
             for section in &page.sections {
-                self.sections.entry(section.clone()).or_insert(vec![]).push(page.slug.clone());
+                self.sections.entry(section.clone()).or_insert_with(|| vec![]).push(page.slug.clone());
             }
 
             self.pages.insert(page.slug.clone(), page);
@@ -195,11 +195,11 @@ impl Site {
             pages.push(page);
 
             if let Some(ref category) = page.meta.category {
-                category_pages.entry(category.to_string()).or_insert(vec![]).push(page);
+                category_pages.entry(category.to_string()).or_insert_with(|| vec![]).push(page);
             }
             if let Some(ref tags) = page.meta.tags {
                 for tag in tags {
-                    tag_pages.entry(tag.to_string()).or_insert(vec![]).push(page);
+                    tag_pages.entry(tag.to_string()).or_insert_with(|| vec![]).push(page);
                 }
             }
         }
@@ -307,7 +307,7 @@ impl Site {
         context.add("last_build_date", &pages[0].meta.date);
         context.add("config", &self.config);
 
-        let rss_feed_url = if self.config.base_url.ends_with("/") {
+        let rss_feed_url = if self.config.base_url.ends_with('/') {
             format!("{}{}", self.config.base_url, "feed.xml")
         } else {
             format!("{}/{}", self.config.base_url, "feed.xml")

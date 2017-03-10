@@ -11,7 +11,7 @@ pub fn create_file<P: AsRef<Path>>(path: P, content: &str) -> Result<()> {
     Ok(())
 }
 
-/// Very similar to create_dir from the std except it checks if the folder
+/// Very similar to `create_dir` from the std except it checks if the folder
 /// exists before creating it
 pub fn create_directory<P: AsRef<Path>>(path: P) -> Result<()> {
     let path = path.as_ref();

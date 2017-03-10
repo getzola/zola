@@ -19,8 +19,6 @@ use markdown::markdown_to_html;
 
 lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n((?s).*(?-s))$").unwrap();
-    static ref SUMMARY_RE: Regex = Regex::new(r"<!-- more -->").unwrap();
-    static ref CODE_BLOCK_RE: Regex = Regex::new(r"```").unwrap();
 }
 
 
@@ -108,7 +106,7 @@ impl Page {
         let content = &caps[2];
 
         // 3. create our page, parse front matter and assign all of that
-        let meta = FrontMatter::parse(&front_matter)
+        let meta = FrontMatter::parse(front_matter)
             .chain_err(|| format!("Error when parsing front matter of file `{}`", filepath))?;
 
         let mut page = Page::new(meta);
@@ -120,15 +118,17 @@ impl Page {
         // if we see a code block in the content, we assume that this page needs
         // to be highlighted. It could potentially have false positive if the content
         // has ``` in it but that seems kind of unlikely
-        let mut should_highlight = config.highlight_code.unwrap();
-        if should_highlight {
-            should_highlight = CODE_BLOCK_RE.is_match(&page.raw_content);
-        }
+        let should_highlight = if config.highlight_code.unwrap() {
+            page.raw_content.contains("```")
+        } else {
+            false
+        };
+
         page.content = markdown_to_html(&page.raw_content, should_highlight);
 
         if page.raw_content.contains("<!-- more -->") {
             page.summary = {
-                let summary = SUMMARY_RE.split(&page.raw_content).collect::<Vec<&str>>()[0];
+                let summary = page.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
                 markdown_to_html(summary, should_highlight)
             }
         }
@@ -157,10 +157,10 @@ impl Page {
             if !page.sections.is_empty() {
                 page.url = format!("{}/{}", page.sections.join("/"), page.slug);
             } else {
-                page.url = format!("{}", page.slug);
+                page.url = page.slug.clone();
             }
         }
-        page.permalink = if config.base_url.ends_with("/") {
+        page.permalink = if config.base_url.ends_with('/') {
             format!("{}{}", config.base_url, page.url)
         } else {
             format!("{}/{}", config.base_url, page.url)

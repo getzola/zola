@@ -73,7 +73,7 @@ impl FrontMatter {
     pub fn parse_date(&self) -> Option<NaiveDateTime> {
         match self.date {
             Some(ref d) => {
-                if d.contains("T") {
+                if d.contains('T') {
                     DateTime::parse_from_rfc3339(d).ok().and_then(|s| Some(s.naive_local()))
                 } else {
                     NaiveDate::parse_from_str(d, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0,0,0)))

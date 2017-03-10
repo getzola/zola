@@ -155,22 +155,18 @@ fn is_temp_file(path: &Path) -> bool {
             x if x.ends_with("jb_tmp___") => true,
             x if x.ends_with("jb_bak___") => true,
             // vim
-            x if x.ends_with("~") => true,
+            x if x.ends_with('~') => true,
             _ => {
                 if let Some(filename) = path.file_stem() {
                     // emacs
-                    filename.to_str().unwrap().starts_with("#")
+                    filename.to_str().unwrap().starts_with('#')
                 } else {
                     false
                 }
             }
         },
         None => {
-            if path.ends_with(".DS_STORE") {
-                true
-            } else {
-                false
-            }
+            path.ends_with(".DS_STORE")
         },
     }
 }
