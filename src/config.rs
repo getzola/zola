@@ -21,8 +21,9 @@ pub struct Config {
     pub description: Option<String>,
     /// The language used in the site. Defaults to "en"
     pub language_code: Option<String>,
-    /// Whether to disable RSS generation, defaults to false (== generate RSS)
-    pub disable_rss: Option<bool>,
+    /// Whether to generate RSS, defaults to false
+    pub generate_rss: Option<bool>,
+
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
 }
@@ -44,8 +45,8 @@ impl Config {
             config.highlight_code = Some(false);
         }
 
-        if config.disable_rss.is_none() {
-            config.disable_rss = Some(false);
+        if config.generate_rss.is_none() {
+            config.generate_rss = Some(false);
         }
 
         Ok(config)
@@ -71,7 +72,7 @@ impl Default for Config {
             highlight_code: Some(true),
             description: None,
             language_code: Some("en".to_string()),
-            disable_rss: Some(false),
+            generate_rss: Some(false),
             extra: None,
         }
     }

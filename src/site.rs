@@ -229,7 +229,9 @@ impl Site {
         self.clean()?;
         self.build_pages()?;
         self.render_sitemap()?;
-        self.render_rss_feed()?;
+        if self.config.generate_rss.unwrap() {
+            self.render_rss_feed()?;
+        }
         self.copy_static_directory()
     }
 
