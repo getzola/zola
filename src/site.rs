@@ -192,6 +192,11 @@ impl Site {
             // Finally, create a index.html file there with the page rendered
             let output = page.render_html(&self.templates, &self.config)?;
             create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
+            // Copy any asset we found previously into the same directory as the index.html
+            for asset in &page.assets {
+                let asset_path = asset.as_path();
+                copy(&asset_path, &current_path.join(asset_path.file_name().unwrap()))?;
+            }
             pages.push(page);
 
             if let Some(ref category) = page.meta.category {

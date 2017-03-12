@@ -37,6 +37,7 @@ Gallery at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark
 
 # TODO:
 
+- find a way to add tests
 - syntax highlighting
 - pass a --config arg to the CLI to change from `config.toml`
 - have verbosity levels with a `verbosity` config variable with a default

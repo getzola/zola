@@ -1,8 +1,8 @@
 /// A page, can be a blog post or a basic page
 use std::cmp::Ordering;
-use std::fs::File;
+use std::fs::{File, read_dir};
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
 
@@ -19,6 +19,27 @@ use markdown::markdown_to_html;
 
 lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n((?s).*(?-s))$").unwrap();
+}
+
+/// Looks into the current folder for the path and see if there's anything that is not a .md
+/// file. Those will be copied next to the rendered .html file
+fn find_related_assets(path: &Path) -> Vec<PathBuf> {
+    let mut assets = vec![];
+
+    for entry in read_dir(path.parent().unwrap()).unwrap().filter_map(|e| e.ok()) {
+        let entry_path = entry.path();
+        if entry_path.is_file() {
+            match entry_path.extension() {
+                Some(e) => match e.to_str() {
+                    Some("md") => continue,
+                    _ => assets.push(entry_path.to_path_buf()),
+                },
+                None => continue,
+            }
+        }
+    }
+
+    assets
 }
 
 
@@ -38,6 +59,9 @@ pub struct Page {
     /// The actual content of the page, in markdown
     #[serde(skip_serializing)]
     pub raw_content: String,
+    /// All the non-md files we found next to the .md file
+    #[serde(skip_serializing)]
+    pub assets: Vec<PathBuf>,
     /// The HTML rendered of the page
     pub content: String,
     /// The front matter meta-data
@@ -69,6 +93,7 @@ impl Page {
             filename: "".to_string(),
             sections: vec![],
             raw_content: "".to_string(),
+            assets: vec![],
             content: "".to_string(),
             slug: "".to_string(),
             url: "".to_string(),
@@ -80,7 +105,7 @@ impl Page {
         }
     }
 
-    // Get word count and estimated reading time
+    /// Get word count and estimated reading time
     pub fn get_reading_analytics(&self) -> (usize, usize) {
         // Only works for latin language but good enough for a start
         let word_count: usize = self.raw_content.split_whitespace().count();
@@ -90,9 +115,9 @@ impl Page {
         (word_count, (word_count / 200))
     }
 
-    // Parse a page given the content of the .md file
-    // Files without front matter or with invalid front matter are considered
-    // erroneous
+    /// Parse a page given the content of the .md file
+    /// Files without front matter or with invalid front matter are considered
+    /// erroneous
     pub fn parse(filepath: &str, content: &str, config: &Config) -> Result<Page> {
         // 1. separate front matter from content
         if !PAGE_RE.is_match(content) {
@@ -169,6 +194,7 @@ impl Page {
         Ok(page)
     }
 
+    /// Read and parse a .md file into a Page struct
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config) -> Result<Page> {
         let path = path.as_ref();
 
@@ -178,8 +204,10 @@ impl Page {
             .read_to_string(&mut content)?;
 
         // Remove the content string from name
-        // Maybe get a path as an arg instead and use strip_prefix?
-        Page::parse(&path.strip_prefix("content").unwrap().to_string_lossy(), &content, config)
+        let mut page = Page::parse(&path.strip_prefix("content").unwrap().to_string_lossy(), &content, config)?;
+        page.assets = find_related_assets(&path);
+        Ok(page)
+
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
