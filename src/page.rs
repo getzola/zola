@@ -1,32 +1,28 @@
 /// A page, can be a blog post or a basic page
 use std::cmp::Ordering;
-use std::fs::{File, read_dir};
-use std::io::prelude::*;
+use std::fs::{read_dir};
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
 
-use regex::Regex;
 use tera::{Tera, Context};
 use serde::ser::{SerializeStruct, self};
 use slug::slugify;
 
 use errors::{Result, ResultExt};
 use config::Config;
-use front_matter::{FrontMatter};
+use front_matter::{FrontMatter, split_content};
 use markdown::markdown_to_html;
+use utils::{read_file, find_content_components};
 
 
-lazy_static! {
-    static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n((?s).*(?-s))$").unwrap();
-}
 
 /// Looks into the current folder for the path and see if there's anything that is not a .md
 /// file. Those will be copied next to the rendered .html file
 fn find_related_assets(path: &Path) -> Vec<PathBuf> {
     let mut assets = vec![];
 
-    for entry in read_dir(path.parent().unwrap()).unwrap().filter_map(|e| e.ok()) {
+    for entry in read_dir(path).unwrap().filter_map(|e| e.ok()) {
         let entry_path = entry.path();
         if entry_path.is_file() {
             match entry_path.extension() {
@@ -43,24 +39,22 @@ fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 }
 
 
-#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Page {
-    /// .md filepath, excluding the content/ bit
-    #[serde(skip_serializing)]
-    pub filepath: String,
+    /// The .md path
+    pub file_path: PathBuf,
+    /// The parent directory of the file. Is actually the grand parent directory
+    /// if it's an asset folder
+    pub parent_path: PathBuf,
     /// The name of the .md file
-    #[serde(skip_serializing)]
-    pub filename: String,
-    /// The directories above our .md file are called sections
-    /// for example a file at content/kb/solutions/blabla.md will have 2 sections:
+    pub file_name: String,
+    /// The directories above our .md file
+    /// for example a file at content/kb/solutions/blabla.md will have 2 components:
     /// `kb` and `solutions`
-    #[serde(skip_serializing)]
-    pub sections: Vec<String>,
+    pub components: Vec<String>,
     /// The actual content of the page, in markdown
-    #[serde(skip_serializing)]
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
-    #[serde(skip_serializing)]
     pub assets: Vec<PathBuf>,
     /// The HTML rendered of the page
     pub content: String,
@@ -89,9 +83,10 @@ pub struct Page {
 impl Page {
     pub fn new(meta: FrontMatter) -> Page {
         Page {
-            filepath: "".to_string(),
-            filename: "".to_string(),
-            sections: vec![],
+            file_path: PathBuf::new(),
+            parent_path: PathBuf::new(),
+            file_name: "".to_string(),
+            components: vec![],
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),
@@ -118,25 +113,13 @@ impl Page {
     /// Parse a page given the content of the .md file
     /// Files without front matter or with invalid front matter are considered
     /// erroneous
-    pub fn parse(filepath: &str, content: &str, config: &Config) -> Result<Page> {
+    pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Page> {
         // 1. separate front matter from content
-        if !PAGE_RE.is_match(content) {
-            bail!("Couldn't find front matter in `{}`. Did you forget to add `+++`?", filepath);
-        }
-
-        // 2. extract the front matter and the content
-        let caps = PAGE_RE.captures(content).unwrap();
-        // caps[0] is the full match
-        let front_matter = &caps[1];
-        let content = &caps[2];
-
-        // 3. create our page, parse front matter and assign all of that
-        let meta = FrontMatter::parse(front_matter)
-            .chain_err(|| format!("Error when parsing front matter of file `{}`", filepath))?;
-
+        let (meta, content) = split_content(file_path, content)?;
         let mut page = Page::new(meta);
-        page.filepath = filepath.to_string();
-        page.raw_content = content.to_string();
+        page.file_path = file_path.to_path_buf();
+        page.parent_path = page.file_path.parent().unwrap().to_path_buf();
+        page.raw_content = content;
 
         // We try to be smart about highlighting code as it can be time-consuming
         // If the global config disables it, then we do nothing. However,
@@ -158,33 +141,38 @@ impl Page {
             }
         }
 
-        let path = Path::new(filepath);
-        page.filename = path.file_stem().expect("Couldn't get filename").to_string_lossy().to_string();
+        let path = Path::new(file_path);
+        page.file_name = path.file_stem().unwrap().to_string_lossy().to_string();
+
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
             } else {
-                slugify(page.filename.clone())
+                slugify(page.file_name.clone())
             }
         };
-
 
         // 4. Find sections
         // Pages with custom urls exists outside of sections
         if let Some(ref u) = page.meta.url {
             page.url = u.trim().to_string();
         } else {
-            // find out if we have sections
-            for section in path.parent().unwrap().components() {
-                page.sections.push(section.as_ref().to_string_lossy().to_string());
-            }
+            page.components = find_content_components(&page.file_path);
+            if !page.components.is_empty() {
+                // If we have a folder with an asset, don't consider it as a component
+                if page.file_name == "index" {
+                    page.components.pop();
+                    // also set parent_path to grandparent instead
+                    page.parent_path = page.parent_path.parent().unwrap().to_path_buf();
+                }
 
-            if !page.sections.is_empty() {
-                page.url = format!("{}/{}", page.sections.join("/"), page.slug);
+                // Don't add a trailing slash to sections
+                page.url = format!("{}/{}", page.components.join("/"), page.slug);
             } else {
                 page.url = page.slug.clone();
             }
         }
+
         page.permalink = if config.base_url.ends_with('/') {
             format!("{}{}", config.base_url, page.url)
         } else {
@@ -197,15 +185,14 @@ impl Page {
     /// Read and parse a .md file into a Page struct
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config) -> Result<Page> {
         let path = path.as_ref();
+        let content = read_file(path)?;
+        let mut page = Page::parse(path, &content, config)?;
+        page.assets = find_related_assets(&path.parent().unwrap());
 
-        let mut content = String::new();
-        File::open(path)
-            .chain_err(|| format!("Failed to open '{:?}'", path.display()))?
-            .read_to_string(&mut content)?;
+        if !page.assets.is_empty() && page.file_name != "index" {
+            bail!("Page `{}` has assets but is not named index.md", path.display());
+        }
 
-        // Remove the content string from name
-        let mut page = Page::parse(&path.strip_prefix("content").unwrap().to_string_lossy(), &content, config)?;
-        page.assets = find_related_assets(&path);
         Ok(page)
 
     }
@@ -223,7 +210,7 @@ impl Page {
         context.add("page", self);
 
         tera.render(&tpl_name, &context)
-            .chain_err(|| format!("Failed to render page '{}'", self.filename))
+            .chain_err(|| format!("Failed to render page '{}'", self.file_name))
     }
 }
 
@@ -275,235 +262,25 @@ impl PartialOrd for Page {
 
 #[cfg(test)]
 mod tests {
-    use super::{Page};
-    use config::Config;
+    use tempdir::TempDir;
 
+    use std::fs::File;
 
-    #[test]
-    fn test_can_parse_a_valid_page() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-+++
-Hello world"#;
-        let res = Page::parse("post.md", content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-
-        assert_eq!(page.meta.title, "Hello".to_string());
-        assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
-        assert_eq!(page.raw_content, "Hello world".to_string());
-        assert_eq!(page.content, "<p>Hello world</p>\n".to_string());
-    }
+    use super::{find_related_assets};
 
     #[test]
-    fn test_can_find_one_parent_directory() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-+++
-Hello world"#;
-        let res = Page::parse("posts/intro.md", content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.sections, vec!["posts".to_string()]);
-    }
+    fn test_find_related_assets() {
+        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        File::create(tmp_dir.path().join("index.md")).unwrap();
+        File::create(tmp_dir.path().join("example.js")).unwrap();
+        File::create(tmp_dir.path().join("graph.jpg")).unwrap();
+        File::create(tmp_dir.path().join("fail.png")).unwrap();
 
-    #[test]
-    fn test_can_find_multiple_parent_directories() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-+++
-Hello world"#;
-        let res = Page::parse("posts/intro/start.md", content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.sections, vec!["posts".to_string(), "intro".to_string()]);
-    }
-
-    #[test]
-    fn test_can_make_url_from_sections_and_slug() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-+++
-Hello world"#;
-        let mut conf = Config::default();
-        conf.base_url = "http://hello.com/".to_string();
-        let res = Page::parse("posts/intro/start.md", content, &conf);
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.url, "posts/intro/hello-world");
-        assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world");
-    }
-
-    #[test]
-    fn test_can_make_permalink_with_non_trailing_slash_base_url() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-+++
-Hello world"#;
-        let mut conf = Config::default();
-        conf.base_url = "http://hello.com".to_string();
-        let res = Page::parse("posts/intro/start.md", content, &conf);
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.url, "posts/intro/hello-world");
-        assert_eq!(page.permalink, format!("{}{}", conf.base_url, "/posts/intro/hello-world"));
-    }
-
-    #[test]
-    fn test_can_make_url_from_slug_only() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-+++
-Hello world"#;
-        let res = Page::parse("start.md", content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.url, "hello-world");
-        assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "hello-world"));
-    }
-
-    #[test]
-    fn test_errors_on_invalid_front_matter_format() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-+++
-Hello world"#;
-        let res = Page::parse("start.md", content, &Config::default());
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn test_can_make_slug_from_non_slug_filename() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world"#;
-        let res = Page::parse("file with space.md", content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.slug, "file-with-space");
-        assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "file-with-space"));
-    }
-
-    #[test]
-    fn test_trim_slug_if_needed() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world"#;
-        let res = Page::parse(" file with space.md", content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.slug, "file-with-space");
-        assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "file-with-space"));
-    }
-
-    #[test]
-    fn test_reading_analytics_short() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world"#;
-        let res = Page::parse("file with space.md", content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        let (word_count, reading_time) = page.get_reading_analytics();
-        assert_eq!(word_count, 2);
-        assert_eq!(reading_time, 0);
-    }
-
-    #[test]
-    fn test_reading_analytics_long() {
-        let mut content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world"#.to_string();
-        for _ in 0..1000 {
-            content.push_str(" Hello world");
-        }
-        let res = Page::parse("hello.md", &content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        let (word_count, reading_time) = page.get_reading_analytics();
-        assert_eq!(word_count, 2002);
-        assert_eq!(reading_time, 10);
-    }
-
-    #[test]
-    fn test_automatic_summary_is_empty_string() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world"#.to_string();
-        let res = Page::parse("hello.md", &content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.summary, "");
-    }
-
-    #[test]
-    fn test_can_specify_summary() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world
-<!-- more -->
-"#.to_string();
-        let res = Page::parse("hello.md", &content, &Config::default());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.summary, "<p>Hello world</p>\n");
-    }
-
-    #[test]
-    fn test_can_auto_detect_when_highlighting_needed() {
-        let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-```
-Hey there
-```
-"#.to_string();
-        let mut config = Config::default();
-        config.highlight_code = Some(true);
-        let res = Page::parse("hello.md", &content, &config);
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        assert!(page.content.starts_with("<pre"));
-
+        let assets = find_related_assets(tmp_dir.path());
+        assert_eq!(assets.len(), 3);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 3);
+        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "example.js").count(), 1);
+        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "graph.jpg").count(), 1);
+        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "fail.png").count(), 1);
     }
 }

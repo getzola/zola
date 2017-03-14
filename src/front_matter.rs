@@ -1,12 +1,18 @@
 use std::collections::HashMap;
-
+use std::path::Path;
 
 use toml;
 use tera::Value;
 use chrono::prelude::*;
+use regex::Regex;
 
 
-use errors::{Result};
+use errors::{Result, ResultExt};
+
+
+lazy_static! {
+    static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n?((?s).*(?-s))$").unwrap();
+}
 
 
 /// The front matter of every page
@@ -85,157 +91,23 @@ impl FrontMatter {
 }
 
 
-#[cfg(test)]
-mod tests {
-    use super::{FrontMatter};
-    use tera::to_value;
-
-
-    #[test]
-    fn test_can_parse_a_valid_front_matter() {
-        let content = r#"
-title = "Hello"
-description = "hey there""#;
-        let res = FrontMatter::parse(content);
-        println!("{:?}", res);
-        assert!(res.is_ok());
-        let res = res.unwrap();
-        assert_eq!(res.title, "Hello".to_string());
-        assert_eq!(res.description, "hey there".to_string());
+/// Split a file between the front matter and its content
+/// It will parse the front matter as well and returns any error encountered
+/// TODO: add tests
+pub fn split_content(file_path: &Path, content: &str) -> Result<(FrontMatter, String)> {
+    if !PAGE_RE.is_match(content) {
+        bail!("Couldn't find front matter in `{}`. Did you forget to add `+++`?", file_path.to_string_lossy());
     }
 
-    #[test]
-    fn test_can_parse_tags() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-tags = ["rust", "html"]"#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_ok());
-        let res = res.unwrap();
+    // 2. extract the front matter and the content
+    let caps = PAGE_RE.captures(content).unwrap();
+    // caps[0] is the full match
+    let front_matter = &caps[1];
+    let content = &caps[2];
 
-        assert_eq!(res.title, "Hello".to_string());
-        assert_eq!(res.slug.unwrap(), "hello-world".to_string());
-        assert_eq!(res.tags.unwrap(), ["rust".to_string(), "html".to_string()]);
-    }
+    // 3. create our page, parse front matter and assign all of that
+    let meta = FrontMatter::parse(front_matter)
+        .chain_err(|| format!("Error when parsing front matter of file `{}`", file_path.to_string_lossy()))?;
 
-    #[test]
-    fn test_can_parse_extra_attributes_in_frontmatter() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-
-[extra]
-language = "en"
-authors = ["Bob", "Alice"]"#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_ok());
-        let res = res.unwrap();
-
-        assert_eq!(res.title, "Hello".to_string());
-        assert_eq!(res.slug.unwrap(), "hello-world".to_string());
-        let extra = res.extra.unwrap();
-        assert_eq!(extra.get("language").unwrap(), &to_value("en").unwrap());
-        assert_eq!(
-            extra.get("authors").unwrap(),
-            &to_value(["Bob".to_string(), "Alice".to_string()]).unwrap()
-        );
-    }
-
-    #[test]
-    fn test_is_ok_with_url_instead_of_slug() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-url = "hello-world""#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_ok());
-        let res = res.unwrap();
-        assert!(res.slug.is_none());
-        assert_eq!(res.url.unwrap(), "hello-world".to_string());
-    }
-
-    #[test]
-    fn test_errors_with_empty_front_matter() {
-        let content = r#"  "#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn test_errors_with_invalid_front_matter() {
-        let content = r#"title = 1\n"#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn test_errors_with_missing_required_value_front_matter() {
-        let content = r#"title = """#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn test_errors_on_non_string_tag() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-slug = "hello-world"
-tags = ["rust", 1]"#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn test_errors_on_present_but_empty_slug() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-slug = """#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn test_errors_on_present_but_empty_url() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-url = """#;
-        let res = FrontMatter::parse(content);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn test_parse_date_yyyy_mm_dd() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-date = "2016-10-10""#;
-        let res = FrontMatter::parse(content).unwrap();
-        assert!(res.parse_date().is_some());
-    }
-
-    #[test]
-    fn test_parse_date_rfc3339() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-date = "2002-10-02T15:00:00Z""#;
-        let res = FrontMatter::parse(content).unwrap();
-        assert!(res.parse_date().is_some());
-    }
-
-    #[test]
-    fn test_cant_parse_random_date_format() {
-        let content = r#"
-title = "Hello"
-description = "hey there"
-date = "2002/10/12""#;
-        let res = FrontMatter::parse(content).unwrap();
-        assert!(res.parse_date().is_none());
-    }
+    Ok((meta, content.to_string()))
 }

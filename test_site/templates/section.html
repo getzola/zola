@@ -1,0 +1,10 @@
+{% extends "index.html" %}
+
+{% block content %}
+    {% for page in section.pages %}
+        {{page.title}}
+    {% endfor %}
+    {% for subsection in section.subsections %}
+        {{subsection.title}}
+    {% endfor %}
+{% endblock content %}

@@ -61,7 +61,8 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
 pub fn serve(interface: &str, port: &str) -> Result<()> {
     println!("Building site...");
     let start = Instant::now();
-    let mut site = Site::new(true)?;
+    let mut site = Site::new(env::current_dir().unwrap())?;
+    site.enable_live_reload();
     site.build()?;
     report_elapsed_time(start);
 

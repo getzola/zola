@@ -9,6 +9,9 @@ homepage = "https://github.com/Keats/gutenberg"
 repository = "https://github.com/Keats/gutenberg"
 keywords = ["static", "site", "generator", "blog"]
 
+[[bin]]
+name = "gutenberg"
+
 [dependencies]
 error-chain = "0.10"
 clap = "2.19"
@@ -20,11 +23,13 @@ glob = "0.2"
 serde = "0.9"
 serde_json = "0.9"
 serde_derive = "0.9"
-tera = { git = "https://github.com/Keats/tera", branch = "reload" }
-# tera = "0.8"
+# tera = { path = "../tera" }
+# tera = { git = "https://github.com/Keats/tera", branch = "reload" }
+tera = "0.8"
 slug = "0.1"
 syntect = "1"
 chrono = "0.3"
+toml = { version = "0.3", default-features = false, features = ["serde"]}
 
 # Below is for the serve cmd
 staticfile = "0.4"
@@ -33,9 +38,5 @@ mount = "0.3"
 notify = "4"
 ws = "0.6"
 
-[dependencies.toml]
-version = "0.3"
-default-features = false
-features = ["serde"]
-
-
+[dev-dependencies]
+tempdir = "0.3"

@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::iter::FromIterator;
 use std::fs::{remove_dir_all, copy, remove_file};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use glob::glob;
 use tera::{Tera, Context};
@@ -10,8 +10,9 @@ use walkdir::WalkDir;
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
-use page::Page;
+use page::{Page};
 use utils::{create_file, create_directory};
+use section::{Section};
 
 
 lazy_static! {
@@ -50,53 +51,98 @@ impl ListItem {
     }
 }
 
-
 #[derive(Debug)]
 pub struct Site {
-    config: Config,
-    pages: HashMap<String, Page>,
-    sections: HashMap<String, Vec<String>>,
-    templates: Tera,
+    pub base_path: PathBuf,
+    pub config: Config,
+    pub pages: HashMap<PathBuf, Page>,
+    pub sections: BTreeMap<PathBuf, Section>,
+    pub templates: Tera,
     live_reload: bool,
+    output_path: PathBuf,
 }
 
 impl Site {
-    pub fn new(livereload: bool) -> Result<Site> {
-        let mut tera = Tera::new("templates/**/*")
-            .chain_err(|| "Error parsing templates")?;
+    /// Parse a site at the given path. Defaults to the current dir
+    /// Passing in a path is only used in tests
+    pub fn new<P: AsRef<Path>>(path: P) -> Result<Site> {
+        let path = path.as_ref();
+
+        let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*");
+        let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
 
         let mut site = Site {
-            config: get_config(),
+            base_path: path.to_path_buf(),
+            config: get_config(&path),
             pages: HashMap::new(),
-            sections: HashMap::new(),
+            sections: BTreeMap::new(),
             templates: tera,
-            live_reload: livereload,
+            live_reload: false,
+            output_path: PathBuf::from("public"),
         };
         site.parse_site()?;
 
         Ok(site)
     }
 
+    /// What the function name says
+    pub fn enable_live_reload(&mut self) {
+        self.live_reload = true;
+    }
+
+    /// Used by tests to change the output path to a tmp dir
+    #[doc(hidden)]
+    pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {
+        self.output_path = path.as_ref().to_path_buf();
+    }
+
     /// Reads all .md files in the `content` directory and create pages
     /// out of them
     fn parse_site(&mut self) -> Result<()> {
-        // First step: do all the articles and group article by sections
-        // hardcoded pattern so can't error
-        for entry in glob("content/**/*.md").unwrap().filter_map(|e| e.ok()) {
-            let page = Page::from_file(&entry.as_path(), &self.config)?;
+        let path = self.base_path.to_string_lossy().replace("\\", "/");
+        let content_glob = format!("{}/{}", path, "content/**/*.md");
 
-            for section in &page.sections {
-                self.sections.entry(section.clone()).or_insert_with(|| vec![]).push(page.slug.clone());
+        // parent_dir -> Section
+        let mut sections = BTreeMap::new();
+
+        // Glob is giving us the result order so _index will show up first
+        // for each directory
+        for entry in glob(&content_glob).unwrap().filter_map(|e| e.ok()) {
+            let path = entry.as_path();
+
+            if path.file_name().unwrap() == "_index.md" {
+                let section = Section::from_file(&path, &self.config)?;
+                sections.insert(section.parent_path.clone(), section);
+            } else {
+                let page = Page::from_file(&path, &self.config)?;
+                if sections.contains_key(&page.parent_path) {
+                    sections.get_mut(&page.parent_path).unwrap().pages.push(page.clone());
+                }
+                self.pages.insert(page.file_path.clone(), page);
             }
-
-            self.pages.insert(page.slug.clone(), page);
         }
+
+        // Find out the direct subsections of each subsection if there are some
+        let mut grandparent_paths = HashMap::new();
+        for section in sections.values() {
+            let grand_parent = section.parent_path.parent().unwrap().to_path_buf();
+            grandparent_paths.entry(grand_parent).or_insert_with(|| vec![]).push(section.clone());
+        }
+
+        for (parent_path, section) in sections.iter_mut() {
+            match grandparent_paths.get(parent_path) {
+                Some(paths) => section.subsections.extend(paths.clone()),
+                None => continue,
+            };
+        }
+
+        self.sections = sections;
 
         Ok(())
     }
 
-    // Inject live reload script tag if in live reload mode
+    /// Inject live reload script tag if in live reload mode
     fn inject_livereload(&self, html: String) -> String {
         if self.live_reload {
             return html.replace(
@@ -108,11 +154,10 @@ impl Site {
         html
     }
 
-
     /// Copy the content of the `static` folder into the `public` folder
     ///
-    /// TODO: only copy one file if possible because that would be a waster
-    /// to do re-copy the whole thing
+    /// TODO: only copy one file if possible because that would be a waste
+    /// to do re-copy the whole thing. Benchmark first to see if it's a big difference
     pub fn copy_static_directory(&self) -> Result<()> {
         let from = Path::new("static");
         let target = Path::new("public");
@@ -160,7 +205,7 @@ impl Site {
     }
 
     pub fn build_pages(&self) -> Result<()> {
-        let public = Path::new("public");
+        let public = self.output_path.clone();
         if !public.exists() {
             create_directory(&public)?;
         }
@@ -168,40 +213,39 @@ impl Site {
         let mut pages = vec![];
         let mut category_pages: HashMap<String, Vec<&Page>> = HashMap::new();
         let mut tag_pages: HashMap<String, Vec<&Page>> = HashMap::new();
+
         // First we render the pages themselves
         for page in self.pages.values() {
             // Copy the nesting of the content directory if we have sections for that page
             let mut current_path = public.to_path_buf();
 
-            // This loop happens when the page doesn't have a set URL
-            for section in &page.sections {
-                current_path.push(section);
+            for component in page.url.split("/") {
+                current_path.push(component);
 
                 if !current_path.exists() {
                     create_directory(&current_path)?;
                 }
             }
 
-            // if we have a url already set, use that as base
-            if let Some(ref url) = page.meta.url {
-                current_path.push(url);
-            }
-
             // Make sure the folder exists
             create_directory(&current_path)?;
+
             // Finally, create a index.html file there with the page rendered
             let output = page.render_html(&self.templates, &self.config)?;
             create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
+
             // Copy any asset we found previously into the same directory as the index.html
             for asset in &page.assets {
                 let asset_path = asset.as_path();
                 copy(&asset_path, &current_path.join(asset_path.file_name().unwrap()))?;
             }
+
             pages.push(page);
 
             if let Some(ref category) = page.meta.category {
                 category_pages.entry(category.to_string()).or_insert_with(|| vec![]).push(page);
             }
+
             if let Some(ref tags) = page.meta.tags {
                 for tag in tags {
                     tag_pages.entry(tag.to_string()).or_insert_with(|| vec![]).push(page);
@@ -232,6 +276,7 @@ impl Site {
         if self.config.generate_rss.unwrap() {
             self.render_rss_feed()?;
         }
+        self.render_sections()?;
         self.copy_static_directory()
     }
 
@@ -247,7 +292,7 @@ impl Site {
             ("tags", "tags.html", "tag.html", "tag")
         };
 
-        let public = Path::new("public");
+        let public = self.output_path.clone();
         let mut output_path = public.to_path_buf();
         output_path.push(name);
         create_directory(&output_path)?;
@@ -292,8 +337,7 @@ impl Site {
         context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
         let sitemap = self.templates.render("sitemap.xml", &context)?;
 
-        let public = Path::new("public");
-        create_file(public.join("sitemap.xml"), &sitemap)?;
+        create_file(self.output_path.join("sitemap.xml"), &sitemap)?;
 
         Ok(())
     }
@@ -309,6 +353,7 @@ impl Site {
         if pages.is_empty() {
             return Ok(());
         }
+
         pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
         context.add("pages", &pages);
         context.add("last_build_date", &pages[0].meta.date);
@@ -323,8 +368,27 @@ impl Site {
 
         let sitemap = self.templates.render("rss.xml", &context)?;
 
-        let public = Path::new("public");
-        create_file(public.join("rss.xml"), &sitemap)?;
+        create_file(self.output_path.join("rss.xml"), &sitemap)?;
+
+        Ok(())
+    }
+
+    fn render_sections(&self) -> Result<()> {
+        let public = self.output_path.clone();
+
+        for section in self.sections.values() {
+            let mut output_path = public.to_path_buf();
+            for component in &section.components {
+                output_path.push(component);
+
+                if !output_path.exists() {
+                    create_directory(&output_path)?;
+                }
+            }
+
+            let output = section.render_html(&self.templates, &self.config)?;
+            create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+        }
 
         Ok(())
     }

@@ -2,8 +2,7 @@ use tera;
 use toml;
 
 error_chain! {
-    errors {
-    }
+    errors {}
 
     links {
         Tera(tera::Error, tera::ErrorKind);
