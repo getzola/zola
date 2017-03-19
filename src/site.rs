@@ -131,6 +131,8 @@ impl Site {
         }
 
         for (parent_path, section) in &mut sections {
+            section.pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
             match grandparent_paths.get(parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),
                 None => continue,
