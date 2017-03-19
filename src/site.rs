@@ -74,7 +74,7 @@ impl Site {
 
         let mut site = Site {
             base_path: path.to_path_buf(),
-            config: get_config(&path),
+            config: get_config(path),
             pages: HashMap::new(),
             sections: BTreeMap::new(),
             templates: tera,
@@ -130,7 +130,7 @@ impl Site {
             grandparent_paths.entry(grand_parent).or_insert_with(|| vec![]).push(section.clone());
         }
 
-        for (parent_path, section) in sections.iter_mut() {
+        for (parent_path, section) in &mut sections {
             match grandparent_paths.get(parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),
                 None => continue,
@@ -219,7 +219,7 @@ impl Site {
             // Copy the nesting of the content directory if we have sections for that page
             let mut current_path = public.to_path_buf();
 
-            for component in page.url.split("/") {
+            for component in page.url.split('/') {
                 current_path.push(component);
 
                 if !current_path.exists() {

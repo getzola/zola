@@ -187,7 +187,7 @@ impl Page {
         let path = path.as_ref();
         let content = read_file(path)?;
         let mut page = Page::parse(path, &content, config)?;
-        page.assets = find_related_assets(&path.parent().unwrap());
+        page.assets = find_related_assets(path.parent().unwrap());
 
         if !page.assets.is_empty() && page.file_name != "index" {
             bail!("Page `{}` has assets but is not named index.md", path.display());

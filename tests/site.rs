@@ -23,34 +23,34 @@ fn test_can_parse_site() {
     let posts_path = path.join("content").join("posts");
 
     // Make sure we remove all the pwd + content from the sections
-    let basic = site.pages.get(&posts_path.join("simple.md")).unwrap();
+    let basic = &site.pages[&posts_path.join("simple.md")];
     assert_eq!(basic.components, vec!["posts".to_string()]);
 
     // Make sure the page with a url doesn't have any sections
-    let url_post = site.pages.get(&posts_path.join("fixed-url.md")).unwrap();
+    let url_post = &site.pages[&posts_path.join("fixed-url.md")];
     assert!(url_post.components.is_empty());
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
-    let asset_folder_post = site.pages.get(&posts_path.join("with-assets").join("index.md")).unwrap();
+    let asset_folder_post = &site.pages[&posts_path.join("with-assets").join("index.md")];
     assert_eq!(asset_folder_post.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
     assert_eq!(site.sections.len(), 4);
 
     // And that the sections are correct
-    let posts_section = site.sections.get(&posts_path).unwrap();
+    let posts_section = &site.sections[&posts_path];
     assert_eq!(posts_section.subsections.len(), 1);
     assert_eq!(posts_section.pages.len(), 5);
 
-    let tutorials_section = site.sections.get(&posts_path.join("tutorials")).unwrap();
+    let tutorials_section = &site.sections[&posts_path.join("tutorials")];
     assert_eq!(tutorials_section.subsections.len(), 2);
     assert_eq!(tutorials_section.pages.len(), 0);
 
-    let devops_section = site.sections.get(&posts_path.join("tutorials").join("devops")).unwrap();
+    let devops_section = &site.sections[&posts_path.join("tutorials").join("devops")];
     assert_eq!(devops_section.subsections.len(), 0);
     assert_eq!(devops_section.pages.len(), 2);
 
-    let prog_section = site.sections.get(&posts_path.join("tutorials").join("programming")).unwrap();
+    let prog_section = &site.sections[&posts_path.join("tutorials").join("programming")];
     assert_eq!(prog_section.subsections.len(), 0);
     assert_eq!(prog_section.pages.len(), 2);
 }
