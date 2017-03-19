@@ -8,6 +8,11 @@ use toml::{Value as Toml, self};
 use errors::{Result, ResultExt};
 
 
+// TO ADD:
+// highlight code theme
+// generate_tags_pages
+// generate_categories_pages
+
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// Title of the site

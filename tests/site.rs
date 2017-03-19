@@ -163,9 +163,45 @@ fn test_can_build_site_with_categories() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
+
+    let mut i = 0;
+    for (_, page) in &mut site.pages {
+        page.meta.category = if i % 2 == 0 {
+            Some("A".to_string())
+        } else {
+            Some("B".to_string())
+        };
+        i += 1;
+    }
+
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    site.set_output_path(&tmp_dir);
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
     site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_exists!(public, "sitemap.xml"));
+    assert!(file_exists!(public, "a-fixed-url/index.html"));
+
+    assert!(file_exists!(public, "posts/python/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(public, "posts/with-assets/index.html"));
+
+    // Sections
+    assert!(file_exists!(public, "posts/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
+    // TODO: add assertion for syntax highlighting
+
+    // Categories are there
+    assert!(file_exists!(public, "categories/index.html"));
+    assert!(file_exists!(public, "categories/a/index.html"));
+    assert!(file_exists!(public, "categories/b/index.html"));
+    // Tags aren't
+    assert_eq!(file_exists!(public, "tags/index.html"), false);
 }
 
 #[test]
@@ -173,7 +209,44 @@ fn test_can_build_site_with_tags() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
+
+    let mut i = 0;
+    for (_, page) in &mut site.pages {
+        page.meta.tags = if i % 2 == 0 {
+            Some(vec!["tag1".to_string(), "tag2".to_string()])
+        } else {
+            Some(vec!["tag with space".to_string()])
+        };
+        i += 1;
+    }
+
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    site.set_output_path(&tmp_dir);
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
     site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_exists!(public, "sitemap.xml"));
+    assert!(file_exists!(public, "a-fixed-url/index.html"));
+
+    assert!(file_exists!(public, "posts/python/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(public, "posts/with-assets/index.html"));
+
+    // Sections
+    assert!(file_exists!(public, "posts/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
+    // TODO: add assertion for syntax highlighting
+
+    // Tags are there
+    assert!(file_exists!(public, "tags/index.html"));
+    assert!(file_exists!(public, "tags/tag1/index.html"));
+    assert!(file_exists!(public, "tags/tag2/index.html"));
+    assert!(file_exists!(public, "tags/tag-with-space/index.html"));
+    // Categories aren't
+    assert_eq!(file_exists!(public, "categories/index.html"), false);
 }
