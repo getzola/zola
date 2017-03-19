@@ -1,10 +1,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     {% for page in pages %}
         <url>
-            <loc>{{ page.permalink }}</loc>
+            <loc>{{ page.permalink | safe }}</loc>
             {% if page.date %}
                 <lastmod>{{ page.date }}</lastmod>
             {% endif %}
+        </url>
+    {% endfor %}
+    {% for section in sections %}
+        <url>
+            <loc>{{ section.permalink | safe }}</loc>
         </url>
     {% endfor %}
 </urlset>

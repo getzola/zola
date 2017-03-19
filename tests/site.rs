@@ -78,7 +78,6 @@ macro_rules! file_contains {
             let mut file = File::open(&path).unwrap();
             let mut s = String::new();
             file.read_to_string(&mut s).unwrap();
-
             s.contains($text)
         }
     }
@@ -117,6 +116,10 @@ fn test_can_build_site_without_live_reload() {
 
     // no live reload code
     assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
+
+    // Both pages and sections are in the sitemap
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts</loc>"));
 }
 
 #[test]

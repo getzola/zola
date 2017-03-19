@@ -335,6 +335,8 @@ impl Site {
     fn render_sitemap(&self) -> Result<()> {
         let mut context = Context::new();
         context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
+        context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
+        // TODO: add categories and tags pages
         let sitemap = self.templates.render("sitemap.xml", &context)?;
 
         create_file(self.output_path.join("sitemap.xml"), &sitemap)?;
