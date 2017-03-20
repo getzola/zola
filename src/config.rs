@@ -31,9 +31,21 @@ pub struct Config {
     pub language_code: Option<String>,
     /// Whether to generate RSS, defaults to false
     pub generate_rss: Option<bool>,
+    /// Whether to generate tags and individual tag pages if some pages have them. Defaults to true
+    pub generate_tags_pages: Option<bool>,
+    /// Whether to generate categories and individual tag categories if some pages have them. Defaults to true
+    pub generate_categories_pages: Option<bool>,
 
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
+}
+
+macro_rules! set_default {
+    ($key: expr, $default: expr) => {
+        if $key.is_none() {
+            $key = Some($default);
+        }
+    }
 }
 
 impl Config {
@@ -45,13 +57,8 @@ impl Config {
             Err(e) => bail!(e)
         };
 
-        if config.language_code.is_none() {
-            config.language_code = Some("en".to_string());
-        }
-
-        if config.highlight_code.is_none() {
-            config.highlight_code = Some(false);
-        }
+        set_default!(config.language_code, "en".to_string());
+        set_default!(config.highlight_code, false);
 
         match config.highlight_theme {
             Some(ref t) => {
@@ -62,9 +69,9 @@ impl Config {
             None => config.highlight_theme = Some("base16-ocean-dark".to_string())
         };
 
-        if config.generate_rss.is_none() {
-            config.generate_rss = Some(false);
-        }
+        set_default!(config.generate_rss, false);
+        set_default!(config.generate_tags_pages, true);
+        set_default!(config.generate_categories_pages, true);
 
         Ok(config)
     }
@@ -100,6 +107,8 @@ impl Default for Config {
             description: None,
             language_code: Some("en".to_string()),
             generate_rss: Some(false),
+            generate_tags_pages: Some(true),
+            generate_categories_pages: Some(true),
             extra: None,
         }
     }

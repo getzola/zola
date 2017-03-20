@@ -269,8 +269,12 @@ impl Site {
         }
 
         // Outputting categories and pages
-        self.render_categories_and_tags(RenderList::Categories)?;
-        self.render_categories_and_tags(RenderList::Tags)?;
+        if self.config.generate_categories_pages.unwrap() {
+            self.render_categories_and_tags(RenderList::Categories)?;
+        }
+        if self.config.generate_tags_pages.unwrap() {
+            self.render_categories_and_tags(RenderList::Tags)?;
+        }
 
         // And finally the index page
         let mut context = Context::new();
@@ -368,23 +372,27 @@ impl Site {
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
 
         let mut categories = vec![];
-        if !self.categories.is_empty() {
-            categories.push(self.config.make_permalink("categories"));
-            for category in self.categories.keys() {
-                categories.push(
-                    self.config.make_permalink(&format!("categories/{}", slugify(category)))
-                );
+        if self.config.generate_categories_pages.unwrap() {
+            if !self.categories.is_empty() {
+                categories.push(self.config.make_permalink("categories"));
+                for category in self.categories.keys() {
+                    categories.push(
+                        self.config.make_permalink(&format!("categories/{}", slugify(category)))
+                    );
+                }
             }
         }
         context.add("categories", &categories);
 
         let mut tags = vec![];
-        if !self.tags.is_empty() {
-            tags.push(self.config.make_permalink("tags"));
-            for tag in self.tags.keys() {
-                tags.push(
-                    self.config.make_permalink(&format!("tags/{}", slugify(tag)))
-                );
+        if self.config.generate_tags_pages.unwrap() {
+            if !self.tags.is_empty() {
+                tags.push(self.config.make_permalink("tags"));
+                for tag in self.tags.keys() {
+                    tags.push(
+                        self.config.make_permalink(&format!("tags/{}", slugify(tag)))
+                    );
+                }
             }
         }
         context.add("tags", &tags);
