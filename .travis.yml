@@ -1,0 +1,10 @@
+language: rust
+cache: cargo
+
+rust:
+  - nightly
+  - beta
+  - stable
+
+notifications:
+  email: false

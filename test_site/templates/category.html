@@ -1,0 +1,8 @@
+Category: {{ category }}
+
+
+{% for page in pages %}
+    <article>
+        <h3 class="post__title"><a href="{{ page.url }}">{{ page.title }}</a></h3>
+    </article>
+{% endfor %}

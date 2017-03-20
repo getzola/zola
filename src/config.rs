@@ -7,19 +7,28 @@ use toml::{Value as Toml, self};
 
 use errors::{Result, ResultExt};
 
-// TODO: disable tag(s)/category(ies) page generation
+
+// TO ADD:
+// highlight code theme
+// generate_tags_pages
+// generate_categories_pages
+
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// Title of the site
     pub title: String,
     /// Base URL of the site
     pub base_url: String,
+
+    /// Whether to highlight all code blocks found in markdown files. Defaults to false
+    pub highlight_code: Option<bool>,
     /// Description of the site
     pub description: Option<String>,
     /// The language used in the site. Defaults to "en"
     pub language_code: Option<String>,
-    /// Whether to disable RSS generation, defaults to None (== generate RSS)
-    pub disable_rss: Option<bool>,
+    /// Whether to generate RSS, defaults to false
+    pub generate_rss: Option<bool>,
+
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
 }
@@ -32,8 +41,17 @@ impl Config {
             Ok(c) => c,
             Err(e) => bail!(e)
         };
+
         if config.language_code.is_none() {
             config.language_code = Some("en".to_string());
+        }
+
+        if config.highlight_code.is_none() {
+            config.highlight_code = Some(false);
+        }
+
+        if config.generate_rss.is_none() {
+            config.generate_rss = Some(false);
         }
 
         Ok(config)
@@ -47,6 +65,44 @@ impl Config {
             .read_to_string(&mut content)?;
 
         Config::parse(&content)
+    }
+
+    /// Makes a url, taking into account that the base url might have a trailing slash
+    pub fn make_permalink(&self, path: &str) -> String {
+        if self.base_url.ends_with('/') {
+            format!("{}{}", self.base_url, path)
+        } else {
+            format!("{}/{}", self.base_url, path)
+        }
+    }
+}
+
+impl Default for Config {
+    /// Exists for testing purposes
+    fn default() -> Config {
+        Config {
+            title: "".to_string(),
+            base_url: "http://a-website.com/".to_string(),
+            highlight_code: Some(true),
+            description: None,
+            language_code: Some("en".to_string()),
+            generate_rss: Some(false),
+            extra: None,
+        }
+    }
+}
+
+
+/// Get and parse the config.
+/// If it doesn't succeed, exit
+pub fn get_config(path: &Path) -> Config {
+    match Config::from_file(path.join("config.toml")) {
+        Ok(c) => c,
+        Err(e) => {
+            println!("Failed to load config.toml");
+            println!("Error: {}", e);
+            ::std::process::exit(1);
+        }
     }
 }
 

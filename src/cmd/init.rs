@@ -2,8 +2,8 @@
 use std::fs::{create_dir};
 use std::path::Path;
 
-use errors::Result;
-use utils::create_file;
+use gutenberg::errors::Result;
+use gutenberg::create_file;
 
 
 const CONFIG: &'static str = r#"

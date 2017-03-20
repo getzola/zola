@@ -2,44 +2,31 @@
 extern crate clap;
 #[macro_use]
 extern crate error_chain;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate toml;
-extern crate walkdir;
-extern crate pulldown_cmark;
-extern crate regex;
-extern crate tera;
-extern crate glob;
-extern crate syntect;
+extern crate gutenberg;
+extern crate chrono;
+
+extern crate staticfile;
+extern crate iron;
+extern crate mount;
+extern crate notify;
+extern crate ws;
 
 
-mod utils;
-mod config;
-mod errors;
+use std::time::Instant;
+use chrono::Duration;
+
 mod cmd;
-mod page;
-mod front_matter;
 
 
-use config::Config;
+// Print the time elapsed rounded to 1 decimal
+fn report_elapsed_time(instant: Instant) {
+    let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64;
 
-
-// Get and parse the config.
-// If it doesn't succeed, exit
-fn get_config() -> Config {
-    match Config::from_file("config.toml") {
-        Ok(c) => c,
-        Err(e) => {
-            println!("Failed to load config.toml");
-            println!("Error: {}", e);
-            for e in e.iter().skip(1) {
-                println!("Reason: {}", e)
-            }
-            ::std::process::exit(1);
-        }
+    if duration_ms < 1000.0 {
+        println!("Done in {}ms.\n", duration_ms);
+    } else {
+        let duration_sec = duration_ms / 1000.0;
+        println!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0));
     }
 }
 
@@ -57,6 +44,11 @@ fn main() {
         (@subcommand build =>
             (about: "Builds the site")
         )
+        (@subcommand serve =>
+            (about: "Serve the site. Rebuild and reload on change automatically")
+            (@arg interface: "Interface to bind on (default to 127.0.0.1)")
+            (@arg port: "Which port to use (default to 1111)")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -64,7 +56,6 @@ fn main() {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
                 Ok(()) => {
                     println!("Project created");
-                    println!("You will now need to set a theme in `config.toml`");
                 },
                 Err(e) => {
                     println!("Error: {}", e);
@@ -73,12 +64,28 @@ fn main() {
             };
         },
         ("build", Some(_)) => {
-            match cmd::build(get_config()) {
+            println!("Building site");
+            let start = Instant::now();
+            match cmd::build() {
                 Ok(()) => {
-                    println!("Project built.");
+                    report_elapsed_time(start);
                 },
                 Err(e) => {
                     println!("Failed to build the site");
+                    println!("Error: {}", e);
+                    for e in e.iter().skip(1) {
+                        println!("Reason: {}", e)
+                    }
+                    ::std::process::exit(1);
+                },
+            };
+        },
+        ("serve", Some(matches)) => {
+            let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
+            let port = matches.value_of("port").unwrap_or("1111");
+            match cmd::serve(interface, port) {
+                Ok(()) => (),
+                Err(e) => {
                     println!("Error: {}", e);
                     for e in e.iter().skip(1) {
                         println!("Reason: {}", e)
