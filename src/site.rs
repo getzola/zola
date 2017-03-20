@@ -21,6 +21,7 @@ lazy_static! {
         tera.add_raw_templates(vec![
             ("rss.xml", include_str!("templates/rss.xml")),
             ("sitemap.xml", include_str!("templates/sitemap.xml")),
+            ("robots.txt", include_str!("templates/robots.txt")),
         ]).unwrap();
         tera
     };
@@ -296,8 +297,17 @@ impl Site {
             self.render_rss_feed()?;
         }
 
+        self.render_robots()?;
+
         self.render_sections()?;
         self.copy_static_directory()
+    }
+
+    fn render_robots(&self) -> Result<()> {
+        create_file(
+            self.output_path.join("robots.txt"),
+            &self.templates.render("robots.txt", &Context::new())?
+        )
     }
 
     /// Render the /{categories, list} pages and each individual category/tag page
