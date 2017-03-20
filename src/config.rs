@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use toml::{Value as Toml, self};
 
 use errors::{Result, ResultExt};
+use markdown::SETUP;
 
 
 // TO ADD:
@@ -22,6 +23,8 @@ pub struct Config {
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: Option<bool>,
+    /// Which themes to use for code highlighting. See Readme for supported themes
+    pub highlight_theme: Option<String>,
     /// Description of the site
     pub description: Option<String>,
     /// The language used in the site. Defaults to "en"
@@ -49,6 +52,15 @@ impl Config {
         if config.highlight_code.is_none() {
             config.highlight_code = Some(false);
         }
+
+        match config.highlight_theme {
+            Some(ref t) => {
+                if !SETUP.theme_set.themes.contains_key(t) {
+                    bail!("Theme {} not available", t)
+                }
+            },
+            None => config.highlight_theme = Some("base16-ocean-dark".to_string())
+        };
 
         if config.generate_rss.is_none() {
             config.generate_rss = Some(false);
@@ -84,6 +96,7 @@ impl Default for Config {
             title: "".to_string(),
             base_url: "http://a-website.com/".to_string(),
             highlight_code: Some(true),
+            highlight_theme: Some("base16-ocean-dark".to_string()),
             description: None,
             language_code: Some("en".to_string()),
             generate_rss: Some(false),

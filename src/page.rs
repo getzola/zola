@@ -132,12 +132,13 @@ impl Page {
             false
         };
 
-        page.content = markdown_to_html(&page.raw_content, should_highlight);
+        let highlight_theme = config.highlight_theme.clone().unwrap();
+        page.content = markdown_to_html(&page.raw_content, should_highlight, &highlight_theme);
 
         if page.raw_content.contains("<!-- more -->") {
             page.summary = {
                 let summary = page.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, should_highlight)
+                markdown_to_html(summary, should_highlight, &highlight_theme)
             }
         }
 
