@@ -74,7 +74,7 @@ impl Site {
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
 
-        let mut site = Site {
+        let site = Site {
             base_path: path.to_path_buf(),
             config: get_config(path),
             pages: HashMap::new(),
@@ -85,7 +85,6 @@ impl Site {
             tags: HashMap::new(),
             categories: HashMap::new(),
         };
-        site.parse()?;
 
         Ok(site)
     }

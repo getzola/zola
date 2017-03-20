@@ -5,5 +5,7 @@ use gutenberg::Site;
 
 
 pub fn build() -> Result<()> {
-    Site::new(env::current_dir().unwrap())?.build()
+    let mut site = Site::new(env::current_dir().unwrap())?;
+    site.parse()?;
+    site.build()
 }

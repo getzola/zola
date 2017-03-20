@@ -62,11 +62,19 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
     println!("Building site...");
     let start = Instant::now();
     let mut site = Site::new(env::current_dir().unwrap())?;
+    let address = format!("{}:{}", interface, port);
+    // Override the base url so links work in localhost
+    site.config.base_url = if site.config.base_url.ends_with('/') {
+        format!("http://{}/", address)
+    } else {
+        format!("http://{}", address)
+    };
+
+    site.parse()?;
     site.enable_live_reload();
     site.build()?;
     report_elapsed_time(start);
 
-    let address = format!("{}:{}", interface, port);
     let ws_address = format!("{}:{}", interface, "1112");
 
     // Start a webserver that serves the `public` directory
