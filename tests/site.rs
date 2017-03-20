@@ -164,22 +164,21 @@ fn test_can_build_site_with_categories() {
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
 
-    let mut i = 0;
-    for (_, page) in &mut site.pages {
+    for (i, page) in site.pages.values_mut().enumerate() {
         page.meta.category = if i % 2 == 0 {
             Some("A".to_string())
         } else {
             Some("B".to_string())
         };
-        i += 1;
     }
-
+    site.parse_tags_and_categories();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
+    assert_eq!(site.categories.len(), 2);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -202,6 +201,10 @@ fn test_can_build_site_with_categories() {
     assert!(file_exists!(public, "categories/b/index.html"));
     // Tags aren't
     assert_eq!(file_exists!(public, "tags/index.html"), false);
+
+    // Categories are in the sitemap
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/a</loc>"));
 }
 
 #[test]
@@ -210,15 +213,14 @@ fn test_can_build_site_with_tags() {
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
 
-    let mut i = 0;
-    for (_, page) in &mut site.pages {
+    for (i, page) in site.pages.values_mut().enumerate() {
         page.meta.tags = if i % 2 == 0 {
             Some(vec!["tag1".to_string(), "tag2".to_string()])
         } else {
             Some(vec!["tag with space".to_string()])
         };
-        i += 1;
     }
+    site.parse_tags_and_categories();
 
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");
@@ -226,6 +228,7 @@ fn test_can_build_site_with_tags() {
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
+    assert_eq!(site.tags.len(), 3);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -249,4 +252,7 @@ fn test_can_build_site_with_tags() {
     assert!(file_exists!(public, "tags/tag-with-space/index.html"));
     // Categories aren't
     assert_eq!(file_exists!(public, "categories/index.html"), false);
+    // Tags are in the sitemap
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/tag-with-space</loc>"));
 }

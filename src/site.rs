@@ -60,6 +60,8 @@ pub struct Site {
     pub templates: Tera,
     live_reload: bool,
     output_path: PathBuf,
+    pub tags: HashMap<String, Vec<PathBuf>>,
+    pub categories: HashMap<String, Vec<PathBuf>>,
 }
 
 impl Site {
@@ -80,8 +82,10 @@ impl Site {
             templates: tera,
             live_reload: false,
             output_path: PathBuf::from("public"),
+            tags: HashMap::new(),
+            categories: HashMap::new(),
         };
-        site.parse_site()?;
+        site.parse()?;
 
         Ok(site)
     }
@@ -99,7 +103,7 @@ impl Site {
 
     /// Reads all .md files in the `content` directory and create pages
     /// out of them
-    fn parse_site(&mut self) -> Result<()> {
+    pub fn parse(&mut self) -> Result<()> {
         let path = self.base_path.to_string_lossy().replace("\\", "/");
         let content_glob = format!("{}/{}", path, "content/**/*.md");
 
@@ -122,7 +126,6 @@ impl Site {
                 self.pages.insert(page.file_path.clone(), page);
             }
         }
-
         // Find out the direct subsections of each subsection if there are some
         let mut grandparent_paths = HashMap::new();
         for section in sections.values() {
@@ -140,8 +143,30 @@ impl Site {
         }
 
         self.sections = sections;
+        self.parse_tags_and_categories();
 
         Ok(())
+    }
+
+    /// Separated from `parse` for easier testing
+    pub fn parse_tags_and_categories(&mut self) {
+        for page in self.pages.values() {
+            if let Some(ref category) = page.meta.category {
+                self.categories
+                    .entry(category.to_string())
+                    .or_insert_with(|| vec![])
+                    .push(page.file_path.clone());
+            }
+
+            if let Some(ref tags) = page.meta.tags {
+                for tag in tags {
+                    self.tags
+                        .entry(tag.to_string())
+                        .or_insert_with(|| vec![])
+                        .push(page.file_path.clone());
+                }
+            }
+        }
     }
 
     /// Inject live reload script tag if in live reload mode
@@ -197,7 +222,7 @@ impl Site {
     }
 
     pub fn rebuild_after_content_change(&mut self) -> Result<()> {
-        self.parse_site()?;
+        self.parse()?;
         self.build()
     }
 
@@ -213,8 +238,6 @@ impl Site {
         }
 
         let mut pages = vec![];
-        let mut category_pages: HashMap<String, Vec<&Page>> = HashMap::new();
-        let mut tag_pages: HashMap<String, Vec<&Page>> = HashMap::new();
 
         // First we render the pages themselves
         for page in self.pages.values() {
@@ -243,21 +266,11 @@ impl Site {
             }
 
             pages.push(page);
-
-            if let Some(ref category) = page.meta.category {
-                category_pages.entry(category.to_string()).or_insert_with(|| vec![]).push(page);
-            }
-
-            if let Some(ref tags) = page.meta.tags {
-                for tag in tags {
-                    tag_pages.entry(tag.to_string()).or_insert_with(|| vec![]).push(page);
-                }
-            }
         }
 
         // Outputting categories and pages
-        self.render_categories_and_tags(RenderList::Categories, &category_pages)?;
-        self.render_categories_and_tags(RenderList::Tags, &tag_pages)?;
+        self.render_categories_and_tags(RenderList::Categories)?;
+        self.render_categories_and_tags(RenderList::Tags)?;
 
         // And finally the index page
         let mut context = Context::new();
@@ -275,48 +288,63 @@ impl Site {
         self.clean()?;
         self.build_pages()?;
         self.render_sitemap()?;
+
         if self.config.generate_rss.unwrap() {
             self.render_rss_feed()?;
         }
+
         self.render_sections()?;
         self.copy_static_directory()
     }
 
     /// Render the /{categories, list} pages and each individual category/tag page
-    fn render_categories_and_tags(&self, kind: RenderList, container: &HashMap<String, Vec<&Page>>) -> Result<()> {
-        if container.is_empty() {
+    /// They are the same thing fundamentally, a list of pages with something in common
+    fn render_categories_and_tags(&self, kind: RenderList) -> Result<()> {
+        let items = match kind {
+            RenderList::Categories => &self.categories,
+            RenderList::Tags => &self.tags,
+        };
+
+        if items.is_empty() {
             return Ok(());
         }
 
-        let (name, list_tpl_name, single_tpl_name, var_name) = if kind == RenderList::Categories {
-            ("categories", "categories.html", "category.html", "category")
+        let (list_tpl_name, single_tpl_name, name, var_name) = if kind == RenderList::Categories {
+            ("categories.html", "category.html", "categories", "category")
         } else {
-            ("tags", "tags.html", "tag.html", "tag")
+            ("tags.html", "tag.html", "tags", "tag")
         };
 
+        // Create the categories/tags directory first
         let public = self.output_path.clone();
         let mut output_path = public.to_path_buf();
         output_path.push(name);
         create_directory(&output_path)?;
 
-        // First we render the list of categories/tags page
-        let mut sorted_container = vec![];
-        for (item, count) in Vec::from_iter(container).into_iter().map(|(a, b)| (a, b.len())) {
-            sorted_container.push(ListItem::new(item, count));
+        // Then render the index page for that kind.
+        // We sort by number of page in that category/tag
+        let mut sorted_items = vec![];
+        for (item, count) in Vec::from_iter(items).into_iter().map(|(a, b)| (a, b.len())) {
+            sorted_items.push(ListItem::new(&item, count));
         }
-        sorted_container.sort_by(|a, b| b.count.cmp(&a.count));
-
+        sorted_items.sort_by(|a, b| b.count.cmp(&a.count));
         let mut context = Context::new();
-        context.add(name, &sorted_container);
+        context.add(name, &sorted_items);
         context.add("config", &self.config);
-
+        // And render it immediately
         let list_output = self.templates.render(list_tpl_name, &context)?;
         create_file(output_path.join("index.html"), &self.inject_livereload(list_output))?;
 
-        // and then each individual item
-        for (item_name, mut pages) in container.clone() {
-            let mut context = Context::new();
+        // Now, each individual item
+        for (item_name, pages_paths) in items.iter() {
+            let mut pages: Vec<&Page> = self.pages
+                .iter()
+                .filter(|&(path, _)| pages_paths.contains(&path))
+                .map(|(_, page)| page)
+                .collect();
             pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+            let mut context = Context::new();
             let slug = slugify(&item_name);
             context.add(var_name, &item_name);
             context.add(&format!("{}_slug", var_name), &slug);
@@ -338,7 +366,29 @@ impl Site {
         let mut context = Context::new();
         context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
-        // TODO: add categories and tags pages
+
+        let mut categories = vec![];
+        if !self.categories.is_empty() {
+            categories.push(self.config.make_permalink("categories"));
+            for category in self.categories.keys() {
+                categories.push(
+                    self.config.make_permalink(&format!("categories/{}", slugify(category)))
+                );
+            }
+        }
+        context.add("categories", &categories);
+
+        let mut tags = vec![];
+        if !self.tags.is_empty() {
+            tags.push(self.config.make_permalink("tags"));
+            for tag in self.tags.keys() {
+                tags.push(
+                    self.config.make_permalink(&format!("tags/{}", slugify(tag)))
+                );
+            }
+        }
+        context.add("tags", &tags);
+
         let sitemap = self.templates.render("sitemap.xml", &context)?;
 
         create_file(self.output_path.join("sitemap.xml"), &sitemap)?;

@@ -52,11 +52,7 @@ impl Section {
         section.url = section.components.join("/");
         section.permalink = section.components.join("/");
 
-        section.permalink = if config.base_url.ends_with('/') {
-            format!("{}{}", config.base_url, section.url)
-        } else {
-            format!("{}/{}", config.base_url, section.url)
-        };
+        section.permalink = config.make_permalink(&section.url);
 
         Ok(section)
     }

@@ -173,11 +173,7 @@ impl Page {
             }
         }
 
-        page.permalink = if config.base_url.ends_with('/') {
-            format!("{}{}", config.base_url, page.url)
-        } else {
-            format!("{}/{}", config.base_url, page.url)
-        };
+        page.permalink = config.make_permalink(&page.url);
 
         Ok(page)
     }

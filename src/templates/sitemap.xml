@@ -12,4 +12,14 @@
             <loc>{{ section.permalink | safe }}</loc>
         </url>
     {% endfor %}
+    {% for category in categories %}
+        <url>
+            <loc>{{ category | safe }}</loc>
+        </url>
+    {% endfor %}
+    {% for tag in tags %}
+        <url>
+            <loc>{{ tag | safe }}</loc>
+        </url>
+    {% endfor %}
 </urlset>

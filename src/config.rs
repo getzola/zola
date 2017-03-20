@@ -66,6 +66,15 @@ impl Config {
 
         Config::parse(&content)
     }
+
+    /// Makes a url, taking into account that the base url might have a trailing slash
+    pub fn make_permalink(&self, path: &str) -> String {
+        if self.base_url.ends_with('/') {
+            format!("{}{}", self.base_url, path)
+        } else {
+            format!("{}/{}", self.base_url, path)
+        }
+    }
 }
 
 impl Default for Config {
