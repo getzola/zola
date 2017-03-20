@@ -14,7 +14,7 @@ name = "gutenberg"
 
 [dependencies]
 error-chain = "0.10"
-clap = "2.19"
+clap = "2"
 walkdir = "1"
 pulldown-cmark = "0"
 regex = "0.2"
