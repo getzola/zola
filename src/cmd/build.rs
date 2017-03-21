@@ -6,6 +6,6 @@ use gutenberg::Site;
 
 pub fn build() -> Result<()> {
     let mut site = Site::new(env::current_dir().unwrap())?;
-    site.parse()?;
+    site.load()?;
     site.build()
 }

@@ -101,39 +101,60 @@ impl Site {
         self.output_path = path.as_ref().to_path_buf();
     }
 
-    /// Reads all .md files in the `content` directory and create pages
+    /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
-    pub fn parse(&mut self) -> Result<()> {
+    pub fn load(&mut self) -> Result<()> {
         let path = self.base_path.to_string_lossy().replace("\\", "/");
         let content_glob = format!("{}/{}", path, "content/**/*.md");
 
-        // parent_dir -> Section
-        let mut sections = BTreeMap::new();
-
-        // Glob is giving us the result order so _index will show up first
-        // for each directory
+        // TODO: make that parallel, that's the main bottleneck
+        // `add_section` and `add_page` can't be used in the parallel version afaik
         for entry in glob(&content_glob).unwrap().filter_map(|e| e.ok()) {
             let path = entry.as_path();
 
             if path.file_name().unwrap() == "_index.md" {
-                let section = Section::from_file(&path, &self.config)?;
-                sections.insert(section.parent_path.clone(), section);
+                self.add_section(&path)?;
             } else {
-                let page = Page::from_file(&path, &self.config)?;
-                if sections.contains_key(&page.parent_path) {
-                    sections.get_mut(&page.parent_path).unwrap().pages.push(page.clone());
-                }
-                self.pages.insert(page.file_path.clone(), page);
+                self.add_page(&path)?;
             }
         }
-        // Find out the direct subsections of each subsection if there are some
+
+        self.populate_sections();
+        self.populate_tags_and_categories();
+
+        Ok(())
+    }
+
+    /// Simple wrapper fn to avoid repeating that code in several places
+    fn add_page(&mut self, path: &Path) -> Result<()> {
+        let page = Page::from_file(&path, &self.config)?;
+        self.pages.insert(page.file_path.clone(), page);
+        Ok(())
+    }
+
+    /// Simple wrapper fn to avoid repeating that code in several places
+    fn add_section(&mut self, path: &Path) -> Result<()> {
+        let section = Section::from_file(path, &self.config)?;
+        self.sections.insert(section.parent_path.clone(), section);
+        Ok(())
+    }
+
+    /// Find out the direct subsections of each subsection if there are some
+    /// as well as the pages for each section
+    fn populate_sections(&mut self) {
+        for page in self.pages.values() {
+            if self.sections.contains_key(&page.parent_path) {
+                self.sections.get_mut(&page.parent_path).unwrap().pages.push(page.clone());
+            }
+        }
+
         let mut grandparent_paths = HashMap::new();
-        for section in sections.values() {
+        for section in self.sections.values() {
             let grand_parent = section.parent_path.parent().unwrap().to_path_buf();
             grandparent_paths.entry(grand_parent).or_insert_with(|| vec![]).push(section.clone());
         }
 
-        for (parent_path, section) in &mut sections {
+        for (parent_path, section) in &mut self.sections {
             section.pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
             match grandparent_paths.get(parent_path) {
@@ -141,15 +162,10 @@ impl Site {
                 None => continue,
             };
         }
-
-        self.sections = sections;
-        self.parse_tags_and_categories();
-
-        Ok(())
     }
 
     /// Separated from `parse` for easier testing
-    pub fn parse_tags_and_categories(&mut self) {
+    pub fn populate_tags_and_categories(&mut self) {
         for page in self.pages.values() {
             if let Some(ref category) = page.meta.category {
                 self.categories
@@ -221,8 +237,26 @@ impl Site {
         Ok(())
     }
 
-    pub fn rebuild_after_content_change(&mut self) -> Result<()> {
-        self.parse()?;
+    pub fn rebuild_after_content_change(&mut self, path: &Path) -> Result<()> {
+        if path.exists() {
+            // file exists, either a new one or updating content
+            if self.pages.contains_key(path) {
+                if path.ends_with("_index.md") {
+                    self.add_section(path)?;
+                } else {
+                    // probably just an update so just re-parse that page
+                    self.add_page(path)?;
+                }
+            } else {
+                // new file?
+                self.add_page(path)?;
+            }
+        } else {
+            // File doesn't exist -> a deletion so we remove it from
+            self.pages.remove(path);
+        }
+        self.populate_sections();
+        self.populate_tags_and_categories();
         self.build()
     }
 

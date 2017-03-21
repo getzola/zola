@@ -17,7 +17,7 @@ fn test_can_parse_site() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
-    site.parse().unwrap();
+    site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
     assert_eq!(site.pages.len(), 10);
@@ -89,7 +89,7 @@ fn test_can_build_site_without_live_reload() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
-    site.parse().unwrap();
+    site.load().unwrap();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
@@ -130,7 +130,7 @@ fn test_can_build_site_with_live_reload() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
-    site.parse().unwrap();
+    site.load().unwrap();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
@@ -168,7 +168,7 @@ fn test_can_build_site_with_categories() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
-    site.parse().unwrap();
+    site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
         page.meta.category = if i % 2 == 0 {
@@ -177,7 +177,7 @@ fn test_can_build_site_with_categories() {
             Some("B".to_string())
         };
     }
-    site.parse_tags_and_categories();
+    site.populate_tags_and_categories();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
@@ -219,7 +219,7 @@ fn test_can_build_site_with_tags() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path).unwrap();
-    site.parse().unwrap();
+    site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
         page.meta.tags = if i % 2 == 0 {
@@ -228,7 +228,7 @@ fn test_can_build_site_with_tags() {
             Some(vec!["tag with space".to_string()])
         };
     }
-    site.parse_tags_and_categories();
+    site.populate_tags_and_categories();
 
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");

@@ -70,7 +70,7 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
         format!("http://{}", address)
     };
 
-    site.parse()?;
+    site.load()?;
     site.enable_live_reload();
     site.build()?;
     report_elapsed_time(start);
@@ -129,7 +129,7 @@ pub fn serve(interface: &str, port: &str) -> Result<()> {
                             (ChangeKind::Content, _) => {
                                 println!("-> Content changed {}", path.display());
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, site.rebuild_after_content_change(), "/x.js");
+                                rebuild_done_handling(&broadcaster, site.rebuild_after_content_change(&path), "/x.js");
                             },
                             (ChangeKind::Templates, _) => {
                                 println!("-> Template changed {}", path.display());
