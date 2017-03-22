@@ -73,10 +73,14 @@ pub struct Page {
     /// as summary
     pub summary: String,
 
-    /// The previous page, by date
+    /// The previous page, by date globally
     pub previous: Option<Box<Page>>,
+    /// The previous page, by date only for the section the page is in
+    pub previous_in_section: Option<Box<Page>>,
     /// The next page, by date
     pub next: Option<Box<Page>>,
+    /// The next page, by date only for the section the page is in
+    pub next_in_section: Option<Box<Page>>,
 }
 
 
@@ -96,8 +100,14 @@ impl Page {
             summary: "".to_string(),
             meta: meta,
             previous: None,
+            previous_in_section: None,
             next: None,
+            next_in_section: None,
         }
+    }
+
+    pub fn has_date(&self) -> bool {
+        self.meta.date.is_some()
     }
 
     /// Get word count and estimated reading time
@@ -256,6 +266,45 @@ impl PartialOrd for Page {
     }
 }
 
+
+/// Horribly inefficient way to set previous and next on each pages
+/// So many clones
+pub fn populate_previous_and_next_pages(input: &[Page], in_section: bool) -> Vec<Page> {
+    let pages = input.to_vec();
+    let mut res = Vec::new();
+
+    // the input is sorted from most recent to least recent already
+    for (i, page) in input.iter().enumerate() {
+        let mut new_page = page.clone();
+
+        if new_page.has_date() {
+            if i > 0 {
+                let next = &pages[i - 1];
+                if next.has_date() {
+                    if in_section {
+                        new_page.next_in_section = Some(Box::new(next.clone()));
+                    } else {
+                        new_page.next = Some(Box::new(next.clone()));
+                    }
+                }
+            }
+
+            if i < input.len() - 1 {
+                let previous = &pages[i + 1];
+                if previous.has_date() {
+                    if in_section {
+                        new_page.previous_in_section = Some(Box::new(previous.clone()));
+                    } else {
+                        new_page.previous = Some(Box::new(previous.clone()));
+                    }
+                }
+            }
+        }
+        res.push(new_page);
+    }
+
+    res
+}
 
 #[cfg(test)]
 mod tests {

@@ -77,9 +77,9 @@ impl<'a> Iterator for CodeHighlightingParser<'a> {
                     .and_then(|lang| SETUP.syntax_set.find_syntax_by_token(lang))
                     .unwrap_or_else(|| SETUP.syntax_set.find_syntax_plain_text());
                 self.highlighter = Some(
-                    HighlightLines::new(syntax, &theme)
+                    HighlightLines::new(syntax, theme)
                 );
-                let snippet = start_coloured_html_snippet(&theme);
+                let snippet = start_coloured_html_snippet(theme);
                 Some(Event::Html(Owned(snippet)))
             },
             Event::End(Tag::CodeBlock(_)) => {

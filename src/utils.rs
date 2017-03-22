@@ -4,7 +4,6 @@ use std::path::Path;
 
 use errors::{Result, ResultExt};
 
-
 pub fn create_file<P: AsRef<Path>>(path: P, content: &str) -> Result<()> {
     let mut file = File::create(&path)?;
     file.write_all(content.as_bytes())?;

@@ -10,7 +10,7 @@ use walkdir::WalkDir;
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
-use page::{Page};
+use page::{Page, populate_previous_and_next_pages};
 use utils::{create_file, create_directory};
 use section::{Section};
 
@@ -113,9 +113,9 @@ impl Site {
             let path = entry.as_path();
 
             if path.file_name().unwrap() == "_index.md" {
-                self.add_section(&path)?;
+                self.add_section(path)?;
             } else {
-                self.add_page(&path)?;
+                self.add_page(path)?;
             }
         }
 
@@ -156,6 +156,7 @@ impl Site {
 
         for (parent_path, section) in &mut self.sections {
             section.pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            section.pages = populate_previous_and_next_pages(section.pages.as_slice(), true);
 
             match grandparent_paths.get(parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),
@@ -299,7 +300,7 @@ impl Site {
                 copy(&asset_path, &current_path.join(asset_path.file_name().unwrap()))?;
             }
 
-            pages.push(page);
+            pages.push(page.clone());
         }
 
         // Outputting categories and pages
@@ -313,7 +314,8 @@ impl Site {
         // And finally the index page
         let mut context = Context::new();
         pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        context.add("pages", &pages);
+
+        context.add("pages", &populate_previous_and_next_pages(&pages, false));
         context.add("config", &self.config);
         let index = self.templates.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
@@ -372,7 +374,7 @@ impl Site {
         // We sort by number of page in that category/tag
         let mut sorted_items = vec![];
         for (item, count) in Vec::from_iter(items).into_iter().map(|(a, b)| (a, b.len())) {
-            sorted_items.push(ListItem::new(&item, count));
+            sorted_items.push(ListItem::new(item, count));
         }
         sorted_items.sort_by(|a, b| b.count.cmp(&a.count));
         let mut context = Context::new();
@@ -386,7 +388,7 @@ impl Site {
         for (item_name, pages_paths) in items.iter() {
             let mut pages: Vec<&Page> = self.pages
                 .iter()
-                .filter(|&(path, _)| pages_paths.contains(&path))
+                .filter(|&(path, _)| pages_paths.contains(path))
                 .map(|(_, page)| page)
                 .collect();
             pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -415,27 +417,23 @@ impl Site {
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
 
         let mut categories = vec![];
-        if self.config.generate_categories_pages.unwrap() {
-            if !self.categories.is_empty() {
-                categories.push(self.config.make_permalink("categories"));
-                for category in self.categories.keys() {
-                    categories.push(
-                        self.config.make_permalink(&format!("categories/{}", slugify(category)))
-                    );
-                }
+        if self.config.generate_categories_pages.unwrap() && !self.categories.is_empty() {
+            categories.push(self.config.make_permalink("categories"));
+            for category in self.categories.keys() {
+                categories.push(
+                    self.config.make_permalink(&format!("categories/{}", slugify(category)))
+                );
             }
         }
         context.add("categories", &categories);
 
         let mut tags = vec![];
-        if self.config.generate_tags_pages.unwrap() {
-            if !self.tags.is_empty() {
-                tags.push(self.config.make_permalink("tags"));
-                for tag in self.tags.keys() {
-                    tags.push(
-                        self.config.make_permalink(&format!("tags/{}", slugify(tag)))
-                    );
-                }
+        if self.config.generate_tags_pages.unwrap() && !self.tags.is_empty() {
+            tags.push(self.config.make_permalink("tags"));
+            for tag in self.tags.keys() {
+                tags.push(
+                    self.config.make_permalink(&format!("tags/{}", slugify(tag)))
+                );
             }
         }
         context.add("tags", &tags);

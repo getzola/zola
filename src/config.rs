@@ -9,11 +9,6 @@ use errors::{Result, ResultExt};
 use markdown::SETUP;
 
 
-// TO ADD:
-// highlight code theme
-// generate_tags_pages
-// generate_categories_pages
-
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// Title of the site

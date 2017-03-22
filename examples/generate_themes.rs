@@ -35,7 +35,7 @@ fn main() {
         }
         (Some(ref s), Some(ref theme_dir), Some(ref packpath), None) if s == "themepack" => {
             let ts = ThemeSet::load_from_folder(theme_dir).unwrap();
-            for (path, _) in &ts.themes {
+            for path in ts.themes.keys() {
                 println!("{:?}", path);
             }
             dump_to_file(&ts, packpath).unwrap();
