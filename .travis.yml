@@ -1,10 +1,70 @@
+dist: trusty
 language: rust
+services: docker
+sudo: required
+
+
+env:
+  global:
+    - CRATE_NAME=gutenberg
+
+matrix:
+  # TODO These are all the build jobs. Adjust as necessary. Comment out what you
+  # don't need
+  include:
+    # Linux
+    - env: TARGET=x86_64-unknown-linux-gnu
+    - env: TARGET=x86_64-unknown-linux-musl
+    # OSX
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+
+    # Testing other channels
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: beta
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+
+
+before_install: set -e
+
+install:
+  - sh ci/install.sh
+  - source ~/.cargo/env || true
+
+script:
+  - bash ci/script.sh
+
+after_script: set +e
+
+before_deploy:
+  - sh ci/before_deploy.sh
+
+deploy:
+  # TODO update `api_key.secure`
+  # - Create a `public_repo` GitHub token. Go to: https://github.com/settings/tokens/new
+  # - Encrypt it: `travis encrypt YOUR_TOKEN`
+  # - Paste the output down here
+  api_key:
+    secure: X0M1TT06/MHfwaENl+u/K3twBU0BVTQimXfBkHzODWsWC84SGeJPMiovIkuBxq4P7Wk7sIr1d/IINlq0sK40IvI3Xwy95YtpTKcK52ffZjTmHSNExCy+OhW2JefNPOwPI89JWKsmHM1I8FuDRiENTyawVS8akcl1XnQhS3V3a1zEuwpULO+6UwDTauJDRdVenDY7tHxbwYH644djZpKcL3LsPLkv0r0XlWnyH+Lw65/ggUmw63KaZTN+hOYfznXGNjlsv2YSD8lCo7eGGg+WA1rsr1SDOxzMM60OOE2Y4lDo0lX9tPWAxMfltvuouxfZ8Y2II4oNEYQui+AqaZ6CfhjFrfZG5P6QdFcGcjiYhDC+s+R9m+tCtzCcKh+lahxcfwOEo1O9pAsg77XVy5gf9guM++9uhYc54Z7tUeyNyJQVaQHt0drmqqeQWfk8w2YBmTPiJ7mwAbhEU5gISWQBpc9eRM1PiOaWDOJHgyV1rZfOT6RxgKBu5DW4pSZ6Iar7Qc+u4ei80QRI2jVsnlPY8/5rl/z0fqSnOen/wyGQHNI18SwXiy0TbN8aMpwr9tllOBYtjrWoX4xCj8NJksl1EAYaE2Cwy768mSfO9FTMqGQpuG5S6M9BRsG5pOtZdKpxjyP8vJ1ahp8KDI9Mz8QJSfG6kOHXqCaed+MmJNxJYI0=  file_glob: true
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  on:
+    # TODO Here you can pick which targets will generate binary releases
+    # In this example, there are some targets that are tested using the stable
+    # and nightly channels. This condition makes sure there is only one release
+    # for such targets and that's generated using the stable channel
+    condition: $TRAVIS_RUST_VERSION = stable
+    tags: true
+  provider: releases
+  skip_cleanup: true
+
 cache: cargo
+before_cache:
+  # Travis can't cache files that are not readable by "others"
+  - chmod -R a+r $HOME/.cargo
 
-rust:
-  - nightly
-  - beta
-  - stable
-
-notifications:
-  email: false
+branches:
+  only:
+    # release tags
+    - /^v\d+\.\d+\.\d+.*$/
+    - master
