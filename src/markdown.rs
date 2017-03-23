@@ -94,8 +94,20 @@ impl<'a> Iterator for CodeHighlightingParser<'a> {
 }
 
 pub fn markdown_to_html(content: &str, highlight_code: bool, highlight_theme: &str) -> String {
+    // We try to be smart about highlighting code as it can be time-consuming
+    // If the global config disables it, then we do nothing. However,
+    // if we see a code block in the content, we assume that this page needs
+    // to be highlighted. It could potentially have false positive if the content
+    // has ``` in it but that seems kind of unlikely
+    let should_highlight = if highlight_code {
+        content.contains("```")
+    } else {
+        false
+    };
+
+
     let mut html = String::new();
-    if highlight_code {
+    if should_highlight {
         let parser = CodeHighlightingParser::new(Parser::new(content), highlight_theme);
         cmark::html::push_html(&mut html, parser);
     } else {

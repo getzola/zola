@@ -131,24 +131,13 @@ impl Page {
         page.parent_path = page.file_path.parent().unwrap().to_path_buf();
         page.raw_content = content;
 
-        // We try to be smart about highlighting code as it can be time-consuming
-        // If the global config disables it, then we do nothing. However,
-        // if we see a code block in the content, we assume that this page needs
-        // to be highlighted. It could potentially have false positive if the content
-        // has ``` in it but that seems kind of unlikely
-        let should_highlight = if config.highlight_code.unwrap() {
-            page.raw_content.contains("```")
-        } else {
-            false
-        };
-
         let highlight_theme = config.highlight_theme.clone().unwrap();
-        page.content = markdown_to_html(&page.raw_content, should_highlight, &highlight_theme);
+        page.content = markdown_to_html(&page.raw_content, config.highlight_code.unwrap(), &highlight_theme);
 
         if page.raw_content.contains("<!-- more -->") {
             page.summary = {
                 let summary = page.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, should_highlight, &highlight_theme)
+                markdown_to_html(summary, config.highlight_code.unwrap(), &highlight_theme)
             }
         }
 
