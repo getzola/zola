@@ -145,3 +145,7 @@ built-in:
 
 A gallery containing lots of themes at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
 More themes can be easily added to gutenberg, just make a PR with the wanted theme.
+
+## Example sites
+
+- [vincent.is](vincent.is): https://gitlab.com/Keats/vincent.is
