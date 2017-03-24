@@ -148,4 +148,4 @@ More themes can be easily added to gutenberg, just make a PR with the wanted the
 
 ## Example sites
 
-- [vincent.is](vincent.is): https://gitlab.com/Keats/vincent.is
+- [vincent.is](https://vincent.is): https://gitlab.com/Keats/vincent.is
