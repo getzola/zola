@@ -23,9 +23,9 @@ environment:
 install:
   - ps: >-
       If ($Env:TARGET -eq 'x86_64-pc-windows-gnu') {
-        $Env:PATH += ';C:\msys64\mingw64\bin'
+        $Env:PATH += ';C:\msys64\mingw64\bin;C:\Program Files\Git\mingw64\bin'
       } ElseIf ($Env:TARGET -eq 'i686-pc-windows-gnu') {
-        $Env:PATH += ';C:\msys64\mingw32\bin'
+        $Env:PATH += ';C:\msys64\mingw32\bin;C:\Program Files\Git\mingw64\bin'
       }
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/
   - rustup-init.exe -y --default-host %TARGET% --default-toolchain %RUST_VERSION%

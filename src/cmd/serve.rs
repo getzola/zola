@@ -47,7 +47,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                 }}"#, reload_path)
             ).unwrap();
         },
-        Err(e) => unravel_errors("Failed to build the site", e, false)
+        Err(e) => unravel_errors("Failed to build the site", &e, false)
     }
 }
 

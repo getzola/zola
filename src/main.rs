@@ -35,7 +35,7 @@ fn report_elapsed_time(instant: Instant) {
 }
 
 ////Display an error message, the actual error and then exits if requested
-fn unravel_errors(message: &str, error: Error, exit: bool) {
+fn unravel_errors(message: &str, error: &Error, exit: bool) {
         console::error(message);
         console::error(&format!("Error: {}", error));
         for e in error.iter().skip(1) {
@@ -74,24 +74,24 @@ fn main() {
         ("init", Some(matches)) => {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
                 Ok(()) => console::success("Project created"),
-                Err(e) => unravel_errors("Failed to create the project", e, true),
+                Err(e) => unravel_errors("Failed to create the project", &e, true),
             };
         },
         ("build", Some(_)) => {
             console::info("Building site...");
             let start = Instant::now();
-            match cmd::build(&config_file) {
+            match cmd::build(config_file) {
                 Ok(()) => report_elapsed_time(start),
-                Err(e) => unravel_errors("Failed to build the site", e, true),
+                Err(e) => unravel_errors("Failed to build the site", &e, true),
             };
         },
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let port = matches.value_of("port").unwrap_or("1111");
             console::info("Building site...");
-            match cmd::serve(interface, port, &config_file) {
+            match cmd::serve(interface, port, config_file) {
                 Ok(()) => (),
-                Err(e) => unravel_errors("Failed to build the site", e, true),
+                Err(e) => unravel_errors("Failed to build the site", &e, true),
             };
         },
         _ => unreachable!(),
