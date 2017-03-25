@@ -37,6 +37,7 @@ fn main() {
         (author: "Vincent Prouillet")
         (about: "Static site generator")
         (@setting SubcommandRequiredElseHelp)
+        (@arg config: -c --config +takes_value "Path to a config file other than config.toml")
         (@subcommand init =>
             (about: "Create a new Gutenberg project")
             (@arg name: +required "Name of the project. Will create a directory with that name in the current directory")
@@ -50,6 +51,8 @@ fn main() {
             (@arg port: "Which port to use (default to 1111)")
         )
     ).get_matches();
+
+    let config_file = matches.value_of("config").unwrap_or("config.toml");
 
     match matches.subcommand() {
         ("init", Some(matches)) => {
@@ -66,7 +69,7 @@ fn main() {
         ("build", Some(_)) => {
             println!("Building site");
             let start = Instant::now();
-            match cmd::build() {
+            match cmd::build(&config_file) {
                 Ok(()) => {
                     report_elapsed_time(start);
                 },
@@ -83,7 +86,7 @@ fn main() {
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let port = matches.value_of("port").unwrap_or("1111");
-            match cmd::serve(interface, port) {
+            match cmd::serve(interface, port, &config_file) {
                 Ok(()) => (),
                 Err(e) => {
                     println!("Error: {}", e);

@@ -27,7 +27,7 @@ mod markdown;
 mod section;
 
 pub use site::Site;
-pub use config::Config;
+pub use config::{Config, get_config};
 pub use front_matter::{FrontMatter, split_content};
 pub use page::{Page, populate_previous_and_next_pages};
 pub use section::{Section};

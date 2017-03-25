@@ -112,11 +112,11 @@ impl Default for Config {
 
 /// Get and parse the config.
 /// If it doesn't succeed, exit
-pub fn get_config(path: &Path) -> Config {
-    match Config::from_file(path.join("config.toml")) {
+pub fn get_config(path: &Path, filename: &str) -> Config {
+    match Config::from_file(path.join(filename)) {
         Ok(c) => c,
         Err(e) => {
-            println!("Failed to load config.toml");
+            println!("Failed to load {}", filename);
             println!("Error: {}", e);
             ::std::process::exit(1);
         }

@@ -58,10 +58,10 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
 
 
 // Most of it taken from mdbook
-pub fn serve(interface: &str, port: &str) -> Result<()> {
+pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     println!("Building site...");
     let start = Instant::now();
-    let mut site = Site::new(env::current_dir().unwrap())?;
+    let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
     let address = format!("{}:{}", interface, port);
     // Override the base url so links work in localhost
     site.config.base_url = if site.config.base_url.ends_with('/') {
