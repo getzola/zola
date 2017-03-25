@@ -68,7 +68,7 @@ pub struct Site {
 impl Site {
     /// Parse a site at the given path. Defaults to the current dir
     /// Passing in a path is only used in tests
-    pub fn new<P: AsRef<Path>>(path: P) -> Result<Site> {
+    pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
 
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*");
@@ -77,7 +77,7 @@ impl Site {
 
         let site = Site {
             base_path: path.to_path_buf(),
-            config: get_config(path),
+            config: get_config(path, config_file),
             pages: HashMap::new(),
             sections: BTreeMap::new(),
             templates: tera,
