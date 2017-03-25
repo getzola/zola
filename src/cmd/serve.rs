@@ -56,6 +56,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
 pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
+
     let address = format!("{}:{}", interface, port);
     // Override the base url so links work in localhost
     site.config.base_url = if site.config.base_url.ends_with('/') {
@@ -66,6 +67,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     site.load()?;
     site.enable_live_reload();
+    println!("-> Creating {} pages and {} sections", site.pages.len(), site.sections.len());
     site.build()?;
     report_elapsed_time(start);
 
