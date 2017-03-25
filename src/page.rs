@@ -206,7 +206,7 @@ impl Page {
         context.add("page", self);
 
         tera.render(&tpl_name, &context)
-            .chain_err(|| format!("Failed to render page '{}'", self.file_name))
+            .chain_err(|| format!("Failed to render page '{}'", self.file_path.display()))
     }
 }
 

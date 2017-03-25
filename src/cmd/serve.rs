@@ -14,7 +14,8 @@ use gutenberg::Site;
 use gutenberg::errors::{Result};
 
 
-use ::report_elapsed_time;
+use ::{report_elapsed_time, unravel_errors};
+use console;
 
 
 #[derive(Debug, PartialEq)]
@@ -46,20 +47,13 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                 }}"#, reload_path)
             ).unwrap();
         },
-        Err(e) => {
-            println!("Failed to build the site");
-            println!("Error: {}", e);
-            for e in e.iter().skip(1) {
-                println!("Reason: {}", e)
-            }
-        }
+        Err(e) => unravel_errors("Failed to build the site", e, false)
     }
 }
 
 
 // Most of it taken from mdbook
 pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
-    println!("Building site...");
     let start = Instant::now();
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
     let address = format!("{}:{}", interface, port);
@@ -84,7 +78,6 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     // Starts with a _ to not trigger the unused lint
     // we need to assign to a variable otherwise it will block
     let _iron = Iron::new(mount).http(address.as_str()).unwrap();
-    println!("Web server is available at http://{}", address);
 
     // The websocket for livereload
     let ws_server = WebSocket::new(|_| {
@@ -104,8 +97,10 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     watcher.watch("static/", RecursiveMode::Recursive).unwrap();
     watcher.watch("templates/", RecursiveMode::Recursive).unwrap();
     let pwd = format!("{}", env::current_dir().unwrap().display());
+
     println!("Listening for changes in {}/{{content, static, templates}}", pwd);
-    println!("Press CTRL+C to stop\n");
+    println!("Web server is available at http://{}", address);
+    println!("Press Ctrl+C to stop\n");
 
     use notify::DebouncedEvent::*;
 
@@ -127,17 +122,17 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                         let start = Instant::now();
                         match detect_change_kind(&pwd, &path) {
                             (ChangeKind::Content, _) => {
-                                println!("-> Content changed {}", path.display());
+                                console::info(&format!("-> Content changed {}", path.display()));
                                 // Force refresh
                                 rebuild_done_handling(&broadcaster, site.rebuild_after_content_change(&path), "/x.js");
                             },
                             (ChangeKind::Templates, _) => {
-                                println!("-> Template changed {}", path.display());
+                                console::info(&format!("-> Template changed {}", path.display()));
                                 // Force refresh
                                 rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(), "/x.js");
                             },
                             (ChangeKind::StaticFiles, p) => {
-                                println!("-> Static file changes detected {}", path.display());
+                                console::info(&format!("-> Static file changes detected {}", path.display()));
                                 rebuild_done_handling(&broadcaster, site.copy_static_directory(), &p);
                             },
                         };
@@ -146,14 +141,14 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                     _ => {}
                 }
             },
-            Err(e) => println!("Watch error: {:?}", e),
+            Err(e) => console::error(&format!("Watch error: {:?}", e)),
         };
     }
 }
 
 
-/// Returns whether the path we received corresponds to a temp file create
-/// by an editor
+/// Returns whether the path we received corresponds to a temp file created
+/// by an editor or the OS
 fn is_temp_file(path: &Path) -> bool {
     let ext = path.extension();
     match ext {
@@ -194,7 +189,7 @@ fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
     } else if path_str.starts_with("/static") {
         ChangeKind::StaticFiles
     } else {
-        panic!("Got a change in an unexpected path: {}", path_str);
+        unreachable!("Got a change in an unexpected path: {}", path_str);
     };
 
     (change_kind, path_str)
@@ -221,7 +216,6 @@ mod tests {
         ];
 
         for t in testcases {
-            println!("{:?}", t.display());
             assert!(is_temp_file(&t));
         }
     }
@@ -244,7 +238,6 @@ mod tests {
         ];
 
         for (expected, pwd, path) in testcases {
-            println!("{:?}", path.display());
             assert_eq!(expected, detect_change_kind(&pwd, &path));
         }
     }

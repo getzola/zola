@@ -19,6 +19,7 @@ dependencies = [
  "syntect 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempdir 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "tera 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "term-painter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "ws 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -821,6 +822,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "term"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "term-painter"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "term 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "term_size"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1131,6 +1149,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum syntect 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6728e7e9bbd971751d17d39b0e38e3558c10b9fb32125441bb17c434a2754e7c"
 "checksum tempdir 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "87974a6f5c1dfb344d733055601650059a3363de2a6104819293baff662132d6"
 "checksum tera 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6f2ff83a1773a0482ddc961d0030b514f1848f592ae9612afb241e5eb455df75"
+"checksum term 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "d168af3930b369cfe245132550579d47dfd873d69470755a19c2c6568dbbd989"
+"checksum term-painter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ab900bf2f05175932b13d4fc12f8ff09ef777715b04998791ab2c930841e496b"
 "checksum term_size 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "07b6c1ac5b3fffd75073276bca1ceed01f67a28537097a2a9539e116e50fb21a"
 "checksum thread-id 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4437c97558c70d129e40629a5b385b3fb1ffac301e63941335e4d354081ec14a"
 "checksum thread_local 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "c85048c6260d17cf486ceae3282d9fb6b90be220bf5b28c400f5485ffc29f0c7"
