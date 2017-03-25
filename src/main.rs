@@ -4,6 +4,7 @@ extern crate clap;
 extern crate error_chain;
 extern crate gutenberg;
 extern crate chrono;
+extern crate term_painter;
 
 extern crate staticfile;
 extern crate iron;
@@ -13,21 +14,36 @@ extern crate ws;
 
 
 use std::time::Instant;
+
 use chrono::Duration;
+use gutenberg::errors::Error;
 
 mod cmd;
+mod console;
 
 
-// Print the time elapsed rounded to 1 decimal
+/// Print the time elapsed rounded to 1 decimal
 fn report_elapsed_time(instant: Instant) {
     let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64;
 
     if duration_ms < 1000.0 {
-        println!("Done in {}ms.\n", duration_ms);
+        console::success(&format!("Done in {}ms.\n", duration_ms));
     } else {
         let duration_sec = duration_ms / 1000.0;
-        println!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0));
+        console::success(&format!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0)));
     }
+}
+
+////Display an error message, the actual error and then exits if requested
+fn unravel_errors(message: &str, error: &Error, exit: bool) {
+        console::error(message);
+        console::error(&format!("Error: {}", error));
+        for e in error.iter().skip(1) {
+            console::error(&format!("Reason: {}", e));
+        }
+        if exit {
+            ::std::process::exit(1);
+        }
 }
 
 
@@ -57,44 +73,25 @@ fn main() {
     match matches.subcommand() {
         ("init", Some(matches)) => {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
-                Ok(()) => {
-                    println!("Project created");
-                },
-                Err(e) => {
-                    println!("Error: {}", e);
-                    ::std::process::exit(1);
-                },
+                Ok(()) => console::success("Project created"),
+                Err(e) => unravel_errors("Failed to create the project", &e, true),
             };
         },
         ("build", Some(_)) => {
-            println!("Building site");
+            console::info("Building site...");
             let start = Instant::now();
-            match cmd::build(&config_file) {
-                Ok(()) => {
-                    report_elapsed_time(start);
-                },
-                Err(e) => {
-                    println!("Failed to build the site");
-                    println!("Error: {}", e);
-                    for e in e.iter().skip(1) {
-                        println!("Reason: {}", e)
-                    }
-                    ::std::process::exit(1);
-                },
+            match cmd::build(config_file) {
+                Ok(()) => report_elapsed_time(start),
+                Err(e) => unravel_errors("Failed to build the site", &e, true),
             };
         },
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let port = matches.value_of("port").unwrap_or("1111");
-            match cmd::serve(interface, port, &config_file) {
+            console::info("Building site...");
+            match cmd::serve(interface, port, config_file) {
                 Ok(()) => (),
-                Err(e) => {
-                    println!("Error: {}", e);
-                    for e in e.iter().skip(1) {
-                        println!("Reason: {}", e)
-                    }
-                    ::std::process::exit(1);
-                },
+                Err(e) => unravel_errors("Failed to build the site", &e, true),
             };
         },
         _ => unreachable!(),

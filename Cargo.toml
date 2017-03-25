@@ -29,6 +29,7 @@ slug = "0.1"
 syntect = "1"
 chrono = "0.3"
 toml = { version = "0.3", default-features = false, features = ["serde"]}
+term-painter = "0.2"
 
 # Below is for the serve cmd
 staticfile = "0.4"
