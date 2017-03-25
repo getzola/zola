@@ -21,7 +21,6 @@ regex = "0.2"
 lazy_static = "0.2"
 glob = "0.2"
 serde = "0.9"
-serde_json = "0.9"
 serde_derive = "0.9"
 # tera = { path = "../tera" }
 # tera = { git = "https://github.com/Keats/tera", branch = "reload" }
