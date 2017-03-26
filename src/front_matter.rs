@@ -11,7 +11,7 @@ use errors::{Result, ResultExt};
 
 
 lazy_static! {
-    static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*(?-s))\+\+\+\n?((?s).*(?-s))$").unwrap();
+    static ref PAGE_RE: Regex = Regex::new(r"^\n?\+\+\+\n((?s).*?(?-s))\+\+\+\n?((?s).*(?-s))$").unwrap();
 }
 
 
