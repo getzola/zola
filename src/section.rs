@@ -15,6 +15,8 @@ use page::Page;
 pub struct Section {
     /// The _index.md full path
     pub file_path: PathBuf,
+    /// The .md path, starting from the content directory, with / slashes
+    pub relative_path: String,
     /// Path of the directory containing the _index.md file
     pub parent_path: PathBuf,
     /// The folder names from `content` to this section file
@@ -35,6 +37,7 @@ impl Section {
     pub fn new(file_path: &Path, meta: FrontMatter) -> Section {
         Section {
             file_path: file_path.to_path_buf(),
+            relative_path: "".to_string(),
             parent_path: file_path.parent().unwrap().to_path_buf(),
             components: vec![],
             url: "".to_string(),
@@ -50,9 +53,9 @@ impl Section {
         let mut section = Section::new(file_path, meta);
         section.components = find_content_components(&section.file_path);
         section.url = section.components.join("/");
-        section.permalink = section.components.join("/");
-
         section.permalink = config.make_permalink(&section.url);
+        section.relative_path = format!("{}/_index.md", section.components.join("/"));
+
 
         Ok(section)
     }

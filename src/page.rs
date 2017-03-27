@@ -1,5 +1,6 @@
 /// A page, can be a blog post or a basic page
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::fs::{read_dir};
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
@@ -43,6 +44,8 @@ fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 pub struct Page {
     /// The .md path
     pub file_path: PathBuf,
+    /// The .md path, starting from the content directory, with / slashes
+    pub relative_path: String,
     /// The parent directory of the file. Is actually the grand parent directory
     /// if it's an asset folder
     pub parent_path: PathBuf,
@@ -88,6 +91,7 @@ impl Page {
     pub fn new(meta: FrontMatter) -> Page {
         Page {
             file_path: PathBuf::new(),
+            relative_path: String::new(),
             parent_path: PathBuf::new(),
             file_name: "".to_string(),
             components: vec![],
@@ -131,16 +135,6 @@ impl Page {
         page.parent_path = page.file_path.parent().unwrap().to_path_buf();
         page.raw_content = content;
 
-        let highlight_theme = config.highlight_theme.clone().unwrap();
-        page.content = markdown_to_html(&page.raw_content, config.highlight_code.unwrap(), &highlight_theme);
-
-        if page.raw_content.contains("<!-- more -->") {
-            page.summary = {
-                let summary = page.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, config.highlight_code.unwrap(), &highlight_theme)
-            }
-        }
-
         let path = Path::new(file_path);
         page.file_name = path.file_stem().unwrap().to_string_lossy().to_string();
 
@@ -151,13 +145,14 @@ impl Page {
                 slugify(page.file_name.clone())
             }
         };
+        page.components = find_content_components(&page.file_path);
+        page.relative_path = format!("{}/{}.md", page.components.join("/"), page.file_name);
 
         // 4. Find sections
         // Pages with custom urls exists outside of sections
         if let Some(ref u) = page.meta.url {
             page.url = u.trim().to_string();
         } else {
-            page.components = find_content_components(&page.file_path);
             if !page.components.is_empty() {
                 // If we have a folder with an asset, don't consider it as a component
                 if page.file_name == "index" {
@@ -191,6 +186,21 @@ impl Page {
 
         Ok(page)
 
+    }
+
+    /// We need access to all pages url to render links relative to content
+    /// so that can't happen at the same time as parsing
+    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
+        self.content = markdown_to_html(&self.raw_content, permalinks, tera, config)?;
+
+        if self.raw_content.contains("<!-- more -->") {
+            self.summary = {
+                let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
+                markdown_to_html(summary, permalinks, tera, config)?
+            }
+        }
+
+        Ok(())
     }
 
     /// Renders the page using the default layout, unless specified in front-matter

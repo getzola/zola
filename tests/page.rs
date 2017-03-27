@@ -1,10 +1,13 @@
 extern crate gutenberg;
+extern crate tera;
 extern crate tempdir;
 
-use tempdir::TempDir;
-
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
+
+use tempdir::TempDir;
+use tera::Tera;
 
 use gutenberg::{Page, Config};
 
@@ -20,7 +23,8 @@ slug = "hello-world"
 Hello world"#;
     let res = Page::parse(Path::new("post.md"), content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
 
     assert_eq!(page.meta.title, "Hello".to_string());
     assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -39,7 +43,8 @@ slug = "hello-world"
 Hello world"#;
     let res = Page::parse(Path::new("content/posts/intro.md"), content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.components, vec!["posts".to_string()]);
 }
 
@@ -54,7 +59,8 @@ slug = "hello-world"
 Hello world"#;
     let res = Page::parse(Path::new("content/posts/intro/start.md"), content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.components, vec!["posts".to_string(), "intro".to_string()]);
 }
 
@@ -71,7 +77,8 @@ Hello world"#;
     conf.base_url = "http://hello.com/".to_string();
     let res = Page::parse(Path::new("content/posts/intro/start.md"), content, &conf);
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.url, "posts/intro/hello-world");
     assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world");
 }
@@ -89,7 +96,8 @@ Hello world"#;
     conf.base_url = "http://hello.com".to_string();
     let res = Page::parse(Path::new("content/posts/intro/hello-world.md"), content, &conf);
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.url, "posts/intro/hello-world");
     assert_eq!(page.permalink, format!("{}{}", conf.base_url, "/posts/intro/hello-world"));
 }
@@ -105,7 +113,8 @@ slug = "hello-world"
 Hello world"#;
     let res = Page::parse(Path::new("start.md"), content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.url, "hello-world");
     assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "hello-world"));
 }
@@ -132,7 +141,8 @@ description = "hey there"
 Hello world"#;
     let res = Page::parse(Path::new("file with space.md"), content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.slug, "file-with-space");
     assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "file-with-space"));
 }
@@ -147,7 +157,8 @@ description = "hey there"
 Hello world"#;
     let res = Page::parse(Path::new(" file with space.md"), content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.slug, "file-with-space");
     assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "file-with-space"));
 }
@@ -162,7 +173,8 @@ description = "hey there"
 Hello world"#;
     let res = Page::parse(Path::new("hello.md"), content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     let (word_count, reading_time) = page.get_reading_analytics();
     assert_eq!(word_count, 2);
     assert_eq!(reading_time, 0);
@@ -181,7 +193,8 @@ Hello world"#.to_string();
     }
     let res = Page::parse(Path::new("hello.md"), &content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     let (word_count, reading_time) = page.get_reading_analytics();
     assert_eq!(word_count, 2002);
     assert_eq!(reading_time, 10);
@@ -197,7 +210,8 @@ description = "hey there"
 Hello world"#.to_string();
     let res = Page::parse(Path::new("hello.md"), &content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.summary, "");
 }
 
@@ -213,7 +227,8 @@ Hello world
 "#.to_string();
     let res = Page::parse(Path::new("hello.md"), &content, &Config::default());
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert_eq!(page.summary, "<p>Hello world</p>\n");
 }
 
@@ -232,7 +247,8 @@ Hey there
     config.highlight_code = Some(true);
     let res = Page::parse(Path::new("hello.md"), &content, &config);
     assert!(res.is_ok());
-    let page = res.unwrap();
+    let mut page = res.unwrap();
+    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert!(page.content.starts_with("<pre"));
 }
 
