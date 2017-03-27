@@ -316,6 +316,7 @@ impl Site {
         pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         context.add("pages", &populate_previous_and_next_pages(&pages, false));
+        context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
         context.add("config", &self.config);
         let index = self.templates.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
