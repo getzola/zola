@@ -185,6 +185,20 @@ date = "2002/10/12"
 }
 
 #[test]
+fn test_can_split_content_lazily() {
+    let content = r#"
++++
+title = "Title"
+description = "hey there"
+date = "2002-10-02T15:00:00Z"
++++
++++"#;
+    let (front_matter, content) = split_content(Path::new(""), content).unwrap();
+    assert_eq!(content, "+++");
+    assert_eq!(front_matter.title, "Title");
+}
+
+#[test]
 fn test_error_if_cannot_locate_frontmatter() {
     let content = r#"
 +++
