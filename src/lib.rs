@@ -26,7 +26,7 @@ mod site;
 mod markdown;
 mod section;
 
-pub use site::Site;
+pub use site::{Site, GUTENBERG_TERA};
 pub use config::{Config, get_config};
 pub use front_matter::{FrontMatter, split_content};
 pub use page::{Page, populate_previous_and_next_pages};

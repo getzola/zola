@@ -16,12 +16,16 @@ use section::{Section};
 
 
 lazy_static! {
-    static ref GUTENBERG_TERA: Tera = {
+    pub static ref GUTENBERG_TERA: Tera = {
         let mut tera = Tera::default();
         tera.add_raw_templates(vec![
             ("rss.xml", include_str!("templates/rss.xml")),
             ("sitemap.xml", include_str!("templates/sitemap.xml")),
             ("robots.txt", include_str!("templates/robots.txt")),
+
+            ("shortcodes/youtube.html", include_str!("templates/shortcodes/youtube.html")),
+            ("shortcodes/vimeo.html", include_str!("templates/shortcodes/vimeo.html")),
+            ("shortcodes/gist.html", include_str!("templates/shortcodes/gist.html")),
         ]).unwrap();
         tera
     };

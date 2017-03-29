@@ -236,7 +236,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
 
     match error {
         Some(e) => Err(e),
-        None => Ok(html),
+        None => Ok(html.replace("<p></p>", "")),
     }
 }
 
@@ -245,17 +245,11 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
 mod tests {
     use std::collections::HashMap;
 
+    use site::GUTENBERG_TERA;
     use tera::Tera;
 
     use config::Config;
     use super::{markdown_to_html, parse_shortcode};
-
-    fn create_test_tera() -> Tera {
-        let mut tera = Tera::default();
-        tera.add_raw_template("shortcodes/youtube.html", "Youtube video: {{id}}").unwrap();
-        tera.add_raw_template("shortcodes/quote.html", "Quote: {{body}} - {{author}}").unwrap();
-        tera
-    }
 
     #[test]
     fn test_parse_simple_shortcode_one_arg() {
@@ -326,28 +320,53 @@ mod tests {
     }
 
     #[test]
-    fn test_markdown_to_html_simple_shortcode() {
+    fn test_markdown_to_html_with_shortcode() {
         let res = markdown_to_html(r#"
 Hello
-{{ youtube(id="w7Ft2ymGmfc") }}
-        "#, &HashMap::new(), &create_test_tera(), &Config::default()).unwrap();
-        assert_eq!(res, "<p>Hello\n</p>Youtube video: w7Ft2ymGmfc");
+
+{{ youtube(id="ub36ffWAqgQ") }}
+        "#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert!(res.contains("<p>Hello</p>\n<div >"));
+        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+    }
+
+    #[test]
+    fn test_markdown_to_html_with_several_shortcode_in_row() {
+        let res = markdown_to_html(r#"
+Hello
+
+{{ youtube(id="ub36ffWAqgQ") }}
+
+{{ youtube(id="ub36ffWAqgQ", autoplay=true) }}
+
+{{ vimeo(id="210073083") }}
+
+{{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}
+
+        "#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert!(res.contains("<p>Hello</p>\n<div >"));
+        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
+        assert!(res.contains(r#"//player.vimeo.com/video/210073083""#));
     }
 
     #[test]
     fn test_markdown_to_html_shortcode_in_code_block() {
-        let res = markdown_to_html(r#"```{{ youtube(id="w7Ft2ymGmfc") }}```"#, &HashMap::new(), &create_test_tera(), &Config::default()).unwrap();
+        let res = markdown_to_html(r#"```{{ youtube(id="w7Ft2ymGmfc") }}```"#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
         assert_eq!(res, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
     }
 
     #[test]
     fn test_markdown_to_html_shortcode_with_body() {
+        let mut tera = Tera::default();
+        tera.extend(&GUTENBERG_TERA).unwrap();
+        tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
         let res = markdown_to_html(r#"
 Hello
 {% quote(author="Keats") %}
 A quote
 {% end %}
-        "#, &HashMap::new(), &create_test_tera(), &Config::default()).unwrap();
-        assert_eq!(res, "<p>Hello\n</p>Quote: A quote - Keats");
+        "#, &HashMap::new(), &tera, &Config::default()).unwrap();
+        assert_eq!(res, "<p>Hello\n</p><blockquote>A quote - Keats</blockquote>");
     }
 }
