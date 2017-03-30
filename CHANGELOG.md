@@ -6,3 +6,4 @@
 - Add sections to the index page context
 - Fix page rendering not working when containing `+++`
 - Add shortcodes (see README for details)
+- Allow relative links to other content in markdown links
