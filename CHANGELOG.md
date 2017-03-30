@@ -2,6 +2,8 @@
 
 ## 0.0.4 (unreleased)
 - Fix RSS feed link and description
+- Renamed `Page::url` and `Section::url` to `Page::path` and `Section::path`
+- Pass `current_url` and `current_path` to every template
 
 ## 0.0.3 (2017-04-05)
 - Add some colours in console
