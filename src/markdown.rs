@@ -1,13 +1,18 @@
 use std::borrow::Cow::Owned;
+use std::collections::HashMap;
 
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag};
-
+use regex::Regex;
 use syntect::dumps::from_binary;
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::ThemeSet;
 use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, IncludeBackground};
+use tera::{Tera, Context};
+
+use config::Config;
+use errors::{Result, ResultExt};
 
 
 // We need to put those in a struct to impl Send and sync
@@ -20,117 +25,266 @@ unsafe impl Send for Setup {}
 unsafe impl Sync for Setup {}
 
 lazy_static!{
+    static ref SHORTCODE_RE: Regex = Regex::new(r#"\{(?:%|\{)\s+([[:alnum:]]+?)\(([[:alnum:]]+?="?.+?"?)\)\s+(?:%|\})\}"#).unwrap();
     pub static ref SETUP: Setup = Setup {
         syntax_set: SyntaxSet::load_defaults_newlines(),
         theme_set: from_binary(include_bytes!("../sublime_themes/all.themedump"))
     };
 }
 
-
-struct CodeHighlightingParser<'a> {
-    // The block we're currently highlighting
-    highlighter: Option<HighlightLines<'a>>,
-    parser: Parser<'a>,
-    theme: &'a str,
+/// A ShortCode that has a body
+/// Called by having some content like {% ... %} body {% end %}
+/// We need the struct to hold the data while we're processing the markdown
+#[derive(Debug)]
+struct ShortCode {
+    name: String,
+    args: HashMap<String, String>,
+    body: String,
 }
 
-impl<'a> CodeHighlightingParser<'a> {
-    pub fn new(parser: Parser<'a>, theme: &'a str) -> CodeHighlightingParser<'a> {
-        CodeHighlightingParser {
-            highlighter: None,
-            parser: parser,
-            theme: theme,
+impl ShortCode {
+    pub fn new(name: &str, args: HashMap<String, String>) -> ShortCode {
+        ShortCode {
+            name: name.to_string(),
+            args: args,
+            body: String::new(),
         }
+    }
+
+    pub fn append(&mut self, text: &str) {
+        self.body.push_str(text)
+    }
+
+    pub fn render(&self, tera: &Tera) -> Result<String> {
+        let mut context = Context::new();
+        for (key, value) in self.args.iter() {
+            context.add(key, value);
+        }
+        context.add("body", &self.body);
+        let tpl_name = format!("shortcodes/{}.html", self.name);
+        tera.render(&tpl_name, &context)
+            .chain_err(|| format!("Failed to render {} shortcode", self.name))
     }
 }
 
-impl<'a> Iterator for CodeHighlightingParser<'a> {
-    type Item = Event<'a>;
-
-    fn next(&mut self) -> Option<Event<'a>> {
-        // Not using pattern matching to reduce indentation levels
-        let next_opt = self.parser.next();
-        if next_opt.is_none() {
-            return None;
-        }
-
-        let item = next_opt.unwrap();
-        // Below we just look for the start of a code block and highlight everything
-        // until we see the end of a code block.
-        // Everything else happens as normal in pulldown_cmark
-        match item {
-            Event::Text(text) => {
-                // if we are in the middle of a code block
-                if let Some(ref mut highlighter) = self.highlighter {
-                    let highlighted = &highlighter.highlight(&text);
-                    let html = styles_to_coloured_html(highlighted, IncludeBackground::Yes);
-                    Some(Event::Html(Owned(html)))
-                } else {
-                    Some(Event::Text(text))
-                }
-            },
-            Event::Start(Tag::CodeBlock(ref info)) => {
-                let theme = &SETUP.theme_set.themes[self.theme];
-                let syntax = info
-                    .split(' ')
-                    .next()
-                    .and_then(|lang| SETUP.syntax_set.find_syntax_by_token(lang))
-                    .unwrap_or_else(|| SETUP.syntax_set.find_syntax_plain_text());
-                self.highlighter = Some(
-                    HighlightLines::new(syntax, theme)
-                );
-                let snippet = start_coloured_html_snippet(theme);
-                Some(Event::Html(Owned(snippet)))
-            },
-            Event::End(Tag::CodeBlock(_)) => {
-                // reset highlight and close the code block
-                self.highlighter = None;
-                Some(Event::Html(Owned("</pre>".to_owned())))
-            },
-            _ => Some(item)
-        }
-
+/// Parse a shortcode without a body
+fn parse_shortcode(input: &str) -> (String, HashMap<String, String>) {
+    let mut args = HashMap::new();
+    let caps = SHORTCODE_RE.captures(input).unwrap();
+    // caps[0] is the full match
+    let name = &caps[1];
+    let arg_list = &caps[2];
+    for arg in arg_list.split(',') {
+        let bits = arg.split('=').collect::<Vec<_>>();
+        args.insert(bits[0].trim().to_string(), bits[1].replace("\"", ""));
     }
+
+    (name.to_string(), args)
 }
 
-pub fn markdown_to_html(content: &str, highlight_code: bool, highlight_theme: &str) -> String {
+/// Renders a shortcode or return an error
+fn render_simple_shortcode(tera: &Tera, name: &str, args: &HashMap<String, String>) -> Result<String> {
+    let mut context = Context::new();
+    for (key, value) in args.iter() {
+        context.add(key, value);
+    }
+    let tpl_name = format!("shortcodes/{}.html", name);
+
+    tera.render(&tpl_name, &context).chain_err(|| format!("Failed to render {} shortcode", name))
+}
+
+pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<String> {
     // We try to be smart about highlighting code as it can be time-consuming
     // If the global config disables it, then we do nothing. However,
     // if we see a code block in the content, we assume that this page needs
     // to be highlighted. It could potentially have false positive if the content
     // has ``` in it but that seems kind of unlikely
-    let should_highlight = if highlight_code {
+    let should_highlight = if config.highlight_code.unwrap() {
         content.contains("```")
     } else {
         false
     };
-
-
+    let highlight_theme = config.highlight_theme.clone().unwrap();
+    // Set while parsing
+    let mut error = None;
+    let mut highlighter: Option<HighlightLines> = None;
+    let mut shortcode_block = None;
+    // shortcodes live outside of paragraph so we need to ensure we don't close
+    // a paragraph that has already been closed
+    let mut added_shortcode = false;
+    // Don't transform things that look like shortcodes in code blocks
+    let mut in_code_block = false;
+    // the rendered html
     let mut html = String::new();
-    if should_highlight {
-        let parser = CodeHighlightingParser::new(Parser::new(content), highlight_theme);
+
+    {
+        let parser = Parser::new(content).map(|event| match event {
+            Event::Text(text) => {
+                // if we are in the middle of a code block
+                if let Some(ref mut highlighter) = highlighter {
+                    let highlighted = &highlighter.highlight(&text);
+                    let html = styles_to_coloured_html(highlighted, IncludeBackground::Yes);
+                    return Event::Html(Owned(html));
+                }
+
+                if in_code_block {
+                    return Event::Text(text);
+                }
+
+                // Shortcode without body
+                if shortcode_block.is_none() && text.starts_with("{{") && text.ends_with("}}") {
+                    if SHORTCODE_RE.is_match(&text) {
+                        let (name, args) = parse_shortcode(&text);
+                        added_shortcode = true;
+                        match render_simple_shortcode(tera, &name, &args) {
+                            Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
+                            Err(e) => {
+                                error = Some(e);
+                                return Event::Html(Owned("".to_string()));
+                            }
+                        }
+                    }
+                    // non-matching will be returned normally below
+                }
+
+                // Shortcode with a body
+                if shortcode_block.is_none() && text.starts_with("{%") && text.ends_with("%}") {
+                    if SHORTCODE_RE.is_match(&text) {
+                        let (name, args) = parse_shortcode(&text);
+                        shortcode_block = Some(ShortCode::new(&name, args));
+                    }
+                    // Don't return anything
+                    return Event::Text(Owned("".to_string()));
+                }
+
+                // If we have some text while in a shortcode, it's either the body
+                // or the end tag
+                if shortcode_block.is_some() {
+                    if let Some(ref mut shortcode) = shortcode_block {
+                        if text.trim() == "{% end %}" {
+                            added_shortcode = true;
+                            match shortcode.render(tera) {
+                                Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
+                                Err(e) => {
+                                    error = Some(e);
+                                    return Event::Html(Owned("".to_string()));
+                                }
+                            }
+                        } else {
+                            shortcode.append(&text);
+                            return Event::Html(Owned("".to_string()));
+                        }
+                    }
+                }
+
+                // Business as usual
+                Event::Text(text)
+            },
+            Event::Start(Tag::CodeBlock(ref info)) => {
+                in_code_block = true;
+                if !should_highlight {
+                    return Event::Html(Owned("<pre><code>".to_owned()));
+                }
+                let theme = &SETUP.theme_set.themes[&highlight_theme];
+                let syntax = info
+                    .split(' ')
+                    .next()
+                    .and_then(|lang| SETUP.syntax_set.find_syntax_by_token(lang))
+                    .unwrap_or_else(|| SETUP.syntax_set.find_syntax_plain_text());
+                highlighter = Some(HighlightLines::new(syntax, theme));
+                let snippet = start_coloured_html_snippet(theme);
+                Event::Html(Owned(snippet))
+            },
+            Event::End(Tag::CodeBlock(_)) => {
+                in_code_block = false;
+                if !should_highlight{
+                    return Event::Html(Owned("</code></pre>\n".to_owned()))
+                }
+                // reset highlight and close the code block
+                highlighter = None;
+                Event::Html(Owned("</pre>".to_owned()))
+            },
+            Event::Start(Tag::Code) => {
+                in_code_block = true;
+                event
+            },
+            Event::End(Tag::Code) => {
+                in_code_block = false;
+                event
+            },
+            Event::End(Tag::Paragraph) => {
+                if added_shortcode {
+                    added_shortcode = false;
+                    return Event::Html(Owned("".to_owned()));
+                }
+                event
+            },
+            Event::SoftBreak => {
+                if shortcode_block.is_some() {
+                    return Event::Html(Owned("".to_owned()));
+                }
+                event
+            },
+             _ => {
+                 // println!("event = {:?}", event);
+                 event
+             },
+        });
+
         cmark::html::push_html(&mut html, parser);
-    } else {
-        let parser = Parser::new(content);
-        cmark::html::push_html(&mut html, parser);
-    };
-    html
+    }
+
+    match error {
+        Some(e) => Err(e),
+        None => Ok(html.replace("<p></p>", "")),
+    }
 }
 
 
 #[cfg(test)]
 mod tests {
-    use super::{markdown_to_html};
+    use std::collections::HashMap;
+
+    use site::GUTENBERG_TERA;
+    use tera::Tera;
+
+    use config::Config;
+    use super::{markdown_to_html, parse_shortcode};
+
+    #[test]
+    fn test_parse_simple_shortcode_one_arg() {
+        let (name, args) = parse_shortcode(r#"{{ youtube(id="w7Ft2ymGmfc") }}"#);
+        assert_eq!(name, "youtube");
+        assert_eq!(args["id"], "w7Ft2ymGmfc");
+    }
+
+    #[test]
+    fn test_parse_simple_shortcode_several_arg() {
+        let (name, args) = parse_shortcode(r#"{{ youtube(id="w7Ft2ymGmfc", autoplay=true) }}"#);
+        assert_eq!(name, "youtube");
+        assert_eq!(args["id"], "w7Ft2ymGmfc");
+        assert_eq!(args["autoplay"], "true");
+    }
+
+    #[test]
+    fn test_parse_block_shortcode_several_arg() {
+        let (name, args) = parse_shortcode(r#"{% youtube(id="w7Ft2ymGmfc", autoplay=true) %}"#);
+        assert_eq!(name, "youtube");
+        assert_eq!(args["id"], "w7Ft2ymGmfc");
+        assert_eq!(args["autoplay"], "true");
+    }
 
     #[test]
     fn test_markdown_to_html_simple() {
-        let res = markdown_to_html("# hello", true, "base16-ocean-dark");
+        let res = markdown_to_html("# hello", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         assert_eq!(res, "<h1>hello</h1>\n");
     }
 
     #[test]
     fn test_markdown_to_html_code_block_highlighting_off() {
-        let res = markdown_to_html("```\n$ gutenberg server\n```", false, "base16-ocean-dark");
+        let mut config = Config::default();
+        config.highlight_code = Some(false);
+        let res = markdown_to_html("```\n$ gutenberg server\n```", &HashMap::new(), &Tera::default(), &config).unwrap();
         assert_eq!(
             res,
             "<pre><code>$ gutenberg server\n</code></pre>\n"
@@ -139,7 +293,7 @@ mod tests {
 
     #[test]
     fn test_markdown_to_html_code_block_no_lang() {
-        let res = markdown_to_html("```\n$ gutenberg server\n$ ping\n```", true, "base16-ocean-dark");
+        let res = markdown_to_html("```\n$ gutenberg server\n$ ping\n```", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         assert_eq!(
             res,
             "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">$ ping\n</span></pre>"
@@ -148,19 +302,71 @@ mod tests {
 
     #[test]
     fn test_markdown_to_html_code_block_with_lang() {
-        let res = markdown_to_html("```python\nlist.append(1)\n```", true, "base16-ocean-dark");
+        let res = markdown_to_html("```python\nlist.append(1)\n```", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         assert_eq!(
             res,
             "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">.</span><span style=\"background-color:#2b303b;color:#bf616a;\">append</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">(</span><span style=\"background-color:#2b303b;color:#d08770;\">1</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">)</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">\n</span></pre>"
         );
     }
+
     #[test]
     fn test_markdown_to_html_code_block_with_unknown_lang() {
-        let res = markdown_to_html("```yolo\nlist.append(1)\n```", true, "base16-ocean-dark");
+        let res = markdown_to_html("```yolo\nlist.append(1)\n```", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         // defaults to plain text
         assert_eq!(
             res,
             "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list.append(1)\n</span></pre>"
         );
+    }
+
+    #[test]
+    fn test_markdown_to_html_with_shortcode() {
+        let res = markdown_to_html(r#"
+Hello
+
+{{ youtube(id="ub36ffWAqgQ") }}
+        "#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert!(res.contains("<p>Hello</p>\n<div >"));
+        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+    }
+
+    #[test]
+    fn test_markdown_to_html_with_several_shortcode_in_row() {
+        let res = markdown_to_html(r#"
+Hello
+
+{{ youtube(id="ub36ffWAqgQ") }}
+
+{{ youtube(id="ub36ffWAqgQ", autoplay=true) }}
+
+{{ vimeo(id="210073083") }}
+
+{{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}
+
+        "#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert!(res.contains("<p>Hello</p>\n<div >"));
+        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
+        assert!(res.contains(r#"//player.vimeo.com/video/210073083""#));
+    }
+
+    #[test]
+    fn test_markdown_to_html_shortcode_in_code_block() {
+        let res = markdown_to_html(r#"```{{ youtube(id="w7Ft2ymGmfc") }}```"#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert_eq!(res, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
+    }
+
+    #[test]
+    fn test_markdown_to_html_shortcode_with_body() {
+        let mut tera = Tera::default();
+        tera.extend(&GUTENBERG_TERA).unwrap();
+        tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
+        let res = markdown_to_html(r#"
+Hello
+{% quote(author="Keats") %}
+A quote
+{% end %}
+        "#, &HashMap::new(), &tera, &Config::default()).unwrap();
+        assert_eq!(res, "<p>Hello\n</p><blockquote>A quote - Keats</blockquote>");
     }
 }

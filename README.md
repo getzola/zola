@@ -101,6 +101,9 @@ Gutenberg supports that pattern out of the box: you can create a folder, put a f
 along with it that are NOT markdown.
 Those assets will be copied in the same folder when building so you can just use a relative path to use them.
 
+A summary is only defined if you put `<!-- more -->` in the content. If present in a page, the summary will be from
+the start up to that tag.s
+
 ### Sections
 Sections represent a group of pages, for example a `tutorials` section of your site.
 Sections are only created in Gutenberg when a file named `_index.md` is found in the `content` directory.
@@ -146,6 +149,46 @@ built-in:
 
 A gallery containing lots of themes at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
 More themes can be easily added to gutenberg, just make a PR with the wanted theme.
+
+### Shortcodes
+Gutenberg uses markdown for content but sometimes you want to insert some HTML, for example for a YouTube video.
+Rather than copy/pasting the HTML around, Gutenberg supports shortcodes, allowing you to define templates using Tera and call those templates inside markdown.
+
+#### Using a shortcode
+There are 2 kinds of shortcodes: simple ones and those that take some content as body. All shortcodes need to be preceded by a blank line or they
+will be contained in a paragraph.
+
+Simple shortcodes are called the following way:
+
+```markdown
+{{ youtube(id="my_youtube_id") }}
+```
+
+Shortcodes with a body are called like so:
+
+```markdown
+{% quote(author="Me", link="https://google.com") %}
+My quote
+{% end %}
+```
+
+The shortcodes names are taken from the files they are defined in, for example a shortcode with the name youtube will try to render
+the template at `templates/shortcodes/youtube.html`.
+
+#### Built-in shortcodes
+Gutenberg comes with a few built-in shortcodes:
+
+- YouTube: embeds a YouTube player for the given YouTube `id`. Also takes an optional `autoplay` argument that can be set to `true`
+if wanted
+- Vimeo: embeds a Vimeo player for the given Vimeo `id`
+- Gist: embeds a Github gist from the `url` given. Also takes an optional `file` argument if you only want to show one of the files.
+
+#### Defining a shortcode
+All shortcodes need to be in the `templates/shortcodes` folder and their files to end with `.html`.
+Shortcodes templates are simple Tera templates, with all the args being directly accessible in the template.
+
+In case of shortcodes with a body, the body will be passed as the `body` variable.
+
 
 ## Example sites
 

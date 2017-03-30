@@ -16,12 +16,16 @@ use section::{Section};
 
 
 lazy_static! {
-    static ref GUTENBERG_TERA: Tera = {
+    pub static ref GUTENBERG_TERA: Tera = {
         let mut tera = Tera::default();
         tera.add_raw_templates(vec![
             ("rss.xml", include_str!("templates/rss.xml")),
             ("sitemap.xml", include_str!("templates/sitemap.xml")),
             ("robots.txt", include_str!("templates/robots.txt")),
+
+            ("shortcodes/youtube.html", include_str!("templates/shortcodes/youtube.html")),
+            ("shortcodes/vimeo.html", include_str!("templates/shortcodes/vimeo.html")),
+            ("shortcodes/gist.html", include_str!("templates/shortcodes/gist.html")),
         ]).unwrap();
         tera
     };
@@ -58,7 +62,7 @@ pub struct Site {
     pub config: Config,
     pub pages: HashMap<PathBuf, Page>,
     pub sections: BTreeMap<PathBuf, Section>,
-    pub templates: Tera,
+    pub tera: Tera,
     live_reload: bool,
     output_path: PathBuf,
     pub tags: HashMap<String, Vec<PathBuf>>,
@@ -80,7 +84,7 @@ impl Site {
             config: get_config(path, config_file),
             pages: HashMap::new(),
             sections: BTreeMap::new(),
-            templates: tera,
+            tera: tera,
             live_reload: false,
             output_path: PathBuf::from("public"),
             tags: HashMap::new(),
@@ -117,6 +121,22 @@ impl Site {
             } else {
                 self.add_page(path)?;
             }
+        }
+
+        // A map of all .md files (section and pages) and their permalink
+        // We need that if there are relative links in the content that need to be resolved
+        let mut permalinks = HashMap::new();
+
+        for page in self.pages.values() {
+            permalinks.insert(page.relative_path.clone(), page.permalink.clone());
+        }
+
+        for section in self.sections.values() {
+            permalinks.insert(section.relative_path.clone(), section.permalink.clone());
+        }
+
+        for page in self.pages.values_mut() {
+            page.render_markdown(&permalinks, &self.tera, &self.config)?;
         }
 
         self.populate_sections();
@@ -262,7 +282,7 @@ impl Site {
     }
 
     pub fn rebuild_after_template_change(&mut self) -> Result<()> {
-        self.templates.full_reload()?;
+        self.tera.full_reload()?;
         self.build_pages()
     }
 
@@ -291,7 +311,7 @@ impl Site {
             create_directory(&current_path)?;
 
             // Finally, create a index.html file there with the page rendered
-            let output = page.render_html(&self.templates, &self.config)?;
+            let output = page.render_html(&self.tera, &self.config)?;
             create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
 
             // Copy any asset we found previously into the same directory as the index.html
@@ -318,7 +338,7 @@ impl Site {
         context.add("pages", &populate_previous_and_next_pages(&pages, false));
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
         context.add("config", &self.config);
-        let index = self.templates.render("index.html", &context)?;
+        let index = self.tera.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
 
         Ok(())
@@ -343,7 +363,7 @@ impl Site {
     fn render_robots(&self) -> Result<()> {
         create_file(
             self.output_path.join("robots.txt"),
-            &self.templates.render("robots.txt", &Context::new())?
+            &self.tera.render("robots.txt", &Context::new())?
         )
     }
 
@@ -382,7 +402,7 @@ impl Site {
         context.add(name, &sorted_items);
         context.add("config", &self.config);
         // And render it immediately
-        let list_output = self.templates.render(list_tpl_name, &context)?;
+        let list_output = self.tera.render(list_tpl_name, &context)?;
         create_file(output_path.join("index.html"), &self.inject_livereload(list_output))?;
 
         // Now, each individual item
@@ -400,7 +420,7 @@ impl Site {
             context.add(&format!("{}_slug", var_name), &slug);
             context.add("pages", &pages);
             context.add("config", &self.config);
-            let single_output = self.templates.render(single_tpl_name, &context)?;
+            let single_output = self.tera.render(single_tpl_name, &context)?;
 
             create_directory(&output_path.join(&slug))?;
             create_file(
@@ -439,7 +459,7 @@ impl Site {
         }
         context.add("tags", &tags);
 
-        let sitemap = self.templates.render("sitemap.xml", &context)?;
+        let sitemap = self.tera.render("sitemap.xml", &context)?;
 
         create_file(self.output_path.join("sitemap.xml"), &sitemap)?;
 
@@ -470,7 +490,7 @@ impl Site {
         };
         context.add("feed_url", &rss_feed_url);
 
-        let sitemap = self.templates.render("rss.xml", &context)?;
+        let sitemap = self.tera.render("rss.xml", &context)?;
 
         create_file(self.output_path.join("rss.xml"), &sitemap)?;
 
@@ -490,7 +510,7 @@ impl Site {
                 }
             }
 
-            let output = section.render_html(&self.templates, &self.config)?;
+            let output = section.render_html(&self.tera, &self.config)?;
             create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
         }
 
