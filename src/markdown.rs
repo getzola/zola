@@ -204,6 +204,22 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                 highlighter = None;
                 Event::Html(Owned("</pre>".to_owned()))
             },
+            // Need to handle relative links
+            Event::Start(Tag::Link(ref link, ref title)) => {
+                if link.starts_with("./") {
+                    let permalink = match permalinks.get(&link.replacen("./", "", 1)) {
+                        Some(p) => p,
+                        None => {
+                            error = Some(format!("Relative link {} not found.", link).into());
+                            return Event::Html(Owned("".to_string()));
+                        }
+                    };
+                    return Event::Start(Tag::Link(Owned(permalink.clone()), title.clone()));
+                }
+
+                return Event::Start(Tag::Link(link.clone(), title.clone()));
+            },
+            // need to know when we are in a code block to disable shortcodes in them
             Event::Start(Tag::Code) => {
                 in_code_block = true;
                 event
@@ -212,6 +228,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                 in_code_block = false;
                 event
             },
+            // If we added shortcodes, don't close a paragraph since there's none
             Event::End(Tag::Paragraph) => {
                 if added_shortcode {
                     added_shortcode = false;
@@ -219,6 +236,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                 }
                 event
             },
+            // Ignore softbreaks inside shortcodes
             Event::SoftBreak => {
                 if shortcode_block.is_some() {
                     return Event::Html(Owned("".to_owned()));
@@ -369,4 +387,33 @@ A quote
         "#, &HashMap::new(), &tera, &Config::default()).unwrap();
         assert_eq!(res, "<p>Hello\n</p><blockquote>A quote - Keats</blockquote>");
     }
+
+    #[test]
+    fn test_markdown_to_html_unknown_shortcode() {
+        let res = markdown_to_html("{{ hello(flash=true) }}", &HashMap::new(), &Tera::default(), &Config::default());
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_markdown_to_html_relative_link_exists() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
+        let res = markdown_to_html(
+            r#"[rel link](./pages/about.md), [abs link](https://vincent.is/about)"#,
+            &permalinks,
+            &GUTENBERG_TERA,
+            &Config::default()
+        ).unwrap();
+
+        assert!(
+            res.contains(r#"<p><a href="https://vincent.is/about">rel link</a>, <a href="https://vincent.is/about">abs link</a></p>"#)
+        );
+    }
+
+    #[test]
+    fn test_markdown_to_html_relative_link_inexistant() {
+        let res = markdown_to_html("[rel link](./pages/about.md)", &HashMap::new(), &Tera::default(), &Config::default());
+        assert!(res.is_err());
+    }
+
 }

@@ -150,6 +150,14 @@ built-in:
 A gallery containing lots of themes at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
 More themes can be easily added to gutenberg, just make a PR with the wanted theme.
 
+### Internal links
+You can have internal links in your markdown that will be replaced with the full URL when rendering.
+To do so, use the normal markdown link syntax, start the link with `./` and point to the `.md` file you want
+to link to. The path to the file starts from the `content` directory.
+
+For example, linking to a file located at `content/pages/about.md` would be `[my link](./pages/about.md).
+
+
 ### Shortcodes
 Gutenberg uses markdown for content but sometimes you want to insert some HTML, for example for a YouTube video.
 Rather than copy/pasting the HTML around, Gutenberg supports shortcodes, allowing you to define templates using Tera and call those templates inside markdown.
