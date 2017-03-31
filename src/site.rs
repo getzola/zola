@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 use std::iter::FromIterator;
-use std::fs::{remove_dir_all, copy, remove_file};
+use std::fs::{remove_dir_all, copy};
 use std::path::{Path, PathBuf};
 
 use glob::glob;
@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use page::{Page, populate_previous_and_next_pages};
-use utils::{create_file, create_directory};
+use utils::{create_file, create_directory, copy_file_if_modified};
 use section::{Section};
 
 
@@ -219,9 +219,6 @@ impl Site {
     }
 
     /// Copy the content of the `static` folder into the `public` folder
-    ///
-    /// TODO: only copy one file if possible because that would be a waste
-    /// to do re-copy the whole thing. Benchmark first to see if it's a big difference
     pub fn copy_static_directory(&self) -> Result<()> {
         let from = Path::new("static");
         let target = Path::new("public");
@@ -239,10 +236,7 @@ impl Site {
                     create_directory(&target_path)?;
                 }
             } else {
-                if target_path.exists() {
-                    remove_file(&target_path)?;
-                }
-                copy(entry.path(), &target_path)?;
+                copy_file_if_modified(entry.path(), &target_path)?
             }
         }
         Ok(())
@@ -346,7 +340,6 @@ impl Site {
 
     /// Builds the site to the `public` directory after deleting it
     pub fn build(&self) -> Result<()> {
-        self.clean()?;
         self.build_pages()?;
         self.render_sitemap()?;
 

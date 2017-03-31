@@ -30,6 +30,7 @@ syntect = "1"
 chrono = "0.3"
 toml = { version = "0.3", default-features = false, features = ["serde"]}
 term-painter = "0.2"
+libc = "~0.2.0"
 
 # Below is for the serve cmd
 staticfile = "0.4"

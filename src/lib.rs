@@ -16,6 +16,7 @@ extern crate slug;
 extern crate chrono;
 #[cfg(test)]
 extern crate tempdir;
+extern crate libc;
 
 mod utils;
 mod config;
