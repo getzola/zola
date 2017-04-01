@@ -3,8 +3,7 @@ use std::fs::{File, copy, create_dir, metadata};
 use std::path::Path;
 use std::os::unix::io::AsRawFd;
 use std::io::Error as IOError;
-use std::time::{SystemTime, UNIX_EPOCH};
-use libc::{futimens, timespec, timeval, time_t, c_long, suseconds_t};
+use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
 use errors::{Result, ResultExt};
 
@@ -66,7 +65,7 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
 fn set_file_times<P: AsRef<Path>>(path: P, accessed: &SystemTime, modified: &SystemTime) -> Result<()> {
     let accessed_since_epoch = accessed.duration_since(UNIX_EPOCH)?;
     let modified_since_epoch = modified.duration_since(UNIX_EPOCH)?;
-    futime(path, acessed_since_epoch, modified_since_epoch)
+    futime(path, &accessed_since_epoch, &modified_since_epoch)
 }
 
 
@@ -93,7 +92,8 @@ pub fn copy_file_if_modified<P: AsRef<Path>>(source: P, target: P) -> Result<()>
 
 
 #[cfg(any(target_os="unix", target_os="linux"))]
-fn futime<P: AsRef<Path>>(path: P, atime: timespec, mtime: timespec) -> Result<()> {
+fn futime<P: AsRef<Path>>(path: P, accessed_since_epoch: &Duration, modified_since_epoch: &Duration) -> Result<()> {
+    use libc::{futimens, timespec, time_t, c_long};
     let file = File::open(path)?;
 
     let atime = timespec {
@@ -115,7 +115,8 @@ fn futime<P: AsRef<Path>>(path: P, atime: timespec, mtime: timespec) -> Result<(
 }
 
 #[cfg(target_os="darwin")]
-fn futime<P: AsRef<Path>>(path: P, atime: timespec, mtime: timespec) -> Result<()> {
+fn futime<P: AsRef<Path>>(path: P, accessed_since_epoch: &Duration, modified_since_epoch: &Duration) -> Result<()> {
+    use libc::{futimes, timeval, time_t, suseconds_t};
     let file = File::open(path)?;
 
     let atime = timeval {
