@@ -114,7 +114,7 @@ fn futime<P: AsRef<Path>>(path: P, accessed_since_epoch: &Duration, modified_sin
     }
 }
 
-#[cfg(target_os="darwin")]
+#[cfg(target_os="macos")]
 fn futime<P: AsRef<Path>>(path: P, accessed_since_epoch: &Duration, modified_since_epoch: &Duration) -> Result<()> {
     use libc::{futimes, timeval, time_t, suseconds_t};
     let file = File::open(path)?;
