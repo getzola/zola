@@ -2,11 +2,9 @@ use std::io::prelude::*;
 use std::fs::{File, copy, create_dir, metadata};
 use std::path::Path;
 use std::os::unix::io::AsRawFd;
-use std::os::unix::ffi::OsStrExt;
 use std::io::Error as IOError;
-use std::ffi::CString;
 use std::time::{SystemTime, UNIX_EPOCH};
-use libc::{timespec, time_t, c_int, c_long};
+use libc::{futimens, timespec, timeval, time_t, c_long, suseconds_t};
 
 use errors::{Result, ResultExt};
 
@@ -64,35 +62,11 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
     components
 }
 
-fn utime<P: AsRef<Path>>(path: P, accessed: &SystemTime, modified: &SystemTime) -> Result<()> {
-    extern {
-        fn futimens(fd: c_int, times: *const timespec) -> c_int;
-    }
-
-    let path_str = try!(CString::new(path.as_ref().as_os_str().as_bytes()));
-
+/// Set modification time and access time of file
+fn set_file_times<P: AsRef<Path>>(path: P, accessed: &SystemTime, modified: &SystemTime) -> Result<()> {
     let accessed_since_epoch = accessed.duration_since(UNIX_EPOCH)?;
     let modified_since_epoch = modified.duration_since(UNIX_EPOCH)?;
-
-    let atime = timespec {
-        tv_sec: accessed_since_epoch.as_secs() as time_t,
-        tv_nsec: accessed_since_epoch.subsec_nanos() as c_long
-    };
-    let mtime = timespec {
-        tv_sec: modified_since_epoch.as_secs() as time_t,
-        tv_nsec: modified_since_epoch.subsec_nanos() as c_long
-    };
-    let times = [atime, mtime];
-
-    let file = File::open(path)?;
-
-    let ret = unsafe { futimens(file.as_raw_fd(), times.as_ptr()) };
-
-    if ret == 0 {
-        Ok(())
-    } else {
-        bail!(IOError::last_os_error())
-    }
+    futime(path, acessed_since_epoch, modified_since_epoch)
 }
 
 
@@ -114,7 +88,54 @@ pub fn copy_file_if_modified<P: AsRef<Path>>(source: P, target: P) -> Result<()>
     copy(&source, &target)?;
     let accessed_time = source_metadata.accessed()?;
     let modified_time = source_metadata.modified()?;
-    utime(target, &accessed_time, &modified_time)
+    set_file_times(target, &accessed_time, &modified_time)
+}
+
+
+#[cfg(any(target_os="unix", target_os="linux"))]
+fn futime<P: AsRef<Path>>(path: P, atime: timespec, mtime: timespec) -> Result<()> {
+    let file = File::open(path)?;
+
+    let atime = timespec {
+        tv_sec: accessed_since_epoch.as_secs() as time_t,
+        tv_nsec: accessed_since_epoch.subsec_nanos() as c_long
+    };
+    let mtime = timespec {
+        tv_sec: modified_since_epoch.as_secs() as time_t,
+        tv_nsec: modified_since_epoch.subsec_nanos() as c_long
+    };
+    let times = [atime, mtime];
+    let ret = unsafe { futimens(file.as_raw_fd(), times.as_ptr()) };
+
+    if ret == 0 {
+        Ok(())
+    } else {
+        bail!(IOError::last_os_error())
+    }
+}
+
+#[cfg(target_os="darwin")]
+fn futime<P: AsRef<Path>>(path: P, atime: timespec, mtime: timespec) -> Result<()> {
+    let file = File::open(path)?;
+
+    let atime = timeval {
+        tv_sec: accessed_since_epoch.as_secs() as time_t,
+        tv_usec: accessed_since_epoch.subsec_nanos() as suseconds_t
+    };
+    let mtime = timeval {
+        tv_sec: modified_since_epoch.as_secs() as time_t,
+        tv_usec: modified_since_epoch.subsec_nanos() as suseconds_t
+    };
+    let times = [atime, mtime];
+
+    let times = [atime, mtime];
+    let ret = unsafe { futimes(file.as_raw_fd(), times.as_ptr()) };
+
+    if ret == 0 {
+        Ok(())
+    } else {
+        bail!(IOError::last_os_error())
+    }
 }
 
 
