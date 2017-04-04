@@ -13,6 +13,7 @@ use config::{Config, get_config};
 use page::{Page, populate_previous_and_next_pages};
 use utils::{create_file, create_directory};
 use section::{Section};
+use filters;
 
 
 lazy_static! {
@@ -78,6 +79,9 @@ impl Site {
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*");
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
+        tera.register_filter("markdown", filters::markdown);
+        tera.register_filter("base64_encode", filters::base64_encode);
+        tera.register_filter("base64_decode", filters::base64_decode);
 
         let site = Site {
             base_path: path.to_path_buf(),
