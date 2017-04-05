@@ -10,23 +10,21 @@ environment:
     # TODO Update this to match the name of your project.
     CRATE_NAME: gutenberg
 
-  # TODO These are all the build jobs. Adjust as necessary. Comment out what you
-  # don't need
   matrix:
-    # MinGW
-    - TARGET: i686-pc-windows-gnu
-    - TARGET: x86_64-pc-windows-gnu
-    # MSVC
-    - TARGET: i686-pc-windows-msvc
-    - TARGET: x86_64-pc-windows-msvc
+    # GNU
+    - channel: stable
+      target: x86_64-pc-windows-gnu
+      TOOLCHAIN: msys
+      MSYS_BITS: 64
 
 install:
   - ps: >-
       If ($Env:TARGET -eq 'x86_64-pc-windows-gnu') {
         $Env:PATH += ';C:\msys64\mingw64\bin;C:\Program Files\Git\mingw64\bin'
-      } ElseIf ($Env:TARGET -eq 'i686-pc-windows-gnu') {
-        $Env:PATH += ';C:\msys64\mingw32\bin;C:\Program Files\Git\mingw64\bin'
       }
+  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86_amd64
+  - if "%TOOLCHAIN%" == "msys" set PATH=C:\msys64\mingw%MSYS_BITS%\bin;C:\msys64\usr\bin;%PATH%
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/
   - rustup-init.exe -y --default-host %TARGET% --default-toolchain %RUST_VERSION%
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
@@ -40,9 +38,7 @@ test_script:
       cargo build --target %TARGET% &&
       cargo build --target %TARGET% --release &&
       cargo test --target %TARGET% &&
-      cargo test --target %TARGET% --release &&
-      cargo run --target %TARGET% &&
-      cargo run --target %TARGET% --release
+      cargo test --target %TARGET% --release
     )
 
 before_deploy:
@@ -77,10 +73,6 @@ branches:
     # Release tags
     - /^v\d+\.\d+\.\d+.*$/
     - master
-
-notifications:
-  - provider: Email
-    on_build_success: false
 
 # disable automatic builds
 build: false
