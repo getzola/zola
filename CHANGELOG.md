@@ -8,3 +8,4 @@
 - Add shortcodes (see README for details)
 - Allow relative links to other content in markdown links
 - Add `markdown`, `base64_encode` and `base64_decode` filters to the Tera instance of Gutenberg
+- Work on Windows!
