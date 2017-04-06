@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.0.3 (unreleased)
+## 0.0.4 (unreleased)
+- Fix RSS feed link and description
+
+## 0.0.3 (2017-04-05)
 - Add some colours in console
 - Allow using a file other than config.toml for config
 - Add sections to the index page context

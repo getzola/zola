@@ -488,9 +488,9 @@ impl Site {
         context.add("config", &self.config);
 
         let rss_feed_url = if self.config.base_url.ends_with('/') {
-            format!("{}{}", self.config.base_url, "feed.xml")
+            format!("{}{}", self.config.base_url, "rss.xml")
         } else {
-            format!("{}/{}", self.config.base_url, "feed.xml")
+            format!("{}/{}", self.config.base_url, "rss.xml")
         };
         context.add("feed_url", &rss_feed_url);
 
