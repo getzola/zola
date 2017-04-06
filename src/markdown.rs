@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag};
 use regex::Regex;
+use slug::slugify;
 use syntect::dumps::from_binary;
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
@@ -114,8 +115,28 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
     let mut added_shortcode = false;
     // Don't transform things that look like shortcodes in code blocks
     let mut in_code_block = false;
+    // If we get text in header, we need to insert the id and a anchor
+    let mut in_header = false;
     // the rendered html
     let mut html = String::new();
+    let mut anchors: Vec<String> = vec![];
+
+    // We might have cases where the slug is already present in our list of anchor
+    // for example an article could have several titles named Example
+    // We add a counter after the slug if the slug is already present, which
+    // means we will have example, example-1, example-2 etc
+    fn find_anchor(anchors: &Vec<String>, name: String, level: u8) -> String {
+        if level == 0 && !anchors.contains(&name) {
+            return name.to_string();
+        }
+
+        let new_anchor = format!("{}-{}", name, level + 1);
+        if !anchors.contains(&new_anchor) {
+            return new_anchor;
+        }
+
+        find_anchor(anchors, name, level + 1)
+    }
 
     {
         let parser = Parser::new(content).map(|event| match event {
@@ -177,6 +198,12 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                     }
                 }
 
+                if in_header {
+                    let id = find_anchor(&anchors, slugify(&text), 0);
+                    anchors.push(id.clone());
+                    return Event::Html(Owned(format!(r#"id="{}">{}"#, id, text)));
+                }
+
                 // Business as usual
                 Event::Text(text)
             },
@@ -226,6 +253,15 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
             },
             Event::End(Tag::Code) => {
                 in_code_block = false;
+                event
+            },
+            Event::Start(Tag::Header(num)) => {
+                in_header = true;
+                // ugly eh
+                return Event::Html(Owned(format!("<h{} ", num)));
+            },
+            Event::End(Tag::Header(_)) => {
+                in_header = false;
                 event
             },
             // If we added shortcodes, don't close a paragraph since there's none
@@ -416,4 +452,15 @@ A quote
         assert!(res.is_err());
     }
 
+    #[test]
+    fn test_markdown_to_html_add_id_to_headers() {
+        let res = markdown_to_html(r#"# Hello"#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n");
+    }
+
+    #[test]
+    fn test_markdown_to_html_add_id_to_headers_same_slug() {
+        let res = markdown_to_html("# Hello\n# Hello", &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
+    }
 }
