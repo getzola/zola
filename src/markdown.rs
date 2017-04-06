@@ -234,14 +234,25 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
             // Need to handle relative links
             Event::Start(Tag::Link(ref link, ref title)) => {
                 if link.starts_with("./") {
-                    let permalink = match permalinks.get(&link.replacen("./", "", 1)) {
-                        Some(p) => p,
+                    // First we remove the ./ since that's gutenberg specific
+                    let clean_link = link.replacen("./", "", 1);
+                    // Then we remove any potential anchor
+                    // parts[0] will be the file path and parts[1] the anchor if present
+                    let parts = clean_link.split('#').collect::<Vec<_>>();
+                    match permalinks.get(parts[0]) {
+                        Some(p) => {
+                            let url = if parts.len() > 1 {
+                                format!("{}#{}", p, parts[1])
+                            } else {
+                                p.to_string()
+                            };
+                            return Event::Start(Tag::Link(Owned(url), title.clone()));
+                        },
                         None => {
                             error = Some(format!("Relative link {} not found.", link).into());
                             return Event::Html(Owned("".to_string()));
                         }
                     };
-                    return Event::Start(Tag::Link(Owned(permalink.clone()), title.clone()));
                 }
 
                 return Event::Start(Tag::Link(link.clone(), title.clone()));
@@ -330,8 +341,8 @@ mod tests {
 
     #[test]
     fn test_markdown_to_html_simple() {
-        let res = markdown_to_html("# hello", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
-        assert_eq!(res, "<h1>hello</h1>\n");
+        let res = markdown_to_html("hello", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
+        assert_eq!(res, "<p>hello</p>\n");
     }
 
     #[test]
@@ -443,6 +454,22 @@ A quote
 
         assert!(
             res.contains(r#"<p><a href="https://vincent.is/about">rel link</a>, <a href="https://vincent.is/about">abs link</a></p>"#)
+        );
+    }
+
+    #[test]
+    fn test_markdown_to_html_relative_links_with_anchors() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
+        let res = markdown_to_html(
+            r#"[rel link](./pages/about.md#cv)"#,
+            &permalinks,
+            &GUTENBERG_TERA,
+            &Config::default()
+        ).unwrap();
+
+        assert!(
+            res.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
         );
     }
 
