@@ -30,6 +30,10 @@ pub struct Config {
     pub generate_tags_pages: Option<bool>,
     /// Whether to generate categories and individual tag categories if some pages have them. Defaults to true
     pub generate_categories_pages: Option<bool>,
+    /// Whether to insert a link for each header like in Github READMEs. Defaults to false
+    /// The default template can be overridden by creating a `anchor-link.html` template and CSS will need to be
+    /// written if you turn that on.
+    pub insert_anchor_links: Option<bool>,
 
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
@@ -67,6 +71,7 @@ impl Config {
         set_default!(config.generate_rss, false);
         set_default!(config.generate_tags_pages, true);
         set_default!(config.generate_categories_pages, true);
+        set_default!(config.insert_anchor_links, false);
 
         Ok(config)
     }
@@ -104,6 +109,7 @@ impl Default for Config {
             generate_rss: Some(false),
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
+            insert_anchor_links: Some(false),
             extra: None,
         }
     }

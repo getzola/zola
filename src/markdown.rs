@@ -201,7 +201,14 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                 if in_header {
                     let id = find_anchor(&anchors, slugify(&text), 0);
                     anchors.push(id.clone());
-                    return Event::Html(Owned(format!(r#"id="{}">{}"#, id, text)));
+                    let anchor_link = if config.insert_anchor_links.unwrap() {
+                        let mut context = Context::new();
+                        context.add("id", &id);
+                        tera.render("anchor-link.html", &context).unwrap()
+                    } else {
+                        String::new()
+                    };
+                    return Event::Html(Owned(format!(r#"id="{}">{}{}"#, id, anchor_link, text)));
                 }
 
                 // Business as usual
