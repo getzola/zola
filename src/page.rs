@@ -67,8 +67,8 @@ pub struct Page {
     /// The slug of that page.
     /// First tries to find the slug in the meta and defaults to filename otherwise
     pub slug: String,
-    /// The relative URL of the page
-    pub url: String,
+    /// The URL path of the page
+    pub path: String,
     /// The full URL for that page
     pub permalink: String,
     /// The summary for the article, defaults to empty string
@@ -99,7 +99,7 @@ impl Page {
             assets: vec![],
             content: "".to_string(),
             slug: "".to_string(),
-            url: "".to_string(),
+            path: "".to_string(),
             permalink: "".to_string(),
             summary: "".to_string(),
             meta: meta,
@@ -151,7 +151,7 @@ impl Page {
         // 4. Find sections
         // Pages with custom urls exists outside of sections
         if let Some(ref u) = page.meta.url {
-            page.url = u.trim().to_string();
+            page.path = u.trim().to_string();
         } else {
             if !page.components.is_empty() {
                 // If we have a folder with an asset, don't consider it as a component
@@ -162,13 +162,13 @@ impl Page {
                 }
 
                 // Don't add a trailing slash to sections
-                page.url = format!("{}/{}", page.components.join("/"), page.slug);
+                page.path = format!("{}/{}", page.components.join("/"), page.slug);
             } else {
-                page.url = page.slug.clone();
+                page.path = page.slug.clone();
             }
         }
 
-        page.permalink = config.make_permalink(&page.url);
+        page.permalink = config.make_permalink(&page.path);
 
         Ok(page)
     }
@@ -209,11 +209,12 @@ impl Page {
             Some(ref l) => l.to_string(),
             None => "page.html".to_string()
         };
-        // TODO: create a helper to create context to ensure all contexts
-        // have the same names
+
         let mut context = Context::new();
         context.add("config", config);
         context.add("page", self);
+        context.add("current_url", &self.permalink);
+        context.add("current_path", &self.path);
 
         tera.render(&tpl_name, &context)
             .chain_err(|| format!("Failed to render page '{}'", self.file_path.display()))
@@ -228,7 +229,7 @@ impl ser::Serialize for Page {
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
         state.serialize_field("slug", &self.slug)?;
-        state.serialize_field("url", &format!("/{}", self.url))?;
+        state.serialize_field("path", &format!("/{}", self.path))?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("tags", &self.meta.tags)?;
         state.serialize_field("draft", &self.meta.draft)?;

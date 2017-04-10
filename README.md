@@ -60,7 +60,8 @@ Each kind of page get their own variables:
 - categories.html: gets `categories`
 - category.html: gets `category` and `pages`
 
-Additionally, all pages get a `config` variable representing the data in `config.toml`.
+Additionally, all pages get a `config` variable representing the data in `config.toml`, `current_url` that represent
+the absolute URL of the current page and `current_path` that represents the path of the URL of the current page, starting with `/`.
 If you want to know all the data present in a template content, simply put `{{ __tera_context }}`
 in the templates and it will print it.
 

@@ -28,7 +28,7 @@ fn test_can_parse_site() {
 
     // Make sure the page with a url doesn't have any sections
     let url_post = &site.pages[&posts_path.join("fixed-url.md")];
-    assert_eq!(url_post.url, "a-fixed-url");
+    assert_eq!(url_post.path, "a-fixed-url");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post = &site.pages[&posts_path.join("with-assets").join("index.md")];
