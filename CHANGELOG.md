@@ -4,6 +4,9 @@
 - Fix RSS feed link and description
 - Renamed `Page::url` and `Section::url` to `Page::path` and `Section::path`
 - Pass `current_url` and `current_path` to every template
+- Add id to headers to allow anchor linking
+- Make relative link work with anchors
+- Add option to render an anchor link automatically next to headers
 
 ## 0.0.3 (2017-04-05)
 - Add some colours in console
