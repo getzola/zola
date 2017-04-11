@@ -338,7 +338,7 @@ impl Site {
         Ok(())
     }
 
-    /// Builds the site to the `public` directory after deleting it
+    /// Builds the site to the `public` directory
     pub fn build(&self) -> Result<()> {
         self.build_pages()?;
         self.render_sitemap()?;
