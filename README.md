@@ -158,6 +158,11 @@ to link to. The path to the file starts from the `content` directory.
 
 For example, linking to a file located at `content/pages/about.md` would be `[my link](./pages/about.md).
 
+### Anchors
+Headers get an automatic id from their content in order to be able to add deep links. By default no links are actually created but
+the `insert_anchor_links` option in `config.toml` can be set to `true` to link tags. The default template is very ugly and will need
+CSS tweaks in your projet to look decent. The default template can also be easily overwritten by creating a `anchor-link.html` file in
+the `templates` directory.
 
 ### Shortcodes
 Gutenberg uses markdown for content but sometimes you want to insert some HTML, for example for a YouTube video.

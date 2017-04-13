@@ -23,6 +23,7 @@ lazy_static! {
             ("rss.xml", include_str!("templates/rss.xml")),
             ("sitemap.xml", include_str!("templates/sitemap.xml")),
             ("robots.txt", include_str!("templates/robots.txt")),
+            ("anchor-link.html", include_str!("templates/anchor-link.html")),
 
             ("shortcodes/youtube.html", include_str!("templates/shortcodes/youtube.html")),
             ("shortcodes/vimeo.html", include_str!("templates/shortcodes/vimeo.html")),

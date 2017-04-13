@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag};
 use regex::Regex;
+use slug::slugify;
 use syntect::dumps::from_binary;
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
@@ -114,8 +115,28 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
     let mut added_shortcode = false;
     // Don't transform things that look like shortcodes in code blocks
     let mut in_code_block = false;
+    // If we get text in header, we need to insert the id and a anchor
+    let mut in_header = false;
     // the rendered html
     let mut html = String::new();
+    let mut anchors: Vec<String> = vec![];
+
+    // We might have cases where the slug is already present in our list of anchor
+    // for example an article could have several titles named Example
+    // We add a counter after the slug if the slug is already present, which
+    // means we will have example, example-1, example-2 etc
+    fn find_anchor(anchors: &Vec<String>, name: String, level: u8) -> String {
+        if level == 0 && !anchors.contains(&name) {
+            return name.to_string();
+        }
+
+        let new_anchor = format!("{}-{}", name, level + 1);
+        if !anchors.contains(&new_anchor) {
+            return new_anchor;
+        }
+
+        find_anchor(anchors, name, level + 1)
+    }
 
     {
         let parser = Parser::new(content).map(|event| match event {
@@ -177,6 +198,19 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                     }
                 }
 
+                if in_header {
+                    let id = find_anchor(&anchors, slugify(&text), 0);
+                    anchors.push(id.clone());
+                    let anchor_link = if config.insert_anchor_links.unwrap() {
+                        let mut context = Context::new();
+                        context.add("id", &id);
+                        tera.render("anchor-link.html", &context).unwrap()
+                    } else {
+                        String::new()
+                    };
+                    return Event::Html(Owned(format!(r#"id="{}">{}{}"#, id, anchor_link, text)));
+                }
+
                 // Business as usual
                 Event::Text(text)
             },
@@ -207,14 +241,25 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
             // Need to handle relative links
             Event::Start(Tag::Link(ref link, ref title)) => {
                 if link.starts_with("./") {
-                    let permalink = match permalinks.get(&link.replacen("./", "", 1)) {
-                        Some(p) => p,
+                    // First we remove the ./ since that's gutenberg specific
+                    let clean_link = link.replacen("./", "", 1);
+                    // Then we remove any potential anchor
+                    // parts[0] will be the file path and parts[1] the anchor if present
+                    let parts = clean_link.split('#').collect::<Vec<_>>();
+                    match permalinks.get(parts[0]) {
+                        Some(p) => {
+                            let url = if parts.len() > 1 {
+                                format!("{}#{}", p, parts[1])
+                            } else {
+                                p.to_string()
+                            };
+                            return Event::Start(Tag::Link(Owned(url), title.clone()));
+                        },
                         None => {
                             error = Some(format!("Relative link {} not found.", link).into());
                             return Event::Html(Owned("".to_string()));
                         }
                     };
-                    return Event::Start(Tag::Link(Owned(permalink.clone()), title.clone()));
                 }
 
                 return Event::Start(Tag::Link(link.clone(), title.clone()));
@@ -226,6 +271,15 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
             },
             Event::End(Tag::Code) => {
                 in_code_block = false;
+                event
+            },
+            Event::Start(Tag::Header(num)) => {
+                in_header = true;
+                // ugly eh
+                return Event::Html(Owned(format!("<h{} ", num)));
+            },
+            Event::End(Tag::Header(_)) => {
+                in_header = false;
                 event
             },
             // If we added shortcodes, don't close a paragraph since there's none
@@ -294,8 +348,8 @@ mod tests {
 
     #[test]
     fn test_markdown_to_html_simple() {
-        let res = markdown_to_html("# hello", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
-        assert_eq!(res, "<h1>hello</h1>\n");
+        let res = markdown_to_html("hello", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
+        assert_eq!(res, "<p>hello</p>\n");
     }
 
     #[test]
@@ -411,9 +465,36 @@ A quote
     }
 
     #[test]
+    fn test_markdown_to_html_relative_links_with_anchors() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
+        let res = markdown_to_html(
+            r#"[rel link](./pages/about.md#cv)"#,
+            &permalinks,
+            &GUTENBERG_TERA,
+            &Config::default()
+        ).unwrap();
+
+        assert!(
+            res.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
+        );
+    }
+
+    #[test]
     fn test_markdown_to_html_relative_link_inexistant() {
         let res = markdown_to_html("[rel link](./pages/about.md)", &HashMap::new(), &Tera::default(), &Config::default());
         assert!(res.is_err());
     }
 
+    #[test]
+    fn test_markdown_to_html_add_id_to_headers() {
+        let res = markdown_to_html(r#"# Hello"#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n");
+    }
+
+    #[test]
+    fn test_markdown_to_html_add_id_to_headers_same_slug() {
+        let res = markdown_to_html("# Hello\n# Hello", &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
+        assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
+    }
 }
