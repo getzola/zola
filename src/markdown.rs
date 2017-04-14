@@ -33,7 +33,7 @@ lazy_static!{
     };
 }
 
-/// A ShortCode that has a body
+/// A short code that has a body
 /// Called by having some content like {% ... %} body {% end %}
 /// We need the struct to hold the data while we're processing the markdown
 #[derive(Debug)]
@@ -58,7 +58,7 @@ impl ShortCode {
 
     pub fn render(&self, tera: &Tera) -> Result<String> {
         let mut context = Context::new();
-        for (key, value) in self.args.iter() {
+        for (key, value) in &self.args {
             context.add(key, value);
         }
         context.add("body", &self.body);
@@ -125,7 +125,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
     // for example an article could have several titles named Example
     // We add a counter after the slug if the slug is already present, which
     // means we will have example, example-1, example-2 etc
-    fn find_anchor(anchors: &Vec<String>, name: String, level: u8) -> String {
+    fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
         if level == 0 && !anchors.contains(&name) {
             return name.to_string();
         }
@@ -153,16 +153,14 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                 }
 
                 // Shortcode without body
-                if shortcode_block.is_none() && text.starts_with("{{") && text.ends_with("}}") {
-                    if SHORTCODE_RE.is_match(&text) {
-                        let (name, args) = parse_shortcode(&text);
-                        added_shortcode = true;
-                        match render_simple_shortcode(tera, &name, &args) {
-                            Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
-                            Err(e) => {
-                                error = Some(e);
-                                return Event::Html(Owned("".to_string()));
-                            }
+                if shortcode_block.is_none() && text.starts_with("{{") && text.ends_with("}}") && SHORTCODE_RE.is_match(&text) {
+                    let (name, args) = parse_shortcode(&text);
+                    added_shortcode = true;
+                    match render_simple_shortcode(tera, &name, &args) {
+                        Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
+                        Err(e) => {
+                            error = Some(e);
+                            return Event::Html(Owned("".to_string()));
                         }
                     }
                     // non-matching will be returned normally below
@@ -262,7 +260,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                     };
                 }
 
-                return Event::Start(Tag::Link(link.clone(), title.clone()));
+                Event::Start(Tag::Link(link.clone(), title.clone()))
             },
             // need to know when we are in a code block to disable shortcodes in them
             Event::Start(Tag::Code) => {
@@ -276,7 +274,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
             Event::Start(Tag::Header(num)) => {
                 in_header = true;
                 // ugly eh
-                return Event::Html(Owned(format!("<h{} ", num)));
+                Event::Html(Owned(format!("<h{} ", num)))
             },
             Event::End(Tag::Header(_)) => {
                 in_header = false;

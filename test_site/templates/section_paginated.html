@@ -1,0 +1,17 @@
+{% extends "index.html" %}
+
+{% block content %}
+    {% for page in paginator.pages %}
+        {{page.title}}
+    {% endfor %}
+    {% for pager in paginator.pagers %}
+        {{pager.index}}: {{pager.path | safe }}
+    {% endfor %}
+    Num pages: {{ paginator.pages | length }}
+    Page size: {{ paginator.paginate_by }}
+    Current index: {{ paginator.current_index }}
+    First: {{ paginator.first | safe }}
+    Last: {{ paginator.last | safe }}
+    {% if paginator.prev %}has_prev{% endif%}
+    {% if paginator.next %}has_next{% endif%}
+{% endblock content %}
