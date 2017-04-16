@@ -13,7 +13,7 @@
                 <pubDate>{{ page.date | date(format="%a, %d %b %Y %H:%M:%S %z") }}</pubDate>
                 <link>{{ page.permalink }}</link>
                 <guid>{{ page.permalink }}</guid>
-                <description>"{{ page.content | escape }}"</description>
+                <description>{{ page.content }}</description>
             </item>
         {% endfor %}
     </channel>

@@ -9,11 +9,13 @@ extern crate toml;
 extern crate walkdir;
 extern crate pulldown_cmark;
 extern crate regex;
+#[macro_use]
 extern crate tera;
 extern crate glob;
 extern crate syntect;
 extern crate slug;
 extern crate chrono;
+extern crate base64;
 #[cfg(test)]
 extern crate tempdir;
 extern crate libc;
@@ -26,6 +28,8 @@ mod front_matter;
 mod site;
 mod markdown;
 mod section;
+/// Additional filters for Tera
+mod filters;
 
 pub use site::{Site, GUTENBERG_TERA};
 pub use config::{Config, get_config};

@@ -13,6 +13,7 @@ use config::{Config, get_config};
 use page::{Page, populate_previous_and_next_pages};
 use utils::{create_file, create_directory, copy_file_if_modified};
 use section::{Section};
+use filters;
 
 
 lazy_static! {
@@ -22,6 +23,7 @@ lazy_static! {
             ("rss.xml", include_str!("templates/rss.xml")),
             ("sitemap.xml", include_str!("templates/sitemap.xml")),
             ("robots.txt", include_str!("templates/robots.txt")),
+            ("anchor-link.html", include_str!("templates/anchor-link.html")),
 
             ("shortcodes/youtube.html", include_str!("templates/shortcodes/youtube.html")),
             ("shortcodes/vimeo.html", include_str!("templates/shortcodes/vimeo.html")),
@@ -78,6 +80,9 @@ impl Site {
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*");
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
+        tera.register_filter("markdown", filters::markdown);
+        tera.register_filter("base64_encode", filters::base64_encode);
+        tera.register_filter("base64_decode", filters::base64_decode);
 
         let site = Site {
             base_path: path.to_path_buf(),
@@ -293,7 +298,7 @@ impl Site {
             // Copy the nesting of the content directory if we have sections for that page
             let mut current_path = public.to_path_buf();
 
-            for component in page.url.split('/') {
+            for component in page.path.split('/') {
                 current_path.push(component);
 
                 if !current_path.exists() {
@@ -332,6 +337,8 @@ impl Site {
         context.add("pages", &populate_previous_and_next_pages(&pages, false));
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
         context.add("config", &self.config);
+        context.add("current_url", &self.config.base_url);
+        context.add("current_path", &"");
         let index = self.tera.render("index.html", &context)?;
         create_file(public.join("index.html"), &self.inject_livereload(index))?;
 
@@ -394,6 +401,8 @@ impl Site {
         let mut context = Context::new();
         context.add(name, &sorted_items);
         context.add("config", &self.config);
+        context.add("current_url", &self.config.make_permalink(name));
+        context.add("current_path", &format!("/{}", name));
         // And render it immediately
         let list_output = self.tera.render(list_tpl_name, &context)?;
         create_file(output_path.join("index.html"), &self.inject_livereload(list_output))?;
@@ -413,6 +422,8 @@ impl Site {
             context.add(&format!("{}_slug", var_name), &slug);
             context.add("pages", &pages);
             context.add("config", &self.config);
+            context.add("current_url", &self.config.make_permalink(&format!("{}/{}", name, slug)));
+            context.add("current_path", &format!("/{}/{}", name, slug));
             let single_output = self.tera.render(single_tpl_name, &context)?;
 
             create_directory(&output_path.join(&slug))?;
@@ -477,9 +488,9 @@ impl Site {
         context.add("config", &self.config);
 
         let rss_feed_url = if self.config.base_url.ends_with('/') {
-            format!("{}{}", self.config.base_url, "feed.xml")
+            format!("{}{}", self.config.base_url, "rss.xml")
         } else {
-            format!("{}/{}", self.config.base_url, "feed.xml")
+            format!("{}/{}", self.config.base_url, "rss.xml")
         };
         context.add("feed_url", &rss_feed_url);
 

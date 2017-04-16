@@ -6,7 +6,7 @@
 An opinionated static site generator written in Rust.
 
 ## Installation
-You can get the latest release by going to the [Release page](https://..).
+You can get the latest release by going to the [Release page](https://github.com/Keats/gutenberg/releases).
 Alternatively, if you have the rust toolchain on your computer, you can also install it
 through Cargo: `cargo install gutenberg`.
 
@@ -60,7 +60,8 @@ Each kind of page get their own variables:
 - categories.html: gets `categories`
 - category.html: gets `category` and `pages`
 
-Additionally, all pages get a `config` variable representing the data in `config.toml`.
+Additionally, all pages get a `config` variable representing the data in `config.toml`, `current_url` that represent
+the absolute URL of the current page and `current_path` that represents the path of the URL of the current page, starting with `/`.
 If you want to know all the data present in a template content, simply put `{{ __tera_context }}`
 in the templates and it will print it.
 
@@ -157,6 +158,11 @@ to link to. The path to the file starts from the `content` directory.
 
 For example, linking to a file located at `content/pages/about.md` would be `[my link](./pages/about.md).
 
+### Anchors
+Headers get an automatic id from their content in order to be able to add deep links. By default no links are actually created but
+the `insert_anchor_links` option in `config.toml` can be set to `true` to link tags. The default template is very ugly and will need
+CSS tweaks in your projet to look decent. The default template can also be easily overwritten by creating a `anchor-link.html` file in
+the `templates` directory.
 
 ### Shortcodes
 Gutenberg uses markdown for content but sometimes you want to insert some HTML, for example for a YouTube video.

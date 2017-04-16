@@ -28,7 +28,7 @@ fn test_can_parse_site() {
 
     // Make sure the page with a url doesn't have any sections
     let url_post = &site.pages[&posts_path.join("fixed-url.md")];
-    assert_eq!(url_post.url, "a-fixed-url");
+    assert_eq!(url_post.path, "a-fixed-url");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post = &site.pages[&posts_path.join("with-assets").join("index.md")];
@@ -263,4 +263,21 @@ fn test_can_build_site_with_tags() {
     // Tags are in the sitemap
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags</loc>"));
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/tag-with-space</loc>"));
+}
+
+#[test]
+fn test_can_build_site_and_insert_anchor_links() {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.insert_anchor_links = Some(true);
+    site.load().unwrap();
+    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+    // anchor link inserted
+    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"anchor\" href=\"#title\""));
 }

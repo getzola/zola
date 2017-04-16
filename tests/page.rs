@@ -79,7 +79,7 @@ Hello world"#;
     assert!(res.is_ok());
     let mut page = res.unwrap();
     page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
-    assert_eq!(page.url, "posts/intro/hello-world");
+    assert_eq!(page.path, "posts/intro/hello-world");
     assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world");
 }
 
@@ -98,7 +98,7 @@ Hello world"#;
     assert!(res.is_ok());
     let mut page = res.unwrap();
     page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
-    assert_eq!(page.url, "posts/intro/hello-world");
+    assert_eq!(page.path, "posts/intro/hello-world");
     assert_eq!(page.permalink, format!("{}{}", conf.base_url, "/posts/intro/hello-world"));
 }
 
@@ -115,7 +115,7 @@ Hello world"#;
     assert!(res.is_ok());
     let mut page = res.unwrap();
     page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
-    assert_eq!(page.url, "hello-world");
+    assert_eq!(page.path, "hello-world");
     assert_eq!(page.permalink, format!("{}{}", Config::default().base_url, "hello-world"));
 }
 

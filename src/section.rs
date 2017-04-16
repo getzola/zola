@@ -21,8 +21,8 @@ pub struct Section {
     pub parent_path: PathBuf,
     /// The folder names from `content` to this section file
     pub components: Vec<String>,
-    /// The relative URL of the page
-    pub url: String,
+    /// The URL path of the page
+    pub path: String,
     /// The full URL for that page
     pub permalink: String,
     /// The front matter meta-data
@@ -40,7 +40,7 @@ impl Section {
             relative_path: "".to_string(),
             parent_path: file_path.parent().unwrap().to_path_buf(),
             components: vec![],
-            url: "".to_string(),
+            path: "".to_string(),
             permalink: "".to_string(),
             meta: meta,
             pages: vec![],
@@ -52,8 +52,8 @@ impl Section {
         let (meta, _) = split_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
         section.components = find_content_components(&section.file_path);
-        section.url = section.components.join("/");
-        section.permalink = config.make_permalink(&section.url);
+        section.path = section.components.join("/");
+        section.permalink = config.make_permalink(&section.path);
         section.relative_path = format!("{}/_index.md", section.components.join("/"));
 
 
@@ -80,6 +80,8 @@ impl Section {
         let mut context = Context::new();
         context.add("config", config);
         context.add("section", self);
+        context.add("current_url", &self.permalink);
+        context.add("current_path", &self.path);
 
         tera.render(&tpl_name, &context)
             .chain_err(|| format!("Failed to render section '{}'", self.file_path.display()))
@@ -91,7 +93,7 @@ impl ser::Serialize for Section {
         let mut state = serializer.serialize_struct("section", 6)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
-        state.serialize_field("url", &format!("/{}", self.url))?;
+        state.serialize_field("path", &format!("/{}", self.path))?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
