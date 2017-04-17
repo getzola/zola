@@ -46,21 +46,3 @@ fn bench_populate_previous_and_next_pages(b: &mut test::Bencher) {
 
     b.iter(|| populate_previous_and_next_pages(pages.as_slice(), false));
 }
-
-#[bench]
-fn bench_copy_static_files(b: &mut test::Bencher) {
-    let mut path = env::current_dir().unwrap().to_path_buf();
-    path.push("test_site");
-    let site = Site::new(&path, "config.toml").unwrap();
-
-    b.iter(|| site.copy_static_directory().unwrap());
-}
-
-#[bench]
-fn bench_copy_static_files_if_modified(b: &mut test::Bencher) {
-    let mut path = env::current_dir().unwrap().to_path_buf();
-    path.push("test_site");
-    let site = Site::new(&path, "config.toml").unwrap();
-
-    b.iter(|| site.copy_static_directory_if_modified().unwrap());
-}

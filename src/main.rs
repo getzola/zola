@@ -60,7 +60,6 @@ fn main() {
         )
         (@subcommand build =>
             (about: "Builds the site")
-            (@arg clean: -c --clean "Delete public directory before.")
         )
         (@subcommand serve =>
             (about: "Serve the site. Rebuild and reload on change automatically")
@@ -78,11 +77,10 @@ fn main() {
                 Err(e) => unravel_errors("Failed to create the project", &e, true),
             };
         },
-        ("build", Some(matches)) => {
+        ("build", Some(_)) => {
             console::info("Building site...");
             let start = Instant::now();
-            let clean_first = matches.is_present("clean");
-            match cmd::build(config_file, clean_first) {
+            match cmd::build(config_file) {
                 Ok(()) => report_elapsed_time(start),
                 Err(e) => unravel_errors("Failed to build the site", &e, true),
             };

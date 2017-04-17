@@ -30,7 +30,6 @@ syntect = { version = "1", features = ["static-onig"] }
 chrono = "0.3"
 toml = { version = "0.3", default-features = false, features = ["serde"]}
 term-painter = "0.2"
-libc = "~0.2.0"
 base64 = "0.4"
 
 # Below is for the serve cmd

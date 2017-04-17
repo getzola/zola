@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use page::{Page, populate_previous_and_next_pages};
-use utils::{create_file, create_directory, copy_file_if_modified};
+use utils::{create_file, create_directory};
 use section::{Section};
 use filters;
 
@@ -229,7 +229,8 @@ impl Site {
     pub fn copy_static_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let relative_path = path.as_ref().strip_prefix(&self.static_path).unwrap();
         let target_path = self.output_path.join(relative_path);
-        copy_file_if_modified(path.as_ref(), &target_path)
+        copy(path.as_ref(), &target_path)?;
+        Ok(())
     }
 
     /// Copy the content of the `static` folder into the `public` folder
@@ -348,8 +349,9 @@ impl Site {
         Ok(())
     }
 
-    /// Builds the site to the `public` directory
+    /// Builds the site to the `public` directory after deleting it
     pub fn build(&self) -> Result<()> {
+        self.clean()?;
         self.build_pages()?;
         self.render_sitemap()?;
 

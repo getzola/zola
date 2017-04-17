@@ -18,7 +18,6 @@ extern crate chrono;
 extern crate base64;
 #[cfg(test)]
 extern crate tempdir;
-extern crate libc;
 
 mod utils;
 mod config;
