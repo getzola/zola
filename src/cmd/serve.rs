@@ -134,7 +134,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                                 rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(), "/x.js");
                             },
                             (ChangeKind::StaticFiles, p) => {
-                                if path.exists() {
+                                if path.is_file() {
                                     console::info(&format!("-> Static file changes detected {}", path.display()));
                                     rebuild_done_handling(&broadcaster, site.copy_static_file(&path), &p);
                                 }

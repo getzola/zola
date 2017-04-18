@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 use std::iter::FromIterator;
-use std::fs::{remove_dir_all, copy};
+use std::fs::{remove_dir_all, copy, create_dir_all};
 use std::path::{Path, PathBuf};
 
 use glob::glob;
@@ -229,6 +229,9 @@ impl Site {
     pub fn copy_static_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let relative_path = path.as_ref().strip_prefix(&self.static_path).unwrap();
         let target_path = self.output_path.join(relative_path);
+        if let Some(parent_directory) = target_path.parent() {
+            create_dir_all(parent_directory)?;
+        }
         copy(path.as_ref(), &target_path)?;
         Ok(())
     }
