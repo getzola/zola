@@ -58,7 +58,6 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
     components
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::{find_content_components};

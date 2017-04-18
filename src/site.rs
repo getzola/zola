@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 use std::iter::FromIterator;
-use std::fs::{remove_dir_all, copy, remove_file};
+use std::fs::{remove_dir_all, copy, create_dir_all};
 use std::path::{Path, PathBuf};
 
 use glob::glob;
@@ -67,6 +67,7 @@ pub struct Site {
     pub tera: Tera,
     live_reload: bool,
     output_path: PathBuf,
+    static_path: PathBuf,
     pub tags: HashMap<String, Vec<PathBuf>>,
     pub categories: HashMap<String, Vec<PathBuf>>,
 }
@@ -91,7 +92,8 @@ impl Site {
             sections: BTreeMap::new(),
             tera: tera,
             live_reload: false,
-            output_path: PathBuf::from("public"),
+            output_path: path.join("public"),
+            static_path: path.join("static"),
             tags: HashMap::new(),
             categories: HashMap::new(),
         };
@@ -223,31 +225,30 @@ impl Site {
         html
     }
 
-    /// Copy the content of the `static` folder into the `public` folder
-    ///
-    /// TODO: only copy one file if possible because that would be a waste
-    /// to do re-copy the whole thing. Benchmark first to see if it's a big difference
-    pub fn copy_static_directory(&self) -> Result<()> {
-        let from = Path::new("static");
-        let target = Path::new("public");
+    /// Copy static file to public directory.
+    pub fn copy_static_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
+        let relative_path = path.as_ref().strip_prefix(&self.static_path).unwrap();
+        let target_path = self.output_path.join(relative_path);
+        if let Some(parent_directory) = target_path.parent() {
+            create_dir_all(parent_directory)?;
+        }
+        copy(path.as_ref(), &target_path)?;
+        Ok(())
+    }
 
-        for entry in WalkDir::new(from).into_iter().filter_map(|e| e.ok()) {
-            let relative_path = entry.path().strip_prefix(&from).unwrap();
-            let target_path = {
-                let mut target_path = target.to_path_buf();
-                target_path.push(relative_path);
-                target_path
-            };
+    /// Copy the content of the `static` folder into the `public` folder
+    pub fn copy_static_directory(&self) -> Result<()> {
+        for entry in WalkDir::new(&self.static_path).into_iter().filter_map(|e| e.ok()) {
+            let relative_path = entry.path().strip_prefix(&self.static_path).unwrap();
+            let target_path = self.output_path.join(relative_path);
 
             if entry.path().is_dir() {
                 if !target_path.exists() {
                     create_directory(&target_path)?;
                 }
             } else {
-                if target_path.exists() {
-                    remove_file(&target_path)?;
-                }
-                copy(entry.path(), &target_path)?;
+                let entry_fullpath = self.base_path.join(entry.path());
+                self.copy_static_file(entry_fullpath)?;
             }
         }
         Ok(())
@@ -255,9 +256,9 @@ impl Site {
 
     /// Deletes the `public` directory if it exists
     pub fn clean(&self) -> Result<()> {
-        if Path::new("public").exists() {
+        if self.output_path.exists() {
             // Delete current `public` directory so we can start fresh
-            remove_dir_all("public").chain_err(|| "Couldn't delete `public` directory")?;
+            remove_dir_all(&self.output_path).chain_err(|| "Couldn't delete `public` directory")?;
         }
 
         Ok(())
