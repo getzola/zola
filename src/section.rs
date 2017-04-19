@@ -68,15 +68,17 @@ impl Section {
         Section::parse(path, &content, config)
     }
 
-    /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
-        let tpl_name = match self.meta.template {
+    pub fn get_template_name(&self) -> String {
+         match self.meta.template {
             Some(ref l) => l.to_string(),
             None => "section.html".to_string()
-        };
+        }
+    }
 
-        // TODO: create a helper to create context to ensure all contexts
-        // have the same names
+    /// Renders the page using the default layout, unless specified in front-matter
+    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
+        let tpl_name = self.get_template_name();
+
         let mut context = Context::new();
         context.add("config", config);
         context.add("section", self);

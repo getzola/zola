@@ -11,6 +11,7 @@ use walkdir::WalkDir;
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use page::{Page, populate_previous_and_next_pages};
+use pagination::Paginator;
 use utils::{create_file, create_directory};
 use section::{Section};
 use filters;
@@ -28,9 +29,22 @@ lazy_static! {
             ("shortcodes/youtube.html", include_str!("templates/shortcodes/youtube.html")),
             ("shortcodes/vimeo.html", include_str!("templates/shortcodes/vimeo.html")),
             ("shortcodes/gist.html", include_str!("templates/shortcodes/gist.html")),
+
+            ("internal/alias.html", include_str!("templates/internal/alias.html")),
         ]).unwrap();
         tera
     };
+}
+
+
+// Renders the `internal/alias.html` template that will
+// create a template that refreshes to the url given
+fn render_alias(url: &str, tera: &Tera) -> Result<String> {
+    let mut context = Context::new();
+    context.add("url", &url);
+
+    tera.render("internal/alias.html", &context)
+        .chain_err(|| format!("Failed to render alias for '{}'", url))
 }
 
 
@@ -522,8 +536,41 @@ impl Site {
                 }
             }
 
-            let output = section.render_html(&self.tera, &self.config)?;
-            create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+            // Keep track if we need to render the default non-paginated view for a section
+            let mut render_default = true;
+            if let Some(paginate) = section.meta.paginate {
+                if paginate {
+                    render_default = false;
+                    let paginate_path = match self.config.paginate_path {
+                        Some(ref p) => p,
+                        None => unreachable!(),
+                    };
+
+                    let paginator = Paginator::new(
+                        &section.pages,
+                        self.config.paginate_by.unwrap(),
+                    );
+
+                    for (i, _) in paginator.pages.iter().enumerate() {
+                        let folder_path = output_path.join(paginate_path);
+                        let page_path = folder_path.join(&format!("{}", i + 1));
+                        create_directory(&folder_path)?;
+                        create_directory(&page_path)?;
+                        let output = paginator.render_section_page(i, section, &self.tera, &self.config)?;
+                        if i > 0 {
+                            create_file(page_path.join("index.html"), &self.inject_livereload(output))?;
+                        } else {
+                            create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+                            create_file(page_path.join("index.html"), &render_alias(&section.permalink, &self.tera)?)?;
+                        }
+                    }
+                }
+            }
+
+            if render_default {
+                let output = section.render_html(&self.tera, &self.config)?;
+                create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+            }
         }
 
         Ok(())

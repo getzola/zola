@@ -27,6 +27,9 @@ pub struct FrontMatter {
 
     // Optional stuff
 
+    /// Whether to paginate that section, a no-op on non-section
+    pub paginate: Option<bool>,
+
     /// Date if we want to order pages (ie blog post)
     pub date: Option<String>,
     /// The page slug. Will be used instead of the filename if present

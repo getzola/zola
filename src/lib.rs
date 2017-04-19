@@ -27,6 +27,7 @@ mod front_matter;
 mod site;
 mod markdown;
 mod section;
+mod pagination;
 /// Additional filters for Tera
 mod filters;
 

@@ -35,6 +35,12 @@ pub struct Config {
     /// written if you turn that on.
     pub insert_anchor_links: Option<bool>,
 
+    // Pagination
+    /// How many pages to be displayed per paginated page. Defaults to `5`.
+    pub paginate_by: Option<usize>,
+    /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
+    pub paginate_path: Option<String>,
+
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
 }
@@ -72,6 +78,8 @@ impl Config {
         set_default!(config.generate_tags_pages, true);
         set_default!(config.generate_categories_pages, true);
         set_default!(config.insert_anchor_links, false);
+        set_default!(config.paginate_by, 5);
+        set_default!(config.paginate_path, "page".to_string());
 
         Ok(config)
     }
@@ -110,6 +118,10 @@ impl Default for Config {
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
             insert_anchor_links: Some(false),
+
+            paginate_by: None,
+            paginate_path: Some("page".to_string()),
+
             extra: None,
         }
     }
