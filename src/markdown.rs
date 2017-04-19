@@ -2,7 +2,7 @@ use std::borrow::Cow::Owned;
 use std::collections::HashMap;
 
 use pulldown_cmark as cmark;
-use self::cmark::{Parser, Event, Tag};
+use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
 use regex::Regex;
 use slug::slugify;
 use syntect::dumps::from_binary;
@@ -138,8 +138,12 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
         find_anchor(anchors, name, level + 1)
     }
 
+    let mut opts = Options::empty();
+    opts.insert(OPTION_ENABLE_TABLES);
+    opts.insert(OPTION_ENABLE_FOOTNOTES);
+
     {
-        let parser = Parser::new(content).map(|event| match event {
+        let parser = Parser::new_ext(content, opts).map(|event| match event {
             Event::Text(text) => {
                 // if we are in the middle of a code block
                 if let Some(ref mut highlighter) = highlighter {

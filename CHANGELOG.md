@@ -7,6 +7,9 @@
 - Add id to headers to allow anchor linking
 - Make relative link work with anchors
 - Add option to render an anchor link automatically next to headers
+- Only copy the static files that changed, not the whole directory in `gutenberg serve`
+- Use summary if available in RSS feed
+- Add tables and footnotes support in markdown
 
 ## 0.0.3 (2017-04-05)
 - Add some colours in console
