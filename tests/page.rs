@@ -212,7 +212,7 @@ Hello world"#.to_string();
     assert!(res.is_ok());
     let mut page = res.unwrap();
     page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
-    assert_eq!(page.summary, "");
+    assert_eq!(page.summary, None);
 }
 
 #[test]
@@ -229,7 +229,7 @@ Hello world
     assert!(res.is_ok());
     let mut page = res.unwrap();
     page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
-    assert_eq!(page.summary, "<p>Hello world</p>\n");
+    assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
 }
 
 #[test]
