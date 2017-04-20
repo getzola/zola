@@ -71,10 +71,10 @@ pub struct Page {
     pub path: String,
     /// The full URL for that page
     pub permalink: String,
-    /// The summary for the article, defaults to empty string
+    /// The summary for the article, defaults to None
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
-    pub summary: String,
+    pub summary: Option<String>,
 
     /// The previous page, by date globally
     pub previous: Option<Box<Page>>,
@@ -101,7 +101,7 @@ impl Page {
             slug: "".to_string(),
             path: "".to_string(),
             permalink: "".to_string(),
-            summary: "".to_string(),
+            summary: None,
             meta: meta,
             previous: None,
             previous_in_section: None,
@@ -194,10 +194,10 @@ impl Page {
         self.content = markdown_to_html(&self.raw_content, permalinks, tera, config)?;
 
         if self.raw_content.contains("<!-- more -->") {
-            self.summary = {
+            self.summary = Some({
                 let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
                 markdown_to_html(summary, permalinks, tera, config)?
-            }
+            })
         }
 
         Ok(())
@@ -223,7 +223,7 @@ impl Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 13)?;
+        let mut state = serializer.serialize_struct("page", 18)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
@@ -231,6 +231,7 @@ impl ser::Serialize for Page {
         state.serialize_field("slug", &self.slug)?;
         state.serialize_field("path", &format!("/{}", self.path))?;
         state.serialize_field("permalink", &self.permalink)?;
+        state.serialize_field("summary", &self.summary)?;
         state.serialize_field("tags", &self.meta.tags)?;
         state.serialize_field("draft", &self.meta.draft)?;
         state.serialize_field("category", &self.meta.category)?;
@@ -238,6 +239,10 @@ impl ser::Serialize for Page {
         let (word_count, reading_time) = self.get_reading_analytics();
         state.serialize_field("word_count", &word_count)?;
         state.serialize_field("reading_time", &reading_time)?;
+        state.serialize_field("previous", &self.previous)?;
+        state.serialize_field("previous_in_section", &self.previous_in_section)?;
+        state.serialize_field("next", &self.next)?;
+        state.serialize_field("next_in_section", &self.next_in_section)?;
         state.end()
     }
 }
