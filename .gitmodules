@@ -1,6 +1,6 @@
 [submodule "sublime_syntaxes/Packages"]
 	path = sublime_syntaxes/Packages
-	url = git@github.com:sublimehq/Packages.git
+	url = https://github.com/sublimehq/Packages.git
 [submodule "sublime_syntaxes/sublimeassembly"]
 	path = sublime_syntaxes/sublimeassembly
 	url = https://github.com/Nessphoro/sublimeassembly.git
