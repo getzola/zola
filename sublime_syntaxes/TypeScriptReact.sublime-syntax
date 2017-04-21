@@ -1,0 +1,2289 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: TypeScriptReact
+file_extensions:
+  - tsx
+scope: source.tsx
+contexts:
+  main:
+    - include: directives
+    - include: statements
+    - match: \A(#!).*(?=$)
+      scope: comment.line.shebang.ts
+      captures:
+        1: punctuation.definition.comment.ts
+  comment:
+    - match: /\*\*(?!/)
+      captures:
+        0: punctuation.definition.comment.tsx
+      push:
+        - meta_scope: comment.block.documentation.tsx
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.tsx
+          pop: true
+        - include: docblock
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.tsx
+      push:
+        - meta_scope: comment.block.tsx
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.tsx
+          pop: true
+    - match: '(^[ \t]+)?(?=//)'
+      captures:
+        1: punctuation.whitespace.comment.leading.tsx
+      push:
+        - match: (?=$)
+          pop: true
+        - match: //
+          captures:
+            0: punctuation.definition.comment.tsx
+          push:
+            - meta_scope: comment.line.double-slash.tsx
+            - match: (?=$)
+              pop: true
+  access-modifier:
+    - match: (?<!\.|\$)\b(abstract|public|protected|private|readonly|static)\b(?!\$)
+      scope: storage.modifier.tsx
+  after-operator-block:
+    - match: '(?<=[=(,\[?+!]|await|return|yield|throw|in|of|typeof|&&|\|\||\*)\s*(\{)'
+      captures:
+        1: punctuation.definition.block.tsx
+      push:
+        - meta_scope: meta.objectliteral.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.tsx
+          pop: true
+        - include: object-member
+  array-binding-pattern:
+    - match: '(?:(\.\.\.)\s*)?(\[)'
+      captures:
+        1: keyword.operator.rest.tsx
+        2: punctuation.definition.binding-pattern.array.tsx
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.definition.binding-pattern.array.tsx
+          pop: true
+        - include: binding-element
+        - include: punctuation-comma
+  array-literal:
+    - match: '\['
+      captures:
+        0: meta.brace.square.tsx
+      push:
+        - meta_scope: meta.array.literal.tsx
+        - match: '\]'
+          captures:
+            0: meta.brace.square.tsx
+          pop: true
+        - include: expression
+        - include: punctuation-comma
+  arrow-function:
+    - match: '(?:(?<!\.|\$)(\basync)\s*)?([_$[:alpha:]][_$[:alnum:]]*)\s*(?==>)'
+      scope: meta.arrow.tsx
+      captures:
+        1: storage.modifier.async.tsx
+        2: variable.parameter.tsx
+    - match: |-
+        (?x) (?:
+          (?<!\.|\$)(\basync)(?=\s*[<(])
+        ) | ((?<![})\]])\s*
+          (?=
+            # sure shot arrow functions even if => is on new line
+            (
+              [(]\s*
+              (
+                ([)]\s*:) |                               # ():
+                ([_$[:alpha:]][_$[:alnum:]]*\s*:) |       # [(]param:
+                (\.\.\.)                                  # [(]...
+              )
+            ) |
+            (
+              [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>] # < typeparam extends
+            ) |
+            # arrow function possible to detect only with => on same line
+            (
+              (<([^<>]|\<[^<>]+\>)+>\s*)?                 # typeparameters
+              \(([^()]|\([^()]*\))*\)                     # parameteres
+              (\s*:\s*(.)*)?                              # return type
+              \s*=>                                       # arrow operator
+            )
+          )
+        )
+      captures:
+        1: storage.modifier.async.tsx
+      push:
+        - meta_scope: meta.arrow.tsx
+        - match: '(?==>|\{)'
+          pop: true
+        - include: comment
+        - include: type-parameters
+        - include: function-parameters
+        - include: arrow-return-type
+    - match: "=>"
+      captures:
+        0: storage.type.function.arrow.tsx
+      push:
+        - meta_scope: meta.arrow.tsx
+        - match: '(?<=\})|((?!\{)(?=\S))'
+          pop: true
+        - include: decl-block
+        - include: expression
+  arrow-return-type:
+    - match: (?<=\))\s*(:)
+      captures:
+        1: keyword.operator.type.annotation.tsx
+      push:
+        - meta_scope: meta.return.type.arrow.tsx
+        - match: '(?==>|\{)'
+          pop: true
+        - match: '(?<=:)\s*(\{)'
+          captures:
+            1: punctuation.definition.block.tsx
+          push:
+            - meta_scope: meta.object.type.tsx
+            - match: '\}'
+              captures:
+                0: punctuation.definition.block.tsx
+              pop: true
+            - include: type-object-members
+        - include: type-predicate-operator
+        - include: type
+  binding-element:
+    - include: comment
+    - include: object-binding-pattern
+    - include: array-binding-pattern
+    - include: destructuring-variable-rest
+    - include: variable-initializer
+  boolean-literal:
+    - match: (?<!\.|\$)\btrue\b(?!\$)
+      scope: constant.language.boolean.true.tsx
+    - match: (?<!\.|\$)\bfalse\b(?!\$)
+      scope: constant.language.boolean.false.tsx
+  case-clause:
+    - match: (?<!\.|\$)\b(case|default(?=:))\b(?!\$)
+      captures:
+        1: keyword.control.switch.tsx
+      push:
+        - meta_scope: case-clause.expr.tsx
+        - match: ":"
+          captures:
+            0: punctuation.definition.section.case-statement.tsx
+          pop: true
+        - include: expression
+  cast:
+    - include: jsx
+  class-or-interface-body:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.tsx
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.tsx
+          pop: true
+        - include: string
+        - include: comment
+        - include: decorator
+        - include: method-declaration
+        - include: indexer-declaration
+        - include: field-declaration
+        - include: type-annotation
+        - include: variable-initializer
+        - include: access-modifier
+        - include: property-accessor
+        - include: after-operator-block
+        - include: decl-block
+        - include: expression
+        - include: punctuation-comma
+        - include: punctuation-semicolon
+  class-or-interface-declaration:
+    - match: '(?<!\.|\$)\b(?:(export)\s+)?\b(?:(abstract)\s+)?\b(?:(class)|(interface))\b(?=\s+|/[/*])'
+      captures:
+        1: keyword.control.export.tsx
+        2: storage.modifier.tsx
+        3: storage.type.class.tsx
+        4: storage.type.interface.tsx
+      push:
+        - meta_scope: meta.class.tsx
+        - match: '(?<=\})'
+          captures:
+            1: punctuation.definition.block.tsx
+          pop: true
+        - include: comment
+        - include: class-or-interface-heritage
+        - match: "[_$[:alpha:]][_$[:alnum:]]*"
+          captures:
+            0: entity.name.type.class.tsx
+        - include: type-parameters
+        - include: class-or-interface-body
+  class-or-interface-heritage:
+    - match: (?<!\.|\$)(?:\b(extends|implements)\b)(?!\$)
+      captures:
+        1: storage.modifier.tsx
+      push:
+        - match: '(?=\{)'
+          captures:
+            1: punctuation.definition.block.tsx
+          pop: true
+        - include: comment
+        - include: class-or-interface-heritage
+        - include: type-parameters
+        - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(\.)(?=\s*[_$[:alpha:]][_$[:alnum:]]*(\s*\.\s*[_$[:alpha:]][_$[:alnum:]]*)*\s*([,<{]|extends|implements|//|/\*))'
+          captures:
+            1: entity.name.type.module.tsx
+            2: punctuation.accessor.tsx
+        - match: '([_$[:alpha:]][_$[:alnum:]]*)(?=\s*([,<{]|extends|implements|//|/\*))'
+          captures:
+            1: entity.other.inherited-class.tsx
+        - include: expression
+  control-statement:
+    - match: (?<!\.|\$)\b(catch|finally|throw|try)\b(?!\$)
+      scope: keyword.control.trycatch.tsx
+    - match: (?<!\.|\$)\b(break|continue|do|goto|while)\b(?!\$)
+      scope: keyword.control.loop.tsx
+    - match: (?<!\.|\$)\b(return)\b(?!\$)
+      scope: keyword.control.flow.tsx
+    - match: (?<!\.|\$)\b(case|default|switch)\b(?!\$)
+      scope: keyword.control.switch.tsx
+    - match: (?<!\.|\$)\b(else|if)\b(?!\$)
+      scope: keyword.control.conditional.tsx
+    - match: (?<!\.|\$)\b(with)\b(?!\$)
+      scope: keyword.control.with.tsx
+    - match: (?<!\.|\$)\b(debugger)\b(?!\$)
+      scope: keyword.other.debugger.tsx
+    - match: (?<!\.|\$)\b(declare)\b(?!\$)
+      scope: storage.modifier.tsx
+  decl-block:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.tsx
+      push:
+        - meta_scope: meta.block.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.tsx
+          pop: true
+        - include: statements
+  declaration:
+    - include: decorator
+    - include: var-expr
+    - include: function-declaration
+    - include: class-or-interface-declaration
+    - include: type-declaration
+    - include: enum-declaration
+    - include: namespace-declaration
+    - include: import-equals-declaration
+    - include: import-declaration
+    - include: export-declaration
+  decorator:
+    - match: (?<!\.|\$)\@
+      captures:
+        0: punctuation.decorator.tsx
+      push:
+        - meta_scope: meta.decorator.tsx
+        - match: (?=\s)
+          pop: true
+        - include: expression
+  destructuring-parameter:
+    - match: '(?<!=|:)\s*(\{)'
+      captures:
+        1: punctuation.definition.binding-pattern.object.tsx
+      push:
+        - meta_scope: meta.parameter.object-binding-pattern.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.binding-pattern.object.tsx
+          pop: true
+        - include: parameter-object-binding-element
+    - match: '(?<!=|:)\s*(\[)'
+      captures:
+        1: punctuation.definition.binding-pattern.array.tsx
+      push:
+        - meta_scope: meta.paramter.array-binding-pattern.tsx
+        - match: '\]'
+          captures:
+            0: punctuation.definition.binding-pattern.array.tsx
+          pop: true
+        - include: parameter-binding-element
+        - include: punctuation-comma
+  destructuring-parameter-rest:
+    - match: '(?:(\.\.\.)\s*)?([_$[:alpha:]][_$[:alnum:]]*)'
+      captures:
+        1: keyword.operator.rest.tsx
+        2: variable.parameter.tsx
+  destructuring-variable:
+    - match: '(?<!=|:|of|in)\s*(?=\{)'
+      push:
+        - meta_scope: meta.object-binding-pattern-variable.tsx
+        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+          pop: true
+        - include: object-binding-pattern
+        - include: type-annotation
+        - include: comment
+    - match: '(?<!=|:|of|in)\s*(?=\[)'
+      push:
+        - meta_scope: meta.array-binding-pattern-variable.tsx
+        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+          pop: true
+        - include: array-binding-pattern
+        - include: type-annotation
+        - include: comment
+  destructuring-variable-rest:
+    - match: '(?:(\.\.\.)\s*)?([_$[:alpha:]][_$[:alnum:]]*)'
+      captures:
+        1: keyword.operator.rest.tsx
+        2: meta.definition.variable.tsx variable.other.readwrite.tsx
+  directives:
+    - match: '^(///)\s*(?=<(reference|amd-dependency|amd-module)(\s+(path|types|no-default-lib|name)\s*=\s*((\''[^'']*\'')|(\"[^"]*\")))+\s*/>\s*$)'
+      captures:
+        1: punctuation.definition.comment.tsx
+      push:
+        - meta_scope: comment.line.triple-slash.directive.tsx
+        - match: (?=$)
+          pop: true
+        - match: (<)(reference|amd-dependency|amd-module)
+          captures:
+            1: punctuation.definition.tag.directive.tsx
+            2: entity.name.tag.directive.tsx
+          push:
+            - meta_scope: meta.tag.tsx
+            - match: />
+              captures:
+                0: punctuation.definition.tag.directive.tsx
+              pop: true
+            - match: path|types|no-default-lib|name
+              scope: entity.other.attribute-name.directive.tsx
+            - match: "="
+              scope: keyword.operator.assignment.tsx
+            - include: string
+  docblock:
+    - match: |-
+        (?x)(?<!\w)@(
+        abstract|access|alias|arg|argument|async|attribute|augments|author|beta|borrows|bubbes|callback|chainable|class
+        |classdesc|code|config|const|constant|constructor|constructs|copyright|default|defaultvalue|define|deprecated|desc
+        |description|dict|emits|enum|event|example|exports?|extends|extension|extension_for|extensionfor|external|file
+        |fileoverview|final|fires|for|function|global|host|ignore|implements|implicitCast|inherit[Dd]oc|inner|instance
+        |interface|kind|lends|license|listens|main|member|memberof|method|mixex|mixins?|modifies|module|name|namespace
+        |noalias|nocollapse|nocompile|nosideeffects|override|overview|package|param|preserve|private|prop|property
+        |protected|public|read[Oo]nly|record|require[ds]|returns?|see|since|static|struct|submodule|summary|suppress
+        |template|this|throws|todo|type|typedef|unrestricted|uses|var|variation|version|virtual|writeOnce)\b
+      scope: storage.type.class.jsdoc
+    - match: |-
+        (?x)
+        (
+          \[
+            [^\]]+            # Optional [link text] preceding {@link syntax}
+          \]
+
+          (?!                  # Check to avoid highlighting two sets of link text
+            {
+              @\w+            # Tagname
+              \s+
+              [^\s|}]+        # Namepath/URL
+              [\s|]           # Whitespace or bar delimiting description
+              [^}]*
+            }
+          )
+        )?
+
+        (?:
+          {
+            (
+              @
+              (?: link         # Name of tag
+                | linkcode
+                | linkplain
+                | tutorial
+              )
+            )
+
+            \s+
+
+            ([^\s|}]+)        # Namepath or URL
+
+            (?:                # Optional link text following link target
+              [\s|]           # Bar or space separating target and text
+              [^}]*            # Actual text
+            )?
+          }
+        )
+      scope: other.meta.jsdoc
+      captures:
+        0: entity.name.type.instance.jsdoc
+        1: constant.other.description.jsdoc
+        2: storage.type.class.jsdoc
+        3: variable.other.description.jsdoc
+    - match: |-
+        (?x)
+
+        (?:(?<=@param)|(?<=@arg)|(?<=@argument)|(?<=@type)|(?<=@property)|(?<=@prop))
+
+        \s+
+
+        ({(?:
+          \* |                                       # {*} any type
+          \? |                                       # {?} unknown type
+
+          (?:
+            (?:                                       # Check for a prefix
+              \? |                                   # {?string} nullable type
+              !   |                                   # {!string} non-nullable type
+              \.{3}                                  # {...string} variable number of parameters
+            )?
+
+            (?:
+              (?:
+                function                              # {function(string, number)} function type
+                \s*
+                \(
+                \s*
+                (?:
+                  [a-zA-Z_$][\w$]*
+                  (?:
+                    \s*,\s*
+                    [a-zA-Z_$][\w$]*
+                  )*
+                )?
+                \s*
+                \)
+                (?:                                   # {function(): string} function return type
+                  \s*:\s*
+                  [a-zA-Z_$][\w$]*
+                )?
+              )?
+              |
+              (?:
+                \(                                   # Opening bracket of multiple types with parenthesis {(string|number)}
+                  [a-zA-Z_$]+
+                  (?:
+                    (?:
+                      [\w$]*
+                      (?:\[\])?                     # {(string[]|number)} type application, an array of strings or a number
+                    ) |
+                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
+                  )
+                  (?:
+                    [\.|~]                           # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
+                    [a-zA-Z_$]+
+                    (?:
+                      (?:
+                        [\w$]*
+                        (?:\[\])?                   # {(string|number[])} type application, a string or an array of numbers
+                      ) |
+                      \.?<[\w$]+(?:,\s+[\w$]+)*>  # {Array<string>} or {Object<string, number>} type application (optional .)
+                    )
+                  )*
+                \) |
+                [a-zA-Z_$]+
+                (?:
+                  (?:
+                    [\w$]*
+                    (?:\[\])?                       # {(string|number[])} type application, a string or an array of numbers
+                  ) |
+                  \.?<[\w$]+(?:,\s+[\w$]+)*>      # {Array<string>} or {Object<string, number>} type application (optional .)
+                )
+                (?:
+                  [\.|~]                             # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
+                  [a-zA-Z_$]+
+                  (?:
+                    [\w$]* |
+                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
+                  )
+                )*
+              )
+            )
+                                                      # Check for suffix
+            (?:\[\])?                               # {string[]} type application, an array of strings
+            =?                                        # {string=} optional parameter
+          )
+        )})
+
+        \s+
+
+        (
+          \[                                         # [foo] optional parameter
+            \s*
+            (?:
+              [a-zA-Z_$][\w$]*
+              (?:
+                (?:\[\])?                           # Foo[].bar properties within an array
+                \.                                   # Foo.Bar namespaced parameter
+                [a-zA-Z_$][\w$]*
+              )*
+              (?:
+                \s*
+                =                                     # [foo=bar] Default parameter value
+                \s*
+                [\w$\s]*
+              )?
+            )
+            \s*
+          \] |
+          (?:
+            [a-zA-Z_$][\w$]*
+            (?:
+              (?:\[\])?                             # Foo[].bar properties within an array
+              \.                                     # Foo.Bar namespaced parameter
+              [a-zA-Z_$][\w$]*
+            )*
+          )?
+        )
+
+        \s+
+
+        (?:-\s+)?                                     # optional hyphen before the description
+
+        ((?:(?!\*\/).)*)                             # The type description
+      captures:
+        0: other.meta.jsdoc
+        1: entity.name.type.instance.jsdoc
+        2: variable.other.jsdoc
+        3: other.description.jsdoc
+    - match: |-
+        (?x)
+
+        ({(?:
+          \* |                                       # {*} any type
+          \? |                                       # {?} unknown type
+
+          (?:
+            (?:                                       # Check for a prefix
+              \? |                                   # {?string} nullable type
+              !   |                                   # {!string} non-nullable type
+              \.{3}                                  # {...string} variable number of parameters
+            )?
+
+            (?:
+              (?:
+                function                              # {function(string, number)} function type
+                \s*
+                \(
+                \s*
+                (?:
+                  [a-zA-Z_$][\w$]*
+                  (?:
+                    \s*,\s*
+                    [a-zA-Z_$][\w$]*
+                  )*
+                )?
+                \s*
+                \)
+                (?:                                   # {function(): string} function return type
+                  \s*:\s*
+                  [a-zA-Z_$][\w$]*
+                )?
+              )?
+              |
+              (?:
+                \(                                   # Opening bracket of multiple types with parenthesis {(string|number)}
+                  [a-zA-Z_$]+
+                  (?:
+                    [\w$]* |
+                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
+                  )
+                  (?:
+                    [\.|~]                           # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
+                    [a-zA-Z_$]+
+                    (?:
+                      [\w$]* |
+                      \.?<[\w$]+(?:,\s+[\w$]+)*>  # {Array<string>} or {Object<string, number>} type application (optional .)
+                    )
+                  )*
+                \) |
+                [a-zA-Z_$]+
+                (?:
+                  [\w$]* |
+                  \.?<[\w$]+(?:,\s+[\w$]+)*>      # {Array<string>} or {Object<string, number>} type application (optional .)
+                )
+                (?:
+                  [\.|~]                             # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
+                  [a-zA-Z_$]+
+                  (?:
+                    [\w$]* |
+                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
+                  )
+                )*
+              )
+            )
+                                                      # Check for suffix
+            (?:\[\])?                               # {string[]} type application, an array of strings
+            =?                                        # {string=} optional parameter
+          )
+        )})
+
+        \s+
+
+        (?:-\s+)?                                    # optional hyphen before the description
+
+        ((?:(?!\*\/).)*)                            # The type description
+      captures:
+        0: other.meta.jsdoc
+        1: entity.name.type.instance.jsdoc
+        2: other.description.jsdoc
+  enum-declaration:
+    - match: '(?<!\.|\$)(?:(\bexport)\s+)?(?:\b(const)\s+)?\b(enum)\s+([_$[:alpha:]][_$[:alnum:]]*)'
+      captures:
+        1: keyword.control.export.tsx
+        2: storage.modifier.tsx
+        3: storage.type.enum.tsx
+        4: entity.name.type.enum.tsx
+      push:
+        - meta_scope: meta.enum.declaration.tsx
+        - match: '(?<=\})'
+          pop: true
+        - include: comment
+        - match: '\{'
+          captures:
+            0: punctuation.definition.block.tsx
+          push:
+            - match: '\}'
+              captures:
+                0: punctuation.definition.block.tsx
+              pop: true
+            - include: comment
+            - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+              captures:
+                0: variable.other.enummember.tsx
+              push:
+                - match: '(?=,|\}|$)'
+                  pop: true
+                - include: comment
+                - include: variable-initializer
+            - match: '(?=((\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\])))'
+              push:
+                - match: '(?=,|\}|$)'
+                  pop: true
+                - include: string
+                - include: array-literal
+                - include: comment
+                - include: variable-initializer
+            - include: punctuation-comma
+  export-declaration:
+    - match: '(?<!\.|\$)\b(export)\s+(as)\s+(namespace)\s+([_$[:alpha:]][_$[:alnum:]]*)'
+      captures:
+        1: keyword.control.export.tsx
+        2: keyword.control.as.tsx
+        3: storage.type.namespace.tsx
+        4: entity.name.type.module.tsx
+    - match: (?<!\.|\$)\b(export)(?:(?:\s*(=))|(?:\s+(default)(?=\s+)))
+      captures:
+        1: keyword.control.export.tsx
+        2: keyword.operator.assignment.tsx
+        3: keyword.control.default.tsx
+      push:
+        - meta_scope: meta.export.default.tsx
+        - match: (?=;|\bexport\b|\bfunction\b|\bclass\b|\binterface\b|\blet\b|\bvar\b|\bconst\b|\bimport\b|\benum\b|\bnamespace\b|\bmodule\b|\btype\b|\babstract\b|\bdeclare\b|\basync\b|$)
+          pop: true
+        - include: expression
+    - match: (?<!\.|\$)\b(export)(?!(\s*:)|(\$))\b
+      captures:
+        0: keyword.control.export.tsx
+      push:
+        - meta_scope: meta.export.tsx
+        - match: (?=;|\bexport\b|\bfunction\b|\bclass\b|\binterface\b|\blet\b|\bvar\b|\bconst\b|\bimport\b|\benum\b|\bnamespace\b|\bmodule\b|\btype\b|\babstract\b|\bdeclare\b|\basync\b|$)
+          pop: true
+        - include: import-export-declaration
+  expression:
+    - include: jsx
+    - include: string
+    - include: regex
+    - include: template
+    - include: comment
+    - include: function-expression
+    - include: class-or-interface-declaration
+    - include: arrow-function
+    - include: cast
+    - include: ternary-expression
+    - include: new-expr
+    - include: object-literal
+    - include: expression-operators
+    - include: function-call
+    - include: literal
+    - include: support-objects
+    - include: identifiers
+    - include: paren-expression
+    - include: punctuation-comma
+    - include: punctuation-accessor
+  expression-operators:
+    - match: (?<!\.|\$)\b(await)\b(?!\$)
+      scope: keyword.control.flow.tsx
+    - match: (?<!\.|\$)\b(yield)\b(?!\$)(?:\s*(\*))?
+      captures:
+        1: keyword.control.flow.tsx
+        2: keyword.generator.asterisk.tsx
+    - match: (?<!\.|\$)\bdelete\b(?!\$)
+      scope: keyword.operator.expression.delete.tsx
+    - match: (?<!\.|\$)\bin\b(?!\$)
+      scope: keyword.operator.expression.in.tsx
+    - match: (?<!\.|\$)\bof\b(?!\$)
+      scope: keyword.operator.expression.of.tsx
+    - match: (?<!\.|\$)\binstanceof\b(?!\$)
+      scope: keyword.operator.expression.instanceof.tsx
+    - match: (?<!\.|\$)\bnew\b(?!\$)
+      scope: keyword.operator.new.tsx
+    - include: typeof-operator
+    - match: (?<!\.|\$)\bvoid\b(?!\$)
+      scope: keyword.operator.expression.void.tsx
+    - match: (?<!\.|\$)\bas\b(?!\$)
+      captures:
+        0: keyword.control.as.tsx
+      push:
+        - match: '(?=$|[;,:})\]])'
+          pop: true
+        - include: type
+    - match: \.\.\.
+      scope: keyword.operator.spread.tsx
+    - match: \*=|(?<!\()/=|%=|\+=|\-=
+      scope: keyword.operator.assignment.compound.tsx
+    - match: \&=|\^=|<<=|>>=|>>>=|\|=
+      scope: keyword.operator.assignment.compound.bitwise.tsx
+    - match: "<<|>>>|>>"
+      scope: keyword.operator.bitwise.shift.tsx
+    - match: "===|!==|==|!="
+      scope: keyword.operator.comparison.tsx
+    - match: <=|>=|<>|<|>
+      scope: keyword.operator.relational.tsx
+    - match: \!|&&|\|\|
+      scope: keyword.operator.logical.tsx
+    - match: \&|~|\^|\|
+      scope: keyword.operator.bitwise.tsx
+    - match: \=
+      scope: keyword.operator.assignment.tsx
+    - match: "--"
+      scope: keyword.operator.decrement.tsx
+    - match: \+\+
+      scope: keyword.operator.increment.tsx
+    - match: '%|\*|/|-|\+'
+      scope: keyword.operator.arithmetic.tsx
+    - match: '(?<=[_$[:alnum:])])\s*(/)(?![/*])'
+      captures:
+        1: keyword.operator.arithmetic.tsx
+  field-declaration:
+    - match: '(?<!\()(?:(?<!\.|\$)\b(readonly)\s+)?(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))'
+      captures:
+        1: storage.modifier.tsx
+      push:
+        - meta_scope: meta.field.declaration.tsx
+        - match: '(?=\}|;|,|$)|(?<=\})'
+          pop: true
+        - include: variable-initializer
+        - match: '(?=((?:[_$[:alpha:]][_$[:alnum:]]*)|(?:\''[^'']*\'')|(?:\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))'
+          push:
+            - match: '(?=[};,=]|$)|(?<=\})'
+              pop: true
+            - include: type-annotation
+            - include: string
+            - include: array-literal
+            - include: comment
+            - match: |-
+                (?x)([_$[:alpha:]][_$[:alnum:]]*)(?=(\?\s*)?\s*
+                  (=\s*(
+                    (async\s+) |
+                    (function\s*[(<]) |
+                    (function\s+) |
+                    ([_$[:alpha:]][_$[:alnum:]]*\s*=>) |
+                    ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
+                    ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
+                    ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))
+                  ) |
+                  (:\s*(
+                    (<) |
+                    ([(]\s*(
+                      ([)]) |
+                      (\.\.\.) |
+                      ([_$[:alnum:]]+\s*(
+                        ([:,?=])|
+                        ([)]\s*=>)
+                      ))
+                    )))
+                  )
+                )
+              scope: meta.definition.property.tsx entity.name.function.tsx
+            - match: "[_$[:alpha:]][_$[:alnum:]]*"
+              scope: meta.definition.property.tsx variable.object.property.tsx
+            - match: \?
+              scope: keyword.operator.optional.tsx
+  for-loop:
+    - match: (?<!\.|\$)\b(for)(?:\s+(await))?\s*(\()
+      captures:
+        1: keyword.control.loop.tsx
+        2: keyword.control.loop.tsx
+        3: meta.brace.round.tsx
+      push:
+        - match: \)
+          captures:
+            0: meta.brace.round.tsx
+          pop: true
+        - include: var-expr
+        - include: expression
+        - include: punctuation-semicolon
+  function-call:
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*\s*\.\s*)*|(\.\s*)?)([_$[:alpha:]][_$[:alnum:]]*)\s*(<([^<>]|\<[^<>]+\>)+>\s*)?\()'
+      push:
+        - match: '(?<=\))(?!(([_$[:alpha:]][_$[:alnum:]]*\s*\.\s*)*|(\.\s*)?)([_$[:alpha:]][_$[:alnum:]]*)\s*(<([^<>]|\<[^<>]+\>)+>\s*)?\()'
+          pop: true
+        - include: literal
+        - include: support-objects
+        - include: object-identifiers
+        - include: punctuation-accessor
+        - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+          scope: entity.name.function.tsx
+        - include: comment
+        - match: \<
+          captures:
+            0: punctuation.definition.typeparameters.begin.tsx
+          push:
+            - meta_scope: meta.type.parameters.tsx
+            - match: \>
+              captures:
+                0: punctuation.definition.typeparameters.end.tsx
+              pop: true
+            - include: type
+            - include: punctuation-comma
+        - include: paren-expression
+  function-declaration:
+    - match: '(?<!\.|\$)\b(?:(export)\s+)?(?:(async)\s+)?(function\b)(?:\s*(\*))?(?:(?:\s+|(?<=\*))([_$[:alpha:]][_$[:alnum:]]*))?\s*'
+      captures:
+        1: keyword.control.export.tsx
+        2: storage.modifier.async.tsx
+        3: storage.type.function.tsx
+        4: keyword.generator.asterisk.tsx
+        5: meta.definition.function.tsx entity.name.function.tsx
+      push:
+        - meta_scope: meta.function.tsx
+        - match: '(?=$|;)|(?<=\})'
+          pop: true
+        - include: comment
+        - include: type-parameters
+        - include: function-parameters
+        - include: return-type
+        - include: decl-block
+  function-expression:
+    - match: '(?<!\.|\$)\b(?:(async)\s+)?(function\b)(?:\s*(\*))?(?:(?:\s+|(?<=\*))([_$[:alpha:]][_$[:alnum:]]*))?\s*'
+      captures:
+        1: storage.modifier.async.tsx
+        2: storage.type.function.tsx
+        3: keyword.generator.asterisk.tsx
+        4: meta.definition.function.tsx entity.name.function.tsx
+      push:
+        - meta_scope: meta.function.expression.tsx
+        - match: '(?<=\})'
+          pop: true
+        - include: comment
+        - include: type-parameters
+        - include: function-parameters
+        - include: return-type
+        - include: decl-block
+  function-parameters:
+    - match: \(
+      captures:
+        0: punctuation.definition.parameters.begin.tsx
+      push:
+        - meta_scope: meta.parameters.tsx
+        - match: \)
+          captures:
+            0: punctuation.definition.parameters.end.tsx
+          pop: true
+        - include: comment
+        - include: decorator
+        - include: destructuring-parameter
+        - include: parameter-name
+        - include: type-annotation
+        - include: variable-initializer
+        - match: ","
+          scope: punctuation.separator.parameter.tsx
+  identifiers:
+    - include: object-identifiers
+    - match: |-
+        (?x)(?:(\.)\s*)?([_$[:alpha:]][_$[:alnum:]]*)(?=\s*=\s*(
+        (async\s+)|(function\s*[(<])|(function\s+)|
+        ([_$[:alpha:]][_$[:alnum:]]*\s*=>)|
+        ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
+        ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
+        ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>)))
+      captures:
+        1: punctuation.accessor.tsx
+        2: entity.name.function.tsx
+    - match: '(\.)\s*([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])'
+      captures:
+        1: punctuation.accessor.tsx
+        2: variable.other.constant.property.tsx
+    - match: '(\.)\s*([_$[:alpha:]][_$[:alnum:]]*)'
+      captures:
+        1: punctuation.accessor.tsx
+        2: variable.other.property.tsx
+    - match: "([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])"
+      scope: variable.other.constant.tsx
+    - match: "[_$[:alpha:]][_$[:alnum:]]*"
+      scope: variable.other.readwrite.tsx
+  import-declaration:
+    - match: (?<!\.|\$)(?:(\bexport)\s+)?\b(import)(?!(\s*:)|(\$))\b
+      captures:
+        1: keyword.control.export.tsx
+        2: keyword.control.import.tsx
+      push:
+        - meta_scope: meta.import.tsx
+        - match: (?=;|$)
+          pop: true
+        - include: import-export-declaration
+  import-equals-declaration:
+    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(import)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*(=)\s*(require)\s*(\()'
+      captures:
+        1: keyword.control.export.tsx
+        2: keyword.control.import.tsx
+        3: variable.other.readwrite.alias.tsx
+        4: keyword.operator.assignment.tsx
+        5: keyword.control.require.tsx
+        6: meta.brace.round.tsx
+      push:
+        - meta_scope: meta.import-equals.external.tsx
+        - match: \)
+          captures:
+            0: meta.brace.round.tsx
+          pop: true
+        - include: comment
+        - include: string
+    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(import)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*(=)\s*(?!require\b)'
+      captures:
+        1: keyword.control.export.tsx
+        2: keyword.control.import.tsx
+        3: variable.other.readwrite.alias.tsx
+        4: keyword.operator.assignment.tsx
+      push:
+        - meta_scope: meta.import-equals.internal.tsx
+        - match: (?=;|$)
+          pop: true
+        - include: comment
+        - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(\.)'
+          captures:
+            1: entity.name.type.module.tsx
+            2: punctuation.accessor.tsx
+        - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+          scope: variable.other.readwrite.tsx
+  import-export-block:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.tsx
+      push:
+        - meta_scope: meta.block.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.tsx
+          pop: true
+        - include: import-export-clause
+  import-export-clause:
+    - include: comment
+    - match: |-
+        (?x) (?: \b(default)\b | (\*) | ([_$[:alpha:]][_$[:alnum:]]*)) \s+
+        (as) \s+ (?: (\b default \b | \*) | ([_$[:alpha:]][_$[:alnum:]]*))
+      comment: (default|*|name) as alias
+      captures:
+        1: keyword.control.default.tsx
+        2: constant.language.import-export-all.tsx
+        3: variable.other.readwrite.tsx
+        4: keyword.control.as.tsx
+        5: invalid.illegal.tsx
+        6: variable.other.readwrite.alias.tsx
+    - include: punctuation-comma
+    - match: \*
+      scope: constant.language.import-export-all.tsx
+    - match: \b(default)\b
+      scope: keyword.control.default.tsx
+    - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+      scope: variable.other.readwrite.alias.tsx
+  import-export-declaration:
+    - include: comment
+    - include: string
+    - include: import-export-block
+    - match: \bfrom\b
+      scope: keyword.control.from.tsx
+    - include: import-export-clause
+  indexer-declaration:
+    - match: '(?:(?<!\.|\$)\b(readonly)\s*)?(\[)\s*([_$[:alpha:]][_$[:alnum:]]*)\s*(?=:)'
+      captures:
+        1: storage.modifier.tsx
+        2: meta.brace.square.tsx
+        3: variable.parameter.tsx
+      push:
+        - meta_scope: meta.indexer.declaration.tsx
+        - match: '(\])\s*(\?\s*)?|$'
+          captures:
+            1: meta.brace.square.tsx
+            2: keyword.operator.optional.tsx
+          pop: true
+        - include: type-annotation
+  indexer-mapped-type-declaration:
+    - match: '(?:(?<!\.|\$)\b(readonly)\s*)?(\[)\s*([_$[:alpha:]][_$[:alnum:]]*)\s+(in)\s+'
+      captures:
+        1: storage.modifier.tsx
+        2: meta.brace.square.tsx
+        3: entity.name.type.tsx
+        4: keyword.operator.expression.in.tsx
+      push:
+        - meta_scope: meta.indexer.mappedtype.declaration.tsx
+        - match: '(\])\s*(\?\s*)?|$'
+          captures:
+            1: meta.brace.square.tsx
+            2: keyword.operator.optional.tsx
+          pop: true
+        - include: type
+  jsx:
+    - include: jsx-tag-without-attributes
+    - include: jsx-tag-in-expression
+    - include: jsx-tag-invalid
+  jsx-child-tag:
+    - match: |-
+        (?x)
+        (?=(<)\s*
+        ([_$a-zA-Z][-$\w.]*(?<!\.|-))
+        (?=\s+(?!\?)|/?>))
+      push:
+        - match: '(/>)|(?:(</)\s*([_$a-zA-Z][-$\w.]*(?<!\.|-))\s*(>))'
+          captures:
+            0: meta.tag.tsx
+            1: punctuation.definition.tag.end.tsx
+            2: punctuation.definition.tag.begin.tsx
+            3: entity.name.tag.tsx
+            4: punctuation.definition.tag.end.tsx
+          pop: true
+        - include: jsx-tag
+  jsx-children:
+    - include: jsx-tag-without-attributes
+    - include: jsx-child-tag
+    - include: jsx-tag-invalid
+    - include: jsx-evaluated-code
+    - include: jsx-entities
+  jsx-entities:
+    - match: "(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)"
+      scope: constant.character.entity.tsx
+      captures:
+        1: punctuation.definition.entity.tsx
+        3: punctuation.definition.entity.tsx
+    - match: "&"
+      scope: invalid.illegal.bad-ampersand.tsx
+  jsx-evaluated-code:
+    - match: '\{'
+      captures:
+        0: punctuation.section.embedded.begin.tsx
+      push:
+        - meta_scope: meta.embedded.expression.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.section.embedded.end.tsx
+          pop: true
+        - include: expression
+  jsx-string-double-quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.tsx
+      push:
+        - meta_scope: string.quoted.double.tsx
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.tsx
+          pop: true
+        - include: jsx-entities
+  jsx-string-single-quoted:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.tsx
+      push:
+        - meta_scope: string.quoted.single.tsx
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.tsx
+          pop: true
+        - include: jsx-entities
+  jsx-tag:
+    - match: |-
+        (?x)
+        (?=(<)\s*
+        ([_$a-zA-Z][-$\w.]*(?<!\.|-))
+        (?=\s+(?!\?)|/?>))
+      push:
+        - meta_scope: meta.tag.tsx
+        - match: '(?=(/>)|(?:(</)\s*([_$a-zA-Z][-$\w.]*(?<!\.|-))\s*(>)))'
+          pop: true
+        - match: |-
+            (?x)
+            (<)\s*
+            ([_$a-zA-Z][-$\w.]*(?<!\.|-))
+            (?=\s+(?!\?)|/?>)
+          captures:
+            1: punctuation.definition.tag.begin.tsx
+            2: entity.name.tag.tsx
+          push:
+            - match: "(?=[/]?>)"
+              pop: true
+            - include: comment
+            - include: jsx-tag-attributes
+            - include: jsx-tag-attributes-illegal
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.tsx
+          push:
+            - meta_content_scope: meta.jsx.children.tsx
+            - match: (?=</)
+              pop: true
+            - include: jsx-children
+  jsx-tag-attribute-assignment:
+    - match: '=(?=\s*(?:''|"|{|/\*|//|\n))'
+      scope: keyword.operator.assignment.tsx
+  jsx-tag-attribute-name:
+    - match: |-
+        (?x)
+        \s*
+        ([_$a-zA-Z][-$\w]*)
+        (?=\s|=|/?>|/\*|//)
+      captures:
+        1: entity.other.attribute-name.tsx
+  jsx-tag-attributes:
+    - include: jsx-tag-attribute-name
+    - include: jsx-tag-attribute-assignment
+    - include: jsx-string-double-quoted
+    - include: jsx-string-single-quoted
+    - include: jsx-evaluated-code
+  jsx-tag-attributes-illegal:
+    - match: \S+
+      scope: invalid.illegal.attribute.tsx
+  jsx-tag-in-expression:
+    - match: |-
+        (?x)
+        (?<=[({\[,?=>:*]|&&|\|\||\?|\Wreturn|^return|\Wdefault|^)\s*
+        (?!(<)\s*([_$a-zA-Z][-$\w.]*(?<!\.|-))\s*(>)) #look ahead is not start of tag without attributes
+        (?!<\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s+[^=>])|,)) # look ahead is not type parameter of arrow
+        (?=(<)\s*
+        ([_$a-zA-Z][-$\w.]*(?<!\.|-))
+        (?=\s+(?!\?)|/?>))
+      push:
+        - match: '(/>)|(?:(</)\s*([_$a-zA-Z][-$\w.]*(?<!\.|-))\s*(>))'
+          captures:
+            0: meta.tag.tsx
+            1: punctuation.definition.tag.end.tsx
+            2: punctuation.definition.tag.begin.tsx
+            3: entity.name.tag.tsx
+            4: punctuation.definition.tag.end.tsx
+          pop: true
+        - include: jsx-tag
+  jsx-tag-invalid:
+    - match: <\s*>
+      scope: invalid.illegal.tag.incomplete.tsx
+  jsx-tag-without-attributes:
+    - match: '(<)\s*([_$a-zA-Z][-$\w.]*(?<!\.|-))\s*(>)'
+      captures:
+        1: punctuation.definition.tag.begin.tsx
+        2: entity.name.tag.tsx
+        3: punctuation.definition.tag.end.tsx
+      push:
+        - meta_scope: meta.tag.without-attributes.tsx
+        - meta_content_scope: meta.jsx.children.tsx
+        - match: '(</)\s*([_$a-zA-Z][-$\w.]*(?<!\.|-))\s*(>)'
+          captures:
+            1: punctuation.definition.tag.begin.tsx
+            2: entity.name.tag.tsx
+            3: punctuation.definition.tag.end.tsx
+          pop: true
+        - include: jsx-children
+  literal:
+    - include: numeric-literal
+    - include: boolean-literal
+    - include: null-literal
+    - include: undefined-literal
+    - include: numericConstant-literal
+    - include: array-literal
+    - include: this-literal
+    - include: super-literal
+  method-declaration:
+    - match: '(?<!\.|\$)(?:\b(public|private|protected)\s+)?(?:\b(abstract)\s+)?(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(?:\b(?:(new)|(constructor))\b(?!\$|:))|(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))?\s*[\(\<]))'
+      captures:
+        1: storage.modifier.tsx
+        2: storage.modifier.tsx
+        3: storage.modifier.async.tsx
+        4: storage.type.property.tsx
+        5: keyword.operator.new.tsx
+        6: storage.type.tsx
+        7: keyword.generator.asterisk.tsx
+      push:
+        - meta_scope: meta.method.declaration.tsx
+        - match: '(?=\}|;|,|$)|(?<=\})'
+          pop: true
+        - include: method-declaration-name
+        - include: comment
+        - include: type-parameters
+        - include: function-parameters
+        - include: return-type
+        - include: decl-block
+  method-declaration-name:
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??)\s*[\(\<])'
+      push:
+        - match: (?=\(|\<)
+          pop: true
+        - include: string
+        - include: array-literal
+        - match: "[_$[:alpha:]][_$[:alnum:]]*"
+          scope: meta.definition.method.tsx entity.name.function.tsx
+        - match: \?
+          scope: keyword.operator.optional.tsx
+  namespace-declaration:
+    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(namespace|module)\s+(?=[_$[:alpha:]"''`])'
+      captures:
+        1: keyword.control.export.tsx
+        2: storage.type.namespace.tsx
+      push:
+        - meta_scope: meta.namespace.declaration.tsx
+        - match: '(?=$|\{)'
+          pop: true
+        - include: comment
+        - include: string
+        - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+          scope: entity.name.type.module.tsx
+        - include: punctuation-accessor
+  new-expr:
+    - match: (?<!\.|\$)\b(new)\b(?!\$)
+      captures:
+        1: keyword.operator.new.tsx
+      push:
+        - meta_scope: new.expr.tsx
+        - match: '(?<=\))|(?=[;),}]|$|((?<!\.|\$)\bnew\b(?!\$)))'
+          pop: true
+        - include: paren-expression
+        - include: class-or-interface-declaration
+        - include: type
+  null-literal:
+    - match: (?<!\.|\$)\bnull\b(?!\$)
+      scope: constant.language.null.tsx
+  numeric-literal:
+    - match: '\b(?<!\$)0(x|X)[0-9a-fA-F]+\b(?!\$)'
+      scope: constant.numeric.hex.tsx
+    - match: '\b(?<!\$)0(b|B)[01]+\b(?!\$)'
+      scope: constant.numeric.binary.tsx
+    - match: '\b(?<!\$)0(o|O)?[0-7]+\b(?!\$)'
+      scope: constant.numeric.octal.tsx
+    - match: |-
+        (?x)
+        (?<!\$)(?:
+          (?:\b[0-9]+(\.)[0-9]+[eE][+-]?[0-9]+\b)| # 1.1E+3
+          (?:\b[0-9]+(\.)[eE][+-]?[0-9]+\b)|       # 1.E+3
+          (?:\B(\.)[0-9]+[eE][+-]?[0-9]+\b)|       # .1E+3
+          (?:\b[0-9]+[eE][+-]?[0-9]+\b)|            # 1E+3
+          (?:\b[0-9]+(\.)[0-9]+\b)|                # 1.1
+          (?:\b[0-9]+(\.)\B)|                      # 1.
+          (?:\B(\.)[0-9]+\b)|                      # .1
+          (?:\b[0-9]+\b(?!\.))                     # 1
+        )(?!\$)
+      captures:
+        0: constant.numeric.decimal.tsx
+        1: meta.delimiter.decimal.period.tsx
+        2: meta.delimiter.decimal.period.tsx
+        3: meta.delimiter.decimal.period.tsx
+        4: meta.delimiter.decimal.period.tsx
+        5: meta.delimiter.decimal.period.tsx
+        6: meta.delimiter.decimal.period.tsx
+  numericConstant-literal:
+    - match: (?<!\.|\$)\bNaN\b(?!\$)
+      scope: constant.language.nan.tsx
+    - match: (?<!\.|\$)\bInfinity\b(?!\$)
+      scope: constant.language.infinity.tsx
+  object-binding-element:
+    - include: comment
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
+      push:
+        - match: '(?=,|\})'
+          pop: true
+        - include: object-binding-element-propertyName
+        - include: binding-element
+    - include: object-binding-pattern
+    - include: destructuring-variable-rest
+    - include: variable-initializer
+    - include: punctuation-comma
+  object-binding-element-propertyName:
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
+      push:
+        - match: (:)
+          captures:
+            0: punctuation.destructuring.tsx
+          pop: true
+        - include: string
+        - include: array-literal
+        - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+          scope: variable.object.property.tsx
+  object-binding-pattern:
+    - match: '(?:(\.\.\.)\s*)?(\{)'
+      captures:
+        1: keyword.operator.rest.tsx
+        2: punctuation.definition.binding-pattern.object.tsx
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.binding-pattern.object.tsx
+          pop: true
+        - include: object-binding-element
+  object-identifiers:
+    - match: '([_$[:alpha:]][_$[:alnum:]]*)(?=\s*\.\s*prototype\b(?!\$))'
+      scope: support.class.tsx
+    - match: |-
+        (?x)(\.)\s*(?:
+          ([[:upper:]][_$[:digit:][:upper:]]*) |
+          ([_$[:alpha:]][_$[:alnum:]]*)
+        )(?=\s*\.\s*[_$[:alpha:]][_$[:alnum:]]*)
+      captures:
+        1: punctuation.accessor.tsx
+        2: variable.other.constant.object.property.tsx
+        3: variable.other.object.property.tsx
+    - match: |-
+        (?x)(?:
+          ([[:upper:]][_$[:digit:][:upper:]]*) |
+          ([_$[:alpha:]][_$[:alnum:]]*)
+        )(?=\s*\.\s*[_$[:alpha:]][_$[:alnum:]]*)
+      captures:
+        1: variable.other.constant.object.tsx
+        2: variable.other.object.tsx
+  object-literal:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.tsx
+      push:
+        - meta_scope: meta.objectliteral.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.tsx
+          pop: true
+        - include: object-member
+  object-literal-method-declaration:
+    - match: '(?<!\.|\$)(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))?\s*[\(\<])'
+      captures:
+        1: storage.modifier.async.tsx
+        2: storage.type.property.tsx
+        3: keyword.generator.asterisk.tsx
+      push:
+        - meta_scope: meta.method.declaration.tsx
+        - match: '(?=\}|;|,)|(?<=\})'
+          pop: true
+        - include: method-declaration-name
+        - include: comment
+        - include: type-parameters
+        - include: function-parameters
+        - include: return-type
+        - include: object-literal-method-overload-declaration
+        - include: decl-block
+  object-literal-method-overload-declaration:
+    - match: '(?<!\.|\$)(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))?\s*[\(\<])'
+      captures:
+        1: storage.modifier.async.tsx
+        2: storage.type.property.tsx
+        3: keyword.generator.asterisk.tsx
+      push:
+        - match: (?=\(|\<)
+          pop: true
+        - include: method-declaration-name
+  object-member:
+    - include: comment
+    - include: object-literal-method-declaration
+    - match: '(?=(?:(?:\''[^'']*\'')|(?:\"[^"]*\")|(?:\[([^\[\]]|\[[^\[\]]*\])+\]))\s*:)'
+      push:
+        - meta_scope: meta.object.member.tsx
+        - match: '(?=,|\})'
+          pop: true
+        - match: '(?=(?:(?:\''[^'']*\'')|(?:\"[^"]*\")|(?:\[([^\[\]]|\[[^\[\]]*\])+\]))\s*:)'
+          push:
+            - meta_scope: meta.object-literal.key.tsx
+            - match: ":"
+              captures:
+                0: punctuation.separator.key-value.tsx
+              pop: true
+            - include: string
+            - include: array-literal
+        - include: expression
+    - match: |-
+        (?x)(?:([_$[:alpha:]][_$[:alnum:]]*)\s*(:)(?=\s*(
+        (async\s+)|(function\s*[(<])|(function\s+)|
+        ([_$[:alpha:]][_$[:alnum:]]*\s*=>)|
+        ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
+        ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
+        ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))))
+      captures:
+        0: meta.object-literal.key.tsx
+        1: entity.name.function.tsx
+        2: punctuation.separator.key-value.tsx
+      push:
+        - meta_scope: meta.object.member.tsx
+        - match: '(?=,|\})'
+          pop: true
+        - include: expression
+    - match: '(?:[_$[:alpha:]][_$[:alnum:]]*)\s*(:)'
+      captures:
+        0: meta.object-literal.key.tsx
+        1: punctuation.separator.key-value.tsx
+      push:
+        - meta_scope: meta.object.member.tsx
+        - match: '(?=,|\})'
+          pop: true
+        - include: expression
+    - match: \.\.\.
+      captures:
+        0: keyword.operator.spread.tsx
+      push:
+        - meta_scope: meta.object.member.tsx
+        - match: '(?=,|\})'
+          pop: true
+        - include: expression
+    - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(?=,|\}|$)'
+      scope: meta.object.member.tsx
+      captures:
+        1: variable.other.readwrite.tsx
+    - include: punctuation-comma
+  parameter-array-binding-pattern:
+    - match: '(?:(\.\.\.)\s*)?(\[)'
+      captures:
+        1: keyword.operator.rest.tsx
+        2: punctuation.definition.binding-pattern.array.tsx
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.definition.binding-pattern.array.tsx
+          pop: true
+        - include: parameter-binding-element
+        - include: punctuation-comma
+  parameter-binding-element:
+    - include: comment
+    - include: parameter-object-binding-pattern
+    - include: parameter-array-binding-pattern
+    - include: destructuring-parameter-rest
+    - include: variable-initializer
+  parameter-name:
+    - match: \s*\b(public|protected|private|readonly)(?=\s+(public|protected|private|readonly)\s+)
+      captures:
+        1: storage.modifier.tsx
+    - match: |-
+        (?x)(?:\s*\b(public|private|protected|readonly)\s+)?(\.\.\.)?\s*(?<!=|:)([_$[:alpha:]][_$[:alnum:]]*)\s*(\??)(?=\s*
+          (=\s*(
+            (async\s+) |
+            (function\s*[(<]) |
+            (function\s+) |
+            ([_$[:alpha:]][_$[:alnum:]]*\s*=>) |
+            ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
+            ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
+            ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))
+          ) |
+          (:\s*(
+            (<) |
+            ([(]\s*(
+              ([)]) |
+              (\.\.\.) |
+              ([_$[:alnum:]]+\s*(
+                ([:,?=])|
+                ([)]\s*=>)
+              ))
+            )))
+          )
+        )
+      captures:
+        1: storage.modifier.tsx
+        2: keyword.operator.rest.tsx
+        3: entity.name.function.tsx
+        4: keyword.operator.optional.tsx
+    - match: '(?:\s*\b(public|private|protected|readonly)\s+)?(\.\.\.)?\s*(?<!=|:)([_$[:alpha:]][_$[:alnum:]]*)\s*(\??)'
+      captures:
+        1: storage.modifier.tsx
+        2: keyword.operator.rest.tsx
+        3: variable.parameter.tsx
+        4: keyword.operator.optional.tsx
+  parameter-object-binding-element:
+    - include: comment
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
+      push:
+        - match: '(?=,|\})'
+          pop: true
+        - include: object-binding-element-propertyName
+        - include: parameter-binding-element
+    - include: parameter-object-binding-pattern
+    - include: destructuring-parameter-rest
+    - include: variable-initializer
+    - include: punctuation-comma
+  parameter-object-binding-pattern:
+    - match: '(?:(\.\.\.)\s*)?(\{)'
+      captures:
+        1: keyword.operator.rest.tsx
+        2: punctuation.definition.binding-pattern.object.tsx
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.binding-pattern.object.tsx
+          pop: true
+        - include: parameter-object-binding-element
+  paren-expression:
+    - match: \(
+      captures:
+        0: meta.brace.round.tsx
+      push:
+        - match: \)
+          captures:
+            0: meta.brace.round.tsx
+          pop: true
+        - include: expression
+        - include: punctuation-comma
+  property-accessor:
+    - match: (?<!\.|\$)\b(get|set)\b(?!\$)
+      scope: storage.type.property.tsx
+  punctuation-accessor:
+    - match: \.
+      scope: punctuation.accessor.tsx
+  punctuation-comma:
+    - match: ","
+      scope: punctuation.separator.comma.tsx
+  punctuation-semicolon:
+    - match: ;
+      scope: punctuation.terminator.statement.tsx
+  qstring-double:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.tsx
+      push:
+        - meta_scope: string.quoted.double.tsx
+        - match: '(")|((?:[^\\\n])$)'
+          captures:
+            1: punctuation.definition.string.end.tsx
+            2: invalid.illegal.newline.tsx
+          pop: true
+        - include: string-character-escape
+  qstring-single:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.tsx
+      push:
+        - meta_scope: string.quoted.single.tsx
+        - match: '(\'')|((?:[^\\\n])$)'
+          captures:
+            1: punctuation.definition.string.end.tsx
+            2: invalid.illegal.newline.tsx
+          pop: true
+        - include: string-character-escape
+  regex:
+    - match: '(?<=[=(:,\[?+!]|return|case|=>|&&|\|\||\*\/)\s*(/)(?![/*])(?=(?:[^/\\\[]|\\.|\[([^\]\\]|\\.)+\])+/(?![/*])[gimy]*(?!\s*[a-zA-Z0-9_$]))'
+      captures:
+        1: punctuation.definition.string.begin.tsx
+      push:
+        - meta_scope: string.regexp.tsx
+        - match: "(/)([gimuy]*)"
+          captures:
+            1: punctuation.definition.string.end.tsx
+            2: keyword.other.tsx
+          pop: true
+        - include: regexp
+    - match: '(?<![_$[:alnum:]])/(?![/*])(?=(?:[^/\\\[]|\\.|\[([^\]\\]|\\.)+\])+/(?![/*])[gimy]*(?!\s*[a-zA-Z0-9_$]))'
+      captures:
+        0: punctuation.definition.string.begin.tsx
+      push:
+        - meta_scope: string.regexp.tsx
+        - match: "(/)([gimuy]*)"
+          captures:
+            1: punctuation.definition.string.end.tsx
+            2: keyword.other.tsx
+          pop: true
+        - include: regexp
+  regex-character-class:
+    - match: '\\[wWsSdDtrnvf]|\.'
+      scope: constant.other.character-class.regexp
+    - match: '\\([0-7]{3}|x\h\h|u\h\h\h\h)'
+      scope: constant.character.numeric.regexp
+    - match: '\\c[A-Z]'
+      scope: constant.character.control.regexp
+    - match: \\.
+      scope: constant.character.escape.backslash.regexp
+  regexp:
+    - match: '\\[bB]|\^|\$'
+      scope: keyword.control.anchor.regexp
+    - match: '\\[1-9]\d*'
+      scope: keyword.other.back-reference.regexp
+    - match: '[?+*]|\{(\d+,\d+|\d+,|,\d+|\d+)\}\??'
+      scope: keyword.operator.quantifier.regexp
+    - match: \|
+      scope: keyword.operator.or.regexp
+    - match: (\()((\?=)|(\?!))
+      captures:
+        1: punctuation.definition.group.regexp
+        2: punctuation.definition.group.assertion.regexp
+        3: meta.assertion.look-ahead.regexp
+        4: meta.assertion.negative-look-ahead.regexp
+      push:
+        - meta_scope: meta.group.assertion.regexp
+        - match: (\))
+          captures:
+            1: punctuation.definition.group.regexp
+          pop: true
+        - include: regexp
+    - match: \((\?:)?
+      captures:
+        0: punctuation.definition.group.regexp
+        1: punctuation.definition.group.capture.regexp
+      push:
+        - meta_scope: meta.group.regexp
+        - match: \)
+          captures:
+            0: punctuation.definition.group.regexp
+          pop: true
+        - include: regexp
+    - match: '(\[)(\^)?'
+      captures:
+        1: punctuation.definition.character-class.regexp
+        2: keyword.operator.negation.regexp
+      push:
+        - meta_scope: constant.other.character-class.set.regexp
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.character-class.regexp
+          pop: true
+        - match: '(?:.|(\\(?:[0-7]{3}|x\h\h|u\h\h\h\h))|(\\c[A-Z])|(\\.))\-(?:[^\]\\]|(\\(?:[0-7]{3}|x\h\h|u\h\h\h\h))|(\\c[A-Z])|(\\.))'
+          scope: constant.other.character-class.range.regexp
+          captures:
+            1: constant.character.numeric.regexp
+            2: constant.character.control.regexp
+            3: constant.character.escape.backslash.regexp
+            4: constant.character.numeric.regexp
+            5: constant.character.control.regexp
+            6: constant.character.escape.backslash.regexp
+        - include: regex-character-class
+    - include: regex-character-class
+  return-type:
+    - match: (?<=\))\s*(:)
+      captures:
+        1: keyword.operator.type.annotation.tsx
+      push:
+        - meta_scope: meta.return.type.tsx
+        - match: "(?<!:)((?=$)|(?=[{};,]|//))"
+          pop: true
+        - include: comment
+        - match: '(?<=:)\s*(\{)'
+          captures:
+            1: punctuation.definition.block.tsx
+          push:
+            - meta_scope: meta.object.type.tsx
+            - match: '\}'
+              captures:
+                0: punctuation.definition.block.tsx
+              pop: true
+            - include: type-object-members
+        - include: type-predicate-operator
+        - include: type
+  statements:
+    - include: string
+    - include: template
+    - include: comment
+    - include: declaration
+    - include: switch-statement
+    - include: for-loop
+    - include: after-operator-block
+    - include: decl-block
+    - include: control-statement
+    - include: expression
+    - include: punctuation-semicolon
+  string:
+    - include: qstring-single
+    - include: qstring-double
+  string-character-escape:
+    - match: '\\(x\h{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)'
+      scope: constant.character.escape.tsx
+  super-literal:
+    - match: (?<!\.|\$)\bsuper\b(?!\$)
+      scope: variable.language.super.tsx
+  support-objects:
+    - match: (?<!\.|\$)\b(arguments)\b(?!\$)
+      scope: variable.language.arguments.tsx
+    - match: |-
+        (?x)(?<!\.|\$)\b(Array|ArrayBuffer|Atomics|Boolean|DataView|Date|Float32Array|Float64Array|Function|Generator
+        |GeneratorFunction|Int8Array|Int16Array|Int32Array|Intl|Map|Number|Object|Promise|Proxy
+        |Reflect|RegExp|Set|SharedArrayBuffer|SIMD|String|Symbol|TypedArray
+        |Uint8Array|Uint16Array|Uint32Array|Uint8ClampedArray|WeakMap|WeakSet)\b(?!\$)
+      scope: support.class.builtin.tsx
+    - match: (?<!\.|\$)\b((Eval|Internal|Range|Reference|Syntax|Type|URI)?Error)\b(?!\$)
+      scope: support.class.error.tsx
+    - match: |-
+        (?x)(?<!\.|\$)\b(clear(Interval|Timeout)|decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|escape|eval|
+        isFinite|isNaN|parseFloat|parseInt|require|set(Interval|Timeout)|super|unescape|uneval)(?=\s*\()
+      scope: support.function.tsx
+    - match: |-
+        (?x)(?<!\.|\$)\b(Math)(?:\s*(\.)\s*(?:
+        (abs|acos|acosh|asin|asinh|atan|atan2|atanh|cbrt|ceil|clz32|cos|cosh|exp|
+        expm1|floor|fround|hypot|imul|log|log10|log1p|log2|max|min|pow|random|
+        round|sign|sin|sinh|sqrt|tan|tanh|trunc)
+        |
+        (E|LN10|LN2|LOG10E|LOG2E|PI|SQRT1_2|SQRT2)))?\b(?!\$)
+      captures:
+        1: support.constant.math.tsx
+        2: punctuation.accessor.tsx
+        3: support.function.math.tsx
+        4: support.constant.property.math.tsx
+    - match: |-
+        (?x)(?<!\.|\$)\b(console)(?:\s*(\.)\s*(
+        assert|clear|count|debug|dir|error|group|groupCollapsed|groupEnd|info|log
+        |profile|profileEnd|table|time|timeEnd|timeStamp|trace|warn))?\b(?!\$)
+      captures:
+        1: support.class.console.tsx
+        2: punctuation.accessor.tsx
+        3: support.function.console.tsx
+    - match: (?<!\.|\$)\b(JSON)(?:\s*(\.)\s*(parse|stringify))?\b(?!\$)
+      captures:
+        1: support.constant.json.tsx
+        2: punctuation.accessor.tsx
+        3: support.function.json.tsx
+    - match: |-
+        (?x) (\.) \s* (?:
+        (constructor|length|prototype|__proto__)
+        |
+        (EPSILON|MAX_SAFE_INTEGER|MAX_VALUE|MIN_SAFE_INTEGER|MIN_VALUE|NEGATIVE_INFINITY|POSITIVE_INFINITY))\b(?!\$)
+      captures:
+        1: punctuation.accessor.tsx
+        2: support.variable.property.tsx
+        3: support.constant.tsx
+    - match: |-
+        (?x) (?<!\.|\$) \b (?:
+        (document|event|navigator|performance|screen|window)
+        |
+        (AnalyserNode|ArrayBufferView|Attr|AudioBuffer|AudioBufferSourceNode|AudioContext|AudioDestinationNode|AudioListener
+        |AudioNode|AudioParam|BatteryManager|BeforeUnloadEvent|BiquadFilterNode|Blob|BufferSource|ByteString|CSS|CSSConditionRule
+        |CSSCounterStyleRule|CSSGroupingRule|CSSMatrix|CSSMediaRule|CSSPageRule|CSSPrimitiveValue|CSSRule|CSSRuleList|CSSStyleDeclaration
+        |CSSStyleRule|CSSStyleSheet|CSSSupportsRule|CSSValue|CSSValueList|CanvasGradient|CanvasImageSource|CanvasPattern
+        |CanvasRenderingContext2D|ChannelMergerNode|ChannelSplitterNode|CharacterData|ChromeWorker|CloseEvent|Comment|CompositionEvent
+        |Console|ConvolverNode|Coordinates|Credential|CredentialsContainer|Crypto|CryptoKey|CustomEvent|DOMError|DOMException
+        |DOMHighResTimeStamp|DOMImplementation|DOMString|DOMStringList|DOMStringMap|DOMTimeStamp|DOMTokenList|DataTransfer
+        |DataTransferItem|DataTransferItemList|DedicatedWorkerGlobalScope|DelayNode|DeviceProximityEvent|DirectoryEntry
+        |DirectoryEntrySync|DirectoryReader|DirectoryReaderSync|Document|DocumentFragment|DocumentTouch|DocumentType|DragEvent
+        |DynamicsCompressorNode|Element|Entry|EntrySync|ErrorEvent|Event|EventListener|EventSource|EventTarget|FederatedCredential
+        |FetchEvent|File|FileEntry|FileEntrySync|FileException|FileList|FileReader|FileReaderSync|FileSystem|FileSystemSync
+        |FontFace|FormData|GainNode|Gamepad|GamepadButton|GamepadEvent|Geolocation|GlobalEventHandlers|HTMLAnchorElement
+        |HTMLAreaElement|HTMLAudioElement|HTMLBRElement|HTMLBaseElement|HTMLBodyElement|HTMLButtonElement|HTMLCanvasElement
+        |HTMLCollection|HTMLContentElement|HTMLDListElement|HTMLDataElement|HTMLDataListElement|HTMLDialogElement|HTMLDivElement
+        |HTMLDocument|HTMLElement|HTMLEmbedElement|HTMLFieldSetElement|HTMLFontElement|HTMLFormControlsCollection|HTMLFormElement
+        |HTMLHRElement|HTMLHeadElement|HTMLHeadingElement|HTMLHtmlElement|HTMLIFrameElement|HTMLImageElement|HTMLInputElement
+        |HTMLKeygenElement|HTMLLIElement|HTMLLabelElement|HTMLLegendElement|HTMLLinkElement|HTMLMapElement|HTMLMediaElement
+        |HTMLMetaElement|HTMLMeterElement|HTMLModElement|HTMLOListElement|HTMLObjectElement|HTMLOptGroupElement|HTMLOptionElement
+        |HTMLOptionsCollection|HTMLOutputElement|HTMLParagraphElement|HTMLParamElement|HTMLPreElement|HTMLProgressElement
+        |HTMLQuoteElement|HTMLScriptElement|HTMLSelectElement|HTMLShadowElement|HTMLSourceElement|HTMLSpanElement|HTMLStyleElement
+        |HTMLTableCaptionElement|HTMLTableCellElement|HTMLTableColElement|HTMLTableDataCellElement|HTMLTableElement|HTMLTableHeaderCellElement
+        |HTMLTableRowElement|HTMLTableSectionElement|HTMLTextAreaElement|HTMLTimeElement|HTMLTitleElement|HTMLTrackElement
+        |HTMLUListElement|HTMLUnknownElement|HTMLVideoElement|HashChangeEvent|History|IDBCursor|IDBCursorWithValue|IDBDatabase
+        |IDBEnvironment|IDBFactory|IDBIndex|IDBKeyRange|IDBMutableFile|IDBObjectStore|IDBOpenDBRequest|IDBRequest|IDBTransaction
+        |IDBVersionChangeEvent|IIRFilterNode|IdentityManager|ImageBitmap|ImageBitmapFactories|ImageData|Index|InputDeviceCapabilities
+        |InputEvent|InstallEvent|InstallTrigger|KeyboardEvent|LinkStyle|LocalFileSystem|LocalFileSystemSync|Location|MIDIAccess
+        |MIDIConnectionEvent|MIDIInput|MIDIInputMap|MIDIOutputMap|MediaElementAudioSourceNode|MediaError|MediaKeyMessageEvent
+        |MediaKeySession|MediaKeyStatusMap|MediaKeySystemAccess|MediaKeySystemConfiguration|MediaKeys|MediaRecorder|MediaStream
+        |MediaStreamAudioDestinationNode|MediaStreamAudioSourceNode|MessageChannel|MessageEvent|MessagePort|MouseEvent
+        |MutationObserver|MutationRecord|NamedNodeMap|Navigator|NavigatorConcurrentHardware|NavigatorGeolocation|NavigatorID
+        |NavigatorLanguage|NavigatorOnLine|Node|NodeFilter|NodeIterator|NodeList|NonDocumentTypeChildNode|Notification
+        |OfflineAudioCompletionEvent|OfflineAudioContext|OscillatorNode|PageTransitionEvent|PannerNode|ParentNode|PasswordCredential
+        |Path2D|PaymentAddress|PaymentRequest|PaymentResponse|Performance|PerformanceEntry|PerformanceFrameTiming|PerformanceMark
+        |PerformanceMeasure|PerformanceNavigation|PerformanceNavigationTiming|PerformanceObserver|PerformanceObserverEntryList
+        |PerformanceResourceTiming|PerformanceTiming|PeriodicSyncEvent|PeriodicWave|Plugin|Point|PointerEvent|PopStateEvent
+        |PortCollection|Position|PositionError|PositionOptions|PresentationConnectionClosedEvent|PresentationConnectionList
+        |PresentationReceiver|ProcessingInstruction|ProgressEvent|PromiseRejectionEvent|PushEvent|PushRegistrationManager
+        |RTCCertificate|RTCConfiguration|RTCPeerConnection|RTCSessionDescriptionCallback|RTCStatsReport|RadioNodeList|RandomSource
+        |Range|ReadableByteStream|RenderingContext|SVGAElement|SVGAngle|SVGAnimateColorElement|SVGAnimateElement|SVGAnimateMotionElement
+        |SVGAnimateTransformElement|SVGAnimatedAngle|SVGAnimatedBoolean|SVGAnimatedEnumeration|SVGAnimatedInteger|SVGAnimatedLength
+        |SVGAnimatedLengthList|SVGAnimatedNumber|SVGAnimatedNumberList|SVGAnimatedPoints|SVGAnimatedPreserveAspectRatio
+        |SVGAnimatedRect|SVGAnimatedString|SVGAnimatedTransformList|SVGAnimationElement|SVGCircleElement|SVGClipPathElement
+        |SVGCursorElement|SVGDefsElement|SVGDescElement|SVGElement|SVGEllipseElement|SVGEvent|SVGFilterElement|SVGFontElement
+        |SVGFontFaceElement|SVGFontFaceFormatElement|SVGFontFaceNameElement|SVGFontFaceSrcElement|SVGFontFaceUriElement
+        |SVGForeignObjectElement|SVGGElement|SVGGlyphElement|SVGGradientElement|SVGHKernElement|SVGImageElement|SVGLength
+        |SVGLengthList|SVGLineElement|SVGLinearGradientElement|SVGMPathElement|SVGMaskElement|SVGMatrix|SVGMissingGlyphElement
+        |SVGNumber|SVGNumberList|SVGPathElement|SVGPatternElement|SVGPoint|SVGPolygonElement|SVGPolylineElement|SVGPreserveAspectRatio
+        |SVGRadialGradientElement|SVGRect|SVGRectElement|SVGSVGElement|SVGScriptElement|SVGSetElement|SVGStopElement|SVGStringList
+        |SVGStylable|SVGStyleElement|SVGSwitchElement|SVGSymbolElement|SVGTRefElement|SVGTSpanElement|SVGTests|SVGTextElement
+        |SVGTextPositioningElement|SVGTitleElement|SVGTransform|SVGTransformList|SVGTransformable|SVGUseElement|SVGVKernElement
+        |SVGViewElement|ServiceWorker|ServiceWorkerContainer|ServiceWorkerGlobalScope|ServiceWorkerRegistration|ServiceWorkerState
+        |ShadowRoot|SharedWorker|SharedWorkerGlobalScope|SourceBufferList|StereoPannerNode|Storage|StorageEvent|StyleSheet
+        |StyleSheetList|SubtleCrypto|SyncEvent|Text|TextMetrics|TimeEvent|TimeRanges|Touch|TouchEvent|TouchList|Transferable
+        |TreeWalker|UIEvent|USVString|VRDisplayCapabilities|ValidityState|WaveShaperNode|WebGL|WebGLActiveInfo|WebGLBuffer
+        |WebGLContextEvent|WebGLFramebuffer|WebGLProgram|WebGLRenderbuffer|WebGLRenderingContext|WebGLShader|WebGLShaderPrecisionFormat
+        |WebGLTexture|WebGLTimerQueryEXT|WebGLTransformFeedback|WebGLUniformLocation|WebGLVertexArrayObject|WebGLVertexArrayObjectOES
+        |WebSocket|WebSockets|WebVTT|WheelEvent|Window|WindowBase64|WindowEventHandlers|WindowTimers|Worker|WorkerGlobalScope
+        |WorkerLocation|WorkerNavigator|XMLHttpRequest|XMLHttpRequestEventTarget|XMLSerializer|XPathExpression|XPathResult
+        |XSLTProcessor))\b(?!\$)
+      captures:
+        1: support.variable.dom.tsx
+        2: support.class.dom.tsx
+    - match: |-
+        (?x) (\.) \s* (?:
+        (ATTRIBUTE_NODE|CDATA_SECTION_NODE|COMMENT_NODE|DOCUMENT_FRAGMENT_NODE|DOCUMENT_NODE|DOCUMENT_TYPE_NODE
+        |DOMSTRING_SIZE_ERR|ELEMENT_NODE|ENTITY_NODE|ENTITY_REFERENCE_NODE|HIERARCHY_REQUEST_ERR|INDEX_SIZE_ERR
+        |INUSE_ATTRIBUTE_ERR|INVALID_CHARACTER_ERR|NO_DATA_ALLOWED_ERR|NO_MODIFICATION_ALLOWED_ERR|NOT_FOUND_ERR
+        |NOT_SUPPORTED_ERR|NOTATION_NODE|PROCESSING_INSTRUCTION_NODE|TEXT_NODE|WRONG_DOCUMENT_ERR)
+        |
+        (_content|[xyz]|abbr|above|accept|acceptCharset|accessKey|action|align|[av]Link(?:color)?|all|alt|anchors|appCodeName
+        |appCore|applets|appMinorVersion|appName|appVersion|archive|areas|arguments|attributes|availHeight|availLeft|availTop
+        |availWidth|axis|background|backgroundColor|backgroundImage|below|bgColor|body|border|borderBottomWidth|borderColor
+        |borderLeftWidth|borderRightWidth|borderStyle|borderTopWidth|borderWidth|bottom|bufferDepth|callee|caller|caption
+        |cellPadding|cells|cellSpacing|ch|characterSet|charset|checked|childNodes|chOff|cite|classes|className|clear
+        |clientInformation|clip|clipBoardData|closed|code|codeBase|codeType|color|colorDepth|cols|colSpan|compact|complete
+        |components|content|controllers|cookie|cookieEnabled|cords|cpuClass|crypto|current|data|dateTime|declare|defaultCharset
+        |defaultChecked|defaultSelected|defaultStatus|defaultValue|defaultView|defer|description|dialogArguments|dialogHeight
+        |dialogLeft|dialogTop|dialogWidth|dir|directories|disabled|display|docmain|doctype|documentElement|elements|embeds
+        |enabledPlugin|encoding|enctype|entities|event|expando|external|face|fgColor|filename|firstChild|fontFamily|fontSize
+        |fontWeight|form|formName|forms|frame|frameBorder|frameElement|frames|hasFocus|hash|headers|height|history|host
+        |hostname|href|hreflang|hspace|htmlFor|httpEquiv|id|ids|ignoreCase|images|implementation|index|innerHeight|innerWidth
+        |input|isMap|label|lang|language|lastChild|lastIndex|lastMatch|lastModified|lastParen|layer[sXY]|left|leftContext
+        |lineHeight|link|linkColor|links|listStyleType|localName|location|locationbar|longDesc|lowsrc|lowSrc|marginBottom
+        |marginHeight|marginLeft|marginRight|marginTop|marginWidth|maxLength|media|menubar|method|mimeTypes|multiline|multiple
+        |name|nameProp|namespaces|namespaceURI|next|nextSibling|nodeName|nodeType|nodeValue|noHref|noResize|noShade|notationName
+        |notations|noWrap|object|offscreenBuffering|onLine|onreadystatechange|opener|opsProfile|options|oscpu|outerHeight
+        |outerWidth|ownerDocument|paddingBottom|paddingLeft|paddingRight|paddingTop|page[XY]|page[XY]Offset|parent|parentLayer
+        |parentNode|parentWindow|pathname|personalbar|pixelDepth|pkcs11|platform|plugins|port|prefix|previous|previousDibling
+        |product|productSub|profile|profileend|prompt|prompter|protocol|publicId|readOnly|readyState|referrer|rel|responseText
+        |responseXML|rev|right|rightContext|rowIndex|rows|rowSpan|rules|scheme|scope|screen[XY]|screenLeft|screenTop|scripts
+        |scrollbars|scrolling|sectionRowIndex|security|securityPolicy|selected|selectedIndex|selection|self|shape|siblingAbove
+        |siblingBelow|size|source|specified|standby|start|status|statusbar|statusText|style|styleSheets|suffixes|summary
+        |systemId|systemLanguage|tagName|tags|target|tBodies|text|textAlign|textDecoration|textIndent|textTransform|tFoot|tHead
+        |title|toolbar|top|type|undefined|uniqueID|updateInterval|URL|URLUnencoded|useMap|userAgent|userLanguage|userProfile
+        |vAlign|value|valueType|vendor|vendorSub|version|visibility|vspace|whiteSpace|width|X[MS]LDocument|zIndex))\b(?!\$|\s*(<([^<>]|\<[^<>]+\>)+>\s*)?\()
+      captures:
+        1: punctuation.accessor.tsx
+        2: support.constant.dom.tsx
+        3: support.variable.property.dom.tsx
+    - match: |-
+        (?x)(?<!\.|\$)\b(Buffer|EventEmitter|Server|Pipe|Socket|REPLServer|ReadStream|WriteStream|Stream
+        |Inflate|Deflate|InflateRaw|DeflateRaw|GZip|GUnzip|Unzip|Zip)\b(?!\$)
+      scope: support.class.node.tsx
+    - match: |-
+        (?x)(?<!\.|\$)\b(process)(?:(\.)(?:
+          (arch|argv|config|connected|env|execArgv|execPath|exitCode|mainModule|pid|platform|release|stderr|stdin|stdout|title|version|versions)
+          |
+          (abort|chdir|cwd|disconnect|exit|[sg]ete?[gu]id|send|[sg]etgroups|initgroups|kill|memoryUsage|nextTick|umask|uptime|hrtime)
+        ))?\b(?!\$)
+      captures:
+        1: support.variable.object.process.tsx
+        2: punctuation.accessor.tsx
+        3: support.variable.property.process.tsx
+        4: support.function.process.tsx
+    - match: (?<!\.|\$)\b(?:(exports)|(module)(?:(\.)(exports|id|filename|loaded|parent|children))?)\b(?!\$)
+      captures:
+        1: support.type.object.module.tsx
+        2: support.type.object.module.tsx
+        3: punctuation.accessor.tsx
+        4: support.type.object.module.tsx
+    - match: (?<!\.|\$)\b(global|GLOBAL|root|__dirname|__filename)\b(?!\$)
+      scope: support.variable.object.node.tsx
+    - match: |-
+        (?x) (\.) \s*
+        (?:
+         (on(?:Rowsinserted|Rowsdelete|Rowenter|Rowexit|Resize|Resizestart|Resizeend|Reset|
+           Readystatechange|Mouseout|Mouseover|Mousedown|Mouseup|Mousemove|
+           Before(?:cut|deactivate|unload|update|paste|print|editfocus|activate)|
+           Blur|Scrolltop|Submit|Select|Selectstart|Selectionchange|Hover|Help|
+           Change|Contextmenu|Controlselect|Cut|Cellchange|Clock|Close|Deactivate|
+           Datasetchanged|Datasetcomplete|Dataavailable|Drop|Drag|Dragstart|Dragover|
+           Dragdrop|Dragenter|Dragend|Dragleave|Dblclick|Unload|Paste|Propertychange|Error|
+           Errorupdate|Keydown|Keyup|Keypress|Focus|Load|Activate|Afterupdate|Afterprint|Abort)
+         ) |
+         (shift|showModelessDialog|showModalDialog|showHelp|scroll|scrollX|scrollByPages|
+           scrollByLines|scrollY|scrollTo|stop|strike|sizeToContent|sidebar|signText|sort|
+           sup|sub|substr|substring|splice|split|send|set(?:Milliseconds|Seconds|Minutes|Hours|
+           Month|Year|FullYear|Date|UTC(?:Milliseconds|Seconds|Minutes|Hours|Month|FullYear|Date)|
+           Time|Hotkeys|Cursor|ZOptions|Active|Resizable|RequestHeader)|search|slice|
+           savePreferences|small|home|handleEvent|navigate|char|charCodeAt|charAt|concat|
+           contextual|confirm|compile|clear|captureEvents|call|createStyleSheet|createPopup|
+           createEventObject|to(?:GMTString|UTCString|String|Source|UpperCase|LowerCase|LocaleString)|
+           test|taint|taintEnabled|indexOf|italics|disableExternalCapture|dump|detachEvent|unshift|
+           untaint|unwatch|updateCommands|join|javaEnabled|pop|push|plugins.refresh|paddings|parse|
+           print|prompt|preference|enableExternalCapture|exec|execScript|valueOf|UTC|find|file|
+           fileModifiedDate|fileSize|fileCreatedDate|fileUpdatedDate|fixed|fontsize|fontcolor|
+           forward|fromCharCode|watch|link|load|lastIndexOf|anchor|attachEvent|atob|apply|alert|
+           abort|routeEvents|resize|resizeBy|resizeTo|recalc|returnValue|replace|reverse|reload|
+           releaseCapture|releaseEvents|go|get(?:Milliseconds|Seconds|Minutes|Hours|Month|Day|Year|FullYear|
+           Time|Date|TimezoneOffset|UTC(?:Milliseconds|Seconds|Minutes|Hours|Day|Month|FullYear|Date)|
+           Attention|Selection|ResponseHeader|AllResponseHeaders)|moveBy|moveBelow|moveTo|
+           moveToAbsolute|moveAbove|mergeAttributes|match|margins|btoa|big|bold|borderWidths|blink|back
+         ) |
+         (acceptNode|add|addEventListener|addTextTrack|adoptNode|after|animate|append|
+           appendChild|appendData|before|blur|canPlayType|captureStream|
+           caretPositionFromPoint|caretRangeFromPoint|checkValidity|clear|click|
+           cloneContents|cloneNode|cloneRange|close|closest|collapse|
+           compareBoundaryPoints|compareDocumentPosition|comparePoint|contains|
+           convertPointFromNode|convertQuadFromNode|convertRectFromNode|createAttribute|
+           createAttributeNS|createCaption|createCDATASection|createComment|
+           createContextualFragment|createDocument|createDocumentFragment|
+           createDocumentType|createElement|createElementNS|createEntityReference|
+           createEvent|createExpression|createHTMLDocument|createNodeIterator|
+           createNSResolver|createProcessingInstruction|createRange|createShadowRoot|
+           createTBody|createTextNode|createTFoot|createTHead|createTreeWalker|delete|
+           deleteCaption|deleteCell|deleteContents|deleteData|deleteRow|deleteTFoot|
+           deleteTHead|detach|disconnect|dispatchEvent|elementFromPoint|elementsFromPoint|
+           enableStyleSheetsForSet|entries|evaluate|execCommand|exitFullscreen|
+           exitPointerLock|expand|extractContents|fastSeek|firstChild|focus|forEach|get|
+           getAll|getAnimations|getAttribute|getAttributeNames|getAttributeNode|
+           getAttributeNodeNS|getAttributeNS|getBoundingClientRect|getBoxQuads|
+           getClientRects|getContext|getDestinationInsertionPoints|getElementById|
+           getElementsByClassName|getElementsByName|getElementsByTagName|
+           getElementsByTagNameNS|getItem|getNamedItem|getSelection|getStartDate|
+           getVideoPlaybackQuality|has|hasAttribute|hasAttributeNS|hasAttributes|
+           hasChildNodes|hasFeature|hasFocus|importNode|initEvent|insertAdjacentElement|
+           insertAdjacentHTML|insertAdjacentText|insertBefore|insertCell|insertData|
+           insertNode|insertRow|intersectsNode|isDefaultNamespace|isEqualNode|
+           isPointInRange|isSameNode|item|key|keys|lastChild|load|lookupNamespaceURI|
+           lookupPrefix|matches|move|moveAttribute|moveAttributeNode|moveChild|
+           moveNamedItem|namedItem|nextNode|nextSibling|normalize|observe|open|
+           parentNode|pause|play|postMessage|prepend|preventDefault|previousNode|
+           previousSibling|probablySupportsContext|queryCommandEnabled|
+           queryCommandIndeterm|queryCommandState|queryCommandSupported|queryCommandValue|
+           querySelector|querySelectorAll|registerContentHandler|registerElement|
+           registerProtocolHandler|releaseCapture|releaseEvents|remove|removeAttribute|
+           removeAttributeNode|removeAttributeNS|removeChild|removeEventListener|
+           removeItem|replace|replaceChild|replaceData|replaceWith|reportValidity|
+           requestFullscreen|requestPointerLock|reset|scroll|scrollBy|scrollIntoView|
+           scrollTo|seekToNextFrame|select|selectNode|selectNodeContents|set|setAttribute|
+           setAttributeNode|setAttributeNodeNS|setAttributeNS|setCapture|
+           setCustomValidity|setEnd|setEndAfter|setEndBefore|setItem|setNamedItem|
+           setRangeText|setSelectionRange|setSinkId|setStart|setStartAfter|setStartBefore|
+           slice|splitText|stepDown|stepUp|stopImmediatePropagation|stopPropagation|
+           submit|substringData|supports|surroundContents|takeRecords|terminate|toBlob|
+           toDataURL|toggle|toString|values|write|writeln
+         )
+        )(?=\s*\()
+      captures:
+        1: punctuation.accessor.tsx
+        2: support.function.event-handler.tsx
+        3: support.function.tsx
+        4: support.function.dom.tsx
+  switch-block:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.tsx
+      push:
+        - meta_scope: switch-block.expr.tsx
+        - match: '(?=\})'
+          pop: true
+        - include: case-clause
+        - include: statements
+  switch-expression:
+    - match: (?<!\.|\$)\b(switch)\s*(\()
+      captures:
+        1: keyword.control.switch.tsx
+        2: meta.brace.round.tsx
+      push:
+        - meta_scope: switch-expression.expr.tsx
+        - match: \)
+          captures:
+            0: meta.brace.round.tsx
+          pop: true
+        - include: expression
+  switch-statement:
+    - match: (?<!\.|\$)(?=\bswitch\s*\()
+      push:
+        - meta_scope: switch-statement.expr.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.tsx
+          pop: true
+        - include: switch-expression
+        - include: switch-block
+  template:
+    - match: "([_$[:alpha:]][_$[:alnum:]]*)?(`)"
+      captures:
+        1: entity.name.function.tagged-template.tsx
+        2: punctuation.definition.string.template.begin.tsx
+      push:
+        - meta_scope: string.template.tsx
+        - match: "`"
+          captures:
+            0: punctuation.definition.string.template.end.tsx
+          pop: true
+        - include: template-substitution-element
+        - include: string-character-escape
+  template-substitution-element:
+    - match: '\$\{'
+      captures:
+        0: punctuation.definition.template-expression.begin.tsx
+      push:
+        - meta_scope: meta.template.expression.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.template-expression.end.tsx
+          pop: true
+        - include: expression
+  ternary-expression:
+    - match: (\?)
+      captures:
+        0: keyword.operator.ternary.tsx
+      push:
+        - match: (:)
+          captures:
+            0: keyword.operator.ternary.tsx
+          pop: true
+        - include: expression
+  this-literal:
+    - match: (?<!\.|\$)\bthis\b(?!\$)
+      scope: variable.language.this.tsx
+  type:
+    - include: comment
+    - include: string
+    - include: numeric-literal
+    - include: type-primitive
+    - include: type-builtin-literals
+    - include: type-parameters
+    - include: type-tuple
+    - include: type-object
+    - include: type-operators
+    - include: type-fn-type-parameters
+    - include: type-paren-or-function-parameters
+    - include: type-function-return-type
+    - include: type-name
+  type-annotation:
+    - match: ":"
+      captures:
+        0: keyword.operator.type.annotation.tsx
+      push:
+        - meta_scope: meta.type.annotation.tsx
+        - match: '(?=$|[,);\}\]]|//)|(?==[^>])|(?<=[\}>\]\)]|[_$[:alpha:]])\s*(?=\{)'
+          pop: true
+        - include: comment
+        - include: type
+  type-builtin-literals:
+    - match: (?<!\.|\$)\b(this|true|false|undefined|null|object)\b(?!\$)
+      scope: support.type.builtin.tsx
+  type-declaration:
+    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(type)\b\s+([_$[:alpha:]][_$[:alnum:]]*)\s*'
+      captures:
+        1: keyword.control.export.tsx
+        2: storage.type.type.tsx
+        3: entity.name.type.tsx
+      push:
+        - meta_scope: meta.type.declaration.tsx
+        - match: '(?=[};]|\bvar\b|\blet\b|\bconst\b|\btype\b|\bfunction\b|\bclass\b|\binterface\b|\bnamespace\b|\bmodule\b|\bimport\b|\benum\b|\bdeclare\b|\bexport\b|\babstract\b|\basync\b)'
+          pop: true
+        - include: comment
+        - include: type-parameters
+        - include: type
+        - match: (=)\s*
+          captures:
+            1: keyword.operator.assignment.tsx
+  type-fn-type-parameters:
+    - match: (?<!\.|\$)\b(new)\b(?=\s*\<)
+      scope: meta.type.constructor.tsx
+      captures:
+        1: keyword.control.new.tsx
+    - match: (?<!\.|\$)\b(new)\b\s*(?=\()
+      captures:
+        1: keyword.control.new.tsx
+      push:
+        - meta_scope: meta.type.constructor.tsx
+        - match: (?<=\))
+          pop: true
+        - include: function-parameters
+    - match: |-
+        (?x)(
+          (?=
+            [(]\s*(
+              ([)]) |
+              (\.\.\.) |
+              ([_$[:alnum:]]+\s*(
+                ([:,?=])|
+                ([)]\s*=>)
+              ))
+            )
+          )
+        )
+      push:
+        - meta_scope: meta.type.function.tsx
+        - match: (?<=\))
+          pop: true
+        - include: function-parameters
+  type-function-return-type:
+    - match: "=>"
+      captures:
+        0: storage.type.function.arrow.tsx
+      push:
+        - meta_scope: meta.type.function.return.tsx
+        - match: '(?<!=>)(?=[,\]\)\{\}=;>]|//|$)'
+          pop: true
+        - include: comment
+        - match: '(?<==>)\s*(\{)'
+          captures:
+            1: punctuation.definition.block.tsx
+          push:
+            - meta_scope: meta.object.type.tsx
+            - match: '\}'
+              captures:
+                0: punctuation.definition.block.tsx
+              pop: true
+            - include: type-object-members
+        - include: type-predicate-operator
+        - include: type
+  type-name:
+    - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(\.)'
+      captures:
+        1: entity.name.type.module.tsx
+        2: punctuation.accessor.tsx
+    - match: "[_$[:alpha:]][_$[:alnum:]]*"
+      scope: entity.name.type.tsx
+  type-object:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.tsx
+      push:
+        - meta_scope: meta.object.type.tsx
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.tsx
+          pop: true
+        - include: type-object-members
+  type-object-members:
+    - include: comment
+    - include: method-declaration
+    - include: indexer-declaration
+    - include: indexer-mapped-type-declaration
+    - include: field-declaration
+    - include: type-annotation
+    - match: \.\.\.
+      captures:
+        0: keyword.operator.spread.tsx
+      push:
+        - match: '(?=\}|;|,|$)|(?<=\})'
+          pop: true
+        - include: type
+    - include: punctuation-comma
+    - include: punctuation-semicolon
+    - include: type
+  type-operators:
+    - include: typeof-operator
+    - match: "[&|]"
+      scope: keyword.operator.type.tsx
+    - match: (?<!\.|\$)\bkeyof\b(?!\$)
+      scope: keyword.operator.expression.keyof.tsx
+  type-parameters:
+    - match: (<)
+      captures:
+        1: punctuation.definition.typeparameters.begin.tsx
+      push:
+        - meta_scope: meta.type.parameters.tsx
+        - match: (?=$)|(>)
+          captures:
+            1: punctuation.definition.typeparameters.end.tsx
+          pop: true
+        - include: comment
+        - match: (?<!\.|\$)\b(extends)\b(?!\$)
+          scope: storage.modifier.tsx
+        - match: \=(?!>)
+          scope: keyword.operator.assignment.tsx
+        - include: type
+        - include: punctuation-comma
+  type-paren-or-function-parameters:
+    - match: \(
+      captures:
+        0: meta.brace.round.tsx
+      push:
+        - meta_scope: meta.type.paren.cover.tsx
+        - match: \)
+          captures:
+            0: meta.brace.round.tsx
+          pop: true
+        - include: type
+        - include: function-parameters
+  type-predicate-operator:
+    - match: (?<!\.|\$)\bis\b(?!\$)
+      scope: keyword.operator.expression.is.tsx
+  type-primitive:
+    - match: (?<!\.|\$)\b(string|number|boolean|symbol|any|void|never)\b(?!\$)
+      scope: support.type.primitive.tsx
+  type-tuple:
+    - match: '\['
+      captures:
+        0: meta.brace.square.tsx
+      push:
+        - meta_scope: meta.type.tuple.tsx
+        - match: '\]'
+          captures:
+            0: meta.brace.square.tsx
+          pop: true
+        - include: type
+        - include: punctuation-comma
+  typeof-operator:
+    - match: (?<!\.|\$)\btypeof\b(?!\$)
+      scope: keyword.operator.expression.typeof.tsx
+  undefined-literal:
+    - match: (?<!\.|\$)\bundefined\b(?!\$)
+      scope: constant.language.undefined.tsx
+  var-expr:
+    - match: (?<!\.|\$)(?:(\bexport)\s+)?\b(var|let|const(?!\s+enum\b))\b(?!\$)
+      captures:
+        1: keyword.control.export.tsx
+        2: storage.type.tsx
+      push:
+        - meta_scope: meta.var.expr.tsx
+        - match: '(?=$|;|}|(\s+(of|in)\s+))'
+          pop: true
+        - include: destructuring-variable
+        - include: var-single-variable
+        - include: variable-initializer
+        - include: comment
+        - include: punctuation-comma
+  var-single-variable:
+    - match: |-
+        (?x)([_$[:alpha:]][_$[:alnum:]]*)(?=\s*
+          (=\s*(
+            (async\s+) |
+            (function\s*[(<]) |
+            (function\s+) |
+            ([_$[:alpha:]][_$[:alnum:]]*\s*=>) |
+            ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
+            ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
+            ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))
+          ) |
+          (:\s*(
+            (<) |
+            ([(]\s*(
+              ([)]) |
+              (\.\.\.) |
+              ([_$[:alnum:]]+\s*(
+                ([:,?=])|
+                ([)]\s*=>)
+              ))
+            )))
+          )
+        )
+      captures:
+        1: meta.definition.variable.tsx entity.name.function.tsx
+      push:
+        - meta_scope: meta.var-single-variable.expr.tsx
+        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+          pop: true
+        - include: var-single-variable-type-annotation
+    - match: "([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])"
+      captures:
+        1: meta.definition.variable.tsx variable.other.constant.tsx
+      push:
+        - meta_scope: meta.var-single-variable.expr.tsx
+        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+          pop: true
+        - include: var-single-variable-type-annotation
+    - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+      captures:
+        1: meta.definition.variable.tsx variable.other.readwrite.tsx
+      push:
+        - meta_scope: meta.var-single-variable.expr.tsx
+        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+          pop: true
+        - include: var-single-variable-type-annotation
+  var-single-variable-type-annotation:
+    - include: type-annotation
+    - include: string
+    - include: comment
+  variable-initializer:
+    - match: (?<!=|!)(=)(?!=)(?=\s*\S)
+      captures:
+        1: keyword.operator.assignment.tsx
+      push:
+        - match: '(?=$|[,);}\]])'
+          pop: true
+        - include: expression
+    - match: (?<!=|!)(=)(?!=)
+      captures:
+        1: keyword.operator.assignment.tsx
+      push:
+        - match: '(?=[,);}\]])|(?=^\s*$)'
+          pop: true
+        - include: expression

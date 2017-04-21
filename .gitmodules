@@ -1,0 +1,21 @@
+[submodule "sublime_syntaxes/Packages"]
+	path = sublime_syntaxes/Packages
+	url = git@github.com:sublimehq/Packages.git
+[submodule "sublime_syntaxes/sublimeassembly"]
+	path = sublime_syntaxes/sublimeassembly
+	url = https://github.com/Nessphoro/sublimeassembly.git
+[submodule "sublime_syntaxes/LESS-sublime"]
+	path = sublime_syntaxes/LESS-sublime
+	url = https://github.com/danro/LESS-sublime.git
+[submodule "sublime_syntaxes/TypeScript-Sublime-Plugin"]
+	path = sublime_syntaxes/TypeScript-Sublime-Plugin
+	url = https://github.com/Microsoft/TypeScript-Sublime-Plugin.git
+[submodule "sublime_syntaxes/Handlebars"]
+	path = sublime_syntaxes/Handlebars
+	url = https://github.com/daaain/Handlebars.git
+[submodule "sublime_syntaxes/Julia-sublime"]
+	path = sublime_syntaxes/Julia-sublime
+	url = https://github.com/JuliaEditorSupport/Julia-sublime.git
+[submodule "sublime_syntaxes/Elm.tmLanguage"]
+	path = sublime_syntaxes/Elm.tmLanguage
+	url = https://github.com/elm-community/Elm.tmLanguage.git

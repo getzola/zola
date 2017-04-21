@@ -9,19 +9,18 @@ use syntect::dumps::*;
 use std::env;
 
 fn usage_and_exit() -> ! {
-    println!("USAGE: gendata synpack source-dir newlines.packdump nonewlines.packdump\n
-              gendata themepack source-dir themepack.themedump");
+    println!("USAGE: cargo run --example generate_sublime synpack source-dir newlines.packdump nonewlines.packdump\n
+              cargo run --example generate_sublime themepack source-dir themepack.themedump");
     ::std::process::exit(2);
 }
 
+// Not an example of Gutenberg but is used to generate the theme and syntax dump
+// used for syntax highlighting.
+// Check README for more details
 fn main() {
-
-    let mut a = env::args().skip(1);
-    match (a.next(), a.next(), a.next(), a.next()) {
-        (Some(ref cmd),
-         Some(ref package_dir),
-         Some(ref packpath_newlines),
-         Some(ref packpath_nonewlines)) if cmd == "synpack" => {
+    let mut args = env::args().skip(1);
+    match (args.next(), args.next(), args.next(), args.next()) {
+        (Some(ref cmd), Some(ref package_dir), Some(ref packpath_newlines), Some(ref packpath_nonewlines)) if cmd == "synpack" => {
             let mut ps = SyntaxSet::new();
             ps.load_plain_text_syntax();
             ps.load_syntaxes(package_dir, true).unwrap();
@@ -31,9 +30,8 @@ fn main() {
             ps.load_plain_text_syntax();
             ps.load_syntaxes(package_dir, false).unwrap();
             dump_to_file(&ps, packpath_nonewlines).unwrap();
-
-        }
-        (Some(ref s), Some(ref theme_dir), Some(ref packpath), None) if s == "themepack" => {
+        },
+        (Some(ref cmd), Some(ref theme_dir), Some(ref packpath), None) if cmd == "themepack" => {
             let ts = ThemeSet::load_from_folder(theme_dir).unwrap();
             for path in ts.themes.keys() {
                 println!("{:?}", path);
