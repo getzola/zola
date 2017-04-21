@@ -1,0 +1,153 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: TOML
+file_extensions:
+  - toml
+  - tml
+scope: source.toml
+contexts:
+  main:
+    - include: comments
+    - include: tables
+    - include: keys
+    - include: illegal
+  array:
+    - match: '(?<!\w)(\[)\s*'
+      comment: Array
+      captures:
+        1: punctuation.definition.array.toml
+      push:
+        - match: '\s*(\])(?!\w)'
+          captures:
+            1: punctuation.definition.array.toml
+          pop: true
+        - include: comments
+        - include: dataTypes
+  boolean:
+    - match: (?<!\w)(true|false)(?!\w)
+      comment: Boolean
+      captures:
+        1: constant.other.boolean.toml
+  comments:
+    - match: \s*((#).*)$
+      comment: Comments
+      captures:
+        1: comment.line.number-sign.toml
+        2: punctuation.definition.comment.toml
+  dataTypes:
+    - include: inlinetable
+    - include: array
+    - include: string
+    - include: dateTime
+    - include: float
+    - include: integer
+    - include: boolean
+  dateTime:
+    - match: '(?<!\w)(\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[\+\-]\d{2}:\d{2}))(?!\w)'
+      comment: DateTime
+      captures:
+        1: constant.other.datetime.toml
+  float:
+    - match: '(?<!\w)([\+\-]?(?:[1-9][0-9]*|0)(?:(?:\.[0-9]*)?[eE][\+\-]?[1-9][0-9]*|(?:\.[0-9]*)))(?!\w)'
+      comment: Float, decimal and exponential representation
+      captures:
+        1: constant.numeric.float.toml
+  illegal:
+    - match: (.*)
+      comment: Invalid things -> everything unmatched
+      captures:
+        1: invalid.illegal.toml
+  inlinetable:
+    - match: '(?<!\w)(\{)\s*'
+      captures:
+        1: punctuation.definition.inlinetable.toml
+      push:
+        - match: '\s*(\})(?!\w)'
+          captures:
+            1: punctuation.definition.inlinetable.toml
+          pop: true
+        - include: keys
+        - include: dataTypes
+  integer:
+    - match: '(?<!\w)((?:[\+\-]?[1-9][0-9]*|0))(?!\w)'
+      comment: Integer (with and without + and - prefixes)
+      captures:
+        1: constant.numeric.integer.toml
+  keys:
+    - match: (\s*=.*)$
+      comment: Assignments without key are invalid
+      scope: invalid.illegal.noKeyDefined.toml
+    - match: '(\s*[A-Za-z_\-][A-Za-z0-9_\-]*\s*=)(?=\s*$)'
+      comment: Assignments without value are unusual
+      scope: invalid.deprecated.noValueGiven.toml
+    - match: '\s*([A-Za-z_-][A-Za-z0-9_-]*|".+"|''.+''|[0-9]+)\s*(=)\s*'
+      captures:
+        1: keyword.key.toml
+        2: punctuation.definition.keyValuePair.toml
+      push:
+        - match: '($|(?==)|\,|\s*(?=\}))'
+          pop: true
+        - include: comments
+        - include: dataTypes
+        - include: illegal
+  string:
+    - match: "'''"
+      comment: literal string block (no escape sequences)
+      push:
+        - meta_scope: string.quoted.triple.literal.block.toml
+        - match: "'''"
+          pop: true
+    - match: "'.*?'"
+      comment: literal string line (no escape sequences)
+      scope: string.quoted.single.literal.line.toml
+    - match: '"""'
+      comment: basic string block
+      push:
+        - meta_scope: string.quoted.triple.basic.block.toml
+        - match: '"""'
+          pop: true
+        - match: '[^"\\]*(?:\\.?[^"\\]*)*'
+          scope: string.quoted.triple.basic.block.toml
+    - match: '"[^"\\]*(?:\\.[^"\\]*)*"'
+      comment: basic string line
+      scope: string.quoted.single.basic.line.toml
+  tables:
+    - match: '^\s*(\[\[\]\]|\[\[\..*\]\]|\[\[.*\.\]\]|\[\[.*\.\..*\]\]|\[\[.*[\[\]#].*\]\]|\[\[.*\]\].+\n)'
+      comment: non-empty etc. like tables, see below!
+      push:
+        - meta_scope: invalid.illegal.table.array.toml
+        - match: '(?=^\s*\[?\[.*\]\]?)'
+          pop: true
+    - match: '^\s*(\[\[)([A-Za-z_\-][A-Za-z0-9_\-\.]*)(\]\])\s*'
+      comment: A named TOML-Table-Array
+      captures:
+        1: punctuation.definition.table.array.toml
+        2: entity.other.attribute-name.table.array.toml
+        3: punctuation.definition.table.array.toml
+      push:
+        - meta_scope: meta.tag.table.array.toml
+        - match: '(?=^\s*\[?\[[A-Za-z_\-][A-Za-z0-9_\-\.]*\]\]?)'
+          pop: true
+        - include: comments
+        - include: keys
+        - include: illegal
+    - match: '^\s*(\[\]|\[\..*\]|\[.*\.\]|\[.*\.\..*\]|\[.*[\[\]#].*\]|\[.*\].+\n)'
+      comment: 'Each table name segment must be non-empty, must not contain the characters ''['', '']'' or ''#'' and is delimited by a ''.''.  Tables "appear in square brackets *on a line by themselves*"'
+      push:
+        - meta_scope: invalid.illegal.table.toml
+        - match: '(?=^\s*\[?\[.*\]\]?)'
+          pop: true
+    - match: '^\s*(\[)([A-Za-z_\-][A-Za-z0-9_\-\.]*)(\])\s*'
+      comment: A named TOML-Table
+      captures:
+        1: punctuation.definition.table.toml
+        2: entity.other.attribute-name.table.toml
+        3: punctuation.definition.table.toml
+      push:
+        - meta_scope: meta.tag.table.toml
+        - match: '(?=^\s*\[?\[[A-Za-z_\-][A-Za-z0-9_\-\.]*\]\]?)'
+          pop: true
+        - include: comments
+        - include: keys
+        - include: illegal

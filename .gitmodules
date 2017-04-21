@@ -19,3 +19,9 @@
 [submodule "sublime_syntaxes/Elm.tmLanguage"]
 	path = sublime_syntaxes/Elm.tmLanguage
 	url = https://github.com/elm-community/Elm.tmLanguage.git
+[submodule "sublime_syntaxes/sublime_toml_highlighting"]
+	path = sublime_syntaxes/sublime_toml_highlighting
+	url = https://github.com/Jayflux/sublime_toml_highlighting.git
+[submodule "sublime_syntaxes/SublimeTextLinkerSyntax"]
+	path = sublime_syntaxes/SublimeTextLinkerSyntax
+	url = https://github.com/jbw3/SublimeTextLinkerSyntax.git
