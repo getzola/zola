@@ -20,15 +20,15 @@ pulldown-cmark = "0"
 regex = "0.2"
 lazy_static = "0.2"
 glob = "0.2"
-serde = "0.9"
-serde_derive = "0.9"
+serde = "1.0"
+serde_derive = "1.0"
 # tera = { path = "../tera" }
 # tera = { git = "https://github.com/Keats/tera" }
-tera = "0.9"
+tera = "0.10"
 slug = "0.1"
 syntect = { version = "1", features = ["static-onig"] }
 chrono = "0.3"
-toml = { version = "0.3", default-features = false, features = ["serde"]}
+toml = "0.4"
 term-painter = "0.2"
 base64 = "0.4"
 
