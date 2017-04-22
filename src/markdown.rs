@@ -18,7 +18,7 @@ use errors::{Result, ResultExt};
 
 // We need to put those in a struct to impl Send and sync
 pub struct Setup {
-    syntax_set: SyntaxSet,
+    pub syntax_set: SyntaxSet,
     pub theme_set: ThemeSet,
 }
 
@@ -28,7 +28,11 @@ unsafe impl Sync for Setup {}
 lazy_static!{
     static ref SHORTCODE_RE: Regex = Regex::new(r#"\{(?:%|\{)\s+([[:alnum:]]+?)\(([[:alnum:]]+?="?.+?"?)\)\s+(?:%|\})\}"#).unwrap();
     pub static ref SETUP: Setup = Setup {
-        syntax_set: SyntaxSet::load_defaults_newlines(),
+        syntax_set: {
+            let mut ps: SyntaxSet = from_binary(include_bytes!("../sublime_syntaxes/newlines.packdump"));
+            ps.link_syntaxes();
+            ps
+        },
         theme_set: from_binary(include_bytes!("../sublime_themes/all.themedump"))
     };
 }

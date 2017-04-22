@@ -1,0 +1,326 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: LESS
+comment: LESS
+file_extensions:
+  - less
+scope: source.less
+contexts:
+  main:
+    - include: comment-block
+    - include: comment-line
+    - include: less-at-rules
+    - include: less-declarations
+    - include: less-variables
+    - include: less-functions
+    - include: string-double
+    - include: string-single
+    - include: selector
+    - include: rule-list
+    - include: less-operators
+    - include: less-parameters
+    - include: numeric-values
+  color-values:
+    - match: \b(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|olive|orange|purple|red|silver|teal|white|yellow)\b
+      comment: http://www.w3.org/TR/CSS21/syndata.html#value-def-color
+      scope: support.constant.color.w3c-standard-color-name.css
+    - match: \b(aliceblue|antiquewhite|aquamarine|azure|beige|bisque|blanchedalmond|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|gainsboro|ghostwhite|gold|goldenrod|greenyellow|grey|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|limegreen|linen|magenta|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|oldlace|olivedrab|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|thistle|tomato|turquoise|violet|wheat|whitesmoke|yellowgreen)\b
+      comment: "These colours are mostly recognised but will not validate. ref: http://www.w3schools.com/css/css_colornames.asp"
+      scope: support.constant.color.non-standard
+    - match: (hsla?|rgba?)\s*(\()
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+        - match: '(?x)\b(0*((1?[0-9]{1,2})|(2([0-4][0-9]|5[0-5])))\s*,\s*){2}(0*((1?[0-9]{1,2})|(2([0-4][0-9]|5[0-5])))\b)(\s*,\s*((0?\.[0-9]+)|[0-1]))?'
+          scope: constant.other.color.rgb-value.css
+        - match: '\b([0-9]{1,2}|100)\s*%,\s*([0-9]{1,2}|100)\s*%,\s*([0-9]{1,2}|100)\s*%'
+          scope: constant.other.color.rgb-percentage.css
+        - include: numeric-values
+  comment-block:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.css
+      push:
+        - meta_scope: comment.block.css
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.css
+          pop: true
+  comment-line:
+    - match: //
+      captures:
+        0: punctuation.definition.comment.css
+      push:
+        - meta_scope: comment.line.double-slash.less
+        - match: $\n?
+          captures:
+            0: punctuation.definition.comment.css
+          pop: true
+  less-at-rules:
+    - match: ^\s*((@)(?:-(?:webkit|moz|o)-)?(charset|import|namespace|media|page|font-face|keyframes|supports|document)\b)
+      scope: meta.at-rule.css
+      captures:
+        1: keyword.control.at-rule.css
+        2: punctuation.definition.keyword.css
+  less-data-uri:
+    - match: (url)(\()(data:)
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+        3: parameter.less.data-uri comment markup.raw
+      push:
+        - meta_content_scope: parameter.less.data-uri comment markup.raw
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+    - match: (url)(\()("data:)
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+        3: parameter.less.data-uri comment markup.raw
+      push:
+        - meta_content_scope: parameter.less.data-uri comment markup.raw
+        - match: (?<=")(\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+    - match: (url)(\()('data:)
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+        3: parameter.less.data-uri comment markup.raw
+      push:
+        - meta_content_scope: parameter.less.data-uri comment markup.raw
+        - match: (?<=\')(\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+  less-declarations:
+    - match: '(?>@[a-zA-Z0-9_-][\w-]*+)(?!:)'
+      scope: variable.other.less
+    - match: '@[a-zA-Z0-9_-][\w-]*'
+      scope: variable.declaration.less
+  less-functions:
+    - match: '([%a-zA-Z\-\_\d]*)(?=\()'
+      scope: support.function.less
+    - match: '([\.#](?![0-9])[a-zA-Z0-9_-]+(?=\())'
+      captures:
+        1: entity.other.attribute-name.class.css entity.other.less.mixin
+  less-operators:
+    - match: /|!important|$|%|&|\*|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\|\||\?\:|(?<!\()/=|%=|\+=|\-=|&=|when\b|and\b|not\b
+      scope: keyword.operator.less
+  less-parameters:
+    - match: '\(|(}\s*,)'
+      push:
+        - meta_scope: parameter.less
+        - match: '\)|{'
+          pop: true
+        - include: color-values
+        - include: less-parameters
+        - include: less-functions
+        - include: numeric-values
+        - include: string-double
+        - include: string-single
+        - include: less-variables
+        - match: '(?:\:/)?[\/\.a-zA-Z0-9_\-]*'
+          scope: variable.parameter.misc.css
+        - include: less-operators
+  less-variables:
+    - match: '@[a-zA-Z0-9_-][\w-]*'
+      scope: variable.other.less
+    - match: '@{[a-zA-Z0-9_-][\w-]*}'
+      scope: variable.interpolation.less
+    - match: "`"
+      push:
+        - meta_scope: comment markup.raw
+        - match: "`"
+          pop: true
+    - match: (~)`
+      captures:
+        1: keyword.operator.less
+      push:
+        - meta_scope: comment markup.raw
+        - match: "`"
+          pop: true
+    - match: (~)"
+      captures:
+        1: keyword.operator.less
+      push:
+        - meta_scope: string.quoted.double.css comment markup.raw
+        - match: '"'
+          pop: true
+    - match: (~)'
+      captures:
+        1: keyword.operator.less
+      push:
+        - meta_scope: string.quoted.single.css comment markup.raw
+        - match: "'"
+          pop: true
+  numeric-values:
+    - match: '(#)([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b'
+      scope: constant.other.color.rgb-value.css
+      captures:
+        1: punctuation.definition.constant.css
+    - match: '(?x)(?:-|\+)?(?:(?:[0-9]+(?:\.[0-9]+)?)|(?:\.[0-9]+))((?:px|pt|ch|cm|mm|in|r?em|ex|pc|deg|g?rad|dpi|dpcm|ms|s)\b|%)?'
+      scope: constant.numeric.css
+      captures:
+        1: keyword.other.unit.css
+  property-names:
+    - match: "(?<![-a-z])(?=[-a-z])"
+      push:
+        - meta_scope: support.type.property-name.css
+        - match: "$|(?![-a-z])"
+          pop: true
+        - match: \b(word)\b
+          scope: support.type.property-name.css
+  property-values:
+    - include: less-variables
+    - include: less-data-uri
+    - include: less-functions
+    - include: less-operators
+    - include: color-values
+    - include: numeric-values
+    - include: less-parameters
+    - match: \b(absolute|all(-scroll)?|always|subpixel-antialiased|antialiased|armenian|auto|avoid|baseline|below|bidi-override|block|bold|bolder|border-box|both|bottom|break-all|break-word|capitalize|center|char|circle|cjk-ideographic|content-box|col-resize|collapse|crosshair|dashed|decimal-leading-zero|decimal|default|disabled|disc|distribute-all-lines|distribute-letter|distribute-space|distribute|dotted|double|e-resize|ellipsis|fixed|geometricPrecision|georgian|groove|hand|hebrew|help|hidden|hiragana-iroha|hiragana|horizontal|ideograph-alpha|ideograph-numeric|ideograph-parenthesis|ideograph-space|inactive|inherit|inline-block|inline|inset|inside|inter-ideograph|inter-word|italic|justify|katakana-iroha|katakana|keep-all|left|lighter|line-edge|line-through|line|list-item|loose|lower-alpha|lower-greek|lower-latin|lower-roman|lowercase|lr-tb|ltr|medium|middle|move|n-resize|ne-resize|newspaper|no-drop|no-repeat|nw-resize|none|normal|not-allowed|nowrap|oblique|optimize(Legibility|Quality|Speed)|outset|outside|overline|pointer|pre(-(wrap|line))?|progress|relative|repeat-x|repeat-y|repeat|right|ridge|row-resize|rtl|s-resize|scroll|se-resize|separate|small-caps|solid|square|static|strict|sub|super|sw-resize|table-caption|table-cell|table-column-group|table-column|table-footer-group|table-header-group|table-row-group|table|tb-rl|text-bottom|text-top|textfield|text|thick|thin|top|transparent|underline|upper-alpha|upper-latin|upper-roman|uppercase|vertical(-(ideographic|text))?|visible(Painted|Fill|Stroke)?|w-resize|wait|whitespace|zero|smaller|larger|((xx?-)?(small|large))|painted|fill|stroke)\b
+      scope: support.constant.property-value.css
+    - include: selector
+    - match: (\b(?i:arial|century|comic|courier|garamond|georgia|helvetica|impact|lucida|symbol|system|tahoma|times|trebuchet|utopia|verdana|webdings|sans-serif|serif|monospace)\b)
+      scope: support.constant.font-name.css
+    - include: string-double
+    - include: string-single
+    - match: (rect)\s*(\()
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+        - include: numeric-values
+    - match: (format|local|url|attr|counter|counters)\s*(\()
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+        - include: string-single
+        - include: string-double
+        - match: '[^''") \t]+'
+          scope: variable.parameter.misc.css
+    - match: \!\s*important
+      scope: keyword.other.important.css
+  rule-list:
+    - include: comment-block
+    - include: comment-line
+    - include: selector
+    - include: property-names
+    - match: (:)\s*
+      captures:
+        1: punctuation.separator.key-value.css
+      push:
+        - meta_scope: meta.property-value.css
+        - match: '\s*(;|(?=[{}]))'
+          captures:
+            1: punctuation.terminator.rule.css
+          pop: true
+        - include: property-values
+  selector:
+    - match: '\b(a|abbr|acronym|address|area|article|aside|audio|b|base|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|eventsource|fieldset|figure|figcaption|footer|form|frame|frameset|(h[1-6])|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|map|mark|menu|meta|meter|nav|noframes|noscript|object|ol|optgroup|option|output|p|param|pre|progress|q|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|svg|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|ul|var|video)\b'
+      scope: entity.name.tag.css, keyword.control.html.elements
+    - match: '(\.)-?[a-zA-Z_][a-zA-Z0-9_-]*'
+      scope: entity.other.attribute-name.class.css
+      captures:
+        1: punctuation.definition.entity.css
+    - match: "(#)-?[a-zA-Z_][a-zA-Z0-9_-]*"
+      scope: entity.other.attribute-name.id.css
+      captures:
+        1: punctuation.definition.entity.css
+    - match: \*
+      scope: entity.name.tag.wildcard.css
+    - match: (:+)((first|last|only)-child|(first|last|only)-of-type|empty|root|target|first-letter|first-line|first|left|right|lang)\b
+      scope: entity.other.attribute-name.pseudo-class.css
+      captures:
+        1: punctuation.definition.entity.css
+    - match: (:)(extend)\b
+      scope: entity.other.attribute-name.pseudo-class.less
+      captures:
+        1: punctuation.definition.entity.css
+    - match: (:)(checked|enabled|default|disabled|indeterminate|invalid|optional|required|valid)\b
+      scope: entity.other.attribute-name.pseudo-class.ui-state.css
+      captures:
+        1: punctuation.definition.entity.css
+    - match: ((:)not)(\()
+      captures:
+        1: entity.other.attribute-name.pseudo-class.css
+        2: punctuation.definition.entity.css
+        3: punctuation.section.function.css
+      push:
+        - match: \)
+          captures:
+            0: punctuation.section.function.css
+          pop: true
+        - include: selector
+    - match: ((:)nth-(?:(?:last-)?child|(?:last-)?of-type))(\()
+      captures:
+        1: entity.other.attribute-name.pseudo-class.css
+        2: punctuation.definition.entity.css
+        3: punctuation.section.function.css
+      push:
+        - meta_content_scope: constant.numeric.css
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+    - match: (:+)(?:-(?:webkit|moz|o)-)?(after|before|selection|scrollbar|placeholder|input-placeholder)\b
+      scope: entity.other.attribute-name.pseudo-element.css
+      captures:
+        1: punctuation.definition.entity.css
+    - match: (:+)(?:-(?:webkit|moz|o)-)?(active|hover|link|visited|focus-inner|focus)\b
+      scope: entity.other.attribute-name.pseudo-class.css
+      captures:
+        1: punctuation.definition.entity.css
+    - match: '(?i)(\[)\s*(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)(?:\s*([~|^$*]?=)\s*(?:(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)|((?>([''"])(?:[^\\]|\\.)*?(\6)))))?\s*(\])'
+      scope: meta.attribute-selector.css
+      captures:
+        1: punctuation.definition.entity.css
+        2: entity.other.attribute-name.attribute.css
+        3: punctuation.separator.operator.css
+        4: string.unquoted.attribute-value.css
+        5: string.quoted.double.attribute-value.css
+        6: punctuation.definition.string.begin.css
+        7: punctuation.definition.string.end.css
+  string-double:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.css
+      push:
+        - meta_scope: string.quoted.double.css
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.css
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.css
+  string-single:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.css
+      push:
+        - meta_scope: string.quoted.single.css
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.css
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.css

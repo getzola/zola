@@ -70,6 +70,7 @@ pub struct Site {
     static_path: PathBuf,
     pub tags: HashMap<String, Vec<PathBuf>>,
     pub categories: HashMap<String, Vec<PathBuf>>,
+    pub permalinks: HashMap<String, String>,
 }
 
 impl Site {
@@ -96,6 +97,7 @@ impl Site {
             static_path: path.join("static"),
             tags: HashMap::new(),
             categories: HashMap::new(),
+            permalinks: HashMap::new(),
         };
 
         Ok(site)
@@ -146,6 +148,7 @@ impl Site {
             page.render_markdown(&permalinks, &self.tera, &self.config)?;
         }
 
+        self.permalinks = permalinks;
         self.populate_sections();
         self.populate_tags_and_categories();
 
@@ -164,6 +167,14 @@ impl Site {
         let section = Section::from_file(path, &self.config)?;
         self.sections.insert(section.parent_path.clone(), section);
         Ok(())
+    }
+
+    /// Called in serve, add a page again updating permalinks and its content
+    fn add_page_and_render(&mut self, path: &Path) -> Result<()> {
+        self.add_page(path)?;
+        let mut page = self.pages.get_mut(path).unwrap();
+        self.permalinks.insert(page.relative_path.clone(), page.permalink.clone());
+        page.render_markdown(&self.permalinks, &self.tera, &self.config)
     }
 
     /// Find out the direct subsections of each subsection if there are some
@@ -272,15 +283,17 @@ impl Site {
                     self.add_section(path)?;
                 } else {
                     // probably just an update so just re-parse that page
-                    self.add_page(path)?;
+                    self.add_page_and_render(path)?;
                 }
             } else {
                 // new file?
-                self.add_page(path)?;
+                self.add_page_and_render(path)?;
             }
         } else {
-            // File doesn't exist -> a deletion so we remove it from
+            // File doesn't exist -> a deletion so we remove it from everything
+            let relative_path = self.pages[path].relative_path.clone();
             self.pages.remove(path);
+            self.permalinks.remove(&relative_path);
         }
         self.populate_sections();
         self.populate_tags_and_categories();
