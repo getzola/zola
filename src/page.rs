@@ -152,21 +152,20 @@ impl Page {
         // Pages with custom urls exists outside of sections
         if let Some(ref u) = page.meta.url {
             page.path = u.trim().to_string();
-        } else {
-            if !page.components.is_empty() {
-                // If we have a folder with an asset, don't consider it as a component
-                if page.file_name == "index" {
-                    page.components.pop();
-                    // also set parent_path to grandparent instead
-                    page.parent_path = page.parent_path.parent().unwrap().to_path_buf();
-                }
-
-                // Don't add a trailing slash to sections
-                page.path = format!("{}/{}", page.components.join("/"), page.slug);
-            } else {
-                page.path = page.slug.clone();
+        } else if !page.components.is_empty() {
+            // If we have a folder with an asset, don't consider it as a component
+            if page.file_name == "index" {
+                page.components.pop();
+                // also set parent_path to grandparent instead
+                page.parent_path = page.parent_path.parent().unwrap().to_path_buf();
             }
+
+            // Don't add a trailing slash to sections
+            page.path = format!("{}/{}", page.components.join("/"), page.slug);
+        } else {
+            page.path = page.slug.clone();
         }
+
 
         page.permalink = config.make_permalink(&page.path);
 
