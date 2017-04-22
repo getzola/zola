@@ -22,6 +22,9 @@ fn test_can_parse_site() {
     assert_eq!(site.pages.len(), 10);
     let posts_path = path.join("content").join("posts");
 
+    // We have an index page
+    assert!(site.index.is_some());
+
     // Make sure we remove all the pwd + content from the sections
     let basic = &site.pages[&posts_path.join("simple.md")];
     assert_eq!(basic.components, vec!["posts".to_string()]);

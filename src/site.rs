@@ -64,6 +64,7 @@ pub struct Site {
     pub config: Config,
     pub pages: HashMap<PathBuf, Page>,
     pub sections: BTreeMap<PathBuf, Section>,
+    pub index: Option<Section>,
     pub tera: Tera,
     live_reload: bool,
     output_path: PathBuf,
@@ -91,6 +92,7 @@ impl Site {
             config: get_config(path, config_file),
             pages: HashMap::new(),
             sections: BTreeMap::new(),
+            index: None,
             tera: tera,
             live_reload: false,
             output_path: path.join("public"),
@@ -117,16 +119,21 @@ impl Site {
     /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
     pub fn load(&mut self) -> Result<()> {
-        let path = self.base_path.to_string_lossy().replace("\\", "/");
-        let content_glob = format!("{}/{}", path, "content/**/*.md");
+        let base_path = self.base_path.to_string_lossy().replace("\\", "/");
+        let content_glob = format!("{}/{}", base_path, "content/**/*.md");
 
         // TODO: make that parallel, that's the main bottleneck
         // `add_section` and `add_page` can't be used in the parallel version afaik
         for entry in glob(&content_glob).unwrap().filter_map(|e| e.ok()) {
             let path = entry.as_path();
-
             if path.file_name().unwrap() == "_index.md" {
-                self.add_section(path)?;
+                // Index section
+                if path.parent().unwrap() == self.base_path.join("content") {
+                    self.index = Some(Section::from_file(path, &self.config)?);
+                } else {
+                    // all the other sections
+                    self.add_section(path)?;
+                }
             } else {
                 self.add_page(path)?;
             }

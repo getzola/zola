@@ -123,14 +123,18 @@ which template will be used to render that section.
 Sections will also automatically pick up their subsections, allowing you to make some complex pages layout and
 table of contents.
 
+A special case is the `_index.md` at the root of the `content` directory which represents the homepage. It is only there
+to control pagination and sorting of the homepage.
+
 ### Code highlighting themes
 Code highlighting can be turned on by setting `highlight_code = true` in `config.toml`.
 
 When turned on, all text between backticks will be highlighted, like the example below.
 
-    ```rust
-    let site = Site::new();
-    ```
+```rust
+let site = Site::new();
+```
+
 If the name of the language is not given, it will default to plain-text highlighting.
 
 Gutenberg uses Sublime Text themes for syntax highlighting. It comes with the following theme
