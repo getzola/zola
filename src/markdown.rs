@@ -121,6 +121,9 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
     let mut in_code_block = false;
     // If we get text in header, we need to insert the id and a anchor
     let mut in_header = false;
+    // pulldown_cmark can send several text events for a title if there are markdown
+    // specific characters like `!` in them. We only want to insert the anchor the first time
+    let mut header_already_inserted = false;
     // the rendered html
     let mut html = String::new();
     let mut anchors: Vec<String> = vec![];
@@ -207,6 +210,9 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                 }
 
                 if in_header {
+                    if header_already_inserted {
+                        return Event::Text(text);
+                    }
                     let id = find_anchor(&anchors, slugify(&text), 0);
                     anchors.push(id.clone());
                     let anchor_link = if config.insert_anchor_links.unwrap() {
@@ -216,6 +222,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                     } else {
                         String::new()
                     };
+                    header_already_inserted = true;
                     return Event::Html(Owned(format!(r#"id="{}">{}{}"#, id, anchor_link, text)));
                 }
 
@@ -288,6 +295,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
             },
             Event::End(Tag::Header(_)) => {
                 in_header = false;
+                header_already_inserted = false;
                 event
             },
             // If we added shortcodes, don't close a paragraph since there's none
@@ -504,5 +512,39 @@ A quote
     fn test_markdown_to_html_add_id_to_headers_same_slug() {
         let res = markdown_to_html("# Hello\n# Hello", &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
         assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
+    }
+
+    #[test]
+    fn test_markdown_to_html_insert_anchor() {
+        let mut config = Config::default();
+        config.insert_anchor_links = Some(true);
+        let res = markdown_to_html("# Hello", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
+        assert_eq!(
+            res,
+            "<h1 id=\"hello\"><a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
+        );
+    }
+
+    // See https://github.com/Keats/gutenberg/issues/42
+    #[test]
+    fn test_markdown_to_html_insert_anchor_with_exclamation_mark() {
+        let mut config = Config::default();
+        config.insert_anchor_links = Some(true);
+        let res = markdown_to_html("# Hello!", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
+        assert_eq!(
+            res,
+            "<h1 id=\"hello\"><a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
+        );
+    }
+
+    #[test]
+    fn test_markdown_to_html_insert_anchor_with_other_special_chars() {
+        let mut config = Config::default();
+        config.insert_anchor_links = Some(true);
+        let res = markdown_to_html("# Hello*_()", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
+        assert_eq!(
+            res,
+            "<h1 id=\"hello\"><a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
+        );
     }
 }
