@@ -5,6 +5,7 @@ name: Assembly x86 (NASM)
 file_extensions:
   - asm
   - inc
+  - nasm
 scope: source.assembly
 contexts:
   main:

@@ -30,6 +30,10 @@ fn main() {
             ps.load_plain_text_syntax();
             ps.load_syntaxes(package_dir, false).unwrap();
             dump_to_file(&ps, packpath_nonewlines).unwrap();
+
+            for s in ps.syntaxes() {
+                println!("Add {} -> {:?}", s.name, s.file_extensions);
+            }
         },
         (Some(ref cmd), Some(ref theme_dir), Some(ref packpath), None) if cmd == "themepack" => {
             let ts = ThemeSet::load_from_folder(theme_dir).unwrap();

@@ -226,6 +226,12 @@ $ git submodule add https://github.com/elm-community/Elm.tmLanguage.git
 Note that you can also only copy manually the updated syntax definition file but this means
 Gutenberg won't be able to automatically update it.
 
+You can check for any updates to the current packages by running:
+
+```bash
+$ git submodule update --remote --merge
+```
+
 And finally from the root of the repository run the following command:
 
 ```bash
