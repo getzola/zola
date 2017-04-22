@@ -79,7 +79,7 @@ impl Site {
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
 
-        let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*");
+        let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.html");
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
         tera.register_filter("markdown", filters::markdown);

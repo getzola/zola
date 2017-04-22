@@ -12,6 +12,7 @@
 - Add tables and footnotes support in markdown
 - Add previous/previous_in_section/next/next_in_section/summary to `Page` 
 - Add more language syntaxes
+- Only load templates ending by `.html`
 
 ## 0.0.3 (2017-04-05)
 - Add some colours in console

@@ -45,7 +45,7 @@ If you want to add some of your own variables, you will need to put them in the 
 they will be silently ignored.
 
 ### Templates
-Templates live in the `templates/` directory.
+Templates live in the `templates/` directory and the files need to end by `.html`.
 Only [Tera](https://github.com/Keats/tera) templates are supported.
 
 Each kind of page get their own variables:
