@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.4 (unreleased)
+## 0.0.4 (2017-04-23)
 - Fix RSS feed link and description
 - Renamed `Page::url` and `Section::url` to `Page::path` and `Section::path`
 - Pass `current_url` and `current_path` to every template
@@ -10,7 +10,6 @@
 - Only copy the static files that changed, not the whole directory in `gutenberg serve`
 - Use summary if available in RSS feed
 - Add tables and footnotes support in markdown
-- Add previous/previous_in_section/next/next_in_section/summary to `Page` 
 - Add more language syntaxes
 - Only load templates ending by `.html`
 

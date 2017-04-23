@@ -1,6 +1,6 @@
 [package]
 name = "gutenberg"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 license = "MIT"
 readme = "README.md"
@@ -30,7 +30,7 @@ syntect = { version = "1", features = ["static-onig"] }
 chrono = "0.3"
 toml = "0.4"
 term-painter = "0.2"
-base64 = "0.4"
+base64 = "0.5"
 
 # Below is for the serve cmd
 staticfile = "0.4"
