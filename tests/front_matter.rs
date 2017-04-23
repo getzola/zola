@@ -53,10 +53,10 @@ authors = ["Bob", "Alice"]"#;
     assert_eq!(res.title, "Hello".to_string());
     assert_eq!(res.slug.unwrap(), "hello-world".to_string());
     let extra = res.extra.unwrap();
-    assert_eq!(extra.get("language").unwrap(), &to_value("en").unwrap());
+    assert_eq!(extra["language"], to_value("en").unwrap());
     assert_eq!(
-    extra.get("authors").unwrap(),
-    &to_value(["Bob".to_string(), "Alice".to_string()]).unwrap()
+        extra["authors"],
+        to_value(["Bob".to_string(), "Alice".to_string()]).unwrap()
     );
 }
 
