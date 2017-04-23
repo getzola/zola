@@ -152,12 +152,13 @@ built-in:
 - solarized-dark
 - solarized-light
 
-### Internal links
+### Internal 
+s
 You can have internal links in your markdown that will be replaced with the full URL when rendering.
 To do so, use the normal markdown link syntax, start the link with `./` and point to the `.md` file you want
 to link to. The path to the file starts from the `content` directory.
 
-For example, linking to a file located at `content/pages/about.md` would be `[my link](./pages/about.md).
+For example, linking to a file located at `content/pages/about.md` would be `[my link](./pages/about.md)`.
 
 ### Anchors
 Headers get an automatic id from their content in order to be able to add deep links. By default no links are actually created but
