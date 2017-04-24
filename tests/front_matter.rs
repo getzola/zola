@@ -125,7 +125,7 @@ title = "Hello"
 description = "hey there"
 date = "2016-10-10""#;
     let res = FrontMatter::parse(content).unwrap();
-    assert!(res.parse_date().is_some());
+    assert!(res.date().is_some());
 }
 
 #[test]
@@ -135,7 +135,7 @@ title = "Hello"
 description = "hey there"
 date = "2002-10-02T15:00:00Z""#;
     let res = FrontMatter::parse(content).unwrap();
-    assert!(res.parse_date().is_some());
+    assert!(res.date().is_some());
 }
 
 #[test]
@@ -145,9 +145,41 @@ title = "Hello"
 description = "hey there"
 date = "2002/10/12""#;
     let res = FrontMatter::parse(content).unwrap();
-    assert!(res.parse_date().is_none());
+    assert!(res.date().is_none());
 }
 
+#[test]
+fn test_cant_parse_sort_by_date() {
+    let content = r#"
+title = "Hello"
+description = "hey there"
+sort_by = "date""#;
+    let res = FrontMatter::parse(content).unwrap();
+    assert!(res.sort_by.is_some());
+    assert!(res.sort_by.unwrap(), SortBy::Date);
+}
+
+#[test]
+fn test_cant_parse_sort_by_order() {
+    let content = r#"
+title = "Hello"
+description = "hey there"
+sort_by = "order""#;
+    let res = FrontMatter::parse(content).unwrap();
+    assert!(res.sort_by.is_some());
+    assert!(res.sort_by.unwrap(), SortBy::Order);
+}
+
+#[test]
+fn test_cant_parse_sort_by_none() {
+    let content = r#"
+title = "Hello"
+description = "hey there"
+sort_by = "none""#;
+    let res = FrontMatter::parse(content).unwrap();
+    assert!(res.sort_by.is_some());
+    assert!(res.sort_by.unwrap(), SortBy::None);
+}
 
 #[test]
 fn test_can_split_content_valid() {
