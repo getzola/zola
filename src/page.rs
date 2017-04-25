@@ -180,7 +180,7 @@ impl Page {
         page.assets = find_related_assets(path.parent().unwrap());
 
         if !page.assets.is_empty() && page.file_name != "index" {
-            bail!("Page `{}` has assets but is not named index.md", path.display());
+            bail!("Page `{}` has assets ({:?}) but is not named index.md", path.display(), page.assets);
         }
 
         Ok(page)
