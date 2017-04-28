@@ -1,6 +1,11 @@
 # Changelog
 
+## 0.0.5 (unreleased)
+
+- Fix XML templates overriding and reloading
+
 ## 0.0.4 (2017-04-23)
+
 - Fix RSS feed link and description
 - Renamed `Page::url` and `Section::url` to `Page::path` and `Section::path`
 - Pass `current_url` and `current_path` to every template
@@ -14,6 +19,7 @@
 - Only load templates ending by `.html`
 
 ## 0.0.3 (2017-04-05)
+
 - Add some colours in console
 - Allow using a file other than config.toml for config
 - Add sections to the index page context

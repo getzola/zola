@@ -80,7 +80,7 @@ impl Site {
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
 
-        let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.html");
+        let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
         tera.register_filter("markdown", filters::markdown);
@@ -307,9 +307,13 @@ impl Site {
         self.build()
     }
 
-    pub fn rebuild_after_template_change(&mut self) -> Result<()> {
+    pub fn rebuild_after_template_change(&mut self, path: &Path) -> Result<()> {
         self.tera.full_reload()?;
-        self.build_pages()
+        match path.file_name().unwrap().to_str().unwrap() {
+            "sitemap.xml" => self.render_sitemap(),
+            "rss.xml" => self.render_rss_feed(),
+            _ => self.build_pages()
+        }
     }
 
     pub fn build_pages(&self) -> Result<()> {

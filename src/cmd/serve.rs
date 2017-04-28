@@ -131,7 +131,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                             (ChangeKind::Templates, _) => {
                                 console::info(&format!("-> Template changed {}", path.display()));
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(), "/x.js");
+                                rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(&path), "/x.js");
                             },
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {
