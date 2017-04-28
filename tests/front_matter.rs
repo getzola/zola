@@ -16,8 +16,8 @@ description = "hey there""#;
     println!("{:?}", res);
     assert!(res.is_ok());
     let res = res.unwrap();
-    assert_eq!(res.title, "Hello".to_string());
-    assert_eq!(res.description, "hey there".to_string());
+    assert_eq!(res.title.unwrap(), "Hello".to_string());
+    assert_eq!(res.description.unwrap(), "hey there".to_string());
 }
 
 #[test]
@@ -31,7 +31,7 @@ tags = ["rust", "html"]"#;
     assert!(res.is_ok());
     let res = res.unwrap();
 
-    assert_eq!(res.title, "Hello".to_string());
+    assert_eq!(res.title.unwrap(), "Hello".to_string());
     assert_eq!(res.slug.unwrap(), "hello-world".to_string());
     assert_eq!(res.tags.unwrap(), ["rust".to_string(), "html".to_string()]);
 }
@@ -50,7 +50,7 @@ authors = ["Bob", "Alice"]"#;
     assert!(res.is_ok());
     let res = res.unwrap();
 
-    assert_eq!(res.title, "Hello".to_string());
+    assert_eq!(res.title.unwrap(), "Hello".to_string());
     assert_eq!(res.slug.unwrap(), "hello-world".to_string());
     let extra = res.extra.unwrap();
     assert_eq!(extra["language"], to_value("en").unwrap());
@@ -83,13 +83,6 @@ fn test_errors_with_empty_front_matter() {
 #[test]
 fn test_errors_with_invalid_front_matter() {
     let content = r#"title = 1\n"#;
-    let res = FrontMatter::parse(content);
-    assert!(res.is_err());
-}
-
-#[test]
-fn test_errors_with_missing_required_value_front_matter() {
-    let content = r#"title = """#;
     let res = FrontMatter::parse(content);
     assert!(res.is_err());
 }
@@ -168,7 +161,7 @@ Hello
 "#;
     let (front_matter, content) = split_content(Path::new(""), content).unwrap();
     assert_eq!(content, "Hello\n");
-    assert_eq!(front_matter.title, "Title");
+    assert_eq!(front_matter.title.unwrap(), "Title");
 }
 
 #[test]
@@ -181,7 +174,7 @@ date = "2002/10/12"
 +++"#;
     let (front_matter, content) = split_content(Path::new(""), content).unwrap();
     assert_eq!(content, "");
-    assert_eq!(front_matter.title, "Title");
+    assert_eq!(front_matter.title.unwrap(), "Title");
 }
 
 #[test]
@@ -195,7 +188,7 @@ date = "2002-10-02T15:00:00Z"
 +++"#;
     let (front_matter, content) = split_content(Path::new(""), content).unwrap();
     assert_eq!(content, "+++");
-    assert_eq!(front_matter.title, "Title");
+    assert_eq!(front_matter.title.unwrap(), "Title");
 }
 
 #[test]

@@ -80,8 +80,10 @@ description = "Some meta info"
 A simple page with fixed url
 ```
 
-A front-matter requires a title, a description and has the following optional variables:
+A front-matter has only optional variables:
 
+- title
+- description
 - date: a YYYY-MM-DD or RFC339 formatted date
 - slug: what slug to use in the url
 - url: this overrides the slug and make this page accessible at `{config.base_url}/{url}`
@@ -90,6 +92,7 @@ A front-matter requires a title, a description and has the following optional va
 - draft: whether the post is a draft or not
 - template: if you want to change the template used to render that specific page
 
+Even if your front-matter is empty, you will need to put the `+++`.
 You can also, like in the config, add your own variables in a `[extra]` table.
 The front-matter will be accessible in templates at the `page.meta` field.
 
@@ -114,11 +117,9 @@ This `_index.md` file needs to include a front-matter as well, but won't have co
 ```md
 +++
 title = "Tutorials"
-description = ""
 +++
 ```
-Both `title` and `description` are mandatory, you can also set the `template` variable to change
-which template will be used to render that section.
+You can also set the `template` variable to change which template will be used to render that section.
 
 Sections will also automatically pick up their subsections, allowing you to make some complex pages layout and
 table of contents.
@@ -152,8 +153,7 @@ built-in:
 - solarized-dark
 - solarized-light
 
-### Internal 
-s
+### Internal links
 You can have internal links in your markdown that will be replaced with the full URL when rendering.
 To do so, use the normal markdown link syntax, start the link with `./` and point to the `.md` file you want
 to link to. The path to the file starts from the `content` directory.

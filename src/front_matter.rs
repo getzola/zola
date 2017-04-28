@@ -18,15 +18,10 @@ lazy_static! {
 /// The front matter of every page
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FrontMatter {
-    // Mandatory fields
-
     /// <title> of the page
-    pub title: String,
-    /// Description that appears when linked, e.g. on twitter
-    pub description: String,
-
-    // Optional stuff
-
+    pub title: Option<String>,
+    /// Description in <meta> that appears when linked, e.g. on twitter
+    pub description: Option<String>,
     /// Date if we want to order pages (ie blog post)
     pub date: Option<String>,
     /// The page slug. Will be used instead of the filename if present

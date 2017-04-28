@@ -26,7 +26,7 @@ Hello world"#;
     let mut page = res.unwrap();
     page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
 
-    assert_eq!(page.meta.title, "Hello".to_string());
+    assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
     assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
     assert_eq!(page.raw_content, "Hello world".to_string());
     assert_eq!(page.content, "<p>Hello world</p>\n".to_string());
