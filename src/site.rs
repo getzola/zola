@@ -201,7 +201,7 @@ impl Site {
 
         for (parent_path, section) in &mut self.sections {
             // TODO: avoid this clone
-            let sorted_pages = sort_pages(section.pages.clone(), Some(&section));
+            let (sorted_pages, _) = sort_pages(section.pages.clone(), Some(&section));
             section.pages = populate_previous_and_next_pages(sorted_pages.as_slice());
 
             match grandparent_paths.get(parent_path) {
@@ -333,41 +333,55 @@ impl Site {
         }
     }
 
+    pub fn render_page(&self, page: &Page) -> Result<()> {
+        let public = self.output_path.clone();
+        if !public.exists() {
+            create_directory(&public)?;
+        }
+
+        // Copy the nesting of the content directory if we have sections for that page
+        let mut current_path = public.to_path_buf();
+
+        for component in page.path.split('/') {
+            current_path.push(component);
+
+            if !current_path.exists() {
+                create_directory(&current_path)?;
+            }
+        }
+
+        // Make sure the folder exists
+        create_directory(&current_path)?;
+
+        // Finally, create a index.html file there with the page rendered
+        let output = page.render_html(&self.tera, &self.config)?;
+        create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
+
+        // Copy any asset we found previously into the same directory as the index.html
+        for asset in &page.assets {
+            let asset_path = asset.as_path();
+            copy(&asset_path, &current_path.join(asset_path.file_name().unwrap()))?;
+        }
+
+        Ok(())
+    }
+
     pub fn build_pages(&self) -> Result<()> {
         let public = self.output_path.clone();
         if !public.exists() {
             create_directory(&public)?;
         }
 
-        let mut pages = vec![];
+        // Sort the pages first
+        // TODO: avoid the clone()
+        let (mut sorted_pages, cannot_sort_pages) = sort_pages(self.pages.values().map(|p| p.clone()).collect(), self.index.as_ref());
 
-        // First we render the pages themselves
-        for page in self.pages.values() {
-            // Copy the nesting of the content directory if we have sections for that page
-            let mut current_path = public.to_path_buf();
-
-            for component in page.path.split('/') {
-                current_path.push(component);
-
-                if !current_path.exists() {
-                    create_directory(&current_path)?;
-                }
-            }
-
-            // Make sure the folder exists
-            create_directory(&current_path)?;
-
-            // Finally, create a index.html file there with the page rendered
-            let output = page.render_html(&self.tera, &self.config)?;
-            create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
-
-            // Copy any asset we found previously into the same directory as the index.html
-            for asset in &page.assets {
-                let asset_path = asset.as_path();
-                copy(&asset_path, &current_path.join(asset_path.file_name().unwrap()))?;
-            }
-
-            pages.push(page.clone());
+        sorted_pages = populate_previous_and_next_pages(&sorted_pages);
+        for page in &sorted_pages {
+            self.render_page(page)?;
+        }
+        for page in &cannot_sort_pages {
+            self.render_page(page)?;
         }
 
         // Outputting categories and pages
@@ -378,13 +392,10 @@ impl Site {
             self.render_categories_and_tags(RenderList::Tags)?;
         }
 
-        // Sort the pages
-        let sorted_pages = sort_pages(pages, self.index.as_ref());
-
         // And finally the index page
         let mut context = Context::new();
 
-        context.add("pages", &populate_previous_and_next_pages(sorted_pages.as_slice()));
+        context.add("pages", &sorted_pages);
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
         context.add("config", &self.config);
         context.add("current_url", &self.config.base_url);

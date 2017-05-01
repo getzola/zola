@@ -126,6 +126,9 @@ fn test_can_build_site_without_live_reload() {
     // Both pages and sections are in the sitemap
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple</loc>"));
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts</loc>"));
+
+    assert!(file_contains!(public, "a-fixed-url/index.html", "Previous article: "));
+    assert!(file_contains!(public, "a-fixed-url/index.html", "Next article: "));
 }
 
 #[test]
