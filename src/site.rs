@@ -202,7 +202,7 @@ impl Site {
         for (parent_path, section) in &mut self.sections {
             // TODO: avoid this clone
             let (sorted_pages, _) = sort_pages(section.pages.clone(), Some(&section));
-            section.pages = populate_previous_and_next_pages(sorted_pages.as_slice());
+            section.pages = sorted_pages;
 
             match grandparent_paths.get(parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),

@@ -106,7 +106,7 @@ along with it that are NOT markdown.
 Those assets will be copied in the same folder when building so you can just use a relative path to use them.
 
 A summary is only defined if you put `<!-- more -->` in the content. If present in a page, the summary will be from
-the start up to that tag.s
+the start up to that tag.
 
 ### Sections
 Sections represent a group of pages, for example a `tutorials` section of your site.
