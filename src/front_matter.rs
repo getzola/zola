@@ -111,8 +111,8 @@ impl FrontMatter {
 impl Default for FrontMatter {
     fn default() -> FrontMatter {
         FrontMatter {
-            title: "default".to_string(),
-            description: " A default front matter".to_string(),
+            title: None,
+            description: None,
             date: None,
             slug: None,
             url: None,

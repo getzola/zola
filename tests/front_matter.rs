@@ -3,7 +3,7 @@ extern crate tera;
 
 use std::path::Path;
 
-use gutenberg::{FrontMatter, split_content};
+use gutenberg::{FrontMatter, split_content, SortBy};
 use tera::to_value;
 
 
@@ -156,7 +156,7 @@ description = "hey there"
 sort_by = "date""#;
     let res = FrontMatter::parse(content).unwrap();
     assert!(res.sort_by.is_some());
-    assert!(res.sort_by.unwrap(), SortBy::Date);
+    assert_eq!(res.sort_by.unwrap(), SortBy::Date);
 }
 
 #[test]
@@ -167,7 +167,7 @@ description = "hey there"
 sort_by = "order""#;
     let res = FrontMatter::parse(content).unwrap();
     assert!(res.sort_by.is_some());
-    assert!(res.sort_by.unwrap(), SortBy::Order);
+    assert_eq!(res.sort_by.unwrap(), SortBy::Order);
 }
 
 #[test]
@@ -178,7 +178,7 @@ description = "hey there"
 sort_by = "none""#;
     let res = FrontMatter::parse(content).unwrap();
     assert!(res.sort_by.is_some());
-    assert!(res.sort_by.unwrap(), SortBy::None);
+    assert_eq!(res.sort_by.unwrap(), SortBy::None);
 }
 
 #[test]
