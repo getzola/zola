@@ -11,7 +11,7 @@ use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket, Sender};
 use gutenberg::Site;
-use gutenberg::errors::{Result};
+use gutenberg::errors::{Result, ResultExt};
 
 
 use ::{report_elapsed_time, unravel_errors};
@@ -71,6 +71,16 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     site.build()?;
     report_elapsed_time(start);
 
+    // Setup watchers
+    let (tx, rx) = channel();
+    let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
+    watcher.watch("content/", RecursiveMode::Recursive)
+        .chain_err(|| format!("Can't watch the `content` folder. Does it exist?"))?;
+    watcher.watch("static/", RecursiveMode::Recursive)
+        .chain_err(|| format!("Can't watch the `static` folder. Does it exist?"))?;
+    watcher.watch("templates/", RecursiveMode::Recursive)
+        .chain_err(|| format!("Can't watch the `templates` folder. Does it exist?"))?;
+
     let ws_address = format!("{}:{}", interface, "1112");
 
     // Start a webserver that serves the `public` directory
@@ -92,12 +102,6 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
         ws_server.listen(&*ws_address).unwrap();
     });
 
-    // And finally watching/reacting on file changes
-    let (tx, rx) = channel();
-    let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
-    watcher.watch("content/", RecursiveMode::Recursive).unwrap();
-    watcher.watch("static/", RecursiveMode::Recursive).unwrap();
-    watcher.watch("templates/", RecursiveMode::Recursive).unwrap();
     let pwd = format!("{}", env::current_dir().unwrap().display());
 
     println!("Listening for changes in {}/{{content, static, templates}}", pwd);
