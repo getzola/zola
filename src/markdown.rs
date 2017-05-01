@@ -253,6 +253,9 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
             },
             // Need to handle relative links
             Event::Start(Tag::Link(ref link, ref title)) => {
+                if in_header {
+                    return Event::Html(Owned("".to_owned()));
+                }
                 if link.starts_with("./") {
                     // First we remove the ./ since that's gutenberg specific
                     let clean_link = link.replacen("./", "", 1);
@@ -277,6 +280,12 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
 
                 Event::Start(Tag::Link(link.clone(), title.clone()))
             },
+            Event::End(Tag::Link(_, _)) => {
+                if in_header {
+                    return Event::Html(Owned("".to_owned()));
+                }
+                event
+            }
             // need to know when we are in a code block to disable shortcodes in them
             Event::Start(Tag::Code) => {
                 in_code_block = true;
@@ -534,6 +543,19 @@ A quote
             "<h1 id=\"hello\"><a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
         );
     }
+
+    // See https://github.com/Keats/gutenberg/issues/53
+    #[test]
+    fn test_markdown_to_html_insert_anchor_with_link() {
+        let mut config = Config::default();
+        config.insert_anchor_links = Some(true);
+        let res = markdown_to_html("## [](#xresources)Xresources", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
+        assert_eq!(
+            res,
+            "<h2 id=\"xresources\"><a class=\"anchor\" href=\"#xresources\" aria-label=\"Anchor link for: xresources\">🔗</a>\nXresources</h2>\n"
+        );
+    }
+
 
     #[test]
     fn test_markdown_to_html_insert_anchor_with_other_special_chars() {
