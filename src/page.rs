@@ -12,7 +12,8 @@ use slug::slugify;
 
 use errors::{Result, ResultExt};
 use config::Config;
-use front_matter::{FrontMatter, split_content};
+use front_matter::{FrontMatter, SortBy, split_content};
+use section::Section;
 use markdown::markdown_to_html;
 use utils::{read_file, find_content_components};
 
@@ -76,14 +77,10 @@ pub struct Page {
     /// as summary
     pub summary: Option<String>,
 
-    /// The previous page, by date globally
+    /// The previous page, by whatever sorting is used for the index/section
     pub previous: Option<Box<Page>>,
-    /// The previous page, by date only for the section the page is in
-    pub previous_in_section: Option<Box<Page>>,
-    /// The next page, by date
+    /// The next page, by whatever sorting is used for the index/section
     pub next: Option<Box<Page>>,
-    /// The next page, by date only for the section the page is in
-    pub next_in_section: Option<Box<Page>>,
 }
 
 
@@ -104,9 +101,7 @@ impl Page {
             summary: None,
             meta: meta,
             previous: None,
-            previous_in_section: None,
             next: None,
-            next_in_section: None,
         }
     }
 
@@ -222,7 +217,7 @@ impl Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 18)?;
+        let mut state = serializer.serialize_struct("page", 16)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
@@ -239,13 +234,65 @@ impl ser::Serialize for Page {
         state.serialize_field("word_count", &word_count)?;
         state.serialize_field("reading_time", &reading_time)?;
         state.serialize_field("previous", &self.previous)?;
-        state.serialize_field("previous_in_section", &self.previous_in_section)?;
         state.serialize_field("next", &self.next)?;
-        state.serialize_field("next_in_section", &self.next_in_section)?;
         state.end()
     }
 }
 
+/// Sort pages using the method for the given section
+///
+/// Any pages that doesn't have a date when the sorting method is date or order
+/// when the sorting method is order will be ignored.
+pub fn sort_pages(pages: Vec<Page>, section: Option<&Section>) -> Vec<Page> {
+    let sort_by = if let Some(ref sec) = section {
+        sec.meta.sort_by()
+    } else {
+        SortBy::Date
+    };
+
+    match sort_by {
+        SortBy::Date => {
+            let mut can_be_sorted = vec![];
+            let mut cannot_be_sorted = vec![];
+            for page in pages {
+                if page.meta.date.is_some() {
+                    can_be_sorted.push(page);
+                } else {
+                    cannot_be_sorted.push(page);
+                }
+            }
+            can_be_sorted.sort_by(|a, b| b.meta.date().unwrap().cmp(&a.meta.date().unwrap()));
+            // can_be_sorted.append(&mut cannot_be_sorted);
+
+            can_be_sorted
+        },
+        SortBy::Order => {
+            let mut can_be_sorted = vec![];
+            let mut cannot_be_sorted = vec![];
+            for page in pages {
+                if page.meta.order.is_some() {
+                    can_be_sorted.push(page);
+                } else {
+                    cannot_be_sorted.push(page);
+                }
+            }
+            can_be_sorted.sort_by(|a, b| b.meta.order().cmp(&a.meta.order()));
+            // can_be_sorted.append(&mut cannot_be_sorted);
+
+            can_be_sorted
+        },
+        SortBy::None => {
+            let mut p = vec![];
+            for page in pages {
+                p.push(page);
+            }
+
+            p
+        },
+    }
+}
+
+/// Used only by the RSS feed (I think)
 impl PartialOrd for Page {
     fn partial_cmp(&self, other: &Page) -> Option<Ordering> {
         if self.meta.date.is_none() {
@@ -256,8 +303,8 @@ impl PartialOrd for Page {
             return Some(Ordering::Greater);
         }
 
-        let this_date = self.meta.parse_date().unwrap();
-        let other_date = other.meta.parse_date().unwrap();
+        let this_date = self.meta.date().unwrap();
+        let other_date = other.meta.date().unwrap();
 
         if this_date > other_date {
             return Some(Ordering::Less);
@@ -273,36 +320,23 @@ impl PartialOrd for Page {
 
 /// Horribly inefficient way to set previous and next on each pages
 /// So many clones
-pub fn populate_previous_and_next_pages(input: &[Page], in_section: bool) -> Vec<Page> {
+pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
     let pages = input.to_vec();
     let mut res = Vec::new();
 
-    // the input is sorted from most recent to least recent already
+    // the input is already sorted
+    // We might put prev/next randomly if a page is missing date/order, probably fine
     for (i, page) in input.iter().enumerate() {
         let mut new_page = page.clone();
 
-        if new_page.has_date() {
-            if i > 0 {
-                let next = &pages[i - 1];
-                if next.has_date() {
-                    if in_section {
-                        new_page.next_in_section = Some(Box::new(next.clone()));
-                    } else {
-                        new_page.next = Some(Box::new(next.clone()));
-                    }
-                }
-            }
+        if i > 0 {
+            let next = &pages[i - 1];
+            new_page.next = Some(Box::new(next.clone()));
+        }
 
-            if i < input.len() - 1 {
-                let previous = &pages[i + 1];
-                if previous.has_date() {
-                    if in_section {
-                        new_page.previous_in_section = Some(Box::new(previous.clone()));
-                    } else {
-                        new_page.previous = Some(Box::new(previous.clone()));
-                    }
-                }
-            }
+        if i < input.len() - 1 {
+            let previous = &pages[i + 1];
+            new_page.previous = Some(Box::new(previous.clone()));
         }
         res.push(new_page);
     }
@@ -315,8 +349,23 @@ mod tests {
     use tempdir::TempDir;
 
     use std::fs::File;
+    use std::path::Path;
 
-    use super::{find_related_assets};
+    use front_matter::{FrontMatter, SortBy};
+    use section::Section;
+    use super::{Page, find_related_assets, sort_pages, populate_previous_and_next_pages};
+
+    fn create_page_with_date(date: &str) -> Page {
+        let mut front_matter = FrontMatter::default();
+        front_matter.date = Some(date.to_string());
+        Page::new(front_matter)
+    }
+
+    fn create_page_with_order(order: usize) -> Page {
+        let mut front_matter = FrontMatter::default();
+        front_matter.order = Some(order);
+        Page::new(front_matter)
+    }
 
     #[test]
     fn test_find_related_assets() {
@@ -332,5 +381,107 @@ mod tests {
         assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "example.js").count(), 1);
         assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "graph.jpg").count(), 1);
         assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "fail.png").count(), 1);
+    }
+
+    #[test]
+    fn test_can_default_sort() {
+        let input = vec![
+            create_page_with_date("2018-01-01"),
+            create_page_with_date("2017-01-01"),
+            create_page_with_date("2019-01-01"),
+        ];
+        let pages = sort_pages(input, None);
+        // Should be sorted by date
+        assert_eq!(pages[0].clone().meta.date.unwrap(), "2019-01-01");
+        assert_eq!(pages[1].clone().meta.date.unwrap(), "2018-01-01");
+        assert_eq!(pages[2].clone().meta.date.unwrap(), "2017-01-01");
+    }
+
+    #[test]
+    fn test_can_sort_dates() {
+        let input = vec![
+            create_page_with_date("2018-01-01"),
+            create_page_with_date("2017-01-01"),
+            create_page_with_date("2019-01-01"),
+        ];
+        let mut front_matter = FrontMatter::default();
+        front_matter.sort_by = Some(SortBy::Date);
+        let section = Section::new(Path::new("hey"), front_matter);
+        let pages = sort_pages(input, Some(&section));
+        // Should be sorted by date
+        assert_eq!(pages[0].clone().meta.date.unwrap(), "2019-01-01");
+        assert_eq!(pages[1].clone().meta.date.unwrap(), "2018-01-01");
+        assert_eq!(pages[2].clone().meta.date.unwrap(), "2017-01-01");
+    }
+
+    #[test]
+    fn test_can_sort_order() {
+        let input = vec![
+            create_page_with_order(2),
+            create_page_with_order(3),
+            create_page_with_order(1),
+        ];
+        let mut front_matter = FrontMatter::default();
+        front_matter.sort_by = Some(SortBy::Order);
+        let section = Section::new(Path::new("hey"), front_matter);
+        let pages = sort_pages(input, Some(&section));
+        // Should be sorted by date
+        assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
+        assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
+        assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_can_sort_none() {
+        let input = vec![
+            create_page_with_order(2),
+            create_page_with_order(3),
+            create_page_with_order(1),
+        ];
+        let mut front_matter = FrontMatter::default();
+        front_matter.sort_by = Some(SortBy::None);
+        let section = Section::new(Path::new("hey"), front_matter);
+        let pages = sort_pages(input, Some(&section));
+        // Should be sorted by date
+        assert_eq!(pages[0].clone().meta.order.unwrap(), 2);
+        assert_eq!(pages[1].clone().meta.order.unwrap(), 3);
+        assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_ignore_page_with_missing_field() {
+        let input = vec![
+            create_page_with_order(2),
+            create_page_with_order(3),
+            create_page_with_date("2019-01-01"),
+        ];
+        let mut front_matter = FrontMatter::default();
+        front_matter.sort_by = Some(SortBy::Order);
+        let section = Section::new(Path::new("hey"), front_matter);
+        let pages = sort_pages(input, Some(&section));
+        assert_eq!(pages.len(), 2);
+    }
+
+    #[test]
+    fn test_populate_previous_and_next_pages() {
+        let input = vec![
+            create_page_with_order(3),
+            create_page_with_order(2),
+            create_page_with_order(1),
+        ];
+        let pages = populate_previous_and_next_pages(input.as_slice());
+
+        assert!(pages[0].clone().next.is_none());
+        assert!(pages[0].clone().previous.is_some());
+        assert_eq!(pages[0].clone().previous.unwrap().meta.order.unwrap(), 2);
+
+        assert!(pages[1].clone().next.is_some());
+        assert!(pages[1].clone().previous.is_some());
+        assert_eq!(pages[1].clone().next.unwrap().meta.order.unwrap(), 3);
+        assert_eq!(pages[1].clone().previous.unwrap().meta.order.unwrap(), 1);
+
+        assert!(pages[2].clone().next.is_some());
+        assert!(pages[2].clone().previous.is_none());
+        assert_eq!(pages[2].clone().next.unwrap().meta.order.unwrap(), 2);
     }
 }

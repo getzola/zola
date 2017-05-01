@@ -32,7 +32,7 @@ mod filters;
 
 pub use site::{Site, GUTENBERG_TERA};
 pub use config::{Config, get_config};
-pub use front_matter::{FrontMatter, split_content};
+pub use front_matter::{FrontMatter, split_content, SortBy};
 pub use page::{Page, populate_previous_and_next_pages};
 pub use section::{Section};
 pub use utils::{create_file};

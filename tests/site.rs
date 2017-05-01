@@ -44,7 +44,7 @@ fn test_can_parse_site() {
     let posts_section = &site.sections[&posts_path];
     assert_eq!(posts_section.subsections.len(), 1);
     //println!("{:#?}", posts_section.pages);
-    assert_eq!(posts_section.pages.len(), 5);
+    assert_eq!(posts_section.pages.len(), 4);
 
     let tutorials_section = &site.sections[&posts_path.join("tutorials")];
     assert_eq!(tutorials_section.subsections.len(), 2);

@@ -44,5 +44,5 @@ fn bench_populate_previous_and_next_pages(b: &mut test::Bencher) {
     let mut pages = site.pages.values().cloned().collect::<Vec<_>>();
     pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-    b.iter(|| populate_previous_and_next_pages(pages.as_slice(), false));
+    b.iter(|| populate_previous_and_next_pages(pages.as_slice()));
 }

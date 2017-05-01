@@ -10,7 +10,7 @@ use walkdir::WalkDir;
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
-use page::{Page, populate_previous_and_next_pages};
+use page::{Page, populate_previous_and_next_pages, sort_pages};
 use utils::{create_file, create_directory};
 use section::{Section};
 use filters;
@@ -200,8 +200,9 @@ impl Site {
         }
 
         for (parent_path, section) in &mut self.sections {
-            section.pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
-            section.pages = populate_previous_and_next_pages(section.pages.as_slice(), true);
+            // TODO: avoid this clone
+            let sorted_pages = sort_pages(section.pages.clone(), Some(&section));
+            section.pages = populate_previous_and_next_pages(sorted_pages.as_slice());
 
             match grandparent_paths.get(parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),
@@ -361,11 +362,13 @@ impl Site {
             self.render_categories_and_tags(RenderList::Tags)?;
         }
 
+        // Sort the pages
+        let sorted_pages = sort_pages(pages, self.index.as_ref());
+
         // And finally the index page
         let mut context = Context::new();
-        pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-        context.add("pages", &populate_previous_and_next_pages(&pages, false));
+        context.add("pages", &populate_previous_and_next_pages(sorted_pages.as_slice()));
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
         context.add("config", &self.config);
         context.add("current_url", &self.config.base_url);
@@ -446,6 +449,10 @@ impl Site {
                 .filter(|&(path, _)| pages_paths.contains(path))
                 .map(|(_, page)| page)
                 .collect();
+            // TODO: how to sort categories and tag content?
+            // Have a setting in config.toml or a _category.md and _tag.md
+            // The latter is more in line with the rest of Gutenberg but order ordering
+            // doesn't really work across sections so default to partial ordering for now (date)
             pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
             let mut context = Context::new();
