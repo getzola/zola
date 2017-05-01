@@ -284,24 +284,40 @@ impl Site {
     }
 
     pub fn rebuild_after_content_change(&mut self, path: &Path) -> Result<()> {
+        let is_section = path.ends_with("_index.md");
+        let is_index_section = if is_section {
+            path.parent().unwrap() == self.base_path.join("content")
+        } else {
+            false
+        };
+
         if path.exists() {
             // file exists, either a new one or updating content
-            if self.pages.contains_key(path) {
-                if path.ends_with("_index.md") {
-                    self.add_section(path)?;
+            if is_section {
+                if is_index_section {
+                    self.index = Some(Section::from_file(path, &self.config)?);
                 } else {
-                    // probably just an update so just re-parse that page
-                    self.add_page_and_render(path)?;
+                    self.add_section(path)?;
                 }
             } else {
-                // new file?
+                // probably just an update so just re-parse that page
                 self.add_page_and_render(path)?;
             }
         } else {
             // File doesn't exist -> a deletion so we remove it from everything
-            let relative_path = self.pages[path].relative_path.clone();
-            self.pages.remove(path);
-            self.permalinks.remove(&relative_path);
+            if is_section {
+                if !is_index_section {
+                    let relative_path = self.sections[path].relative_path.clone();
+                    self.sections.remove(path);
+                    self.permalinks.remove(&relative_path);
+                } else {
+                    self.index = None;
+                }
+            } else {
+                let relative_path = self.pages[path].relative_path.clone();
+                self.pages.remove(path);
+                self.permalinks.remove(&relative_path);
+            }
         }
         self.populate_sections();
         self.populate_tags_and_categories();
