@@ -239,8 +239,10 @@ impl ser::Serialize for Page {
     }
 }
 
-/// Sort pages
-/// TODO: write doc and tests
+/// Sort pages using the method for the given section
+///
+/// Any pages that doesn't have a date when the sorting method is date or order
+/// when the sorting method is order will be ignored.
 pub fn sort_pages(pages: Vec<Page>, section: Option<&Section>) -> Vec<Page> {
     let sort_by = if let Some(ref sec) = section {
         sec.meta.sort_by()
@@ -260,7 +262,7 @@ pub fn sort_pages(pages: Vec<Page>, section: Option<&Section>) -> Vec<Page> {
                 }
             }
             can_be_sorted.sort_by(|a, b| b.meta.date().unwrap().cmp(&a.meta.date().unwrap()));
-            can_be_sorted.append(&mut cannot_be_sorted);
+            // can_be_sorted.append(&mut cannot_be_sorted);
 
             can_be_sorted
         },
@@ -275,7 +277,7 @@ pub fn sort_pages(pages: Vec<Page>, section: Option<&Section>) -> Vec<Page> {
                 }
             }
             can_be_sorted.sort_by(|a, b| b.meta.order().cmp(&a.meta.order()));
-            can_be_sorted.append(&mut cannot_be_sorted);
+            // can_be_sorted.append(&mut cannot_be_sorted);
 
             can_be_sorted
         },
@@ -427,6 +429,37 @@ mod tests {
         assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
         assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
         assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_can_sort_none() {
+        let input = vec![
+            create_page_with_order(2),
+            create_page_with_order(3),
+            create_page_with_order(1),
+        ];
+        let mut front_matter = FrontMatter::default();
+        front_matter.sort_by = Some(SortBy::None);
+        let section = Section::new(Path::new("hey"), front_matter);
+        let pages = sort_pages(input, Some(&section));
+        // Should be sorted by date
+        assert_eq!(pages[0].clone().meta.order.unwrap(), 2);
+        assert_eq!(pages[1].clone().meta.order.unwrap(), 3);
+        assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_ignore_page_with_missing_field() {
+        let input = vec![
+            create_page_with_order(2),
+            create_page_with_order(3),
+            create_page_with_date("2019-01-01"),
+        ];
+        let mut front_matter = FrontMatter::default();
+        front_matter.sort_by = Some(SortBy::Order);
+        let section = Section::new(Path::new("hey"), front_matter);
+        let pages = sort_pages(input, Some(&section));
+        assert_eq!(pages.len(), 2);
     }
 
     #[test]

@@ -1,6 +1,6 @@
 +++
 title = "Rust"
-description = ""
+order = 2
 +++
 
 A simple page

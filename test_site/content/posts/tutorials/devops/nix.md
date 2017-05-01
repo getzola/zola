@@ -1,7 +1,6 @@
 +++
 title = "Nix"
-description = ""
-date = "2017-03-01"
+order = 2
 +++
 
 A simple page
