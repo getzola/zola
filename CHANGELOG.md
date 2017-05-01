@@ -4,6 +4,7 @@
 
 - Fix XML templates overriding and reloading
 - `title` and `description` are now optional in the front matter
+- Add GenericConfig, Vim syntax
 
 ## 0.0.4 (2017-04-23)
 

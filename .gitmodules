@@ -25,3 +25,9 @@
 [submodule "sublime_syntaxes/SublimeTextLinkerSyntax"]
 	path = sublime_syntaxes/SublimeTextLinkerSyntax
 	url = https://github.com/jbw3/SublimeTextLinkerSyntax.git
+[submodule "sublime_syntaxes/Sublime-GenericConfig"]
+	path = sublime_syntaxes/Sublime-GenericConfig
+	url = https://github.com/skozlovf/Sublime-GenericConfig.git
+[submodule "sublime_syntaxes/Sublime-VimL"]
+	path = sublime_syntaxes/Sublime-VimL
+	url = https://github.com/SalGnt/Sublime-VimL.git
