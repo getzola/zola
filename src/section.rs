@@ -8,7 +8,7 @@ use config::Config;
 use front_matter::{FrontMatter, split_content};
 use errors::{Result, ResultExt};
 use utils::{read_file, find_content_components};
-use page::Page;
+use page::{Page, sort_pages};
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -34,7 +34,9 @@ pub struct Section {
 }
 
 impl Section {
-    pub fn new(file_path: &Path, meta: FrontMatter) -> Section {
+    pub fn new<P: AsRef<Path>>(file_path: P, meta: FrontMatter) -> Section {
+        let file_path = file_path.as_ref();
+
         Section {
             file_path: file_path.to_path_buf(),
             relative_path: "".to_string(),
@@ -54,8 +56,11 @@ impl Section {
         section.components = find_content_components(&section.file_path);
         section.path = section.components.join("/");
         section.permalink = config.make_permalink(&section.path);
-        section.relative_path = format!("{}/_index.md", section.components.join("/"));
-
+        if section.components.len() == 0 {
+            section.relative_path = "_index.md".to_string();
+        } else {
+            section.relative_path = format!("{}/_index.md", section.components.join("/"));
+        }
 
         Ok(section)
     }
@@ -68,15 +73,22 @@ impl Section {
         Section::parse(path, &content, config)
     }
 
+    pub fn get_template_name(&self) -> String {
+        match self.meta.template {
+            Some(ref l) => l.to_string(),
+            None => {
+                if self.is_index() {
+                    return "index.html".to_string();
+                }
+                "section.html".to_string()
+            },
+        }
+    }
+
     /// Renders the page using the default layout, unless specified in front-matter
     pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
-        let tpl_name = match self.meta.template {
-            Some(ref l) => l.to_string(),
-            None => "section.html".to_string()
-        };
+        let tpl_name = self.get_template_name();
 
-        // TODO: create a helper to create context to ensure all contexts
-        // have the same names
         let mut context = Context::new();
         context.add("config", config);
         context.add("section", self);
@@ -85,6 +97,10 @@ impl Section {
 
         tera.render(&tpl_name, &context)
             .chain_err(|| format!("Failed to render section '{}'", self.file_path.display()))
+    }
+
+    pub fn is_index(&self) -> bool {
+        self.components.len() == 0
     }
 }
 
@@ -95,7 +111,8 @@ impl ser::Serialize for Section {
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("path", &format!("/{}", self.path))?;
         state.serialize_field("permalink", &self.permalink)?;
-        state.serialize_field("pages", &self.pages)?;
+        let (sorted_pages, _) = sort_pages(self.pages.clone(), Some(self));
+        state.serialize_field("pages", &sorted_pages)?;
         state.serialize_field("subsections", &self.subsections)?;
         state.end()
     }

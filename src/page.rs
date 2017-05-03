@@ -244,10 +244,10 @@ impl ser::Serialize for Page {
 /// Any pages that doesn't have a date when the sorting method is date or order
 /// when the sorting method is order will be ignored.
 pub fn sort_pages(pages: Vec<Page>, section: Option<&Section>) -> (Vec<Page>, Vec<Page>) {
-    let sort_by = if let Some(ref sec) = section {
-        sec.meta.sort_by()
+    let sort_by = if let Some(s) = section {
+        s.meta.sort_by()
     } else {
-        SortBy::Date
+        SortBy::None
     };
 
     match sort_by {
@@ -390,9 +390,9 @@ mod tests {
         ];
         let (pages, _) = sort_pages(input, None);
         // Should be sorted by date
-        assert_eq!(pages[0].clone().meta.date.unwrap(), "2019-01-01");
-        assert_eq!(pages[1].clone().meta.date.unwrap(), "2018-01-01");
-        assert_eq!(pages[2].clone().meta.date.unwrap(), "2017-01-01");
+        assert_eq!(pages[0].clone().meta.date.unwrap(), "2018-01-01");
+        assert_eq!(pages[1].clone().meta.date.unwrap(), "2017-01-01");
+        assert_eq!(pages[2].clone().meta.date.unwrap(), "2019-01-01");
     }
 
     #[test]

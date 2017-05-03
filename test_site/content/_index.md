@@ -1,4 +1,3 @@
 +++
-title = "Home"
-description = ""
+title = "Index"
 +++

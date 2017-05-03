@@ -124,12 +124,16 @@ You can also set the `template` variable to change which template will be used t
 Sections will also automatically pick up their subsections, allowing you to make some complex pages layout and
 table of contents.
 
-You can define how a section pages are sorted using the `sort_by` key in the front-matter. The choices are `date` (default), `order`
-and `none`. Pages that can be sorted will currently be silently dropped: the final page will be rendered but it will not appear in 
+You can define how a section pages are sorted using the `sort_by` key in the front-matter. The choices are `date`, `order`
+and `none` (default). Pages that can't be sorted will currently be silently dropped: the final page will be rendered but it will not appear in 
 the `pages` variable in the section template.
 
 A special case is the `_index.md` at the root of the `content` directory which represents the homepage. It is only there
 to control pagination and sorting of the homepage.
+
+You can also paginate section, including the index by setting the `paginate_by` field in the front matter to an integer. 
+This represents the number of pages for each pager of the paginator. 
+You will need to access pages through the `paginator` object. (TODO: document that).
 
 ### Code highlighting themes
 Code highlighting can be turned on by setting `highlight_code = true` in `config.toml`.
