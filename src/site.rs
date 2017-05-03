@@ -16,6 +16,7 @@ use utils::{create_file, create_directory};
 use section::{Section};
 use front_matter::{SortBy};
 use filters;
+use global_fns;
 
 
 lazy_static! {
@@ -190,6 +191,8 @@ impl Site {
         self.permalinks = permalinks;
         self.populate_sections();
         self.populate_tags_and_categories();
+
+        self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
 
         Ok(())
     }
