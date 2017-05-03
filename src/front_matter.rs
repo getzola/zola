@@ -44,7 +44,7 @@ pub struct FrontMatter {
     pub draft: Option<bool>,
     /// Only one category allowed
     pub category: Option<String>,
-    /// Whether to sort by "date", "order" or "none"
+    /// Whether to sort by "date", "order" or "none". Defaults to `none`.
     #[serde(skip_serializing)]
     pub sort_by: Option<SortBy>,
     /// Integer to use to order content. Lowest is at the bottom, highest first
@@ -52,6 +52,12 @@ pub struct FrontMatter {
     /// Optional template, if we want to specify which template to render for that page
     #[serde(skip_serializing)]
     pub template: Option<String>,
+    /// How many pages to be displayed per paginated page. No pagination will happen if this isn't set
+    #[serde(skip_serializing)]
+    pub paginate_by: Option<usize>,
+    /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
+    #[serde(skip_serializing)]
+    pub paginate_path: Option<String>,
     /// Any extra parameter present in the front matter
     pub extra: Option<HashMap<String, Value>>,
 }
@@ -62,7 +68,7 @@ impl FrontMatter {
             bail!("Front matter of file is missing");
         }
 
-        let f: FrontMatter = match toml::from_str(toml) {
+        let mut f: FrontMatter = match toml::from_str(toml) {
             Ok(d) => d,
             Err(e) => bail!(e),
         };
@@ -78,6 +84,12 @@ impl FrontMatter {
                 bail!("`url` can't be empty if present")
             }
         }
+
+        if f.paginate_path.is_none() {
+            f.paginate_path = Some("page".to_string());
+        }
+
+
 
         Ok(f)
     }
@@ -106,6 +118,14 @@ impl FrontMatter {
             None => SortBy::Date,
         }
     }
+
+    /// Only applies to section, whether it is paginated or not.
+    pub fn is_paginated(&self) -> bool {
+        match self.paginate_by {
+            Some(v) => v > 0,
+            None => false
+        }
+    }
 }
 
 impl Default for FrontMatter {
@@ -122,6 +142,8 @@ impl Default for FrontMatter {
             sort_by: None,
             order: None,
             template: None,
+            paginate_by: None,
+            paginate_path: None,
             extra: None,
         }
     }

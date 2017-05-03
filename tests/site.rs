@@ -43,7 +43,6 @@ fn test_can_parse_site() {
     // And that the sections are correct
     let posts_section = &site.sections[&posts_path];
     assert_eq!(posts_section.subsections.len(), 1);
-    //println!("{:#?}", posts_section.pages);
     assert_eq!(posts_section.pages.len(), 4);
 
     let tutorials_section = &site.sections[&posts_path.join("tutorials")];
@@ -82,6 +81,7 @@ macro_rules! file_contains {
             let mut file = File::open(&path).unwrap();
             let mut s = String::new();
             file.read_to_string(&mut s).unwrap();
+            println!("{}", s);
             s.contains($text)
         }
     }
@@ -286,4 +286,99 @@ fn test_can_build_site_and_insert_anchor_links() {
     assert!(Path::new(&public).exists());
     // anchor link inserted
     assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"anchor\" href=\"#title\""));
+}
+
+#[test]
+fn test_can_build_site_with_pagination_for_section() {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.load().unwrap();
+    for section in site.sections.values_mut(){
+        section.meta.paginate_by = Some(2);
+        section.meta.template = Some("section_paginated.html".to_string());
+    }
+    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_exists!(public, "sitemap.xml"));
+    assert!(file_exists!(public, "robots.txt"));
+    assert!(file_exists!(public, "a-fixed-url/index.html"));
+    assert!(file_exists!(public, "posts/python/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(public, "posts/with-assets/index.html"));
+
+    // Sections
+    assert!(file_exists!(public, "posts/index.html"));
+    // And pagination!
+    assert!(file_exists!(public, "posts/page/1/index.html"));
+    // should redirect to posts/
+    assert!(file_contains!(
+        public,
+        "posts/page/1/index.html",
+        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts\""
+    ));
+    assert!(file_contains!(public, "posts/index.html", "Num pages: 2"));
+    assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
+    assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
+    assert!(file_contains!(public, "posts/index.html", "has_next"));
+    assert!(file_contains!(public, "posts/index.html", "First: https://replace-this-with-your-url.com/posts"));
+    assert!(file_contains!(public, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/2"));
+    assert_eq!(file_contains!(public, "posts/index.html", "has_prev"), false);
+
+    assert!(file_exists!(public, "posts/page/2/index.html"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Num pages: 2"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Page size: 2"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
+    assert_eq!(file_contains!(public, "posts/page/2/index.html", "has_next"), false);
+    assert!(file_contains!(public, "posts/page/2/index.html", "First: https://replace-this-with-your-url.com/posts"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/2"));
+}
+
+#[test]
+fn test_can_build_site_with_pagination_for_index() {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.load().unwrap();
+    let mut index = site.index.unwrap();
+    index.meta.paginate_by = Some(2);
+    index.meta.template = Some("index_paginated.html".to_string());
+    site.index = Some(index);
+    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_exists!(public, "sitemap.xml"));
+    assert!(file_exists!(public, "robots.txt"));
+    assert!(file_exists!(public, "a-fixed-url/index.html"));
+    assert!(file_exists!(public, "posts/python/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(public, "posts/with-assets/index.html"));
+
+    // And pagination!
+    assert!(file_exists!(public, "page/1/index.html"));
+    // should redirect to index
+    assert!(file_contains!(
+        public,
+        "page/1/index.html",
+        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
+    ));
+    assert!(file_contains!(public, "index.html", "Num pages: 2"));
+    assert!(file_contains!(public, "index.html", "Current index: 1"));
+    assert!(file_contains!(public, "index.html", "has_next"));
+    assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
+    assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/page/2"));
+    assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
+
 }

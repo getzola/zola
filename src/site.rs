@@ -11,6 +11,7 @@ use walkdir::WalkDir;
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use page::{Page, populate_previous_and_next_pages, sort_pages};
+use pagination::Paginator;
 use utils::{create_file, create_directory};
 use section::{Section};
 use filters;
@@ -28,9 +29,21 @@ lazy_static! {
             ("shortcodes/youtube.html", include_str!("templates/shortcodes/youtube.html")),
             ("shortcodes/vimeo.html", include_str!("templates/shortcodes/vimeo.html")),
             ("shortcodes/gist.html", include_str!("templates/shortcodes/gist.html")),
+
+            ("internal/alias.html", include_str!("templates/internal/alias.html")),
         ]).unwrap();
         tera
     };
+}
+
+/// Renders the `internal/alias.html` template that will redirect
+/// via refresh to the url given
+fn render_alias(url: &str, tera: &Tera) -> Result<String> {
+    let mut context = Context::new();
+    context.add("url", &url);
+
+    tera.render("internal/alias.html", &context)
+        .chain_err(|| format!("Failed to render alias for '{}'", url))
 }
 
 
@@ -201,7 +214,7 @@ impl Site {
 
         for (parent_path, section) in &mut self.sections {
             // TODO: avoid this clone
-            let (sorted_pages, _) = sort_pages(section.pages.clone(), Some(&section));
+            let (sorted_pages, _) = sort_pages(section.pages.clone(), Some(section));
             section.pages = sorted_pages;
 
             match grandparent_paths.get(parent_path) {
@@ -303,22 +316,21 @@ impl Site {
                 // probably just an update so just re-parse that page
                 self.add_page_and_render(path)?;
             }
-        } else {
+        } else if is_section {
             // File doesn't exist -> a deletion so we remove it from everything
-            if is_section {
-                if !is_index_section {
-                    let relative_path = self.sections[path].relative_path.clone();
-                    self.sections.remove(path);
-                    self.permalinks.remove(&relative_path);
-                } else {
-                    self.index = None;
-                }
-            } else {
-                let relative_path = self.pages[path].relative_path.clone();
-                self.pages.remove(path);
+            if !is_index_section {
+                let relative_path = self.sections[path].relative_path.clone();
+                self.sections.remove(path);
                 self.permalinks.remove(&relative_path);
+            } else {
+                self.index = None;
             }
+        } else {
+            let relative_path = self.pages[path].relative_path.clone();
+            self.pages.remove(path);
+            self.permalinks.remove(&relative_path);
         }
+
         self.populate_sections();
         self.populate_tags_and_categories();
         self.build()
@@ -333,6 +345,7 @@ impl Site {
         }
     }
 
+    /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
         let public = self.output_path.clone();
         if !public.exists() {
@@ -366,6 +379,7 @@ impl Site {
         Ok(())
     }
 
+    /// Renders all content, categories, tags and index pages
     pub fn build_pages(&self) -> Result<()> {
         let public = self.output_path.clone();
         if !public.exists() {
@@ -374,7 +388,7 @@ impl Site {
 
         // Sort the pages first
         // TODO: avoid the clone()
-        let (mut sorted_pages, cannot_sort_pages) = sort_pages(self.pages.values().map(|p| p.clone()).collect(), self.index.as_ref());
+        let (mut sorted_pages, cannot_sort_pages) = sort_pages(self.pages.values().cloned().collect(), self.index.as_ref());
 
         sorted_pages = populate_previous_and_next_pages(&sorted_pages);
         for page in &sorted_pages {
@@ -393,15 +407,26 @@ impl Site {
         }
 
         // And finally the index page
-        let mut context = Context::new();
+        let mut rendered_index = false;
+        // Try to render the index as a paginated page first if needed
+        if let Some(ref i) = self.index {
+            if i.meta.is_paginated() {
+                self.render_paginated(&self.output_path, i)?;
+                rendered_index = true;
+            }
+        }
 
-        context.add("pages", &sorted_pages);
-        context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
-        context.add("config", &self.config);
-        context.add("current_url", &self.config.base_url);
-        context.add("current_path", &"");
-        let index = self.tera.render("index.html", &context)?;
-        create_file(public.join("index.html"), &self.inject_livereload(index))?;
+        // Otherwise render the default index page
+        if !rendered_index {
+            let mut context = Context::new();
+            context.add("pages", &sorted_pages);
+            context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
+            context.add("config", &self.config);
+            context.add("current_url", &self.config.base_url);
+            context.add("current_path", &"");
+            let index = self.tera.render("index.html", &context)?;
+            create_file(public.join("index.html"), &self.inject_livereload(index))?;
+        }
 
         Ok(())
     }
@@ -422,6 +447,7 @@ impl Site {
         self.copy_static_directory()
     }
 
+    /// Renders robots.txt
     fn render_robots(&self) -> Result<()> {
         create_file(
             self.output_path.join("robots.txt"),
@@ -580,8 +606,46 @@ impl Site {
                 }
             }
 
-            let output = section.render_html(&self.tera, &self.config)?;
-            create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+            if section.meta.is_paginated() {
+                self.render_paginated(&output_path, section)?;
+            } else {
+                let output = section.render_html(&self.tera, &self.config)?;
+                create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Renders a list of pages when the section/index is wanting pagination.
+    fn render_paginated(&self, output_path: &Path, section: &Section) -> Result<()> {
+        let paginate_path = match section.meta.paginate_path {
+            Some(ref s) => s.clone(),
+            None => unreachable!()
+        };
+
+        // this will sort too many times!
+        // TODO: make sorting happen once for everything so we don't need to sort all the time
+        let sorted_pages = if section.is_index() {
+            sort_pages(self.pages.values().cloned().collect(), self.index.as_ref()).0
+        } else {
+            sort_pages(section.pages.clone(), Some(section)).0
+        };
+
+        let paginator = Paginator::new(&sorted_pages, section);
+
+        for (i, pager) in paginator.pagers.iter().enumerate() {
+            let folder_path = output_path.join(&paginate_path);
+            let page_path = folder_path.join(&format!("{}", i + 1));
+            create_directory(&folder_path)?;
+            create_directory(&page_path)?;
+            let output = paginator.render_pager(pager, self)?;
+            if i > 0 {
+                create_file(page_path.join("index.html"), &self.inject_livereload(output))?;
+            } else {
+                create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+                create_file(page_path.join("index.html"), &render_alias(&section.permalink, &self.tera)?)?;
+            }
         }
 
         Ok(())

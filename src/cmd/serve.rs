@@ -75,11 +75,11 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
     watcher.watch("content/", RecursiveMode::Recursive)
-        .chain_err(|| format!("Can't watch the `content` folder. Does it exist?"))?;
+        .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
     watcher.watch("static/", RecursiveMode::Recursive)
-        .chain_err(|| format!("Can't watch the `static` folder. Does it exist?"))?;
+        .chain_err(|| "Can't watch the `static` folder. Does it exist?")?;
     watcher.watch("templates/", RecursiveMode::Recursive)
-        .chain_err(|| format!("Can't watch the `templates` folder. Does it exist?"))?;
+        .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
 
     let ws_address = format!("{}:{}", interface, "1112");
 
