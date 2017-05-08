@@ -56,7 +56,7 @@ impl Section {
         section.components = find_content_components(&section.file_path);
         section.path = section.components.join("/");
         section.permalink = config.make_permalink(&section.path);
-        if section.components.len() == 0 {
+        if section.components.is_empty() {
             section.relative_path = "_index.md".to_string();
         } else {
             section.relative_path = format!("{}/_index.md", section.components.join("/"));
@@ -100,7 +100,7 @@ impl Section {
     }
 
     pub fn is_index(&self) -> bool {
-        self.components.len() == 0
+        self.components.is_empty()
     }
 }
 

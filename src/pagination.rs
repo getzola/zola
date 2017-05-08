@@ -66,10 +66,10 @@ impl<'a> Paginator<'a> {
         }
 
         let mut pagers = vec![];
-        for index in 0..pages.len() {
+        for (index, page) in pages.iter().enumerate() {
             // First page has no pagination path
             if index == 0 {
-                pagers.push(Pager::new(1, pages[index].clone(), section.permalink.clone(), section.path.clone()));
+                pagers.push(Pager::new(1, page.clone(), section.permalink.clone(), section.path.clone()));
                 continue;
             }
 
@@ -81,13 +81,11 @@ impl<'a> Paginator<'a> {
             };
             pagers.push(Pager::new(
                 index + 1,
-                pages[index].clone(),
+                page.clone(),
                 permalink,
-                if section.is_index() { format!("{}", page_path) } else { format!("{}/{}", section.path, page_path) }
+                if section.is_index() { page_path } else { format!("{}/{}", section.path, page_path) }
             ));
         }
-
-        //println!("{:?}", pagers);
 
         Paginator {
             all_pages: all_pages,
