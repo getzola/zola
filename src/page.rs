@@ -1,5 +1,4 @@
 /// A page, can be a blog post or a basic page
-use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::{read_dir};
 use std::path::{Path, PathBuf};
@@ -13,7 +12,6 @@ use slug::slugify;
 use errors::{Result, ResultExt};
 use config::Config;
 use front_matter::{FrontMatter, SortBy, split_content};
-use section::Section;
 use markdown::markdown_to_html;
 use utils::{read_file, find_content_components};
 
@@ -243,13 +241,7 @@ impl ser::Serialize for Page {
 ///
 /// Any pages that doesn't have a date when the sorting method is date or order
 /// when the sorting method is order will be ignored.
-pub fn sort_pages(pages: Vec<Page>, section: Option<&Section>) -> (Vec<Page>, Vec<Page>) {
-    let sort_by = if let Some(s) = section {
-        s.meta.sort_by()
-    } else {
-        SortBy::None
-    };
-
+pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
     match sort_by {
         SortBy::Date => {
             let mut can_be_sorted = vec![];
@@ -290,32 +282,6 @@ pub fn sort_pages(pages: Vec<Page>, section: Option<&Section>) -> (Vec<Page>, Ve
     }
 }
 
-/// Used only by the RSS feed (I think)
-impl PartialOrd for Page {
-    fn partial_cmp(&self, other: &Page) -> Option<Ordering> {
-        if self.meta.date.is_none() {
-            return Some(Ordering::Less);
-        }
-
-        if other.meta.date.is_none() {
-            return Some(Ordering::Greater);
-        }
-
-        let this_date = self.meta.date().unwrap();
-        let other_date = other.meta.date().unwrap();
-
-        if this_date > other_date {
-            return Some(Ordering::Less);
-        }
-        if this_date < other_date {
-            return Some(Ordering::Greater);
-        }
-
-        Some(Ordering::Equal)
-    }
-}
-
-
 /// Horribly inefficient way to set previous and next on each pages
 /// So many clones
 pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
@@ -347,10 +313,8 @@ mod tests {
     use tempdir::TempDir;
 
     use std::fs::File;
-    use std::path::Path;
 
     use front_matter::{FrontMatter, SortBy};
-    use section::Section;
     use super::{Page, find_related_assets, sort_pages, populate_previous_and_next_pages};
 
     fn create_page_with_date(date: &str) -> Page {
@@ -382,30 +346,13 @@ mod tests {
     }
 
     #[test]
-    fn test_can_default_sort() {
-        let input = vec![
-            create_page_with_date("2018-01-01"),
-            create_page_with_date("2017-01-01"),
-            create_page_with_date("2019-01-01"),
-        ];
-        let (pages, _) = sort_pages(input, None);
-        // Should be sorted by date
-        assert_eq!(pages[0].clone().meta.date.unwrap(), "2018-01-01");
-        assert_eq!(pages[1].clone().meta.date.unwrap(), "2017-01-01");
-        assert_eq!(pages[2].clone().meta.date.unwrap(), "2019-01-01");
-    }
-
-    #[test]
     fn test_can_sort_dates() {
         let input = vec![
             create_page_with_date("2018-01-01"),
             create_page_with_date("2017-01-01"),
             create_page_with_date("2019-01-01"),
         ];
-        let mut front_matter = FrontMatter::default();
-        front_matter.sort_by = Some(SortBy::Date);
-        let section = Section::new(Path::new("hey"), front_matter);
-        let (pages, _) = sort_pages(input, Some(&section));
+        let (pages, _) = sort_pages(input, SortBy::Date);
         // Should be sorted by date
         assert_eq!(pages[0].clone().meta.date.unwrap(), "2019-01-01");
         assert_eq!(pages[1].clone().meta.date.unwrap(), "2018-01-01");
@@ -419,10 +366,7 @@ mod tests {
             create_page_with_order(3),
             create_page_with_order(1),
         ];
-        let mut front_matter = FrontMatter::default();
-        front_matter.sort_by = Some(SortBy::Order);
-        let section = Section::new(Path::new("hey"), front_matter);
-        let (pages, _) = sort_pages(input, Some(&section));
+        let (pages, _) = sort_pages(input, SortBy::Order);
         // Should be sorted by date
         assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
         assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
@@ -436,10 +380,7 @@ mod tests {
             create_page_with_order(3),
             create_page_with_order(1),
         ];
-        let mut front_matter = FrontMatter::default();
-        front_matter.sort_by = Some(SortBy::None);
-        let section = Section::new(Path::new("hey"), front_matter);
-        let (pages, _) = sort_pages(input, Some(&section));
+        let (pages, _) = sort_pages(input, SortBy::None);
         // Should be sorted by date
         assert_eq!(pages[0].clone().meta.order.unwrap(), 2);
         assert_eq!(pages[1].clone().meta.order.unwrap(), 3);
@@ -453,10 +394,7 @@ mod tests {
             create_page_with_order(3),
             create_page_with_date("2019-01-01"),
         ];
-        let mut front_matter = FrontMatter::default();
-        front_matter.sort_by = Some(SortBy::Order);
-        let section = Section::new(Path::new("hey"), front_matter);
-        let (pages, unsorted) = sort_pages(input, Some(&section));
+        let (pages, unsorted) = sort_pages(input, SortBy::Order);
         assert_eq!(pages.len(), 2);
         assert_eq!(unsorted.len(), 1);
     }

@@ -74,10 +74,10 @@ url = "hello-world""#;
 }
 
 #[test]
-fn test_errors_with_empty_front_matter() {
+fn test_is_ok_with_empty_front_matter() {
     let content = r#"  "#;
     let res = FrontMatter::parse(content);
-    assert!(res.is_err());
+    assert!(res.is_ok());
 }
 
 #[test]

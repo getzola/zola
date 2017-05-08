@@ -14,7 +14,7 @@ lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^\r?\n?\+\+\+\r?\n((?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SortBy {
     Date,
@@ -64,10 +64,6 @@ pub struct FrontMatter {
 
 impl FrontMatter {
     pub fn parse(toml: &str) -> Result<FrontMatter> {
-        if toml.trim() == "" {
-            bail!("Front matter of file is missing");
-        }
-
         let mut f: FrontMatter = match toml::from_str(toml) {
             Ok(d) => d,
             Err(e) => bail!(e),
@@ -88,8 +84,6 @@ impl FrontMatter {
         if f.paginate_path.is_none() {
             f.paginate_path = Some("page".to_string());
         }
-
-
 
         Ok(f)
     }
@@ -112,10 +106,11 @@ impl FrontMatter {
         self.order.unwrap()
     }
 
+    /// Returns the current sorting method, defaults to `None` (== no sorting)
     pub fn sort_by(&self) -> SortBy {
         match self.sort_by {
-            Some(ref s) => s.clone(),
-            None => SortBy::Date,
+            Some(ref s) => *s,
+            None => SortBy::None,
         }
     }
 

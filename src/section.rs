@@ -8,7 +8,7 @@ use config::Config;
 use front_matter::{FrontMatter, split_content};
 use errors::{Result, ResultExt};
 use utils::{read_file, find_content_components};
-use page::{Page, sort_pages};
+use page::{Page};
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -29,6 +29,8 @@ pub struct Section {
     pub meta: FrontMatter,
     /// All direct pages of that section
     pub pages: Vec<Page>,
+    /// All pages that cannot be sorted in this section
+    pub ignored_pages: Vec<Page>,
     /// All direct subsections
     pub subsections: Vec<Section>,
 }
@@ -46,6 +48,7 @@ impl Section {
             permalink: "".to_string(),
             meta: meta,
             pages: vec![],
+            ignored_pages: vec![],
             subsections: vec![],
         }
     }
@@ -86,7 +89,7 @@ impl Section {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, sections: &[&Section], tera: &Tera, config: &Config) -> Result<String> {
         let tpl_name = self.get_template_name();
 
         let mut context = Context::new();
@@ -94,13 +97,24 @@ impl Section {
         context.add("section", self);
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
+        if self.is_index() {
+            context.add("sections", &sections);
+        }
 
         tera.render(&tpl_name, &context)
             .chain_err(|| format!("Failed to render section '{}'", self.file_path.display()))
     }
 
+    /// Is this the index section?
     pub fn is_index(&self) -> bool {
         self.components.is_empty()
+    }
+
+    pub fn all_pages_path(&self) -> Vec<PathBuf> {
+        let mut paths = vec![];
+        paths.extend(self.pages.iter().map(|p| p.file_path.clone()));
+        paths.extend(self.ignored_pages.iter().map(|p| p.file_path.clone()));
+        paths
     }
 }
 
@@ -111,8 +125,7 @@ impl ser::Serialize for Section {
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("path", &format!("/{}", self.path))?;
         state.serialize_field("permalink", &self.permalink)?;
-        let (sorted_pages, _) = sort_pages(self.pages.clone(), Some(self));
-        state.serialize_field("pages", &sorted_pages)?;
+        state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
         state.end()
     }
