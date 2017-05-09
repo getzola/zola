@@ -11,7 +11,12 @@ use gutenberg::Site;
 use console::warn;
 
 fn notify_site_size(site: &Site) {
-    println!("-> Creating {} pages and {} sections", site.pages.len(), site.sections.len());
+    println!(
+        "-> Creating {} pages ({} orphan) and {} sections",
+        site.pages.len(),
+        site.get_all_orphan_pages().len(),
+        site.sections.len()
+    );
 }
 
 fn warn_about_ignored_pages(site: &Site) {

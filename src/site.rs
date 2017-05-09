@@ -122,11 +122,30 @@ impl Site {
         self.live_reload = true;
     }
 
+    /// Gets the path of all ignored pages in the site
     pub fn get_ignored_pages(&self) -> Vec<PathBuf> {
         self.sections
             .values()
             .flat_map(|s| s.ignored_pages.iter().map(|p| p.file_path.clone()))
             .collect()
+    }
+
+    /// Get all the orphan (== without section) pages in the site
+    pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
+        let mut pages_in_sections = vec![];
+        let mut orphans = vec![];
+
+        for s in self.sections.values() {
+            pages_in_sections.extend(s.all_pages_path());
+        }
+
+        for page in self.pages.values() {
+            if !pages_in_sections.contains(&page.file_path) {
+                orphans.push(page);
+            }
+        }
+
+        orphans
     }
 
     /// Used by tests to change the output path to a tmp dir
@@ -589,15 +608,9 @@ impl Site {
     /// Renders all pages that do not belong to any sections
     fn render_orphan_pages(&self) -> Result<()> {
         self.ensure_public_directory_exists()?;
-        let mut pages_in_sections = vec![];
-        for s in self.sections.values() {
-            pages_in_sections.extend(s.all_pages_path());
-        }
 
-        for page in self.pages.values() {
-            if !pages_in_sections.contains(&page.file_path) {
-                self.render_page(page)?;
-            }
+        for page in self.get_all_orphan_pages() {
+            self.render_page(page)?;
         }
 
         Ok(())
