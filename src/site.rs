@@ -548,6 +548,9 @@ impl Site {
             .collect();
 
         for section in self.sections.values() {
+            if !section.meta.should_render() {
+                continue;
+            }
             let mut output_path = public.to_path_buf();
             for component in &section.components {
                 output_path.push(component);

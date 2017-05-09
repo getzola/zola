@@ -58,6 +58,9 @@ pub struct FrontMatter {
     /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
     #[serde(skip_serializing)]
     pub paginate_path: Option<String>,
+    /// Whether to render that page/section or not. Defaults to `true`.
+    #[serde(skip_serializing)]
+    pub render: Option<bool>,
     /// Any extra parameter present in the front matter
     pub extra: Option<HashMap<String, Value>>,
 }
@@ -83,6 +86,10 @@ impl FrontMatter {
 
         if f.paginate_path.is_none() {
             f.paginate_path = Some("page".to_string());
+        }
+
+        if f.render.is_none() {
+            f.render = Some(true);
         }
 
         Ok(f)
@@ -121,6 +128,10 @@ impl FrontMatter {
             None => false
         }
     }
+
+    pub fn should_render(&self) -> bool {
+        self.render.unwrap()
+    }
 }
 
 impl Default for FrontMatter {
@@ -139,6 +150,7 @@ impl Default for FrontMatter {
             template: None,
             paginate_by: None,
             paginate_path: None,
+            render: None,
             extra: None,
         }
     }
