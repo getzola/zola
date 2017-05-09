@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{HashMap};
 use std::iter::FromIterator;
 use std::fs::{remove_dir_all, copy, create_dir_all};
 use std::path::{Path, PathBuf};
@@ -77,7 +77,7 @@ pub struct Site {
     pub base_path: PathBuf,
     pub config: Config,
     pub pages: HashMap<PathBuf, Page>,
-    pub sections: BTreeMap<PathBuf, Section>,
+    pub sections: HashMap<PathBuf, Section>,
     pub tera: Tera,
     live_reload: bool,
     output_path: PathBuf,
@@ -104,7 +104,7 @@ impl Site {
             base_path: path.to_path_buf(),
             config: get_config(path, config_file),
             pages: HashMap::new(),
-            sections: BTreeMap::new(),
+            sections: HashMap::new(),
             tera: tera,
             live_reload: false,
             output_path: path.join("public"),
@@ -542,6 +542,10 @@ impl Site {
     fn render_sections(&self) -> Result<()> {
         self.ensure_public_directory_exists()?;
         let public = self.output_path.clone();
+        let sections: HashMap<String, Section> = self.sections
+            .values()
+            .map(|s| (s.components.join("/"), s.clone()))
+            .collect();
 
         for section in self.sections.values() {
             let mut output_path = public.to_path_buf();
@@ -557,7 +561,7 @@ impl Site {
                 self.render_paginated(&output_path, section)?;
             } else {
                 let output = section.render_html(
-                    &self.sections.values().collect::<Vec<&Section>>(),
+                    &sections,
                     &self.tera,
                     &self.config,
                 )?;

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
@@ -89,7 +90,7 @@ impl Section {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, sections: &[&Section], tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, sections: &HashMap<String, Section>, tera: &Tera, config: &Config) -> Result<String> {
         let tpl_name = self.get_template_name();
 
         let mut context = Context::new();
@@ -98,7 +99,7 @@ impl Section {
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
         if self.is_index() {
-            context.add("sections", &sections);
+            context.add("sections", sections);
         }
 
         tera.render(&tpl_name, &context)
