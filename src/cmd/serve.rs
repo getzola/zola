@@ -67,7 +67,8 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     site.load()?;
     site.enable_live_reload();
-    println!("-> Creating {} pages and {} sections", site.pages.len(), site.sections.len());
+    super::notify_site_size(&site);
+    super::warn_about_ignored_pages(&site);
     site.build()?;
     report_elapsed_time(start);
 

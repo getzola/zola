@@ -122,6 +122,13 @@ impl Site {
         self.live_reload = true;
     }
 
+    pub fn get_ignored_pages(&self) -> Vec<PathBuf> {
+        self.sections
+            .values()
+            .flat_map(|s| s.ignored_pages.iter().map(|p| p.file_path.clone()))
+            .collect()
+    }
+
     /// Used by tests to change the output path to a tmp dir
     #[doc(hidden)]
     pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {
