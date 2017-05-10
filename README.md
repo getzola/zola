@@ -52,7 +52,7 @@ Each kind of page get their own variables:
 
 // TODO: detail the schema of the variables
 
-- index.html: gets `pages` that contain all pages in the site
+- index.html: gets `section` representing the index section and all `sections`
 - page.html: gets `page` that contains the data for that page 
 - section.html: gets `section` that contains the data for pages in it and its subsections
 - tags.html: gets `tags`

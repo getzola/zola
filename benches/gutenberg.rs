@@ -41,8 +41,7 @@ fn bench_populate_previous_and_next_pages(b: &mut test::Bencher) {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
-    let mut pages = site.pages.values().cloned().collect::<Vec<_>>();
-    pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let pages = site.pages.values().cloned().collect::<Vec<_>>();
 
     b.iter(|| populate_previous_and_next_pages(pages.as_slice()));
 }

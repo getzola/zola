@@ -5,7 +5,7 @@
 - Fix XML templates overriding and reloading
 - `title` and `description` are now optional in the front matter
 - Add GenericConfig, Vim syntax
-- Add `_index.md` for homepage as well
+- Add `_index.md` for homepage as well and make that into a normal section
 - Allow sorting by `none`, `date` and `order` for sections
 - Add pagination
 

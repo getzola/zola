@@ -14,7 +14,7 @@ lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^\r?\n?\+\+\+\r?\n((?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SortBy {
     Date,
@@ -58,16 +58,15 @@ pub struct FrontMatter {
     /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
     #[serde(skip_serializing)]
     pub paginate_path: Option<String>,
+    /// Whether to render that page/section or not. Defaults to `true`.
+    #[serde(skip_serializing)]
+    pub render: Option<bool>,
     /// Any extra parameter present in the front matter
     pub extra: Option<HashMap<String, Value>>,
 }
 
 impl FrontMatter {
     pub fn parse(toml: &str) -> Result<FrontMatter> {
-        if toml.trim() == "" {
-            bail!("Front matter of file is missing");
-        }
-
         let mut f: FrontMatter = match toml::from_str(toml) {
             Ok(d) => d,
             Err(e) => bail!(e),
@@ -89,7 +88,9 @@ impl FrontMatter {
             f.paginate_path = Some("page".to_string());
         }
 
-
+        if f.render.is_none() {
+            f.render = Some(true);
+        }
 
         Ok(f)
     }
@@ -112,10 +113,11 @@ impl FrontMatter {
         self.order.unwrap()
     }
 
+    /// Returns the current sorting method, defaults to `None` (== no sorting)
     pub fn sort_by(&self) -> SortBy {
         match self.sort_by {
-            Some(ref s) => s.clone(),
-            None => SortBy::Date,
+            Some(ref s) => *s,
+            None => SortBy::None,
         }
     }
 
@@ -125,6 +127,10 @@ impl FrontMatter {
             Some(v) => v > 0,
             None => false
         }
+    }
+
+    pub fn should_render(&self) -> bool {
+        self.render.unwrap()
     }
 }
 
@@ -144,6 +150,7 @@ impl Default for FrontMatter {
             template: None,
             paginate_by: None,
             paginate_path: None,
+            render: None,
             extra: None,
         }
     }

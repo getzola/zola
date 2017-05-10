@@ -15,7 +15,7 @@
     <div class="content">
         {% block content %}
             <div class="list-posts">
-                {% for page in pages %}
+                {% for page in section.pages %}
                     <article>
                         <h3 class="post__title"><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
                     </article>

@@ -3,7 +3,7 @@ extern crate tera;
 extern crate tempdir;
 
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{File, create_dir};
 use std::path::Path;
 
 use tempdir::TempDir;
@@ -250,6 +250,29 @@ Hey there
     let mut page = res.unwrap();
     page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
     assert!(page.content.starts_with("<pre"));
+}
+
+#[test]
+fn test_page_with_assets_gets_right_parent_path() {
+    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let path = tmp_dir.path();
+    create_dir(&path.join("content")).expect("create content temp dir");
+    create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+    let nested_path = path.join("content").join("posts").join("assets");
+    create_dir(&nested_path).expect("create nested temp dir");
+    File::create(nested_path.join("index.md")).unwrap();
+    File::create(nested_path.join("example.js")).unwrap();
+    File::create(nested_path.join("graph.jpg")).unwrap();
+    File::create(nested_path.join("fail.png")).unwrap();
+
+    let res = Page::parse(
+        &nested_path.join("index.md").as_path(),
+        "+++\nurl=\"hey\"+++\n",
+        &Config::default()
+    );
+    assert!(res.is_ok());
+    let page = res.unwrap();
+    assert_eq!(page.parent_path, path.join("content").join("posts"));
 }
 
 #[test]

@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{HashMap};
 use std::iter::FromIterator;
 use std::fs::{remove_dir_all, copy, create_dir_all};
 use std::path::{Path, PathBuf};
@@ -14,6 +14,7 @@ use page::{Page, populate_previous_and_next_pages, sort_pages};
 use pagination::Paginator;
 use utils::{create_file, create_directory};
 use section::{Section};
+use front_matter::{SortBy};
 use filters;
 
 
@@ -76,8 +77,7 @@ pub struct Site {
     pub base_path: PathBuf,
     pub config: Config,
     pub pages: HashMap<PathBuf, Page>,
-    pub sections: BTreeMap<PathBuf, Section>,
-    pub index: Option<Section>,
+    pub sections: HashMap<PathBuf, Section>,
     pub tera: Tera,
     live_reload: bool,
     output_path: PathBuf,
@@ -104,8 +104,7 @@ impl Site {
             base_path: path.to_path_buf(),
             config: get_config(path, config_file),
             pages: HashMap::new(),
-            sections: BTreeMap::new(),
-            index: None,
+            sections: HashMap::new(),
             tera: tera,
             live_reload: false,
             output_path: path.join("public"),
@@ -121,6 +120,32 @@ impl Site {
     /// What the function name says
     pub fn enable_live_reload(&mut self) {
         self.live_reload = true;
+    }
+
+    /// Gets the path of all ignored pages in the site
+    pub fn get_ignored_pages(&self) -> Vec<PathBuf> {
+        self.sections
+            .values()
+            .flat_map(|s| s.ignored_pages.iter().map(|p| p.file_path.clone()))
+            .collect()
+    }
+
+    /// Get all the orphan (== without section) pages in the site
+    pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
+        let mut pages_in_sections = vec![];
+        let mut orphans = vec![];
+
+        for s in self.sections.values() {
+            pages_in_sections.extend(s.all_pages_path());
+        }
+
+        for page in self.pages.values() {
+            if !pages_in_sections.contains(&page.file_path) {
+                orphans.push(page);
+            }
+        }
+
+        orphans
     }
 
     /// Used by tests to change the output path to a tmp dir
@@ -140,13 +165,7 @@ impl Site {
         for entry in glob(&content_glob).unwrap().filter_map(|e| e.ok()) {
             let path = entry.as_path();
             if path.file_name().unwrap() == "_index.md" {
-                // Index section
-                if path.parent().unwrap() == self.base_path.join("content") {
-                    self.index = Some(Section::from_file(path, &self.config)?);
-                } else {
-                    // all the other sections
-                    self.add_section(path)?;
-                }
+                self.add_section(path)?;
             } else {
                 self.add_page(path)?;
             }
@@ -214,8 +233,10 @@ impl Site {
 
         for (parent_path, section) in &mut self.sections {
             // TODO: avoid this clone
-            let (sorted_pages, _) = sort_pages(section.pages.clone(), Some(section));
+            let (mut sorted_pages, cannot_be_sorted_pages) = sort_pages(section.pages.clone(), section.meta.sort_by());
+            sorted_pages = populate_previous_and_next_pages(&sorted_pages);
             section.pages = sorted_pages;
+            section.ignored_pages = cannot_be_sorted_pages;
 
             match grandparent_paths.get(parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),
@@ -255,6 +276,14 @@ impl Site {
         }
 
         html
+    }
+
+    pub fn ensure_public_directory_exists(&self) -> Result<()> {
+        let public = self.output_path.clone();
+        if !public.exists() {
+            create_directory(&public)?;
+        }
+        Ok(())
     }
 
     /// Copy static file to public directory.
@@ -298,39 +327,29 @@ impl Site {
 
     pub fn rebuild_after_content_change(&mut self, path: &Path) -> Result<()> {
         let is_section = path.ends_with("_index.md");
-        let is_index_section = if is_section {
-            path.parent().unwrap() == self.base_path.join("content")
-        } else {
-            false
-        };
 
         if path.exists() {
             // file exists, either a new one or updating content
             if is_section {
-                if is_index_section {
-                    self.index = Some(Section::from_file(path, &self.config)?);
-                } else {
-                    self.add_section(path)?;
-                }
+                self.add_section(path)?;
             } else {
                 // probably just an update so just re-parse that page
+                // TODO: we can compare the frontmatter of the existing and new one
+                // to see if we need to update re-build the whole thing or just that
+                // page
                 self.add_page_and_render(path)?;
             }
         } else if is_section {
             // File doesn't exist -> a deletion so we remove it from everything
-            if !is_index_section {
-                let relative_path = self.sections[path].relative_path.clone();
-                self.sections.remove(path);
-                self.permalinks.remove(&relative_path);
-            } else {
-                self.index = None;
-            }
+            let relative_path = self.sections[path].relative_path.clone();
+            self.sections.remove(path);
+            self.permalinks.remove(&relative_path);
         } else {
             let relative_path = self.pages[path].relative_path.clone();
             self.pages.remove(path);
             self.permalinks.remove(&relative_path);
         }
-
+        // TODO: probably no need to do that, we should be able to only re-render a page or a section.
         self.populate_sections();
         self.populate_tags_and_categories();
         self.build()
@@ -341,19 +360,16 @@ impl Site {
         match path.file_name().unwrap().to_str().unwrap() {
             "sitemap.xml" => self.render_sitemap(),
             "rss.xml" => self.render_rss_feed(),
-            _ => self.build_pages()
+            _ => self.build() // TODO: change that
         }
     }
 
     /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
-        let public = self.output_path.clone();
-        if !public.exists() {
-            create_directory(&public)?;
-        }
+        self.ensure_public_directory_exists()?;
 
         // Copy the nesting of the content directory if we have sections for that page
-        let mut current_path = public.to_path_buf();
+        let mut current_path = self.output_path.to_path_buf();
 
         for component in page.path.split('/') {
             current_path.push(component);
@@ -379,26 +395,16 @@ impl Site {
         Ok(())
     }
 
-    /// Renders all content, categories, tags and index pages
-    pub fn build_pages(&self) -> Result<()> {
-        let public = self.output_path.clone();
-        if !public.exists() {
-            create_directory(&public)?;
+    /// Builds the site to the `public` directory after deleting it
+    pub fn build(&self) -> Result<()> {
+        self.clean()?;
+        self.render_sections()?;
+        self.render_orphan_pages()?;
+        self.render_sitemap()?;
+        if self.config.generate_rss.unwrap() {
+            self.render_rss_feed()?;
         }
-
-        // Sort the pages first
-        // TODO: avoid the clone()
-        let (mut sorted_pages, cannot_sort_pages) = sort_pages(self.pages.values().cloned().collect(), self.index.as_ref());
-
-        sorted_pages = populate_previous_and_next_pages(&sorted_pages);
-        for page in &sorted_pages {
-            self.render_page(page)?;
-        }
-        for page in &cannot_sort_pages {
-            self.render_page(page)?;
-        }
-
-        // Outputting categories and pages
+        self.render_robots()?;
         if self.config.generate_categories_pages.unwrap() {
             self.render_categories_and_tags(RenderList::Categories)?;
         }
@@ -406,49 +412,12 @@ impl Site {
             self.render_categories_and_tags(RenderList::Tags)?;
         }
 
-        // And finally the index page
-        let mut rendered_index = false;
-        // Try to render the index as a paginated page first if needed
-        if let Some(ref i) = self.index {
-            if i.meta.is_paginated() {
-                self.render_paginated(&self.output_path, i)?;
-                rendered_index = true;
-            }
-        }
-
-        // Otherwise render the default index page
-        if !rendered_index {
-            let mut context = Context::new();
-            context.add("pages", &sorted_pages);
-            context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
-            context.add("config", &self.config);
-            context.add("current_url", &self.config.base_url);
-            context.add("current_path", &"");
-            let index = self.tera.render("index.html", &context)?;
-            create_file(public.join("index.html"), &self.inject_livereload(index))?;
-        }
-
-        Ok(())
-    }
-
-    /// Builds the site to the `public` directory after deleting it
-    pub fn build(&self) -> Result<()> {
-        self.clean()?;
-        self.build_pages()?;
-        self.render_sitemap()?;
-
-        if self.config.generate_rss.unwrap() {
-            self.render_rss_feed()?;
-        }
-
-        self.render_robots()?;
-
-        self.render_sections()?;
         self.copy_static_directory()
     }
 
     /// Renders robots.txt
     fn render_robots(&self) -> Result<()> {
+        self.ensure_public_directory_exists()?;
         create_file(
             self.output_path.join("robots.txt"),
             &self.tera.render("robots.txt", &Context::new())?
@@ -472,6 +441,7 @@ impl Site {
         } else {
             ("tags.html", "tag.html", "tags", "tag")
         };
+        self.ensure_public_directory_exists()?;
 
         // Create the categories/tags directory first
         let public = self.output_path.clone();
@@ -497,7 +467,7 @@ impl Site {
 
         // Now, each individual item
         for (item_name, pages_paths) in items.iter() {
-            let mut pages: Vec<&Page> = self.pages
+            let pages: Vec<&Page> = self.pages
                 .iter()
                 .filter(|&(path, _)| pages_paths.contains(path))
                 .map(|(_, page)| page)
@@ -505,8 +475,7 @@ impl Site {
             // TODO: how to sort categories and tag content?
             // Have a setting in config.toml or a _category.md and _tag.md
             // The latter is more in line with the rest of Gutenberg but order ordering
-            // doesn't really work across sections so default to partial ordering for now (date)
-            pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            // doesn't really work across sections.
 
             let mut context = Context::new();
             let slug = slugify(&item_name);
@@ -529,6 +498,7 @@ impl Site {
     }
 
     fn render_sitemap(&self) -> Result<()> {
+        self.ensure_public_directory_exists()?;
         let mut context = Context::new();
         context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
         context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
@@ -563,20 +533,22 @@ impl Site {
     }
 
     fn render_rss_feed(&self) -> Result<()> {
+        self.ensure_public_directory_exists()?;
+
         let mut context = Context::new();
-        let mut pages = self.pages.values()
+        let pages = self.pages.values()
             .filter(|p| p.meta.date.is_some())
             .take(15) // limit to the last 15 elements
-            .collect::<Vec<&Page>>();
+            .map(|p| p.clone())
+            .collect::<Vec<Page>>();
 
         // Don't generate a RSS feed if none of the pages has a date
         if pages.is_empty() {
             return Ok(());
         }
-
-        pages.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        context.add("pages", &pages);
         context.add("last_build_date", &pages[0].meta.date);
+        let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
+        context.add("pages", &sorted_pages);
         context.add("config", &self.config);
 
         let rss_feed_url = if self.config.base_url.ends_with('/') {
@@ -594,9 +566,17 @@ impl Site {
     }
 
     fn render_sections(&self) -> Result<()> {
+        self.ensure_public_directory_exists()?;
         let public = self.output_path.clone();
+        let sections: HashMap<String, Section> = self.sections
+            .values()
+            .map(|s| (s.components.join("/"), s.clone()))
+            .collect();
 
         for section in self.sections.values() {
+            if !section.meta.should_render() {
+                continue;
+            }
             let mut output_path = public.to_path_buf();
             for component in &section.components {
                 output_path.push(component);
@@ -609,9 +589,28 @@ impl Site {
             if section.meta.is_paginated() {
                 self.render_paginated(&output_path, section)?;
             } else {
-                let output = section.render_html(&self.tera, &self.config)?;
+                let output = section.render_html(
+                    &sections,
+                    &self.tera,
+                    &self.config,
+                )?;
                 create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
             }
+
+            for page in &section.pages {
+                self.render_page(page)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Renders all pages that do not belong to any sections
+    fn render_orphan_pages(&self) -> Result<()> {
+        self.ensure_public_directory_exists()?;
+
+        for page in self.get_all_orphan_pages() {
+            self.render_page(page)?;
         }
 
         Ok(())
@@ -619,20 +618,14 @@ impl Site {
 
     /// Renders a list of pages when the section/index is wanting pagination.
     fn render_paginated(&self, output_path: &Path, section: &Section) -> Result<()> {
+        self.ensure_public_directory_exists()?;
+
         let paginate_path = match section.meta.paginate_path {
             Some(ref s) => s.clone(),
             None => unreachable!()
         };
 
-        // this will sort too many times!
-        // TODO: make sorting happen once for everything so we don't need to sort all the time
-        let sorted_pages = if section.is_index() {
-            sort_pages(self.pages.values().cloned().collect(), self.index.as_ref()).0
-        } else {
-            sort_pages(section.pages.clone(), Some(section)).0
-        };
-
-        let paginator = Paginator::new(&sorted_pages, section);
+        let paginator = Paginator::new(&section.pages, section);
 
         for (i, pager) in paginator.pagers.iter().enumerate() {
             let folder_path = output_path.join(&paginate_path);
