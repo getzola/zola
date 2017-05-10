@@ -30,6 +30,8 @@ mod section;
 mod pagination;
 /// Additional filters for Tera
 mod filters;
+/// Global fns for Tera
+mod global_fns;
 
 pub use site::{Site, GUTENBERG_TERA};
 pub use config::{Config, get_config};
