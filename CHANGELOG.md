@@ -8,6 +8,7 @@
 - Add `_index.md` for homepage as well and make that into a normal section
 - Allow sorting by `none`, `date` and `order` for sections
 - Add pagination
+- Add a `get_page` global function to tera
 
 ## 0.0.4 (2017-04-23)
 
