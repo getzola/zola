@@ -558,7 +558,7 @@ impl Site {
         let pages = self.pages.values()
             .filter(|p| p.meta.date.is_some())
             .take(15) // limit to the last 15 elements
-            .map(|p| p.clone())
+            .cloned()
             .collect::<Vec<Page>>();
 
         // Don't generate a RSS feed if none of the pages has a date

@@ -266,7 +266,7 @@ fn test_page_with_assets_gets_right_parent_path() {
     File::create(nested_path.join("fail.png")).unwrap();
 
     let res = Page::parse(
-        &nested_path.join("index.md").as_path(),
+        nested_path.join("index.md").as_path(),
         "+++\nurl=\"hey\"+++\n",
         &Config::default()
     );
