@@ -212,11 +212,15 @@ impl Site {
     }
 
     /// Called in serve, add a page again updating permalinks and its content
-    fn add_page_and_render(&mut self, path: &Path) -> Result<()> {
+    /// The bool in the result is whether the front matter has been updated or not
+    fn add_page_and_render(&mut self, path: &Path) -> Result<(bool, Page)> {
+        let existing_page = self.pages.get(path).expect("Page was supposed to exist in add_page_and_render").clone();
         self.add_page(path)?;
         let mut page = self.pages.get_mut(path).unwrap();
         self.permalinks.insert(page.relative_path.clone(), page.permalink.clone());
-        page.render_markdown(&self.permalinks, &self.tera, &self.config)
+        page.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+
+        Ok((existing_page.meta != page.meta, page.clone()))
     }
 
     /// Find out the direct subsections of each subsection if there are some
@@ -337,25 +341,37 @@ impl Site {
                 self.add_section(path)?;
             } else {
                 // probably just an update so just re-parse that page
-                // TODO: we can compare the frontmatter of the existing and new one
-                // to see if we need to update re-build the whole thing or just that
-                // page
-                self.add_page_and_render(path)?;
+                let (frontmatter_changed, page) = self.add_page_and_render(path)?;
+                // TODO: can probably be smarter and check what changed
+                if frontmatter_changed {
+                    self.populate_sections();
+                    self.populate_tags_and_categories();
+                    self.build()?;
+                } else {
+                    self.render_page(&page)?;
+                }
             }
-        } else if is_section {
-            // File doesn't exist -> a deletion so we remove it from everything
-            let relative_path = self.sections[path].relative_path.clone();
-            self.sections.remove(path);
-            self.permalinks.remove(&relative_path);
         } else {
-            let relative_path = self.pages[path].relative_path.clone();
-            self.pages.remove(path);
+            // File doesn't exist -> a deletion so we remove it from everything
+            let relative_path = if is_section {
+                self.sections[path].relative_path.clone()
+            } else {
+                self.pages[path].relative_path.clone()
+            };
             self.permalinks.remove(&relative_path);
+
+            if is_section {
+                self.sections.remove(path);
+            } else {
+                self.pages.remove(path);
+            }
+            // TODO: probably no need to do that, we should be able to only re-render a page or a section.
+            self.populate_sections();
+            self.populate_tags_and_categories();
+            self.build()?;
         }
-        // TODO: probably no need to do that, we should be able to only re-render a page or a section.
-        self.populate_sections();
-        self.populate_tags_and_categories();
-        self.build()
+
+        Ok(())
     }
 
     pub fn rebuild_after_template_change(&mut self, path: &Path) -> Result<()> {
@@ -577,9 +593,6 @@ impl Site {
             .collect();
 
         for section in self.sections.values() {
-            if !section.meta.should_render() {
-                continue;
-            }
             let mut output_path = public.to_path_buf();
             for component in &section.components {
                 output_path.push(component);
@@ -587,6 +600,14 @@ impl Site {
                 if !output_path.exists() {
                     create_directory(&output_path)?;
                 }
+            }
+
+            for page in &section.pages {
+                self.render_page(page)?;
+            }
+
+            if !section.meta.should_render() {
+                continue;
             }
 
             if section.meta.is_paginated() {
@@ -598,10 +619,6 @@ impl Site {
                     &self.config,
                 )?;
                 create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
-            }
-
-            for page in &section.pages {
-                self.render_page(page)?;
             }
         }
 
