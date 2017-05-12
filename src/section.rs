@@ -69,6 +69,7 @@ impl Section {
         section.path = section.components.join("/");
         section.permalink = config.make_permalink(&section.path);
         if section.components.is_empty() {
+            // the index one
             section.relative_path = "_index.md".to_string();
         } else {
             section.relative_path = format!("{}/_index.md", section.components.join("/"));
@@ -105,7 +106,7 @@ impl Section {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, sections: &HashMap<String, Section>, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, sections: HashMap<String, Section>, tera: &Tera, config: &Config) -> Result<String> {
         let tpl_name = self.get_template_name();
 
         let mut context = Context::new();
@@ -114,7 +115,7 @@ impl Section {
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
         if self.is_index() {
-            context.add("sections", sections);
+            context.add("sections", &sections);
         }
 
         tera.render(&tpl_name, &context)
@@ -126,6 +127,7 @@ impl Section {
         self.components.is_empty()
     }
 
+    /// Returns all the paths for the pages belonging to that section
     pub fn all_pages_path(&self) -> Vec<PathBuf> {
         let mut paths = vec![];
         paths.extend(self.pages.iter().map(|p| p.file_path.clone()));

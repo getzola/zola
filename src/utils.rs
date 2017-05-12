@@ -35,7 +35,7 @@ pub fn read_file<P: AsRef<Path>>(path: P) -> Result<String> {
 }
 
 
-/// Takes a full path to a .md and returns only the components after the `content` directory
+/// Takes a full path to a .md and returns only the components after the first `content` directory
 /// Will not return the filename as last component
 pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
     let path = path.as_ref();

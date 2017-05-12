@@ -161,8 +161,6 @@ impl Site {
         let base_path = self.base_path.to_string_lossy().replace("\\", "/");
         let content_glob = format!("{}/{}", base_path, "content/**/*.md");
 
-        // TODO: make that parallel, that's the main bottleneck
-        // `add_section` and `add_page` can't be used in the parallel version afaik
         for entry in glob(&content_glob).unwrap().filter_map(|e| e.ok()) {
             let path = entry.as_path();
             if path.file_name().unwrap() == "_index.md" {
@@ -611,44 +609,56 @@ impl Site {
         Ok(())
     }
 
-    fn render_sections(&self) -> Result<()> {
-        self.ensure_public_directory_exists()?;
-        let public = self.output_path.clone();
-        let sections: HashMap<String, Section> = self.sections
+    /// Create a hashmap of paths to section
+    /// For example `content/posts/_index.md` key will be `posts`
+    fn get_sections_map(&self) -> HashMap<String, Section> {
+        self.sections
             .values()
             .map(|s| (s.components.join("/"), s.clone()))
-            .collect();
+            .collect()
+    }
 
-        for section in self.sections.values() {
-            let mut output_path = public.to_path_buf();
-            for component in &section.components {
-                output_path.push(component);
+    /// Renders a single section
+    fn render_section(&self, section: &Section) -> Result<()> {
+        self.ensure_public_directory_exists()?;
+        let public = self.output_path.clone();
 
-                if !output_path.exists() {
-                    create_directory(&output_path)?;
-                }
-            }
+        let mut output_path = public.to_path_buf();
+        for component in &section.components {
+            output_path.push(component);
 
-            for page in &section.pages {
-                self.render_page(page)?;
-            }
-
-            if !section.meta.should_render() {
-                continue;
-            }
-
-            if section.meta.is_paginated() {
-                self.render_paginated(&output_path, section)?;
-            } else {
-                let output = section.render_html(
-                    &sections,
-                    &self.tera,
-                    &self.config,
-                )?;
-                create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+            if !output_path.exists() {
+                create_directory(&output_path)?;
             }
         }
 
+        for page in &section.pages {
+            self.render_page(page)?;
+        }
+
+        if !section.meta.should_render() {
+            return Ok(());
+        }
+
+        if section.meta.is_paginated() {
+            self.render_paginated(&output_path, section)?;
+        } else {
+            let output = section.render_html(
+                if section.is_index() { self.get_sections_map() } else { HashMap::new() },
+                &self.tera,
+                &self.config,
+            )?;
+            create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+        }
+
+        Ok(())
+    }
+
+    /// Renders all sections
+    fn render_sections(&self) -> Result<()> {
+        for section in self.sections.values() {
+            self.render_section(section)?;
+        }
         Ok(())
     }
 

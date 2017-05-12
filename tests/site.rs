@@ -173,6 +173,7 @@ fn test_can_build_site_with_categories() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.generate_categories_pages = Some(true);
     site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
@@ -224,6 +225,7 @@ fn test_can_build_site_with_tags() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.generate_tags_pages = Some(true);
     site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
