@@ -15,28 +15,8 @@ use pagination::Paginator;
 use utils::{create_file, create_directory};
 use section::{Section};
 use front_matter::{SortBy};
-use filters;
-use global_fns;
+use templates::{GUTENBERG_TERA, filters, global_fns};
 
-
-lazy_static! {
-    pub static ref GUTENBERG_TERA: Tera = {
-        let mut tera = Tera::default();
-        tera.add_raw_templates(vec![
-            ("rss.xml", include_str!("templates/rss.xml")),
-            ("sitemap.xml", include_str!("templates/sitemap.xml")),
-            ("robots.txt", include_str!("templates/robots.txt")),
-            ("anchor-link.html", include_str!("templates/anchor-link.html")),
-
-            ("shortcodes/youtube.html", include_str!("templates/shortcodes/youtube.html")),
-            ("shortcodes/vimeo.html", include_str!("templates/shortcodes/vimeo.html")),
-            ("shortcodes/gist.html", include_str!("templates/shortcodes/gist.html")),
-
-            ("internal/alias.html", include_str!("templates/internal/alias.html")),
-        ]).unwrap();
-        tera
-    };
-}
 
 /// Renders the `internal/alias.html` template that will redirect
 /// via refresh to the url given

@@ -340,7 +340,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
 mod tests {
     use std::collections::HashMap;
 
-    use site::GUTENBERG_TERA;
+    use templates::GUTENBERG_TERA;
     use tera::Tera;
 
     use config::Config;
