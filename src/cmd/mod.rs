@@ -15,7 +15,7 @@ fn notify_site_size(site: &Site) {
         "-> Creating {} pages ({} orphan) and {} sections",
         site.pages.len(),
         site.get_all_orphan_pages().len(),
-        site.sections.len()
+        site.sections.len() - 1, // -1 since we do not the index as a section
     );
 }
 
