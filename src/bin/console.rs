@@ -1,5 +1,11 @@
+use std::time::Instant;
+
+use chrono::Duration;
 use term_painter::ToStyle;
 use term_painter::Color::*;
+
+use gutenberg::errors::Error;
+use gutenberg::Site;
 
 
 pub fn info(message: &str) {
@@ -16,4 +22,49 @@ pub fn success(message: &str) {
 
 pub fn error(message: &str) {
     println!("{}", Red.bold().paint(message));
+}
+
+/// Display in the console the number of pages/sections in the site
+pub fn notify_site_size(site: &Site) {
+    println!(
+        "-> Creating {} pages ({} orphan) and {} sections",
+        site.pages.len(),
+        site.get_all_orphan_pages().len(),
+        site.sections.len() - 1, // -1 since we do not the index as a section
+    );
+}
+
+/// Display a warning in the console if there are ignored pages in the site
+pub fn warn_about_ignored_pages(site: &Site) {
+    let ignored_pages = site.get_ignored_pages();
+    if !ignored_pages.is_empty() {
+        warn(&format!(
+            "{} page(s) ignored (missing date or order in a sorted section):",
+            ignored_pages.len()
+        ));
+        for path in site.get_ignored_pages() {
+            warn(&format!("- {}", path.display()));
+        }
+    }
+}
+
+/// Print the time elapsed rounded to 1 decimal
+pub fn report_elapsed_time(instant: Instant) {
+    let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64;
+
+    if duration_ms < 1000.0 {
+        success(&format!("Done in {}ms.\n", duration_ms));
+    } else {
+        let duration_sec = duration_ms / 1000.0;
+        success(&format!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0)));
+    }
+}
+
+/// Display an error message and the actual error(s)
+pub fn unravel_errors(message: &str, error: &Error) {
+        self::error(message);
+        self::error(&format!("Error: {}", error));
+        for e in error.iter().skip(1) {
+            self::error(&format!("Reason: {}", e));
+        }
 }

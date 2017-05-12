@@ -12,39 +12,10 @@ extern crate mount;
 extern crate notify;
 extern crate ws;
 
-
 use std::time::Instant;
-
-use chrono::Duration;
-use gutenberg::errors::Error;
 
 mod cmd;
 mod console;
-
-
-/// Print the time elapsed rounded to 1 decimal
-fn report_elapsed_time(instant: Instant) {
-    let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64;
-
-    if duration_ms < 1000.0 {
-        console::success(&format!("Done in {}ms.\n", duration_ms));
-    } else {
-        let duration_sec = duration_ms / 1000.0;
-        console::success(&format!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0)));
-    }
-}
-
-////Display an error message, the actual error and then exits if requested
-fn unravel_errors(message: &str, error: &Error, exit: bool) {
-        console::error(message);
-        console::error(&format!("Error: {}", error));
-        for e in error.iter().skip(1) {
-            console::error(&format!("Reason: {}", e));
-        }
-        if exit {
-            ::std::process::exit(1);
-        }
-}
 
 
 fn main() {
@@ -74,15 +45,21 @@ fn main() {
         ("init", Some(matches)) => {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
                 Ok(()) => console::success("Project created"),
-                Err(e) => unravel_errors("Failed to create the project", &e, true),
+                Err(e) => {
+                    console::unravel_errors("Failed to create the project", &e);
+                    ::std::process::exit(1);
+                },
             };
         },
         ("build", Some(_)) => {
             console::info("Building site...");
             let start = Instant::now();
             match cmd::build(config_file) {
-                Ok(()) => report_elapsed_time(start),
-                Err(e) => unravel_errors("Failed to build the site", &e, true),
+                Ok(()) => console::report_elapsed_time(start),
+                Err(e) => {
+                    console::unravel_errors("Failed to build the site", &e);
+                    ::std::process::exit(1);
+                },
             };
         },
         ("serve", Some(matches)) => {
@@ -91,7 +68,10 @@ fn main() {
             console::info("Building site...");
             match cmd::serve(interface, port, config_file) {
                 Ok(()) => (),
-                Err(e) => unravel_errors("Failed to build the site", &e, true),
+                Err(e) => {
+                    console::unravel_errors("Failed to build the site", &e);
+                    ::std::process::exit(1);
+                },
             };
         },
         _ => unreachable!(),

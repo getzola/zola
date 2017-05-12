@@ -13,10 +13,7 @@ use ws::{WebSocket, Sender, Message};
 use gutenberg::Site;
 use gutenberg::errors::{Result, ResultExt};
 
-
-use ::{report_elapsed_time, unravel_errors};
 use console;
-
 
 #[derive(Debug, PartialEq)]
 enum ChangeKind {
@@ -47,7 +44,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                 }}"#, reload_path)
             ).unwrap();
         },
-        Err(e) => unravel_errors("Failed to build the site", &e, false)
+        Err(e) => console::unravel_errors("Failed to build the site", &e)
     }
 }
 
@@ -67,10 +64,10 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     site.load()?;
     site.enable_live_reload();
-    super::notify_site_size(&site);
-    super::warn_about_ignored_pages(&site);
+    console::notify_site_size(&site);
+    console::warn_about_ignored_pages(&site);
     site.build()?;
-    report_elapsed_time(start);
+    console::report_elapsed_time(start);
 
     // Setup watchers
     let (tx, rx) = channel();
@@ -154,7 +151,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                                 }
                             },
                         };
-                        report_elapsed_time(start);
+                        console::report_elapsed_time(start);
                     }
                     _ => {}
                 }
