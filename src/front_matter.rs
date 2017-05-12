@@ -150,7 +150,7 @@ impl Default for FrontMatter {
             template: None,
             paginate_by: None,
             paginate_path: None,
-            render: None,
+            render: Some(true),
             extra: None,
         }
     }

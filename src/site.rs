@@ -171,6 +171,12 @@ impl Site {
                 self.add_page(path)?;
             }
         }
+        // Insert a default index section so we don't need to create a _index.md to render
+        // the index page
+        let index_path = self.base_path.join("content");
+        if !self.sections.contains_key(&index_path) {
+            self.sections.insert(index_path, Section::default());
+        }
 
         // A map of all .md files (section and pages) and their permalink
         // We need that if there are relative links in the content that need to be resolved
@@ -234,8 +240,9 @@ impl Site {
 
         let mut grandparent_paths = HashMap::new();
         for section in self.sections.values() {
-            let grand_parent = section.parent_path.parent().unwrap().to_path_buf();
-            grandparent_paths.entry(grand_parent).or_insert_with(|| vec![]).push(section.clone());
+            if let Some(grand_parent) = section.parent_path.parent() {
+                grandparent_paths.entry(grand_parent.to_path_buf()).or_insert_with(|| vec![]).push(section.clone());
+            }
         }
 
         for (parent_path, section) in &mut self.sections {

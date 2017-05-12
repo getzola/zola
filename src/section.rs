@@ -131,3 +131,21 @@ impl ser::Serialize for Section {
         state.end()
     }
 }
+
+impl Default for Section {
+    /// Used to create a default index section if there is no _index.md
+    fn default() -> Section {
+        Section {
+            file_path: PathBuf::new(),
+            relative_path: "".to_string(),
+            parent_path: PathBuf::new(),
+            components: vec![],
+            path: "".to_string(),
+            permalink: "".to_string(),
+            meta: FrontMatter::default(),
+            pages: vec![],
+            ignored_pages: vec![],
+            subsections: vec![],
+        }
+    }
+}
