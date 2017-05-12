@@ -194,6 +194,10 @@ impl Site {
             page.render_markdown(&permalinks, &self.tera, &self.config)?;
         }
 
+        for section in self.sections.values_mut() {
+            section.render_markdown(&permalinks, &self.tera, &self.config)?;
+        }
+
         self.permalinks = permalinks;
         self.populate_sections();
         self.populate_tags_and_categories();
@@ -219,14 +223,18 @@ impl Site {
 
     /// Called in serve, add a page again updating permalinks and its content
     /// The bool in the result is whether the front matter has been updated or not
+    /// TODO: the above is very confusing, change that
     fn add_page_and_render(&mut self, path: &Path) -> Result<(bool, Page)> {
-        let existing_page = self.pages.get(path).expect("Page was supposed to exist in add_page_and_render").clone();
+        let existing_page = self.pages.get(path).cloned();
         self.add_page(path)?;
         let mut page = self.pages.get_mut(path).unwrap();
         self.permalinks.insert(page.relative_path.clone(), page.permalink.clone());
         page.render_markdown(&self.permalinks, &self.tera, &self.config)?;
 
-        Ok((existing_page.meta != page.meta, page.clone()))
+        if let Some(prev_page) = existing_page {
+            return Ok((prev_page.meta != page.meta, page.clone()));
+        }
+        Ok((true, page.clone()))
     }
 
     /// Find out the direct subsections of each subsection if there are some

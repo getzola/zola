@@ -9,6 +9,7 @@ use config::Config;
 use front_matter::{FrontMatter, split_content};
 use errors::{Result, ResultExt};
 use utils::{read_file, find_content_components};
+use markdown::markdown_to_html;
 use page::{Page};
 
 
@@ -26,6 +27,10 @@ pub struct Section {
     pub path: String,
     /// The full URL for that page
     pub permalink: String,
+    /// The actual content of the page, in markdown
+    pub raw_content: String,
+    /// The HTML rendered of the page
+    pub content: String,
     /// The front matter meta-data
     pub meta: FrontMatter,
     /// All direct pages of that section
@@ -47,6 +52,8 @@ impl Section {
             components: vec![],
             path: "".to_string(),
             permalink: "".to_string(),
+            raw_content: "".to_string(),
+            content: "".to_string(),
             meta: meta,
             pages: vec![],
             ignored_pages: vec![],
@@ -55,8 +62,9 @@ impl Section {
     }
 
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Section> {
-        let (meta, _) = split_content(file_path, content)?;
+        let (meta, content) = split_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
+        section.raw_content = content.clone();
         section.components = find_content_components(&section.file_path);
         section.path = section.components.join("/");
         section.permalink = config.make_permalink(&section.path);
@@ -87,6 +95,13 @@ impl Section {
                 "section.html".to_string()
             },
         }
+    }
+
+    /// We need access to all pages url to render links relative to content
+    /// so that can't happen at the same time as parsing
+    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
+        self.content = markdown_to_html(&self.raw_content, permalinks, tera, config)?;
+        Ok(())
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
@@ -121,7 +136,8 @@ impl Section {
 
 impl ser::Serialize for Section {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("section", 6)?;
+        let mut state = serializer.serialize_struct("section", 7)?;
+        state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("path", &format!("/{}", self.path))?;
@@ -142,6 +158,8 @@ impl Default for Section {
             components: vec![],
             path: "".to_string(),
             permalink: "".to_string(),
+            raw_content: "".to_string(),
+            content: "".to_string(),
             meta: FrontMatter::default(),
             pages: vec![],
             ignored_pages: vec![],
