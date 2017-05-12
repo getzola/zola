@@ -9,7 +9,7 @@ use iron::{Iron, Request, IronResult, Response, status};
 use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
-use ws::{WebSocket, Sender};
+use ws::{WebSocket, Sender, Message};
 use gutenberg::Site;
 use gutenberg::errors::{Result, ResultExt};
 
@@ -93,8 +93,17 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     let _iron = Iron::new(mount).http(address.as_str()).unwrap();
 
     // The websocket for livereload
-    let ws_server = WebSocket::new(|_| {
-        |_| {
+    let ws_server = WebSocket::new(|output: Sender| {
+        move |msg: Message| {
+            if msg.into_text().unwrap().contains("\"hello\"") {
+                return output.send(Message::text(r#"
+                    {
+                        "command": "hello",
+                        "protocols": [ "http://livereload.com/protocols/official-7" ],
+                        "serverName": "Gutenberg"
+                    }
+                "#));
+            }
             Ok(())
         }
     }).unwrap();
