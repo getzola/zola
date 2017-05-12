@@ -28,8 +28,7 @@ tera = "0.10"
 slug = "0.1"
 syntect = { version = "1", features = ["static-onig"] }
 chrono = "0.3"
-# toml = "0.4"
-toml = { git = "https://github.com/alexcrichton/toml-rs" }
+toml = "0.4"
 term-painter = "0.2"
 base64 = "0.5"
 
