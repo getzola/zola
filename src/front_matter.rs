@@ -149,7 +149,7 @@ impl Default for FrontMatter {
             order: None,
             template: None,
             paginate_by: None,
-            paginate_path: None,
+            paginate_path: Some("page".to_string()),
             render: Some(true),
             extra: None,
         }

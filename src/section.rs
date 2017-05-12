@@ -149,7 +149,7 @@ impl ser::Serialize for Section {
 }
 
 impl Default for Section {
-    /// Used to create a default index section if there is no _index.md
+    /// Used to create a default index section if there is no _index.md in the root content directory
     fn default() -> Section {
         Section {
             file_path: PathBuf::new(),

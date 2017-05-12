@@ -173,9 +173,11 @@ impl Site {
         }
         // Insert a default index section so we don't need to create a _index.md to render
         // the index page
-        let index_path = self.base_path.join("content");
+        let index_path = self.base_path.join("content").join("_index.md");
         if !self.sections.contains_key(&index_path) {
-            self.sections.insert(index_path, Section::default());
+            let mut index_section = Section::default();
+            index_section.permalink = self.config.make_permalink("");
+            self.sections.insert(index_path, index_section);
         }
 
         // A map of all .md files (section and pages) and their permalink
@@ -217,7 +219,16 @@ impl Site {
     /// Simple wrapper fn to avoid repeating that code in several places
     fn add_section(&mut self, path: &Path) -> Result<()> {
         let section = Section::from_file(path, &self.config)?;
-        self.sections.insert(section.parent_path.clone(), section);
+        self.sections.insert(section.file_path.clone(), section);
+        Ok(())
+    }
+
+    /// Called in serve, add the section and render it
+    fn add_section_and_render(&mut self, path: &Path) -> Result<()> {
+        self.add_section(path)?;
+        let mut section = self.sections.get_mut(path).unwrap();
+        self.permalinks.insert(section.relative_path.clone(), section.permalink.clone());
+        section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         Ok(())
     }
 
@@ -239,10 +250,10 @@ impl Site {
 
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
-    fn populate_sections(&mut self) {
+    pub fn populate_sections(&mut self) {
         for page in self.pages.values() {
-            if self.sections.contains_key(&page.parent_path) {
-                self.sections.get_mut(&page.parent_path).unwrap().pages.push(page.clone());
+            if self.sections.contains_key(&page.parent_path.join("_index.md")) {
+                self.sections.get_mut(&page.parent_path.join("_index.md")).unwrap().pages.push(page.clone());
             }
         }
 
@@ -253,14 +264,14 @@ impl Site {
             }
         }
 
-        for (parent_path, section) in &mut self.sections {
+        for section in self.sections.values_mut() {
             // TODO: avoid this clone
             let (mut sorted_pages, cannot_be_sorted_pages) = sort_pages(section.pages.clone(), section.meta.sort_by());
             sorted_pages = populate_previous_and_next_pages(&sorted_pages);
             section.pages = sorted_pages;
             section.ignored_pages = cannot_be_sorted_pages;
 
-            match grandparent_paths.get(parent_path) {
+            match grandparent_paths.get(&section.parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),
                 None => continue,
             };
@@ -353,7 +364,8 @@ impl Site {
         if path.exists() {
             // file exists, either a new one or updating content
             if is_section {
-                self.add_section(path)?;
+                self.add_section_and_render(path)?;
+                self.render_sections()?;
             } else {
                 // probably just an update so just re-parse that page
                 let (frontmatter_changed, page) = self.add_page_and_render(path)?;
@@ -661,7 +673,6 @@ impl Site {
         };
 
         let paginator = Paginator::new(&section.pages, section);
-
         for (i, pager) in paginator.pagers.iter().enumerate() {
             let folder_path = output_path.join(&paginate_path);
             let page_path = folder_path.join(&format!("{}", i + 1));
