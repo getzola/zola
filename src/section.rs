@@ -6,7 +6,7 @@ use tera::{Tera, Context};
 use serde::ser::{SerializeStruct, self};
 
 use config::Config;
-use front_matter::{FrontMatter, split_content};
+use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
 use utils::{read_file, find_content_components};
 use markdown::markdown_to_html;
@@ -15,6 +15,8 @@ use page::{Page};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Section {
+    /// The front matter meta-data
+    pub meta: SectionFrontMatter,
     /// The _index.md full path
     pub file_path: PathBuf,
     /// The .md path, starting from the content directory, with / slashes
@@ -31,8 +33,6 @@ pub struct Section {
     pub raw_content: String,
     /// The HTML rendered of the page
     pub content: String,
-    /// The front matter meta-data
-    pub meta: FrontMatter,
     /// All direct pages of that section
     pub pages: Vec<Page>,
     /// All pages that cannot be sorted in this section
@@ -42,10 +42,11 @@ pub struct Section {
 }
 
 impl Section {
-    pub fn new<P: AsRef<Path>>(file_path: P, meta: FrontMatter) -> Section {
+    pub fn new<P: AsRef<Path>>(file_path: P, meta: SectionFrontMatter) -> Section {
         let file_path = file_path.as_ref();
 
         Section {
+            meta: meta,
             file_path: file_path.to_path_buf(),
             relative_path: "".to_string(),
             parent_path: file_path.parent().unwrap().to_path_buf(),
@@ -54,7 +55,6 @@ impl Section {
             permalink: "".to_string(),
             raw_content: "".to_string(),
             content: "".to_string(),
-            meta: meta,
             pages: vec![],
             ignored_pages: vec![],
             subsections: vec![],
@@ -62,7 +62,7 @@ impl Section {
     }
 
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Section> {
-        let (meta, content) = split_content(file_path, content)?;
+        let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
         section.raw_content = content.clone();
         section.components = find_content_components(&section.file_path);
@@ -154,6 +154,7 @@ impl Default for Section {
     /// Used to create a default index section if there is no _index.md in the root content directory
     fn default() -> Section {
         Section {
+            meta: SectionFrontMatter::default(),
             file_path: PathBuf::new(),
             relative_path: "".to_string(),
             parent_path: PathBuf::new(),
@@ -162,7 +163,6 @@ impl Default for Section {
             permalink: "".to_string(),
             raw_content: "".to_string(),
             content: "".to_string(),
-            meta: FrontMatter::default(),
             pages: vec![],
             ignored_pages: vec![],
             subsections: vec![],

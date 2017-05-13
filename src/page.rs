@@ -11,7 +11,7 @@ use slug::slugify;
 
 use errors::{Result, ResultExt};
 use config::Config;
-use front_matter::{FrontMatter, SortBy, split_content};
+use front_matter::{PageFrontMatter, SortBy, split_page_content};
 use markdown::markdown_to_html;
 use utils::{read_file, find_content_components};
 
@@ -41,6 +41,8 @@ fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Page {
+    /// The front matter meta-data
+    pub meta: PageFrontMatter,
     /// The .md path
     pub file_path: PathBuf,
     /// The .md path, starting from the content directory, with / slashes
@@ -60,8 +62,6 @@ pub struct Page {
     pub assets: Vec<PathBuf>,
     /// The HTML rendered of the page
     pub content: String,
-    /// The front matter meta-data
-    pub meta: FrontMatter,
 
     /// The slug of that page.
     /// First tries to find the slug in the meta and defaults to filename otherwise
@@ -83,8 +83,9 @@ pub struct Page {
 
 
 impl Page {
-    pub fn new(meta: FrontMatter) -> Page {
+    pub fn new(meta: PageFrontMatter) -> Page {
         Page {
+            meta: meta,
             file_path: PathBuf::new(),
             relative_path: String::new(),
             parent_path: PathBuf::new(),
@@ -97,7 +98,6 @@ impl Page {
             path: "".to_string(),
             permalink: "".to_string(),
             summary: None,
-            meta: meta,
             previous: None,
             next: None,
         }
@@ -122,7 +122,7 @@ impl Page {
     /// erroneous
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Page> {
         // 1. separate front matter from content
-        let (meta, content) = split_content(file_path, content)?;
+        let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(meta);
         page.file_path = file_path.to_path_buf();
         page.parent_path = page.file_path.parent().unwrap().to_path_buf();
@@ -214,6 +214,28 @@ impl Page {
 
         tera.render(&tpl_name, &context)
             .chain_err(|| format!("Failed to render page '{}'", self.file_path.display()))
+    }
+}
+
+impl Default for Page {
+    fn default() -> Page {
+        Page {
+            meta: PageFrontMatter::default(),
+            file_path: PathBuf::new(),
+            relative_path: String::new(),
+            parent_path: PathBuf::new(),
+            file_name: "".to_string(),
+            components: vec![],
+            raw_content: "".to_string(),
+            assets: vec![],
+            content: "".to_string(),
+            slug: "".to_string(),
+            path: "".to_string(),
+            permalink: "".to_string(),
+            summary: None,
+            previous: None,
+            next: None,
+        }
     }
 }
 
@@ -318,17 +340,17 @@ mod tests {
 
     use std::fs::File;
 
-    use front_matter::{FrontMatter, SortBy};
+    use front_matter::{PageFrontMatter, SortBy};
     use super::{Page, find_related_assets, sort_pages, populate_previous_and_next_pages};
 
     fn create_page_with_date(date: &str) -> Page {
-        let mut front_matter = FrontMatter::default();
+        let mut front_matter = PageFrontMatter::default();
         front_matter.date = Some(date.to_string());
         Page::new(front_matter)
     }
 
     fn create_page_with_order(order: usize) -> Page {
-        let mut front_matter = FrontMatter::default();
+        let mut front_matter = PageFrontMatter::default();
         front_matter.order = Some(order);
         Page::new(front_matter)
     }
