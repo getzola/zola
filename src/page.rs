@@ -297,14 +297,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
 
             (can_be_sorted, cannot_be_sorted)
         },
-        SortBy::None => {
-            let mut p = vec![];
-            for page in pages {
-                p.push(page);
-            }
-
-            (p, vec![])
-        },
+        SortBy::None => (pages,  vec![])
     }
 }
 

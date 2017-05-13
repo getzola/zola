@@ -134,6 +134,23 @@ impl Section {
         paths.extend(self.ignored_pages.iter().map(|p| p.file_path.clone()));
         paths
     }
+
+    /// Whether the page given belongs to that section
+    pub fn is_child_page(&self, page: &Page) -> bool {
+        for p in &self.pages {
+            if p.file_path == page.file_path {
+                return true;
+            }
+        }
+
+        for p in &self.ignored_pages {
+            if p.file_path == page.file_path {
+                return true;
+            }
+        }
+
+        false
+    }
 }
 
 impl ser::Serialize for Section {

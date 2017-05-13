@@ -26,11 +26,11 @@ pub struct PageFrontMatter {
     pub tags: Option<Vec<String>>,
     /// Whether this page is a draft and should be published or not
     pub draft: Option<bool>,
-    /// Only one category allowed
+    /// Only one category allowed. Can't be an empty string if present
     pub category: Option<String>,
     /// Integer to use to order content. Lowest is at the bottom, highest first
     pub order: Option<usize>,
-    /// Optional template, if we want to specify which template to render for that page
+    /// Specify a template different from `page.html` to use for that page
     #[serde(skip_serializing)]
     pub template: Option<String>,
     /// Any extra parameter present in the front matter
@@ -56,6 +56,12 @@ impl PageFrontMatter {
             }
         }
 
+        if let Some(ref category) = f.category {
+            if category == "" {
+                bail!("`category` can't be empty if present")
+            }
+        }
+
         Ok(f)
     }
 
@@ -75,6 +81,13 @@ impl PageFrontMatter {
 
     pub fn order(&self) -> usize {
         self.order.unwrap()
+    }
+
+    pub fn has_tags(&self) -> bool {
+        match self.tags {
+            Some(ref t) => !t.is_empty(),
+            None => false
+        }
     }
 }
 

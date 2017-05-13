@@ -16,6 +16,7 @@ use std::time::Instant;
 
 mod cmd;
 mod console;
+mod rebuild;
 
 
 fn main() {

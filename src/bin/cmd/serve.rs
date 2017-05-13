@@ -14,6 +14,7 @@ use gutenberg::Site;
 use gutenberg::errors::{Result, ResultExt};
 
 use console;
+use rebuild;
 
 #[derive(Debug, PartialEq)]
 enum ChangeKind {
@@ -137,12 +138,12 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, site.rebuild_after_content_change(&path), "/x.js");
+                                rebuild_done_handling(&broadcaster, rebuild::after_content_change(&mut site, &path), "/x.js");
                             },
                             (ChangeKind::Templates, _) => {
                                 console::info(&format!("-> Template changed {}", path.display()));
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(&path), "/x.js");
+                                rebuild_done_handling(&broadcaster, rebuild::after_template_change(&mut site, &path), "/x.js");
                             },
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {

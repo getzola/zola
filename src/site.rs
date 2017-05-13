@@ -18,8 +18,6 @@ use front_matter::{SortBy};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 
 
-
-
 #[derive(Debug, PartialEq)]
 enum RenderList {
     Tags,
@@ -56,6 +54,8 @@ pub struct Site {
     static_path: PathBuf,
     pub tags: HashMap<String, Vec<PathBuf>>,
     pub categories: HashMap<String, Vec<PathBuf>>,
+    /// A map of all .md files (section and pages) and their permalink
+    /// We need that if there are relative links in the content that need to be resolved
     pub permalinks: HashMap<String, String>,
 }
 
@@ -92,6 +92,7 @@ impl Site {
     }
 
     /// Gets the path of all ignored pages in the site
+    /// Used for reporting them in the CLI
     pub fn get_ignored_pages(&self) -> Vec<PathBuf> {
         self.sections
             .values()
@@ -117,6 +118,17 @@ impl Site {
         orphans
     }
 
+    /// Finds the section that contains the page given if there is one
+    pub fn find_parent_section(&self, page: &Page) -> Option<&Section> {
+        for section in self.sections.values() {
+            if section.is_child_page(page) {
+                return Some(section)
+            }
+        }
+
+        None
+    }
+
     /// Used by tests to change the output path to a tmp dir
     #[doc(hidden)]
     pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {
@@ -132,9 +144,9 @@ impl Site {
         for entry in glob(&content_glob).unwrap().filter_map(|e| e.ok()) {
             let path = entry.as_path();
             if path.file_name().unwrap() == "_index.md" {
-                self.add_section(path)?;
+                self.add_section(path, false)?;
             } else {
-                self.add_page(path)?;
+                self.add_page(path, false)?;
             }
         }
         // Insert a default index section so we don't need to create a _index.md to render
@@ -146,27 +158,15 @@ impl Site {
             self.sections.insert(index_path, index_section);
         }
 
-        // A map of all .md files (section and pages) and their permalink
-        // We need that if there are relative links in the content that need to be resolved
-        let mut permalinks = HashMap::new();
-
-        for page in self.pages.values() {
-            permalinks.insert(page.relative_path.clone(), page.permalink.clone());
-        }
-
-        for section in self.sections.values() {
-            permalinks.insert(section.relative_path.clone(), section.permalink.clone());
-        }
-
+        // TODO: make that parallel
         for page in self.pages.values_mut() {
-            page.render_markdown(&permalinks, &self.tera, &self.config)?;
+            page.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
-
+        // TODO: make that parallel
         for section in self.sections.values_mut() {
-            section.render_markdown(&permalinks, &self.tera, &self.config)?;
+            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
 
-        self.permalinks = permalinks;
         self.populate_sections();
         self.populate_tags_and_categories();
 
@@ -175,72 +175,81 @@ impl Site {
         Ok(())
     }
 
-    /// Simple wrapper fn to avoid repeating that code in several places
-    fn add_page(&mut self, path: &Path) -> Result<()> {
+    /// Add a page to the site
+    /// The `render` parameter is used in the serve command, when rebuilding a page.
+    /// If `true`, it will also render the markdown for that page
+    /// Returns the previous page struct if there was one
+    pub fn add_page(&mut self, path: &Path, render: bool) -> Result<Option<Page>> {
         let page = Page::from_file(&path, &self.config)?;
-        self.pages.insert(page.file_path.clone(), page);
-        Ok(())
-    }
-
-    /// Simple wrapper fn to avoid repeating that code in several places
-    fn add_section(&mut self, path: &Path) -> Result<()> {
-        let section = Section::from_file(path, &self.config)?;
-        self.sections.insert(section.file_path.clone(), section);
-        Ok(())
-    }
-
-    /// Called in serve, add the section and render it
-    fn add_section_and_render(&mut self, path: &Path) -> Result<()> {
-        self.add_section(path)?;
-        let mut section = self.sections.get_mut(path).unwrap();
-        self.permalinks.insert(section.relative_path.clone(), section.permalink.clone());
-        section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
-        Ok(())
-    }
-
-    /// Called in serve, add a page again updating permalinks and its content
-    /// The bool in the result is whether the front matter has been updated or not
-    /// TODO: the above is very confusing, change that
-    fn add_page_and_render(&mut self, path: &Path) -> Result<(bool, Page)> {
-        let existing_page = self.pages.get(path).cloned();
-        self.add_page(path)?;
-        let mut page = self.pages.get_mut(path).unwrap();
         self.permalinks.insert(page.relative_path.clone(), page.permalink.clone());
-        page.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+        let prev = self.pages.insert(page.file_path.clone(), page);
 
-        if let Some(prev_page) = existing_page {
-            return Ok((prev_page.meta != page.meta, page.clone()));
+        if render {
+            let mut page = self.pages.get_mut(path).unwrap();
+            page.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
-        Ok((true, page.clone()))
+
+        Ok(prev)
+    }
+
+    /// Add a section to the site
+    /// The `render` parameter is used in the serve command, when rebuilding a page.
+    /// If `true`, it will also render the markdown for that page
+    /// Returns the previous page struct if there was one
+    pub fn add_section(&mut self, path: &Path, render: bool) -> Result<Option<Section>> {
+        let section = Section::from_file(path, &self.config)?;
+        self.permalinks.insert(section.relative_path.clone(), section.permalink.clone());
+        let prev = self.sections.insert(section.file_path.clone(), section);
+
+        if render {
+            let mut section = self.sections.get_mut(path).unwrap();
+            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+        }
+
+        Ok(prev)
     }
 
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
+        let mut grandparent_paths = HashMap::new();
+        for section in self.sections.values_mut() {
+            if let Some(grand_parent) = section.parent_path.parent() {
+                grandparent_paths.entry(grand_parent.to_path_buf()).or_insert_with(|| vec![]).push(section.clone());
+            }
+            // Make sure the pages of a section are empty since we can call that many times on `serve`
+            section.pages = vec![];
+            section.ignored_pages = vec![];
+        }
+
         for page in self.pages.values() {
             if self.sections.contains_key(&page.parent_path.join("_index.md")) {
                 self.sections.get_mut(&page.parent_path.join("_index.md")).unwrap().pages.push(page.clone());
             }
         }
 
-        let mut grandparent_paths = HashMap::new();
-        for section in self.sections.values() {
-            if let Some(grand_parent) = section.parent_path.parent() {
-                grandparent_paths.entry(grand_parent.to_path_buf()).or_insert_with(|| vec![]).push(section.clone());
-            }
-        }
-
         for section in self.sections.values_mut() {
-            // TODO: avoid this clone
-            let (mut sorted_pages, cannot_be_sorted_pages) = sort_pages(section.pages.clone(), section.meta.sort_by());
-            sorted_pages = populate_previous_and_next_pages(&sorted_pages);
-            section.pages = sorted_pages;
-            section.ignored_pages = cannot_be_sorted_pages;
-
             match grandparent_paths.get(&section.parent_path) {
                 Some(paths) => section.subsections.extend(paths.clone()),
                 None => continue,
             };
+        }
+
+        self.sort_sections_pages(None);
+    }
+
+    /// Sorts the pages of the section at the given path
+    /// By default will sort all sections but can be made to only sort a single one by providing a path
+    pub fn sort_sections_pages(&mut self, only: Option<&Path>) {
+        for (path, section) in self.sections.iter_mut() {
+            if let Some(p) = only {
+                if p != path {
+                    continue;
+                }
+            }
+            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(section.pages.clone(), section.meta.sort_by());
+            section.pages = populate_previous_and_next_pages(&sorted_pages);
+            section.ignored_pages = cannot_be_sorted_pages;
         }
     }
 
@@ -277,7 +286,7 @@ impl Site {
         html
     }
 
-    pub fn ensure_public_directory_exists(&self) -> Result<()> {
+    fn ensure_public_directory_exists(&self) -> Result<()> {
         let public = self.output_path.clone();
         if !public.exists() {
             create_directory(&public)?;
@@ -324,58 +333,6 @@ impl Site {
         Ok(())
     }
 
-    pub fn rebuild_after_content_change(&mut self, path: &Path) -> Result<()> {
-        let is_section = path.ends_with("_index.md");
-
-        if path.exists() {
-            // file exists, either a new one or updating content
-            if is_section {
-                self.add_section_and_render(path)?;
-                self.render_sections()?;
-            } else {
-                // probably just an update so just re-parse that page
-                let (frontmatter_changed, page) = self.add_page_and_render(path)?;
-                // TODO: can probably be smarter and check what changed
-                if frontmatter_changed {
-                    self.populate_sections();
-                    self.populate_tags_and_categories();
-                    self.build()?;
-                } else {
-                    self.render_page(&page)?;
-                }
-            }
-        } else {
-            // File doesn't exist -> a deletion so we remove it from everything
-            let relative_path = if is_section {
-                self.sections[path].relative_path.clone()
-            } else {
-                self.pages[path].relative_path.clone()
-            };
-            self.permalinks.remove(&relative_path);
-
-            if is_section {
-                self.sections.remove(path);
-            } else {
-                self.pages.remove(path);
-            }
-            // TODO: probably no need to do that, we should be able to only re-render a page or a section.
-            self.populate_sections();
-            self.populate_tags_and_categories();
-            self.build()?;
-        }
-
-        Ok(())
-    }
-
-    pub fn rebuild_after_template_change(&mut self, path: &Path) -> Result<()> {
-        self.tera.full_reload()?;
-        match path.file_name().unwrap().to_str().unwrap() {
-            "sitemap.xml" => self.render_sitemap(),
-            "rss.xml" => self.render_rss_feed(),
-            _ => self.build() // TODO: change that
-        }
-    }
-
     /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
         self.ensure_public_directory_exists()?;
@@ -417,18 +374,16 @@ impl Site {
             self.render_rss_feed()?;
         }
         self.render_robots()?;
-        if self.config.generate_categories_pages.unwrap() {
-            self.render_categories_and_tags(RenderList::Categories)?;
-        }
-        if self.config.generate_tags_pages.unwrap() {
-            self.render_categories_and_tags(RenderList::Tags)?;
-        }
+        // `render_categories` and `render_tags` will check whether the config allows
+        // them to render or not
+        self.render_categories()?;
+        self.render_tags()?;
 
         self.copy_static_directory()
     }
 
     /// Renders robots.txt
-    fn render_robots(&self) -> Result<()> {
+    pub fn render_robots(&self) -> Result<()> {
         self.ensure_public_directory_exists()?;
         create_file(
             self.output_path.join("robots.txt"),
@@ -436,8 +391,27 @@ impl Site {
         )
     }
 
+    /// Renders all categories if the config allows it
+    pub fn render_categories(&self) -> Result<()> {
+        if self.config.generate_categories_pages.unwrap() {
+            self.render_categories_and_tags(RenderList::Categories)
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Renders all tags if the config allows it
+    pub fn render_tags(&self) -> Result<()> {
+        if self.config.generate_tags_pages.unwrap() {
+            self.render_categories_and_tags(RenderList::Tags)
+        } else {
+            Ok(())
+        }
+    }
+
     /// Render the /{categories, list} pages and each individual category/tag page
     /// They are the same thing fundamentally, a list of pages with something in common
+    /// TODO: revisit this function, lots of things have changed since then
     fn render_categories_and_tags(&self, kind: RenderList) -> Result<()> {
         let items = match kind {
             RenderList::Categories => &self.categories,
@@ -509,7 +483,8 @@ impl Site {
         Ok(())
     }
 
-    fn render_sitemap(&self) -> Result<()> {
+    /// What it says on the tin
+    pub fn render_sitemap(&self) -> Result<()> {
         self.ensure_public_directory_exists()?;
         let mut context = Context::new();
         context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
@@ -544,7 +519,7 @@ impl Site {
         Ok(())
     }
 
-    fn render_rss_feed(&self) -> Result<()> {
+    pub fn render_rss_feed(&self) -> Result<()> {
         self.ensure_public_directory_exists()?;
 
         let mut context = Context::new();
@@ -587,7 +562,7 @@ impl Site {
     }
 
     /// Renders a single section
-    fn render_section(&self, section: &Section) -> Result<()> {
+    pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         self.ensure_public_directory_exists()?;
         let public = self.output_path.clone();
 
@@ -600,8 +575,10 @@ impl Site {
             }
         }
 
-        for page in &section.pages {
-            self.render_page(page)?;
+        if render_pages {
+            for page in &section.pages {
+                self.render_page(page)?;
+            }
         }
 
         if !section.meta.should_render() {
@@ -622,16 +599,20 @@ impl Site {
         Ok(())
     }
 
+    pub fn render_index(&self) -> Result<()> {
+        self.render_section(&self.sections[&self.base_path.join("content").join("_index.md")], false)
+    }
+
     /// Renders all sections
-    fn render_sections(&self) -> Result<()> {
+    pub fn render_sections(&self) -> Result<()> {
         for section in self.sections.values() {
-            self.render_section(section)?;
+            self.render_section(section, true)?;
         }
         Ok(())
     }
 
     /// Renders all pages that do not belong to any sections
-    fn render_orphan_pages(&self) -> Result<()> {
+    pub fn render_orphan_pages(&self) -> Result<()> {
         self.ensure_public_directory_exists()?;
 
         for page in self.get_all_orphan_pages() {
