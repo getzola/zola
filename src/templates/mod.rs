@@ -1,4 +1,6 @@
-use tera::Tera;
+use tera::{Tera, Context};
+
+use errors::{Result, ResultExt};
 
 pub mod filters;
 pub mod global_fns;
@@ -23,4 +25,15 @@ lazy_static! {
         tera.register_filter("base64_decode", filters::base64_decode);
         tera
     };
+}
+
+
+/// Renders the `internal/alias.html` template that will redirect
+/// via refresh to the url given
+pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
+    let mut context = Context::new();
+    context.add("url", &url);
+
+    tera.render("internal/alias.html", &context)
+        .chain_err(|| format!("Failed to render alias for '{}'", url))
 }

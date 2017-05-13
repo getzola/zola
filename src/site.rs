@@ -15,18 +15,9 @@ use pagination::Paginator;
 use utils::{create_file, create_directory};
 use section::{Section};
 use front_matter::{SortBy};
-use templates::{GUTENBERG_TERA, global_fns};
+use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 
 
-/// Renders the `internal/alias.html` template that will redirect
-/// via refresh to the url given
-fn render_alias(url: &str, tera: &Tera) -> Result<String> {
-    let mut context = Context::new();
-    context.add("url", &url);
-
-    tera.render("internal/alias.html", &context)
-        .chain_err(|| format!("Failed to render alias for '{}'", url))
-}
 
 
 #[derive(Debug, PartialEq)]
@@ -670,7 +661,7 @@ impl Site {
                 create_file(page_path.join("index.html"), &self.inject_livereload(output))?;
             } else {
                 create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
-                create_file(page_path.join("index.html"), &render_alias(&section.permalink, &self.tera)?)?;
+                create_file(page_path.join("index.html"), &render_redirect_template(&section.permalink, &self.tera)?)?;
             }
         }
 
