@@ -15,7 +15,7 @@ use pagination::Paginator;
 use utils::{create_file, create_directory};
 use section::{Section};
 use front_matter::{SortBy};
-use templates::{GUTENBERG_TERA, filters, global_fns};
+use templates::{GUTENBERG_TERA, global_fns};
 
 
 /// Renders the `internal/alias.html` template that will redirect
@@ -77,9 +77,6 @@ impl Site {
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
-        tera.register_filter("markdown", filters::markdown);
-        tera.register_filter("base64_encode", filters::base64_encode);
-        tera.register_filter("base64_decode", filters::base64_decode);
 
         let site = Site {
             base_path: path.to_path_buf(),

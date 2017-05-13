@@ -18,6 +18,9 @@ lazy_static! {
 
             ("internal/alias.html", include_str!("builtins/internal/alias.html")),
         ]).unwrap();
+        tera.register_filter("markdown", filters::markdown);
+        tera.register_filter("base64_encode", filters::base64_encode);
+        tera.register_filter("base64_decode", filters::base64_decode);
         tera
     };
 }
