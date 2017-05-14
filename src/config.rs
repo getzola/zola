@@ -134,7 +134,7 @@ mod tests {
     use super::{Config};
 
     #[test]
-    fn test_can_import_valid_config() {
+    fn can_import_valid_config() {
         let config = r#"
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
@@ -145,7 +145,7 @@ base_url = "https://replace-this-with-your-url.com"
     }
 
     #[test]
-    fn test_errors_when_invalid_type() {
+    fn errors_when_invalid_type() {
         let config = r#"
 title = 1
 base_url = "https://replace-this-with-your-url.com"
@@ -156,7 +156,7 @@ base_url = "https://replace-this-with-your-url.com"
     }
 
     #[test]
-    fn test_errors_when_missing_required_field() {
+    fn errors_when_missing_required_field() {
         // base_url is required
         let config = r#"
 title = ""
@@ -167,7 +167,7 @@ title = ""
     }
 
     #[test]
-    fn test_can_add_extra_values() {
+    fn can_add_extra_values() {
         let config = r#"
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"

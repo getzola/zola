@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use tera::{Context, to_value, Value};
 
 use errors::{Result, ResultExt};
-use page::Page;
-use section::Section;
+use content::{Page, Section};
 use site::Site;
 
 
@@ -155,8 +154,7 @@ mod tests {
     use tera::{to_value};
 
     use front_matter::SectionFrontMatter;
-    use page::Page;
-    use section::Section;
+    use content::{Page, Section};
 
     use super::{Paginator};
 

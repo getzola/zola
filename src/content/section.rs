@@ -10,7 +10,7 @@ use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
 use utils::{read_file, find_content_components};
 use markdown::markdown_to_html;
-use page::{Page};
+use content::Page;
 
 
 #[derive(Clone, Debug, PartialEq)]

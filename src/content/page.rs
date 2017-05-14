@@ -16,7 +16,6 @@ use markdown::markdown_to_html;
 use utils::{read_file, find_content_components};
 
 
-
 /// Looks into the current folder for the path and see if there's anything that is not a .md
 /// file. Those will be copied next to the rendered .html file
 fn find_related_assets(path: &Path) -> Vec<PathBuf> {
@@ -329,9 +328,9 @@ pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
 
 #[cfg(test)]
 mod tests {
-    use tempdir::TempDir;
-
     use std::fs::File;
+
+    use tempdir::TempDir;
 
     use front_matter::{PageFrontMatter, SortBy};
     use super::{Page, find_related_assets, sort_pages, populate_previous_and_next_pages};
@@ -349,7 +348,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_related_assets() {
+    fn can_find_related_assets() {
         let tmp_dir = TempDir::new("example").expect("create temp dir");
         File::create(tmp_dir.path().join("index.md")).unwrap();
         File::create(tmp_dir.path().join("example.js")).unwrap();
@@ -365,7 +364,7 @@ mod tests {
     }
 
     #[test]
-    fn test_can_sort_dates() {
+    fn can_sort_by_dates() {
         let input = vec![
             create_page_with_date("2018-01-01"),
             create_page_with_date("2017-01-01"),
@@ -379,7 +378,7 @@ mod tests {
     }
 
     #[test]
-    fn test_can_sort_order() {
+    fn can_sort_by_order() {
         let input = vec![
             create_page_with_order(2),
             create_page_with_order(3),
@@ -393,7 +392,7 @@ mod tests {
     }
 
     #[test]
-    fn test_can_sort_none() {
+    fn can_sort_by_none() {
         let input = vec![
             create_page_with_order(2),
             create_page_with_order(3),
@@ -407,7 +406,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ignore_page_with_missing_field() {
+    fn ignore_page_with_missing_field() {
         let input = vec![
             create_page_with_order(2),
             create_page_with_order(3),
@@ -419,7 +418,7 @@ mod tests {
     }
 
     #[test]
-    fn test_populate_previous_and_next_pages() {
+    fn can_populate_previous_and_next_pages() {
         let input = vec![
             create_page_with_order(3),
             create_page_with_order(2),

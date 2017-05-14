@@ -10,10 +10,8 @@ use walkdir::WalkDir;
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
-use page::{Page, populate_previous_and_next_pages, sort_pages};
-use pagination::Paginator;
 use utils::{create_file, create_directory};
-use section::{Section};
+use content::{Page, Section, Paginator, populate_previous_and_next_pages, sort_pages};
 use front_matter::{SortBy};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 
