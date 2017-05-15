@@ -23,6 +23,10 @@ enum ChangeKind {
     StaticFiles,
 }
 
+// Uglified using uglifyjs
+// Also, commenting out the lines 330-340 (containing `e instanceof ProtocolError`) was needed
+// as it seems their build didn't work well and didn't include ProtocolError so it would error on
+// errors
 const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
 

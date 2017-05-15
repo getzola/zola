@@ -391,5 +391,4 @@ fn test_can_build_site_with_pagination_for_index() {
     assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
     assert_eq!(file_contains!(public, "index.html", "has_next"), false);
-
 }
