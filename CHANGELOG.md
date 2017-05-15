@@ -4,11 +4,14 @@
 
 - Fix XML templates overriding and reloading
 - `title` and `description` are now optional in the front matter
-- Add GenericConfig, Vim syntax
+- Add GenericConfig, Vim, Jinja2 syntax
 - Add `_index.md` for homepage as well and make that into a normal section
 - Allow sorting by `none`, `date` and `order` for sections
 - Add pagination
 - Add a `get_page` global function to tera
+- Revamp index page, no more `pages` variables
+- Fix livereload stopping randomly
+- Smarter re-rendering in `serve` command
 
 ## 0.0.4 (2017-04-23)
 

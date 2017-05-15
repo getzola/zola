@@ -9,14 +9,12 @@ use iron::{Iron, Request, IronResult, Response, status};
 use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
-use ws::{WebSocket, Sender};
+use ws::{WebSocket, Sender, Message};
 use gutenberg::Site;
 use gutenberg::errors::{Result, ResultExt};
 
-
-use ::{report_elapsed_time, unravel_errors};
 use console;
-
+use rebuild;
 
 #[derive(Debug, PartialEq)]
 enum ChangeKind {
@@ -47,7 +45,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                 }}"#, reload_path)
             ).unwrap();
         },
-        Err(e) => unravel_errors("Failed to build the site", &e, false)
+        Err(e) => console::unravel_errors("Failed to build the site", &e)
     }
 }
 
@@ -67,10 +65,10 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     site.load()?;
     site.enable_live_reload();
-    super::notify_site_size(&site);
-    super::warn_about_ignored_pages(&site);
+    console::notify_site_size(&site);
+    console::warn_about_ignored_pages(&site);
     site.build()?;
-    report_elapsed_time(start);
+    console::report_elapsed_time(start);
 
     // Setup watchers
     let (tx, rx) = channel();
@@ -93,8 +91,17 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     let _iron = Iron::new(mount).http(address.as_str()).unwrap();
 
     // The websocket for livereload
-    let ws_server = WebSocket::new(|_| {
-        |_| {
+    let ws_server = WebSocket::new(|output: Sender| {
+        move |msg: Message| {
+            if msg.into_text().unwrap().contains("\"hello\"") {
+                return output.send(Message::text(r#"
+                    {
+                        "command": "hello",
+                        "protocols": [ "http://livereload.com/protocols/official-7" ],
+                        "serverName": "Gutenberg"
+                    }
+                "#));
+            }
             Ok(())
         }
     }).unwrap();
@@ -131,12 +138,12 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, site.rebuild_after_content_change(&path), "/x.js");
+                                rebuild_done_handling(&broadcaster, rebuild::after_content_change(&mut site, &path), "/x.js");
                             },
                             (ChangeKind::Templates, _) => {
                                 console::info(&format!("-> Template changed {}", path.display()));
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, site.rebuild_after_template_change(&path), "/x.js");
+                                rebuild_done_handling(&broadcaster, rebuild::after_template_change(&mut site, &path), "/x.js");
                             },
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {
@@ -145,7 +152,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                                 }
                             },
                         };
-                        report_elapsed_time(start);
+                        console::report_elapsed_time(start);
                     }
                     _ => {}
                 }

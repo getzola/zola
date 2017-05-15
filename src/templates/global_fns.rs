@@ -3,7 +3,7 @@ use std::path::{PathBuf};
 
 use tera::{GlobalFn, Value, from_value, to_value, Result};
 
-use page::Page;
+use content::Page;
 
 
 pub fn make_get_page(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {

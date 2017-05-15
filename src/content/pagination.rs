@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use tera::{Context, to_value, Value};
 
 use errors::{Result, ResultExt};
-use page::Page;
-use section::Section;
+use content::{Page, Section};
 use site::Site;
 
 
@@ -23,10 +22,10 @@ pub struct Pager<'a> {
 impl<'a> Pager<'a> {
     fn new(index: usize, pages: Vec<&'a Page>, permalink: String, path: String) -> Pager<'a> {
         Pager {
-            index: index,
-            permalink: permalink,
-            path: path,
-            pages: pages,
+            index,
+            permalink,
+            path,
+            pages,
         }
     }
 }
@@ -44,6 +43,8 @@ pub struct Paginator<'a> {
 }
 
 impl<'a> Paginator<'a> {
+    /// Create a new paginator
+    /// It will always at least create one pager (the first) even if there are no pages to paginate
     pub fn new(all_pages: &'a [Page], section: &'a Section) -> Paginator<'a> {
         let paginate_by = section.meta.paginate_by.unwrap();
         let paginate_path = match section.meta.paginate_path {
@@ -85,6 +86,11 @@ impl<'a> Paginator<'a> {
                 permalink,
                 if section.is_index() { page_path } else { format!("{}/{}", section.path, page_path) }
             ));
+        }
+
+        // We always have the index one at least
+        if pagers.is_empty() {
+            pagers.push(Pager::new(1, vec![], section.permalink.clone(), section.path.clone()));
         }
 
         Paginator {
@@ -147,14 +153,13 @@ impl<'a> Paginator<'a> {
 mod tests {
     use tera::{to_value};
 
-    use front_matter::FrontMatter;
-    use page::Page;
-    use section::Section;
+    use front_matter::SectionFrontMatter;
+    use content::{Page, Section};
 
     use super::{Paginator};
 
     fn create_section(is_index: bool) -> Section {
-        let mut f = FrontMatter::default();
+        let mut f = SectionFrontMatter::default();
         f.paginate_by = Some(2);
         f.paginate_path = Some("page".to_string());
         let mut s = Section::new("content/_index.md", f);
@@ -171,9 +176,9 @@ mod tests {
     #[test]
     fn test_can_create_paginator() {
         let pages = vec![
-            Page::new(FrontMatter::default()),
-            Page::new(FrontMatter::default()),
-            Page::new(FrontMatter::default()),
+            Page::default(),
+            Page::default(),
+            Page::default(),
         ];
         let section = create_section(false);
         let paginator = Paginator::new(pages.as_slice(), &section);
@@ -193,9 +198,9 @@ mod tests {
     #[test]
     fn test_can_create_paginator_for_index() {
         let pages = vec![
-            Page::new(FrontMatter::default()),
-            Page::new(FrontMatter::default()),
-            Page::new(FrontMatter::default()),
+            Page::default(),
+            Page::default(),
+            Page::default(),
         ];
         let section = create_section(true);
         let paginator = Paginator::new(pages.as_slice(), &section);
@@ -215,9 +220,9 @@ mod tests {
     #[test]
     fn test_can_build_paginator_context() {
         let pages = vec![
-            Page::new(FrontMatter::default()),
-            Page::new(FrontMatter::default()),
-            Page::new(FrontMatter::default()),
+            Page::default(),
+            Page::default(),
+            Page::default(),
         ];
         let section = create_section(false);
         let paginator = Paginator::new(pages.as_slice(), &section);

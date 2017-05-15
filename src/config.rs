@@ -58,6 +58,10 @@ impl Config {
 
         set_default!(config.language_code, "en".to_string());
         set_default!(config.highlight_code, false);
+        set_default!(config.generate_rss, false);
+        set_default!(config.generate_tags_pages, false);
+        set_default!(config.generate_categories_pages, false);
+        set_default!(config.insert_anchor_links, false);
 
         match config.highlight_theme {
             Some(ref t) => {
@@ -67,11 +71,6 @@ impl Config {
             },
             None => config.highlight_theme = Some("base16-ocean-dark".to_string())
         };
-
-        set_default!(config.generate_rss, false);
-        set_default!(config.generate_tags_pages, true);
-        set_default!(config.generate_categories_pages, true);
-        set_default!(config.insert_anchor_links, false);
 
         Ok(config)
     }
@@ -135,7 +134,7 @@ mod tests {
     use super::{Config};
 
     #[test]
-    fn test_can_import_valid_config() {
+    fn can_import_valid_config() {
         let config = r#"
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
@@ -146,7 +145,7 @@ base_url = "https://replace-this-with-your-url.com"
     }
 
     #[test]
-    fn test_errors_when_invalid_type() {
+    fn errors_when_invalid_type() {
         let config = r#"
 title = 1
 base_url = "https://replace-this-with-your-url.com"
@@ -157,7 +156,8 @@ base_url = "https://replace-this-with-your-url.com"
     }
 
     #[test]
-    fn test_errors_when_missing_required_field() {
+    fn errors_when_missing_required_field() {
+        // base_url is required
         let config = r#"
 title = ""
         "#;
@@ -167,7 +167,7 @@ title = ""
     }
 
     #[test]
-    fn test_can_add_extra_values() {
+    fn can_add_extra_values() {
         let config = r#"
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
@@ -181,15 +181,4 @@ hello = "world"
         assert_eq!(config.unwrap().extra.unwrap().get("hello").unwrap().as_str().unwrap(), "world");
     }
 
-    #[test]
-    fn test_language_defaults_to_en() {
-        let config = r#"
-title = "My site"
-base_url = "https://replace-this-with-your-url.com""#;
-
-        let config = Config::parse(config);
-        assert!(config.is_ok());
-        let config = config.unwrap();
-        assert_eq!(config.language_code.unwrap(), "en");
-    }
 }

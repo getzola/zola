@@ -35,26 +35,26 @@ fn test_can_parse_site() {
     assert_eq!(asset_folder_post.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.sections.len(), 5);
+    assert_eq!(site.sections.len(), 6);
 
     // And that the sections are correct
-    let index_section = &site.sections[&path.join("content")];
-    assert_eq!(index_section.subsections.len(), 1);
+    let index_section = &site.sections[&path.join("content").join("_index.md")];
+    assert_eq!(index_section.subsections.len(), 2);
     assert_eq!(index_section.pages.len(), 1);
 
-    let posts_section = &site.sections[&posts_path];
+    let posts_section = &site.sections[&posts_path.join("_index.md")];
     assert_eq!(posts_section.subsections.len(), 1);
     assert_eq!(posts_section.pages.len(), 5);
 
-    let tutorials_section = &site.sections[&posts_path.join("tutorials")];
+    let tutorials_section = &site.sections[&posts_path.join("tutorials").join("_index.md")];
     assert_eq!(tutorials_section.subsections.len(), 2);
     assert_eq!(tutorials_section.pages.len(), 0);
 
-    let devops_section = &site.sections[&posts_path.join("tutorials").join("devops")];
+    let devops_section = &site.sections[&posts_path.join("tutorials").join("devops").join("_index.md")];
     assert_eq!(devops_section.subsections.len(), 0);
     assert_eq!(devops_section.pages.len(), 2);
 
-    let prog_section = &site.sections[&posts_path.join("tutorials").join("programming")];
+    let prog_section = &site.sections[&posts_path.join("tutorials").join("programming").join("_index.md")];
     assert_eq!(prog_section.subsections.len(), 0);
     assert_eq!(prog_section.pages.len(), 2);
 }
@@ -173,6 +173,7 @@ fn test_can_build_site_with_categories() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.generate_categories_pages = Some(true);
     site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
@@ -224,6 +225,7 @@ fn test_can_build_site_with_tags() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.generate_tags_pages = Some(true);
     site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
@@ -294,6 +296,9 @@ fn test_can_build_site_with_pagination_for_section() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     for section in site.sections.values_mut(){
+        if section.is_index() {
+            continue;
+        }
         section.meta.paginate_by = Some(2);
         section.meta.template = Some("section_paginated.html".to_string());
     }
@@ -316,6 +321,9 @@ fn test_can_build_site_with_pagination_for_section() {
     assert!(file_exists!(public, "posts/index.html"));
     // And pagination!
     assert!(file_exists!(public, "posts/page/1/index.html"));
+    // even if there is no pages, only the section!
+    assert!(file_exists!(public, "paginated/page/1/index.html"));
+    assert!(file_exists!(public, "paginated/index.html"));
     // should redirect to posts/
     assert!(file_contains!(
         public,
@@ -347,7 +355,7 @@ fn test_can_build_site_with_pagination_for_index() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     {
-        let mut index = site.sections.get_mut(&path.join("content")).unwrap();
+        let mut index = site.sections.get_mut(&path.join("content").join("_index.md")).unwrap();
         index.meta.paginate_by = Some(2);
         index.meta.template = Some("index_paginated.html".to_string());
     }
@@ -368,6 +376,9 @@ fn test_can_build_site_with_pagination_for_index() {
 
     // And pagination!
     assert!(file_exists!(public, "page/1/index.html"));
+    // even if there is no pages, only the section!
+    assert!(file_exists!(public, "paginated/page/1/index.html"));
+    assert!(file_exists!(public, "paginated/index.html"));
     // should redirect to index
     assert!(file_contains!(
         public,
