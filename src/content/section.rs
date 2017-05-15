@@ -8,9 +8,10 @@ use serde::ser::{SerializeStruct, self};
 use config::Config;
 use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
-use utils::{read_file, find_content_components};
+use utils::{read_file};
 use markdown::markdown_to_html;
 use content::Page;
+use content::utils::find_content_components;
 
 
 #[derive(Clone, Debug, PartialEq)]

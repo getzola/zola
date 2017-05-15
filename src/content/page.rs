@@ -12,8 +12,8 @@ use errors::{Result, ResultExt};
 use config::Config;
 use front_matter::{PageFrontMatter, split_page_content};
 use markdown::markdown_to_html;
-use utils::{read_file, find_content_components};
-use content::utils::{find_related_assets, get_reading_analytics};
+use utils::{read_file};
+use content::utils::{find_related_assets, find_content_components, get_reading_analytics};
 
 
 
