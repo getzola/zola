@@ -82,7 +82,7 @@ impl Default for SectionFrontMatter {
         SectionFrontMatter {
             title: None,
             description: None,
-            sort_by: None,
+            sort_by: Some(SortBy::None),
             template: None,
             paginate_by: None,
             paginate_path: Some(DEFAULT_PAGINATE_PATH.to_string()),
