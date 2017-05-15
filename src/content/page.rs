@@ -226,3 +226,144 @@ impl ser::Serialize for Page {
         state.end()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use std::fs::{File, create_dir};
+    use std::path::Path;
+
+    use tera::Tera;
+    use tempdir::TempDir;
+
+    use config::Config;
+    use super::Page;
+
+
+    #[test]
+    fn test_can_parse_a_valid_page() {
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
+slug = "hello-world"
++++
+Hello world"#;
+        let res = Page::parse(Path::new("post.md"), content, &Config::default());
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
+
+        assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
+        assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
+        assert_eq!(page.raw_content, "Hello world".to_string());
+        assert_eq!(page.content, "<p>Hello world</p>\n".to_string());
+    }
+
+    #[test]
+    fn test_can_make_url_from_sections_and_slug() {
+        let content = r#"
+    +++
+    slug = "hello-world"
+    +++
+    Hello world"#;
+        let mut conf = Config::default();
+        conf.base_url = "http://hello.com/".to_string();
+        let res = Page::parse(Path::new("content/posts/intro/start.md"), content, &conf);
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
+        assert_eq!(page.path, "posts/intro/hello-world");
+        assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world");
+    }
+
+    #[test]
+    fn can_make_url_from_slug_only() {
+        let content = r#"
+    +++
+    slug = "hello-world"
+    +++
+    Hello world"#;
+        let config = Config::default();
+        let res = Page::parse(Path::new("start.md"), content, &config);
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &config).unwrap();
+        assert_eq!(page.path, "hello-world");
+        assert_eq!(page.permalink, config.make_permalink("hello-world"));
+    }
+
+    #[test]
+    fn errors_on_invalid_front_matter_format() {
+        // missing starting +++
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    slug = "hello-world"
+    +++
+    Hello world"#;
+        let res = Page::parse(Path::new("start.md"), content, &Config::default());
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn can_make_slug_from_non_slug_filename() {
+        let config = Config::default();
+        let res = Page::parse(Path::new(" file with space.md"), "+++\n+++", &config);
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &config).unwrap();
+        assert_eq!(page.slug, "file-with-space");
+        assert_eq!(page.permalink, config.make_permalink(&page.slug));
+    }
+
+    #[test]
+    fn can_specify_summary() {
+        let config = Config::default();
+        let content = r#"
++++
++++
+Hello world
+<!-- more -->"#.to_string();
+        let res = Page::parse(Path::new("hello.md"), &content, &config);
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &config).unwrap();
+        assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
+    }
+
+    #[test]
+    fn page_with_assets_gets_right_parent_path() {
+        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        File::create(nested_path.join("index.md")).unwrap();
+        File::create(nested_path.join("example.js")).unwrap();
+        File::create(nested_path.join("graph.jpg")).unwrap();
+        File::create(nested_path.join("fail.png")).unwrap();
+
+        let res = Page::parse(
+            nested_path.join("index.md").as_path(),
+            "+++\nurl=\"hey\"+++\n",
+            &Config::default()
+        );
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.parent_path, path.join("content").join("posts"));
+    }
+
+    #[test]
+    fn errors_file_not_named_index_with_assets() {
+        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        File::create(tmp_dir.path().join("something.md")).unwrap();
+        File::create(tmp_dir.path().join("example.js")).unwrap();
+        File::create(tmp_dir.path().join("graph.jpg")).unwrap();
+        File::create(tmp_dir.path().join("fail.png")).unwrap();
+
+        let page = Page::from_file(tmp_dir.path().join("something.md"), &Config::default());
+        assert!(page.is_err());
+    }
+}

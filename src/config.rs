@@ -87,7 +87,9 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        if self.base_url.ends_with('/') {
+        if self.base_url.ends_with('/') && path.starts_with('/') {
+            format!("{}{}", self.base_url, &path[1..])
+        } else if self.base_url.ends_with('/') {
             format!("{}{}", self.base_url, path)
         } else {
             format!("{}/{}", self.base_url, path)
@@ -95,8 +97,9 @@ impl Config {
     }
 }
 
+/// Exists only for testing purposes
+#[doc(hidden)]
 impl Default for Config {
-    /// Exists for testing purposes
     fn default() -> Config {
         Config {
             title: "".to_string(),
@@ -181,4 +184,17 @@ hello = "world"
         assert_eq!(config.unwrap().extra.unwrap().get("hello").unwrap().as_str().unwrap(), "world");
     }
 
+    #[test]
+    fn can_make_url_with_non_trailing_slash_base_url() {
+        let mut config = Config::default();
+        config.base_url = "http://vincent.is".to_string();
+        assert_eq!(config.make_permalink("hello"), "http://vincent.is/hello");
+    }
+
+    #[test]
+    fn can_make_url_with_trailing_slash_path() {
+        let mut config = Config::default();
+        config.base_url = "http://vincent.is/".to_string();
+        assert_eq!(config.make_permalink("/hello"), "http://vincent.is/hello");
+    }
 }

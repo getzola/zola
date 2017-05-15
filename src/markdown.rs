@@ -347,14 +347,14 @@ mod tests {
     use super::{markdown_to_html, parse_shortcode};
 
     #[test]
-    fn test_parse_simple_shortcode_one_arg() {
+    fn can_parse_simple_shortcode_one_arg() {
         let (name, args) = parse_shortcode(r#"{{ youtube(id="w7Ft2ymGmfc") }}"#);
         assert_eq!(name, "youtube");
         assert_eq!(args["id"], "w7Ft2ymGmfc");
     }
 
     #[test]
-    fn test_parse_simple_shortcode_several_arg() {
+    fn can_parse_simple_shortcode_several_arg() {
         let (name, args) = parse_shortcode(r#"{{ youtube(id="w7Ft2ymGmfc", autoplay=true) }}"#);
         assert_eq!(name, "youtube");
         assert_eq!(args["id"], "w7Ft2ymGmfc");
@@ -362,7 +362,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_block_shortcode_several_arg() {
+    fn can_parse_block_shortcode_several_arg() {
         let (name, args) = parse_shortcode(r#"{% youtube(id="w7Ft2ymGmfc", autoplay=true) %}"#);
         assert_eq!(name, "youtube");
         assert_eq!(args["id"], "w7Ft2ymGmfc");
@@ -370,13 +370,13 @@ mod tests {
     }
 
     #[test]
-    fn test_markdown_to_html_simple() {
+    fn can_do_markdown_to_html_simple() {
         let res = markdown_to_html("hello", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         assert_eq!(res, "<p>hello</p>\n");
     }
 
     #[test]
-    fn test_markdown_to_html_code_block_highlighting_off() {
+    fn doesnt_highlight_code_block_with_highlighting_off() {
         let mut config = Config::default();
         config.highlight_code = Some(false);
         let res = markdown_to_html("```\n$ gutenberg server\n```", &HashMap::new(), &Tera::default(), &config).unwrap();
@@ -387,7 +387,7 @@ mod tests {
     }
 
     #[test]
-    fn test_markdown_to_html_code_block_no_lang() {
+    fn can_highlight_code_block_no_lang() {
         let res = markdown_to_html("```\n$ gutenberg server\n$ ping\n```", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         assert_eq!(
             res,
@@ -396,7 +396,7 @@ mod tests {
     }
 
     #[test]
-    fn test_markdown_to_html_code_block_with_lang() {
+    fn can_highlight_code_block_with_lang() {
         let res = markdown_to_html("```python\nlist.append(1)\n```", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         assert_eq!(
             res,
@@ -405,7 +405,7 @@ mod tests {
     }
 
     #[test]
-    fn test_markdown_to_html_code_block_with_unknown_lang() {
+    fn can_higlight_code_block_with_unknown_lang() {
         let res = markdown_to_html("```yolo\nlist.append(1)\n```", &HashMap::new(), &Tera::default(), &Config::default()).unwrap();
         // defaults to plain text
         assert_eq!(
@@ -415,7 +415,7 @@ mod tests {
     }
 
     #[test]
-    fn test_markdown_to_html_with_shortcode() {
+    fn can_render_shortcode() {
         let res = markdown_to_html(r#"
 Hello
 
@@ -426,7 +426,7 @@ Hello
     }
 
     #[test]
-    fn test_markdown_to_html_with_several_shortcode_in_row() {
+    fn can_render_several_shortcode_in_row() {
         let res = markdown_to_html(r#"
 Hello
 
@@ -446,13 +446,13 @@ Hello
     }
 
     #[test]
-    fn test_markdown_to_html_shortcode_in_code_block() {
+    fn doesnt_render_shortcode_in_code_block() {
         let res = markdown_to_html(r#"```{{ youtube(id="w7Ft2ymGmfc") }}```"#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
         assert_eq!(res, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
     }
 
     #[test]
-    fn test_markdown_to_html_shortcode_with_body() {
+    fn can_render_shortcode_with_body() {
         let mut tera = Tera::default();
         tera.extend(&GUTENBERG_TERA).unwrap();
         tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
@@ -466,13 +466,13 @@ A quote
     }
 
     #[test]
-    fn test_markdown_to_html_unknown_shortcode() {
+    fn errors_rendering_unknown_shortcode() {
         let res = markdown_to_html("{{ hello(flash=true) }}", &HashMap::new(), &Tera::default(), &Config::default());
         assert!(res.is_err());
     }
 
     #[test]
-    fn test_markdown_to_html_relative_link_exists() {
+    fn can_make_valid_relative_link() {
         let mut permalinks = HashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let res = markdown_to_html(
@@ -488,7 +488,7 @@ A quote
     }
 
     #[test]
-    fn test_markdown_to_html_relative_links_with_anchors() {
+    fn can_make_relative_links_with_anchors() {
         let mut permalinks = HashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let res = markdown_to_html(
@@ -504,25 +504,25 @@ A quote
     }
 
     #[test]
-    fn test_markdown_to_html_relative_link_inexistant() {
+    fn errors_relative_link_inexistant() {
         let res = markdown_to_html("[rel link](./pages/about.md)", &HashMap::new(), &Tera::default(), &Config::default());
         assert!(res.is_err());
     }
 
     #[test]
-    fn test_markdown_to_html_add_id_to_headers() {
+    fn can_add_id_to_headers() {
         let res = markdown_to_html(r#"# Hello"#, &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
         assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n");
     }
 
     #[test]
-    fn test_markdown_to_html_add_id_to_headers_same_slug() {
+    fn can_add_id_to_headers_same_slug() {
         let res = markdown_to_html("# Hello\n# Hello", &HashMap::new(), &GUTENBERG_TERA, &Config::default()).unwrap();
         assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
     }
 
     #[test]
-    fn test_markdown_to_html_insert_anchor() {
+    fn can_insert_anchor() {
         let mut config = Config::default();
         config.insert_anchor_links = Some(true);
         let res = markdown_to_html("# Hello", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
@@ -534,7 +534,7 @@ A quote
 
     // See https://github.com/Keats/gutenberg/issues/42
     #[test]
-    fn test_markdown_to_html_insert_anchor_with_exclamation_mark() {
+    fn can_insert_anchor_with_exclamation_mark() {
         let mut config = Config::default();
         config.insert_anchor_links = Some(true);
         let res = markdown_to_html("# Hello!", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
@@ -546,7 +546,7 @@ A quote
 
     // See https://github.com/Keats/gutenberg/issues/53
     #[test]
-    fn test_markdown_to_html_insert_anchor_with_link() {
+    fn can_insert_anchor_with_link() {
         let mut config = Config::default();
         config.insert_anchor_links = Some(true);
         let res = markdown_to_html("## [](#xresources)Xresources", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
@@ -556,9 +556,8 @@ A quote
         );
     }
 
-
     #[test]
-    fn test_markdown_to_html_insert_anchor_with_other_special_chars() {
+    fn can_insert_anchor_with_other_special_chars() {
         let mut config = Config::default();
         config.insert_anchor_links = Some(true);
         let res = markdown_to_html("# Hello*_()", &HashMap::new(), &GUTENBERG_TERA, &config).unwrap();
