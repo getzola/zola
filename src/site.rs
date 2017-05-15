@@ -93,7 +93,7 @@ impl Site {
     pub fn get_ignored_pages(&self) -> Vec<PathBuf> {
         self.sections
             .values()
-            .flat_map(|s| s.ignored_pages.iter().map(|p| p.file_path.clone()))
+            .flat_map(|s| s.ignored_pages.iter().map(|p| p.file.path.clone()))
             .collect()
     }
 
@@ -107,7 +107,7 @@ impl Site {
         }
 
         for page in self.pages.values() {
-            if !pages_in_sections.contains(&page.file_path) {
+            if !pages_in_sections.contains(&page.file.path) {
                 orphans.push(page);
             }
         }
@@ -146,8 +146,8 @@ impl Site {
                 self.add_page(path, false)?;
             }
         }
-        // Insert a default index section so we don't need to create a _index.md to render
-        // the index page
+        // Insert a default index section if necessary so we don't need to create
+        // a _index.md to render the index page
         let index_path = self.base_path.join("content").join("_index.md");
         if !self.sections.contains_key(&index_path) {
             let mut index_section = Section::default();
@@ -178,8 +178,8 @@ impl Site {
     /// Returns the previous page struct if there was one
     pub fn add_page(&mut self, path: &Path, render: bool) -> Result<Option<Page>> {
         let page = Page::from_file(&path, &self.config)?;
-        self.permalinks.insert(page.relative_path.clone(), page.permalink.clone());
-        let prev = self.pages.insert(page.file_path.clone(), page);
+        self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
+        let prev = self.pages.insert(page.file.path.clone(), page);
 
         if render {
             let mut page = self.pages.get_mut(path).unwrap();
@@ -192,11 +192,11 @@ impl Site {
     /// Add a section to the site
     /// The `render` parameter is used in the serve command, when rebuilding a page.
     /// If `true`, it will also render the markdown for that page
-    /// Returns the previous page struct if there was one
+    /// Returns the previous section struct if there was one
     pub fn add_section(&mut self, path: &Path, render: bool) -> Result<Option<Section>> {
         let section = Section::from_file(path, &self.config)?;
-        self.permalinks.insert(section.relative_path.clone(), section.permalink.clone());
-        let prev = self.sections.insert(section.file_path.clone(), section);
+        self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
+        let prev = self.sections.insert(section.file.path.clone(), section);
 
         if render {
             let mut section = self.sections.get_mut(path).unwrap();
@@ -211,7 +211,7 @@ impl Site {
     pub fn populate_sections(&mut self) {
         let mut grandparent_paths = HashMap::new();
         for section in self.sections.values_mut() {
-            if let Some(grand_parent) = section.parent_path.parent() {
+            if let Some(ref grand_parent) = section.file.grand_parent {
                 grandparent_paths.entry(grand_parent.to_path_buf()).or_insert_with(|| vec![]).push(section.clone());
             }
             // Make sure the pages of a section are empty since we can call that many times on `serve`
@@ -220,13 +220,14 @@ impl Site {
         }
 
         for page in self.pages.values() {
-            if self.sections.contains_key(&page.parent_path.join("_index.md")) {
-                self.sections.get_mut(&page.parent_path.join("_index.md")).unwrap().pages.push(page.clone());
+            let parent_section_path = page.file.parent.join("_index.md");
+            if self.sections.contains_key(&parent_section_path) {
+                self.sections.get_mut(&parent_section_path).unwrap().pages.push(page.clone());
             }
         }
 
         for section in self.sections.values_mut() {
-            match grandparent_paths.get(&section.parent_path) {
+            match grandparent_paths.get(&section.file.parent) {
                 Some(paths) => section.subsections.extend(paths.clone()),
                 None => continue,
             };
@@ -257,7 +258,7 @@ impl Site {
                 self.categories
                     .entry(category.to_string())
                     .or_insert_with(|| vec![])
-                    .push(page.file_path.clone());
+                    .push(page.file.path.clone());
             }
 
             if let Some(ref tags) = page.meta.tags {
@@ -265,7 +266,7 @@ impl Site {
                     self.tags
                         .entry(tag.to_string())
                         .or_insert_with(|| vec![])
-                        .push(page.file_path.clone());
+                        .push(page.file.path.clone());
                 }
             }
         }
@@ -554,7 +555,7 @@ impl Site {
     fn get_sections_map(&self) -> HashMap<String, Section> {
         self.sections
             .values()
-            .map(|s| (s.components.join("/"), s.clone()))
+            .map(|s| (s.file.components.join("/"), s.clone()))
             .collect()
     }
 
@@ -564,7 +565,7 @@ impl Site {
         let public = self.output_path.clone();
 
         let mut output_path = public.to_path_buf();
-        for component in &section.components {
+        for component in &section.file.components {
             output_path.push(component);
 
             if !output_path.exists() {

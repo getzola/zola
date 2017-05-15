@@ -13,34 +13,22 @@ use config::Config;
 use front_matter::{PageFrontMatter, split_page_content};
 use markdown::markdown_to_html;
 use utils::{read_file};
-use content::utils::{find_related_assets, find_content_components, get_reading_analytics};
-
+use content::utils::{find_related_assets, get_reading_analytics};
+use content::file_info::FileInfo;
 
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Page {
+    /// All info about the actual file
+    pub file: FileInfo,
     /// The front matter meta-data
     pub meta: PageFrontMatter,
-    /// The .md path
-    pub file_path: PathBuf,
-    /// The .md path, starting from the content directory, with / slashes
-    pub relative_path: String,
-    /// The parent directory of the file. Is actually the grand parent directory
-    /// if it's an asset folder
-    pub parent_path: PathBuf,
-    /// The name of the .md file
-    pub file_name: String,
-    /// The directories above our .md file
-    /// for example a file at content/kb/solutions/blabla.md will have 2 components:
-    /// `kb` and `solutions`
-    pub components: Vec<String>,
     /// The actual content of the page, in markdown
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
     pub assets: Vec<PathBuf>,
     /// The HTML rendered of the page
     pub content: String,
-
     /// The slug of that page.
     /// First tries to find the slug in the meta and defaults to filename otherwise
     pub slug: String,
@@ -52,7 +40,6 @@ pub struct Page {
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
     pub summary: Option<String>,
-
     /// The previous page, by whatever sorting is used for the index/section
     pub previous: Option<Box<Page>>,
     /// The next page, by whatever sorting is used for the index/section
@@ -61,14 +48,12 @@ pub struct Page {
 
 
 impl Page {
-    pub fn new(meta: PageFrontMatter) -> Page {
+    pub fn new<P: AsRef<Path>>(file_path: P, meta: PageFrontMatter) -> Page {
+        let file_path = file_path.as_ref();
+
         Page {
+            file: FileInfo::new_page(file_path),
             meta: meta,
-            file_path: PathBuf::new(),
-            relative_path: String::new(),
-            parent_path: PathBuf::new(),
-            file_name: "".to_string(),
-            components: vec![],
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),
@@ -85,49 +70,26 @@ impl Page {
     /// Files without front matter or with invalid front matter are considered
     /// erroneous
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Page> {
-        // 1. separate front matter from content
         let (meta, content) = split_page_content(file_path, content)?;
-        let mut page = Page::new(meta);
-        page.file_path = file_path.to_path_buf();
-        page.parent_path = page.file_path.parent().unwrap().to_path_buf();
+        let mut page = Page::new(file_path, meta);
         page.raw_content = content;
-
-        let path = Path::new(file_path);
-        page.file_name = path.file_stem().unwrap().to_string_lossy().to_string();
-
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
             } else {
-                slugify(page.file_name.clone())
+                slugify(page.file.name.clone())
             }
         };
-        page.components = find_content_components(&page.file_path);
-        page.relative_path = format!("{}/{}.md", page.components.join("/"), page.file_name);
 
-        // 4. Find sections
-        // Pages with custom urls exists outside of sections
-        let mut path_set = false;
         if let Some(ref u) = page.meta.url {
             page.path = u.trim().to_string();
-            path_set = true;
+        } else {
+            page.path = if page.file.components.is_empty() {
+                page.slug.clone()
+            } else {
+                format!("{}/{}", page.file.components.join("/"), page.slug)
+            };
         }
-
-        if !page.components.is_empty() {
-            // If we have a folder with an asset, don't consider it as a component
-            if page.file_name == "index" {
-                page.components.pop();
-                // also set parent_path to grandparent instead
-                page.parent_path = page.parent_path.parent().unwrap().to_path_buf();
-            }
-            if !path_set {
-                // Don't add a trailing slash to sections
-                page.path = format!("{}/{}", page.components.join("/"), page.slug);
-            }
-        } else if !path_set {
-            page.path = page.slug.clone();
-        }
-
         page.permalink = config.make_permalink(&page.path);
 
         Ok(page)
@@ -140,7 +102,7 @@ impl Page {
         let mut page = Page::parse(path, &content, config)?;
         page.assets = find_related_assets(path.parent().unwrap());
 
-        if !page.assets.is_empty() && page.file_name != "index" {
+        if !page.assets.is_empty() && page.file.name != "index" {
             bail!("Page `{}` has assets ({:?}) but is not named index.md", path.display(), page.assets);
         }
 
@@ -177,19 +139,15 @@ impl Page {
         context.add("current_path", &self.path);
 
         tera.render(&tpl_name, &context)
-            .chain_err(|| format!("Failed to render page '{}'", self.file_path.display()))
+            .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 }
 
 impl Default for Page {
     fn default() -> Page {
         Page {
+            file: FileInfo::default(),
             meta: PageFrontMatter::default(),
-            file_path: PathBuf::new(),
-            relative_path: String::new(),
-            parent_path: PathBuf::new(),
-            file_name: "".to_string(),
-            components: vec![],
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),
@@ -352,7 +310,7 @@ Hello world
         );
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.parent_path, path.join("content").join("posts"));
+        assert_eq!(page.file.parent, path.join("content").join("posts"));
     }
 
     #[test]

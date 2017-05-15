@@ -81,13 +81,13 @@ mod tests {
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.date = Some(date.to_string());
-        Page::new(front_matter)
+        Page::new("content/hello.md", front_matter)
     }
 
     fn create_page_with_order(order: usize) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.order = Some(order);
-        Page::new(front_matter)
+        Page::new("content/hello.md", front_matter)
     }
 
     #[test]

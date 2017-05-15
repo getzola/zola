@@ -32,37 +32,13 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
     (word_count, (word_count / 200))
 }
 
-
-/// Takes a full path to a .md and returns only the components after the first `content` directory
-/// Will not return the filename as last component
-pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
-    let path = path.as_ref();
-    let mut is_in_content = false;
-    let mut components = vec![];
-
-    for section in path.parent().unwrap().components() {
-        let component = section.as_ref().to_string_lossy();
-
-        if is_in_content {
-            components.push(component.to_string());
-            continue;
-        }
-
-        if component == "content" {
-            is_in_content = true;
-        }
-    }
-
-    components
-}
-
 #[cfg(test)]
 mod tests {
     use std::fs::File;
 
     use tempdir::TempDir;
 
-    use super::{find_related_assets, find_content_components, get_reading_analytics};
+    use super::{find_related_assets, get_reading_analytics};
 
     #[test]
     fn can_find_related_assets() {
@@ -96,11 +72,5 @@ mod tests {
         let (word_count, reading_time) = get_reading_analytics(&content);
         assert_eq!(word_count, 2000);
         assert_eq!(reading_time, 10);
-    }
-
-    #[test]
-    fn can_find_content_components() {
-        let res = find_content_components("/home/vincent/code/site/content/posts/tutorials/python.md");
-        assert_eq!(res, ["posts".to_string(), "tutorials".to_string()]);
     }
 }

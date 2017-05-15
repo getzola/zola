@@ -9,7 +9,7 @@ use content::Page;
 pub fn make_get_page(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {
     let mut pages = HashMap::new();
     for page in all_pages.values() {
-        pages.insert(page.relative_path.clone(), page.clone());
+        pages.insert(page.file.relative.clone(), page.clone());
     }
 
     Box::new(move |args| -> Result<Value> {

@@ -85,7 +85,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             // A section was deleted, many things can be impacted:
             // - the pages of the section are becoming orphans
             // - any page that was referencing the section (index, etc)
-            let relative_path = site.sections[path].relative_path.clone();
+            let relative_path = site.sections[path].file.relative.clone();
             // Remove the link to it and the section itself from the Site
             site.permalinks.remove(&relative_path);
             site.sections.remove(path);
@@ -94,7 +94,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             // A page was deleted, many things can be impacted:
             // - the section the page is in
             // - any page that was referencing the section (index, etc)
-            let relative_path = site.pages[path].relative_path.clone();
+            let relative_path = site.pages[path].file.relative.clone();
             site.permalinks.remove(&relative_path);
             if let Some(p) = site.pages.remove(path) {
                 if p.meta.has_tags() || p.meta.category.is_some() {
@@ -172,7 +172,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                     },
                     PageChangesNeeded::Sort => {
                         let section_path = match site.find_parent_section(&site.pages[path]) {
-                            Some(s) => s.file_path.clone(),
+                            Some(s) => s.file.path.clone(),
                             None => continue  // Do nothing if it's an orphan page
                         };
                         site.populate_sections();

@@ -145,7 +145,7 @@ impl<'a> Paginator<'a> {
         }
 
         site.tera.render(&self.section.get_template_name(), &context)
-            .chain_err(|| format!("Failed to render pager {} of section '{}'", pager.index, self.section.file_path.display()))
+            .chain_err(|| format!("Failed to render pager {} of section '{}'", pager.index, self.section.file.path.display()))
     }
 }
 
@@ -166,7 +166,7 @@ mod tests {
         if !is_index {
             s.path = "posts".to_string();
             s.permalink = "https://vincent.is/posts".to_string();
-            s.components = vec!["posts".to_string()];
+            s.file.components = vec!["posts".to_string()];
         } else {
             s.permalink = "https://vincent.is".to_string();
         }
