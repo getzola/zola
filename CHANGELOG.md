@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.5 (unreleased)
+## 0.0.5 (2017-05-15)
 
 - Fix XML templates overriding and reloading
 - `title` and `description` are now optional in the front matter
