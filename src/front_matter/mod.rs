@@ -8,7 +8,7 @@ mod page;
 mod section;
 
 pub use self::page::PageFrontMatter;
-pub use self::section::{SectionFrontMatter, SortBy};
+pub use self::section::{SectionFrontMatter};
 
 lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^[[:space:]]*\+\+\+\r?\n((?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
@@ -30,7 +30,7 @@ fn split_content(file_path: &Path, content: &str) -> Result<(String, String)> {
 }
 
 /// Split a file between the front matter and its content.
-/// Returns a parsed SectionFrontMatter and the rest of the content
+/// Returns a parsed `SectionFrontMatter` and the rest of the content
 pub fn split_section_content(file_path: &Path, content: &str) -> Result<(SectionFrontMatter, String)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = SectionFrontMatter::parse(&front_matter)
@@ -39,7 +39,7 @@ pub fn split_section_content(file_path: &Path, content: &str) -> Result<(Section
 }
 
 /// Split a file between the front matter and its content
-/// Returns a parsed PageFrontMatter and the rest of the content
+/// Returns a parsed `PageFrontMatter` and the rest of the content
 pub fn split_page_content(file_path: &Path, content: &str) -> Result<(PageFrontMatter, String)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = PageFrontMatter::parse(&front_matter)

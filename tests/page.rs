@@ -164,43 +164,6 @@ Hello world"#;
 }
 
 #[test]
-fn test_reading_analytics_short() {
-    let content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world"#;
-    let res = Page::parse(Path::new("hello.md"), content, &Config::default());
-    assert!(res.is_ok());
-    let mut page = res.unwrap();
-    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
-    let (word_count, reading_time) = page.get_reading_analytics();
-    assert_eq!(word_count, 2);
-    assert_eq!(reading_time, 0);
-}
-
-#[test]
-fn test_reading_analytics_long() {
-    let mut content = r#"
-+++
-title = "Hello"
-description = "hey there"
-+++
-Hello world"#.to_string();
-    for _ in 0..1000 {
-        content.push_str(" Hello world");
-    }
-    let res = Page::parse(Path::new("hello.md"), &content, &Config::default());
-    assert!(res.is_ok());
-    let mut page = res.unwrap();
-    page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
-    let (word_count, reading_time) = page.get_reading_analytics();
-    assert_eq!(word_count, 2002);
-    assert_eq!(reading_time, 10);
-}
-
-#[test]
 fn test_automatic_summary_is_empty_string() {
     let content = r#"
 +++

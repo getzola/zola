@@ -4,16 +4,10 @@ use tera::Value;
 use toml;
 
 use errors::{Result};
+use content::SortBy;
 
 static DEFAULT_PAGINATE_PATH: &'static str = "page";
 
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum SortBy {
-    Date,
-    Order,
-    None,
-}
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -21,7 +21,6 @@ pub fn create_directory<P: AsRef<Path>>(path: P) -> Result<()> {
     Ok(())
 }
 
-
 /// Return the content of a file, with error handling added
 pub fn read_file<P: AsRef<Path>>(path: P) -> Result<String> {
     let path = path.as_ref();

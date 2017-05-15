@@ -96,17 +96,14 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             // - any page that was referencing the section (index, etc)
             let relative_path = site.pages[path].relative_path.clone();
             site.permalinks.remove(&relative_path);
-            match site.pages.remove(path) {
-                Some(p) => {
-                    if p.meta.has_tags() || p.meta.category.is_some() {
-                        site.populate_tags_and_categories();
-                    }
+            if let Some(p) = site.pages.remove(path) {
+                if p.meta.has_tags() || p.meta.category.is_some() {
+                    site.populate_tags_and_categories();
+                }
 
-                    if site.find_parent_section(&p).is_some() {
-                        site.populate_sections();
-                    }
-                },
-                None => ()
+                if site.find_parent_section(&p).is_some() {
+                    site.populate_sections();
+                }
             };
         }
         // Deletion is something that doesn't happen all the time so we

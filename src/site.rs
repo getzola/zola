@@ -11,8 +11,7 @@ use walkdir::WalkDir;
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use utils::{create_file, create_directory};
-use content::{Page, Section, Paginator, populate_previous_and_next_pages, sort_pages};
-use front_matter::{SortBy};
+use content::{Page, Section, Paginator, SortBy, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 
 
@@ -239,7 +238,7 @@ impl Site {
     /// Sorts the pages of the section at the given path
     /// By default will sort all sections but can be made to only sort a single one by providing a path
     pub fn sort_sections_pages(&mut self, only: Option<&Path>) {
-        for (path, section) in self.sections.iter_mut() {
+        for (path, section) in &mut self.sections {
             if let Some(p) = only {
                 if p != path {
                     continue;
