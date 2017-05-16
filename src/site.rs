@@ -299,7 +299,7 @@ impl Site {
 
         // Finally, create a index.html file there with the page rendered
         let output = page.render_html(&self.tera, &self.config)?;
-        create_file(current_path.join("index.html"), &self.inject_livereload(output))?;
+        create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
@@ -332,7 +332,7 @@ impl Site {
     pub fn render_robots(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         create_file(
-            self.output_path.join("robots.txt"),
+            &self.output_path.join("robots.txt"),
             &self.tera.render("robots.txt", &Context::new())?
         )
     }
@@ -361,14 +361,14 @@ impl Site {
         let output_path = self.output_path.join(&taxonomy.get_list_name());
         let list_output = taxonomy.render_list(&self.tera, &self.config)?;
         create_directory(&output_path)?;
-        create_file(output_path.join("index.html"), &self.inject_livereload(list_output))?;
+        create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
 
         for item in &taxonomy.items {
             let single_output = taxonomy.render_single_item(item, &self.tera, &self.config)?;
 
             create_directory(&output_path.join(&item.slug))?;
             create_file(
-                output_path.join(&item.slug).join("index.html"),
+                &output_path.join(&item.slug).join("index.html"),
                 &self.inject_livereload(single_output)
             )?;
         }
@@ -410,7 +410,7 @@ impl Site {
 
         let sitemap = self.tera.render("sitemap.xml", &context)?;
 
-        create_file(self.output_path.join("sitemap.xml"), &sitemap)?;
+        create_file(&self.output_path.join("sitemap.xml"), &sitemap)?;
 
         Ok(())
     }
@@ -443,7 +443,7 @@ impl Site {
 
         let sitemap = self.tera.render("rss.xml", &context)?;
 
-        create_file(self.output_path.join("rss.xml"), &sitemap)?;
+        create_file(&self.output_path.join("rss.xml"), &sitemap)?;
 
         Ok(())
     }
@@ -489,7 +489,7 @@ impl Site {
                 &self.tera,
                 &self.config,
             )?;
-            create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
+            create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
         }
 
         Ok(())
@@ -535,10 +535,10 @@ impl Site {
             create_directory(&page_path)?;
             let output = paginator.render_pager(pager, self)?;
             if i > 0 {
-                create_file(page_path.join("index.html"), &self.inject_livereload(output))?;
+                create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
             } else {
-                create_file(output_path.join("index.html"), &self.inject_livereload(output))?;
-                create_file(page_path.join("index.html"), &render_redirect_template(&section.permalink, &self.tera)?)?;
+                create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
+                create_file(&page_path.join("index.html"), &render_redirect_template(&section.permalink, &self.tera)?)?;
             }
         }
 

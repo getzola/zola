@@ -16,8 +16,8 @@ base_url = "https://example.com"
 "#;
 
 
-pub fn create_new_project<P: AsRef<Path>>(name: P) -> Result<()> {
-    let path = name.as_ref();
+pub fn create_new_project(name: &str) -> Result<()> {
+    let path = Path::new(name);
 
     // Better error message than the rust default
     if path.exists() && path.is_dir() {
@@ -26,7 +26,7 @@ pub fn create_new_project<P: AsRef<Path>>(name: P) -> Result<()> {
 
     // main folder
     create_dir(path)?;
-    create_file(path.join("config.toml"), CONFIG.trim_left())?;
+    create_file(&path.join("config.toml"), CONFIG.trim_left())?;
 
     // content folder
     create_dir(path.join("content"))?;
