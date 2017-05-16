@@ -190,7 +190,7 @@ fn can_build_site_with_categories() {
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
-    assert_eq!(site.categories.len(), 2);
+    assert_eq!(site.categories.unwrap().len(), 2);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -243,7 +243,7 @@ fn can_build_site_with_tags() {
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
-    assert_eq!(site.tags.len(), 3);
+    assert_eq!(site.tags.unwrap().len(), 3);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));

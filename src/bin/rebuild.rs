@@ -1,7 +1,20 @@
 use std::path::Path;
 
-use gutenberg::{Site, SectionFrontMatter, PageFrontMatter};
+use gutenberg::{Site, Page, Section, SectionFrontMatter, PageFrontMatter};
 use gutenberg::errors::Result;
+
+
+/// Finds the section that contains the page given if there is one
+pub fn find_parent_section<'a>(site: &'a Site, page: &Page) -> Option<&'a Section> {
+    for section in site.sections.values() {
+        if section.is_child_page(page) {
+            return Some(section)
+        }
+    }
+
+    None
+}
+
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PageChangesNeeded {
@@ -101,7 +114,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                     site.populate_tags_and_categories();
                 }
 
-                if site.find_parent_section(&p).is_some() {
+                if find_parent_section(site, &p).is_some() {
                     site.populate_sections();
                 }
             };
@@ -171,7 +184,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                         site.render_categories()?;
                     },
                     PageChangesNeeded::Sort => {
-                        let section_path = match site.find_parent_section(&site.pages[path]) {
+                        let section_path = match find_parent_section(site, &site.pages[path]) {
                             Some(s) => s.file.path.clone(),
                             None => continue  // Do nothing if it's an orphan page
                         };

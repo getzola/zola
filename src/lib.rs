@@ -19,7 +19,7 @@ extern crate base64;
 #[cfg(test)]
 extern crate tempdir;
 
-mod utils;
+mod fs;
 mod config;
 pub mod errors;
 mod front_matter;
@@ -33,5 +33,5 @@ pub use site::{Site};
 pub use config::{Config, get_config};
 pub use front_matter::{PageFrontMatter, SectionFrontMatter, split_page_content, split_section_content};
 pub use content::{Page, Section, SortBy, sort_pages, populate_previous_and_next_pages};
-pub use utils::{create_file};
+pub use fs::{create_file};
 pub use markdown::markdown_to_html;

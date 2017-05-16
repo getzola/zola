@@ -36,13 +36,17 @@ pub fn notify_site_size(site: &Site) {
 
 /// Display a warning in the console if there are ignored pages in the site
 pub fn warn_about_ignored_pages(site: &Site) {
-    let ignored_pages = site.get_ignored_pages();
+    let ignored_pages: Vec<_> = site.sections
+        .values()
+        .flat_map(|s| s.ignored_pages.iter().map(|p| p.file.path.clone()))
+        .collect();
+
     if !ignored_pages.is_empty() {
         warn(&format!(
             "{} page(s) ignored (missing date or order in a sorted section):",
             ignored_pages.len()
         ));
-        for path in site.get_ignored_pages() {
+        for path in ignored_pages {
             warn(&format!("- {}", path.display()));
         }
     }

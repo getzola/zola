@@ -24,8 +24,6 @@ pub struct PageFrontMatter {
     pub url: Option<String>,
     /// Tags, not to be confused with categories
     pub tags: Option<Vec<String>>,
-    /// Whether this page is a draft and should be published or not
-    pub draft: Option<bool>,
     /// Only one category allowed. Can't be an empty string if present
     pub category: Option<String>,
     /// Integer to use to order content. Lowest is at the bottom, highest first
@@ -100,7 +98,6 @@ impl Default for PageFrontMatter {
             slug: None,
             url: None,
             tags: None,
-            draft: None,
             category: None,
             order: None,
             template: None,

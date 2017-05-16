@@ -11,6 +11,15 @@ pub fn create_file<P: AsRef<Path>>(path: P, content: &str) -> Result<()> {
     Ok(())
 }
 
+/// Create a directory at the given path if it doesn't exist already
+pub fn ensure_directory_exists<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path = path.as_ref();
+    if !path.exists() {
+        create_directory(&path)?;
+    }
+    Ok(())
+}
+
 /// Very similar to `create_dir` from the std except it checks if the folder
 /// exists before creating it
 pub fn create_directory<P: AsRef<Path>>(path: P) -> Result<()> {

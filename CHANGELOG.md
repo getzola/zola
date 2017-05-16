@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.6 (unreleased)
+
+- Fix missing serialized data for sections
+- Change the single item template context for categories/tags
+
 ## 0.0.5 (2017-05-15)
 
 - Fix XML templates overriding and reloading
