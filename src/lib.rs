@@ -25,7 +25,7 @@ pub mod errors;
 mod front_matter;
 mod content;
 mod site;
-mod markdown;
+mod rendering;
 // Filters, Global Fns and default instance of Tera
 mod templates;
 
@@ -34,4 +34,3 @@ pub use config::{Config, get_config};
 pub use front_matter::{PageFrontMatter, SectionFrontMatter, split_page_content, split_section_content};
 pub use content::{Page, Section, SortBy, sort_pages, populate_previous_and_next_pages};
 pub use fs::{create_file};
-pub use markdown::markdown_to_html;

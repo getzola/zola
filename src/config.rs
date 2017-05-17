@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use toml::{Value as Toml, self};
 
 use errors::{Result, ResultExt};
-use markdown::SETUP;
+use rendering::highlighting::THEME_SET;
 
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -65,7 +65,7 @@ impl Config {
 
         match config.highlight_theme {
             Some(ref t) => {
-                if !SETUP.theme_set.themes.contains_key(t) {
+                if !THEME_SET.themes.contains_key(t) {
                     bail!("Theme {} not available", t)
                 }
             },

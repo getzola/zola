@@ -8,19 +8,18 @@ use slug::slugify;
 use syntect::dumps::from_binary;
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
-use syntect::highlighting::ThemeSet;
 use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, IncludeBackground};
 use tera::{Tera, Context};
 
 use config::Config;
-use errors::{Result, ResultExt};
+use errors::{Result};
 use site::resolve_internal_link;
-
+use rendering::highlighting::THEME_SET;
+use rendering::short_code::{ShortCode, parse_shortcode, render_simple_shortcode};
 
 // We need to put those in a struct to impl Send and sync
 pub struct Setup {
     pub syntax_set: SyntaxSet,
-    pub theme_set: ThemeSet,
 }
 
 unsafe impl Send for Setup {}
@@ -30,73 +29,11 @@ lazy_static!{
     static ref SHORTCODE_RE: Regex = Regex::new(r#"\{(?:%|\{)\s+([[:alnum:]]+?)\(([[:alnum:]]+?="?.+?"?)\)\s+(?:%|\})\}"#).unwrap();
     pub static ref SETUP: Setup = Setup {
         syntax_set: {
-            let mut ps: SyntaxSet = from_binary(include_bytes!("../sublime_syntaxes/newlines.packdump"));
+            let mut ps: SyntaxSet = from_binary(include_bytes!("../../sublime_syntaxes/newlines.packdump"));
             ps.link_syntaxes();
             ps
         },
-        theme_set: from_binary(include_bytes!("../sublime_themes/all.themedump"))
     };
-}
-
-/// A shortcode that has a body
-/// Called by having some content like {% ... %} body {% end %}
-/// We need the struct to hold the data while we're processing the markdown
-#[derive(Debug)]
-struct ShortCode {
-    name: String,
-    args: HashMap<String, String>,
-    body: String,
-}
-
-impl ShortCode {
-    pub fn new(name: &str, args: HashMap<String, String>) -> ShortCode {
-        ShortCode {
-            name: name.to_string(),
-            args: args,
-            body: String::new(),
-        }
-    }
-
-    pub fn append(&mut self, text: &str) {
-        self.body.push_str(text)
-    }
-
-    pub fn render(&self, tera: &Tera) -> Result<String> {
-        let mut context = Context::new();
-        for (key, value) in &self.args {
-            context.add(key, value);
-        }
-        context.add("body", &self.body);
-        let tpl_name = format!("shortcodes/{}.html", self.name);
-        tera.render(&tpl_name, &context)
-            .chain_err(|| format!("Failed to render {} shortcode", self.name))
-    }
-}
-
-/// Parse a shortcode without a body
-fn parse_shortcode(input: &str) -> (String, HashMap<String, String>) {
-    let mut args = HashMap::new();
-    let caps = SHORTCODE_RE.captures(input).unwrap();
-    // caps[0] is the full match
-    let name = &caps[1];
-    let arg_list = &caps[2];
-    for arg in arg_list.split(',') {
-        let bits = arg.split('=').collect::<Vec<_>>();
-        args.insert(bits[0].trim().to_string(), bits[1].replace("\"", ""));
-    }
-
-    (name.to_string(), args)
-}
-
-/// Renders a shortcode or return an error
-fn render_simple_shortcode(tera: &Tera, name: &str, args: &HashMap<String, String>) -> Result<String> {
-    let mut context = Context::new();
-    for (key, value) in args.iter() {
-        context.add(key, value);
-    }
-    let tpl_name = format!("shortcodes/{}.html", name);
-
-    tera.render(&tpl_name, &context).chain_err(|| format!("Failed to render {} shortcode", name))
 }
 
 pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<String> {
@@ -233,7 +170,7 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                 if !should_highlight {
                     return Event::Html(Owned("<pre><code>".to_owned()));
                 }
-                let theme = &SETUP.theme_set.themes[&highlight_theme];
+                let theme = &THEME_SET.themes[&highlight_theme];
                 let syntax = info
                     .split(' ')
                     .next()

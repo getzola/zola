@@ -9,7 +9,7 @@ use config::Config;
 use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
 use fs::{read_file};
-use markdown::markdown_to_html;
+use rendering::markdown::markdown_to_html;
 use content::Page;
 use content::file_info::FileInfo;
 
