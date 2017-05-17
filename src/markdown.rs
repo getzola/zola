@@ -14,6 +14,7 @@ use tera::{Tera, Context};
 
 use config::Config;
 use errors::{Result, ResultExt};
+use site::resolve_internal_link;
 
 
 // We need to put those in a struct to impl Send and sync
@@ -257,21 +258,11 @@ pub fn markdown_to_html(content: &str, permalinks: &HashMap<String, String>, ter
                     return Event::Html(Owned("".to_owned()));
                 }
                 if link.starts_with("./") {
-                    // First we remove the ./ since that's gutenberg specific
-                    let clean_link = link.replacen("./", "", 1);
-                    // Then we remove any potential anchor
-                    // parts[0] will be the file path and parts[1] the anchor if present
-                    let parts = clean_link.split('#').collect::<Vec<_>>();
-                    match permalinks.get(parts[0]) {
-                        Some(p) => {
-                            let url = if parts.len() > 1 {
-                                format!("{}#{}", p, parts[1])
-                            } else {
-                                p.to_string()
-                            };
+                    match resolve_internal_link(link, permalinks) {
+                        Ok(url) => {
                             return Event::Start(Tag::Link(Owned(url), title.clone()));
                         },
-                        None => {
+                        Err(_) => {
                             error = Some(format!("Relative link {} not found.", link).into());
                             return Event::Html(Owned("".to_string()));
                         }

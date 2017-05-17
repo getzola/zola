@@ -125,8 +125,14 @@ impl Site {
         self.populate_tags_and_categories();
 
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
+        self.register_get_url_fn();
 
         Ok(())
+    }
+
+    /// Separate fn as it can be called in the serve command
+    pub fn register_get_url_fn(&mut self) {
+        self.tera.register_global_function("get_url", global_fns::make_get_url(self.permalinks.clone()));
     }
 
     /// Add a page to the site
@@ -543,5 +549,55 @@ impl Site {
         }
 
         Ok(())
+    }
+}
+
+
+/// Resolves an internal link (of the `./posts/something.md#hey` sort) to its absolute link
+pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -> Result<String> {
+    // First we remove the ./ since that's gutenberg specific
+    let clean_link = link.replacen("./", "", 1);
+    // Then we remove any potential anchor
+    // parts[0] will be the file path and parts[1] the anchor if present
+    let parts = clean_link.split('#').collect::<Vec<_>>();
+    match permalinks.get(parts[0]) {
+        Some(p) => {
+            if parts.len() > 1 {
+                Ok(format!("{}#{}", p, parts[1]))
+            } else {
+                Ok(p.to_string())
+            }
+        },
+        None => bail!(format!("Relative link {} not found.", link)),
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use super::resolve_internal_link;
+
+    #[test]
+    fn can_resolve_valid_internal_link() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
+        let res = resolve_internal_link("./pages/about.md", &permalinks).unwrap();
+        assert_eq!(res, "https://vincent.is/about");
+    }
+
+    #[test]
+    fn can_resolve_internal_links_with_anchors() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
+        let res = resolve_internal_link("./pages/about.md#hello", &permalinks).unwrap();
+        assert_eq!(res, "https://vincent.is/about#hello");
+    }
+
+    #[test]
+    fn errors_resolve_inexistant_internal_link() {
+        let res = resolve_internal_link("./pages/about.md#hello", &HashMap::new());
+        assert!(res.is_err());
     }
 }

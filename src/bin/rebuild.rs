@@ -119,6 +119,8 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                 }
             };
         }
+        // Ensure we have our fn updated so it doesn't contain the permalinks deleted
+        site.register_get_url_fn();
         // Deletion is something that doesn't happen all the time so we
         // don't need to optimise it too much
         return site.build();
@@ -153,6 +155,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                 return Ok(());
             },
             None => {
+                site.register_get_url_fn();
                 // New section, only render that one
                 site.populate_sections();
                 return site.render_section(&site.sections[path], true);
@@ -163,6 +166,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     // A page was edited
     match site.add_page(path, true)? {
         Some(prev) => {
+            site.register_get_url_fn();
             // Updating a page
             let current = site.pages[path].clone();
             // Front matter didn't change, only content did
@@ -201,6 +205,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
 
         },
         None => {
+            site.register_get_url_fn();
             // It's a new page!
             site.populate_sections();
             site.populate_tags_and_categories();
