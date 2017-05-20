@@ -5,6 +5,7 @@
 - Fix missing serialized data for sections
 - Change the single item template context for categories/tags
 - Add a `get_url` global Tera function
+- Add a config option to control how many articles to show in RSS feed
 
 ## 0.0.5 (2017-05-15)
 

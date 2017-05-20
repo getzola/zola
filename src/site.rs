@@ -427,7 +427,7 @@ impl Site {
         let mut context = Context::new();
         let pages = self.pages.values()
             .filter(|p| p.meta.date.is_some())
-            .take(15) // limit to the last 15 elements
+            .take(self.config.rss_limit.unwrap()) // limit to the last n elements
             .cloned()
             .collect::<Vec<Page>>();
 
