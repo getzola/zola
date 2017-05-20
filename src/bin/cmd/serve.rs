@@ -53,8 +53,6 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
-
-// Most of it taken from mdbook
 pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
@@ -92,7 +90,8 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     mount.mount("/livereload.js", livereload_handler);
     // Starts with a _ to not trigger the unused lint
     // we need to assign to a variable otherwise it will block
-    let _iron = Iron::new(mount).http(address.as_str()).unwrap();
+    let _iron = Iron::new(mount).http(address.as_str())
+        .chain_err(|| "Can't start the webserver")?;
 
     // The websocket for livereload
     let ws_server = WebSocket::new(|output: Sender| {
@@ -123,8 +122,6 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     use notify::DebouncedEvent::*;
 
     loop {
-        // See https://github.com/spf13/hugo/blob/master/commands/hugo.go
-        // for a more complete version of that
         match rx.recv() {
             Ok(event) => {
                 match event {
@@ -166,7 +163,6 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     }
 }
 
-
 /// Returns whether the path we received corresponds to a temp file created
 /// by an editor or the OS
 fn is_temp_file(path: &Path) -> bool {
@@ -195,7 +191,6 @@ fn is_temp_file(path: &Path) -> bool {
     }
 }
 
-
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
 fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
@@ -222,8 +217,8 @@ mod tests {
     use super::{is_temp_file, detect_change_kind, ChangeKind};
 
     #[test]
-    fn test_can_recognize_temp_files() {
-        let testcases = vec![
+    fn can_recognize_temp_files() {
+        let test_cases = vec![
             Path::new("hello.swp"),
             Path::new("hello.swx"),
             Path::new(".DS_STORE"),
@@ -235,14 +230,14 @@ mod tests {
             Path::new("#hello.html"),
         ];
 
-        for t in testcases {
+        for t in test_cases {
             assert!(is_temp_file(&t));
         }
     }
 
     #[test]
-    fn test_can_detect_kind_of_changes() {
-        let testcases = vec![
+    fn can_detect_kind_of_changes() {
+        let test_cases = vec![
             (
                 (ChangeKind::Templates, "/templates/hello.html".to_string()),
                 "/home/vincent/site", Path::new("/home/vincent/site/templates/hello.html")
@@ -257,7 +252,7 @@ mod tests {
             ),
         ];
 
-        for (expected, pwd, path) in testcases {
+        for (expected, pwd, path) in test_cases {
             assert_eq!(expected, detect_change_kind(&pwd, &path));
         }
     }
