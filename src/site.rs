@@ -181,7 +181,7 @@ impl Site {
     /// Defaults to `AnchorInsert::None` if no parent section found
     pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
         match self.sections.get(&parent_path.join("_index.md")) {
-            Some(ref s) => s.meta.insert_anchor.unwrap(),
+            Some(s) => s.meta.insert_anchor.unwrap(),
             None => InsertAnchor::None
         }
     }

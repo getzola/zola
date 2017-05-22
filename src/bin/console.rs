@@ -66,7 +66,7 @@ pub fn report_elapsed_time(instant: Instant) {
 
 /// Display an error message and the actual error(s)
 pub fn unravel_errors(message: &str, error: &Error) {
-    if message.len() > 0 {
+    if !message.is_empty() {
         self::error(message);
     }
     self::error(&format!("Error: {}", error));

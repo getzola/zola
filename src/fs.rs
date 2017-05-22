@@ -14,7 +14,7 @@ pub fn create_file(path: &Path, content: &str) -> Result<()> {
 /// Create a directory at the given path if it doesn't exist already
 pub fn ensure_directory_exists(path: &Path) -> Result<()> {
     if !path.exists() {
-        create_directory(&path)?;
+        create_directory(path)?;
     }
     Ok(())
 }
