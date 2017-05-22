@@ -11,7 +11,7 @@ use config::{Config, get_config};
 use fs::{create_file, create_directory, ensure_directory_exists};
 use content::{Page, Section, Paginator, SortBy, Taxonomy, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
-
+use front_matter::InsertAnchor;
 
 
 #[derive(Debug)]
@@ -112,9 +112,16 @@ impl Site {
             self.sections.insert(index_path, index_section);
         }
 
+        // Silly thing needed to make the borrow checker happy
+        let mut pages_insert_anchors = HashMap::new();
+        for page in self.pages.values() {
+            pages_insert_anchors.insert(page.file.path.clone(), self.find_parent_section_insert_anchor(&page.file.parent.clone()));
+        }
+
         // TODO: make that parallel
         for page in self.pages.values_mut() {
-            page.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+            let insert_anchor = pages_insert_anchors[&page.file.path];
+            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
         // TODO: make that parallel
         for section in self.sections.values_mut() {
@@ -145,8 +152,9 @@ impl Site {
         let prev = self.pages.insert(page.file.path.clone(), page);
 
         if render {
+            let insert_anchor = self.find_parent_section_insert_anchor(&self.pages[path].file.parent);
             let mut page = self.pages.get_mut(path).unwrap();
-            page.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
 
         Ok(prev)
@@ -167,6 +175,15 @@ impl Site {
         }
 
         Ok(prev)
+    }
+
+    /// Finds the insert_anchor for the parent section of the directory at `path`.
+    /// Defaults to `AnchorInsert::None` if no parent section found
+    pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
+        match self.sections.get(&parent_path.join("_index.md")) {
+            Some(ref s) => s.meta.insert_anchor.unwrap(),
+            None => InsertAnchor::None
+        }
     }
 
     /// Find out the direct subsections of each subsection if there are some
@@ -299,6 +316,7 @@ impl Site {
                 create_directory(&current_path)?;
             }
         }
+        println!("Rendering page");
 
         // Make sure the folder exists
         create_directory(&current_path)?;

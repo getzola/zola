@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
-use tera::{Tera, Context};
+use tera::{Tera, Context as TeraContext};
 use serde::ser::{SerializeStruct, self};
 
 use config::Config;
@@ -10,6 +10,7 @@ use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
 use fs::{read_file};
 use rendering::markdown::markdown_to_html;
+use rendering::context::Context;
 use content::Page;
 use content::file_info::FileInfo;
 
@@ -85,7 +86,8 @@ impl Section {
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
-        self.content = markdown_to_html(&self.raw_content, permalinks, tera, config)?;
+        let context = Context::new(tera, config, permalinks, self.meta.insert_anchor.unwrap());
+        self.content = markdown_to_html(&self.raw_content, &context)?;
         Ok(())
     }
 
@@ -93,7 +95,7 @@ impl Section {
     pub fn render_html(&self, sections: HashMap<String, Section>, tera: &Tera, config: &Config) -> Result<String> {
         let tpl_name = self.get_template_name();
 
-        let mut context = Context::new();
+        let mut context = TeraContext::new();
         context.add("config", config);
         context.add("section", self);
         context.add("current_url", &self.permalink);
@@ -120,8 +122,8 @@ impl Section {
     }
 
     /// Whether the page given belongs to that section
-    pub fn is_child_page(&self, page: &Page) -> bool {
-        self.all_pages_path().contains(&page.file.path)
+    pub fn is_child_page(&self, path: &PathBuf) -> bool {
+        self.all_pages_path().contains(path)
     }
 }
 

@@ -277,7 +277,6 @@ fn can_build_site_and_insert_anchor_links() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.insert_anchor_links = Some(true);
     site.load().unwrap();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");

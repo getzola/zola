@@ -6,6 +6,7 @@
 - Change the single item template context for categories/tags
 - Add a `get_url` global Tera function
 - Add a config option to control how many articles to show in RSS feed
+- Move `insert_anchor_links` from config to being a section option
 
 ## 0.0.5 (2017-05-15)
 

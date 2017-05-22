@@ -69,3 +69,33 @@ pub fn render_simple_shortcode(tera: &Tera, name: &str, args: &HashMap<String, S
 
     tera.render(&tpl_name, &context).chain_err(|| format!("Failed to render {} shortcode", name))
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::{parse_shortcode};
+
+    #[test]
+    fn can_parse_simple_shortcode_one_arg() {
+        let (name, args) = parse_shortcode(r#"{{ youtube(id="w7Ft2ymGmfc") }}"#);
+        assert_eq!(name, "youtube");
+        assert_eq!(args["id"], "w7Ft2ymGmfc");
+    }
+
+    #[test]
+    fn can_parse_simple_shortcode_several_arg() {
+        let (name, args) = parse_shortcode(r#"{{ youtube(id="w7Ft2ymGmfc", autoplay=true) }}"#);
+        assert_eq!(name, "youtube");
+        assert_eq!(args["id"], "w7Ft2ymGmfc");
+        assert_eq!(args["autoplay"], "true");
+    }
+
+    #[test]
+    fn can_parse_block_shortcode_several_arg() {
+        let (name, args) = parse_shortcode(r#"{% youtube(id="w7Ft2ymGmfc", autoplay=true) %}"#);
+        assert_eq!(name, "youtube");
+        assert_eq!(args["id"], "w7Ft2ymGmfc");
+        assert_eq!(args["autoplay"], "true");
+    }
+
+}

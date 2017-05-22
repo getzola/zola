@@ -4,14 +4,15 @@ use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
 
-use tera::{Tera, Context};
+use tera::{Tera, Context as TeraContext};
 use serde::ser::{SerializeStruct, self};
 use slug::slugify;
 
 use errors::{Result, ResultExt};
 use config::Config;
-use front_matter::{PageFrontMatter, split_page_content};
+use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
 use rendering::markdown::markdown_to_html;
+use rendering::context::Context;
 use fs::{read_file};
 use content::utils::{find_related_assets, get_reading_analytics};
 use content::file_info::FileInfo;
@@ -112,13 +113,13 @@ impl Page {
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
-    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
-        self.content = markdown_to_html(&self.raw_content, permalinks, tera, config)?;
-
+    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, anchor_insert: InsertAnchor) -> Result<()> {
+        let context = Context::new(tera, config, permalinks, anchor_insert);
+        self.content = markdown_to_html(&self.raw_content, &context)?;
         if self.raw_content.contains("<!-- more -->") {
             self.summary = Some({
                 let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, permalinks, tera, config)?
+                markdown_to_html(summary, &context)?
             })
         }
 
@@ -132,7 +133,7 @@ impl Page {
             None => "page.html".to_string()
         };
 
-        let mut context = Context::new();
+        let mut context = TeraContext::new();
         context.add("config", config);
         context.add("page", self);
         context.add("current_url", &self.permalink);
@@ -195,6 +196,7 @@ mod tests {
 
     use config::Config;
     use super::Page;
+    use front_matter::InsertAnchor;
 
 
     #[test]
@@ -209,7 +211,7 @@ Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &Config::default());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default(), InsertAnchor::None).unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -228,8 +230,7 @@ Hello world"#;
         conf.base_url = "http://hello.com/".to_string();
         let res = Page::parse(Path::new("content/posts/intro/start.md"), content, &conf);
         assert!(res.is_ok());
-        let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default()).unwrap();
+        let page = res.unwrap();
         assert_eq!(page.path, "posts/intro/hello-world");
         assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world");
     }
@@ -244,8 +245,7 @@ Hello world"#;
         let config = Config::default();
         let res = Page::parse(Path::new("start.md"), content, &config);
         assert!(res.is_ok());
-        let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config).unwrap();
+        let page = res.unwrap();
         assert_eq!(page.path, "hello-world");
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
@@ -268,8 +268,7 @@ Hello world"#;
         let config = Config::default();
         let res = Page::parse(Path::new(" file with space.md"), "+++\n+++", &config);
         assert!(res.is_ok());
-        let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config).unwrap();
+        let page = res.unwrap();
         assert_eq!(page.slug, "file-with-space");
         assert_eq!(page.permalink, config.make_permalink(&page.slug));
     }
@@ -285,7 +284,7 @@ Hello world
         let res = Page::parse(Path::new("hello.md"), &content, &config);
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config).unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None).unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
     }
 

@@ -7,7 +7,7 @@ use gutenberg::errors::Result;
 /// Finds the section that contains the page given if there is one
 pub fn find_parent_section<'a>(site: &'a Site, page: &Page) -> Option<&'a Section> {
     for section in site.sections.values() {
-        if section.is_child_page(page) {
+        if section.is_child_page(&page.file.path) {
             return Some(section)
         }
     }
