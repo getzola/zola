@@ -316,7 +316,6 @@ impl Site {
                 create_directory(&current_path)?;
             }
         }
-        println!("Rendering page");
 
         // Make sure the folder exists
         create_directory(&current_path)?;
