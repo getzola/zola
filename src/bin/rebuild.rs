@@ -35,7 +35,7 @@ enum SectionChangesNeeded {
     Sort,
     /// Editing `title`, `description`, `extra`, `template` or setting `render` to true
     Render,
-    /// Editing `paginate_by` or `paginate_path`
+    /// Editing `paginate_by`, `paginate_path` or `insert_anchor`
     RenderWithPages,
     /// Setting `render` to false
     Delete,
@@ -56,7 +56,9 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, other: &Secti
         return changes_needed;
     }
 
-    if current.paginate_by != other.paginate_by || current.paginate_path != other.paginate_path {
+    if current.paginate_by != other.paginate_by
+        || current.paginate_path != other.paginate_path
+        || current.insert_anchor != other.insert_anchor {
         changes_needed.push(SectionChangesNeeded::RenderWithPages);
         // Nothing else we can do
         return changes_needed;
