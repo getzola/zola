@@ -132,6 +132,7 @@ impl Site {
         self.populate_tags_and_categories();
 
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
+        self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.register_get_url_fn();
 
         Ok(())

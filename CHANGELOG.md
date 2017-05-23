@@ -4,9 +4,11 @@
 
 - Fix missing serialized data for sections
 - Change the single item template context for categories/tags
-- Add a `get_url` global Tera function
+- Add a `get_url` and a `get_section` global Tera function
 - Add a config option to control how many articles to show in RSS feed
-- Move `insert_anchor_links` from config to being a section option
+- Move `insert_anchor_links` from config to being a section option and it can
+now be insert left or right
+
 
 ## 0.0.5 (2017-05-15)
 

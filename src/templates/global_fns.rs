@@ -3,7 +3,7 @@ use std::path::{PathBuf};
 
 use tera::{GlobalFn, Value, from_value, to_value, Result};
 
-use content::Page;
+use content::{Page, Section};
 use site::resolve_internal_link;
 
 
@@ -25,6 +25,28 @@ pub fn make_get_page(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {
                 Err(_) => Err(format!("`get_page` received path={:?} but it requires a string", val).into()),
             },
             None => Err("`get_page` requires a `path` argument.".into()),
+        }
+    })
+}
+
+pub fn make_get_section(all_sections: &HashMap<PathBuf, Section>) -> GlobalFn {
+    let mut sections = HashMap::new();
+    for section in all_sections.values() {
+        sections.insert(section.file.relative.clone(), section.clone());
+    }
+
+    Box::new(move |args| -> Result<Value> {
+        match args.get("path") {
+            Some(val) => match from_value::<String>(val.clone()) {
+                Ok(v) => {
+                    match sections.get(&v) {
+                        Some(p) => Ok(to_value(p).unwrap()),
+                        None => Err(format!("Section `{}` not found.", v).into())
+                    }
+                },
+                Err(_) => Err(format!("`get_section` received path={:?} but it requires a string", val).into()),
+            },
+            None => Err("`get_section` requires a `path` argument.".into()),
         }
     })
 }
