@@ -285,7 +285,7 @@ fn can_build_site_and_insert_anchor_links() {
 
     assert!(Path::new(&public).exists());
     // anchor link inserted
-    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"anchor\" href=\"#title\""));
+    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"gutenberg-anchor\" href=\"#title\""));
 }
 
 #[test]

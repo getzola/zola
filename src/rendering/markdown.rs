@@ -489,7 +489,7 @@ A quote
         let res = markdown_to_html("# Hello", &context).unwrap();
         assert_eq!(
             res,
-            "<h1 id=\"hello\"><a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
+            "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
         );
     }
 
@@ -501,7 +501,7 @@ A quote
         let res = markdown_to_html("# Hello", &context).unwrap();
         assert_eq!(
             res,
-            "<h1 id=\"hello\">Hello<a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
+            "<h1 id=\"hello\">Hello<a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
         );
     }
 
@@ -514,7 +514,7 @@ A quote
         let res = markdown_to_html("# Hello!", &context).unwrap();
         assert_eq!(
             res,
-            "<h1 id=\"hello\"><a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
+            "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
         );
     }
 
@@ -527,7 +527,7 @@ A quote
         let res = markdown_to_html("## [](#xresources)Xresources", &context).unwrap();
         assert_eq!(
             res,
-            "<h2 id=\"xresources\"><a class=\"anchor\" href=\"#xresources\" aria-label=\"Anchor link for: xresources\">🔗</a>\nXresources</h2>\n"
+            "<h2 id=\"xresources\"><a class=\"gutenberg-anchor\" href=\"#xresources\" aria-label=\"Anchor link for: xresources\">🔗</a>\nXresources</h2>\n"
         );
     }
 
@@ -539,7 +539,7 @@ A quote
         let res = markdown_to_html("# Hello*_()", &context).unwrap();
         assert_eq!(
             res,
-            "<h1 id=\"hello\"><a class=\"anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
+            "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
         );
     }
 }
