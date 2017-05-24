@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.6 (unreleased)
+## 0.0.6 (2017-05-24)
 
 - Fix missing serialized data for sections
 - Change the single item template context for categories/tags
