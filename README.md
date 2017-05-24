@@ -174,7 +174,7 @@ You can also choose, at the section level, whether to automatically insert an an
 but can be turned on by setting `insert_anchor = "left"` or `insert_anchor = "right"` in the `_index.md` file. `left` will insert
 the anchor link before the title text and right will insert it after.
 
-The default template is very basic and will need CSS tweaks in your projet to look decent. 
+The default template is very basic and will need CSS tweaks in your project to look decent. 
 It can easily be overwritten by creating a `anchor-link.html` file in the `templates` directory.
 
 ### Shortcodes
