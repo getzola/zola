@@ -1,7 +1,20 @@
 use std::path::Path;
 
-use gutenberg::{Site, SectionFrontMatter, PageFrontMatter};
+use gutenberg::{Site, Page, Section, SectionFrontMatter, PageFrontMatter};
 use gutenberg::errors::Result;
+
+
+/// Finds the section that contains the page given if there is one
+pub fn find_parent_section<'a>(site: &'a Site, page: &Page) -> Option<&'a Section> {
+    for section in site.sections.values() {
+        if section.is_child_page(&page.file.path) {
+            return Some(section)
+        }
+    }
+
+    None
+}
+
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PageChangesNeeded {
@@ -22,7 +35,7 @@ enum SectionChangesNeeded {
     Sort,
     /// Editing `title`, `description`, `extra`, `template` or setting `render` to true
     Render,
-    /// Editing `paginate_by` or `paginate_path`
+    /// Editing `paginate_by`, `paginate_path` or `insert_anchor`
     RenderWithPages,
     /// Setting `render` to false
     Delete,
@@ -43,7 +56,9 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, other: &Secti
         return changes_needed;
     }
 
-    if current.paginate_by != other.paginate_by || current.paginate_path != other.paginate_path {
+    if current.paginate_by != other.paginate_by
+        || current.paginate_path != other.paginate_path
+        || current.insert_anchor != other.insert_anchor {
         changes_needed.push(SectionChangesNeeded::RenderWithPages);
         // Nothing else we can do
         return changes_needed;
@@ -85,7 +100,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             // A section was deleted, many things can be impacted:
             // - the pages of the section are becoming orphans
             // - any page that was referencing the section (index, etc)
-            let relative_path = site.sections[path].relative_path.clone();
+            let relative_path = site.sections[path].file.relative.clone();
             // Remove the link to it and the section itself from the Site
             site.permalinks.remove(&relative_path);
             site.sections.remove(path);
@@ -94,18 +109,20 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             // A page was deleted, many things can be impacted:
             // - the section the page is in
             // - any page that was referencing the section (index, etc)
-            let relative_path = site.pages[path].relative_path.clone();
+            let relative_path = site.pages[path].file.relative.clone();
             site.permalinks.remove(&relative_path);
             if let Some(p) = site.pages.remove(path) {
                 if p.meta.has_tags() || p.meta.category.is_some() {
                     site.populate_tags_and_categories();
                 }
 
-                if site.find_parent_section(&p).is_some() {
+                if find_parent_section(site, &p).is_some() {
                     site.populate_sections();
                 }
             };
         }
+        // Ensure we have our fn updated so it doesn't contain the permalinks deleted
+        site.register_get_url_fn();
         // Deletion is something that doesn't happen all the time so we
         // don't need to optimise it too much
         return site.build();
@@ -140,6 +157,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                 return Ok(());
             },
             None => {
+                site.register_get_url_fn();
                 // New section, only render that one
                 site.populate_sections();
                 return site.render_section(&site.sections[path], true);
@@ -150,6 +168,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     // A page was edited
     match site.add_page(path, true)? {
         Some(prev) => {
+            site.register_get_url_fn();
             // Updating a page
             let current = site.pages[path].clone();
             // Front matter didn't change, only content did
@@ -171,8 +190,8 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                         site.render_categories()?;
                     },
                     PageChangesNeeded::Sort => {
-                        let section_path = match site.find_parent_section(&site.pages[path]) {
-                            Some(s) => s.file_path.clone(),
+                        let section_path = match find_parent_section(site, &site.pages[path]) {
+                            Some(s) => s.file.path.clone(),
                             None => continue  // Do nothing if it's an orphan page
                         };
                         site.populate_sections();
@@ -188,6 +207,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
 
         },
         None => {
+            site.register_get_url_fn();
             // It's a new page!
             site.populate_sections();
             site.populate_tags_and_categories();

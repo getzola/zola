@@ -8,7 +8,7 @@ mod page;
 mod section;
 
 pub use self::page::PageFrontMatter;
-pub use self::section::{SectionFrontMatter};
+pub use self::section::{SectionFrontMatter, InsertAnchor};
 
 lazy_static! {
     static ref PAGE_RE: Regex = Regex::new(r"^[[:space:]]*\+\+\+\r?\n((?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();

@@ -70,7 +70,7 @@ fn main() {
             match cmd::serve(interface, port, config_file) {
                 Ok(()) => (),
                 Err(e) => {
-                    console::unravel_errors("Failed to build the site", &e);
+                    console::unravel_errors("", &e);
                     ::std::process::exit(1);
                 },
             };

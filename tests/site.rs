@@ -12,7 +12,7 @@ use gutenberg::{Site};
 
 
 #[test]
-fn test_can_parse_site() {
+fn can_parse_site() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
@@ -24,7 +24,7 @@ fn test_can_parse_site() {
 
     // Make sure we remove all the pwd + content from the sections
     let basic = &site.pages[&posts_path.join("simple.md")];
-    assert_eq!(basic.components, vec!["posts".to_string()]);
+    assert_eq!(basic.file.components, vec!["posts".to_string()]);
 
     // Make sure the page with a url doesn't have any sections
     let url_post = &site.pages[&posts_path.join("fixed-url.md")];
@@ -32,7 +32,7 @@ fn test_can_parse_site() {
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post = &site.pages[&posts_path.join("with-assets").join("index.md")];
-    assert_eq!(asset_folder_post.components, vec!["posts".to_string()]);
+    assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
     assert_eq!(site.sections.len(), 6);
@@ -89,7 +89,7 @@ macro_rules! file_contains {
 }
 
 #[test]
-fn test_can_build_site_without_live_reload() {
+fn can_build_site_without_live_reload() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
@@ -131,7 +131,7 @@ fn test_can_build_site_without_live_reload() {
 }
 
 #[test]
-fn test_can_build_site_with_live_reload() {
+fn can_build_site_with_live_reload() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
@@ -169,7 +169,7 @@ fn test_can_build_site_with_live_reload() {
 }
 
 #[test]
-fn test_can_build_site_with_categories() {
+fn can_build_site_with_categories() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
@@ -190,7 +190,7 @@ fn test_can_build_site_with_categories() {
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
-    assert_eq!(site.categories.len(), 2);
+    assert_eq!(site.categories.unwrap().len(), 2);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -221,7 +221,7 @@ fn test_can_build_site_with_categories() {
 }
 
 #[test]
-fn test_can_build_site_with_tags() {
+fn can_build_site_with_tags() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
@@ -243,7 +243,7 @@ fn test_can_build_site_with_tags() {
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
-    assert_eq!(site.tags.len(), 3);
+    assert_eq!(site.tags.unwrap().len(), 3);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -273,11 +273,10 @@ fn test_can_build_site_with_tags() {
 }
 
 #[test]
-fn test_can_build_site_and_insert_anchor_links() {
+fn can_build_site_and_insert_anchor_links() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.insert_anchor_links = Some(true);
     site.load().unwrap();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");
@@ -286,11 +285,11 @@ fn test_can_build_site_and_insert_anchor_links() {
 
     assert!(Path::new(&public).exists());
     // anchor link inserted
-    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"anchor\" href=\"#title\""));
+    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"gutenberg-anchor\" href=\"#title\""));
 }
 
 #[test]
-fn test_can_build_site_with_pagination_for_section() {
+fn can_build_site_with_pagination_for_section() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
@@ -349,7 +348,7 @@ fn test_can_build_site_with_pagination_for_section() {
 }
 
 #[test]
-fn test_can_build_site_with_pagination_for_index() {
+fn can_build_site_with_pagination_for_index() {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
@@ -391,5 +390,4 @@ fn test_can_build_site_with_pagination_for_index() {
     assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
     assert_eq!(file_contains!(public, "index.html", "has_next"), false);
-
 }

@@ -1,7 +1,7 @@
-Category: {{ category }}
+Category: {{ category.name }}
 
 
-{% for page in pages %}
+{% for page in category.pages %}
     <article>
         <h3 class="post__title"><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
     </article>

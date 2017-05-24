@@ -59,12 +59,20 @@ pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
 
         if i > 0 {
             let next = &pages[i - 1];
-            new_page.next = Some(Box::new(next.clone()));
+            let mut next_page = next.clone();
+            // Remove prev/next otherwise we serialise the whole thing...
+            next_page.previous = None;
+            next_page.next = None;
+            new_page.next = Some(Box::new(next_page));
         }
 
         if i < input.len() - 1 {
             let previous = &pages[i + 1];
-            new_page.previous = Some(Box::new(previous.clone()));
+            // Remove prev/next otherwise we serialise the whole thing...
+            let mut previous_page = previous.clone();
+            previous_page.previous = None;
+            previous_page.next = None;
+            new_page.previous = Some(Box::new(previous_page));
         }
         res.push(new_page);
     }
@@ -81,13 +89,13 @@ mod tests {
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.date = Some(date.to_string());
-        Page::new(front_matter)
+        Page::new("content/hello.md", front_matter)
     }
 
     fn create_page_with_order(order: usize) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.order = Some(order);
-        Page::new(front_matter)
+        Page::new("content/hello.md", front_matter)
     }
 
     #[test]

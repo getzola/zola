@@ -2,29 +2,25 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
-use tera::{Tera, Context};
+use tera::{Tera, Context as TeraContext};
 use serde::ser::{SerializeStruct, self};
 
 use config::Config;
 use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
-use utils::{read_file, find_content_components};
-use markdown::markdown_to_html;
+use fs::{read_file};
+use rendering::markdown::markdown_to_html;
+use rendering::context::Context;
 use content::Page;
+use content::file_info::FileInfo;
 
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Section {
+    /// All info about the actual file
+    pub file: FileInfo,
     /// The front matter meta-data
     pub meta: SectionFrontMatter,
-    /// The _index.md full path
-    pub file_path: PathBuf,
-    /// The .md path, starting from the content directory, with / slashes
-    pub relative_path: String,
-    /// Path of the directory containing the _index.md file
-    pub parent_path: PathBuf,
-    /// The folder names from `content` to this section file
-    pub components: Vec<String>,
     /// The URL path of the page
     pub path: String,
     /// The full URL for that page
@@ -46,11 +42,8 @@ impl Section {
         let file_path = file_path.as_ref();
 
         Section {
+            file: FileInfo::new_section(file_path),
             meta: meta,
-            file_path: file_path.to_path_buf(),
-            relative_path: "".to_string(),
-            parent_path: file_path.parent().unwrap().to_path_buf(),
-            components: vec![],
             path: "".to_string(),
             permalink: "".to_string(),
             raw_content: "".to_string(),
@@ -65,16 +58,8 @@ impl Section {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
         section.raw_content = content.clone();
-        section.components = find_content_components(&section.file_path);
-        section.path = section.components.join("/");
+        section.path = section.file.components.join("/");
         section.permalink = config.make_permalink(&section.path);
-        if section.components.is_empty() {
-            // the index one
-            section.relative_path = "_index.md".to_string();
-        } else {
-            section.relative_path = format!("{}/_index.md", section.components.join("/"));
-        }
-
         Ok(section)
     }
 
@@ -101,7 +86,8 @@ impl Section {
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
-        self.content = markdown_to_html(&self.raw_content, permalinks, tera, config)?;
+        let context = Context::new(tera, config, permalinks, self.meta.insert_anchor.unwrap());
+        self.content = markdown_to_html(&self.raw_content, &context)?;
         Ok(())
     }
 
@@ -109,7 +95,7 @@ impl Section {
     pub fn render_html(&self, sections: HashMap<String, Section>, tera: &Tera, config: &Config) -> Result<String> {
         let tpl_name = self.get_template_name();
 
-        let mut context = Context::new();
+        let mut context = TeraContext::new();
         context.add("config", config);
         context.add("section", self);
         context.add("current_url", &self.permalink);
@@ -119,46 +105,36 @@ impl Section {
         }
 
         tera.render(&tpl_name, &context)
-            .chain_err(|| format!("Failed to render section '{}'", self.file_path.display()))
+            .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 
     /// Is this the index section?
     pub fn is_index(&self) -> bool {
-        self.components.is_empty()
+        self.file.components.is_empty()
     }
 
-    /// Returns all the paths for the pages belonging to that section
+    /// Returns all the paths of the pages belonging to that section
     pub fn all_pages_path(&self) -> Vec<PathBuf> {
         let mut paths = vec![];
-        paths.extend(self.pages.iter().map(|p| p.file_path.clone()));
-        paths.extend(self.ignored_pages.iter().map(|p| p.file_path.clone()));
+        paths.extend(self.pages.iter().map(|p| p.file.path.clone()));
+        paths.extend(self.ignored_pages.iter().map(|p| p.file.path.clone()));
         paths
     }
 
     /// Whether the page given belongs to that section
-    pub fn is_child_page(&self, page: &Page) -> bool {
-        for p in &self.pages {
-            if p.file_path == page.file_path {
-                return true;
-            }
-        }
-
-        for p in &self.ignored_pages {
-            if p.file_path == page.file_path {
-                return true;
-            }
-        }
-
-        false
+    pub fn is_child_page(&self, path: &PathBuf) -> bool {
+        self.all_pages_path().contains(path)
     }
 }
 
 impl ser::Serialize for Section {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("section", 7)?;
+        let mut state = serializer.serialize_struct("section", 9)?;
         state.serialize_field("content", &self.content)?;
+        state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
+        state.serialize_field("extra", &self.meta.extra)?;
         state.serialize_field("path", &format!("/{}", self.path))?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
@@ -167,15 +143,12 @@ impl ser::Serialize for Section {
     }
 }
 
+/// Used to create a default index section if there is no _index.md in the root content directory
 impl Default for Section {
-    /// Used to create a default index section if there is no _index.md in the root content directory
     fn default() -> Section {
         Section {
+            file: FileInfo::default(),
             meta: SectionFrontMatter::default(),
-            file_path: PathBuf::new(),
-            relative_path: "".to_string(),
-            parent_path: PathBuf::new(),
-            components: vec![],
             path: "".to_string(),
             permalink: "".to_string(),
             raw_content: "".to_string(),

@@ -32,7 +32,6 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
     (word_count, (word_count / 200))
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::fs::File;

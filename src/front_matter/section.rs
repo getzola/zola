@@ -9,6 +9,14 @@ use content::SortBy;
 static DEFAULT_PAGINATE_PATH: &'static str = "page";
 
 
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum InsertAnchor {
+    Left,
+    Right,
+    None,
+}
+
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SectionFrontMatter {
@@ -28,6 +36,10 @@ pub struct SectionFrontMatter {
     /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
     #[serde(skip_serializing)]
     pub paginate_path: Option<String>,
+    /// Whether to insert a link for each header like in Github READMEs. Defaults to false
+    /// The default template can be overridden by creating a `anchor-link.html` template and CSS will need to be
+    /// written if you turn that on.
+    pub insert_anchor: Option<InsertAnchor>,
     /// Whether to render that section or not. Defaults to `true`.
     /// Useful when the section is only there to organize things but is not meant
     /// to be used directly, like a posts section in a personal site
@@ -54,6 +66,10 @@ impl SectionFrontMatter {
 
         if f.sort_by.is_none() {
             f.sort_by = Some(SortBy::None);
+        }
+
+        if f.insert_anchor.is_none() {
+            f.insert_anchor = Some(InsertAnchor::None);
         }
 
         Ok(f)
@@ -87,6 +103,7 @@ impl Default for SectionFrontMatter {
             paginate_by: None,
             paginate_path: Some(DEFAULT_PAGINATE_PATH.to_string()),
             render: Some(true),
+            insert_anchor: Some(InsertAnchor::None),
             extra: None,
         }
     }

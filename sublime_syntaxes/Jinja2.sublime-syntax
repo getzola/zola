@@ -5,9 +5,10 @@ name: Jinja2
 file_extensions:
   - j2
   - jinja2
-scope: source.jinja2
+scope: text.html.jinja2
 contexts:
   main:
+    - include: scope:text.html.basic
     - match: '({%)\s*(raw)\s*(%})'
       captures:
         1: entity.other.jinja2.delimiter.tag

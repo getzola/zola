@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use toml::{Value as Toml, self};
 
 use errors::{Result, ResultExt};
-use markdown::SETUP;
+use rendering::highlighting::THEME_SET;
 
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -24,8 +24,10 @@ pub struct Config {
     pub description: Option<String>,
     /// The language used in the site. Defaults to "en"
     pub language_code: Option<String>,
-    /// Whether to generate RSS, defaults to false
+    /// Whether to generate RSS. Defaults to false
     pub generate_rss: Option<bool>,
+    /// The number of articles to include in the RSS feed. Defaults to unlimited
+    pub rss_limit: Option<usize>,
     /// Whether to generate tags and individual tag pages if some pages have them. Defaults to true
     pub generate_tags_pages: Option<bool>,
     /// Whether to generate categories and individual tag categories if some pages have them. Defaults to true
@@ -59,13 +61,14 @@ impl Config {
         set_default!(config.language_code, "en".to_string());
         set_default!(config.highlight_code, false);
         set_default!(config.generate_rss, false);
+        set_default!(config.rss_limit, <usize>::max_value());
         set_default!(config.generate_tags_pages, false);
         set_default!(config.generate_categories_pages, false);
         set_default!(config.insert_anchor_links, false);
 
         match config.highlight_theme {
             Some(ref t) => {
-                if !SETUP.theme_set.themes.contains_key(t) {
+                if !THEME_SET.themes.contains_key(t) {
                     bail!("Theme {} not available", t)
                 }
             },
@@ -87,7 +90,9 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        if self.base_url.ends_with('/') {
+        if self.base_url.ends_with('/') && path.starts_with('/') {
+            format!("{}{}", self.base_url, &path[1..])
+        } else if self.base_url.ends_with('/') {
             format!("{}{}", self.base_url, path)
         } else {
             format!("{}/{}", self.base_url, path)
@@ -95,8 +100,9 @@ impl Config {
     }
 }
 
+/// Exists only for testing purposes
+#[doc(hidden)]
 impl Default for Config {
-    /// Exists for testing purposes
     fn default() -> Config {
         Config {
             title: "".to_string(),
@@ -106,6 +112,7 @@ impl Default for Config {
             description: None,
             language_code: Some("en".to_string()),
             generate_rss: Some(false),
+            rss_limit: Some(10000),
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
             insert_anchor_links: Some(false),
@@ -181,4 +188,17 @@ hello = "world"
         assert_eq!(config.unwrap().extra.unwrap().get("hello").unwrap().as_str().unwrap(), "world");
     }
 
+    #[test]
+    fn can_make_url_with_non_trailing_slash_base_url() {
+        let mut config = Config::default();
+        config.base_url = "http://vincent.is".to_string();
+        assert_eq!(config.make_permalink("hello"), "http://vincent.is/hello");
+    }
+
+    #[test]
+    fn can_make_url_with_trailing_slash_path() {
+        let mut config = Config::default();
+        config.base_url = "http://vincent.is/".to_string();
+        assert_eq!(config.make_permalink("/hello"), "http://vincent.is/hello");
+    }
 }

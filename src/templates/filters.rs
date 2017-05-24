@@ -45,14 +45,14 @@ mod tests {
     use super::{markdown, base64_decode, base64_encode};
 
     #[test]
-    fn test_markdown() {
+    fn markdown_filter() {
         let result = markdown(to_value(&"# Hey").unwrap(), HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1>Hey</h1>\n").unwrap());
     }
 
     #[test]
-    fn test_base64_encode() {
+    fn base64_encode_filter() {
         // from https://tools.ietf.org/html/rfc4648#section-10
         let tests = vec![
             ("", ""),
@@ -73,7 +73,7 @@ mod tests {
 
 
     #[test]
-    fn test_base64_decode() {
+    fn base64_decode_filter() {
         let tests = vec![
             ("", ""),
             ("Zg==", "f"),
