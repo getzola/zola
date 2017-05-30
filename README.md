@@ -224,6 +224,7 @@ In case of shortcodes with a body, the body will be passed as the `body` variabl
 ## Example sites
 
 - [vincent.is](https://vincent.is): https://gitlab.com/Keats/vincent.is
+- [code<future](http://www.codelessfuture.com/)
 
 
 ## Adding syntax highlighting languages and themes
