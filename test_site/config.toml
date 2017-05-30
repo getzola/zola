@@ -2,6 +2,5 @@ title = "My site"
 base_url = "https://replace-this-with-your-url.com"
 highlight_code = true
 
-
 [extra.author]
 name = "Vincent Prouillet"

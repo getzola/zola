@@ -135,6 +135,10 @@ You can also paginate section, including the index by setting the `paginate_by` 
 This represents the number of pages for each pager of the paginator. 
 You will need to access pages through the `paginator` object. (TODO: document that).
 
+### Taxonomies: tags and categories
+
+Individual tag/category pages are only supported for pages having a date.
+
 ### Code highlighting themes
 Code highlighting can be turned on by setting `highlight_code = true` in `config.toml`.
 
@@ -223,6 +227,7 @@ In case of shortcodes with a body, the body will be passed as the `body` variabl
 
 
 ## Adding syntax highlighting languages and themes
+
 ### Adding a syntax
 Syntax highlighting depends on submodules so ensure you load them first:
 ```bash

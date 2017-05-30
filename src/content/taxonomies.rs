@@ -6,6 +6,7 @@ use tera::{Context, Tera};
 use config::Config;
 use errors::{Result, ResultExt};
 use content::Page;
+use content::sorting::{SortBy, sort_pages};
 
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -24,10 +25,12 @@ pub struct TaxonomyItem {
 
 impl TaxonomyItem {
     pub fn new(name: &str, pages: Vec<Page>) -> TaxonomyItem {
+        // We shouldn't have any pages without dates there
+        let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
         TaxonomyItem {
             name: name.to_string(),
             slug: slugify(name),
-            pages,
+            pages: sorted_pages,
         }
     }
 }
@@ -48,6 +51,14 @@ impl Taxonomy {
 
         // Find all the tags/categories first
         for page in all_pages {
+            // Don't consider pages without pages for tags/categories as that's the only thing
+            // we can sort pages with across sections
+            // If anyone sees that comment and wonder wtf, please open an issue as I can't think of
+            // usecases other than blog posts for built-in taxonomies
+            if page.meta.date.is_none() {
+                continue;
+            }
+
             if let Some(ref category) = page.meta.category {
                 categories
                     .entry(category.to_string())
@@ -109,10 +120,6 @@ impl Taxonomy {
         let name = self.get_single_item_name();
         let mut context = Context::new();
         context.add("config", config);
-        // TODO: how to sort categories and tag content?
-        // Have a setting in config.toml or a _category.md and _tag.md
-        // The latter is more in line with the rest of Gutenberg but order ordering
-        // doesn't really work across sections.
         context.add(&name, item);
         context.add("current_url", &config.make_permalink(&format!("{}/{}", name, item.slug)));
         context.add("current_path", &format!("/{}/{}", name, item.slug));

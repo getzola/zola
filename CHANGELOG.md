@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.7 (unreleased)
+
+- Sort individual tag/category pages by date
+
 ## 0.0.6 (2017-05-24)
 
 - Fix missing serialized data for sections
