@@ -17,6 +17,7 @@ lazy_static! {
             ("shortcodes/youtube.html", include_str!("builtins/shortcodes/youtube.html")),
             ("shortcodes/vimeo.html", include_str!("builtins/shortcodes/vimeo.html")),
             ("shortcodes/gist.html", include_str!("builtins/shortcodes/gist.html")),
+            ("shortcodes/streamable.html", include_str!("builtins/shortcodes/streamable.html")),
 
             ("internal/alias.html", include_str!("builtins/internal/alias.html")),
         ]).unwrap();
