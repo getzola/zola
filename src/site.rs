@@ -380,6 +380,10 @@ impl Site {
     }
 
     fn render_taxonomy(&self, taxonomy: &Taxonomy) -> Result<()> {
+        if taxonomy.items.is_empty() {
+            return Ok(())
+        }
+
         ensure_directory_exists(&self.output_path)?;
 
         let output_path = self.output_path.join(&taxonomy.get_list_name());
