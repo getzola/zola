@@ -208,7 +208,8 @@ Gutenberg comes with a few built-in shortcodes:
 - YouTube: embeds a YouTube player for the given YouTube `id`. Also takes an optional `autoplay` argument that can be set to `true`
 if wanted
 - Vimeo: embeds a Vimeo player for the given Vimeo `id`
-- Gist: embeds a Github gist from the `url` given. Also takes an optional `file` argument if you only want to show one of the files.
+- Streamable: embeds a Streamable player for the given Streamable `id`
+- Gist: embeds a Github gist from the `url` given. Also takes an optional `file` argument if you only want to show one of the files
 
 #### Defining a shortcode
 All shortcodes need to be in the `templates/shortcodes` folder and their files to end with `.html`.
