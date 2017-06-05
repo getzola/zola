@@ -373,6 +373,8 @@ Hello
 {{ youtube(id="ub36ffWAqgQ", autoplay=true) }}
 
 {{ vimeo(id="210073083") }}
+ 
+{{ streamable(id="c0ic") }} 
 
 {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}
 
@@ -380,6 +382,7 @@ Hello
         assert!(res.contains("<p>Hello</p>\n<div >"));
         assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
         assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
+        assert!(res.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
         assert!(res.contains(r#"//player.vimeo.com/video/210073083""#));
     }
 
