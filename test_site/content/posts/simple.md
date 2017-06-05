@@ -11,4 +11,6 @@ A simple page
 
 {{ vimeo(id="210073083") }}
 
+{{ streamable(id="c0ic") }}
+
 {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}
