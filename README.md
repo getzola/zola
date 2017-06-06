@@ -178,7 +178,7 @@ You can also choose, at the section level, whether to automatically insert an an
 but can be turned on by setting `insert_anchor = "left"` or `insert_anchor = "right"` in the `_index.md` file. `left` will insert
 the anchor link before the title text and right will insert it after.
 
-The default template is very basic and will need CSS tweaks in your projet to look decent. 
+The default template is very basic and will need CSS tweaks in your project to look decent. 
 It can easily be overwritten by creating a `anchor-link.html` file in the `templates` directory.
 
 ### Shortcodes
@@ -212,7 +212,8 @@ Gutenberg comes with a few built-in shortcodes:
 - YouTube: embeds a YouTube player for the given YouTube `id`. Also takes an optional `autoplay` argument that can be set to `true`
 if wanted
 - Vimeo: embeds a Vimeo player for the given Vimeo `id`
-- Gist: embeds a Github gist from the `url` given. Also takes an optional `file` argument if you only want to show one of the files.
+- Streamable: embeds a Streamable player for the given Streamable `id`
+- Gist: embeds a Github gist from the `url` given. Also takes an optional `file` argument if you only want to show one of the files
 
 #### Defining a shortcode
 All shortcodes need to be in the `templates/shortcodes` folder and their files to end with `.html`.
