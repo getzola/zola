@@ -58,7 +58,7 @@ impl Section {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
         section.raw_content = content.clone();
-        section.path = section.file.components.join("/");
+        section.path = format!("{}/", section.file.components.join("/"));
         section.permalink = config.make_permalink(&section.path);
         Ok(section)
     }

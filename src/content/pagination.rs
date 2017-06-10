@@ -74,17 +74,18 @@ impl<'a> Paginator<'a> {
                 continue;
             }
 
-            let page_path = format!("{}/{}", paginate_path, index + 1);
-            let permalink = if section.permalink.ends_with('/') {
-                format!("{}{}", section.permalink, page_path)
+            let page_path = format!("{}/{}/", paginate_path, index + 1);
+            let permalink = format!("{}{}", section.permalink, page_path);
+            let pager_path = if section.is_index() {
+                page_path
             } else {
-                format!("{}/{}", section.permalink, page_path)
+                format!("{}{}", section.path, page_path)
             };
             pagers.push(Pager::new(
                 index + 1,
                 page.clone(),
                 permalink,
-                if section.is_index() { page_path } else { format!("{}/{}", section.path, page_path) }
+                pager_path,
             ));
         }
 
@@ -164,11 +165,11 @@ mod tests {
         f.paginate_path = Some("page".to_string());
         let mut s = Section::new("content/_index.md", f);
         if !is_index {
-            s.path = "posts".to_string();
-            s.permalink = "https://vincent.is/posts".to_string();
+            s.path = "posts/".to_string();
+            s.permalink = "https://vincent.is/posts/".to_string();
             s.file.components = vec!["posts".to_string()];
         } else {
-            s.permalink = "https://vincent.is".to_string();
+            s.permalink = "https://vincent.is/".to_string();
         }
         s
     }
@@ -186,13 +187,13 @@ mod tests {
 
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
-        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts");
-        assert_eq!(paginator.pagers[0].path, "posts");
+        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts/");
+        assert_eq!(paginator.pagers[0].path, "posts/");
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 1);
-        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2");
-        assert_eq!(paginator.pagers[1].path, "posts/page/2");
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2/");
+        assert_eq!(paginator.pagers[1].path, "posts/page/2/");
     }
 
     #[test]
@@ -208,13 +209,13 @@ mod tests {
 
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
-        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is");
+        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/");
         assert_eq!(paginator.pagers[0].path, "");
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 1);
-        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/page/2");
-        assert_eq!(paginator.pagers[1].path, "page/2");
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/page/2/");
+        assert_eq!(paginator.pagers[1].path, "page/2/");
     }
 
     #[test]
@@ -230,18 +231,18 @@ mod tests {
 
         let context = paginator.build_paginator_context(&paginator.pagers[0]);
         assert_eq!(context["paginate_by"], to_value(2).unwrap());
-        assert_eq!(context["first"], to_value("https://vincent.is/posts").unwrap());
-        assert_eq!(context["last"], to_value("https://vincent.is/posts/page/2").unwrap());
+        assert_eq!(context["first"], to_value("https://vincent.is/posts/").unwrap());
+        assert_eq!(context["last"], to_value("https://vincent.is/posts/page/2/").unwrap());
         assert_eq!(context["previous"], to_value::<Option<()>>(None).unwrap());
-        assert_eq!(context["next"], to_value("https://vincent.is/posts/page/2").unwrap());
+        assert_eq!(context["next"], to_value("https://vincent.is/posts/page/2/").unwrap());
         assert_eq!(context["current_index"], to_value(1).unwrap());
 
         let context = paginator.build_paginator_context(&paginator.pagers[1]);
         assert_eq!(context["paginate_by"], to_value(2).unwrap());
-        assert_eq!(context["first"], to_value("https://vincent.is/posts").unwrap());
-        assert_eq!(context["last"], to_value("https://vincent.is/posts/page/2").unwrap());
+        assert_eq!(context["first"], to_value("https://vincent.is/posts/").unwrap());
+        assert_eq!(context["last"], to_value("https://vincent.is/posts/page/2/").unwrap());
         assert_eq!(context["next"], to_value::<Option<()>>(None).unwrap());
-        assert_eq!(context["previous"], to_value("https://vincent.is/posts").unwrap());
+        assert_eq!(context["previous"], to_value("https://vincent.is/posts/").unwrap());
         assert_eq!(context["current_index"], to_value(2).unwrap());
     }
 }

@@ -91,6 +91,9 @@ impl Page {
                 format!("{}/{}", page.file.components.join("/"), page.slug)
             };
         }
+        if !page.path.ends_with('/') {
+            page.path = format!("{}/", page.path);
+        }
         page.permalink = config.make_permalink(&page.path);
 
         Ok(page)
@@ -231,8 +234,8 @@ Hello world"#;
         let res = Page::parse(Path::new("content/posts/intro/start.md"), content, &conf);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "posts/intro/hello-world");
-        assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world");
+        assert_eq!(page.path, "posts/intro/hello-world/");
+        assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world/");
     }
 
     #[test]
@@ -246,7 +249,7 @@ Hello world"#;
         let res = Page::parse(Path::new("start.md"), content, &config);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world");
+        assert_eq!(page.path, "hello-world/");
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
 

@@ -4,6 +4,7 @@
 
 - Sort individual tag/category pages by date
 - Add extra builtin shortcode for Streamable videos
+- `path` and `permalink` now end with a `/`
 
 ## 0.0.6 (2017-05-24)
 
