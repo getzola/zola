@@ -30,7 +30,7 @@ syntect = { version = "1", features = ["static-onig"] }
 chrono = "0.3"
 toml = "0.4"
 term-painter = "0.2"
-base64 = "0.5"
+base64 = "0.6"
 
 # Below is for the serve cmd
 staticfile = "0.4"
