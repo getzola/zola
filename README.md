@@ -91,6 +91,7 @@ A front-matter has only optional variables:
 - category: only one category is allowed
 - draft: whether the post is a draft or not
 - template: if you want to change the template used to render that specific page
+- aliases: which URL to redirect to the new: useful when you changed a page URL and don't want to 404
 
 Even if your front-matter is empty, you will need to put the `+++`.
 You can also, like in the config, add your own variables in a `[extra]` table.

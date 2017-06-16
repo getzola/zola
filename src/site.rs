@@ -337,6 +337,8 @@ impl Site {
     /// Deletes the `public` directory and builds the site
     pub fn build(&self) -> Result<()> {
         self.clean()?;
+        // Render aliases first to allow overwriting
+        self.render_aliases()?;
         self.render_sections()?;
         self.render_orphan_pages()?;
         self.render_sitemap()?;
@@ -350,6 +352,25 @@ impl Site {
         self.render_tags()?;
 
         self.copy_static_directory()
+    }
+
+    pub fn render_aliases(&self) -> Result<()> {
+        for page in self.pages.values() {
+            if let Some(ref aliases) = page.meta.aliases {
+                for alias in aliases {
+                    let mut output_path = self.output_path.to_path_buf();
+                    for component in alias.split("/") {
+                        output_path.push(&component);
+
+                        if !output_path.exists() {
+                            create_directory(&output_path)?;
+                        }
+                    }
+                    create_file(&output_path.join("index.html"), &render_redirect_template(&page.permalink, &self.tera)?)?;
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Renders robots.txt
