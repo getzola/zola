@@ -16,6 +16,7 @@ use rendering::context::Context;
 use fs::{read_file};
 use content::utils::{find_related_assets, get_reading_analytics};
 use content::file_info::FileInfo;
+use content::Header;
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -45,6 +46,8 @@ pub struct Page {
     pub previous: Option<Box<Page>>,
     /// The next page, by whatever sorting is used for the index/section
     pub next: Option<Box<Page>>,
+    /// Toc made from the headers of the markdown file
+    pub toc: Vec<Header>,
 }
 
 
@@ -64,6 +67,7 @@ impl Page {
             summary: None,
             previous: None,
             next: None,
+            toc: vec![],
         }
     }
 
@@ -117,12 +121,14 @@ impl Page {
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, anchor_insert: InsertAnchor) -> Result<()> {
-        let context = Context::new(tera, config, permalinks, anchor_insert);
-        self.content = markdown_to_html(&self.raw_content, &context)?;
+        let context = Context::new(tera, config, &self.permalink, permalinks, anchor_insert);
+        let res = markdown_to_html(&self.raw_content, &context)?;
+        self.content = res.0;
+        self.toc = res.1;
         if self.raw_content.contains("<!-- more -->") {
             self.summary = Some({
                 let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, &context)?
+                markdown_to_html(summary, &context)?.0
             })
         }
 
@@ -161,13 +167,14 @@ impl Default for Page {
             summary: None,
             previous: None,
             next: None,
+            toc: vec![],
         }
     }
 }
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 15)?;
+        let mut state = serializer.serialize_struct("page", 16)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
@@ -184,6 +191,7 @@ impl ser::Serialize for Page {
         state.serialize_field("reading_time", &reading_time)?;
         state.serialize_field("previous", &self.previous)?;
         state.serialize_field("next", &self.next)?;
+        state.serialize_field("toc", &self.toc)?;
         state.end()
     }
 }

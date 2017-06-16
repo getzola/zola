@@ -16,6 +16,7 @@ use front_matter::InsertAnchor;
 use rendering::context::Context;
 use rendering::highlighting::THEME_SET;
 use rendering::short_code::{ShortCode, parse_shortcode, render_simple_shortcode};
+use content::{TempHeader, Header, make_table_of_contents};
 
 // We need to put those in a struct to impl Send and sync
 pub struct Setup {
@@ -37,7 +38,7 @@ lazy_static!{
 }
 
 
-pub fn markdown_to_html(content: &str, context: &Context) -> Result<String> {
+pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec<Header>)> {
     // We try to be smart about highlighting code as it can be time-consuming
     // If the global config disables it, then we do nothing. However,
     // if we see a code block in the content, we assume that this page needs
@@ -62,9 +63,10 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<String> {
     // pulldown_cmark can send several text events for a title if there are markdown
     // specific characters like `!` in them. We only want to insert the anchor the first time
     let mut header_already_inserted = false;
+    let mut anchors: Vec<String> = vec![];
+
     // the rendered html
     let mut html = String::new();
-    let mut anchors: Vec<String> = vec![];
 
     // We might have cases where the slug is already present in our list of anchor
     // for example an article could have several titles named Example
@@ -82,6 +84,11 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<String> {
 
         find_anchor(anchors, name, level + 1)
     }
+
+    let mut headers = vec![];
+    // Defaults to a 0 level so not a real header
+    // It should be an Option ideally but not worth the hassle to update
+    let mut temp_header = TempHeader::default();
 
     let mut opts = Options::empty();
     opts.insert(OPTION_ENABLE_TABLES);
@@ -158,6 +165,13 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<String> {
                     } else {
                         String::new()
                     };
+                    // update the header and add it to the list
+                    temp_header.id = id.clone();
+                    temp_header.title = text.clone().into_owned();
+                    temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
+                    headers.push(temp_header.clone());
+                    temp_header = TempHeader::default();
+
                     header_already_inserted = true;
                     let event = match context.insert_anchor {
                         InsertAnchor::Left => Event::Html(Owned(format!(r#"id="{}">{}{}"#, id, anchor_link, text))),
@@ -230,6 +244,7 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<String> {
             },
             Event::Start(Tag::Header(num)) => {
                 in_header = true;
+                temp_header = TempHeader::new(num);
                 // ugly eh
                 Event::Html(Owned(format!("<h{} ", num)))
             },
@@ -264,7 +279,7 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<String> {
 
     match error {
         Some(e) => Err(e),
-        None => Ok(html.replace("<p></p>", "")),
+        None => Ok((html.replace("<p></p>", ""), make_table_of_contents(headers))),
     }
 }
 
@@ -287,9 +302,9 @@ mod tests {
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html("hello", &context).unwrap();
-        assert_eq!(res, "<p>hello</p>\n");
+        assert_eq!(res.0, "<p>hello</p>\n");
     }
 
     #[test]
@@ -297,11 +312,11 @@ mod tests {
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let mut context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let mut context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         context.highlight_code = false;
         let res = markdown_to_html("```\n$ gutenberg server\n```", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<pre><code>$ gutenberg server\n</code></pre>\n"
         );
     }
@@ -311,10 +326,10 @@ mod tests {
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">$ ping\n</span></pre>"
         );
     }
@@ -324,10 +339,10 @@ mod tests {
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html("```python\nlist.append(1)\n```", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">.</span><span style=\"background-color:#2b303b;color:#bf616a;\">append</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">(</span><span style=\"background-color:#2b303b;color:#d08770;\">1</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">)</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">\n</span></pre>"
         );
     }
@@ -337,11 +352,11 @@ mod tests {
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html("```yolo\nlist.append(1)\n```", &context).unwrap();
         // defaults to plain text
         assert_eq!(
-            res,
+            res.0,
             "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list.append(1)\n</span></pre>"
         );
     }
@@ -350,21 +365,21 @@ mod tests {
     fn can_render_shortcode() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html(r#"
 Hello
 
 {{ youtube(id="ub36ffWAqgQ") }}
         "#, &context).unwrap();
-        assert!(res.contains("<p>Hello</p>\n<div >"));
-        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+        assert!(res.0.contains("<p>Hello</p>\n<div >"));
+        assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
     }
 
     #[test]
     fn can_render_several_shortcode_in_row() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html(r#"
 Hello
 
@@ -373,26 +388,26 @@ Hello
 {{ youtube(id="ub36ffWAqgQ", autoplay=true) }}
 
 {{ vimeo(id="210073083") }}
- 
-{{ streamable(id="c0ic") }} 
+
+{{ streamable(id="c0ic") }}
 
 {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}
 
         "#, &context).unwrap();
-        assert!(res.contains("<p>Hello</p>\n<div >"));
-        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
-        assert!(res.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
-        assert!(res.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
-        assert!(res.contains(r#"//player.vimeo.com/video/210073083""#));
+        assert!(res.0.contains("<p>Hello</p>\n<div >"));
+        assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+        assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
+        assert!(res.0.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
+        assert!(res.0.contains(r#"//player.vimeo.com/video/210073083""#));
     }
 
     #[test]
     fn doesnt_render_shortcode_in_code_block() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html(r#"```{{ youtube(id="w7Ft2ymGmfc") }}```"#, &context).unwrap();
-        assert_eq!(res, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
+        assert_eq!(res.0, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
     }
 
     #[test]
@@ -402,7 +417,7 @@ Hello
         tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
 
         let res = markdown_to_html(r#"
 Hello
@@ -410,7 +425,7 @@ Hello
 A quote
 {% end %}
         "#, &context).unwrap();
-        assert_eq!(res, "<p>Hello\n</p><blockquote>A quote - Keats</blockquote>");
+        assert_eq!(res.0, "<p>Hello\n</p><blockquote>A quote - Keats</blockquote>");
     }
 
     #[test]
@@ -418,7 +433,7 @@ A quote
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html("{{ hello(flash=true) }}", &context);
         assert!(res.is_err());
     }
@@ -429,14 +444,14 @@ A quote
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let tera_ctx = Tera::default();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks, InsertAnchor::None);
         let res = markdown_to_html(
             r#"[rel link](./pages/about.md), [abs link](https://vincent.is/about)"#,
             &context
         ).unwrap();
 
         assert!(
-            res.contains(r#"<p><a href="https://vincent.is/about">rel link</a>, <a href="https://vincent.is/about">abs link</a></p>"#)
+            res.0.contains(r#"<p><a href="https://vincent.is/about">rel link</a>, <a href="https://vincent.is/about">abs link</a></p>"#)
         );
     }
 
@@ -446,11 +461,11 @@ A quote
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let tera_ctx = Tera::default();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks, InsertAnchor::None);
         let res = markdown_to_html(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
 
         assert!(
-            res.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
+            res.0.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
         );
     }
 
@@ -459,7 +474,7 @@ A quote
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html("[rel link](./pages/about.md)", &context);
         assert!(res.is_err());
     }
@@ -469,9 +484,9 @@ A quote
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html(r#"# Hello"#, &context).unwrap();
-        assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n");
+        assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n");
     }
 
     #[test]
@@ -479,19 +494,19 @@ A quote
         let tera_ctx = Tera::default();
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&tera_ctx, &config_ctx, &permalinks_ctx, InsertAnchor::None);
+        let context = Context::new(&tera_ctx, &config_ctx, "", &permalinks_ctx, InsertAnchor::None);
         let res = markdown_to_html("# Hello\n# Hello", &context).unwrap();
-        assert_eq!(res, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
+        assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
     }
 
     #[test]
     fn can_insert_anchor_left() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::Left);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::Left);
         let res = markdown_to_html("# Hello", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
         );
     }
@@ -500,10 +515,10 @@ A quote
     fn can_insert_anchor_right() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::Right);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::Right);
         let res = markdown_to_html("# Hello", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<h1 id=\"hello\">Hello<a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
         );
     }
@@ -513,10 +528,10 @@ A quote
     fn can_insert_anchor_with_exclamation_mark() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::Left);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::Left);
         let res = markdown_to_html("# Hello!", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
         );
     }
@@ -526,10 +541,10 @@ A quote
     fn can_insert_anchor_with_link() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::Left);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::Left);
         let res = markdown_to_html("## [](#xresources)Xresources", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<h2 id=\"xresources\"><a class=\"gutenberg-anchor\" href=\"#xresources\" aria-label=\"Anchor link for: xresources\">🔗</a>\nXresources</h2>\n"
         );
     }
@@ -538,11 +553,40 @@ A quote
     fn can_insert_anchor_with_other_special_chars() {
         let permalinks_ctx = HashMap::new();
         let config_ctx = Config::default();
-        let context = Context::new(&GUTENBERG_TERA, &config_ctx, &permalinks_ctx, InsertAnchor::Left);
+        let context = Context::new(&GUTENBERG_TERA, &config_ctx, "", &permalinks_ctx, InsertAnchor::Left);
         let res = markdown_to_html("# Hello*_()", &context).unwrap();
         assert_eq!(
-            res,
+            res.0,
             "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
         );
+    }
+
+    #[test]
+    fn can_make_toc() {
+        let permalinks_ctx = HashMap::new();
+        let config_ctx = Config::default();
+        let context = Context::new(
+            &GUTENBERG_TERA,
+            &config_ctx,
+            "https://mysite.com/something",
+            &permalinks_ctx,
+            InsertAnchor::Left
+        );
+
+        let res = markdown_to_html(r#"
+# Header 1
+
+## Header 2
+
+## Another Header 2
+
+### Last one
+        "#, &context).unwrap();
+
+        let toc = res.1;
+        assert_eq!(toc.len(), 1);
+        assert_eq!(toc[0].children.len(), 2);
+        assert_eq!(toc[0].children[1].children.len(), 1);
+
     }
 }

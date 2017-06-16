@@ -13,6 +13,7 @@ use rendering::markdown::markdown_to_html;
 use rendering::context::Context;
 use content::Page;
 use content::file_info::FileInfo;
+use content::Header;
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -35,6 +36,8 @@ pub struct Section {
     pub ignored_pages: Vec<Page>,
     /// All direct subsections
     pub subsections: Vec<Section>,
+    /// Toc made from the headers of the markdown file
+    pub toc: Vec<Header>,
 }
 
 impl Section {
@@ -51,6 +54,7 @@ impl Section {
             pages: vec![],
             ignored_pages: vec![],
             subsections: vec![],
+            toc: vec![],
         }
     }
 
@@ -86,8 +90,10 @@ impl Section {
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
-        let context = Context::new(tera, config, permalinks, self.meta.insert_anchor.unwrap());
-        self.content = markdown_to_html(&self.raw_content, &context)?;
+        let context = Context::new(tera, config, &self.permalink, permalinks, self.meta.insert_anchor.unwrap());
+        let res = markdown_to_html(&self.raw_content, &context)?;
+        self.content = res.0;
+        self.toc = res.1;
         Ok(())
     }
 
@@ -129,7 +135,7 @@ impl Section {
 
 impl ser::Serialize for Section {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("section", 9)?;
+        let mut state = serializer.serialize_struct("section", 10)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("title", &self.meta.title)?;
@@ -139,6 +145,7 @@ impl ser::Serialize for Section {
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
+        state.serialize_field("toc", &self.toc)?;
         state.end()
     }
 }
@@ -156,6 +163,7 @@ impl Default for Section {
             pages: vec![],
             ignored_pages: vec![],
             subsections: vec![],
+            toc: vec![],
         }
     }
 }
