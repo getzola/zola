@@ -135,6 +135,34 @@ You can also paginate section, including the index by setting the `paginate_by` 
 This represents the number of pages for each pager of the paginator. 
 You will need to access pages through the `paginator` object. (TODO: document that).
 
+### Table of contents
+
+Each page/section will generate a table of content based on the title. It is accessible through `section.toc` and
+`page.toc`. It is a list of headers that contains a `permalink`, a `title` and `children`. 
+Here is an example on how to make a ToC using that:
+
+```jinja2
+<ul>
+{% for h1 in page.toc %}
+    <li>
+        <a href="{{h1.permalink}}">{{ h1.title }}</a>
+        {% if h1.children %}
+            <ul>
+                {% for h2 in h1.children %}
+                    <li>
+                        <a href="{{h2.permalink}}">{{ h2.title }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </li>
+{% endfor %}
+</ul>
+```
+
+While headers are neatly ordered in that example, you can a table of contents looking like h2, h2, h1, h3 without
+any issues.
+
 ### Taxonomies: tags and categories
 
 Individual tag/category pages are only supported for pages having a date.

@@ -5,6 +5,7 @@
 - Sort individual tag/category pages by date
 - Add extra builtin shortcode for Streamable videos
 - `path` and `permalink` now end with a `/`
+- Generate table of contents for each page
 
 ## 0.0.6 (2017-05-24)
 
