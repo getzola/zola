@@ -6,6 +6,7 @@
 - Add extra builtin shortcode for Streamable videos
 - `path` and `permalink` now end with a `/`
 - Generate table of contents for each page
+- Add `section` to a page Tera context if there is one
 
 ## 0.0.6 (2017-05-24)
 

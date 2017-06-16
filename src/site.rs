@@ -304,7 +304,7 @@ impl Site {
     }
 
     /// Renders a single content page
-    pub fn render_page(&self, page: &Page) -> Result<()> {
+    pub fn render_page(&self, page: &Page, section: Option<&Section>) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
         // Copy the nesting of the content directory if we have sections for that page
@@ -322,7 +322,7 @@ impl Site {
         create_directory(&current_path)?;
 
         // Finally, create a index.html file there with the page rendered
-        let output = page.render_html(&self.tera, &self.config)?;
+        let output = page.render_html(&self.tera, &self.config, section)?;
         create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
 
         // Copy any asset we found previously into the same directory as the index.html
@@ -501,7 +501,7 @@ impl Site {
 
         if render_pages {
             for page in &section.pages {
-                self.render_page(page)?;
+                self.render_page(page, Some(section))?;
             }
         }
 
@@ -540,7 +540,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         for page in self.get_all_orphan_pages() {
-            self.render_page(page)?;
+            self.render_page(page, None)?;
         }
 
         Ok(())

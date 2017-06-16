@@ -95,10 +95,10 @@ impl<'a> Paginator<'a> {
         }
 
         Paginator {
-            all_pages: all_pages,
-            pagers: pagers,
-            paginate_by: paginate_by,
-            section: section,
+            all_pages,
+            pagers,
+            paginate_by,
+            section,
         }
     }
 

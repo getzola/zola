@@ -16,7 +16,7 @@ use rendering::context::Context;
 use fs::{read_file};
 use content::utils::{find_related_assets, get_reading_analytics};
 use content::file_info::FileInfo;
-use content::Header;
+use content::{Header, Section};
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -136,7 +136,7 @@ impl Page {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, tera: &Tera, config: &Config, section: Option<&Section>) -> Result<String> {
         let tpl_name = match self.meta.template {
             Some(ref l) => l.to_string(),
             None => "page.html".to_string()
@@ -147,6 +147,7 @@ impl Page {
         context.add("page", self);
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
+        context.add("section", &section);
 
         tera.render(&tpl_name, &context)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))

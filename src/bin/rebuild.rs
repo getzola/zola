@@ -172,9 +172,9 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             // Updating a page
             let current = site.pages[path].clone();
             // Front matter didn't change, only content did
-            // so we render only the section page, not its pages
+            // so we render only the section page, not its content
             if current.meta == prev.meta {
-                return site.render_page(&site.pages[path]);
+                return site.render_page(&current, find_parent_section(site, &current));
             }
 
             // Front matter changed
@@ -199,7 +199,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                         site.render_index()?;
                     },
                     PageChangesNeeded::Render => {
-                        site.render_page(&site.pages[path])?;
+                        site.render_page(&site.pages[path], find_parent_section(site, &current))?;
                     },
                 };
             }
