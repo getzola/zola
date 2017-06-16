@@ -38,7 +38,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                     cannot_be_sorted.push(page);
                 }
             }
-            can_be_sorted.sort_by(|a, b| a.meta.order().cmp(&b.meta.order()));
+            can_be_sorted.sort_by(|a, b| b.meta.order().cmp(&a.meta.order()));
 
             (can_be_sorted, cannot_be_sorted)
         },
@@ -120,10 +120,10 @@ mod tests {
             create_page_with_order(1),
         ];
         let (pages, _) = sort_pages(input, SortBy::Order);
-        // Should be sorted by order
-        assert_eq!(pages[0].clone().meta.order.unwrap(), 1);
+        // Should be sorted by date
+        assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
         assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
-        assert_eq!(pages[2].clone().meta.order.unwrap(), 3);
+        assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
     }
 
     #[test]

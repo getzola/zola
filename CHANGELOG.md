@@ -7,8 +7,6 @@
 - `path` and `permalink` now end with a `/`
 - Generate table of contents for each page
 - Add `section` to a page Tera context if there is one
-- Reverse `order` sorting to be more intuitive: they are now desc, think of them
-as 1st, 2nd in the list
 - Add `aliases` to pages for when you are changing urls but want to redirect
 to the new one
 
