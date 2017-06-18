@@ -91,6 +91,7 @@ A front-matter has only optional variables:
 - category: only one category is allowed
 - draft: whether the post is a draft or not
 - template: if you want to change the template used to render that specific page
+- aliases: which URL to redirect to the new: useful when you changed a page URL and don't want to 404
 
 Even if your front-matter is empty, you will need to put the `+++`.
 You can also, like in the config, add your own variables in a `[extra]` table.
@@ -134,6 +135,38 @@ to control pagination and sorting of the homepage.
 You can also paginate section, including the index by setting the `paginate_by` field in the front matter to an integer. 
 This represents the number of pages for each pager of the paginator. 
 You will need to access pages through the `paginator` object. (TODO: document that).
+
+### Table of contents
+
+Each page/section will generate a table of content based on the title. It is accessible through `section.toc` and
+`page.toc`. It is a list of headers that contains a `permalink`, a `title` and `children`. 
+Here is an example on how to make a ToC using that:
+
+```jinja2
+<ul>
+{% for h1 in page.toc %}
+    <li>
+        <a href="{{h1.permalink}}">{{ h1.title }}</a>
+        {% if h1.children %}
+            <ul>
+                {% for h2 in h1.children %}
+                    <li>
+                        <a href="{{h2.permalink}}">{{ h2.title }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </li>
+{% endfor %}
+</ul>
+```
+
+While headers are neatly ordered in that example, you can a table of contents looking like h2, h2, h1, h3 without
+any issues.
+
+### Taxonomies: tags and categories
+
+Individual tag/category pages are only supported for pages having a date.
 
 ### Code highlighting themes
 Code highlighting can be turned on by setting `highlight_code = true` in `config.toml`.
@@ -208,7 +241,8 @@ Gutenberg comes with a few built-in shortcodes:
 - YouTube: embeds a YouTube player for the given YouTube `id`. Also takes an optional `autoplay` argument that can be set to `true`
 if wanted
 - Vimeo: embeds a Vimeo player for the given Vimeo `id`
-- Gist: embeds a Github gist from the `url` given. Also takes an optional `file` argument if you only want to show one of the files.
+- Streamable: embeds a Streamable player for the given Streamable `id`
+- Gist: embeds a Github gist from the `url` given. Also takes an optional `file` argument if you only want to show one of the files
 
 #### Defining a shortcode
 All shortcodes need to be in the `templates/shortcodes` folder and their files to end with `.html`.
@@ -220,9 +254,11 @@ In case of shortcodes with a body, the body will be passed as the `body` variabl
 ## Example sites
 
 - [vincent.is](https://vincent.is): https://gitlab.com/Keats/vincent.is
+- [code<future](http://www.codelessfuture.com/)
 
 
 ## Adding syntax highlighting languages and themes
+
 ### Adding a syntax
 Syntax highlighting depends on submodules so ensure you load them first:
 ```bash

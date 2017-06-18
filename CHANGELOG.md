@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.7 (unreleased)
+
+- Sort individual tag/category pages by date
+- Add extra builtin shortcode for Streamable videos
+- `path` and `permalink` now end with a `/`
+- Generate table of contents for each page
+- Add `section` to a page Tera context if there is one
+- Add `aliases` to pages for when you are changing urls but want to redirect
+to the new one
+
 ## 0.0.6 (2017-05-24)
 
 - Fix missing serialized data for sections

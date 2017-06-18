@@ -28,6 +28,9 @@ pub struct PageFrontMatter {
     pub category: Option<String>,
     /// Integer to use to order content. Lowest is at the bottom, highest first
     pub order: Option<usize>,
+    /// All aliases for that page. Gutenberg will create HTML templates that will
+    #[serde(skip_serializing)]
+    pub aliases: Option<Vec<String>>,
     /// Specify a template different from `page.html` to use for that page
     #[serde(skip_serializing)]
     pub template: Option<String>,
@@ -100,6 +103,7 @@ impl Default for PageFrontMatter {
             tags: None,
             category: None,
             order: None,
+            aliases: None,
             template: None,
             extra: None,
         }

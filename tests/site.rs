@@ -28,7 +28,7 @@ fn can_parse_site() {
 
     // Make sure the page with a url doesn't have any sections
     let url_post = &site.pages[&posts_path.join("fixed-url.md")];
-    assert_eq!(url_post.path, "a-fixed-url");
+    assert_eq!(url_post.path, "a-fixed-url/");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post = &site.pages[&posts_path.join("with-assets").join("index.md")];
@@ -118,6 +118,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
     // TODO: add assertion for syntax highlighting
 
+    // aliases work
+    assert!(file_exists!(public, "an-old-url/old-page/index.html"));
+    assert!(file_contains!(public, "an-old-url/old-page/index.html", "something-else"));
+
     // No tags or categories
     assert_eq!(file_exists!(public, "categories/index.html"), false);
     assert_eq!(file_exists!(public, "tags/index.html"), false);
@@ -126,8 +130,11 @@ fn can_build_site_without_live_reload() {
     assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
 
     // Both pages and sections are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
+
+    // section is in the page context
+    assert!(file_contains!(public, "posts/python/index.html", "Section:"));
 }
 
 #[test]
@@ -216,8 +223,8 @@ fn can_build_site_with_categories() {
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
     // Categories are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/a</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"));
 }
 
 #[test]
@@ -268,8 +275,8 @@ fn can_build_site_with_tags() {
     // Categories aren't
     assert_eq!(file_exists!(public, "categories/index.html"), false);
     // Tags are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/tag-with-space</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/tag-with-space/</loc>"));
 }
 
 #[test]
@@ -327,14 +334,14 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts\""
+        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts/\""
     ));
     assert!(file_contains!(public, "posts/index.html", "Num pagers: 3"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
     assert!(file_contains!(public, "posts/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/index.html", "First: https://replace-this-with-your-url.com/posts"));
-    assert!(file_contains!(public, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3"));
+    assert!(file_contains!(public, "posts/index.html", "First: https://replace-this-with-your-url.com/posts/"));
+    assert!(file_contains!(public, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
     assert_eq!(file_contains!(public, "posts/index.html", "has_prev"), false);
 
     assert!(file_exists!(public, "posts/page/2/index.html"));
@@ -343,8 +350,8 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "First: https://replace-this-with-your-url.com/posts"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "First: https://replace-this-with-your-url.com/posts/"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
 }
 
 #[test]

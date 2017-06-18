@@ -304,7 +304,7 @@ impl Site {
     }
 
     /// Renders a single content page
-    pub fn render_page(&self, page: &Page) -> Result<()> {
+    pub fn render_page(&self, page: &Page, section: Option<&Section>) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
         // Copy the nesting of the content directory if we have sections for that page
@@ -322,7 +322,7 @@ impl Site {
         create_directory(&current_path)?;
 
         // Finally, create a index.html file there with the page rendered
-        let output = page.render_html(&self.tera, &self.config)?;
+        let output = page.render_html(&self.tera, &self.config, section)?;
         create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
 
         // Copy any asset we found previously into the same directory as the index.html
@@ -337,6 +337,8 @@ impl Site {
     /// Deletes the `public` directory and builds the site
     pub fn build(&self) -> Result<()> {
         self.clean()?;
+        // Render aliases first to allow overwriting
+        self.render_aliases()?;
         self.render_sections()?;
         self.render_orphan_pages()?;
         self.render_sitemap()?;
@@ -350,6 +352,25 @@ impl Site {
         self.render_tags()?;
 
         self.copy_static_directory()
+    }
+
+    pub fn render_aliases(&self) -> Result<()> {
+        for page in self.pages.values() {
+            if let Some(ref aliases) = page.meta.aliases {
+                for alias in aliases {
+                    let mut output_path = self.output_path.to_path_buf();
+                    for component in alias.split("/") {
+                        output_path.push(&component);
+
+                        if !output_path.exists() {
+                            create_directory(&output_path)?;
+                        }
+                    }
+                    create_file(&output_path.join("index.html"), &render_redirect_template(&page.permalink, &self.tera)?)?;
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Renders robots.txt
@@ -380,6 +401,10 @@ impl Site {
     }
 
     fn render_taxonomy(&self, taxonomy: &Taxonomy) -> Result<()> {
+        if taxonomy.items.is_empty() {
+            return Ok(())
+        }
+
         ensure_directory_exists(&self.output_path)?;
 
         let output_path = self.output_path.join(&taxonomy.get_list_name());
@@ -497,7 +522,7 @@ impl Site {
 
         if render_pages {
             for page in &section.pages {
-                self.render_page(page)?;
+                self.render_page(page, Some(section))?;
             }
         }
 
@@ -536,7 +561,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         for page in self.get_all_orphan_pages() {
-            self.render_page(page)?;
+            self.render_page(page, None)?;
         }
 
         Ok(())
