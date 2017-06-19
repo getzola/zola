@@ -499,10 +499,12 @@ impl Site {
 
     /// Create a hashmap of paths to section
     /// For example `content/posts/_index.md` key will be `posts`
+    /// The index section will always be called `index` so don't use a path such as
+    /// `content/index/_index.md` yourself
     fn get_sections_map(&self) -> HashMap<String, Section> {
         self.sections
             .values()
-            .map(|s| (s.file.components.join("/"), s.clone()))
+            .map(|s| (if s.is_index() { "index".to_string() } else { s.file.components.join("/") }, s.clone()))
             .collect()
     }
 

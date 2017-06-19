@@ -9,6 +9,7 @@
 - Add `section` to a page Tera context if there is one
 - Add `aliases` to pages for when you are changing urls but want to redirect
 to the new one
+- Name the homepage section `index` (previously empty string)
 
 ## 0.0.6 (2017-05-24)
 
