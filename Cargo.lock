@@ -1,6 +1,6 @@
 [root]
 name = "gutenberg"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
