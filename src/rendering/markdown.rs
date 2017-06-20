@@ -4,9 +4,7 @@ use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
 use regex::Regex;
 use slug::slugify;
-use syntect::dumps::from_binary;
 use syntect::easy::HighlightLines;
-use syntect::parsing::SyntaxSet;
 use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, IncludeBackground};
 use tera::{Context as TeraContext};
 
@@ -15,26 +13,12 @@ use site::resolve_internal_link;
 use front_matter::InsertAnchor;
 use rendering::context::Context;
 use rendering::highlighting::THEME_SET;
+use rendering::parsing::SYNTAX_SET;
 use rendering::short_code::{ShortCode, parse_shortcode, render_simple_shortcode};
 use content::{TempHeader, Header, make_table_of_contents};
 
-// We need to put those in a struct to impl Send and sync
-pub struct Setup {
-    pub syntax_set: SyntaxSet,
-}
-
-unsafe impl Send for Setup {}
-unsafe impl Sync for Setup {}
-
 lazy_static!{
     static ref SHORTCODE_RE: Regex = Regex::new(r#"\{(?:%|\{)\s+([[:alnum:]]+?)\(([[:alnum:]]+?="?.+?"?)\)\s+(?:%|\})\}"#).unwrap();
-    pub static ref SETUP: Setup = Setup {
-        syntax_set: {
-            let mut ps: SyntaxSet = from_binary(include_bytes!("../../sublime_syntaxes/newlines.packdump"));
-            ps.link_syntaxes();
-            ps
-        },
-    };
 }
 
 
@@ -190,12 +174,14 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
                     return Event::Html(Owned("<pre><code>".to_owned()));
                 }
                 let theme = &THEME_SET.themes[&context.highlight_theme];
-                let syntax = info
-                    .split(' ')
-                    .next()
-                    .and_then(|lang| SETUP.syntax_set.find_syntax_by_token(lang))
-                    .unwrap_or_else(|| SETUP.syntax_set.find_syntax_plain_text());
-                highlighter = Some(HighlightLines::new(syntax, theme));
+                highlighter = SYNTAX_SET.with(|ss| {
+                    let syntax = info
+                        .split(' ')
+                        .next()
+                        .and_then(|lang| ss.find_syntax_by_token(lang))
+                        .unwrap_or_else(|| ss.find_syntax_plain_text());
+                    Some(HighlightLines::new(syntax, theme))
+                });
                 let snippet = start_coloured_html_snippet(theme);
                 Event::Html(Owned(snippet))
             },
