@@ -12,8 +12,7 @@ use errors::{Result};
 use site::resolve_internal_link;
 use front_matter::InsertAnchor;
 use rendering::context::Context;
-use rendering::highlighting::THEME_SET;
-use rendering::parsing::SYNTAX_SET;
+use rendering::highlighting::{SYNTAX_SET, THEME_SET};
 use rendering::short_code::{ShortCode, parse_shortcode, render_simple_shortcode};
 use content::{TempHeader, Header, make_table_of_contents};
 
