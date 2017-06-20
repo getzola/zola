@@ -1,3 +1,11 @@
 target
 .idea/
 test_site/public
+
+benches/small-blog
+benches/medium-blog
+benches/big-blog
+benches/huge-blog
+benches/small-kb
+benches/medium-kb
+benches/huge-kb

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.8 (unreleased)
+
+
 ## 0.0.7 (2017-06-19)
 
 - Sort individual tag/category pages by date
