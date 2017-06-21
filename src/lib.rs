@@ -16,6 +16,7 @@ extern crate syntect;
 extern crate slug;
 extern crate chrono;
 extern crate base64;
+extern crate rayon;
 #[cfg(test)]
 extern crate tempdir;
 

@@ -13,6 +13,7 @@ use content::{Page, Section, Paginator, SortBy, Taxonomy, populate_previous_and_
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::InsertAnchor;
 
+use rayon::prelude::*;
 
 #[derive(Debug)]
 pub struct Site {
@@ -118,14 +119,27 @@ impl Site {
             pages_insert_anchors.insert(page.file.path.clone(), self.find_parent_section_insert_anchor(&page.file.parent.clone()));
         }
 
-        // TODO: make that parallel
-        for page in self.pages.values_mut() {
-            let insert_anchor = pages_insert_anchors[&page.file.path];
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
-        }
-        // TODO: make that parallel
-        for section in self.sections.values_mut() {
-            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+        {
+            // Another silly thing needed to not borrow &self in parallel and
+            // make the borrow checker happy
+            let permalinks = &self.permalinks;
+            let tera = &self.tera;
+            let config = &self.config;
+
+            self.pages.par_iter_mut()
+                .map(|(_, page)| page)
+                .map(|page| {
+                    let insert_anchor = pages_insert_anchors[&page.file.path];
+                    page.render_markdown(&permalinks, &tera, &config, insert_anchor)
+                })
+                .fold(|| Ok(()), Result::and)
+                .reduce(|| Ok(()), Result::and)?;
+
+            self.sections.par_iter_mut()
+                .map(|(_, section)| section)
+                .map(|section| section.render_markdown(permalinks, tera, config))
+                .fold(|| Ok(()), Result::and)
+                .reduce(|| Ok(()), Result::and)?;
         }
 
         self.populate_sections();

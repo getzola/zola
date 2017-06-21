@@ -31,6 +31,7 @@ chrono = "0.3"
 toml = "0.4"
 term-painter = "0.2"
 base64 = "0.6"
+rayon = "0.8"
 
 # Below is for the serve cmd
 staticfile = "0.4"
