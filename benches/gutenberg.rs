@@ -6,42 +6,152 @@ extern crate tempdir;
 use std::env;
 
 use tempdir::TempDir;
-use gutenberg::{Site, populate_previous_and_next_pages};
+use gutenberg::Site;
 
-// TODO: add bench with ~1000 pages for all cases
 
 #[bench]
-fn bench_loading_test_site(b: &mut test::Bencher) {
+fn bench_loading_small_blog(b: &mut test::Bencher) {
     let mut path = env::current_dir().unwrap().to_path_buf();
-    path.push("test_site");
+    path.push("benches");
+    path.push("small-blog");
     let mut site = Site::new(&path, "config.toml").unwrap();
-
 
     b.iter(|| site.load().unwrap());
 }
 
-
 #[bench]
-fn bench_building_test_site(b: &mut test::Bencher) {
+fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
     let mut path = env::current_dir().unwrap().to_path_buf();
-    path.push("test_site");
+    path.push("benches");
+    path.push("small-blog");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    site.config.highlight_code = Some(true);
 
-
-    b.iter(|| site.build().unwrap());
+    b.iter(|| site.load().unwrap());
 }
 
 #[bench]
-fn bench_populate_previous_and_next_pages(b: &mut test::Bencher) {
+fn bench_loading_medium_blog(b: &mut test::Bencher) {
     let mut path = env::current_dir().unwrap().to_path_buf();
-    path.push("test_site");
+    path.push("benches");
+    path.push("medium-blog");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    let pages = site.pages.values().cloned().collect::<Vec<_>>();
 
-    b.iter(|| populate_previous_and_next_pages(pages.as_slice()));
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_medium_blog_with_syntax_highlighting(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("medium-blog");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.highlight_code = Some(true);
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_big_blog(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("big-blog");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_big_blog_with_syntax_highlighting(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("big-blog");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.highlight_code = Some(true);
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_huge_blog(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("huge-blog");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_huge_blog_with_syntax_highlighting(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("huge-blog");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.highlight_code = Some(true);
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_small_kb(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("small-kb");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("small-kb");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.highlight_code = Some(true);
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_medium_kb(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("medium-kb");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_medium_kb_with_syntax_highlighting(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("medium-kb");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.highlight_code = Some(true);
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_huge_kb(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("huge-kb");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+
+    b.iter(|| site.load().unwrap());
+}
+
+#[bench]
+fn bench_loading_huge_kb_with_syntax_highlighting(b: &mut test::Bencher) {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("benches");
+    path.push("huge-kb");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.highlight_code = Some(true);
+
+    b.iter(|| site.load().unwrap());
 }
