@@ -9,3 +9,5 @@ benches/huge-blog
 benches/small-kb
 benches/medium-kb
 benches/huge-kb
+current.bench
+now.bench

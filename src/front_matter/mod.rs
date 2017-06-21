@@ -43,7 +43,7 @@ pub fn split_section_content(file_path: &Path, content: &str) -> Result<(Section
 pub fn split_page_content(file_path: &Path, content: &str) -> Result<(PageFrontMatter, String)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = PageFrontMatter::parse(&front_matter)
-        .chain_err(|| format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy()))?;
+        .chain_err(|| format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy()))?;
     Ok((meta, content))
 }
 

@@ -108,10 +108,10 @@ impl Page {
         let path = path.as_ref();
         let content = read_file(path)?;
         let mut page = Page::parse(path, &content, config)?;
-        page.assets = find_related_assets(path.parent().unwrap());
+        page.assets = vec![];
 
-        if !page.assets.is_empty() && page.file.name != "index" {
-            bail!("Page `{}` has assets ({:?}) but is not named index.md", path.display(), page.assets);
+        if page.file.name == "index" {
+            page.assets = find_related_assets(path.parent().unwrap());
         }
 
         Ok(page)
@@ -321,17 +321,5 @@ Hello world
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
-    }
-
-    #[test]
-    fn errors_file_not_named_index_with_assets() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
-        File::create(tmp_dir.path().join("something.md")).unwrap();
-        File::create(tmp_dir.path().join("example.js")).unwrap();
-        File::create(tmp_dir.path().join("graph.jpg")).unwrap();
-        File::create(tmp_dir.path().join("fail.png")).unwrap();
-
-        let page = Page::from_file(tmp_dir.path().join("something.md"), &Config::default());
-        assert!(page.is_err());
     }
 }
