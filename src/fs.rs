@@ -1,5 +1,5 @@
 use std::io::prelude::*;
-use std::fs::{File, create_dir};
+use std::fs::{File, create_dir_all};
 use std::path::Path;
 
 use errors::{Result, ResultExt};
@@ -23,7 +23,7 @@ pub fn ensure_directory_exists(path: &Path) -> Result<()> {
 /// exists before creating it
 pub fn create_directory(path: &Path) -> Result<()> {
     if !path.exists() {
-        create_dir(path)
+        create_dir_all(path)
             .chain_err(|| format!("Was not able to create folder {}", path.display()))?;
     }
     Ok(())

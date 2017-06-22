@@ -34,4 +34,4 @@ pub use site::{Site};
 pub use config::{Config, get_config};
 pub use front_matter::{PageFrontMatter, SectionFrontMatter, InsertAnchor, split_page_content, split_section_content};
 pub use content::{Page, Section, SortBy, sort_pages, populate_previous_and_next_pages};
-pub use fs::{create_file};
+pub use fs::{create_file, ensure_directory_exists};

@@ -131,10 +131,6 @@ impl Site {
             let s = section?;
             self.add_section(s, false)?;
         }
-        for page in pages {
-            let p = page?;
-            self.add_page(p, false)?;
-        }
 
         // Insert a default index section if necessary so we don't need to create
         // a _index.md to render the index page
@@ -142,13 +138,15 @@ impl Site {
         if !self.sections.contains_key(&index_path) {
             let mut index_section = Section::default();
             index_section.permalink = self.config.make_permalink("");
+            // TODO: need to insert into permalinks too
             self.sections.insert(index_path, index_section);
         }
 
-        // Silly thing needed to make the borrow checker happy
         let mut pages_insert_anchors = HashMap::new();
-        for page in self.pages.values() {
-            pages_insert_anchors.insert(page.file.path.clone(), self.find_parent_section_insert_anchor(&page.file.parent.clone()));
+        for page in pages {
+            let p = page?;
+            pages_insert_anchors.insert(p.file.path.clone(), self.find_parent_section_insert_anchor(&p.file.parent.clone()));
+            self.add_page(p, false)?;
         }
 
         {
@@ -387,6 +385,7 @@ impl Site {
         self.render_aliases()?;
         self.render_sections()?;
         self.render_orphan_pages()?;
+        // TODO: render_sitemap is slow
         self.render_sitemap()?;
         if self.config.generate_rss.unwrap() {
             self.render_rss_feed()?;
@@ -569,9 +568,12 @@ impl Site {
         }
 
         if render_pages {
-            for page in &section.pages {
-                self.render_page(page, Some(section))?;
-            }
+            section
+                .pages
+                .par_iter()
+                .map(|p| self.render_page(&p, Some(section)))
+                .fold(|| Ok(()), Result::and)
+                .reduce(|| Ok(()), Result::and)?;
         }
 
         if !section.meta.should_render() {
@@ -598,10 +600,13 @@ impl Site {
 
     /// Renders all sections
     pub fn render_sections(&self) -> Result<()> {
-        for section in self.sections.values() {
-            self.render_section(section, true)?;
-        }
-        Ok(())
+        self.sections
+            .values()
+            .collect::<Vec<_>>()
+            .into_par_iter()
+            .map(|s| self.render_section(s, true))
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)
     }
 
     /// Renders all pages that do not belong to any sections
@@ -625,21 +630,26 @@ impl Site {
         };
 
         let paginator = Paginator::new(&section.pages, section);
-        for (i, pager) in paginator.pagers.iter().enumerate() {
-            let folder_path = output_path.join(&paginate_path);
-            let page_path = folder_path.join(&format!("{}", i + 1));
-            create_directory(&folder_path)?;
-            create_directory(&page_path)?;
-            let output = paginator.render_pager(pager, self)?;
-            if i > 0 {
-                create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
-            } else {
-                create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
-                create_file(&page_path.join("index.html"), &render_redirect_template(&section.permalink, &self.tera)?)?;
-            }
-        }
-
-        Ok(())
+        let folder_path = output_path.join(&paginate_path);
+        create_directory(&folder_path)?;
+        paginator
+            .pagers
+            .par_iter()
+            .enumerate()
+            .map(|(i, pager)| {
+                let page_path = folder_path.join(&format!("{}", i + 1));
+                create_directory(&page_path)?;
+                let output = paginator.render_pager(pager, self)?;
+                if i > 0 {
+                    create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
+                } else {
+                    create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
+                    create_file(&page_path.join("index.html"), &render_redirect_template(&section.permalink, &self.tera)?)?;
+                }
+                Ok(())
+            })
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)
     }
 }
 
