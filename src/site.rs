@@ -96,14 +96,46 @@ impl Site {
         let base_path = self.base_path.to_string_lossy().replace("\\", "/");
         let content_glob = format!("{}/{}", base_path, "content/**/*.md");
 
-        for entry in glob(&content_glob).unwrap().filter_map(|e| e.ok()) {
-            let path = entry.as_path();
-            if path.file_name().unwrap() == "_index.md" {
-                self.add_section(path, false)?;
-            } else {
-                self.add_page(path, false)?;
-            }
+        let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .partition(|ref entry| entry.as_path().file_name().unwrap() == "_index.md");
+
+        let sections = {
+            let config = &self.config;
+
+            section_entries
+                .into_par_iter()
+                .filter(|entry| entry.as_path().file_name().unwrap() == "_index.md")
+                .map(|entry| {
+                    let path = entry.as_path();
+                    Section::from_file(path, &config)
+                }).collect::<Vec<_>>()
+        };
+
+        let pages = {
+            let config = &self.config;
+
+            page_entries
+                .into_par_iter()
+                .filter(|entry| entry.as_path().file_name().unwrap() != "_index.md")
+                .map(|entry| {
+                    let path = entry.as_path();
+                    Page::from_file(path, &config)
+                }).collect::<Vec<_>>()
+        };
+
+        // Kinda duplicated code for add_section/add_page but necessary to do it that
+        // way because of the borrow checker
+        for section in sections {
+            let s = section?;
+            self.add_section(s, false)?;
         }
+        for page in pages {
+            let p = page?;
+            self.add_page(p, false)?;
+        }
+
         // Insert a default index section if necessary so we don't need to create
         // a _index.md to render the index page
         let index_path = self.base_path.join("content").join("_index.md");
@@ -161,14 +193,14 @@ impl Site {
     /// The `render` parameter is used in the serve command, when rebuilding a page.
     /// If `true`, it will also render the markdown for that page
     /// Returns the previous page struct if there was one
-    pub fn add_page(&mut self, path: &Path, render: bool) -> Result<Option<Page>> {
-        let page = Page::from_file(&path, &self.config)?;
+    pub fn add_page(&mut self, page: Page, render: bool) -> Result<Option<Page>> {
+        let path = page.file.path.clone();
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         let prev = self.pages.insert(page.file.path.clone(), page);
 
         if render {
-            let insert_anchor = self.find_parent_section_insert_anchor(&self.pages[path].file.parent);
-            let mut page = self.pages.get_mut(path).unwrap();
+            let insert_anchor = self.find_parent_section_insert_anchor(&self.pages[&path].file.parent);
+            let mut page = self.pages.get_mut(&path).unwrap();
             page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
 
@@ -179,13 +211,13 @@ impl Site {
     /// The `render` parameter is used in the serve command, when rebuilding a page.
     /// If `true`, it will also render the markdown for that page
     /// Returns the previous section struct if there was one
-    pub fn add_section(&mut self, path: &Path, render: bool) -> Result<Option<Section>> {
-        let section = Section::from_file(path, &self.config)?;
+    pub fn add_section(&mut self, section: Section, render: bool) -> Result<Option<Section>> {
+        let path = section.file.path.clone();
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         let prev = self.sections.insert(section.file.path.clone(), section);
 
         if render {
-            let mut section = self.sections.get_mut(path).unwrap();
+            let mut section = self.sections.get_mut(&path).unwrap();
             section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
 

@@ -130,7 +130,8 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
 
     // A section was edited
     if is_section {
-        match site.add_section(path, true)? {
+        let section = Section::from_file(path, &site.config)?;
+        match site.add_section(section, true)? {
             Some(prev) => {
                 // Updating a section
                 let current_meta = site.sections[path].meta.clone();
@@ -166,7 +167,8 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     }
 
     // A page was edited
-    match site.add_page(path, true)? {
+    let page = Page::from_file(path, &site.config)?;
+    match site.add_page(page, true)? {
         Some(prev) => {
             site.register_get_url_fn();
             // Updating a page

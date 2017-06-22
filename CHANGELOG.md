@@ -2,7 +2,7 @@
 
 ## 0.0.8 (unreleased)
 
-- Parallelize page rendering using rayon
+- Parallelize all the things
 
 ## 0.0.7 (2017-06-19)
 
