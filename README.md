@@ -155,7 +155,7 @@ Here is an example on how to make a ToC using that:
                     </li>
                 {% endfor %}
             </ul>
-        {% endfor %}
+        {% endif %}
     </li>
 {% endfor %}
 </ul>
