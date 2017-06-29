@@ -3,6 +3,8 @@
 ## 0.0.8 (unreleased)
 
 - Parallelize all the things
+- Remove `section` from the `page` rendering context: this is too expensive. Use
+the global function `get_section` if you need to get it
 
 ## 0.0.7 (2017-06-19)
 

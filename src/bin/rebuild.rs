@@ -176,7 +176,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             // Front matter didn't change, only content did
             // so we render only the section page, not its content
             if current.meta == prev.meta {
-                return site.render_page(&current, find_parent_section(site, &current));
+                return site.render_page(&current);
             }
 
             // Front matter changed
@@ -201,7 +201,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                         site.render_index()?;
                     },
                     PageChangesNeeded::Render => {
-                        site.render_page(&site.pages[path], find_parent_section(site, &current))?;
+                        site.render_page(&site.pages[path])?;
                     },
                 };
             }

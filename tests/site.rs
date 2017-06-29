@@ -132,9 +132,6 @@ fn can_build_site_without_live_reload() {
     // Both pages and sections are in the sitemap
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"));
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
-
-    // section is in the page context
-    assert!(file_contains!(public, "posts/python/index.html", "Section:"));
 }
 
 #[test]
