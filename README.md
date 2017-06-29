@@ -125,7 +125,7 @@ You can also set the `template` variable to change which template will be used t
 Sections will also automatically pick up their subsections, allowing you to make some complex pages layout and
 table of contents.
 
-You can define how a section pages are sorted using the `sort_by` key in the front-matter. The choices are `date`, `order`
+You can define how a section pages are sorted using the `sort_by` key in the front-matter. The choices are `date`, `order`, `weight` (opposite of order)
 and `none` (default). Pages that can't be sorted will currently be silently dropped: the final page will be rendered but it will not appear in 
 the `pages` variable in the section template.
 

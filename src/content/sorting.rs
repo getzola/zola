@@ -5,6 +5,7 @@ use content::Page;
 pub enum SortBy {
     Date,
     Order,
+    Weight,
     None,
 }
 
@@ -28,7 +29,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
 
             (can_be_sorted, cannot_be_sorted)
         },
-        SortBy::Order => {
+        SortBy::Order | SortBy::Weight => {
             let mut can_be_sorted = vec![];
             let mut cannot_be_sorted = vec![];
             for page in pages {
@@ -38,7 +39,11 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                     cannot_be_sorted.push(page);
                 }
             }
-            can_be_sorted.sort_by(|a, b| b.meta.order().cmp(&a.meta.order()));
+            if sort_by == SortBy::Order {
+                can_be_sorted.sort_by(|a, b| b.meta.order().cmp(&a.meta.order()));
+            } else {
+                can_be_sorted.sort_by(|a, b| a.meta.order().cmp(&b.meta.order()));
+            }
 
             (can_be_sorted, cannot_be_sorted)
         },
@@ -124,6 +129,20 @@ mod tests {
         assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
         assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
         assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
+    }
+
+    #[test]
+    fn can_sort_by_weight() {
+        let input = vec![
+            create_page_with_order(2),
+            create_page_with_order(3),
+            create_page_with_order(1),
+        ];
+        let (pages, _) = sort_pages(input, SortBy::Weight);
+        // Should be sorted by date
+        assert_eq!(pages[0].clone().meta.order.unwrap(), 1);
+        assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
+        assert_eq!(pages[2].clone().meta.order.unwrap(), 3);
     }
 
     #[test]
