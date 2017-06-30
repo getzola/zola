@@ -146,12 +146,12 @@ Here is an example on how to make a ToC using that:
 <ul>
 {% for h1 in page.toc %}
     <li>
-        <a href="{{h1.permalink}}">{{ h1.title }}</a>
+        <a href="{{h1.permalink | safe}}">{{ h1.title }}</a>
         {% if h1.children %}
             <ul>
                 {% for h2 in h1.children %}
                     <li>
-                        <a href="{{h2.permalink}}">{{ h2.title }}</a>
+                        <a href="{{h2.permalink | safe}}">{{ h2.title }}</a>
                     </li>
                 {% endfor %}
             </ul>
