@@ -28,6 +28,8 @@ pub struct PageFrontMatter {
     pub category: Option<String>,
     /// Integer to use to order content. Lowest is at the bottom, highest first
     pub order: Option<usize>,
+    /// Integer to use to order content. Highest is at the bottom, lowest first
+    pub weight: Option<usize>,
     /// All aliases for that page. Gutenberg will create HTML templates that will
     #[serde(skip_serializing)]
     pub aliases: Option<Vec<String>>,
@@ -84,6 +86,10 @@ impl PageFrontMatter {
         self.order.unwrap()
     }
 
+    pub fn weight(&self) -> usize {
+        self.weight.unwrap()
+    }
+
     pub fn has_tags(&self) -> bool {
         match self.tags {
             Some(ref t) => !t.is_empty(),
@@ -103,6 +109,7 @@ impl Default for PageFrontMatter {
             tags: None,
             category: None,
             order: None,
+            weight: None,
             aliases: None,
             template: None,
             extra: None,

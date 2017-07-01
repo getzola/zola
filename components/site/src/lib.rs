@@ -17,6 +17,7 @@ extern crate tempdir;
 
 use std::collections::HashMap;
 use std::fs::{remove_dir_all, copy, create_dir_all};
+use std::mem;
 use std::path::{Path, PathBuf};
 
 use glob::glob;
@@ -289,8 +290,9 @@ impl Site {
                     continue;
                 }
             }
-            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(section.pages.clone(), section.meta.sort_by());
-            section.pages = populate_previous_and_next_pages(&sorted_pages);
+            let pages = mem::replace(&mut section.pages, vec![]);
+            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by());
+            section.pages = populate_previous_and_next_pages(sorted_pages);
             section.ignored_pages = cannot_be_sorted_pages;
         }
     }
@@ -305,7 +307,7 @@ impl Site {
 
         // TODO: can we pass a reference?
         let (tags, categories) = Taxonomy::find_tags_and_categories(
-            self.pages.values().cloned().collect::<Vec<_>>()
+            self.pages.values().cloned().collect::<Vec<_>>().as_slice()
         );
         if generate_tags_pages {
             self.tags = Some(tags);

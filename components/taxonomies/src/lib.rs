@@ -37,6 +37,7 @@ impl TaxonomyItem {
     pub fn new(name: &str, pages: Vec<Page>) -> TaxonomyItem {
         // We shouldn't have any pages without dates there
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
+
         TaxonomyItem {
             name: name.to_string(),
             slug: slugify(name),
@@ -55,7 +56,7 @@ pub struct Taxonomy {
 
 impl Taxonomy {
     // TODO: take a Vec<&'a Page> if it makes a difference in terms of perf for actual sites
-    pub fn find_tags_and_categories(all_pages: Vec<Page>) -> (Taxonomy, Taxonomy) {
+    pub fn find_tags_and_categories(all_pages: &[Page]) -> (Taxonomy, Taxonomy) {
         let mut tags = HashMap::new();
         let mut categories = HashMap::new();
 
