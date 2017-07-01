@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use content::Page;
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
@@ -25,7 +27,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                     cannot_be_sorted.push(page);
                 }
             }
-            can_be_sorted.sort_by(|a, b| b.meta.date().unwrap().cmp(&a.meta.date().unwrap()));
+            can_be_sorted.par_sort_unstable_by(|a, b| b.meta.date().unwrap().cmp(&a.meta.date().unwrap()));
 
             (can_be_sorted, cannot_be_sorted)
         },
@@ -40,9 +42,9 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                 }
             }
             if sort_by == SortBy::Order {
-                can_be_sorted.sort_by(|a, b| b.meta.order().cmp(&a.meta.order()));
+                can_be_sorted.par_sort_unstable_by(|a, b| b.meta.order().cmp(&a.meta.order()));
             } else {
-                can_be_sorted.sort_by(|a, b| a.meta.order().cmp(&b.meta.order()));
+                can_be_sorted.par_sort_unstable_by(|a, b| a.meta.order().cmp(&b.meta.order()));
             }
 
             (can_be_sorted, cannot_be_sorted)
