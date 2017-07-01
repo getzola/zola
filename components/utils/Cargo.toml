@@ -1,0 +1,11 @@
+[package]
+name = "utils"
+version = "0.1.0"
+authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+
+[dependencies]
+errors = { path = "../errors" }
+
+
+[dev-dependencies]
+tempdir = "0.3"
