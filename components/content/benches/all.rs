@@ -133,3 +133,16 @@ fn bench_populate_previous_and_next_pages(b: &mut test::Bencher) {
     let (sorted_pages, _) = sort_pages(pages, SortBy::Order);
     b.iter(|| populate_previous_and_next_pages(sorted_pages.clone()));
 }
+
+#[bench]
+fn bench_page_render_html(b: &mut test::Bencher) {
+    let pages = create_pages(10, SortBy::Order);
+    let (mut sorted_pages, _) = sort_pages(pages, SortBy::Order);
+    sorted_pages = populate_previous_and_next_pages(sorted_pages.clone());
+
+    let config = Config::default();
+    let mut tera = Tera::default();
+    tera.add_raw_template("page.html", "{{ page.content }}").unwrap();
+    let page = &sorted_pages[5];
+    b.iter(|| page.render_html(&tera, &config).unwrap());
+}
