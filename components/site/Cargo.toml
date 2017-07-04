@@ -8,6 +8,8 @@ tera = "0.10"
 glob = "0.2"
 walkdir = "1"
 rayon = "0.8"
+serde = "1.0"
+serde_derive = "1.0"
 
 errors = { path = "../errors" }
 config = { path = "../config" }

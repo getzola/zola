@@ -2,6 +2,9 @@ extern crate tera;
 extern crate rayon;
 extern crate glob;
 extern crate walkdir;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 extern crate errors;
 extern crate config;
@@ -34,6 +37,19 @@ use taxonomies::Taxonomy;
 use pagination::Paginator;
 
 use rayon::prelude::*;
+
+
+#[derive(Debug, Serialize)]
+struct SitemapEntry {
+    permalink: String,
+    date: Option<String>,
+}
+
+impl SitemapEntry {
+    pub fn new(permalink: String, date: Option<String>) -> SitemapEntry {
+        SitemapEntry { permalink, date }
+    }
+}
 
 #[derive(Debug)]
 pub struct Site {
@@ -406,7 +422,6 @@ impl Site {
         self.render_aliases()?;
         self.render_sections()?;
         self.render_orphan_pages()?;
-        // TODO: render_sitemap is slow
         self.render_sitemap()?;
         if self.config.generate_rss.unwrap() {
             self.render_rss_feed()?;
@@ -496,16 +511,23 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let mut context = Context::new();
-        context.add("pages", &self.pages.values().collect::<Vec<&Page>>());
-        context.add("sections", &self.sections.values().collect::<Vec<&Section>>());
+
+        context.add(
+            "pages",
+            &self.pages.values().map(|p| SitemapEntry::new(p.permalink.clone(), p.meta.date.clone())).collect::<Vec<_>>()
+        );
+        context.add(
+            "sections",
+            &self.sections.values().map(|s| SitemapEntry::new(s.permalink.clone(), None)).collect::<Vec<_>>()
+        );
 
         let mut categories = vec![];
         if let Some(ref c) = self.categories {
             let name = c.get_list_name();
-            categories.push(self.config.make_permalink(&name));
+            categories.push(SitemapEntry::new(self.config.make_permalink(&name), None));
             for item in &c.items {
                 categories.push(
-                    self.config.make_permalink(&format!("{}/{}", &name, item.slug))
+                    SitemapEntry::new(self.config.make_permalink(&format!("{}/{}", &name, item.slug)), None),
                 );
             }
         }
@@ -514,10 +536,10 @@ impl Site {
         let mut tags = vec![];
         if let Some(ref t) = self.tags {
             let name = t.get_list_name();
-            tags.push(self.config.make_permalink(&name));
+            tags.push(SitemapEntry::new(self.config.make_permalink(&name), None));
             for item in &t.items {
                 tags.push(
-                    self.config.make_permalink(&format!("{}/{}", &name, item.slug))
+                    SitemapEntry::new(self.config.make_permalink(&format!("{}/{}", &name, item.slug)), None),
                 );
             }
         }

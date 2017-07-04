@@ -14,12 +14,12 @@
     {% endfor %}
     {% for category in categories %}
         <url>
-            <loc>{{ category | safe }}</loc>
+            <loc>{{ category.permalink | safe }}</loc>
         </url>
     {% endfor %}
     {% for tag in tags %}
         <url>
-            <loc>{{ tag | safe }}</loc>
+            <loc>{{ tag.permalink | safe }}</loc>
         </url>
     {% endfor %}
 </urlset>
