@@ -8,7 +8,7 @@ extern crate tempdir;
 use std::env;
 
 use tempdir::TempDir;
-use gutenberg::Site;
+use gutenberg::{Site, sort_pages};
 
 
 fn setup_site(name: &str) -> Site {
@@ -57,4 +57,17 @@ fn bench_render_small_section_with_pages_and_no_pagination(b: &mut test::Bencher
     section.meta.paginate_by = None;
     section.meta.template = None;
     b.iter(|| site.render_section(&section, true).unwrap());
+}
+
+
+#[bench]
+fn bench_sort_sections_pages_medium_blog(b: &mut test::Bencher) {
+    let mut site = setup_site("medium-blog");
+    b.iter(|| site.sort_sections_pages(None));
+}
+
+#[bench]
+fn bench_sort_sections_pages_medium_kb(b: &mut test::Bencher) {
+    let mut site = setup_site("medium-kb");
+    b.iter(|| site.sort_sections_pages(None));
 }
