@@ -39,6 +39,8 @@ use pagination::Paginator;
 use rayon::prelude::*;
 
 
+/// The sitemap only needs links and potentially date so we trim down
+/// all pages to only that
 #[derive(Debug, Serialize)]
 struct SitemapEntry {
     permalink: String,
@@ -566,8 +568,9 @@ impl Site {
         if pages.is_empty() {
             return Ok(());
         }
-        context.add("last_build_date", &pages[0].meta.date);
+
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
+        context.add("last_build_date", &sorted_pages[0].meta.date);
         context.add("pages", &sorted_pages);
         context.add("config", &self.config);
 

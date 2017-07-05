@@ -6,7 +6,7 @@
 - Add weight sorting
 - Remove `section` from the `page` rendering context: this is too expensive. Use
 the global function `get_section` if you need to get it
-- Fix next/previous in pagination being incorrect
+- Put back a 20 page limit on rss feed by default (configurable)
 
 ## 0.0.7 (2017-06-19)
 

@@ -68,7 +68,7 @@ impl Config {
         set_default!(config.language_code, "en".to_string());
         set_default!(config.highlight_code, false);
         set_default!(config.generate_rss, false);
-        set_default!(config.rss_limit, <usize>::max_value());
+        set_default!(config.rss_limit, 20);
         set_default!(config.generate_tags_pages, false);
         set_default!(config.generate_categories_pages, false);
         set_default!(config.insert_anchor_links, false);
