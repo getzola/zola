@@ -43,19 +43,19 @@ pub fn populate_previous_and_next_pages(input: Vec<Page>) -> Vec<Page> {
         let mut new_page = input[i].clone();
 
         if i > 0 {
-            let mut previous_page = input[i - 1].clone();
-            // Remove prev/next otherwise we serialise the whole thing...
-            previous_page.previous = None;
-            previous_page.next = None;
-            new_page.previous = Some(Box::new(previous_page));
-        }
-
-        if i < input.len() - 1 {
-            let mut next_page = input[i + 1].clone();
+            let mut next_page = input[i - 1].clone();
             // Remove prev/next otherwise we serialise the whole thing...
             next_page.previous = None;
             next_page.next = None;
             new_page.next = Some(Box::new(next_page));
+        }
+
+        if i < input.len() - 1 {
+            let mut previous_page = input[i + 1].clone();
+            // Remove prev/next otherwise we serialise the whole thing...
+            previous_page.previous = None;
+            previous_page.next = None;
+            new_page.previous = Some(Box::new(previous_page));
         }
         res.push(new_page);
     }
@@ -164,17 +164,17 @@ mod tests {
         ];
         let pages = populate_previous_and_next_pages(input);
 
-        assert!(pages[0].clone().previous.is_none());
-        assert!(pages[0].clone().next.is_some());
-        assert_eq!(pages[0].clone().next.unwrap().meta.order.unwrap(), 2);
+        assert!(pages[0].clone().next.is_none());
+        assert!(pages[0].clone().previous.is_some());
+        assert_eq!(pages[0].clone().previous.unwrap().meta.order.unwrap(), 2);
 
         assert!(pages[1].clone().next.is_some());
         assert!(pages[1].clone().previous.is_some());
-        assert_eq!(pages[1].clone().previous.unwrap().meta.order.unwrap(), 1);
-        assert_eq!(pages[1].clone().next.unwrap().meta.order.unwrap(), 3);
+        assert_eq!(pages[1].clone().previous.unwrap().meta.order.unwrap(), 3);
+        assert_eq!(pages[1].clone().next.unwrap().meta.order.unwrap(), 1);
 
-        assert!(pages[2].clone().next.is_none());
-        assert!(pages[2].clone().previous.is_some());
-        assert_eq!(pages[2].clone().previous.unwrap().meta.order.unwrap(), 2);
+        assert!(pages[2].clone().next.is_some());
+        assert!(pages[2].clone().previous.is_none());
+        assert_eq!(pages[2].clone().next.unwrap().meta.order.unwrap(), 2);
     }
 }
