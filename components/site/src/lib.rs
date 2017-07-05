@@ -489,23 +489,24 @@ impl Site {
         }
 
         ensure_directory_exists(&self.output_path)?;
-
         let output_path = self.output_path.join(&taxonomy.get_list_name());
         let list_output = taxonomy.render_list(&self.tera, &self.config)?;
         create_directory(&output_path)?;
         create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
 
-        for item in &taxonomy.items {
-            let single_output = taxonomy.render_single_item(item, &self.tera, &self.config)?;
-
-            create_directory(&output_path.join(&item.slug))?;
-            create_file(
-                &output_path.join(&item.slug).join("index.html"),
-                &self.inject_livereload(single_output)
-            )?;
-        }
-
-        Ok(())
+        taxonomy
+            .items
+            .par_iter()
+            .map(|item| {
+                let single_output = taxonomy.render_single_item(item, &self.tera, &self.config)?;
+                create_directory(&output_path.join(&item.slug))?;
+                create_file(
+                    &output_path.join(&item.slug).join("index.html"),
+                    &self.inject_livereload(single_output)
+                )
+            })
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)
     }
 
     /// What it says on the tin

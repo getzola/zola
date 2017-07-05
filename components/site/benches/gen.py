@@ -4,13 +4,19 @@ Tested with python3 and probably does not work on Windows.
 """
 import datetime
 import os
+import random
 import shutil
 
+
+TAGS = ["a", "b", "c", "d", "e", "f", "g"]
+CATEGORIES = ["c1", "c2", "c3", "c4"]
 
 PAGE = """
 +++
 title = "Hello"
-date = "REPLACE_ME"
+date = "REPLACE_DATE"
+tags = REPLACE_TAG
+category = "REPLACE_CATEGORY"
 +++
 
 # Modus cognitius profanam ne duae virtutis mundi
@@ -85,7 +91,7 @@ if __name__ == "__main__":
 """
 
 
-def gen_skeleton(name):
+def gen_skeleton(name, is_blog):
     if os.path.exists(name):
         shutil.rmtree(name)
 
@@ -93,7 +99,18 @@ def gen_skeleton(name):
     os.makedirs(os.path.join(name, "static"))
 
     with open(os.path.join(name, "config.toml"), "w") as f:
-        f.write("""
+        if is_blog:
+            f.write("""
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+generate_tags_pages = true
+generate_categories_pages = true
+
+[extra.author]
+name = "Vincent Prouillet"
+""")
+        else:
+            f.write("""
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
 
@@ -101,13 +118,14 @@ base_url = "https://replace-this-with-your-url.com"
 name = "Vincent Prouillet"
 """)
 
+
     # Re-use the test templates
     shutil.copytree("../test_site/templates", os.path.join(name, "templates"))
 
 
-def gen_section(path, num_pages, paginate):
+def gen_section(path, num_pages, is_blog):
     with open(os.path.join(path, "_index.md"), "w") as f:
-        if paginate:
+        if is_blog:
             f.write("""
 +++
 paginate_by = 5
@@ -121,24 +139,29 @@ template = "section_paginated.html"
     day = datetime.date.today()
     for (i, page) in enumerate(range(0, num_pages)):
         with open(os.path.join(path, "page-{}.md".format(i)), "w") as f:
-            f.write(PAGE.replace("REPLACE_ME", str(day + datetime.timedelta(days=1))))
+            f.write(
+                PAGE
+                .replace("REPLACE_DATE", str(day + datetime.timedelta(days=1)))
+                .replace("REPLACE_CATEGORY", random.choice(CATEGORIES))
+                .replace("REPLACE_TAG", str([random.choice(TAGS), random.choice(TAGS)]))
+            )
 
 
-def gen_site(name, sections, num_pages_per_section, paginate=False):
-    gen_skeleton(name)
+def gen_site(name, sections, num_pages_per_section, is_blog=False):
+    gen_skeleton(name, is_blog)
 
     for section in sections:
         path = os.path.join(name, "content", section) if section else os.path.join(name, "content")
         if section:
             os.makedirs(path)
-        gen_section(path, num_pages_per_section, paginate)
+        gen_section(path, num_pages_per_section, is_blog)
 
 
 if __name__ == "__main__":
-    gen_site("small-blog", [""], 30, paginate=True)
-    gen_site("medium-blog", [""], 250, paginate=True)
-    gen_site("big-blog", [""], 1000, paginate=True)
-    gen_site("huge-blog", [""], 10000, paginate=True)
+    gen_site("small-blog", [""], 30, is_blog=True)
+    gen_site("medium-blog", [""], 250, is_blog=True)
+    gen_site("big-blog", [""], 1000, is_blog=True)
+    gen_site("huge-blog", [""], 10000, is_blog=True)
 
     gen_site("small-kb", ["help", "help1", "help2", "help3", "help4", "help5", "help6", "help7", "help8", "help9"], 10)
     gen_site("medium-kb", ["help", "help1", "help2", "help3", "help4", "help5", "help6", "help7", "help8", "help9"], 100)
