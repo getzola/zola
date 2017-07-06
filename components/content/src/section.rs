@@ -104,7 +104,7 @@ impl Section {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, sections: HashMap<String, Section>, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
@@ -112,9 +112,6 @@ impl Section {
         context.add("section", self);
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
-        if self.is_index() {
-            context.add("sections", &sections);
-        }
 
         tera.render(&tpl_name, &context)
             .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))

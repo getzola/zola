@@ -10,7 +10,6 @@ extern crate content;
 extern crate front_matter;
 
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use tera::{Tera, Context, to_value, Value};
 
@@ -39,6 +38,17 @@ impl<'a> Pager<'a> {
             permalink,
             path,
             pages,
+        }
+    }
+
+    /// Returns a manually cloned Pager with the pages removed
+    /// for use as template context
+    fn clone_without_pages(&self) -> Pager<'a> {
+        Pager {
+            index: self.index,
+            permalink: self.permalink.clone(),
+            path: self.path.clone(),
+            pages: vec![],
         }
     }
 }
@@ -125,7 +135,12 @@ impl<'a> Paginator<'a> {
         paginator.insert("first", to_value(&self.section.permalink).unwrap());
         let last_pager = &self.pagers[self.pagers.len() - 1];
         paginator.insert("last", to_value(&last_pager.permalink).unwrap());
-        paginator.insert("pagers", to_value(&self.pagers).unwrap());
+        paginator.insert(
+            "pagers",
+            to_value(
+                &self.pagers.iter().map(|p| p.clone_without_pages()).collect::<Vec<_>>()
+            ).unwrap()
+        );
 
         // Variables for this specific page
         if pager_index > 0 {
@@ -147,16 +162,13 @@ impl<'a> Paginator<'a> {
         paginator
     }
 
-    pub fn render_pager(&self, pager: &Pager, config: &Config, sections: &HashMap<PathBuf, Section>, tera: &Tera) -> Result<String> {
+    pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera) -> Result<String> {
         let mut context = Context::new();
         context.add("config", &config);
         context.add("section", self.section);
         context.add("current_url", &pager.permalink);
         context.add("current_path", &pager.path);
         context.add("paginator", &self.build_paginator_context(pager));
-        if self.section.is_index() {
-            context.add("section", &sections);
-        }
 
         tera.render(&self.section.get_template_name(), &context)
             .chain_err(|| format!("Failed to render pager {} of section '{}'", pager.index, self.section.file.path.display()))

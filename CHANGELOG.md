@@ -7,6 +7,9 @@
 - Remove `section` from the `page` rendering context: this is too expensive. Use
 the global function `get_section` if you need to get it
 - Put back a 20 page limit on rss feed by default (configurable)
+- Remove index page getting all sections: use the `get_section` global fn instead to
+only get the ones you need
+- Remove pages from pagers in pagination: they were not supposed to be there
 
 ## 0.0.7 (2017-06-19)
 

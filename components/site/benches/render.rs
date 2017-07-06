@@ -2,12 +2,12 @@
 
 #![feature(test)]
 extern crate test;
-extern crate gutenberg;
+extern crate site;
 extern crate tempdir;
 
 use std::env;
 
-use gutenberg::Site;
+use site::Site;
 use tempdir::TempDir;
 
 

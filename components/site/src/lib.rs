@@ -589,17 +589,6 @@ impl Site {
         Ok(())
     }
 
-    /// Create a hashmap of paths to section
-    /// For example `content/posts/_index.md` key will be `posts`
-    /// The index section will always be called `index` so don't use a path such as
-    /// `content/index/_index.md` yourself
-    fn get_sections_map(&self) -> HashMap<String, Section> {
-        self.sections
-            .values()
-            .map(|s| (if s.is_index() { "index".to_string() } else { s.file.components.join("/") }, s.clone()))
-            .collect()
-    }
-
     /// Renders a single section
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
@@ -630,11 +619,7 @@ impl Site {
         if section.meta.is_paginated() {
             self.render_paginated(&output_path, section)?;
         } else {
-            let output = section.render_html(
-                if section.is_index() { self.get_sections_map() } else { HashMap::new() },
-                &self.tera,
-                &self.config,
-            )?;
+            let output = section.render_html(&self.tera, &self.config)?;
             create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
         }
 
@@ -668,7 +653,7 @@ impl Site {
     }
 
     /// Renders a list of pages when the section/index is wanting pagination.
-    fn render_paginated(&self, output_path: &Path, section: &Section) -> Result<()> {
+    pub fn render_paginated(&self, output_path: &Path, section: &Section) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
         let paginate_path = match section.meta.paginate_path {
@@ -679,6 +664,7 @@ impl Site {
         let paginator = Paginator::new(&section.pages, section);
         let folder_path = output_path.join(&paginate_path);
         create_directory(&folder_path)?;
+
         paginator
             .pagers
             .par_iter()
@@ -686,7 +672,7 @@ impl Site {
             .map(|(i, pager)| {
                 let page_path = folder_path.join(&format!("{}", i + 1));
                 create_directory(&page_path)?;
-                let output = paginator.render_pager(pager, &self.config, &self.sections, &self.tera)?;
+                let output = paginator.render_pager(pager, &self.config, &self.tera)?;
                 if i > 0 {
                     create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
                 } else {

@@ -53,3 +53,14 @@ fn bench_render_categories(b: &mut test::Bencher) {
     site.set_output_path(&public);
     b.iter(|| site.render_categories().unwrap());
 }
+
+#[bench]
+fn bench_render_paginated(b: &mut test::Bencher) {
+    let mut site = setup_site("medium-blog");
+    let tmp_dir = TempDir::new("benches").expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    let section = site.sections.values().collect::<Vec<_>>()[0];
+
+    b.iter(|| site.render_paginated(&public, section));
+}

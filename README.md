@@ -52,7 +52,7 @@ Each kind of page get their own variables:
 
 // TODO: detail the schema of the variables
 
-- index.html: gets `section` representing the index section and all `sections`
+- index.html: gets `section` representing the index section
 - page.html: gets `page` that contains the data for that page 
 - section.html: gets `section` that contains the data for pages in it and its subsections
 - tags.html: gets `tags`
@@ -64,6 +64,30 @@ Additionally, all pages get a `config` variable representing the data in `config
 the absolute URL of the current page and `current_path` that represents the path of the URL of the current page, starting with `/`.
 If you want to know all the data present in a template content, simply put `{{ __tera_context }}`
 in the templates and it will print it.
+
+Gutenberg also ships with 3 Tera global functions:
+
+#### `get_page`
+Takes a path to a `.md` file and returns the associated page
+
+```jinja2
+{% set page = get_page(path="blog/page2.md") %}
+```
+
+#### `get_section`
+Takes a path to a `_index.md` file and returns the associated section
+
+```jinja2
+{% set section = get_page(path="blog/_index.md") %}
+```
+
+####` get_url`
+Gets the permalink for a local file following the same convention as internal
+link in markdown.
+
+```jinja2
+{% set url = get_url(link="./blog/_index.md") %}
+```
 
 ### Static files
 Everything in the `static` folder will be copied into the output directory as-is.
