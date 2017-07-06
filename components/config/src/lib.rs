@@ -43,6 +43,8 @@ pub struct Config {
     /// The default template can be overridden by creating a `anchor-link.html` template and CSS will need to be
     /// written if you turn that on.
     pub insert_anchor_links: Option<bool>,
+    /// Whether to compile the `sass` directory and output the css files into the static folder
+    pub compile_sass: Option<bool>,
 
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
@@ -72,6 +74,7 @@ impl Config {
         set_default!(config.generate_tags_pages, false);
         set_default!(config.generate_categories_pages, false);
         set_default!(config.insert_anchor_links, false);
+        set_default!(config.compile_sass, false);
 
         match config.highlight_theme {
             Some(ref t) => {
@@ -131,6 +134,7 @@ impl Default for Config {
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
             insert_anchor_links: Some(false),
+            compile_sass: Some(false),
             extra: None,
         }
     }

@@ -20,5 +20,9 @@ pagination = { path = "../pagination" }
 taxonomies = { path = "../taxonomies" }
 content = { path = "../content" }
 
+[target.'cfg(not(target_os = "windows"))'.dependencies]
+sass-rs = { git = "https://github.com/compass-rs/sass-rs.git" }
+
+
 [dev-dependencies]
 tempdir = "0.3"

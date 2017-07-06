@@ -44,6 +44,7 @@ enum ChangeKind {
     Content,
     Templates,
     StaticFiles,
+    Sass,
 }
 
 // Uglified using uglifyjs
@@ -105,6 +106,9 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     watcher.watch("templates/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
 
+    // Sass support is optional so don't make it an error to no have a sass folder
+    let _ = watcher.watch("sass/", RecursiveMode::Recursive);
+
     let ws_address = format!("{}:{}", interface, "1112");
 
     // Start a webserver that serves the `public` directory
@@ -138,7 +142,11 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     let pwd = format!("{}", env::current_dir().unwrap().display());
 
-    println!("Listening for changes in {}/{{content, static, templates}}", pwd);
+    if site.config.compile_sass.unwrap() {
+        println!("Listening for changes in {}/{{content, static, templates, sass}}", pwd);
+    } else {
+        println!("Listening for changes in {}/{{content, static, templates}}", pwd);
+    }
     println!("Web server is available at http://{}", address);
     println!("Press Ctrl+C to stop\n");
 
@@ -174,6 +182,10 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                                     console::info(&format!("-> Static file changes detected {}", path.display()));
                                     rebuild_done_handling(&broadcaster, site.copy_static_file(&path), &p);
                                 }
+                            },
+                            (ChangeKind::Sass, p) => {
+                                console::info(&format!("-> Sass file changed {}", path.display()));
+                                rebuild_done_handling(&broadcaster, site.compile_sass(), &p);
                             },
                         };
                         console::report_elapsed_time(start);
@@ -226,6 +238,8 @@ fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
         ChangeKind::Content
     } else if path_str.starts_with("/static") {
         ChangeKind::StaticFiles
+    } else if path_str.starts_with("/sass") {
+        ChangeKind::Sass
     } else {
         unreachable!("Got a change in an unexpected path: {}", path_str);
     };

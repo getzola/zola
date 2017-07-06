@@ -6,6 +6,10 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
+#[cfg(not(target_os = "windows"))]
+extern crate sass_rs;
+
+#[macro_use]
 extern crate errors;
 extern crate config;
 extern crate utils;
@@ -27,9 +31,12 @@ use glob::glob;
 use tera::{Tera, Context};
 use walkdir::WalkDir;
 
+#[cfg(not(target_os = "windows"))]
+use sass_rs::{Options, compile_string};
+
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
-use utils::fs::{create_file, create_directory, ensure_directory_exists};
+use utils::fs::{create_file, read_file, create_directory, ensure_directory_exists};
 use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::{SortBy, InsertAnchor};
@@ -434,7 +441,43 @@ impl Site {
         self.render_categories()?;
         self.render_tags()?;
 
+        if self.config.compile_sass.unwrap() {
+            self.compile_sass()?;
+        }
+
         self.copy_static_directory()
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    pub fn compile_sass(&self) -> Result<()> {
+        ensure_directory_exists(&self.output_path)?;
+
+        let base_path = self.base_path.to_string_lossy().replace("\\", "/");
+        let sass_glob = format!("{}/{}", base_path, "sass/**/*.scss");
+        let files = glob(&sass_glob)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|ref entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with("_"))
+            .collect::<Vec<_>>();
+
+        for file in files {
+            let name = file.as_path().file_stem().unwrap().to_string_lossy();
+            let content = read_file(&file)?;
+            let css = match compile_string(&content, Options::default()) {
+                Ok(c) => c,
+                Err(e) => bail!(e)
+            };
+
+            create_file(&self.output_path.join(format!("{}.css", name)), &css)?;
+        }
+
+        Ok(())
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn compile_sass(&self) -> Result<()> {
+        println!("Sass not supported on Windows yet.");
+        Ok(())
     }
 
     pub fn render_aliases(&self) -> Result<()> {
@@ -685,5 +728,3 @@ impl Site {
             .reduce(|| Ok(()), Result::and)
     }
 }
-
-
