@@ -144,7 +144,7 @@ impl Site {
         let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
             .unwrap()
             .filter_map(|e| e.ok())
-            .partition(|ref entry| entry.as_path().file_name().unwrap() == "_index.md");
+            .partition(|entry| entry.as_path().file_name().unwrap() == "_index.md");
 
         let sections = {
             let config = &self.config;
@@ -154,7 +154,7 @@ impl Site {
                 .filter(|entry| entry.as_path().file_name().unwrap() == "_index.md")
                 .map(|entry| {
                     let path = entry.as_path();
-                    Section::from_file(path, &config)
+                    Section::from_file(path, config)
                 }).collect::<Vec<_>>()
         };
 
@@ -166,7 +166,7 @@ impl Site {
                 .filter(|entry| entry.as_path().file_name().unwrap() != "_index.md")
                 .map(|entry| {
                     let path = entry.as_path();
-                    Page::from_file(path, &config)
+                    Page::from_file(path, config)
                 }).collect::<Vec<_>>()
         };
 
@@ -205,7 +205,7 @@ impl Site {
                 .map(|(_, page)| page)
                 .map(|page| {
                     let insert_anchor = pages_insert_anchors[&page.file.path];
-                    page.render_markdown(&permalinks, &tera, &config, insert_anchor)
+                    page.render_markdown(permalinks, tera, config, insert_anchor)
                 })
                 .fold(|| Ok(()), Result::and)
                 .reduce(|| Ok(()), Result::and)?;
@@ -317,7 +317,7 @@ impl Site {
             }
             let pages = mem::replace(&mut section.pages, vec![]);
             let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by());
-            section.pages = populate_previous_and_next_pages(sorted_pages);
+            section.pages = populate_previous_and_next_pages(&sorted_pages);
             section.ignored_pages = cannot_be_sorted_pages;
         }
     }
@@ -457,7 +457,7 @@ impl Site {
         let files = glob(&sass_glob)
             .unwrap()
             .filter_map(|e| e.ok())
-            .filter(|ref entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with("_"))
+            .filter(|entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_'))
             .collect::<Vec<_>>();
 
         for file in files {
@@ -484,7 +484,7 @@ impl Site {
             if let Some(ref aliases) = page.meta.aliases {
                 for alias in aliases {
                     let mut output_path = self.output_path.to_path_buf();
-                    for component in alias.split("/") {
+                    for component in alias.split('/') {
                         output_path.push(&component);
 
                         if !output_path.exists() {
@@ -649,7 +649,7 @@ impl Site {
             section
                 .pages
                 .par_iter()
-                .map(|p| self.render_page(&p))
+                .map(|p| self.render_page(p))
                 .fold(|| Ok(()), Result::and)
                 .reduce(|| Ok(()), Result::and)?;
         }

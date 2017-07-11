@@ -62,5 +62,5 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     site.set_output_path(&public);
     let section = site.sections.values().collect::<Vec<_>>()[0];
 
-    b.iter(|| site.render_paginated(&public, section));
+    b.iter(|| site.render_paginated(public, section));
 }

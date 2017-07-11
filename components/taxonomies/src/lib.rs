@@ -113,6 +113,10 @@ impl Taxonomy {
         self.items.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn get_single_item_name(&self) -> String {
         match self.kind {
             TaxonomyKind::Tags => "tag".to_string(),

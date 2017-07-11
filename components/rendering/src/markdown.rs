@@ -259,6 +259,6 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
 
     match error {
         Some(e) => Err(e),
-        None => Ok((html.replace("<p></p>", ""), make_table_of_contents(headers))),
+        None => Ok((html.replace("<p></p>", ""), make_table_of_contents(&headers))),
     }
 }

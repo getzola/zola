@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.8 (unreleased)
+## 0.1.0 (unreleased)
 
 - Parallelize all the things
 - Add weight sorting

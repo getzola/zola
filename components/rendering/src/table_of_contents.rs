@@ -69,7 +69,7 @@ fn find_children(parent_level: i32, start_at: usize, temp_headers: &[TempHeader]
             continue;
         }
 
-        let (end, children) = find_children(h.level, start_at + 1, &temp_headers);
+        let (end, children) = find_children(h.level, start_at + 1, temp_headers);
         headers.push(Header::from_temp_header(h, children));
 
         // we didn't find any children
@@ -95,7 +95,7 @@ fn find_children(parent_level: i32, start_at: usize, temp_headers: &[TempHeader]
 
 /// Converts the flat temp headers into a nested set of headers
 /// representing the hierarchy
-pub fn make_table_of_contents(temp_headers: Vec<TempHeader>) -> Vec<Header> {
+pub fn make_table_of_contents(temp_headers: &[TempHeader]) -> Vec<Header> {
     let mut toc = vec![];
     let mut start_idx = 0;
     for (i, h) in temp_headers.iter().enumerate() {
@@ -121,7 +121,7 @@ mod tests {
             TempHeader::new(1),
             TempHeader::new(1),
         ];
-        let toc = make_table_of_contents(input);
+        let toc = make_table_of_contents(&input);
         assert_eq!(toc.len(), 3);
     }
 
@@ -138,7 +138,7 @@ mod tests {
             TempHeader::new(3),
             TempHeader::new(3),
         ];
-        let toc = make_table_of_contents(input);
+        let toc = make_table_of_contents(&input);
         assert_eq!(toc.len(), 2);
         assert_eq!(toc[0].children.len(), 3);
         assert_eq!(toc[1].children.len(), 1);
@@ -157,7 +157,7 @@ mod tests {
             TempHeader::new(1),
             TempHeader::new(4),
         ];
-        let toc = make_table_of_contents(input);
+        let toc = make_table_of_contents(&input);
         assert_eq!(toc.len(), 5);
         assert_eq!(toc[2].children.len(), 1);
         assert_eq!(toc[4].children.len(), 1);

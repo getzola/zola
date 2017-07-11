@@ -14,7 +14,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
 
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) = pages
         .into_par_iter()
-        .partition(|ref page| {
+        .partition(|page| {
             match sort_by {
                 SortBy::Date => page.meta.date.is_some(),
                 SortBy::Order => page.meta.order.is_some(),
@@ -35,7 +35,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
 
 /// Horribly inefficient way to set previous and next on each pages
 /// So many clones
-pub fn populate_previous_and_next_pages(input: Vec<Page>) -> Vec<Page> {
+pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
     let mut res = Vec::with_capacity(input.len());
 
     // The input is already sorted
@@ -162,7 +162,7 @@ mod tests {
             create_page_with_order(2),
             create_page_with_order(3),
         ];
-        let pages = populate_previous_and_next_pages(input);
+        let pages = populate_previous_and_next_pages(&input);
 
         assert!(pages[0].clone().next.is_none());
         assert!(pages[0].clone().previous.is_some());
