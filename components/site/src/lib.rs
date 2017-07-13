@@ -5,8 +5,6 @@ extern crate walkdir;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-
-#[cfg(not(target_os = "windows"))]
 extern crate sass_rs;
 
 #[macro_use]
@@ -30,8 +28,6 @@ use std::path::{Path, PathBuf};
 use glob::glob;
 use tera::{Tera, Context};
 use walkdir::WalkDir;
-
-#[cfg(not(target_os = "windows"))]
 use sass_rs::{Options, compile_file};
 
 use errors::{Result, ResultExt};
@@ -448,7 +444,6 @@ impl Site {
         self.copy_static_directory()
     }
 
-    #[cfg(not(target_os = "windows"))]
     pub fn compile_sass(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
@@ -470,12 +465,6 @@ impl Site {
             create_file(&self.output_path.join(format!("{}.css", name)), &css)?;
         }
 
-        Ok(())
-    }
-
-    #[cfg(target_os = "windows")]
-    pub fn compile_sass(&self) -> Result<()> {
-        println!("Sass not supported on Windows yet.");
         Ok(())
     }
 

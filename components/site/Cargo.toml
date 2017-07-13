@@ -11,6 +11,8 @@ rayon = "0.8"
 serde = "1.0"
 serde_derive = "1.0"
 
+sass-rs = { git = "https://github.com/compass-rs/sass-rs.git" }
+
 errors = { path = "../errors" }
 config = { path = "../config" }
 utils = { path = "../utils" }
@@ -19,9 +21,6 @@ front_matter = { path = "../front_matter" }
 pagination = { path = "../pagination" }
 taxonomies = { path = "../taxonomies" }
 content = { path = "../content" }
-
-[target.'cfg(not(target_os = "windows"))'.dependencies]
-sass-rs = { git = "https://github.com/compass-rs/sass-rs.git" }
 
 
 [dev-dependencies]
