@@ -192,6 +192,11 @@ any issues.
 
 Individual tag/category pages are only supported for pages having a date.
 
+### Sass compilation
+
+You can automatically compile and watch all `.scss` files by adding `compile_sass = true` in your 
+`config.toml`.
+
 ### Code highlighting themes
 Code highlighting can be turned on by setting `highlight_code = true` in `config.toml`.
 
