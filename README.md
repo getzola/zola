@@ -7,8 +7,6 @@ An opinionated static site generator written in Rust.
 
 ## Installation
 You can get the latest release by going to the [Release page](https://github.com/Keats/gutenberg/releases).
-Alternatively, if you have the rust toolchain on your computer, you can also install it
-through Cargo: `cargo install gutenberg`.
 
 ## Usage
 
