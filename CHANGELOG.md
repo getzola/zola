@@ -10,7 +10,7 @@ the global function `get_section` if you need to get it
 - Remove index page getting all sections: use the `get_section` global fn instead to
 only get the ones you need
 - Remove pages from pagers in pagination: they were not supposed to be there
-- Add built-in Sass compilation support (*nix only for now)
+- Add built-in Sass compilation support
 
 
 ## 0.0.7 (2017-06-19)
