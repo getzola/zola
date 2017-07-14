@@ -1,0 +1,27 @@
+[package]
+name = "site"
+version = "0.1.0"
+authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+
+[dependencies]
+tera = "0.10"
+glob = "0.2"
+walkdir = "1"
+rayon = "0.8"
+serde = "1.0"
+serde_derive = "1.0"
+sass-rs = "0.1"
+#sass-rs = { git = "https://github.com/compass-rs/sass-rs.git" }
+
+errors = { path = "../errors" }
+config = { path = "../config" }
+utils = { path = "../utils" }
+templates = { path = "../templates" }
+front_matter = { path = "../front_matter" }
+pagination = { path = "../pagination" }
+taxonomies = { path = "../taxonomies" }
+content = { path = "../content" }
+
+
+[dev-dependencies]
+tempdir = "0.3"

@@ -1,0 +1,14 @@
+[package]
+name = "templates"
+version = "0.1.0"
+authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+
+[dependencies]
+tera = "0.10"
+base64 = "0.6"
+lazy_static = "0.2"
+pulldown-cmark = "0"
+
+errors = { path = "../errors" }
+utils = { path = "../utils" }
+content = { path = "../content" }

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0 (unreleased)
+
+- Parallelize all the things
+- Add weight sorting
+- Remove `section` from the `page` rendering context: this is too expensive. Use
+the global function `get_section` if you need to get it
+- Put back a 20 page limit on rss feed by default (configurable)
+- Remove index page getting all sections: use the `get_section` global fn instead to
+only get the ones you need
+- Remove pages from pagers in pagination: they were not supposed to be there
+- Add built-in Sass compilation support (*nix only for now)
+
+
 ## 0.0.7 (2017-06-19)
 
 - Sort individual tag/category pages by date

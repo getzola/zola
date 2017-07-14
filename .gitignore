@@ -1,3 +1,14 @@
 target
 .idea/
-test_site/public
+components/site/test_site/public
+
+small-blog
+medium-blog
+big-blog
+huge-blog
+small-kb
+medium-kb
+huge-kb
+
+current.bench
+now.bench

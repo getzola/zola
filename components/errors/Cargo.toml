@@ -1,0 +1,9 @@
+[package]
+name = "errors"
+version = "0.1.0"
+authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+
+[dependencies]
+error-chain = "0.10"
+tera = "0.10"
+toml = "0.4"

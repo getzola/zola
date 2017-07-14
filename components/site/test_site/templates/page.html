@@ -1,0 +1,8 @@
+{% extends "index.html" %}
+
+{% block content %}
+    {{ page.content | safe }}
+
+    {% if page.previous %}Previous article: {{ page.previous.permalink }}{% endif %}
+    {% if page.next %}Next article: {{ page.next.permalink }}{% endif %}
+{% endblock content %}

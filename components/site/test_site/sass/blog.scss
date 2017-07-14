@@ -1,0 +1,9 @@
+body {
+  background: red;
+
+  .container {
+    background: blue;
+  }
+}
+
+@import "included";
