@@ -38,6 +38,7 @@ The other options are:
 - `generate_rss`: Whether to generate RSS, defaults to false
 - `generate_tags_pages`: Whether to generate tags and individual tag pages if some pages have them. Defaults to true
 - `generate_categories_pages`: Whether to generate categories and individual category categories if some pages have them. Defaults to true
+- `compile_sass`: Whether to compile all `.scss` files in the `sass` directory
 
 If you want to add some of your own variables, you will need to put them in the `[extra]` table in `config.toml` or
 they will be silently ignored.
