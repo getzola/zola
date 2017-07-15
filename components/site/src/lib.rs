@@ -592,7 +592,6 @@ impl Site {
         let mut context = Context::new();
         let pages = self.pages.values()
             .filter(|p| p.meta.date.is_some())
-            .take(self.config.rss_limit.unwrap()) // limit to the last n elements
             .cloned()
             .collect::<Vec<Page>>();
 
@@ -603,7 +602,8 @@ impl Site {
 
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
         context.add("last_build_date", &sorted_pages[0].meta.date);
-        context.add("pages", &sorted_pages);
+         // limit to the last n elements)
+        context.add("pages", &sorted_pages.iter().take(self.config.rss_limit.unwrap()).collect::<Vec<_>>());
         context.add("config", &self.config);
 
         let rss_feed_url = if self.config.base_url.ends_with('/') {

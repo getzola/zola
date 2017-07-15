@@ -1,5 +1,5 @@
 +++
-title = "Simple"
+title = "Simple article with shortcodes"
 description = ""
 date = "2017-04-01"
 +++

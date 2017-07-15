@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.1 (unreleased)
+
+- Fix RSS feed not behaving (https://github.com/Keats/gutenberg/issues/101)
+
+
+## 0.1.0 (2017-07-14)
 
 - Parallelize all the things
 - Add weight sorting

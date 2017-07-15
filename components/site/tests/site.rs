@@ -395,3 +395,22 @@ fn can_build_site_with_pagination_for_index() {
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
     assert_eq!(file_contains!(public, "index.html", "has_next"), false);
 }
+
+#[test]
+fn can_build_rss_feed() {
+    let mut path = env::current_dir().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.load().unwrap();
+    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+    assert!(file_exists!(public, "rss.xml"));
+    // latest article is posts/simple.md
+    assert!(file_contains!(public, "rss.xml", "Simple article with shortcodes"));
+    // Next is posts/python.md
+    assert!(file_contains!(public, "rss.xml", "Python in posts"));
+}
