@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.1 (unreleased)
+## 0.1.1 (2017-07-16)
 
 - Fix RSS feed not behaving (https://github.com/Keats/gutenberg/issues/101)
 
