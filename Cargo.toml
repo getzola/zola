@@ -8,7 +8,7 @@ description = "Static site generator"
 homepage = "https://github.com/Keats/gutenberg"
 repository = "https://github.com/Keats/gutenberg"
 keywords = ["static", "site", "generator", "blog"]
-build = "build.rs"
+# build = "build.rs"
 
 [build-dependencies]
 clap = "2"
