@@ -283,6 +283,7 @@ In case of shortcodes with a body, the body will be passed as the `body` variabl
 
 - [vincent.is](https://vincent.is): https://gitlab.com/Keats/vincent.is
 - [code<future](http://www.codelessfuture.com/)
+- http://t-rex.tileserver.ch (https://github.com/pka/t-rex-website/)
 
 
 ## Adding syntax highlighting languages and themes
