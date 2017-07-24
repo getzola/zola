@@ -912,7 +912,7 @@ dependencies = [
 
 [[package]]
 name = "sass-rs"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.26 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -991,7 +991,7 @@ dependencies = [
  "glob 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "pagination 0.1.0",
  "rayon 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "sass-rs 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sass-rs 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "taxonomies 0.1.0",
@@ -1503,7 +1503,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)" = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda"
 "checksum safemem 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e27a8b19b835f7aea908818e871f5cc3a5a186550c30773be987e155e8163d8f"
 "checksum same-file 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "d931a44fdaa43b8637009e7632a02adc4f2b2e0733c08caa4cf00e8da4a117a7"
-"checksum sass-rs 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b48ba5cee7b5aa2291cdc7b1138215e7f11e09a2f725a57318149e88837a7b93"
+"checksum sass-rs 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "22498eeceeef42b0bfbf44c27bf49bc37043beddc7eac73ae9f4d17e08967e2e"
 "checksum sass-sys 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "49e6025ff142eb235157aea8d6ee8085d9f5b80e280cb54b911f6b778e64075a"
 "checksum scopeguard 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c79eb2c3ac4bc2507cda80e7f3ac5b88bd8eae4c0914d5663e6a8933994be918"
 "checksum sequence_trie 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c915714ca833b1d4d6b8f6a9d72a3ff632fe45b40a8d184ef79c81bec6327eed"

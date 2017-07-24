@@ -10,7 +10,7 @@ walkdir = "1"
 rayon = "0.8"
 serde = "1.0"
 serde_derive = "1.0"
-sass-rs = "0.1"
+sass-rs = "0.2"
 #sass-rs = { git = "https://github.com/compass-rs/sass-rs.git" }
 
 errors = { path = "../errors" }

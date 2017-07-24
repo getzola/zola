@@ -457,7 +457,7 @@ impl Site {
 
         for file in files {
             let name = file.as_path().file_stem().unwrap().to_string_lossy();
-            let css = match compile_file(file.as_path().to_str().unwrap(), Options::default()) {
+            let css = match compile_file(file.as_path(), Options::default()) {
                 Ok(c) => c,
                 Err(e) => bail!(e)
             };
