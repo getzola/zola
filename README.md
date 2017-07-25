@@ -159,6 +159,13 @@ You can also paginate section, including the index by setting the `paginate_by` 
 This represents the number of pages for each pager of the paginator. 
 You will need to access pages through the `paginator` object. (TODO: document that).
 
+You can redirect a root section page to another url by using the `redirect_to` parameter of the front-matter followed
+by a path:
+
+```
+redirect_to = "docs/docker"
+```
+
 ### Table of contents
 
 Each page/section will generate a table of content based on the title. It is accessible through `section.toc` and

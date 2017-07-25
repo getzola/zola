@@ -647,6 +647,12 @@ impl Site {
             return Ok(());
         }
 
+        if let Some(ref redirect_to) = section.meta.redirect_to {
+            let permalink = self.config.make_permalink(redirect_to);
+            create_file(&output_path.join("index.html"), &render_redirect_template(&permalink, &self.tera)?)?;
+            return Ok(());
+        }
+
         if section.meta.is_paginated() {
             self.render_paginated(&output_path, section)?;
         } else {

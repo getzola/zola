@@ -122,6 +122,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "an-old-url/old-page/index.html"));
     assert!(file_contains!(public, "an-old-url/old-page/index.html", "something-else"));
 
+    // redirect_to works
+    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
+    assert!(file_contains!(public, "posts/tutorials/devops/index.html", "docker"));
+
     // No tags or categories
     assert_eq!(file_exists!(public, "categories/index.html"), false);
     assert_eq!(file_exists!(public, "tags/index.html"), false);

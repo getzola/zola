@@ -1,9 +1,13 @@
 # Changelog
 
+## 0.1.2 (unreleased)
+
+- Add `redirect_to` to section front matter to redirect when landing on section
+root page
+
 ## 0.1.1 (2017-07-16)
 
 - Fix RSS feed not behaving (https://github.com/Keats/gutenberg/issues/101)
-
 
 ## 0.1.0 (2017-07-14)
 
