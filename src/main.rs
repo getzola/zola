@@ -6,6 +6,7 @@ extern crate staticfile;
 extern crate iron;
 extern crate mount;
 extern crate notify;
+extern crate url;
 extern crate ws;
 
 extern crate site;
@@ -21,6 +22,7 @@ mod cmd;
 mod console;
 mod rebuild;
 mod cli;
+mod prompt;
 
 
 fn main() {
@@ -31,7 +33,7 @@ fn main() {
     match matches.subcommand() {
         ("init", Some(matches)) => {
             match cmd::create_new_project(matches.value_of("name").unwrap()) {
-                Ok(()) => console::success("Project created"),
+                Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("Failed to create the project", &e);
                     ::std::process::exit(1);

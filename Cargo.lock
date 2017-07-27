@@ -400,6 +400,7 @@ dependencies = [
  "staticfile 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "term-painter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "url 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
  "ws 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
