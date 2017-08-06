@@ -4,6 +4,8 @@
 
 - Add `redirect_to` to section front matter to redirect when landing on section
 root page
+- Make `title` in config optional
+- Improved `gutenberg init` UX and users first experience
 
 ## 0.1.1 (2017-07-16)
 

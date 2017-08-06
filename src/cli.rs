@@ -10,7 +10,7 @@ pub fn build_cli() -> App<'static, 'static> {
         (@arg config: -c --config +takes_value "Path to a config file other than config.toml")
         (@subcommand init =>
             (about: "Create a new Gutenberg project")
-            (@arg name: +required "Name of the project. Will create a directory with that name in the current directory")
+            (@arg name: +required "Name of the project. Will create a new directory with that name in the current directory")
         )
         (@subcommand build =>
             (about: "Builds the site")

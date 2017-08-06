@@ -18,11 +18,11 @@ use rendering::highlighting::THEME_SET;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
-    /// Title of the site
-    pub title: String,
-    /// Base URL of the site
+    /// Base URL of the site, the only required config argument
     pub base_url: String,
 
+    /// Title of the site. Defaults to None
+    pub title: Option<String>,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: Option<bool>,
     /// Which themes to use for code highlighting. See Readme for supported themes
@@ -123,7 +123,7 @@ impl Config {
 impl Default for Config {
     fn default() -> Config {
         Config {
-            title: "".to_string(),
+            title: Some("".to_string()),
             base_url: "http://a-website.com/".to_string(),
             highlight_code: Some(true),
             highlight_theme: Some("base16-ocean-dark".to_string()),
@@ -167,7 +167,7 @@ base_url = "https://replace-this-with-your-url.com"
         "#;
 
         let config = Config::parse(config).unwrap();
-        assert_eq!(config.title, "My site".to_string());
+        assert_eq!(config.title.unwrap(), "My site".to_string());
     }
 
     #[test]
