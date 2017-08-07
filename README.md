@@ -81,24 +81,25 @@ Takes a path to a `_index.md` file and returns the associated section
 ```
 
 ####` get_url`
-Gets the permalink for a local file following the same convention as internal
-link in markdown.
+Gets the permalink for the given path.
+If the path starts with `./`, it will be understood as an internal
+link like the ones used in markdown.
 
 ```jinja2
-{% set url = get_url(link="./blog/_index.md") %}
+{% set url = get_url(path="./blog/_index.md") %}
 ```
 
-#### `get_static_url`
-Gets the permalink for a given path, with cachebusting support.
+This can also be used to get the permalinks for static assets for example if
+we want to link to the file that is located at `static/css/app.css`:
 
 ```jinja2
-{% get_static_url(path="path.css") %}
+{{ get_url(path="css/app.css") }}
 ```
 
-The path should start at the static folder root and should not being with a `/`. By default,
-this will add a cachebust of the format `?t=1290192` at the end of a URL. You can disable it
-by passing `cachebust=false` to the function.
+Note that the path shouldn't start with a slash.
 
+In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
+by passing `cachebust=true` to the `get_url` function.
 
 ### Static files
 Everything in the `static` folder will be copied into the output directory as-is.

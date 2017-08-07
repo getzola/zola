@@ -52,49 +52,46 @@ pub fn make_get_section(all_sections: &HashMap<PathBuf, Section>) -> GlobalFn {
     })
 }
 
-pub fn make_get_url(permalinks: HashMap<String, String>) -> GlobalFn {
-    Box::new(move |args| -> Result<Value> {
-        match args.get("link") {
-            Some(val) => match from_value::<String>(val.clone()) {
-                Ok(v) => match resolve_internal_link(&v, &permalinks) {
-                    Ok(url) => Ok(to_value(url).unwrap()),
-                    Err(_) => Err(format!("Could not resolve URL for link `{}` not found.", v).into())
-                },
-                Err(_) => Err(format!("`get_url` received link={:?} but it requires a string", val).into()),
-            },
-            None => Err("`get_url` requires a `link` argument.".into()),
-        }
-    })
-}
-
-pub fn make_get_static_url(config: Config) -> GlobalFn {
+pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
         let cachebust = args
             .get("cachebust")
-            .map_or(true, |c| {
-                from_value::<bool>(c.clone()).unwrap_or(true)
+            .map_or(false, |c| {
+                from_value::<bool>(c.clone()).unwrap_or(false)
             });
 
-        match args.get("path") {
+        if args.contains_key("link") {
+            println!("> DEPRECATION -- `link` is deprecated for `get_url`: use `path` instead");
+        }
+
+        match args.get("link").or_else(|| args.get("path")) {
             Some(val) => match from_value::<String>(val.clone()) {
                 Ok(v) => {
-                    let mut permalink = config.make_permalink(&v);
-                    if cachebust {
-                        permalink = format!("{}?t={}", permalink, config.build_timestamp.unwrap());
+                    // Internal link
+                    if v.starts_with("./") {
+                        match resolve_internal_link(&v, &permalinks) {
+                            Ok(url) => Ok(to_value(url).unwrap()),
+                            Err(_) => Err(format!("Could not resolve URL for link `{}` not found.", v).into())
+                        }
+                    } else {
+                        // anything else
+                        let mut permalink = config.make_permalink(&v);
+                        if cachebust {
+                            permalink = format!("{}?t={}", permalink, config.build_timestamp.unwrap());
+                        }
+                        return Ok(to_value(permalink).unwrap());
                     }
-                    Ok(to_value(permalink).unwrap())
                 },
-                Err(_) => Err(format!("`get_static_url` received path={:?} but it requires a string", val).into()),
-
+                Err(_) => Err(format!("`get_url` received path={:?} but it requires a string", val).into()),
             },
-            None => Err("`get_static_url` requires a `path` argument.".into()),
+            None => Err("`get_url` requires a `path` argument.".into()),
         }
     })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::make_get_static_url;
+    use super::make_get_url;
 
     use std::collections::HashMap;
 
@@ -104,21 +101,21 @@ mod tests {
 
 
     #[test]
-    fn add_cachebust_to_static_url_by_default() {
+    fn can_add_cachebust_to_url() {
         let config = Config::default();
-        let static_fn = make_get_static_url(config);
+        let static_fn = make_get_url(HashMap::new(), config);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
+        args.insert("cachebust".to_string(), to_value(true).unwrap());
         assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css/?t=1");
     }
 
     #[test]
-    fn can_disable_cachebust_for_static_url() {
+    fn can_link_to_some_static_file() {
         let config = Config::default();
-        let static_fn = make_get_static_url(config);
+        let static_fn = make_get_url(HashMap::new(), config);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
-        args.insert("cachebust".to_string(), to_value(false).unwrap());
         assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css/");
     }
 }
