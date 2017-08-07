@@ -218,6 +218,7 @@ impl Site {
 
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
+        self.tera.register_global_function("get_static_url", global_fns::make_get_static_url(self.config.clone()));
         self.register_get_url_fn();
 
         Ok(())

@@ -64,7 +64,7 @@ the absolute URL of the current page and `current_path` that represents the path
 If you want to know all the data present in a template content, simply put `{{ __tera_context }}`
 in the templates and it will print it.
 
-Gutenberg also ships with 3 Tera global functions:
+Gutenberg also ships with a few Tera global functions:
 
 #### `get_page`
 Takes a path to a `.md` file and returns the associated page
@@ -87,6 +87,18 @@ link in markdown.
 ```jinja2
 {% set url = get_url(link="./blog/_index.md") %}
 ```
+
+#### `get_static_url`
+Gets the permalink for a given path, with cachebusting support.
+
+```jinja2
+{% get_static_url(path="path.css") %}
+```
+
+The path should start at the static folder root and should not being with a `/`. By default,
+this will add a cachebust of the format `?t=1290192` at the end of a URL. You can disable it
+by passing `cachebust=false` to the function.
+
 
 ### Static files
 Everything in the `static` folder will be copied into the output directory as-is.

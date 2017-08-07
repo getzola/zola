@@ -8,6 +8,7 @@ extern crate pulldown_cmark;
 extern crate errors;
 extern crate utils;
 extern crate content;
+extern crate config;
 
 pub mod filters;
 pub mod global_fns;

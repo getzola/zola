@@ -4,6 +4,7 @@ extern crate toml;
 #[macro_use]
 extern crate errors;
 extern crate rendering;
+extern crate chrono;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -11,12 +12,13 @@ use std::io::prelude::*;
 use std::path::Path;
 
 use toml::{Value as Toml};
+use chrono::Utc;
 
 use errors::{Result, ResultExt};
 use rendering::highlighting::THEME_SET;
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
     pub base_url: String,
@@ -48,6 +50,9 @@ pub struct Config {
 
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
+
+    /// Set automatically when instantiating the config. Used for cachebusting
+    pub build_timestamp: Option<i64>,
 }
 
 macro_rules! set_default {
@@ -85,6 +90,7 @@ impl Config {
             None => config.highlight_theme = Some("base16-ocean-dark".to_string())
         };
 
+        config.build_timestamp = Some(Utc::now().timestamp());
         Ok(config)
     }
 
@@ -136,6 +142,7 @@ impl Default for Config {
             insert_anchor_links: Some(false),
             compile_sass: Some(false),
             extra: None,
+            build_timestamp: Some(1),
         }
     }
 }

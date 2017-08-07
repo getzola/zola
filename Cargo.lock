@@ -233,6 +233,7 @@ dependencies = [
 name = "config"
 version = "0.1.0"
 dependencies = [
+ "chrono 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "errors 0.1.0",
  "rendering 0.1.0",
  "serde 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1144,6 +1145,7 @@ name = "templates"
 version = "0.1.0"
 dependencies = [
  "base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "config 0.1.0",
  "content 0.1.0",
  "errors 0.1.0",
  "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",

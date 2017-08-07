@@ -6,6 +6,7 @@
 root page
 - Make `title` in config optional
 - Improved `gutenberg init` UX and users first experience
+- Add a `get_static_url` global function that can do cachebusting
 
 ## 0.1.1 (2017-07-16)
 
