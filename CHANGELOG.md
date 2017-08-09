@@ -1,13 +1,13 @@
 # Changelog
 
-## 0.1.2 (unreleased)
+## 0.1.2 (2017-08-09)
 
 - Add `redirect_to` to section front matter to redirect when landing on section
 root page
 - Make `title` in config optional
 - Improved `gutenberg init` UX and users first experience
-- Make `get_url` work for any path with optional cachebusting. Deprecates `link` param
-in favour of `path` to be consistent
+- Make `get_url` work for any path with optional cachebusting. 
+- Deprecates `link` param of `get_url` in favour of `path` to be consistent
 
 ## 0.1.1 (2017-07-16)
 
