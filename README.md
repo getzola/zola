@@ -335,19 +335,19 @@ You can check for any updates to the current packages by running:
 $ git submodule update --remote --merge
 ```
 
-And finally from the root of the repository run the following command:
+And finally from the root of the components/rendering crate run the following command:
 
 ```bash
-$ cargo run --example generate_sublime synpack sublime_syntaxes sublime_syntaxes/newlines.packdump sublime_syntaxes/nonewlines.packdump
+$ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump ../../sublime_syntaxes/nonewlines.packdump
 ```
 
 ### Adding a theme
 A gallery containing lots of themes at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
 More themes can be easily added to gutenberg, just make a PR with the wanted theme added in the `sublime_themes` directory
-and run the following command from the repository root:
+and run the following command from the root of the components/rendering:
 
 ```bash
-$ cargo run --example generate_sublime themepack sublime_themes sublime_themes/all.themedump
+$ cargo run --example generate_sublime themepack ../../sublime_themes ../../sublime_themes/all.themedump
 ```
 
 You should see the list of themes being added.
