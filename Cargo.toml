@@ -1,6 +1,6 @@
 [package]
 name = "gutenberg"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 license = "MIT"
 readme = "README.md"
@@ -21,6 +21,9 @@ clap = "2"
 chrono = "0.4"
 toml = "0.4"
 term-painter = "0.2"
+
+# Used in init to ensure the url given as base_url is a valid one
+url = "1.5"
 
 # Below is for the serve cmd
 staticfile = "0.4"

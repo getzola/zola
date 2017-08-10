@@ -225,7 +225,10 @@ impl Site {
 
     /// Separate fn as it can be called in the serve command
     pub fn register_get_url_fn(&mut self) {
-        self.tera.register_global_function("get_url", global_fns::make_get_url(self.permalinks.clone()));
+        self.tera.register_global_function(
+            "get_url",
+            global_fns::make_get_url(self.permalinks.clone(), self.config.clone())
+        );
     }
 
     /// Add a page to the site
@@ -644,6 +647,12 @@ impl Site {
         }
 
         if !section.meta.should_render() {
+            return Ok(());
+        }
+
+        if let Some(ref redirect_to) = section.meta.redirect_to {
+            let permalink = self.config.make_permalink(redirect_to);
+            create_file(&output_path.join("index.html"), &render_redirect_template(&permalink, &self.tera)?)?;
             return Ok(());
         }
 

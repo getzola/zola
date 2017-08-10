@@ -8,6 +8,7 @@ extern crate pulldown_cmark;
 extern crate errors;
 extern crate utils;
 extern crate content;
+extern crate config;
 
 pub mod filters;
 pub mod global_fns;
@@ -20,6 +21,12 @@ lazy_static! {
     pub static ref GUTENBERG_TERA: Tera = {
         let mut tera = Tera::default();
         tera.add_raw_templates(vec![
+            // adding default built-ins templates for index/page/section so
+            // users don't get an error when they run gutenberg after init
+            ("index.html", include_str!("builtins/index.html")),
+            ("page.html", include_str!("builtins/page.html")),
+            ("section.html", include_str!("builtins/section.html")),
+
             ("rss.xml", include_str!("builtins/rss.xml")),
             ("sitemap.xml", include_str!("builtins/sitemap.xml")),
             ("robots.txt", include_str!("builtins/robots.txt")),

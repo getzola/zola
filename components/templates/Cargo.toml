@@ -12,3 +12,4 @@ pulldown-cmark = "0"
 errors = { path = "../errors" }
 utils = { path = "../utils" }
 content = { path = "../content" }
+config = { path = "../config" }

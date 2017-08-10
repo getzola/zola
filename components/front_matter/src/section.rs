@@ -38,6 +38,11 @@ pub struct SectionFrontMatter {
     /// to be used directly, like a posts section in a personal site
     #[serde(skip_serializing)]
     pub render: Option<bool>,
+    /// Whether to redirect when landing on that section. Defaults to `None`.
+    /// Useful for the same reason as `render` but when you don't want a 404 when
+    /// landing on the root section page
+    #[serde(skip_serializing)]
+    pub redirect_to: Option<String>,
     /// Any extra parameter present in the front matter
     pub extra: Option<HashMap<String, Value>>,
 }
@@ -96,6 +101,7 @@ impl Default for SectionFrontMatter {
             paginate_by: None,
             paginate_path: Some(DEFAULT_PAGINATE_PATH.to_string()),
             render: Some(true),
+            redirect_to: None,
             insert_anchor: Some(InsertAnchor::None),
             extra: None,
         }

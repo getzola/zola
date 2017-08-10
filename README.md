@@ -64,7 +64,7 @@ the absolute URL of the current page and `current_path` that represents the path
 If you want to know all the data present in a template content, simply put `{{ __tera_context }}`
 in the templates and it will print it.
 
-Gutenberg also ships with 3 Tera global functions:
+Gutenberg also ships with a few Tera global functions:
 
 #### `get_page`
 Takes a path to a `.md` file and returns the associated page
@@ -81,12 +81,25 @@ Takes a path to a `_index.md` file and returns the associated section
 ```
 
 ####` get_url`
-Gets the permalink for a local file following the same convention as internal
-link in markdown.
+Gets the permalink for the given path.
+If the path starts with `./`, it will be understood as an internal
+link like the ones used in markdown.
 
 ```jinja2
-{% set url = get_url(link="./blog/_index.md") %}
+{% set url = get_url(path="./blog/_index.md") %}
 ```
+
+This can also be used to get the permalinks for static assets for example if
+we want to link to the file that is located at `static/css/app.css`:
+
+```jinja2
+{{ get_url(path="css/app.css") }}
+```
+
+Note that the path shouldn't start with a slash.
+
+In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
+by passing `cachebust=true` to the `get_url` function.
 
 ### Static files
 Everything in the `static` folder will be copied into the output directory as-is.
@@ -158,6 +171,13 @@ to control pagination and sorting of the homepage.
 You can also paginate section, including the index by setting the `paginate_by` field in the front matter to an integer. 
 This represents the number of pages for each pager of the paginator. 
 You will need to access pages through the `paginator` object. (TODO: document that).
+
+You can redirect a root section page to another url by using the `redirect_to` parameter of the front-matter followed
+by a path:
+
+```
+redirect_to = "docs/docker"
+```
 
 ### Table of contents
 

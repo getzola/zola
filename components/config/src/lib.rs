@@ -4,6 +4,7 @@ extern crate toml;
 #[macro_use]
 extern crate errors;
 extern crate rendering;
+extern crate chrono;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -11,18 +12,19 @@ use std::io::prelude::*;
 use std::path::Path;
 
 use toml::{Value as Toml};
+use chrono::Utc;
 
 use errors::{Result, ResultExt};
 use rendering::highlighting::THEME_SET;
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
-    /// Title of the site
-    pub title: String,
-    /// Base URL of the site
+    /// Base URL of the site, the only required config argument
     pub base_url: String,
 
+    /// Title of the site. Defaults to None
+    pub title: Option<String>,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: Option<bool>,
     /// Which themes to use for code highlighting. See Readme for supported themes
@@ -48,6 +50,9 @@ pub struct Config {
 
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
+
+    /// Set automatically when instantiating the config. Used for cachebusting
+    pub build_timestamp: Option<i64>,
 }
 
 macro_rules! set_default {
@@ -85,6 +90,7 @@ impl Config {
             None => config.highlight_theme = Some("base16-ocean-dark".to_string())
         };
 
+        config.build_timestamp = Some(Utc::now().timestamp());
         Ok(config)
     }
 
@@ -123,7 +129,7 @@ impl Config {
 impl Default for Config {
     fn default() -> Config {
         Config {
-            title: "".to_string(),
+            title: Some("".to_string()),
             base_url: "http://a-website.com/".to_string(),
             highlight_code: Some(true),
             highlight_theme: Some("base16-ocean-dark".to_string()),
@@ -136,6 +142,7 @@ impl Default for Config {
             insert_anchor_links: Some(false),
             compile_sass: Some(false),
             extra: None,
+            build_timestamp: Some(1),
         }
     }
 }
@@ -167,7 +174,7 @@ base_url = "https://replace-this-with-your-url.com"
         "#;
 
         let config = Config::parse(config).unwrap();
-        assert_eq!(config.title, "My site".to_string());
+        assert_eq!(config.title.unwrap(), "My site".to_string());
     }
 
     #[test]

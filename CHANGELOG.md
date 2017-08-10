@@ -1,9 +1,17 @@
 # Changelog
 
+## 0.1.2 (2017-08-09)
+
+- Add `redirect_to` to section front matter to redirect when landing on section
+root page
+- Make `title` in config optional
+- Improved `gutenberg init` UX and users first experience
+- Make `get_url` work for any path with optional cachebusting. 
+- Deprecates `link` param of `get_url` in favour of `path` to be consistent
+
 ## 0.1.1 (2017-07-16)
 
 - Fix RSS feed not behaving (https://github.com/Keats/gutenberg/issues/101)
-
 
 ## 0.1.0 (2017-07-14)
 
