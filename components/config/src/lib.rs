@@ -23,6 +23,8 @@ pub struct Config {
     /// Base URL of the site, the only required config argument
     pub base_url: String,
 
+    /// Theme to use
+    pub theme: Option<String>,
     /// Title of the site. Defaults to None
     pub title: Option<String>,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
@@ -130,6 +132,7 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             title: Some("".to_string()),
+            theme: None,
             base_url: "http://a-website.com/".to_string(),
             highlight_code: Some(true),
             highlight_theme: Some("base16-ocean-dark".to_string()),

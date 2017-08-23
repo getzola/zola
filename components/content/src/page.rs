@@ -12,6 +12,7 @@ use errors::{Result, ResultExt};
 use config::Config;
 use utils::fs::{read_file, find_related_assets};
 use utils::site::get_reading_analytics;
+use utils::templates::render_template;
 use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
 use rendering::{Context, Header, markdown_to_html};
 
@@ -154,7 +155,7 @@ impl Page {
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
 
-        tera.render(&tpl_name, &context)
+        render_template(&tpl_name, tera, &context, config.theme.clone())
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 }

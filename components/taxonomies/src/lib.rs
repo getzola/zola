@@ -7,6 +7,7 @@ extern crate errors;
 extern crate config;
 extern crate content;
 extern crate front_matter;
+extern crate utils;
 
 use std::collections::HashMap;
 
@@ -17,6 +18,7 @@ use config::Config;
 use errors::{Result, ResultExt};
 use content::{Page, sort_pages};
 use front_matter::SortBy;
+use utils::templates::render_template;
 
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -139,7 +141,7 @@ impl Taxonomy {
         context.add("current_url", &config.make_permalink(&format!("{}/{}", name, item.slug)));
         context.add("current_path", &format!("/{}/{}", name, item.slug));
 
-        tera.render(&format!("{}.html", name), &context)
+        render_template(&format!("{}.html", name), tera, &context, config.theme.clone())
             .chain_err(|| format!("Failed to render {} page.", name))
     }
 
@@ -151,7 +153,7 @@ impl Taxonomy {
         context.add("current_url", &config.make_permalink(&name));
         context.add("current_path", &name);
 
-        tera.render(&format!("{}.html", name), &context)
+        render_template(&format!("{}.html", name), tera, &context, config.theme.clone())
             .chain_err(|| format!("Failed to render {} page.", name))
     }
 }

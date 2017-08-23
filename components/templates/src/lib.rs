@@ -14,8 +14,8 @@ pub mod filters;
 pub mod global_fns;
 
 use tera::{Tera, Context};
-use errors::{Result, ResultExt};
 
+use errors::{Result, ResultExt};
 
 lazy_static! {
     pub static ref GUTENBERG_TERA: Tera = {

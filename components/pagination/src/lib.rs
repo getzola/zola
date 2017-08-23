@@ -5,6 +5,7 @@ extern crate tera;
 extern crate errors;
 extern crate config;
 extern crate content;
+extern crate utils;
 
 #[cfg(test)]
 extern crate front_matter;
@@ -16,6 +17,7 @@ use tera::{Tera, Context, to_value, Value};
 use errors::{Result, ResultExt};
 use config::Config;
 use content::{Page, Section};
+use utils::templates::render_template;
 
 
 /// A list of all the pages in the paginator with their index and links
@@ -170,7 +172,7 @@ impl<'a> Paginator<'a> {
         context.add("current_path", &pager.path);
         context.add("paginator", &self.build_paginator_context(pager));
 
-        tera.render(&self.section.get_template_name(), &context)
+        render_template(&self.section.get_template_name(), tera, &context, config.theme.clone())
             .chain_err(|| format!("Failed to render pager {} of section '{}'", pager.index, self.section.file.path.display()))
     }
 }

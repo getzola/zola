@@ -13,3 +13,4 @@ errors = { path = "../errors" }
 config = { path = "../config" }
 content = { path = "../content" }
 front_matter = { path = "../front_matter" }
+utils = { path = "../utils" }

@@ -180,12 +180,12 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {
                                     console::info(&format!("-> Static file changes detected {}", path.display()));
-                                    rebuild_done_handling(&broadcaster, site.copy_static_file(&path), &p);
+                                    rebuild_done_handling(&broadcaster, site.copy_static_file(&path, &site.static_path), &p);
                                 }
                             },
                             (ChangeKind::Sass, p) => {
                                 console::info(&format!("-> Sass file changed {}", path.display()));
-                                rebuild_done_handling(&broadcaster, site.compile_sass(), &p);
+                                rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p);
                             },
                         };
                         console::report_elapsed_time(start);
