@@ -49,6 +49,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
     create_dir(path.join("content"))?;
     create_dir(path.join("templates"))?;
     create_dir(path.join("static"))?;
+    create_dir(path.join("themes"))?;
     if compile_sass {
         create_dir(path.join("sass"))?;
     }
