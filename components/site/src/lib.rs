@@ -33,7 +33,7 @@ use sass_rs::{Options, compile_file};
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use utils::fs::{create_file, create_directory, ensure_directory_exists};
-use utils::templates::render_template;
+use utils::templates::{render_template, rewrite_theme_paths};
 use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::{SortBy, InsertAnchor};
@@ -81,15 +81,18 @@ impl Site {
     /// Passing in a path is only used in tests
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
-        let config = get_config(path, config_file);
+        let mut config = get_config(path, config_file);
 
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
 
-        if let Some(ref theme) = config.theme {
+        if let Some(theme) = config.theme.clone() {
+            // Grab data from the extra section of the theme
+            config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
+
             // Test that the {templates,static} folder exist for that theme
-            let theme_path = path.join("themes").join(theme);
+            let theme_path = path.join("themes").join(&theme);
             if !theme_path.join("templates").exists() {
                 bail!("Theme `{}` is missing a templates folder", theme);
             }
@@ -97,8 +100,10 @@ impl Site {
                 bail!("Theme `{}` is missing a static folder", theme);
             }
             let theme_tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "themes/**/*.html");
-            let tera_themes = Tera::new(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
-            tera.extend(&tera_themes)?;
+            let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
+            rewrite_theme_paths(&mut tera_theme, &theme);
+            tera_theme.build_inheritance_chains().unwrap();
+            tera.extend(&tera_theme)?;
         }
 
         let site = Site {
