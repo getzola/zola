@@ -216,6 +216,32 @@ Individual tag/category pages are only supported for pages having a date.
 You can automatically compile and watch all `.scss` files by adding `compile_sass = true` in your 
 `config.toml`.
 
+### Theme
+Gutenberg has built-in support for themes. 
+To use a theme, download the theme in the `themes` folder and add its name in your `config.toml`:
+
+```toml
+// if the theme is called hyde and found in themes/hyde
+theme = "hyde"
+```
+
+Themes can provide values in the `extra` portion of the `theme.toml` but you can override any
+of those in the `config.toml`.
+
+Changes in the themes folder are not watched: if you want to make changes to a theme, it's better
+to extend a template in your own `templates` directory or create a new Sass file in the `sass` directory.
+You get to be able to update the themes easily that way.
+
+#### List of themes
+
+- hyde: https://github.com/Keats/hyde
+
+#### Making a theme
+See https://github.com/Keats/hyde for an example on how to build a theme. 
+
+The most important thing to remember is that you cannot use Tera's `include` in a theme, which means adding `block`
+everywhere a user might want to customise things: `extra_head` to add some JS/CSS files for example.
+
 ### Code highlighting themes
 Code highlighting can be turned on by setting `highlight_code = true` in `config.toml`.
 
