@@ -54,8 +54,8 @@ fn main() {
             };
         },
         ("serve", Some(matches)) => {
-            let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
-            let port = matches.value_of("port").unwrap_or("1111");
+            let interface = matches.value_of("interface").unwrap();
+            let port = matches.value_of("port").unwrap();
             console::info("Building site...");
             match cmd::serve(interface, port, config_file) {
                 Ok(()) => (),
