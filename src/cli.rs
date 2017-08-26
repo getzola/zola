@@ -20,5 +20,9 @@ pub fn build_cli() -> App<'static, 'static> {
             (@arg interface: "Interface to bind on (default to 127.0.0.1)")
             (@arg port: "Which port to use (default to 1111)")
         )
+        (@subcommand completions =>
+            (about: "Create completions file for specified shell")
+            (@arg for_shell: +required +takes_value "Destination shell (bash, zsh, fish, powershell")
+        )
     )
 }

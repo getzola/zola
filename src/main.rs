@@ -17,6 +17,8 @@ extern crate front_matter;
 extern crate utils;
 
 use std::time::Instant;
+use std::io;
+use clap::Shell;
 
 mod cmd;
 mod console;
@@ -63,7 +65,10 @@ fn main() {
                 },
             };
         },
+        ("completions", Some(matches)) => {
+            let shell = matches.value_of("for_shell").unwrap();
+            cli::build_cli().gen_completions_to("gutenberg", shell.parse::<Shell>().unwrap(), &mut io::stdout());
+        },
         _ => unreachable!(),
     }
 }
-
