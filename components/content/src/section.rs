@@ -9,6 +9,7 @@ use config::Config;
 use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
 use utils::fs::read_file;
+use utils::templates::render_template;
 use rendering::{Context, Header, markdown_to_html};
 
 use page::Page;
@@ -113,7 +114,7 @@ impl Section {
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
 
-        tera.render(&tpl_name, &context)
+        render_template(&tpl_name, tera, &context, config.theme.clone())
             .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 

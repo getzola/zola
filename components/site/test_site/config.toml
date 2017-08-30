@@ -4,6 +4,7 @@ highlight_code = true
 compile_sass = true
 generate_rss = true
 rss_limit = 2
+theme = "sample"
 
 [extra.author]
 name = "Vincent Prouillet"

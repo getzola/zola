@@ -11,6 +11,7 @@ serde_derive = "1.0"
 errors = { path = "../errors" }
 config = { path = "../config" }
 content = { path = "../content" }
+utils = { path = "../utils" }
 
 [dev-dependencies]
 front_matter = { path = "../front_matter" }

@@ -9,7 +9,7 @@ extern crate chrono;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use toml::{Value as Toml};
 use chrono::Utc;
@@ -18,11 +18,17 @@ use errors::{Result, ResultExt};
 use rendering::highlighting::THEME_SET;
 
 
+mod theme;
+
+use theme::Theme;
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
     pub base_url: String,
 
+    /// Theme to use
+    pub theme: Option<String>,
     /// Title of the site. Defaults to None
     pub title: Option<String>,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
@@ -80,6 +86,7 @@ impl Config {
         set_default!(config.generate_categories_pages, false);
         set_default!(config.insert_anchor_links, false);
         set_default!(config.compile_sass, false);
+        set_default!(config.extra, HashMap::new());
 
         match config.highlight_theme {
             Some(ref t) => {
@@ -122,6 +129,33 @@ impl Config {
             format!("{}/{}{}", self.base_url, path, trailing_bit)
         }
     }
+
+    /// Merges the extra data from the theme with the config extra data
+    fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
+        if let Some(ref mut config_extra) = self.extra {
+            // 3 pass merging
+            // 1. save config to preserve user
+            let original = config_extra.clone();
+            // 2. inject theme extra values
+            for (key, val) in &theme.extra {
+                config_extra.entry(key.to_string()).or_insert(val.clone());
+            }
+
+            // 3. overwrite with original config
+            for (key, val) in &original {
+                config_extra.entry(key.to_string()).or_insert(val.clone());
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Parse the theme.toml file and merges the extra data from the theme
+    /// with the config extra data
+    pub fn merge_with_theme(&mut self, path: &PathBuf) -> Result<()> {
+        let theme = Theme::from_file(path)?;
+        self.add_theme_extra(&theme)
+    }
 }
 
 /// Exists only for testing purposes
@@ -130,6 +164,7 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             title: Some("".to_string()),
+            theme: None,
             base_url: "http://a-website.com/".to_string(),
             highlight_code: Some(true),
             highlight_theme: Some("base16-ocean-dark".to_string()),
@@ -164,7 +199,7 @@ pub fn get_config(path: &Path, filename: &str) -> Config {
 
 #[cfg(test)]
 mod tests {
-    use super::{Config};
+    use super::{Config, Theme};
 
     #[test]
     fn can_import_valid_config() {
@@ -226,5 +261,27 @@ hello = "world"
         let mut config = Config::default();
         config.base_url = "http://vincent.is/".to_string();
         assert_eq!(config.make_permalink("/hello"), "http://vincent.is/hello/");
+    }
+
+    #[test]
+    fn can_merge_with_theme_data_and_preserve_config_value() {
+        let config_str = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+
+[extra]
+hello = "world"
+        "#;
+        let mut config = Config::parse(config_str).unwrap();
+        let theme_str = r#"
+[extra]
+hello = "foo"
+a_value = 10
+        "#;
+        let theme = Theme::parse(theme_str).unwrap();
+        assert!(config.add_theme_extra(&theme).is_ok());
+        let extra = config.extra.unwrap();
+        assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
+        assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
     }
 }

@@ -100,7 +100,6 @@ fn can_build_site_without_live_reload() {
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
-
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
     assert!(file_exists!(public, "robots.txt"));
@@ -129,6 +128,10 @@ fn can_build_site_without_live_reload() {
     // No tags or categories
     assert_eq!(file_exists!(public, "categories/index.html"), false);
     assert_eq!(file_exists!(public, "tags/index.html"), false);
+
+    // Theme files are there
+    assert!(file_exists!(public, "sample.css"));
+    assert!(file_exists!(public, "some.js"));
 
     // no live reload code
     assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);

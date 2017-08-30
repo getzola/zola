@@ -33,6 +33,7 @@ use sass_rs::{Options, compile_file};
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use utils::fs::{create_file, create_directory, ensure_directory_exists};
+use utils::templates::{render_template, rewrite_theme_paths};
 use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::{SortBy, InsertAnchor};
@@ -67,7 +68,7 @@ pub struct Site {
     pub tera: Tera,
     live_reload: bool,
     output_path: PathBuf,
-    static_path: PathBuf,
+    pub static_path: PathBuf,
     pub tags: Option<Taxonomy>,
     pub categories: Option<Taxonomy>,
     /// A map of all .md files (section and pages) and their permalink
@@ -80,14 +81,34 @@ impl Site {
     /// Passing in a path is only used in tests
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
+        let mut config = get_config(path, config_file);
 
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
         tera.extend(&GUTENBERG_TERA)?;
 
+        if let Some(theme) = config.theme.clone() {
+            // Grab data from the extra section of the theme
+            config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
+
+            // Test that the {templates,static} folder exist for that theme
+            let theme_path = path.join("themes").join(&theme);
+            if !theme_path.join("templates").exists() {
+                bail!("Theme `{}` is missing a templates folder", theme);
+            }
+            if !theme_path.join("static").exists() {
+                bail!("Theme `{}` is missing a static folder", theme);
+            }
+            let theme_tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "themes/**/*.html");
+            let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
+            rewrite_theme_paths(&mut tera_theme, &theme);
+            tera_theme.build_inheritance_chains().unwrap();
+            tera.extend(&tera_theme)?;
+        }
+
         let site = Site {
             base_path: path.to_path_buf(),
-            config: get_config(path, config_file),
+            config: config,
             pages: HashMap::new(),
             sections: HashMap::new(),
             tera: tera,
@@ -242,7 +263,7 @@ impl Site {
 
         if render {
             let insert_anchor = self.find_parent_section_insert_anchor(&self.pages[&path].file.parent);
-            let mut page = self.pages.get_mut(&path).unwrap();
+            let page = self.pages.get_mut(&path).unwrap();
             page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
 
@@ -259,7 +280,7 @@ impl Site {
         let prev = self.sections.insert(section.file.path.clone(), section);
 
         if render {
-            let mut section = self.sections.get_mut(&path).unwrap();
+            let section = self.sections.get_mut(&path).unwrap();
             section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
 
@@ -353,9 +374,9 @@ impl Site {
         html
     }
 
-    /// Copy static file to public directory.
-    pub fn copy_static_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-        let relative_path = path.as_ref().strip_prefix(&self.static_path).unwrap();
+    /// Copy the file at the given path into the public folder
+    pub fn copy_static_file<P: AsRef<Path>>(&self, path: P, base_path: &PathBuf) -> Result<()> {
+        let relative_path = path.as_ref().strip_prefix(base_path).unwrap();
         let target_path = self.output_path.join(relative_path);
         if let Some(parent_directory) = target_path.parent() {
             create_dir_all(parent_directory)?;
@@ -364,21 +385,33 @@ impl Site {
         Ok(())
     }
 
-    /// Copy the content of the `static` folder into the `public` folder
-    pub fn copy_static_directory(&self) -> Result<()> {
-        for entry in WalkDir::new(&self.static_path).into_iter().filter_map(|e| e.ok()) {
-            let relative_path = entry.path().strip_prefix(&self.static_path).unwrap();
+    /// Copy the content of the given folder into the `public` folder
+    fn copy_static_directory(&self, path: &PathBuf) -> Result<()> {
+        for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
+            let relative_path = entry.path().strip_prefix(path).unwrap();
             let target_path = self.output_path.join(relative_path);
-
             if entry.path().is_dir() {
                 if !target_path.exists() {
                     create_directory(&target_path)?;
                 }
             } else {
                 let entry_fullpath = self.base_path.join(entry.path());
-                self.copy_static_file(entry_fullpath)?;
+                self.copy_static_file(entry_fullpath, path)?;
             }
         }
+        Ok(())
+    }
+
+    /// Copy the main `static` folder and the theme `static` folder if a theme is used
+    pub fn copy_static_directories(&self) -> Result<()> {
+        // The user files will overwrite the theme files
+        if let Some(ref theme) = self.config.theme {
+            self.copy_static_directory(
+                &self.base_path.join("themes").join(theme).join("static")
+            )?;
+        }
+        self.copy_static_directory(&self.static_path)?;
+
         Ok(())
     }
 
@@ -440,17 +473,24 @@ impl Site {
         self.render_categories()?;
         self.render_tags()?;
 
-        if self.config.compile_sass.unwrap() {
-            self.compile_sass()?;
+        if let Some(ref theme) = self.config.theme {
+            let theme_path = self.base_path.join("themes").join(theme);
+            if theme_path.join("sass").exists() {
+                self.compile_sass(&theme_path)?;
+            }
         }
 
-        self.copy_static_directory()
+        if self.config.compile_sass.unwrap() {
+            self.compile_sass(&self.base_path)?;
+        }
+
+        self.copy_static_directories()
     }
 
-    pub fn compile_sass(&self) -> Result<()> {
+    pub fn compile_sass(&self, base_path: &PathBuf) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let base_path = self.base_path.to_string_lossy().replace("\\", "/");
+        let base_path = base_path.to_string_lossy().replace("\\", "/");
         let sass_glob = format!("{}/{}", base_path, "sass/**/*.scss");
         let files = glob(&sass_glob)
             .unwrap()
@@ -495,7 +535,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         create_file(
             &self.output_path.join("robots.txt"),
-            &self.tera.render("robots.txt", &Context::new())?
+            &render_template("robots.txt", &self.tera, &Context::new(), self.config.theme.clone())?
         )
     }
 
@@ -582,7 +622,7 @@ impl Site {
         }
         context.add("tags", &tags);
 
-        let sitemap = self.tera.render("sitemap.xml", &context)?;
+        let sitemap = &render_template("sitemap.xml", &self.tera, &context, self.config.theme.clone())?;
 
         create_file(&self.output_path.join("sitemap.xml"), &sitemap)?;
 
@@ -616,9 +656,9 @@ impl Site {
         };
         context.add("feed_url", &rss_feed_url);
 
-        let sitemap = self.tera.render("rss.xml", &context)?;
+        let feed = &render_template("rss.xml", &self.tera, &context, self.config.theme.clone())?;
 
-        create_file(&self.output_path.join("rss.xml"), &sitemap)?;
+        create_file(&self.output_path.join("rss.xml"), &feed)?;
 
         Ok(())
     }
