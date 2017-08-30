@@ -1,0 +1,11 @@
+Category: {{ category.name }}
+
+
+{% for page in category.pages %}
+    <article>
+        <h3 class="post__title"><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
+    </article>
+{% endfor %}
+
+{% block extra_category %}
+{% endblock extra_category %}

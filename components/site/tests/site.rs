@@ -223,6 +223,8 @@ fn can_build_site_with_categories() {
     assert!(file_exists!(public, "categories/index.html"));
     assert!(file_exists!(public, "categories/a/index.html"));
     assert!(file_exists!(public, "categories/b/index.html"));
+    // Extending from a theme works
+    assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
     // Tags aren't
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
