@@ -84,8 +84,9 @@ impl Site {
         let mut config = get_config(path, config_file);
 
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
-        let mut tera = Tera::new(&tpl_glob).chain_err(|| "Error parsing templates")?;
-        tera.extend(&GUTENBERG_TERA)?;
+        // Only parsing as we might be extending templates from themes and that would error
+        // as we haven't loaded them yet
+        let mut tera = Tera::parse(&tpl_glob).chain_err(|| "Error parsing templates")?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
@@ -99,12 +100,16 @@ impl Site {
             if !theme_path.join("static").exists() {
                 bail!("Theme `{}` is missing a static folder", theme);
             }
+
             let theme_tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "themes/**/*.html");
             let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
             rewrite_theme_paths(&mut tera_theme, &theme);
-            tera_theme.build_inheritance_chains().unwrap();
+            tera_theme.build_inheritance_chains()?;
             tera.extend(&tera_theme)?;
         }
+        tera.extend(&GUTENBERG_TERA)?;
+        // the `extend` above already does it but hey
+        tera.build_inheritance_chains()?;
 
         let site = Site {
             base_path: path.to_path_buf(),

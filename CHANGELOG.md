@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3 (unreleased)
+
+- Add themes support
+
+
 ## 0.1.2 (2017-08-10)
 
 - Add `redirect_to` to section front matter to redirect when landing on section
