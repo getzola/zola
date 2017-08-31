@@ -26,7 +26,7 @@ impl Theme {
         };
 
         let mut extra = HashMap::new();
-        if let Some(ref theme_table) = theme.as_table() {
+        if let Some(theme_table) = theme.as_table() {
             if let Some(ex) = theme_table.get("extra") {
                 if ex.is_table() {
                     extra = ex.clone().try_into().unwrap();

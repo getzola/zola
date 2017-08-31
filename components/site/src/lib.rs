@@ -629,7 +629,7 @@ impl Site {
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, self.config.theme.clone())?;
 
-        create_file(&self.output_path.join("sitemap.xml"), &sitemap)?;
+        create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
 
         Ok(())
     }
@@ -663,7 +663,7 @@ impl Site {
 
         let feed = &render_template("rss.xml", &self.tera, &context, self.config.theme.clone())?;
 
-        create_file(&self.output_path.join("rss.xml"), &feed)?;
+        create_file(&self.output_path.join("rss.xml"), feed)?;
 
         Ok(())
     }

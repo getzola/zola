@@ -138,12 +138,12 @@ impl Config {
             let original = config_extra.clone();
             // 2. inject theme extra values
             for (key, val) in &theme.extra {
-                config_extra.entry(key.to_string()).or_insert(val.clone());
+                config_extra.entry(key.to_string()).or_insert_with(|| val.clone());
             }
 
             // 3. overwrite with original config
             for (key, val) in &original {
-                config_extra.entry(key.to_string()).or_insert(val.clone());
+                config_extra.entry(key.to_string()).or_insert_with(|| val.clone());
             }
         }
 
@@ -171,7 +171,7 @@ impl Default for Config {
             description: None,
             language_code: Some("en".to_string()),
             generate_rss: Some(false),
-            rss_limit: Some(10000),
+            rss_limit: Some(10_000),
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
             insert_anchor_links: Some(false),

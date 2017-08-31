@@ -131,14 +131,14 @@ fn bench_sorting_order(b: &mut test::Bencher) {
 fn bench_populate_previous_and_next_pages(b: &mut test::Bencher) {
     let pages = create_pages(250, SortBy::Order);
     let (sorted_pages, _) = sort_pages(pages, SortBy::Order);
-    b.iter(|| populate_previous_and_next_pages(sorted_pages.clone()));
+    b.iter(|| populate_previous_and_next_pages(&sorted_pages.clone()));
 }
 
 #[bench]
 fn bench_page_render_html(b: &mut test::Bencher) {
     let pages = create_pages(10, SortBy::Order);
     let (mut sorted_pages, _) = sort_pages(pages, SortBy::Order);
-    sorted_pages = populate_previous_and_next_pages(sorted_pages.clone());
+    sorted_pages = populate_previous_and_next_pages(&sorted_pages);
 
     let config = Config::default();
     let mut tera = Tera::default();

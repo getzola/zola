@@ -79,7 +79,7 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
                         if cachebust {
                             permalink = format!("{}?t={}", permalink, config.build_timestamp.unwrap());
                         }
-                        return Ok(to_value(permalink).unwrap());
+                        Ok(to_value(permalink).unwrap())
                     }
                 },
                 Err(_) => Err(format!("`get_url` received path={:?} but it requires a string", val).into()),

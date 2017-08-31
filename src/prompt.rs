@@ -12,7 +12,7 @@ fn read_line() -> Result<String> {
     lines
         .next()
         .and_then(|l| l.ok())
-        .ok_or("unable to read from stdin for confirmation".into())
+        .ok_or_else(|| "unable to read from stdin for confirmation".into())
 }
 
 /// Ask a yes/no question to the user
