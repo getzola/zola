@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.3 (unreleased)
+## 0.1.3 (2017-08-31)
 
 - Add themes support
 
