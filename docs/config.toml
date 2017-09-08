@@ -1,0 +1,9 @@
+base_url = "https://example.com"
+title = "Gutenberg - your one-stop static site engine"
+description = "Everything you need to make a static site engine in one binary. And it's fast"
+
+compile_sass = true
+highlight_code = true
+
+[extra]
+author = "Vincent Prouillet"

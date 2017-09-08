@@ -1,0 +1,17 @@
+header {
+  padding: 2rem 0;
+
+  nav {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
+
+footer {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.content {
+  flex-grow: 1;
+}

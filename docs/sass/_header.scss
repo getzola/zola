@@ -1,0 +1,14 @@
+header {
+  nav a {
+    margin-right: 1rem;
+  }
+
+  .header__logo {
+    font-size: 2rem;
+    font-weight: bold;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}

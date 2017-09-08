@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
+        <meta name="author" content="{{ config.extra.author }}">
+        <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+        <link rel="stylesheet" href="{{ get_url(path="site.css", cachebust=true) }}"/>
+    </head>
+    <body>
+
+        <header>
+            <nav>
+                <a class="header__logo" href="{{ config.base_url }}">Gutenberg</a>
+                <a href="" class="nav-link">Docs</a>
+                <a href="" class="nav-link">Themes</a>
+                <a href="https://github.com/Keats/gutenberg" class="nav-link">Github</a>
+            </nav>
+        </header>
+
+        <div class="content">
+            {% block content %}
+                <div class="hero">
+                    <h1>Your damn fast one-stop static site engine</h1>
+                    <p class="hero__tagline">
+                        Forget dependencies. Everything you need in one binary.
+                    </p>
+                    <a href="" class="button">Get started</a>
+                </div>
+            {% endblock content %}
+        </div>
+
+        <footer>
+            <div class="container">
+                © 2017 Vincent Prouillet
+            </div>
+        </footer>
+    </body>
+</html>
