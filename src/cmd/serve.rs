@@ -160,7 +160,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                     Write(path) |
                     Remove(path) |
                     Rename(_, path) => {
-                        if is_temp_file(&path) {
+                        if is_temp_file(&path) || path.is_dir() {
                             continue;
                         }
 
