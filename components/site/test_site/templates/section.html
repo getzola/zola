@@ -6,5 +6,6 @@
     {% endfor %}
     {% for subsection in section.subsections %}
         {{subsection.title}}
+        Sub-pages: {{subsection.pages | length}}
     {% endfor %}
 {% endblock content %}
