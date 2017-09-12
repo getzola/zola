@@ -12,15 +12,15 @@
     <body>
 
         <header>
-            <nav>
+            <nav class="container">
                 <a class="header__logo" href="{{ config.base_url }}">Gutenberg</a>
-                <a href="" class="nav-link">Docs</a>
+                <a href="/documentation" class="nav-link">Documentation</a>
                 <a href="" class="nav-link">Themes</a>
                 <a href="https://github.com/Keats/gutenberg" class="nav-link">Github</a>
             </nav>
         </header>
 
-        <div class="content">
+        <div class="content {% block extra_content_class %}{% endblock extra_content_class %}">
             {% block content %}
                 <div class="hero">
                     <h1>Your damn fast one-stop static site engine</h1>
@@ -28,6 +28,43 @@
                         Forget dependencies. Everything you need in one binary.
                     </p>
                     <a href="" class="button">Get started</a>
+                </div>
+
+                <div class="selling-points">
+                    <div class="selling-points__content container">
+
+                        <div class="selling-point">
+                            <h2>Everything built-in</h2>
+                            <p>
+                                Gutenberg comes with Sass compilation, syntax highlighting and
+                                a other features that usually require using additional tools
+                                or use JavaScript libraries on your site.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Fast</h2>
+                            <p>
+                                Your site will be generated in milliseconds, not seconds.
+                                That includes Sass compilation and syntax highlighting.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Flexible</h2>
+                            <p>
+                                You can build anything you want with Gutenberg: blogs, landing pages, knowledge bases...
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Easy to use</h2>
+                            <p>
+                                Gutenberg strives for good UX and being productive instantly.
+                            </p>
+                        </div>
+
+                    </div>
                 </div>
             {% endblock content %}
         </div>
