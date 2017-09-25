@@ -304,10 +304,14 @@ impl Site {
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
-        let mut grandparent_paths = HashMap::new();
+        let mut grandparent_paths: HashMap<PathBuf, Vec<PathBuf>> = HashMap::new();
+
         for section in self.sections.values_mut() {
             if let Some(ref grand_parent) = section.file.grand_parent {
-                grandparent_paths.entry(grand_parent.to_path_buf()).or_insert_with(|| vec![]).push(section.clone());
+                grandparent_paths
+                    .entry(grand_parent.to_path_buf())
+                    .or_insert_with(|| vec![])
+                    .push(section.file.path.clone());
             }
             // Make sure the pages of a section are empty since we can call that many times on `serve`
             section.pages = vec![];
@@ -321,14 +325,20 @@ impl Site {
             }
         }
 
+        self.sort_sections_pages(None);
+        // TODO: remove this clone
+        let sections = self.sections.clone();
+
         for section in self.sections.values_mut() {
             match grandparent_paths.get(&section.file.parent) {
-                Some(paths) => section.subsections.extend(paths.clone()),
+                Some(paths) => {
+                    for p in paths {
+                        section.subsections.push(sections[p].clone());
+                    }
+                },
                 None => continue,
             };
         }
-
-        self.sort_sections_pages(None);
     }
 
     /// Sorts the pages of the section at the given path

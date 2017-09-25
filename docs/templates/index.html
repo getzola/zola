@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
+        <meta name="author" content="{{ config.extra.author }}">
+        <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+        <link rel="stylesheet" href="{{ get_url(path="site.css", cachebust=true) }}"/>
+    </head>
+    <body>
+
+        <header>
+            <nav class="container">
+                <a class="header__logo" href="{{ config.base_url }}">Gutenberg</a>
+                <a href="/documentation" class="nav-link">Documentation</a>
+                <a href="" class="nav-link">Themes</a>
+                <a href="https://github.com/Keats/gutenberg" class="nav-link">Github</a>
+            </nav>
+        </header>
+
+        <div class="content {% block extra_content_class %}{% endblock extra_content_class %}">
+            {% block content %}
+                <div class="hero">
+                    <h1>Your damn fast one-stop static site engine</h1>
+                    <p class="hero__tagline">
+                        Forget dependencies. Everything you need in one binary.
+                    </p>
+                    <a href="" class="button">Get started</a>
+                </div>
+
+                <div class="selling-points">
+                    <div class="selling-points__content container">
+
+                        <div class="selling-point">
+                            <h2>Everything built-in</h2>
+                            <p>
+                                Gutenberg comes with Sass compilation, syntax highlighting and
+                                a other features that usually require using additional tools
+                                or use JavaScript libraries on your site.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Fast</h2>
+                            <p>
+                                Your site will be generated in milliseconds, not seconds.
+                                That includes Sass compilation and syntax highlighting.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Flexible</h2>
+                            <p>
+                                You can build anything you want with Gutenberg: blogs, landing pages, knowledge bases...
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Easy to use</h2>
+                            <p>
+                                Gutenberg strives for good UX and being productive instantly.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            {% endblock content %}
+        </div>
+
+        <footer>
+            <div class="container">
+                © 2017 Vincent Prouillet
+            </div>
+        </footer>
+    </body>
+</html>

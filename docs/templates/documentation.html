@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+
+{% block title %}{{ super() }} - Documentation {% endblock title %}
+
+{% block extra_content_class %}content--reversed{% endblock extra_content_class %}
+
+{% block content %}
+{% set section = get_section(path="documentation/_index.md") %}
+<div class="documentation container">
+    <aside class="documentation__sidebar">
+        {% for subsection in section.subsections %}
+            <li>
+                {{ subsection.title }}
+                <ul>
+                    {% for page in subsection.pages | reverse %}
+                    <li>{{page.title}}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </aside>
+    <div class="documentation__content">
+        hey
+    </div>
+</div>
+{% endblock content %}

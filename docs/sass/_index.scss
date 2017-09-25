@@ -1,0 +1,28 @@
+.hero {
+  width: 60%;
+  margin: 0 auto;
+  margin-top: 3rem;
+  margin-bottom: 6rem;
+  text-align: center;
+
+  &__tagline {
+    margin-bottom: 2rem;
+  }
+}
+
+.selling-points {
+  background: $foreground;
+  color: $background;
+  padding: 3rem;
+
+  &__content {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+.selling-point {
+  // 2 selling points per row on desktop
+  width: 50%;
+  padding: 2rem;
+}

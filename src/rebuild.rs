@@ -98,6 +98,11 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
 
     // A page or section got deleted
     if !path.exists() {
+        // A folder got deleted, ignore this event
+        if !site.sections.contains_key(path) && !site.pages.contains_key(path) {
+            return Ok(());
+        }
+
         if is_section {
             // A section was deleted, many things can be impacted:
             // - the pages of the section are becoming orphans
