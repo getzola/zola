@@ -1,6 +1,5 @@
 extern crate site;
 extern crate tempdir;
-extern crate glob;
 
 use std::env;
 use std::path::Path;
@@ -19,7 +18,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
-    assert_eq!(site.pages.len(), 11);
+    assert_eq!(site.pages.len(), 12);
     let posts_path = path.join("content").join("posts");
 
     // Make sure we remove all the pwd + content from the sections
@@ -44,7 +43,7 @@ fn can_parse_site() {
 
     let posts_section = &site.sections[&posts_path.join("_index.md")];
     assert_eq!(posts_section.subsections.len(), 1);
-    assert_eq!(posts_section.pages.len(), 5);
+    assert_eq!(posts_section.pages.len(), 6);
 
     let tutorials_section = &site.sections[&posts_path.join("tutorials").join("_index.md")];
     assert_eq!(tutorials_section.subsections.len(), 2);
@@ -141,6 +140,8 @@ fn can_build_site_without_live_reload() {
     // Both pages and sections are in the sitemap
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"));
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
+    // Drafts are not in the sitemap
+    assert!(!file_contains!(public, "sitemap.xml", "draft"));
 }
 
 #[test]
@@ -369,7 +370,7 @@ fn can_build_site_with_pagination_for_index() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     {
-        let mut index = site.sections.get_mut(&path.join("content").join("_index.md")).unwrap();
+        let index = site.sections.get_mut(&path.join("content").join("_index.md")).unwrap();
         index.meta.paginate_by = Some(2);
         index.meta.template = Some("index_paginated.html".to_string());
     }

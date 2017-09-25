@@ -367,7 +367,12 @@ impl Site {
 
         // TODO: can we pass a reference?
         let (tags, categories) = Taxonomy::find_tags_and_categories(
-            self.pages.values().cloned().collect::<Vec<_>>().as_slice()
+            self.pages
+                .values()
+                .filter(|p| !p.is_draft())
+                .cloned()
+                .collect::<Vec<_>>()
+                .as_slice()
         );
         if generate_tags_pages {
             self.tags = Some(tags);
@@ -606,11 +611,18 @@ impl Site {
 
         context.add(
             "pages",
-            &self.pages.values().map(|p| SitemapEntry::new(p.permalink.clone(), p.meta.date.clone())).collect::<Vec<_>>()
+            &self.pages
+                .values()
+                .filter(|p| !p.is_draft())
+                .map(|p| SitemapEntry::new(p.permalink.clone(), p.meta.date.clone()))
+                .collect::<Vec<_>>()
         );
         context.add(
             "sections",
-            &self.sections.values().map(|s| SitemapEntry::new(s.permalink.clone(), None)).collect::<Vec<_>>()
+            &self.sections
+                .values()
+                .map(|s| SitemapEntry::new(s.permalink.clone(), None))
+                .collect::<Vec<_>>()
         );
 
         let mut categories = vec![];
@@ -649,7 +661,7 @@ impl Site {
 
         let mut context = Context::new();
         let pages = self.pages.values()
-            .filter(|p| p.meta.date.is_some())
+            .filter(|p| p.meta.date.is_some() && !p.is_draft())
             .cloned()
             .collect::<Vec<Page>>();
 

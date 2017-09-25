@@ -71,6 +71,10 @@ impl Page {
         }
     }
 
+    pub fn is_draft(&self) -> bool {
+        self.meta.draft.unwrap_or(false)
+    }
+
     /// Parse a page given the content of the .md file
     /// Files without front matter or with invalid front matter are considered
     /// erroneous

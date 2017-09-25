@@ -15,6 +15,8 @@ pub struct PageFrontMatter {
     pub description: Option<String>,
     /// Date if we want to order pages (ie blog post)
     pub date: Option<String>,
+    /// Whether this page is a draft and should be ignored for pagination etc
+    pub draft: Option<bool>,
     /// The page slug. Will be used instead of the filename if present
     /// Can't be an empty string if present
     pub slug: Option<String>,
@@ -104,6 +106,7 @@ impl Default for PageFrontMatter {
             title: None,
             description: None,
             date: None,
+            draft: None,
             slug: None,
             url: None,
             tags: None,

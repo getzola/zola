@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 (unreleased)
+
+- Fix `section.subsections` not being filled correctly
+- Do nothing on directory adding/removal in livereload
+- Add back `draft` on pages that was wrongly removed
+
 ## 0.1.3 (2017-08-31)
 
 - Add themes support

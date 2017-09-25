@@ -42,20 +42,53 @@ pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
     for (i, _) in input.iter().enumerate() {
         let mut new_page = input[i].clone();
 
+        if new_page.is_draft() {
+            res.push(new_page);
+            continue;
+        }
+
         if i > 0 {
-            let mut next_page = input[i - 1].clone();
-            // Remove prev/next otherwise we serialise the whole thing...
-            next_page.previous = None;
-            next_page.next = None;
-            new_page.next = Some(Box::new(next_page));
+            let mut j = i;
+            loop {
+                if j == 0 {
+                    break;
+                }
+
+                j -= 1;
+
+                if input[j].is_draft() {
+                    continue;
+                }
+
+                // Remove prev/next otherwise we serialise the whole thing...
+                let mut next_page = input[j].clone();
+                next_page.previous = None;
+                next_page.next = None;
+                new_page.next = Some(Box::new(next_page));
+                break;
+            }
         }
 
         if i < input.len() - 1 {
-            let mut previous_page = input[i + 1].clone();
-            // Remove prev/next otherwise we serialise the whole thing...
-            previous_page.previous = None;
-            previous_page.next = None;
-            new_page.previous = Some(Box::new(previous_page));
+            let mut j = i;
+            loop {
+                if j == input.len() - 1 {
+                    break;
+                }
+
+                j += 1;
+
+                if input[j].is_draft() {
+                    continue;
+                }
+
+                // Remove prev/next otherwise we serialise the whole thing...
+                let mut previous_page = input[j].clone();
+                previous_page.previous = None;
+                previous_page.next = None;
+                new_page.previous = Some(Box::new(previous_page));
+                break;
+            }
         }
         res.push(new_page);
     }
@@ -78,6 +111,13 @@ mod tests {
     fn create_page_with_order(order: usize) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.order = Some(order);
+        Page::new("content/hello.md", front_matter)
+    }
+
+    fn create_draft_page_with_order(order: usize) -> Page {
+        let mut front_matter = PageFrontMatter::default();
+        front_matter.order = Some(order);
+        front_matter.draft = Some(true);
         Page::new("content/hello.md", front_matter)
     }
 
@@ -176,5 +216,36 @@ mod tests {
         assert!(pages[2].clone().next.is_some());
         assert!(pages[2].clone().previous.is_none());
         assert_eq!(pages[2].clone().next.unwrap().meta.order.unwrap(), 2);
+    }
+
+    #[test]
+    fn can_populate_previous_and_next_pages_skip_drafts() {
+        let input = vec![
+            create_draft_page_with_order(0),
+            create_page_with_order(1),
+            create_page_with_order(2),
+            create_page_with_order(3),
+            create_draft_page_with_order(4),
+        ];
+        let pages = populate_previous_and_next_pages(&input);
+
+        assert!(pages[0].clone().next.is_none());
+        assert!(pages[0].clone().previous.is_none());
+
+        assert!(pages[1].clone().next.is_none());
+        assert!(pages[1].clone().previous.is_some());
+        assert_eq!(pages[1].clone().previous.unwrap().meta.order.unwrap(), 2);
+
+        assert!(pages[2].clone().next.is_some());
+        assert!(pages[2].clone().previous.is_some());
+        assert_eq!(pages[2].clone().previous.unwrap().meta.order.unwrap(), 3);
+        assert_eq!(pages[2].clone().next.unwrap().meta.order.unwrap(), 1);
+
+        assert!(pages[3].clone().next.is_some());
+        assert!(pages[3].clone().previous.is_none());
+        assert_eq!(pages[3].clone().next.unwrap().meta.order.unwrap(), 2);
+
+        assert!(pages[4].clone().next.is_none());
+        assert!(pages[4].clone().previous.is_none());
     }
 }
