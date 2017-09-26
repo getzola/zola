@@ -330,14 +330,14 @@ impl Site {
         let sections = self.sections.clone();
 
         for section in self.sections.values_mut() {
-            match grandparent_paths.get(&section.file.parent) {
-                Some(paths) => {
-                    for p in paths {
-                        section.subsections.push(sections[p].clone());
-                    }
-                },
-                None => continue,
-            };
+            if let Some(paths) = grandparent_paths.get(&section.file.parent) {
+                section.subsections = paths
+                    .iter()
+                    .map(|p| sections[p].clone())
+                    .collect::<Vec<_>>();
+                section.subsections
+                    .sort_by(|a, b| a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()));
+            }
         }
     }
 

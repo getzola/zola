@@ -3,6 +3,7 @@
 ## 0.1.4 (unreleased)
 
 - Fix `section.subsections` not being filled correctly
+- `section.subsections` can now be sorted by a `weight` attribute on a section front-matter
 - Do nothing on directory adding/removal in livereload
 - Add back `draft` on pages that was wrongly removed
 

@@ -47,6 +47,8 @@ fn can_parse_site() {
 
     let tutorials_section = &site.sections[&posts_path.join("tutorials").join("_index.md")];
     assert_eq!(tutorials_section.subsections.len(), 2);
+    assert_eq!(tutorials_section.subsections[0].clone().meta.title.unwrap(), "Programming");
+    assert_eq!(tutorials_section.subsections[1].clone().meta.title.unwrap(), "DevOps");
     assert_eq!(tutorials_section.pages.len(), 0);
 
     let devops_section = &site.sections[&posts_path.join("tutorials").join("devops").join("_index.md")];

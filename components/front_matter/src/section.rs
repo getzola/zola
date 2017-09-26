@@ -17,9 +17,13 @@ pub struct SectionFrontMatter {
     pub title: Option<String>,
     /// Description in <meta> that appears when linked, e.g. on twitter
     pub description: Option<String>,
-    /// Whether to sort by "date", "order" or "none". Defaults to `none`.
+    /// Whether to sort by "date", "order", "weight" or "none". Defaults to `none`.
     #[serde(skip_serializing)]
     pub sort_by: Option<SortBy>,
+    /// The weight for this section. This is used by the parent section to order its subsections.
+    /// Higher values means it ends at the end.
+    #[serde(skip_serializing)]
+    pub weight: Option<usize>,
     /// Optional template, if we want to specify which template to render for that page
     #[serde(skip_serializing)]
     pub template: Option<String>,
@@ -70,6 +74,10 @@ impl SectionFrontMatter {
             f.insert_anchor = Some(InsertAnchor::None);
         }
 
+        if f.weight.is_none() {
+            f.weight = Some(0);
+        }
+
         Ok(f)
     }
 
@@ -97,6 +105,7 @@ impl Default for SectionFrontMatter {
             title: None,
             description: None,
             sort_by: Some(SortBy::None),
+            weight: Some(0),
             template: None,
             paginate_by: None,
             paginate_path: Some(DEFAULT_PAGINATE_PATH.to_string()),
