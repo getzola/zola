@@ -191,7 +191,7 @@ impl ser::Serialize for Page {
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
         state.serialize_field("slug", &self.slug)?;
-        state.serialize_field("path", &format!("/{}", self.path))?;
+        state.serialize_field("path", &self.path)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("summary", &self.summary)?;
         state.serialize_field("tags", &self.meta.tags)?;

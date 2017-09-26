@@ -145,7 +145,7 @@ impl ser::Serialize for Section {
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("extra", &self.meta.extra)?;
-        state.serialize_field("path", &format!("/{}", self.path))?;
+        state.serialize_field("path", &self.path)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
