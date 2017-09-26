@@ -242,15 +242,14 @@ impl Site {
         self.populate_sections();
         self.populate_tags_and_categories();
 
-        self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
-        self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
-        self.register_get_url_fn();
+        self.register_tera_global_fns();
 
         Ok(())
     }
 
-    /// Separate fn as it can be called in the serve command
-    pub fn register_get_url_fn(&mut self) {
+    pub fn register_tera_global_fns(&mut self) {
+        self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
+        self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
             "get_url",
             global_fns::make_get_url(self.permalinks.clone(), self.config.clone())

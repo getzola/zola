@@ -6,6 +6,8 @@
 - `section.subsections` can now be sorted by a `weight` attribute on a section front-matter
 - Do nothing on directory adding/removal in livereload
 - Add back `draft` on pages that was wrongly removed
+- Page and Section `path` field is not starting with a `/` anymore
+- All Tera global fns are now rebuilt on changes
 
 ## 0.1.3 (2017-08-31)
 

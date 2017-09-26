@@ -129,7 +129,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             };
         }
         // Ensure we have our fn updated so it doesn't contain the permalinks deleted
-        site.register_get_url_fn();
+        site.register_tera_global_fns();
         // Deletion is something that doesn't happen all the time so we
         // don't need to optimise it too much
         return site.build();
@@ -165,9 +165,9 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                 return Ok(());
             },
             None => {
-                site.register_get_url_fn();
                 // New section, only render that one
                 site.populate_sections();
+                site.register_tera_global_fns();
                 return site.render_section(&site.sections[path], true);
             }
         };
@@ -177,7 +177,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let page = Page::from_file(path, &site.config)?;
     match site.add_page(page, true)? {
         Some(prev) => {
-            site.register_get_url_fn();
+            site.register_tera_global_fns();
             // Updating a page
             let current = site.pages[path].clone();
             // Front matter didn't change, only content did
@@ -216,10 +216,10 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
 
         },
         None => {
-            site.register_get_url_fn();
             // It's a new page!
             site.populate_sections();
             site.populate_tags_and_categories();
+            site.register_tera_global_fns();
             // No need to optimise that yet, we can revisit if it becomes an issue
             site.build()?;
         }
