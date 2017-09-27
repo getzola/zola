@@ -8,6 +8,7 @@
 - Add back `draft` on pages that was wrongly removed
 - Page and Section `path` field is not starting with a `/` anymore
 - All Tera global fns are now rebuilt on changes
+- Use flags for port/interface in `gutenberg serve`
 
 ## 0.1.3 (2017-08-31)
 

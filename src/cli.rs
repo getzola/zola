@@ -17,8 +17,8 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         (@subcommand serve =>
             (about: "Serve the site. Rebuild and reload on change automatically")
-            (@arg interface: "Interface to bind on (default to 127.0.0.1)")
-            (@arg port: "Which port to use (default to 1111)")
+            (@arg interface: -i --interface +takes_value "Interface to bind on (default to 127.0.0.1)")
+            (@arg port: -p --port +takes_value "Which port to use (default to 1111)")
         )
     )
 }
