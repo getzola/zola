@@ -5,11 +5,9 @@ use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENAB
 use slug::slugify;
 use syntect::easy::HighlightLines;
 use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, IncludeBackground};
-use tera::{Context as TeraContext};
 
 use errors::Result;
 use utils::site::resolve_internal_link;
-use front_matter::InsertAnchor;
 use context::Context;
 use highlighting::{SYNTAX_SET, THEME_SET};
 use short_code::{SHORTCODE_RE, ShortCode, parse_shortcode, render_simple_shortcode};
@@ -40,7 +38,7 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     let mut in_header = false;
     // pulldown_cmark can send several text events for a title if there are markdown
     // specific characters like `!` in them. We only want to insert the anchor the first time
-    let mut header_already_inserted = false;
+    let mut header_created = false;
     let mut anchors: Vec<String> = vec![];
 
     // the rendered html
@@ -75,6 +73,23 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     {
         let parser = Parser::new_ext(content, opts).map(|event| match event {
             Event::Text(text) => {
+                // Header first
+                if in_header {
+                    if header_created {
+                        temp_header.push(&text);
+                        return Event::Html(Owned(String::new()));
+                    }
+                    let id = find_anchor(&anchors, slugify(&text), 0);
+                    anchors.push(id.clone());
+                    // update the header and add it to the list
+                    temp_header.id = id.clone();
+                    // += as we might have some <code> or other things already there
+                    temp_header.title += &text;
+                    temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
+                    header_created = true;
+                    return Event::Html(Owned(String::new()));
+                }
+
                 // if we are in the middle of a code block
                 if let Some(ref mut highlighter) = highlighter {
                     let highlighted = &highlighter.highlight(&text);
@@ -94,10 +109,9 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
                         Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
                         Err(e) => {
                             error = Some(e);
-                            return Event::Html(Owned("".to_string()));
+                            return Event::Html(Owned(String::new()));
                         }
                     }
-                    // non-matching will be returned normally below
                 }
 
                 // Shortcode with a body
@@ -107,7 +121,7 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
                         shortcode_block = Some(ShortCode::new(&name, args));
                     }
                     // Don't return anything
-                    return Event::Text(Owned("".to_string()));
+                    return Event::Text(Owned(String::new()));
                 }
 
                 // If we have some text while in a shortcode, it's either the body
@@ -120,43 +134,14 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
                                 Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
                                 Err(e) => {
                                     error = Some(e);
-                                    return Event::Html(Owned("".to_string()));
+                                    return Event::Html(Owned(String::new()));
                                 }
                             }
                         } else {
                             shortcode.append(&text);
-                            return Event::Html(Owned("".to_string()));
+                            return Event::Html(Owned(String::new()));
                         }
                     }
-                }
-
-                if in_header {
-                    if header_already_inserted {
-                        return Event::Text(text);
-                    }
-                    let id = find_anchor(&anchors, slugify(&text), 0);
-                    anchors.push(id.clone());
-                    let anchor_link = if context.should_insert_anchor() {
-                        let mut c = TeraContext::new();
-                        c.add("id", &id);
-                        context.tera.render("anchor-link.html", &c).unwrap()
-                    } else {
-                        String::new()
-                    };
-                    // update the header and add it to the list
-                    temp_header.id = id.clone();
-                    temp_header.title = text.clone().into_owned();
-                    temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
-                    headers.push(temp_header.clone());
-                    temp_header = TempHeader::default();
-
-                    header_already_inserted = true;
-                    let event = match context.insert_anchor {
-                        InsertAnchor::Left => Event::Html(Owned(format!(r#"id="{}">{}{}"#, id, anchor_link, text))),
-                        InsertAnchor::Right => Event::Html(Owned(format!(r#"id="{}">{}{}"#, id, text, anchor_link))),
-                        InsertAnchor::None => Event::Html(Owned(format!(r#"id="{}">{}"#, id, text)))
-                    };
-                    return event;
                 }
 
                 // Business as usual
@@ -216,22 +201,33 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
             // need to know when we are in a code block to disable shortcodes in them
             Event::Start(Tag::Code) => {
                 in_code_block = true;
+                if in_header {
+                    temp_header.push("<code>");
+                    return Event::Html(Owned(String::new()));
+                }
                 event
             },
             Event::End(Tag::Code) => {
                 in_code_block = false;
+                if in_header {
+                    temp_header.push("</code>");
+                    return Event::Html(Owned(String::new()));
+                }
                 event
             },
             Event::Start(Tag::Header(num)) => {
                 in_header = true;
                 temp_header = TempHeader::new(num);
-                // ugly eh
-                Event::Html(Owned(format!("<h{} ", num)))
+                Event::Html(Owned(String::new()))
             },
             Event::End(Tag::Header(_)) => {
+                // End of a header, reset all the things and return the stringified version of the header
                 in_header = false;
-                header_already_inserted = false;
-                event
+                header_created = false;
+                let val = temp_header.to_string(context);
+                headers.push(temp_header.clone());
+                temp_header = TempHeader::default();
+                Event::Html(Owned(val))
             },
             // If we added shortcodes, don't close a paragraph since there's none
             Event::End(Tag::Paragraph) => {

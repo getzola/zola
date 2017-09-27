@@ -9,6 +9,8 @@
 - Page and Section `path` field is not starting with a `/` anymore
 - All Tera global fns are now rebuilt on changes
 - Use flags for port/interface in `gutenberg serve`
+- Fix various issues with headers markdown rendering
+
 
 ## 0.1.3 (2017-08-31)
 

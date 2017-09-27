@@ -284,3 +284,25 @@ fn can_make_toc() {
     assert_eq!(toc[0].children[1].children.len(), 1);
 
 }
+
+#[test]
+fn can_understand_backtick_in_titles() {
+    let permalinks_ctx = HashMap::new();
+    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let res = markdown_to_html("# `Hello`", &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<h1 id=\"hello\"><code>Hello</code></h1>\n"
+    );
+}
+
+#[test]
+fn can_understand_backtick_in_paragraphs() {
+    let permalinks_ctx = HashMap::new();
+    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let res = markdown_to_html("Hello `world`", &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<p>Hello <code>world</code></p>\n"
+    );
+}

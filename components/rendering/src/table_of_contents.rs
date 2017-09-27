@@ -1,3 +1,8 @@
+use tera::{Context as TeraContext};
+use front_matter::InsertAnchor;
+
+use context::Context;
+
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Header {
@@ -21,6 +26,7 @@ impl Header {
     }
 }
 
+/// Populated while receiving events from the markdown parser
 #[derive(Debug, PartialEq, Clone)]
 pub struct TempHeader {
     pub level: i32,
@@ -36,6 +42,27 @@ impl TempHeader {
             id: String::new(),
             permalink: String::new(),
             title: String::new(),
+        }
+    }
+
+    pub fn push(&mut self, val: &str) {
+        self.title += val;
+    }
+
+    /// Transform all the information we have about this header into the HTML string for it
+    pub fn to_string(&self, context: &Context) -> String {
+        let anchor_link = if context.should_insert_anchor() {
+            let mut c = TeraContext::new();
+            c.add("id", &self.id);
+            context.tera.render("anchor-link.html", &c).unwrap()
+        } else {
+            String::new()
+        };
+
+        match context.insert_anchor {
+            InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl=self.level, t=self.title, id=self.id),
+            InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl=self.level, a=anchor_link, t=self.title, id=self.id),
+            InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl=self.level, a=anchor_link, t=self.title, id=self.id),
         }
     }
 }
@@ -102,7 +129,7 @@ pub fn make_table_of_contents(temp_headers: &[TempHeader]) -> Vec<Header> {
         if i < start_idx {
             continue;
         }
-        let (end_idx, children) = find_children(h.level, start_idx + 1, &temp_headers);
+        let (end_idx, children) = find_children(h.level, start_idx + 1, temp_headers);
         start_idx = end_idx;
         toc.push(Header::from_temp_header(h, children));
     }
