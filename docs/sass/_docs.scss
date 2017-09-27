@@ -1,3 +1,44 @@
 .documentation {
   padding: 3rem;
+  display: flex;
+
+  &__sidebar {
+    margin-right: 2rem;
+
+    ul {
+      padding-left: 0;
+      list-style: none;
+
+      ul {
+        padding-left: 1rem;
+
+        li.active a {
+          color: red;
+        }
+      }
+    }
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  a {
+    color: $background;
+    padding-bottom: 2px;
+    border-bottom: 1px solid $background;
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    &:visited {
+      color: $background;
+    }
+  }
+
+  iframe {
+    width: 100%;
+    min-height: 400px;
+  }
 }

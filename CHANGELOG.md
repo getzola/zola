@@ -10,7 +10,10 @@
 - All Tera global fns are now rebuilt on changes
 - Use flags for port/interface in `gutenberg serve`
 - Fix various issues with headers markdown rendering
-
+- Rename `insert_anchor` in section front-matter to `insert_anchor_links`
+- Remove `insert_anchor_links` from the config: it wasn't used
+- Add `class` variable to `gist` shortcode
+- Add reading analytics to sections content
 
 ## 0.1.3 (2017-08-31)
 

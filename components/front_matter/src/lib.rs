@@ -28,9 +28,13 @@ lazy_static! {
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SortBy {
+    /// Most recent to oldest
     Date,
+    /// Lower order comes last
     Order,
+    /// Lower weight comes first
     Weight,
+    /// No sorting
     None,
 }
 

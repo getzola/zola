@@ -8,19 +8,24 @@
 {% set section = get_section(path="documentation/_index.md") %}
 <div class="documentation container">
     <aside class="documentation__sidebar">
+        <ul>
         {% for subsection in section.subsections %}
             <li>
                 {{ subsection.title }}
                 <ul>
-                    {% for page in subsection.pages | reverse %}
-                    <li>{{page.title}}</li>
+                    {% for page in subsection.pages %}
+                        <li class="{% if current_path == page.path %}active{% endif %}">
+                            <a href="{{page.permalink}}">{{page.title}}</a>
+                        </li>
                     {% endfor %}
                 </ul>
             </li>
         {% endfor %}
+        </ul>
     </aside>
     <div class="documentation__content">
-        hey
+        {% block doc_content %}
+        {% endblock doc_content %}
     </div>
 </div>
 {% endblock content %}

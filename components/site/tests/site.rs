@@ -1,4 +1,5 @@
 extern crate site;
+extern crate front_matter;
 extern crate tempdir;
 
 use std::env;
@@ -8,6 +9,7 @@ use std::io::prelude::*;
 
 use tempdir::TempDir;
 use site::Site;
+use front_matter::InsertAnchor;
 
 
 #[test]
@@ -296,6 +298,7 @@ fn can_build_site_and_insert_anchor_links() {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
+
     let tmp_dir = TempDir::new("example").expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
