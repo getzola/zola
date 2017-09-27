@@ -17,6 +17,8 @@ extern crate front_matter;
 extern crate utils;
 
 use std::time::Instant;
+use std::io;
+use clap::Shell;
 
 mod cmd;
 mod console;
@@ -52,8 +54,8 @@ fn main() {
             };
         },
         ("serve", Some(matches)) => {
-            let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
-            let port = matches.value_of("port").unwrap_or("1111");
+            let interface = matches.value_of("interface").unwrap();
+            let port = matches.value_of("port").unwrap();
             console::info("Building site...");
             match cmd::serve(interface, port, config_file) {
                 Ok(()) => (),
@@ -63,7 +65,10 @@ fn main() {
                 },
             };
         },
+        ("completions", Some(matches)) => {
+            let shell = matches.value_of("for_shell").unwrap();
+            cli::build_cli().gen_completions_to("gutenberg", shell.parse::<Shell>().unwrap(), &mut io::stdout());
+        },
         _ => unreachable!(),
     }
 }
-
