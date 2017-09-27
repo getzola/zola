@@ -10,6 +10,9 @@ extern crate front_matter;
 extern crate utils;
 
 use std::collections::HashMap;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::path::PathBuf;
 
 use slug::slugify;
 use tera::{Context, Tera};
@@ -94,6 +97,42 @@ impl Taxonomy {
         let categories_taxonomy = Taxonomy::new(TaxonomyKind::Categories, categories);
 
         (tags_taxonomy, categories_taxonomy)
+    }
+
+    pub fn find_references(all_pages: &mut HashMap<PathBuf, Page>) {
+        let pages = all_pages.values_mut()
+                             .into_iter()
+                             .map(|p| Rc::new(RefCell::new(p)))
+                             .collect::<Vec<Rc<RefCell<&mut Page>>>>();
+
+        for page in pages.clone() {
+            let categories_opt = page.borrow().meta.references.clone();
+
+            if let Some(categories) = categories_opt {
+                for (category, slugs) in categories {
+                    for referenced_page_slug in slugs {
+
+                        let mut referenced_page_opt = pages.clone()
+                                                           .into_iter()
+                                                           .find(|p| 
+                                                             p.borrow().meta.category == Some(category.to_string()) && 
+                                                             p.borrow().slug == referenced_page_slug.to_string()
+                                                           );
+
+                        if let Some(ref mut referenced_page) = referenced_page_opt {
+                            page.borrow_mut()
+                                .references.entry(category.to_string())
+                                .or_insert(Vec::new())
+                                .push(
+                                    referenced_page.borrow().file.relative.clone()
+                                );
+
+                            referenced_page.borrow_mut().referenced_by.push(page.borrow().file.relative.clone());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fn new(kind: TaxonomyKind, items: HashMap<String, Vec<Page>>) -> Taxonomy {

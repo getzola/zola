@@ -216,6 +216,8 @@ impl Site {
             self.add_page(p, false)?;
         }
 
+        Taxonomy::find_references(&mut self.pages);
+
         {
             // Another silly thing needed to not borrow &self in parallel and
             // make the borrow checker happy
@@ -249,6 +251,7 @@ impl Site {
 
     pub fn register_tera_global_fns(&mut self) {
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
+        self.tera.register_global_function("get_pages", global_fns::make_get_pages(&self.pages));
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
             "get_url",

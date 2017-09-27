@@ -46,6 +46,10 @@ pub struct Page {
     pub previous: Option<Box<Page>>,
     /// The next page, by whatever sorting is used for the index/section
     pub next: Option<Box<Page>>,
+    /// References paths
+    pub references: HashMap<String, Vec<String>>,
+    /// Pages that referenced to current page
+    pub referenced_by: Vec<String>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
 }
@@ -67,6 +71,8 @@ impl Page {
             summary: None,
             previous: None,
             next: None,
+            references: HashMap::new(),
+            referenced_by: vec![],
             toc: vec![],
         }
     }
@@ -178,6 +184,8 @@ impl Default for Page {
             summary: None,
             previous: None,
             next: None,
+            references: HashMap::new(),
+            referenced_by: vec![],
             toc: vec![],
         }
     }
@@ -185,7 +193,7 @@ impl Default for Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 16)?;
+        let mut state = serializer.serialize_struct("page", 18)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
@@ -202,6 +210,8 @@ impl ser::Serialize for Page {
         state.serialize_field("reading_time", &reading_time)?;
         state.serialize_field("previous", &self.previous)?;
         state.serialize_field("next", &self.next)?;
+        state.serialize_field("references", &self.references)?;
+        state.serialize_field("referenced_by", &self.referenced_by)?;
         state.serialize_field("toc", &self.toc)?;
         state.end()
     }

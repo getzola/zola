@@ -30,6 +30,29 @@ pub fn make_get_page(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {
     })
 }
 
+pub fn make_get_pages(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {
+    let mut pages = HashMap::new();
+    for page in all_pages.values() {
+        pages.insert(page.file.relative.clone(), page.clone());
+    }
+
+    Box::new(move |args| -> Result<Value> {
+        match args.get("pages") {
+            Some(val) => match from_value::<Vec<String>>(val.clone()) {
+                Ok(vec) => {
+                    if vec.iter().all(|v| pages.get(v).is_some()) {
+                        Ok(to_value(vec.iter().map(|v| pages.get(v).unwrap()).collect::<Vec<&Page>>()).unwrap())
+                    } else {
+                        Err(format!("Page `{}` not found.", vec.iter().find(|v| pages.get(*v).is_none()).unwrap()).into())
+                    }
+                },
+                Err(_) => Err(format!("`get_pages` received pages={:?} but it requires array of string", val).into()),
+            },
+            None => Err("`get_pages` requires a `pages` argument.".into()),
+        }
+    })
+}
+
 pub fn make_get_section(all_sections: &HashMap<PathBuf, Section>) -> GlobalFn {
     let mut sections = HashMap::new();
     for section in all_sections.values() {

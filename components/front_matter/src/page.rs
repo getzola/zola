@@ -38,6 +38,8 @@ pub struct PageFrontMatter {
     /// Specify a template different from `page.html` to use for that page
     #[serde(skip_serializing)]
     pub template: Option<String>,
+    /// All references for that page
+    pub references: Option<HashMap<String, Vec<String>>>,
     /// Any extra parameter present in the front matter
     pub extra: Option<HashMap<String, Value>>,
 }
@@ -115,6 +117,7 @@ impl Default for PageFrontMatter {
             weight: None,
             aliases: None,
             template: None,
+            references: None,
             extra: None,
         }
     }
