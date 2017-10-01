@@ -48,5 +48,5 @@ you can update your `config.toml` like so:
 show_twitter = false
 ```
 
-You can modify files directly in the `themes` directory but this will make updating harder and live reload won't work with those
+You can modify files directly in the `themes` directory but this will make updating the theme harder and live reload won't work with those
 files.

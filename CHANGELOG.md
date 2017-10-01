@@ -15,6 +15,8 @@
 - Add `class` variable to `gist` shortcode
 - Add reading analytics to sections content
 - Add config to sitemap template
+- Add `permalink` to all taxonomy items (tags & categories)
+- Tags in the tags page are now sorting alphabetically instead of by number of pages in them
 
 ## 0.1.3 (2017-08-31)
 

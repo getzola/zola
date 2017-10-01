@@ -366,6 +366,7 @@ impl Site {
 
         // TODO: can we pass a reference?
         let (tags, categories) = Taxonomy::find_tags_and_categories(
+            &self.config,
             self.pages
                 .values()
                 .filter(|p| !p.is_draft())
