@@ -647,6 +647,7 @@ impl Site {
             }
         }
         context.add("tags", &tags);
+        context.add("config", &self.config);
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, self.config.theme.clone())?;
 

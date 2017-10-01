@@ -14,6 +14,7 @@
 - Remove `insert_anchor_links` from the config: it wasn't used
 - Add `class` variable to `gist` shortcode
 - Add reading analytics to sections content
+- Add config to sitemap template
 
 ## 0.1.3 (2017-08-31)
 

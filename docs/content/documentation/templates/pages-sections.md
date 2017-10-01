@@ -75,14 +75,14 @@ Both page and section have a `toc` field which corresponds to an array of `Heade
 A `Header` has the following fields:
 
 ```ts
-// the hx level
+// The hX level
 level: 1 | 2 | 3 | 4 | 5 | 6;
-// the generated slug id
+// The generated slug id
 id: String;
-// the text of the header
+// The text of the header
 title: String;
-// a link pointing directly to the header, using the inserted anchor
+// A link pointing directly to the header, using the inserted anchor
 permalink: String;
-// all lower level headers below this header
+// All lower level headers below this header
 children: Array<Header>;
 ```

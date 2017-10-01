@@ -24,7 +24,7 @@ This option is set at the section level, look up the `insert_anchor_links` varia
 [Section front-matter page](./documentation/content/section.md#front-matter).
 
 The default template is very basic and will need CSS tweaks in your project to look decent. 
-If you want to change the anchor template, itt can easily be overwritten by 
+If you want to change the anchor template, it can easily be overwritten by 
 creating a `anchor-link.html` file in the `templates` directory.
 
 ## Internal links

@@ -1,0 +1,10 @@
++++
+title = "Overview"
+weight = 10
++++
+
+Gutenberg has built-in support for themes in a way that are easy to customise
+but still easy to update if needed.
+
+All themes can use the full power of Gutenberg, from shortcodes to Sass compilation.
+

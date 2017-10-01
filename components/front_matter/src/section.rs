@@ -35,7 +35,6 @@ pub struct SectionFrontMatter {
     pub paginate_path: Option<String>,
     /// Whether to insert a link for each header like the ones you can see in this site if you hover one
     /// The default template can be overridden by creating a `anchor-link.html` in the `templates` directory
-    /// This can also be set in a section front-matter if you only want it for
     pub insert_anchor_links: Option<InsertAnchor>,
     /// Whether to render that section or not. Defaults to `true`.
     /// Useful when the section is only there to organize things but is not meant

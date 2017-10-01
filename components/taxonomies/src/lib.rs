@@ -64,7 +64,7 @@ impl Taxonomy {
 
         // Find all the tags/categories first
         for page in all_pages {
-            // Don't consider pages without pages for tags/categories as that's the only thing
+            // Don't consider pages without dates for tags/categories as that's the only thing
             // we can sort pages with across sections
             // If anyone sees that comment and wonder wtf, please open an issue as I can't think of
             // usecases other than blog posts for built-in taxonomies

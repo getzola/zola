@@ -47,7 +47,6 @@ paginate_by = "page"
 
 # Whether to insert a link for each header like the ones you can see in this site if you hover one
 # The default template can be overridden by creating a `anchor-link.html` in the `templates` directory
-# This can also be set in a section front-matter if you only want it for
 # Options are "left", "right" and "none"
 insert_anchor_links = "none"
 
