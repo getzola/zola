@@ -32,18 +32,30 @@ pub enum TaxonomyKind {
 pub struct TaxonomyItem {
     pub name: String,
     pub slug: String,
+    pub permalink: String,
     pub pages: Vec<Page>,
 }
 
 impl TaxonomyItem {
-    pub fn new(name: &str, pages: Vec<Page>) -> TaxonomyItem {
-        // We shouldn't have any pages without dates there
-        let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
+    pub fn new(name: &str, kind: TaxonomyKind, config: &Config, pages: Vec<Page>) -> TaxonomyItem {
+        // Taxonomy are almost always used for blogs so we filter by dates
+        // and it's not like we can sort things across sections by anything other
+        // than dates
+        let (mut pages, ignored_pages) = sort_pages(pages, SortBy::Date);
+        let slug = slugify(name);
+        let permalink = {
+            let kind_path = if kind == TaxonomyKind::Tags { "tag" } else { "category" };
+            config.make_permalink(&format!("/{}/{}", kind_path, slug))
+        };
+
+        // We still append pages without dates at the end
+        pages.extend(ignored_pages);
 
         TaxonomyItem {
             name: name.to_string(),
-            slug: slugify(name),
-            pages: sorted_pages,
+            permalink,
+            slug,
+            pages,
         }
     }
 }
@@ -57,21 +69,12 @@ pub struct Taxonomy {
 }
 
 impl Taxonomy {
-    // TODO: take a Vec<&'a Page> if it makes a difference in terms of perf for actual sites
-    pub fn find_tags_and_categories(all_pages: &[Page]) -> (Taxonomy, Taxonomy) {
+    pub fn find_tags_and_categories(config: &Config, all_pages: &[Page]) -> (Taxonomy, Taxonomy) {
         let mut tags = HashMap::new();
         let mut categories = HashMap::new();
 
         // Find all the tags/categories first
         for page in all_pages {
-            // Don't consider pages without pages for tags/categories as that's the only thing
-            // we can sort pages with across sections
-            // If anyone sees that comment and wonder wtf, please open an issue as I can't think of
-            // usecases other than blog posts for built-in taxonomies
-            if page.meta.date.is_none() {
-                continue;
-            }
-
             if let Some(ref category) = page.meta.category {
                 categories
                     .entry(category.to_string())
@@ -90,20 +93,20 @@ impl Taxonomy {
         }
 
         // Then make TaxonomyItem out of them, after sorting it
-        let tags_taxonomy = Taxonomy::new(TaxonomyKind::Tags, tags);
-        let categories_taxonomy = Taxonomy::new(TaxonomyKind::Categories, categories);
+        let tags_taxonomy = Taxonomy::new(TaxonomyKind::Tags, config, tags);
+        let categories_taxonomy = Taxonomy::new(TaxonomyKind::Categories, config, categories);
 
         (tags_taxonomy, categories_taxonomy)
     }
 
-    fn new(kind: TaxonomyKind, items: HashMap<String, Vec<Page>>) -> Taxonomy {
+    fn new(kind: TaxonomyKind, config: &Config, items: HashMap<String, Vec<Page>>) -> Taxonomy {
         let mut sorted_items = vec![];
         for (name, pages) in &items {
             sorted_items.push(
-                TaxonomyItem::new(name, pages.clone())
+                TaxonomyItem::new(name, kind, config, pages.clone())
             );
         }
-        sorted_items.sort_by(|a, b| b.pages.len().cmp(&a.pages.len()));
+        sorted_items.sort_by(|a, b| a.name.cmp(&b.name));
 
         Taxonomy {
             kind,
@@ -155,5 +158,57 @@ impl Taxonomy {
 
         render_template(&format!("{}.html", name), tera, &context, config.theme.clone())
             .chain_err(|| format!("Failed to render {} page.", name))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use config::Config;
+    use content::Page;
+
+    #[test]
+    fn can_make_taxonomies() {
+        let config = Config::default();
+        let mut page1 = Page::default();
+        page1.meta.tags = Some(vec!["rust".to_string(), "db".to_string()]);
+        page1.meta.category = Some("Programming tutorials".to_string());
+        let mut page2 = Page::default();
+        page2.meta.tags = Some(vec!["rust".to_string(), "js".to_string()]);
+        page2.meta.category = Some("Other".to_string());
+        let mut page3 = Page::default();
+        page3.meta.tags = Some(vec!["js".to_string()]);
+        let pages = vec![page1, page2, page3];
+
+        let (tags, categories) = Taxonomy::find_tags_and_categories(&config, &pages);
+
+        assert_eq!(tags.items.len(), 3);
+        assert_eq!(categories.items.len(), 2);
+
+        assert_eq!(tags.items[0].name, "db");
+        assert_eq!(tags.items[0].slug, "db");
+        assert_eq!(tags.items[0].permalink, "http://a-website.com/tag/db/");
+        assert_eq!(tags.items[0].pages.len(), 1);
+
+        assert_eq!(tags.items[1].name, "js");
+        assert_eq!(tags.items[1].slug, "js");
+        assert_eq!(tags.items[1].permalink, "http://a-website.com/tag/js/");
+        assert_eq!(tags.items[1].pages.len(), 2);
+
+        assert_eq!(tags.items[2].name, "rust");
+        assert_eq!(tags.items[2].slug, "rust");
+        assert_eq!(tags.items[2].permalink, "http://a-website.com/tag/rust/");
+        assert_eq!(tags.items[2].pages.len(), 2);
+
+        assert_eq!(categories.items[0].name, "Other");
+        assert_eq!(categories.items[0].slug, "other");
+        assert_eq!(categories.items[0].permalink, "http://a-website.com/category/other/");
+        assert_eq!(categories.items[0].pages.len(), 1);
+
+        assert_eq!(categories.items[1].name, "Programming tutorials");
+        assert_eq!(categories.items[1].slug, "programming-tutorials");
+        assert_eq!(categories.items[1].permalink, "http://a-website.com/category/programming-tutorials/");
+        assert_eq!(categories.items[1].pages.len(), 1);
     }
 }

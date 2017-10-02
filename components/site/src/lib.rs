@@ -177,7 +177,8 @@ impl Site {
                 .map(|entry| {
                     let path = entry.as_path();
                     Section::from_file(path, config)
-                }).collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
         };
 
         let pages = {
@@ -189,7 +190,8 @@ impl Site {
                 .map(|entry| {
                     let path = entry.as_path();
                     Page::from_file(path, config)
-                }).collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
         };
 
         // Kinda duplicated code for add_section/add_page but necessary to do it that
@@ -224,8 +226,7 @@ impl Site {
             let config = &self.config;
 
             self.pages.par_iter_mut()
-                .map(|(_, page)| page)
-                .map(|page| {
+                .map(|(_, page)| {
                     let insert_anchor = pages_insert_anchors[&page.file.path];
                     page.render_markdown(permalinks, tera, config, insert_anchor)
                 })
@@ -233,8 +234,7 @@ impl Site {
                 .reduce(|| Ok(()), Result::and)?;
 
             self.sections.par_iter_mut()
-                .map(|(_, section)| section)
-                .map(|section| section.render_markdown(permalinks, tera, config))
+                .map(|(_, section)| section.render_markdown(permalinks, tera, config))
                 .fold(|| Ok(()), Result::and)
                 .reduce(|| Ok(()), Result::and)?;
         }
@@ -295,7 +295,7 @@ impl Site {
     /// Defaults to `AnchorInsert::None` if no parent section found
     pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
         match self.sections.get(&parent_path.join("_index.md")) {
-            Some(s) => s.meta.insert_anchor.unwrap(),
+            Some(s) => s.meta.insert_anchor_links.unwrap(),
             None => InsertAnchor::None
         }
     }
@@ -366,6 +366,7 @@ impl Site {
 
         // TODO: can we pass a reference?
         let (tags, categories) = Taxonomy::find_tags_and_categories(
+            &self.config,
             self.pages
                 .values()
                 .filter(|p| !p.is_draft())
@@ -647,6 +648,7 @@ impl Site {
             }
         }
         context.add("tags", &tags);
+        context.add("config", &self.config);
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, self.config.theme.clone())?;
 

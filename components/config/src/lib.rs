@@ -47,10 +47,6 @@ pub struct Config {
     pub generate_tags_pages: Option<bool>,
     /// Whether to generate categories and individual tag categories if some pages have them. Defaults to true
     pub generate_categories_pages: Option<bool>,
-    /// Whether to insert a link for each header like in Github READMEs. Defaults to false
-    /// The default template can be overridden by creating a `anchor-link.html` template and CSS will need to be
-    /// written if you turn that on.
-    pub insert_anchor_links: Option<bool>,
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: Option<bool>,
 
@@ -84,7 +80,6 @@ impl Config {
         set_default!(config.rss_limit, 20);
         set_default!(config.generate_tags_pages, false);
         set_default!(config.generate_categories_pages, false);
-        set_default!(config.insert_anchor_links, false);
         set_default!(config.compile_sass, false);
         set_default!(config.extra, HashMap::new());
 
@@ -174,7 +169,6 @@ impl Default for Config {
             rss_limit: Some(10_000),
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
-            insert_anchor_links: Some(false),
             compile_sass: Some(false),
             extra: None,
             build_timestamp: Some(1),

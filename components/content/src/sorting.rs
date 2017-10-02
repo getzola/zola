@@ -33,7 +33,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
     (can_be_sorted, cannot_be_sorted)
 }
 
-/// Horribly inefficient way to set previous and next on each pages
+/// Horribly inefficient way to set previous and next on each pages that skips drafts
 /// So many clones
 pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
     let mut res = Vec::with_capacity(input.len());

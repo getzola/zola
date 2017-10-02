@@ -10,6 +10,7 @@ use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
 use utils::fs::read_file;
 use utils::templates::render_template;
+use utils::site::get_reading_analytics;
 use rendering::{Context, Header, markdown_to_html};
 
 use page::Page;
@@ -96,7 +97,7 @@ impl Section {
             config.highlight_theme.clone().unwrap(),
             &self.permalink,
             permalinks,
-            self.meta.insert_anchor.unwrap()
+            self.meta.insert_anchor_links.unwrap()
         );
         let res = markdown_to_html(&self.raw_content, &context)?;
         self.content = res.0;
@@ -139,7 +140,7 @@ impl Section {
 
 impl ser::Serialize for Section {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("section", 10)?;
+        let mut state = serializer.serialize_struct("section", 12)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("title", &self.meta.title)?;
@@ -149,6 +150,9 @@ impl ser::Serialize for Section {
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
+        let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
+        state.serialize_field("word_count", &word_count)?;
+        state.serialize_field("reading_time", &reading_time)?;
         state.serialize_field("toc", &self.toc)?;
         state.end()
     }

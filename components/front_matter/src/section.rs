@@ -20,8 +20,8 @@ pub struct SectionFrontMatter {
     /// Whether to sort by "date", "order", "weight" or "none". Defaults to `none`.
     #[serde(skip_serializing)]
     pub sort_by: Option<SortBy>,
-    /// The weight for this section. This is used by the parent section to order its subsections.
-    /// Higher values means it ends at the end.
+    /// Used by the parent section to order its subsections.
+    /// Higher values means it will be at the end.
     #[serde(skip_serializing)]
     pub weight: Option<usize>,
     /// Optional template, if we want to specify which template to render for that page
@@ -33,10 +33,9 @@ pub struct SectionFrontMatter {
     /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
     #[serde(skip_serializing)]
     pub paginate_path: Option<String>,
-    /// Whether to insert a link for each header like in Github READMEs. Defaults to false
-    /// The default template can be overridden by creating a `anchor-link.html` template and CSS will need to be
-    /// written if you turn that on.
-    pub insert_anchor: Option<InsertAnchor>,
+    /// Whether to insert a link for each header like the ones you can see in this site if you hover one
+    /// The default template can be overridden by creating a `anchor-link.html` in the `templates` directory
+    pub insert_anchor_links: Option<InsertAnchor>,
     /// Whether to render that section or not. Defaults to `true`.
     /// Useful when the section is only there to organize things but is not meant
     /// to be used directly, like a posts section in a personal site
@@ -70,8 +69,8 @@ impl SectionFrontMatter {
             f.sort_by = Some(SortBy::None);
         }
 
-        if f.insert_anchor.is_none() {
-            f.insert_anchor = Some(InsertAnchor::None);
+        if f.insert_anchor_links.is_none() {
+            f.insert_anchor_links = Some(InsertAnchor::None);
         }
 
         if f.weight.is_none() {
@@ -111,7 +110,7 @@ impl Default for SectionFrontMatter {
             paginate_path: Some(DEFAULT_PAGINATE_PATH.to_string()),
             render: Some(true),
             redirect_to: None,
-            insert_anchor: Some(InsertAnchor::None),
+            insert_anchor_links: Some(InsertAnchor::None),
             extra: None,
         }
     }

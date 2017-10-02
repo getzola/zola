@@ -60,7 +60,7 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, other: &Secti
 
     if current.paginate_by != other.paginate_by
         || current.paginate_path != other.paginate_path
-        || current.insert_anchor != other.insert_anchor {
+        || current.insert_anchor_links != other.insert_anchor_links {
         changes_needed.push(SectionChangesNeeded::RenderWithPages);
         // Nothing else we can do
         return changes_needed;
@@ -177,7 +177,6 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let page = Page::from_file(path, &site.config)?;
     match site.add_page(page, true)? {
         Some(prev) => {
-            site.register_tera_global_fns();
             // Updating a page
             let current = site.pages[path].clone();
             // Front matter didn't change, only content did
@@ -212,6 +211,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
                     },
                 };
             }
+            site.register_tera_global_fns();
             return Ok(());
 
         },
