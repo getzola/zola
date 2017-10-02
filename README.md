@@ -332,7 +332,7 @@ In case of shortcodes with a body, the body will be passed as the `body` variabl
 - http://t-rex.tileserver.ch (https://github.com/pka/t-rex-website/)
 - [adrien.is](https://adrien.is): https://github.com/Fandekasp/fandekasp.github.io
 - [Philipp Oppermann's blog](https://os.phil-opp.com/): https://github.com/phil-opp/blog_os/tree/master/blog
-
+- [seventeencups](https://www.seventeencups.net): https://github.com/17cupsofcoffee/seventeencups.net
 
 ## Adding syntax highlighting languages and themes
 
