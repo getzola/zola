@@ -9,7 +9,6 @@ use std::io::prelude::*;
 
 use tempdir::TempDir;
 use site::Site;
-use front_matter::InsertAnchor;
 
 
 #[test]

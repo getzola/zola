@@ -37,7 +37,7 @@ enum SectionChangesNeeded {
     Sort,
     /// Editing `title`, `description`, `extra`, `template` or setting `render` to true
     Render,
-    /// Editing `paginate_by`, `paginate_path` or `insert_anchor`
+    /// Editing `paginate_by`, `paginate_path` or `insert_anchor_links`
     RenderWithPages,
     /// Setting `render` to false
     Delete,

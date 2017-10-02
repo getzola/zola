@@ -241,7 +241,7 @@ fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
     } else if path_str.starts_with("/sass") {
         ChangeKind::Sass
     } else {
-        unreachable!("Got a change in an unexpected path: {}", path_str);
+        unreachable!("Got a change in an unexpected path: {}", path_str)
     };
 
     (change_kind, path_str)
