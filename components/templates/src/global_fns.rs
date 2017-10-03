@@ -60,11 +60,7 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
                 from_value::<bool>(c.clone()).unwrap_or(false)
             });
 
-        if args.contains_key("link") {
-            println!("> DEPRECATION -- `link` is deprecated for `get_url`: use `path` instead");
-        }
-
-        match args.get("link").or_else(|| args.get("path")) {
+        match args.get("path") {
             Some(val) => match from_value::<String>(val.clone()) {
                 Ok(v) => {
                     // Internal link
