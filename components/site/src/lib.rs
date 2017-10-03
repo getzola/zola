@@ -28,7 +28,7 @@ use std::path::{Path, PathBuf};
 use glob::glob;
 use tera::{Tera, Context};
 use walkdir::WalkDir;
-use sass_rs::{Options, compile_file};
+use sass_rs::{Options, OutputStyle, compile_file};
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
@@ -518,9 +518,11 @@ impl Site {
             .filter(|entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_'))
             .collect::<Vec<_>>();
 
+        let mut sass_options = Options::default();
+        sass_options.output_style = OutputStyle::Compressed;
         for file in files {
             let name = file.as_path().file_stem().unwrap().to_string_lossy();
-            let css = match compile_file(file.as_path(), Options::default()) {
+            let css = match compile_file(file.as_path(), sass_options.clone()) {
                 Ok(c) => c,
                 Err(e) => bail!(e)
             };
