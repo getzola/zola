@@ -7,6 +7,7 @@
         <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
         <meta name="author" content="{{ config.extra.author }}">
         <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+        <link href="https://fonts.googleapis.com/css?family=Fira+Sans" rel="stylesheet">
         <link rel="stylesheet" href="{{ get_url(path="site.css", cachebust=true) }}"/>
     </head>
     <body>
@@ -14,8 +15,7 @@
         <header>
             <nav class="container">
                 <a class="header__logo" href="{{ config.base_url }}">Gutenberg</a>
-                <a href="/documentation" class="nav-link">Documentation</a>
-                <a href="" class="nav-link">Themes</a>
+                <a href="/documentation" class="nav-link">Docs</a>
                 <a href="https://github.com/Keats/gutenberg" class="nav-link">Github</a>
             </nav>
         </header>
@@ -27,7 +27,7 @@
                     <p class="hero__tagline">
                         Forget dependencies. Everything you need in one binary.
                     </p>
-                    <a href="" class="button">Get started</a>
+                    <a href="/documentation" class="button">Get started</a>
                 </div>
 
                 <div class="selling-points">
@@ -60,7 +60,8 @@
                         <div class="selling-point">
                             <h2>Easy to use</h2>
                             <p>
-                                Gutenberg strives for good UX and being productive instantly.
+                                Gutenberg gets out of your way so you can focus on what
+                                you are actually making.
                             </p>
                         </div>
 

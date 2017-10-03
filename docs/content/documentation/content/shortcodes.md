@@ -46,11 +46,11 @@ On a new line, call the shortcode as if it was a function in a variable block. A
 calls of the YouTube shortcode.
 
 ```md
-{{ youtube(id="w7Ft2ymGmfc") }}
+{{ youtube(id="dQw4w9WgXcQ") }}
 
-{{ youtube(id="w7Ft2ymGmfc", autoplay=true) }}
+{{ youtube(id="dQw4w9WgXcQ", autoplay=true) }}
 
-{{ youtube(id="w7Ft2ymGmfc", autoplay=true, class="youtube") }}
+{{ youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") }}
 ```
 
 ### Shortcodes with body
@@ -93,16 +93,16 @@ The arguments are:
 Usage example:
 
 ```md
-{{ youtube(id="w7Ft2ymGmfc") }}
+{{ youtube(id="dQw4w9WgXcQ") }}
 
-{{ youtube(id="w7Ft2ymGmfc", autoplay=true) }}
+{{ youtube(id="dQw4w9WgXcQ", autoplay=true) }}
 
-{{ youtube(id="w7Ft2ymGmfc", autoplay=true, class="youtube") }}
+{{ youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") }}
 ```
 
 Result example:
 
-{{ youtube(id="w7Ft2ymGmfc") }}
+{{ youtube(id="dQw4w9WgXcQ") }}
 
 ### Vimeo
 Embed a player for a Vimeo video.

@@ -5,6 +5,7 @@ description = "Everything you need to make a static site engine in one binary. A
 compile_sass = true
 highlight_code = true
 insert_anchor_links = true
+highlight_theme = "kronuz"
 
 [extra]
 author = "Vincent Prouillet"

@@ -17,6 +17,9 @@
 - Add config to sitemap template
 - Add `permalink` to all taxonomy items (tags & categories)
 - Tags in the tags page are now sorting alphabetically instead of by number of pages in them
+- Remove deprecated `link` param of `get_url`
+- Add 1337 color scheme
+- Defaults to compressed Sass output
 
 ## 0.1.3 (2017-08-31)
 

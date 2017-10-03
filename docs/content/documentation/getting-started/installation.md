@@ -6,7 +6,7 @@ weight = 1
 Gutenberg provides pre-built binaries for Mac OS, Linux and Windows on the
 [Github release page](https://github.com/Keats/gutenberg/releases).
 
-## Using brew on Mac OS
+## Mac OS
 
 TODO: it's not on brew right now
 

@@ -338,9 +338,11 @@ In case of shortcodes with a body, the body will be passed as the `body` variabl
 
 ### Adding a syntax
 Syntax highlighting depends on submodules so ensure you load them first:
+
 ```bash
 $ git submodule update --init 
 ```
+
 Gutenberg only works with syntaxes in the `.sublime-syntax` format. If your syntax
 is in `.tmLanguage` format, open it in Sublime Text and convert it to `sublime-syntax` by clicking on
 Tools > Developer > New Syntax from ... and put it at the root of `sublime_syntaxes`.

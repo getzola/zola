@@ -41,3 +41,6 @@ $ gutenberg serve --interface 0.0.0.0 --port 2000
 
 The serve command will watch all your content and will provide live reload, without
 hard refresh if possible.
+
+If you fail to see your change, this means that Gutenberg couldn't reload that bit and you will
+need to restart `gutenberg serve`.

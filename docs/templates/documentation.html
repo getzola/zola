@@ -1,17 +1,15 @@
 {% extends "index.html" %}
 
-{% block title %}{{ super() }} - Documentation {% endblock title %}
-
 {% block extra_content_class %}content--reversed{% endblock extra_content_class %}
 
 {% block content %}
 {% set section = get_section(path="documentation/_index.md") %}
-<div class="documentation container">
+<div class="documentation">
     <aside class="documentation__sidebar">
         <ul>
         {% for subsection in section.subsections %}
             <li>
-                {{ subsection.title }}
+                <span class="documentation__sidebar__title">{{ subsection.title }}</span>
                 <ul>
                     {% for page in subsection.pages %}
                         <li class="{% if current_path == page.path %}active{% endif %}">

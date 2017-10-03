@@ -8,34 +8,85 @@
     ul {
       padding-left: 0;
       list-style: none;
+    }
+
+    > ul {
+      > li {
+        margin-bottom: 1rem;
+      }
+
+      .documentation__sidebar__title {
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
 
       ul {
-        padding-left: 1rem;
+        margin-top: 0.25rem;
+
+        li {
+          border-left: 1px solid $background;
+          padding-left: 0.75rem;
+          padding-top: 0.25rem;
+          padding-bottom: 0.25rem;
+        }
 
         li.active a {
-          color: red;
+          font-weight: bold;
+          border-bottom: 1px solid $background;
         }
+      }
+    }
+
+    a {
+      color: $background;
+      padding-bottom: 2px;
+      border-bottom: 1px solid rgba(25, 25, 25, 0.25);
+      text-decoration: none;
+
+      &:hover {
+        border-bottom: 1px solid $background;
       }
     }
   }
 
   &__content {
-    flex: 1;
-  }
+    width: 60%;
+    // Same as the anchor absolute left to not overlap
+    margin-left: 2rem;
 
-  a {
-    color: $background;
-    padding-bottom: 2px;
-    border-bottom: 1px solid $background;
+    h1, h2, h3, h4, h5, h6 {
+      .gutenberg-anchor {
+        font-size: 1.25rem;
+        visibility: hidden;
+        margin-left: -2rem;
+        text-decoration: none;
+        border-bottom-color: transparent;
+        cursor: pointer;
+      }
 
-    &:hover {
-      text-decoration: none;
+      &:hover {
+        .gutenberg-anchor {
+          visibility: visible;
+        }
+      }
     }
 
-    &:visited {
+    a {
       color: $background;
+      padding-bottom: 2px;
+      border-bottom: 1px solid $background;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      &:visited {
+        color: $background;
+      }
     }
   }
+
 
   iframe {
     width: 100%;

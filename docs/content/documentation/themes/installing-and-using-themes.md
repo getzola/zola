@@ -33,9 +33,9 @@ Any file from the theme can be overriden by creating a file with the same path a
 directory. Here are a few examples of that, assuming the theme name is `simple-blog`:
 
 ```plain
-templates/pages/post.html -> will override themes/simple-blog/pages/post.html
-templates/macros.html -> will override themes/simple-blog/macros.html
-static/js/site.js -> will override themes/simple-blog/static/js/site.jss
+templates/pages/post.html -> replace themes/simple-blog/pages/post.html
+templates/macros.html -> replace themes/simple-blog/macros.html
+static/js/site.js -> replace themes/simple-blog/static/js/site.jss
 ```
 
 Most themes will also provide some variables that are meant to be overriden: this happens in the `extra` section
