@@ -1,5 +1,4 @@
 extern crate site;
-extern crate front_matter;
 extern crate tempdir;
 
 use std::env;
