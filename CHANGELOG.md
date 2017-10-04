@@ -21,6 +21,7 @@
 - Add 1337 color scheme
 - Defaults to compressed Sass output
 - Fix regression wrt co-located assets slug detecting
+- Rename `url` from page front-matter to `path` to be consistent
 
 ## 0.1.3 (2017-08-31)
 

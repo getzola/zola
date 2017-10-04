@@ -98,8 +98,9 @@ impl Page {
             }
         };
 
-        if let Some(ref u) = page.meta.url {
-            page.path = u.trim().to_string();
+        if let Some(ref p) = page.meta.path {
+            page.path = p.trim().trim_left_matches('/').to_string();
+
         } else {
             page.path = if page.file.components.is_empty() {
                 page.slug.clone()
@@ -110,6 +111,7 @@ impl Page {
         if !page.path.ends_with('/') {
             page.path = format!("{}/", page.path);
         }
+
         page.permalink = config.make_permalink(&page.path);
 
         Ok(page)
@@ -275,6 +277,36 @@ Hello world"#;
     Hello world"#;
         let config = Config::default();
         let res = Page::parse(Path::new("start.md"), content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.permalink, config.make_permalink("hello-world"));
+    }
+
+    #[test]
+    fn can_make_url_from_path() {
+        let content = r#"
+    +++
+    path = "hello-world"
+    +++
+    Hello world"#;
+        let config = Config::default();
+        let res = Page::parse(Path::new("content/posts/intro/start.md"), content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.permalink, config.make_permalink("hello-world"));
+    }
+
+    #[test]
+    fn can_make_url_from_path_starting_slash() {
+        let content = r#"
+    +++
+    path = "/hello-world"
+    +++
+    Hello world"#;
+        let config = Config::default();
+        let res = Page::parse(Path::new("content/posts/intro/start.md"), content, &config);
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.path, "hello-world/");

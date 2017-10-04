@@ -32,10 +32,11 @@ draft = false
 # It will still use the section path though
 slug = ""
 
-# The URL the content will appear at
-# If set, it cannot be an empty string and will override both `slug` and the filename
-# and the sections' path won't be used
-url = ""
+# The path the content will appear at
+# If set, it cannot be an empty string and will override both `slug` and the filename.
+# The sections' path won't be used.
+# It should not start with a `/` and the slash will be removed if it does
+path = ""
 
 # An array of strings allowing you to group pages with them
 tags = []

@@ -20,10 +20,10 @@ pub struct PageFrontMatter {
     /// The page slug. Will be used instead of the filename if present
     /// Can't be an empty string if present
     pub slug: Option<String>,
-    /// The url the page appears at, overrides the slug if set in the front-matter
+    /// The path the page appears at, overrides the slug if set in the front-matter
     /// otherwise is set after parsing front matter and sections
     /// Can't be an empty string if present
-    pub url: Option<String>,
+    pub path: Option<String>,
     /// Tags, not to be confused with categories
     pub tags: Option<Vec<String>>,
     /// Only one category allowed. Can't be an empty string if present
@@ -56,9 +56,9 @@ impl PageFrontMatter {
             }
         }
 
-        if let Some(ref url) = f.url {
-            if url == "" {
-                bail!("`url` can't be empty if present")
+        if let Some(ref path) = f.path {
+            if path == "" {
+                bail!("`path` can't be empty if present")
             }
         }
 
@@ -109,7 +109,7 @@ impl Default for PageFrontMatter {
             date: None,
             draft: None,
             slug: None,
-            url: None,
+            path: None,
             tags: None,
             category: None,
             order: None,
@@ -189,11 +189,11 @@ mod tests {
     }
 
     #[test]
-    fn errors_on_present_but_empty_url() {
+    fn errors_on_present_but_empty_path() {
         let content = r#"
     title = "Hello"
     description = "hey there"
-    url = """#;
+    path = """#;
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }

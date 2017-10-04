@@ -1,7 +1,7 @@
 +++
 title = "Fixed URL"
 description = ""
-url = "a-fixed-url"
+path = "a-fixed-url"
 date = "2017-02-01"
 +++
 
