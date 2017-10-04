@@ -86,7 +86,15 @@ impl Page {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
             } else {
-                slugify(page.file.name.clone())
+                if page.file.name == "index" {
+                    if let Some(parent) = page.file.path.parent() {
+                        slugify(parent.file_name().unwrap().to_str().unwrap())
+                    } else {
+                        slugify(page.file.name.clone())
+                    }
+                } else {
+                    slugify(page.file.name.clone())
+                }
             }
         };
 
@@ -210,6 +218,7 @@ impl ser::Serialize for Page {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
+    use std::io::Write;
     use std::fs::{File, create_dir};
     use std::path::Path;
 
@@ -311,25 +320,54 @@ Hello world
     }
 
     #[test]
-    fn page_with_assets_gets_right_parent_path() {
+    fn page_with_assets_gets_right_info() {
         let tmp_dir = TempDir::new("example").expect("create temp dir");
         let path = tmp_dir.path();
         create_dir(&path.join("content")).expect("create content temp dir");
         create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
-        let nested_path = path.join("content").join("posts").join("assets");
+        let nested_path = path.join("content").join("posts").join("with-assets");
         create_dir(&nested_path).expect("create nested temp dir");
-        File::create(nested_path.join("index.md")).unwrap();
+        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        f.write_all(b"+++\n+++\n").unwrap();
         File::create(nested_path.join("example.js")).unwrap();
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Page::parse(
+        let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            "+++\nurl=\"hey\"+++\n",
             &Config::default()
         );
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
+        assert_eq!(page.slug, "with-assets");
+        assert_eq!(page.assets.len(), 3);
+        assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+    }
+
+    #[test]
+    fn page_with_assets_and_slug_overrides_path() {
+        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("with-assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
+        File::create(nested_path.join("example.js")).unwrap();
+        File::create(nested_path.join("graph.jpg")).unwrap();
+        File::create(nested_path.join("fail.png")).unwrap();
+
+        let res = Page::from_file(
+            nested_path.join("index.md").as_path(),
+            &Config::default()
+        );
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.file.parent, path.join("content").join("posts"));
+        assert_eq!(page.slug, "hey");
+        assert_eq!(page.assets.len(), 3);
+        assert_eq!(page.permalink, "http://a-website.com/posts/hey/");
     }
 }

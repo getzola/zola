@@ -20,6 +20,7 @@
 - Remove deprecated `link` param of `get_url`
 - Add 1337 color scheme
 - Defaults to compressed Sass output
+- Fix regression wrt co-located assets slug detecting
 
 ## 0.1.3 (2017-08-31)
 
