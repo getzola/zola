@@ -40,10 +40,10 @@ fn main() {
                 },
             };
         },
-        ("build", Some(_)) => {
+        ("build", Some(matches)) => {
             console::info("Building site...");
             let start = Instant::now();
-            match cmd::build(config_file) {
+            match cmd::build(config_file, matches.value_of("base_url")) {
                 Ok(()) => console::report_elapsed_time(start),
                 Err(e) => {
                     console::unravel_errors("Failed to build the site", &e);

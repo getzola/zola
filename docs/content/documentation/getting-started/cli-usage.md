@@ -27,6 +27,12 @@ This will build the whole site in the `public` directory.
 $ gutenberg build
 ```
 
+You can override the config `base_url` by passing a new URL to the `base-url` flag.
+
+```bash
+$ gutenberg build --base-url https://59a896e2cf321c2dcfd2d6de--tera.netlify.com/
+```
+
 ## serve
 
 This will build and serve the site using a local server. You can also specify

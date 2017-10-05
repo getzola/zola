@@ -22,6 +22,7 @@
 - Defaults to compressed Sass output
 - Fix regression wrt co-located assets slug detecting
 - Rename `url` from page front-matter to `path` to be consistent
+- Add a `base-url` flag to the `build` command to override the URL from config.toml
 
 ## 0.1.3 (2017-08-31)
 

@@ -14,6 +14,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         (@subcommand build =>
             (about: "Builds the site")
+            (@arg base_url: -u --base-url +takes_value "Force the base URL to be that value (default to the one in config.toml)")
         )
         (@subcommand serve =>
             (about: "Serve the site. Rebuild and reload on change automatically")
