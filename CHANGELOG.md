@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0 (2017-10-05)
 
 - Fix `section.subsections` not being filled correctly
 - `section.subsections` can now be sorted by a `weight` attribute on a section front-matter
