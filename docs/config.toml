@@ -1,6 +1,6 @@
 base_url = "https://gutenberg.netlify.com/"
 title = "Gutenberg"
-description = "Everything you need to make a static site engine in one binary. And it's fast"
+description = "Everything you need to make a static site engine in one binary."
 
 compile_sass = true
 highlight_code = true

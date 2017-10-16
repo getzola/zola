@@ -1,0 +1,8 @@
+[build]
+  base    = "docs"
+  publish = "docs/public"
+  command = "curl -sL https://github.com/Keats/gutenberg/releases/download/v0.2.1/gutenberg-v0.2.1-x86_64-unknown-linux-gnu.tar.gz | tar zxvf - && /opt/build/repo/docs/gutenberg build"
+
+[context.deploy-preview]
+  command = "curl -sL https://github.com/Keats/gutenberg/releases/download/v0.2.1/gutenberg-v0.2.1-x86_64-unknown-linux-gnu.tar.gz | tar zxvf - && /opt/build/repo/docs/gutenberg build --base-url $DEPLOY_PRIME_URL"
+
