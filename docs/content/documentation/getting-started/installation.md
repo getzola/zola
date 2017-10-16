@@ -8,15 +8,25 @@ Gutenberg provides pre-built binaries for Mac OS, Linux and Windows on the
 
 ## Mac OS
 
-TODO: it's not on brew right now
+Gutenberg is not currently available on Homebrew at the moment.
+
+If you can help package it, please comment on https://github.com/Keats/gutenberg/issues/12
+if you encounter any issues.
 
 ## Windows
 
-TODO: i have no clue whatsoever about packages in Windows
+I am not aware of the package management state in Windows.
+
+If you can help package it, please comment on https://github.com/Keats/gutenberg/issues/12
+if you encounter any issues.
 
 ## Archlinux
 
-TODO: add a `gutenberg-bin` in AUR and explain how to install it
+Use your favourite AUR helper to install the `gutenberg-bin` package.
+
+```bash
+$ yaourt -S gutenberg-bin
+```
 
 ## From source
 To build it from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/en-US/)
