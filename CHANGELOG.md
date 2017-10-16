@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 (unreleased)
+
+- Fix `base-url` arg to `gutenberg build` being called `base`
+
+
 ## 0.2.0 (2017-10-05)
 
 - Fix `section.subsections` not being filled correctly
