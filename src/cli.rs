@@ -26,6 +26,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("base_url")
                         .short("u")
                         .long("base-url")
+                        .takes_value(true)
                         .help("Force the base URL to be that value (default to the one in config.toml)"),
                 ]),
             SubCommand::with_name("serve")
