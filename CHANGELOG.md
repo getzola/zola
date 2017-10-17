@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.1 (unreleased)
+## 0.2.1 (2017-10-17)
 
 - Fix `base-url` argument to `gutenberg build` being called `base`
 - Add syntaxes: Crystal, Elixir, Kotlin
