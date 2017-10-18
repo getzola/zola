@@ -1,3 +1,19 @@
+.inverted-colours {
+  background: $foreground;
+  color: $background;
+
+  a {
+    color: $background;
+    padding-bottom: 2px;
+    border-bottom: 1px solid $background;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
 .hero {
   width: 60%;
   margin: 0 auto;
@@ -11,8 +27,6 @@
 }
 
 .selling-points {
-  background: $foreground;
-  color: $background;
   padding: 3rem;
 
   &__content {
@@ -23,8 +37,9 @@
 
 .selling-point {
   // 2 selling points per row on desktop
-  width: 50%;
+  width: 33%;
   padding: 2rem;
+  padding-top: 1rem;
 }
 
 // and 1 on mobile

@@ -7,7 +7,6 @@
         <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
         <meta name="author" content="{{ config.extra.author }}">
         <title>{% block title %}{{ config.title }}{% endblock title %}</title>
-        <link href="https://fonts.googleapis.com/css?family=Fira+Sans" rel="stylesheet">
         <link rel="stylesheet" href="{{ get_url(path="site.css", cachebust=true) }}"/>
     </head>
     <body>
@@ -15,7 +14,7 @@
         <header>
             <nav class="container">
                 <a class="header__logo" href="{{ config.base_url }}">Gutenberg</a>
-                <a href="/documentation" class="nav-link">Docs</a>
+                <a href="{{ get_url(path="./documentation/_index.md") }}" class="nav-link">Docs</a>
                 <a href="https://github.com/Keats/gutenberg" class="nav-link">Github</a>
             </nav>
         </header>
@@ -27,47 +26,65 @@
                     <p class="hero__tagline">
                         Forget dependencies. Everything you need in one binary.
                     </p>
-                    <a href="/documentation" class="button">Get started</a>
+                    <a href="{{ get_url(path="./documentation/_index.md") }}" class="button">Get started</a>
                 </div>
 
-                <div class="selling-points">
+                <div class="inverted-colours selling-points">
                     <div class="selling-points__content container">
+                        <div class="selling-point">
+                            <h2>No dependencies</h2>
+                            <p>
+                                Gutenberg comes as a single executable with Sass compilation, syntax highlighting, table of contents
+                                and many other features that traditionally require setting up a dev environment
+                                or adding some JavaScript libraries to your site.
+                            </p>
+                        </div>
 
                         <div class="selling-point">
-                            <h2>Everything built-in</h2>
+                            <h2>Blazing fast</h2>
                             <p>
-                                Gutenberg comes with Sass compilation, syntax highlighting and
-                                other features that usually require using additional tools
-                                or use JavaScript libraries on your site.
+                                The average site will be generated in less than a second,
+                                including Sass compilation and syntax highlighting.
                             </p>
                         </div>
 
                         <div class="selling-point">
                             <h2>Scalable</h2>
                             <p>
-                                Gutenberg builds your site as static files: no need for a database
-                                or a server to manage. You won't run into any scaling issues.
+                                Gutenberg renders your whole site as static files, making it trivial to handle
+                                any kind of traffic you will throw at it at no cost without having
+                                to worry about managing a server or a database.
                             </p>
                         </div>
 
                         <div class="selling-point">
-                            <h2>Flexible & easy to use</h2>
+                            <h2>Easy to use</h2>
                             <p>
-                                From blogs to knowledge bases: anything can be built with Gutenberg.
-                                Gutenberg gets out of your way so you can focus on your content.
+                                From the CLI to the template engine, everything is designed to be intuitive.
+                                Don't take my words for it though, look at the
+                                <a href="{{ get_url(path="./documentation/_index.md") }}">documentation</a> and see for yourself.
                             </p>
                         </div>
 
                         <div class="selling-point">
-                            <h2>Fast</h2>
+                            <h2>Flexible</h2>
                             <p>
-                                Your site — including Sass compilation and syntax highlighting —
-                                will be generated in milliseconds, not seconds.
+                                Gutenberg gets out of your way so you can focus on your content, be it a blog,
+                                a knowledge base, a landing page or a combination of them.
                             </p>
                         </div>
 
+                        <div class="selling-point">
+                            <h2>Augmented Markdown</h2>
+                            <p>
+                                Gutenberg comes with <a href="{{ get_url(path="./documentation/content/shortcodes.md") }}">shortcodes</a> and
+                                <a href="{{ get_url(path="./documentation/content/linking.md") }}">internal links</a>
+                                to make it easier to write your content.
+                            </p>
+                        </div>
                     </div>
                 </div>
+
             {% endblock content %}
         </div>
     </body>
