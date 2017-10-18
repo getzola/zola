@@ -26,3 +26,25 @@
   width: 50%;
   padding: 2rem;
 }
+
+// and 1 on mobile
+@media only screen and (max-width: 1000px) {
+
+  .hero {
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .selling-points {
+    padding: 2rem;
+  }
+
+  .selling-point {
+    width: 100%;
+    padding: 1rem;
+
+    h2 {
+      text-align: center;
+    }
+  }
+}

@@ -87,9 +87,28 @@
     }
   }
 
-
   iframe {
     width: 100%;
     min-height: 400px;
+  }
+}
+
+
+@media only screen and (max-width: 1000px) {
+  .documentation {
+    flex-direction: column;
+    padding: 2rem;
+
+    &__content {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    &__sidebar {
+      border-top: 1px solid $background;
+      order: 1;
+      margin-right: 0;
+      margin-top: 1rem;
+    }
   }
 }
