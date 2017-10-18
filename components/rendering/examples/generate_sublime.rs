@@ -32,7 +32,9 @@ fn main() {
             dump_to_file(&ps, packpath_nonewlines).unwrap();
 
             for s in ps.syntaxes() {
-                println!("Add {} -> {:?}", s.name, s.file_extensions);
+                if !s.file_extensions.is_empty() {
+                    println!("- {} -> {:?}", s.name, s.file_extensions);
+                }
             }
         },
         (Some(ref cmd), Some(ref theme_dir), Some(ref packpath), None) if cmd == "themepack" => {
