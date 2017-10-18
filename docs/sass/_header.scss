@@ -13,3 +13,18 @@ header {
     }
   }
 }
+
+@media only screen and (max-width: 1000px) {
+  header {
+    padding: 1rem 0;
+
+    nav {
+      text-align: center;
+    }
+
+    .header__logo {
+      // to force menu links to be on a line below
+      display: block;
+    }
+  }
+}
