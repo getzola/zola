@@ -7,15 +7,16 @@
         <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
         <meta name="author" content="{{ config.extra.author }}">
         <title>{% block title %}{{ config.title }}{% endblock title %}</title>
-        <link rel="stylesheet" href="{{ get_url(path="site.css", cachebust=true) }}"/>
+        <link rel="stylesheet" href="{{ get_url(path="site.css") }}"/>
+        <link rel="icon" href="{{ get_url(path="favicon.ico") }}">
     </head>
     <body>
 
         <header>
-            <nav class="container">
-                <a class="header__logo" href="{{ config.base_url }}">Gutenberg</a>
-                <a href="{{ get_url(path="./documentation/_index.md") }}" class="nav-link">Docs</a>
-                <a href="https://github.com/Keats/gutenberg" class="nav-link">GitHub</a>
+            <nav class="{% block extra_nav_class %}container{% endblock extra_nav_class %}">
+                <a class="header__logo white" href="{{ config.base_url }}">Gutenberg</a>
+                <a class="white" href="{{ get_url(path="./documentation/_index.md") }}" class="nav-link">Docs</a>
+                <a class="white" href="https://github.com/Keats/gutenberg" class="nav-link">GitHub</a>
             </nav>
         </header>
 
@@ -88,5 +89,8 @@
 
             {% endblock content %}
         </div>
+        <footer>
+            ©2017 — Vincent Prouillet and <a class="white" href="https://github.com/Keats/gutenberg/graphs/contributors">contributors</a>
+        </footer>
     </body>
 </html>

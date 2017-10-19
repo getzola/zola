@@ -1,16 +1,4 @@
 header {
-  a {
-    color: white;
-    border-bottom-color: rgba(255, 255, 255, 0.25);
-    &:hover {
-      border-bottom-color: white;
-    }
-
-    &:visited {
-      color: white;
-    }
-  }
-
   .header__logo {
     border-bottom: none;
   }
