@@ -19,16 +19,17 @@ body {
 }
 
 a {
-  color: white;
+  color: $link-color;
   text-decoration: none;
   cursor: pointer;
+  border-bottom: 1px solid rgba(0, 124, 188, 0.25);
 
   &:hover {
-    text-decoration: underline;
+    border-bottom: 1px solid $link-color;
   }
 
   &:visited {
-    color: white;
+    color: $link-color;
   }
 
   // totally taken from stripe
@@ -49,6 +50,7 @@ a {
     color: #191919;
     text-decoration: none;
     transition: all .15s ease;
+    border-bottom: none;
 
     &:hover {
       transform: translateY(-1px);
