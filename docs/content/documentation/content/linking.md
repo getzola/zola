@@ -20,7 +20,7 @@ if the slug already exists for that article. For example:
 It is possible to have Gutenberg automatically insert anchor links next to the header, as you can see on the site you are currently 
 reading if you hover a title.
 
-This option is set at the section level, look up the `insert_anchor_links` variable on the 
+This option is set at the section level: the `insert_anchor_links` variable on the 
 [Section front-matter page](./documentation/content/section.md#front-matter).
 
 The default template is very basic and will need CSS tweaks in your project to look decent. 
@@ -33,5 +33,4 @@ special syntax to Markdown links to handle them: start the link with `./` and po
 to link to. The path to the file starts from the `content` directory.
 
 For example, linking to a file located at `content/pages/about.md` would be `[my link](./pages/about.md)`.
-You can still link to a header directly: `[my link](./pages/about.md#example)` would work as expected, granted
-the `example` id exists on the header.
+You can still link to a header directly: `[my link](./pages/about.md#example)` will work as expected.

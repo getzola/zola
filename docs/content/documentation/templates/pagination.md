@@ -4,9 +4,8 @@ weight = 30
 +++
 
 A paginated section gets the same `section` variable as a normal
-[section page](./documentation/templates/pages-sections.md#section-variables) and will use
-the template mentioned in the section front-matter or the default one.
-In addition, a paginated section gets a `paginator` one, which has a `Pager` type:
+[section page](./documentation/templates/pages-sections.md#section-variables).
+In addition, a paginated section gets a `paginator` variable of the `Pager` type:
 
 ```ts
 // How many items per page

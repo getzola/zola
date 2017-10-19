@@ -19,7 +19,8 @@ let highlight = true;
 
 You can replace the `rust` by the language you want to highlight or not put anything to get it 
 interpreted as plain text.
-Here is a full list of the supported languages and the short name you can use:
+
+Here is a full list of the supported languages and the short names you can use:
 
 ```
 - Plain Text -> ["txt"]

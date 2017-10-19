@@ -20,7 +20,6 @@ A `TaxonomyItem` has the following fields:
 ```ts
 name: String;
 slug: String;
-// Permalink to the generated page
 permalink: String;
 pages: Array<Page>;
 ```

@@ -30,8 +30,11 @@ $ gutenberg build
 You can override the config `base_url` by passing a new URL to the `base-url` flag.
 
 ```bash
-$ gutenberg build --base-url https://59a896e2cf321c2dcfd2d6de--tera.netlify.com/
+$ gutenberg build --base-url $DEPLOY_URL
 ```
+
+This is useful for example when you want to deploy previews of a site to a dynamic URL, such as Netlify 
+deploy previews.
 
 ## serve
 
@@ -48,5 +51,5 @@ $ gutenberg serve --interface 0.0.0.0 --port 2000
 The serve command will watch all your content and will provide live reload, without
 hard refresh if possible.
 
-If you fail to see your change, this means that Gutenberg couldn't reload that bit and you will
-need to restart `gutenberg serve`.
+Gutenberg does a best-effort to live reload but some changes cannot be handled automatically. If you
+fail to see your change, you will need to restart `gutenberg serve`.

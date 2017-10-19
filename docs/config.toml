@@ -1,4 +1,4 @@
-base_url = "https://gutenberg.netlify.com/"
+base_url = "https://www.getgutenberg.io/"
 title = "Gutenberg"
 description = "Everything you need to make a static site engine in one binary."
 

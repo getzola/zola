@@ -1,17 +1,13 @@
 +++
-title = "Index, Sections and Pages"
+title = "Sections and Pages"
 weight = 20
 +++
-
-First off, it is important to know that in Gutenberg the index 
-page is actually a section like any other: you can add metadata
-and content by adding `_index.md` at the root of the `content` folder.
 
 Pages and sections are actually very similar.
 
 ## Page variables
-By default, Gutenberg will try to load `templates/page.html`. If there isn't
-one, it will render the built-in template: a blank page.
+Gutenberg will try to load the `templates/page.html` template, the `page.html` template of the theme if one is used
+or will render the built-in template: a blank page.
 
 Whichever template you decide to render, you will get a `page` variable in your template
 with the following fields:

@@ -5,8 +5,8 @@ weight = 60
 
 Each page/section will automatically generate a table of content for itself based on the headers present. 
 
-TODO: add link for template variables
-It is available in the template through `section.toc` and `page.toc`. You can view the [template variables]() 
+It is available in the template through `section.toc` and `page.toc`. 
+You can view the [template variables](./documentation/templates/pages-sections.md#table-of-contents) 
 documentation for information on its structure.
 
 Here is an example of using that field to render a 2-level table of content:
