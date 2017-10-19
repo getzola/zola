@@ -38,7 +38,7 @@ Contains the [Sass](http://sass-lang.com) files to be compiled. Non-Sass files w
 Contains any kind of files. All the files/folders in the `static` folder will be copied as-is in the output directory.
 
 ## `templates`
-Contains all the [Tera](tera.netlify.com) templates that will be used to render this site. 
+Contains all the [Tera](https://tera.netlify.com) templates that will be used to render this site. 
 Have a look at the [Templates](./documentation/templates/_index.md) to learn more on the default templates 
 and the variables available.
 
