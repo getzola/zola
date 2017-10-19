@@ -3,7 +3,7 @@ title = "Overview"
 weight = 10
 +++
 
-Gutenberg uses the [Tera](tera.netlify.com) template engine and is very similar
+Gutenberg uses the [Tera](https://tera.netlify.com) template engine and is very similar
 to Jinja2, Liquid or Twig.
 
 As this documentation will only talk about how templates work in Gutenberg, please read
