@@ -34,18 +34,23 @@ That's it, Gutenberg will now recognise this template as a shortcode named `yout
 
 ## Using shortcodes
 
-There are two kinds of shortcodes: ones that do no take a body like the YouTube example above and ones that do, a quote for example.
+There are two kinds of shortcodes: 
+
+- ones that do not take a body like the YouTube example above
+- ones that do, a quote for example
+
 In both cases, their arguments must be named and they will all be passed to the template.
 
-Do note that shortcodes in code blocks will be ignored.
+Any shortcodes in code blocks will be ignored.
 
 ### Shortcodes without body
-Those look like rendering a variable in Tera.
 
-On a new line, call the shortcode as if it was a function in a variable block. All the examples below are valid
+On a new line, call the shortcode as if it was a Tera function in a variable block. All the examples below are valid
 calls of the YouTube shortcode.
 
 ```md
+Here is a YouTube video:
+
 {{ youtube(id="dQw4w9WgXcQ") }}
 
 {{ youtube(id="dQw4w9WgXcQ", autoplay=true) }}
@@ -54,7 +59,6 @@ calls of the YouTube shortcode.
 ```
 
 ### Shortcodes with body
-Those look like a block in Tera.
 For example, let's imagine we have the following shortcode `quote.html` template:
 
 ```jinja2
@@ -67,13 +71,14 @@ For example, let's imagine we have the following shortcode `quote.html` template
 We could use it in our markup file like so:
 
 ```md
+As someone said:
+
 {% quote(author="Vincent") %}
 A quote
 {% end %}
 ```
 
-The `body` variable used in the shortcode template will be implicitly passed down to the rendering
-context automatically.
+The body of the shortcode will be automatically passed down to the rendering context as the `body` variable.
 
 ## Built-in shortcodes
 

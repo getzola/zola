@@ -1,3 +1,8 @@
+.inverted-colours {
+  background: $foreground;
+  color: $background;
+}
+
 .hero {
   width: 60%;
   margin: 0 auto;
@@ -11,8 +16,6 @@
 }
 
 .selling-points {
-  background: $foreground;
-  color: $background;
   padding: 3rem;
 
   &__content {
@@ -23,6 +26,29 @@
 
 .selling-point {
   // 2 selling points per row on desktop
-  width: 50%;
+  width: 33%;
   padding: 2rem;
+  padding-top: 1rem;
+}
+
+// and 1 on mobile
+@media only screen and (max-width: 1000px) {
+  .hero {
+    width: 90%;
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .selling-points {
+    padding: 2rem;
+  }
+
+  .selling-point {
+    width: 100%;
+    padding: 1rem;
+
+    h2 {
+      text-align: center;
+    }
+  }
 }

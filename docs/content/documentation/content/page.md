@@ -11,8 +11,7 @@ named `_index/md`.
 The front-matter is a set of metadata embedded in a file. In Gutenberg,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
-None of the front-matter variables are mandatory. However the opening and closing `+++` are required even if there are
-no variables in it.
+While none of the front-matter variables are mandatory, the the opening and closing `+++` are required.
 
 Here is an example page with all the variables available:
 
@@ -65,8 +64,10 @@ Some content
 ```
 
 ## Summary
+
 You can ask Gutenberg to create a summary if you only want to show the first 
 paragraph of each page in a list for example.
+
 To do so, add `<!-- more -->` in your content at the point where you want the
 summary to end and the content up to that point will be also available separately
-in the template.
+in the [template](./documentation/templates/pages-sections.md#page-variables).

@@ -3,20 +3,22 @@ title = "Section"
 weight = 20
 +++
 
-A section is automatically created implicitly when a folder is found 
-in the `content` section.
+A section is automatically created when a folder is found 
+in the `content` section, unless it only contains a `index.md` file and is actually
+a page with assets.
 
 You can add `_index.md` file to a folder to augment a section and give it
 some metadata and/or content.
+
+The index page is actually a section created automatically like any other: you can add metadata
+and content by adding `_index.md` at the root of the `content` folder.
 
 ## Front-matter
 
 The front-matter is a set of metadata embedded in a file. In Gutenberg,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
-As the file itself is optional, none of the front-matter variables are
-mandatory. However the opening and closing `+++` are required even if there are
-no variables in it.
+While none of the front-matter variables are mandatory, the the opening and closing `+++` are required.
 
 Here is an example `_index.md` with all the variables available:
 
@@ -67,12 +69,11 @@ redirect_to = ""
 Some content
 ```
 
-Keep in mind that the variables only apply to the direct pages, not to the subsections' pages. This means
-you can only paginate the pages directly in the section folder for example.
+Keep in mind that any configuration apply only to the direct pages, not to the subsections' pages.
 
 ## Sorting
-Sections' pages can be sorted three different ways, not counting the unsorted default.
-Sorting is enabled by setting the `sort_by` front-matter variable.
+Sections' pages can be sorted three different ways, not counting the unsorted default and 
+is enabled by setting the `sort_by` front-matter variable.
 
 Any page that cannot be sorted, for example if missing the date variable while sorting by `date`, will be ignored and
 won't be rendered. The terminal will warn you if this is happening.

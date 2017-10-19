@@ -13,4 +13,4 @@ The RSS template gets two variables in addition of the config:
 
 - `last_build_date`: the date of the latest post
 - `pages`: see [the page variables](./documentation/templates/pages-sections.md#page-variables) for
-a detailed description of this variable.
+a detailed description of what this contains

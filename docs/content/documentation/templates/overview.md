@@ -3,23 +3,24 @@ title = "Overview"
 weight = 10
 +++
 
-Gutenberg uses the [Tera](tera.netlify.com) template engine. 
-This documentation will only touch how templates work in Gutenberg, please read
+Gutenberg uses the [Tera](tera.netlify.com) template engine and is very similar
+to Jinja2, Liquid or Twig.
+
+As this documentation will only talk about how templates work in Gutenberg, please read
 the [Tera template documentation](https://tera.netlify.com/docs/templates/) if you want
-to know how write them. If you are familiar with Jinja2, Liquid or Twig, this should be 
-a breeze.
+to learn more about it first.
 
 All templates live in the `templates` directory and built-in or themes templates can
 be overriden by creating a template with same name in the correct path. For example,
 you can override the RSS template by creating a `templates/rss.xml` file.
 
-If you are not sure what is available in a template, you can just stick `{{ __tera_context }}` in it
+If you are not sure what variables are available in a template, you can just stick `{{ __tera_context }}` in it
 to print the whole context.
 
-A few variables are available on all templates except for RSS/Sitemap:
+A few variables are available on all templates minus RSS and sitemap:
 
 - `config`: the [configuration](./documentation/getting-started/configuration.md) without any modifications
-- `current_path`: the path (full URL without the `base_url`) of the current page
+- `current_path`: the path (full URL without the `base_url`) of the current page, never starting with a `/`
 - `current_url`: the full URL for that page
 
 ## Built-in filters
