@@ -161,9 +161,9 @@ The arguments are:
 Usage example:
 
 ```md
-{{ gist(id="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57") }}
+{{ gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57") }}
 
-{{ gist(id="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57", class="gist") }}
+{{ gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57", class="gist") }}
 ```
 
 Result example:
