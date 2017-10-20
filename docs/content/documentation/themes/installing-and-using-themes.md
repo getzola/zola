@@ -24,7 +24,7 @@ Now that you have the theme in your `themes` directory, you only need to tell
 Gutenberg to use it to get started by setting the `theme` variable of the 
 [configuration file](./documentation/getting-started/configuration.md). The theme
 name has to be name of the directory you cloned the theme in.
-For example, if you cloned a theme in `templates/simple-blog`, the theme name to use
+For example, if you cloned a theme in `themes/simple-blog`, the theme name to use
 in the configuration file is `simple-blog`.
 
 ## Customizing a theme
