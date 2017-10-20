@@ -11,7 +11,7 @@ named `_index/md`.
 The front-matter is a set of metadata embedded in a file. In Gutenberg,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
-While none of the front-matter variables are mandatory, the the opening and closing `+++` are required.
+While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
 
 Here is an example page with all the variables available:
 
