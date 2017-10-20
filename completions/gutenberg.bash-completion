@@ -32,21 +32,13 @@ _gutenberg() {
 
     case "${cmd}" in
         gutenberg)
-            opts=" -h -V -c  --help --version --config   init build serve help"
+            opts=" -c -h -V  --config --help --version   init build serve help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
             fi
             case "${prev}" in
                 
-                --config)
-                    COMPREPLY=("<config>")
-                    return 0
-                    ;;
-                    -c)
-                    COMPREPLY=("<config>")
-                    return 0
-                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -56,13 +48,21 @@ _gutenberg() {
             ;;
         
         gutenberg__build)
-            opts=" -h -V  --help --version  "
+            opts=" -h -V -u  --help --version --base-url  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
             fi
             case "${prev}" in
                 
+                --base-url)
+                    COMPREPLY=("<base_url>")
+                    return 0
+                    ;;
+                    -u)
+                    COMPREPLY=("<base_url>")
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -101,13 +101,29 @@ _gutenberg() {
             return 0
             ;;
         gutenberg__serve)
-            opts=" -h -V  --help --version  <interface> <port> "
+            opts=" -h -V -i -p  --help --version --interface --port  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
             fi
             case "${prev}" in
                 
+                --interface)
+                    COMPREPLY=("<interface>")
+                    return 0
+                    ;;
+                    -i)
+                    COMPREPLY=("<interface>")
+                    return 0
+                    ;;
+                --port)
+                    COMPREPLY=("<port>")
+                    return 0
+                    ;;
+                    -p)
+                    COMPREPLY=("<port>")
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

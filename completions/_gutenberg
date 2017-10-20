@@ -6,51 +6,56 @@ _gutenberg() {
 
     local context curcontext="$curcontext" state line
     _arguments -s -S -C \
-"-c+[Path to a config file other than config.toml]" \
-"--config+[Path to a config file other than config.toml]" \
-"-h[Prints help information]" \
-"--help[Prints help information]" \
-"-V[Prints version information]" \
-"--version[Prints version information]" \
+'-c[Path to a config file other than config.toml]' \
+'--config[Path to a config file other than config.toml]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
 "1:: :_gutenberg_commands" \
-"*:: :->Gutenberg" \
+"*:: :->gutenberg" \
 && ret=0
     case $state in
-    (Gutenberg)
+    (gutenberg)
         curcontext="${curcontext%:*:*}:gutenberg-command-$words[1]:"
         case $line[1] in
             (init)
 _arguments -s -S -C \
-"-h[Prints help information]" \
-"--help[Prints help information]" \
-"-V[Prints version information]" \
-"--version[Prints version information]" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
 "1:: :_gutenberg__init_commands" \
 && ret=0
 ;;
 (build)
 _arguments -s -S -C \
-"-h[Prints help information]" \
-"--help[Prints help information]" \
-"-V[Prints version information]" \
-"--version[Prints version information]" \
+'-u+[Force the base URL to be that value (default to the one in config.toml)]' \
+'--base-url+[Force the base URL to be that value (default to the one in config.toml)]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
 && ret=0
 ;;
 (serve)
 _arguments -s -S -C \
-"-h[Prints help information]" \
-"--help[Prints help information]" \
-"-V[Prints version information]" \
-"--version[Prints version information]" \
-"1:: :_gutenberg__serve_commands" \
+'-i+[Interface to bind on]' \
+'--interface+[Interface to bind on]' \
+'-p+[Which port to use]' \
+'--port+[Which port to use]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
 && ret=0
 ;;
 (help)
 _arguments -s -S -C \
-"-h[Prints help information]" \
-"--help[Prints help information]" \
-"-V[Prints version information]" \
-"--version[Prints version information]" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
 && ret=0
 ;;
         esac
@@ -85,15 +90,14 @@ _gutenberg__help_commands() {
 (( $+functions[_gutenberg__init_commands] )) ||
 _gutenberg__init_commands() {
     local commands; commands=(
-        "NAME:Name of the project. Will create a directory with that name in the current directory" \
+        "NAME:Name of the project. Will create a new directory with that name in the current directory" \
     )
     _describe -t commands 'gutenberg init commands' commands "$@"
 }
 (( $+functions[_gutenberg__serve_commands] )) ||
 _gutenberg__serve_commands() {
     local commands; commands=(
-        "INTERFACE:Interface to bind on (default to 127.0.0.1)" \
-"PORT:Which port to use (default to 1111)" \
+        
     )
     _describe -t commands 'gutenberg serve commands' commands "$@"
 }

@@ -9,8 +9,8 @@
             %{
                 switch ($_.ToString()) {
 
-                    'Gutenberg' {
-                        $command += '_Gutenberg'
+                    'gutenberg' {
+                        $command += '_gutenberg'
                         break
                     }
 
@@ -45,7 +45,7 @@
         switch ($command) {
 
             '_gutenberg' {
-                $completions = @('init', 'build', 'serve', 'help', '-h', '-V', '-c', '--help', '--version', '--config')
+                $completions = @('init', 'build', 'serve', 'help', '-c', '-h', '-V', '--config', '--help', '--version')
             }
 
             '_gutenberg_init' {
@@ -53,11 +53,11 @@
             }
 
             '_gutenberg_build' {
-                $completions = @('-h', '-V', '--help', '--version')
+                $completions = @('-h', '-V', '-u', '--help', '--version', '--base-url')
             }
 
             '_gutenberg_serve' {
-                $completions = @('-h', '-V', '--help', '--version')
+                $completions = @('-h', '-V', '-i', '-p', '--help', '--version', '--interface', '--port')
             }
 
             '_gutenberg_help' {
