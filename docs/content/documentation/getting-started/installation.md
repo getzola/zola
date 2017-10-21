@@ -15,10 +15,11 @@ if you encounter any issues.
 
 ## Windows
 
-I am not aware of the package management state in Windows.
+Gutenberg is available on [Scoop](http://scoop.sh):
 
-If you can help package it, please comment on [https://github.com/Keats/gutenberg/issues/12](https://github.com/Keats/gutenberg/issues/12)
-if you encounter any issues.
+```bash
+$ scoop install gutenberg
+```
 
 ## Archlinux
 
