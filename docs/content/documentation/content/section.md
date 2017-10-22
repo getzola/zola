@@ -4,7 +4,7 @@ weight = 20
 +++
 
 A section is automatically created when a folder is found 
-in the `content` section, unless it only contains a `index.md` file and is actually
+in the `content` section, unless it only contains a `_index.md` file and is actually
 a page with assets.
 
 You can add `_index.md` file to a folder to augment a section and give it
