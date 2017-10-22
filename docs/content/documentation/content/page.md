@@ -4,7 +4,7 @@ weight = 30
 +++
 
 A page is any file ending with `.md` in the `content` directory, except files
-named `_index/md`.
+named `_index.md`.
 
 ## Front-matter
 
