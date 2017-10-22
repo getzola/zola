@@ -54,7 +54,7 @@ Takes a path to a `_index.md` file and returns the associated section
 {% set section = get_page(path="blog/_index.md") %}
 ```
 
-###` get_url`
+### ` get_url`
 Gets the permalink for the given path.
 If the path starts with `./`, it will be understood as an internal
 link like the ones used in markdown.
