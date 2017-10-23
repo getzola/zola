@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 (unreleased)
+
+- Fix shortcodes without arguments being ignored
+
+
 ## 0.2.1 (2017-10-17)
 
 - Fix `base-url` argument to `gutenberg build` being called `base`

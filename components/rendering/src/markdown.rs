@@ -104,6 +104,7 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
                 // Shortcode without body
                 if shortcode_block.is_none() && text.starts_with("{{") && text.ends_with("}}") && SHORTCODE_RE.is_match(&text) {
                     let (name, args) = parse_shortcode(&text);
+
                     added_shortcode = true;
                     match render_simple_shortcode(context.tera, &name, &args) {
                         Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
