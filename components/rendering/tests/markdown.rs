@@ -163,6 +163,14 @@ Hello
 }
 
 #[test]
+fn errors_if_unterminated_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let res = markdown_to_html(r#"{{ youtube(id="w7Ft2ym_a"#, &context);
+    assert!(res.is_err());
+}
+
+#[test]
 fn doesnt_render_shortcode_in_code_block() {
     let permalinks_ctx = HashMap::new();
     let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);

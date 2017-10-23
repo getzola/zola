@@ -45,7 +45,7 @@ Any shortcodes in code blocks will be ignored.
 
 Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the arguments name 
 can only contain numbers, letters and underscores, or in Regex terms the following: `[0-9A-Za-z_]`.
-While theoretically an argument name could be a number, it will not be possible to use in the template.
+While theoretically an argument name could be a number, it will not be possible to use it in the template in that case.
 
 ### Shortcodes without body
 
