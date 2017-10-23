@@ -9,5 +9,6 @@ Same filename but different path
 {{ basic() }}
 
 {{ pirate(name="Bob") }}
+{{ pirate(name="Bob_Sponge") }}
 
 

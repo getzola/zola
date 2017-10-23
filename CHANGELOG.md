@@ -3,6 +3,7 @@
 ## 0.2.2 (unreleased)
 
 - Fix shortcodes without arguments being ignored
+- Fix shortcodes with markdown chars (_, *, etc) in name and args being ignored
 
 
 ## 0.2.1 (2017-10-17)

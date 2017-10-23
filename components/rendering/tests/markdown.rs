@@ -85,6 +85,59 @@ Hello
 }
 
 #[test]
+fn can_render_shortcode_with_markdown_char_in_args_name() {
+    let permalinks_ctx = HashMap::new();
+    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let input = vec![
+        "name",
+        "na_me",
+        "n_a_me",
+        "n1",
+    ];
+    for i in input {
+        let res = markdown_to_html(&format!("{{{{ youtube(id=\"hey\", {}=1) }}}}", i), &context).unwrap();
+        assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/hey""#));
+    }
+}
+
+#[test]
+fn can_render_shortcode_with_markdown_char_in_args_value() {
+    let permalinks_ctx = HashMap::new();
+    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let input = vec![
+        "ub36ffWAqgQ-hey",
+        "ub36ffWAqgQ_hey",
+        "ub36ffWAqgQ_he_y",
+        "ub36ffWAqgQ*hey",
+        "ub36ffWAqgQ#hey",
+    ];
+    for i in input {
+        let res = markdown_to_html(&format!("{{{{ youtube(id=\"{}\") }}}}", i), &context).unwrap();
+        assert!(res.0.contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i)));
+    }
+}
+
+#[test]
+fn can_render_body_shortcode_with_markdown_char_in_name() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&GUTENBERG_TERA).unwrap();
+    let input = vec![
+        "quo_te",
+        "qu_o_te",
+    ];
+
+    for i in input {
+        tera.add_raw_template(&format!("shortcodes/{}.html", i), "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
+        let context = Context::new(&tera, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+
+        let res = markdown_to_html(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context).unwrap();
+        println!("{:?}", res);
+        assert!(res.0.contains("<blockquote>hey - Bob</blockquote>"));
+    }
+}
+
+#[test]
 fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
     let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);

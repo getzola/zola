@@ -110,6 +110,7 @@ fn can_build_site_without_live_reload() {
     // Shortcodes work
     assert!(file_contains!(public, "posts/python/index.html", "Basic shortcode"));
     assert!(file_contains!(public, "posts/python/index.html", "Arrrh Bob"));
+    assert!(file_contains!(public, "posts/python/index.html", "Arrrh Bob_Sponge"));
     assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
     assert!(file_exists!(public, "posts/with-assets/index.html"));
     assert!(file_exists!(public, "posts/no-section/simple/index.html"));

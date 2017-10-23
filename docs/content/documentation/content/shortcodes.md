@@ -43,6 +43,10 @@ In both cases, their arguments must be named and they will all be passed to the 
 
 Any shortcodes in code blocks will be ignored.
 
+Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the arguments name 
+can only contain numbers, letters and underscores, or in Regex terms the following: `[0-9A-Za-z_]`.
+While theoretically an argument name could be a number, it will not be possible to use in the template.
+
 ### Shortcodes without body
 
 On a new line, call the shortcode as if it was a Tera function in a variable block. All the examples below are valid
@@ -78,7 +82,8 @@ A quote
 {% end %}
 ```
 
-The body of the shortcode will be automatically passed down to the rendering context as the `body` variable.
+The body of the shortcode will be automatically passed down to the rendering context as the `body` variable and needs
+to be in a newline.
 
 ## Built-in shortcodes
 

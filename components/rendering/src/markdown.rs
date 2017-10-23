@@ -28,6 +28,11 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     // Set while parsing
     let mut error = None;
     let mut highlighter: Option<HighlightLines> = None;
+    // the markdown parser will send several Text event if a markdown character
+    // is present in it, for example `hello_test` will be split in 2: hello and _test.
+    // Since we can use those chars in shortcode arguments, we need to collect
+    // the full shortcode somehow first
+    let mut current_shortcode = String::new();
     let mut shortcode_block = None;
     // shortcodes live outside of paragraph so we need to ensure we don't close
     // a paragraph that has already been closed
@@ -72,7 +77,7 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
 
     {
         let parser = Parser::new_ext(content, opts).map(|event| match event {
-            Event::Text(text) => {
+            Event::Text(mut text) => {
                 // Header first
                 if in_header {
                     if header_created {
@@ -99,6 +104,23 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
 
                 if in_code_block {
                     return Event::Text(text);
+                }
+
+                // Are we in the middle of a shortcode that somehow got cut off
+                // by the markdown parser?
+                if current_shortcode.is_empty() {
+                    if text.starts_with("{{") && !text.ends_with("}}") {
+                        current_shortcode += &text;
+                    } else if text.starts_with("{%") && !text.ends_with("%}") {
+                        current_shortcode += &text;
+                    }
+                } else {
+                    current_shortcode += &text;
+                }
+
+                if current_shortcode.ends_with("}}") || current_shortcode.ends_with("%}") {
+                    text = Owned(current_shortcode.clone());
+                    current_shortcode = String::new();
                 }
 
                 // Shortcode without body
@@ -252,6 +274,10 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
         });
 
         cmark::html::push_html(&mut html, parser);
+    }
+
+    if !current_shortcode.is_empty() {
+        return Err(format!("A shortcode was not closed properly:\n{:?}", current_shortcode).into());
     }
 
     match error {

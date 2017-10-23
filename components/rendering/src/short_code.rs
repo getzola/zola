@@ -6,7 +6,7 @@ use tera::{Tera, Context};
 use errors::{Result, ResultExt};
 
 lazy_static!{
-    pub static ref SHORTCODE_RE: Regex = Regex::new(r#"\{(?:%|\{)\s+([[:alnum:]]+?)\(([[:alnum:]]+?="?.+?"?)?\)\s+(?:%|\})\}"#).unwrap();
+    pub static ref SHORTCODE_RE: Regex = Regex::new(r#"\{(?:%|\{)\s+([[:word:]]+?)\(([[:word:]]+?="?.+?"?)?\)\s+(?:%|\})\}"#).unwrap();
 }
 
 /// A shortcode that has a body
@@ -75,7 +75,28 @@ pub fn render_simple_shortcode(tera: &Tera, name: &str, args: &HashMap<String, S
 
 #[cfg(test)]
 mod tests {
-    use super::parse_shortcode;
+    use super::{parse_shortcode, SHORTCODE_RE};
+
+    #[test]
+    fn can_match_all_kinds_of_shortcode() {
+        let inputs = vec![
+            "{{ basic() }}",
+            "{{ basic(ho=1) }}",
+            "{{ basic(ho=\"hey\") }}",
+            "{{ basic(ho=\"hey_underscore\") }}",
+            "{{ basic(ho=\"hey-dash\") }}",
+            "{% basic(ho=\"hey-dash\") %}",
+            "{% basic(ho=\"hey_underscore\") %}",
+            "{% basic() %}",
+            "{% quo_te(author=\"Bob\") %}",
+            "{{ quo_te(author=\"Bob\") }}",
+        ];
+
+        for i in inputs {
+            println!("{}", i);
+            assert!(SHORTCODE_RE.is_match(i));
+        }
+    }
 
     #[test]
     fn can_parse_simple_shortcode_no_arg() {
