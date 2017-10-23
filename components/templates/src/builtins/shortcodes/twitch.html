@@ -1,0 +1,9 @@
+<div {% if class %}class="{{class}}"{% endif %}>
+    <iframe
+        src="https://player.twitch.tv/?channel={{channel}}" 
+        frameborder="0" 
+        allowfullscreen="true"
+        height="{% if height %}{{height}}{% endif %}"
+        width="{% if width %}{{width}}{% endif %}">  
+    </iframe>
+</div>
