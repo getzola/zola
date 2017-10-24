@@ -5,6 +5,7 @@
 - Fix shortcodes without arguments being ignored
 - Fix shortcodes with markdown chars (_, *, etc) in name and args being ignored
 - Fix subsections of index not being filled without a `_index.md`
+- Fix generated index section not found in `get_section` global function
 - Fix permalink generation for index page
 
 

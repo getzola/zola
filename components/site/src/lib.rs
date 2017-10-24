@@ -208,6 +208,7 @@ impl Site {
             let mut index_section = Section::default();
             index_section.permalink = self.config.make_permalink("");
             index_section.file.parent = self.base_path.join("content");
+            index_section.file.relative = "_index.md".to_string();
             self.sections.insert(index_path, index_section);
         }
 
