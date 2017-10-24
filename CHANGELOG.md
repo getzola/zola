@@ -4,6 +4,8 @@
 
 - Fix shortcodes without arguments being ignored
 - Fix shortcodes with markdown chars (_, *, etc) in name and args being ignored
+- Fix subsections of index not being filled without a `_index.md`
+- Fix permalink generation for index page
 
 
 ## 0.2.1 (2017-10-17)

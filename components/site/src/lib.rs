@@ -207,7 +207,7 @@ impl Site {
         if !self.sections.contains_key(&index_path) {
             let mut index_section = Section::default();
             index_section.permalink = self.config.make_permalink("");
-            // TODO: need to insert into permalinks too
+            index_section.file.parent = self.base_path.join("content");
             self.sections.insert(index_path, index_section);
         }
 
@@ -736,8 +736,12 @@ impl Site {
         Ok(())
     }
 
+    /// Used only on reload
     pub fn render_index(&self) -> Result<()> {
-        self.render_section(&self.sections[&self.base_path.join("content").join("_index.md")], false)
+        self.render_section(
+            &self.sections[&self.base_path.join("content").join("_index.md")],
+            false
+        )
     }
 
     /// Renders all sections
