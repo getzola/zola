@@ -7,6 +7,7 @@
         width="{% if videoWidth %}{{videoWidth}}{% endif %}">  
     </iframe>
     
+    {% if chat %}
     <iframe 
         src="https://www.twitch.tv/{{channel}}/chat?popout=" 
         frameborder="0" 
@@ -14,4 +15,5 @@
         height="{% if chatHeight %}{{chatHeight}}{% endif %}" 
         width="{% if chatWidth %}{{chatWidth}}{% endif %}">
     </iframe>
+    {% endif %}
 </div>
