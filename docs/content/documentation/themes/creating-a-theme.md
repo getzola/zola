@@ -50,4 +50,10 @@ A theme will also need three directories to work:
 - `templates`: all templates used in this theme
 - `sass`: Sass stylesheets for this theme, can be empty
 
+To be featured on this site, the theme will require two more things:
+
+- `screenshot.png`: a screenshot of the theme in action, its size needs to be reasonable
+- `README.md`: a thorough README explaining how to use the theme and any other information
+of importance
+
 A simple theme you can use as example is [Hyde](https://github.com/Keats/hyde).
