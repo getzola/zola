@@ -95,16 +95,21 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     console::warn_about_ignored_pages(&site);
     site.build()?;
     console::report_elapsed_time(start);
+    let mut watching_static = false;
 
     // Setup watchers
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
     watcher.watch("content/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
-    watcher.watch("static/", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `static` folder. Does it exist?")?;
     watcher.watch("templates/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
+
+    if Path::new("static").exists() {
+        watching_static = true;
+        watcher.watch("static/", RecursiveMode::Recursive)
+            .chain_err(|| "Can't watch the `static` folder. Does it exist?")?;
+    }
 
     // Sass support is optional so don't make it an error to no have a sass folder
     let _ = watcher.watch("sass/", RecursiveMode::Recursive);
@@ -142,11 +147,15 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     let pwd = format!("{}", env::current_dir().unwrap().display());
 
-    if site.config.compile_sass.unwrap() {
-        println!("Listening for changes in {}/{{content, static, templates, sass}}", pwd);
-    } else {
-        println!("Listening for changes in {}/{{content, static, templates}}", pwd);
+    let mut watchers = vec!["content", "templates"];
+    if watching_static {
+        watchers.push("static");
     }
+    if site.config.compile_sass.unwrap() {
+        watchers.push("sass");
+    }
+
+    println!("Listening for changes in {}/{{{}}}", pwd, watchers.join(", "));
     println!("Web server is available at http://{}", address);
     println!("Press Ctrl+C to stop\n");
 

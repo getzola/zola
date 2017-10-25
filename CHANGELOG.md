@@ -8,6 +8,7 @@
 - Fix generated index section not found in `get_section` global function
 - Fix permalink generation for index page
 - Add Nim syntax highlighting
+- Allow static folder to be missing
 
 
 ## 0.2.1 (2017-10-17)

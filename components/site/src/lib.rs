@@ -431,7 +431,10 @@ impl Site {
                 &self.base_path.join("themes").join(theme).join("static")
             )?;
         }
-        self.copy_static_directory(&self.static_path)?;
+        // We're fine with missing static folders
+        if self.static_path.exists() {
+            self.copy_static_directory(&self.static_path)?;
+        }
 
         Ok(())
     }
