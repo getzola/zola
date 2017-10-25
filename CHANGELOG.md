@@ -7,6 +7,7 @@
 - Fix subsections of index not being filled without a `_index.md`
 - Fix generated index section not found in `get_section` global function
 - Fix permalink generation for index page
+- Add Nim syntax highlighting
 
 
 ## 0.2.1 (2017-10-17)
