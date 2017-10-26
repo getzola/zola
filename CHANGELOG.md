@@ -9,6 +9,7 @@
 - Fix permalink generation for index page
 - Add Nim syntax highlighting
 - Allow static folder to be missing
+- Fix shortcodes args being only passed as strings
 
 
 ## 0.2.1 (2017-10-17)

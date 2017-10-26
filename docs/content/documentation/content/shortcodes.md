@@ -47,6 +47,15 @@ Lastly, a shortcode name (and thus the corresponding `.html` file) as well as th
 can only contain numbers, letters and underscores, or in Regex terms the following: `[0-9A-Za-z_]`.
 While theoretically an argument name could be a number, it will not be possible to use it in the template in that case.
 
+Argument values can be of 4 types:
+
+- string: surrounded by double quotes `"..."`
+- bool: `true` or `false`
+- float: a number with a `.` in it
+- integer: a number without a `.` in it
+
+Malformed values will be silently ignored.
+
 ### Shortcodes without body
 
 On a new line, call the shortcode as if it was a Tera function in a variable block. All the examples below are valid

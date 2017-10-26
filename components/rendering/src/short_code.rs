@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use regex::Regex;
-use tera::{Tera, Context};
+use tera::{Tera, Context, Value, to_value};
 
 use errors::{Result, ResultExt};
 
@@ -15,15 +15,15 @@ lazy_static!{
 #[derive(Debug)]
 pub struct ShortCode {
     name: String,
-    args: HashMap<String, String>,
+    args: HashMap<String, Value>,
     body: String,
 }
 
 impl ShortCode {
-    pub fn new(name: &str, args: HashMap<String, String>) -> ShortCode {
+    pub fn new(name: &str, args: HashMap<String, Value>) -> ShortCode {
         ShortCode {
             name: name.to_string(),
-            args: args,
+            args,
             body: String::new(),
         }
     }
@@ -45,7 +45,7 @@ impl ShortCode {
 }
 
 /// Parse a shortcode without a body
-pub fn parse_shortcode(input: &str) -> (String, HashMap<String, String>) {
+pub fn parse_shortcode(input: &str) -> (String, HashMap<String, Value>) {
     let mut args = HashMap::new();
     let caps = SHORTCODE_RE.captures(input).unwrap();
     // caps[0] is the full match
@@ -54,7 +54,39 @@ pub fn parse_shortcode(input: &str) -> (String, HashMap<String, String>) {
     if let Some(arg_list) = caps.get(2) {
         for arg in arg_list.as_str().split(',') {
             let bits = arg.split('=').collect::<Vec<_>>();
-            args.insert(bits[0].trim().to_string(), bits[1].replace("\"", ""));
+            let arg_name = bits[0].trim().to_string();
+            let arg_val = bits[1].replace("\"", "");
+
+            // Regex captures will be str so we need to figure out if they are
+            // actually str or bool/number
+            if input.contains(&format!("{}=\"{}\"", arg_name, arg_val)) {
+                // that's a str, just add it
+                args.insert(arg_name, to_value(arg_val).unwrap());
+                continue;
+            }
+
+            if input.contains(&format!("{}=true", arg_name)) {
+                args.insert(arg_name, to_value(true).unwrap());
+                continue;
+            }
+
+            if input.contains(&format!("{}=false", arg_name)) {
+                args.insert(arg_name, to_value(false).unwrap());
+                continue;
+            }
+
+            // Not a string or a bool, a number then?
+            if arg_val.contains('.') {
+                if let Ok(float) = arg_val.parse::<f64>() {
+                    args.insert(arg_name, to_value(float).unwrap());
+                }
+                continue;
+            }
+
+            // must be an integer
+            if let Ok(int) = arg_val.parse::<i64>() {
+                args.insert(arg_name, to_value(int).unwrap());
+            }
         }
     }
 
@@ -62,7 +94,7 @@ pub fn parse_shortcode(input: &str) -> (String, HashMap<String, String>) {
 }
 
 /// Renders a shortcode or return an error
-pub fn render_simple_shortcode(tera: &Tera, name: &str, args: &HashMap<String, String>) -> Result<String> {
+pub fn render_simple_shortcode(tera: &Tera, name: &str, args: &HashMap<String, Value>) -> Result<String> {
     let mut context = Context::new();
     for (key, value) in args.iter() {
         context.add(key, value);
@@ -117,7 +149,7 @@ mod tests {
         let (name, args) = parse_shortcode(r#"{{ youtube(id="w7Ft2ymGmfc", autoplay=true) }}"#);
         assert_eq!(name, "youtube");
         assert_eq!(args["id"], "w7Ft2ymGmfc");
-        assert_eq!(args["autoplay"], "true");
+        assert_eq!(args["autoplay"], true);
     }
 
     #[test]
@@ -125,6 +157,15 @@ mod tests {
         let (name, args) = parse_shortcode(r#"{% youtube(id="w7Ft2ymGmfc", autoplay=true) %}"#);
         assert_eq!(name, "youtube");
         assert_eq!(args["id"], "w7Ft2ymGmfc");
-        assert_eq!(args["autoplay"], "true");
+        assert_eq!(args["autoplay"], true);
+    }
+
+    #[test]
+    fn can_parse_shortcode_number() {
+        let (name, args) = parse_shortcode(r#"{% test(int=42, float=42.0, autoplay=true) %}"#);
+        assert_eq!(name, "test");
+        assert_eq!(args["int"], 42);
+        assert_eq!(args["float"], 42.0);
+        assert_eq!(args["autoplay"], true);
     }
 }
