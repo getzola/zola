@@ -138,6 +138,33 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
 }
 
 #[test]
+fn can_render_body_shortcode_and_paragraph_after() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&GUTENBERG_TERA).unwrap();
+
+    let shortcode = "<p>{{ body }}</p>";
+    let markdown_string = r#"
+{% figure() %}
+This is a figure caption.
+{% end %}
+
+Here is another paragraph.
+"#;
+
+    let expected = "<p>This is a figure caption.</p>
+<p>Here is another paragraph.</p>
+";
+
+    tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
+    let context = Context::new(&tera, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = markdown_to_html(markdown_string, &context).unwrap();
+    println!("{:?}", res);
+    assert_eq!(res.0, expected);
+}
+
+#[test]
 fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
     let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
