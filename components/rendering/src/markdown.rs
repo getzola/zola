@@ -13,8 +13,13 @@ use highlighting::{SYNTAX_SET, THEME_SET};
 use short_code::{SHORTCODE_RE, ShortCode, parse_shortcode, render_simple_shortcode};
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 
-
+#[allow(unused_variables)]
 pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec<Header>)> {
+    Ok(("".to_string(),vec![]))
+}
+
+#[allow(dead_code)]
+pub fn markdown_to_html_old(content: &str, context: &Context) -> Result<(String, Vec<Header>)> {
     // We try to be smart about highlighting code as it can be time-consuming
     // If the global config disables it, then we do nothing. However,
     // if we see a code block in the content, we assume that this page needs
