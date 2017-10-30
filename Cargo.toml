@@ -42,6 +42,7 @@ members = [
     "components/content",
     "components/errors",
     "components/front_matter",
+    "components/highlighting",
     "components/pagination",
     "components/rendering",
     "components/site",

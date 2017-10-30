@@ -11,13 +11,13 @@ extern crate serde;
 
 extern crate errors;
 extern crate front_matter;
+extern crate highlighting;
 extern crate utils;
 
 #[cfg(test)]
 extern crate templates;
 
 mod context;
-pub mod highlighting;
 mod markdown;
 mod short_code;
 mod table_of_contents;

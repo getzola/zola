@@ -1,3 +1,5 @@
+#![allow(unused_doc_comment)]
+
 #[macro_use]
 extern crate error_chain;
 extern crate tera;
@@ -26,4 +28,3 @@ macro_rules! bail {
         return Err(format!($fmt, $($arg)+).into());
     };
 }
-

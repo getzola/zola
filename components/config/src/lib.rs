@@ -3,7 +3,7 @@ extern crate serde_derive;
 extern crate toml;
 #[macro_use]
 extern crate errors;
-extern crate rendering;
+extern crate highlighting;
 extern crate chrono;
 
 use std::collections::HashMap;
@@ -15,7 +15,7 @@ use toml::{Value as Toml};
 use chrono::Utc;
 
 use errors::{Result, ResultExt};
-use rendering::highlighting::THEME_SET;
+use highlighting::THEME_SET;
 
 
 mod theme;
