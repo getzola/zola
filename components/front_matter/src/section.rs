@@ -24,7 +24,7 @@ pub struct SectionFrontMatter {
     /// Higher values means it will be at the end.
     #[serde(skip_serializing)]
     pub weight: Option<usize>,
-    /// Optional template, if we want to specify which template to render for that page
+    /// Optional template, if we want to specify which template to render for that section
     #[serde(skip_serializing)]
     pub template: Option<String>,
     /// How many pages to be displayed per paginated page. No pagination will happen if this isn't set
