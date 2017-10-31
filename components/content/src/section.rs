@@ -25,6 +25,8 @@ pub struct Section {
     pub meta: SectionFrontMatter,
     /// The URL path of the page
     pub path: String,
+    /// The components for the path of that page
+    pub components: Vec<String>,
     /// The full URL for that page
     pub permalink: String,
     /// The actual content of the page, in markdown
@@ -47,8 +49,9 @@ impl Section {
 
         Section {
             file: FileInfo::new_section(file_path),
-            meta: meta,
+            meta,
             path: "".to_string(),
+            components: vec![],
             permalink: "".to_string(),
             raw_content: "".to_string(),
             content: "".to_string(),
@@ -64,6 +67,10 @@ impl Section {
         let mut section = Section::new(file_path, meta);
         section.raw_content = content.clone();
         section.path = format!("{}/", section.file.components.join("/"));
+        section.components = section.path.split('/')
+            .map(|p| p.to_string())
+            .filter(|p| !p.is_empty())
+            .collect::<Vec<_>>();
         section.permalink = config.make_permalink(&section.path);
         Ok(section)
     }
@@ -140,13 +147,14 @@ impl Section {
 
 impl ser::Serialize for Section {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("section", 12)?;
+        let mut state = serializer.serialize_struct("section", 13)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("extra", &self.meta.extra)?;
         state.serialize_field("path", &self.path)?;
+        state.serialize_field("components", &self.components)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
@@ -165,6 +173,7 @@ impl Default for Section {
             file: FileInfo::default(),
             meta: SectionFrontMatter::default(),
             path: "".to_string(),
+            components: vec![],
             permalink: "".to_string(),
             raw_content: "".to_string(),
             content: "".to_string(),

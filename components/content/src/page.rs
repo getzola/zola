@@ -36,6 +36,8 @@ pub struct Page {
     pub slug: String,
     /// The URL path of the page
     pub path: String,
+    /// The components of the path of the page
+    pub components: Vec<String>,
     /// The full URL for that page
     pub permalink: String,
     /// The summary for the article, defaults to None
@@ -63,6 +65,7 @@ impl Page {
             content: "".to_string(),
             slug: "".to_string(),
             path: "".to_string(),
+            components: vec![],
             permalink: "".to_string(),
             summary: None,
             previous: None,
@@ -112,6 +115,10 @@ impl Page {
             page.path = format!("{}/", page.path);
         }
 
+        page.components = page.path.split('/')
+            .map(|p| p.to_string())
+            .filter(|p| !p.is_empty())
+            .collect::<Vec<_>>();
         page.permalink = config.make_permalink(&page.path);
 
         Ok(page)
@@ -184,6 +191,7 @@ impl Default for Page {
             content: "".to_string(),
             slug: "".to_string(),
             path: "".to_string(),
+            components: vec![],
             permalink: "".to_string(),
             summary: None,
             previous: None,
@@ -195,13 +203,14 @@ impl Default for Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 16)?;
+        let mut state = serializer.serialize_struct("page", 17)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
         state.serialize_field("slug", &self.slug)?;
         state.serialize_field("path", &self.path)?;
+        state.serialize_field("components", &self.components)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("summary", &self.summary)?;
         state.serialize_field("tags", &self.meta.tags)?;
@@ -265,6 +274,7 @@ Hello world"#;
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.path, "posts/intro/hello-world/");
+        assert_eq!(page.components, vec!["posts", "intro", "hello-world"]);
         assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world/");
     }
 
@@ -280,6 +290,7 @@ Hello world"#;
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
 
@@ -295,6 +306,7 @@ Hello world"#;
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
 

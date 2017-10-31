@@ -10,7 +10,7 @@
 - Add Nim syntax highlighting
 - Allow static folder to be missing
 - Fix shortcodes args being only passed as strings
-
+- Add `page.components` and `section.components` that are equivalent to `path.split('/')`
 
 ## 0.2.1 (2017-10-17)
 

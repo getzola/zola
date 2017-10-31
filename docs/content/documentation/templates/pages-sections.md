@@ -20,6 +20,8 @@ description: String?;
 date: String?;
 slug: String;
 path: String;
+// the path, split on '/'
+components: Array<String>;
 permalink: String;
 summary: String?;
 tags: Array<String>;
@@ -51,6 +53,8 @@ description: String?;
 date: String?;
 slug: String;
 path: String;
+// the path, split on '/'
+components: Array<String>;
 permalink: String;
 extra: HashMap<String, Any>;
 // Pages directly in this section, sorted if asked
