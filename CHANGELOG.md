@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.2 (unreleased)
+## 0.2.2 (2017-11-01)
 
 - Fix shortcodes without arguments being ignored
 - Fix shortcodes with markdown chars (_, *, etc) in name and args being ignored
@@ -11,6 +11,7 @@
 - Allow static folder to be missing
 - Fix shortcodes args being only passed as strings
 - Add `page.components` and `section.components` that are equivalent to `path.split('/')`
+- Expose `page.draft` in the template
 
 ## 0.2.1 (2017-10-17)
 
