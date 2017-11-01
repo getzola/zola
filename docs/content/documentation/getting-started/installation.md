@@ -8,10 +8,11 @@ Gutenberg provides pre-built binaries for MacOS, Linux and Windows on the
 
 ## Mac OS
 
-Gutenberg is not currently available on Homebrew at the moment.
+Gutenberg is available on [Brew](https://brew.sh):
 
-If you can help package it, please comment on [https://github.com/Keats/gutenberg/issues/12](https://github.com/Keats/gutenberg/issues/12)
-if you encounter any issues.
+```bash
+$ brew install gutenberg
+```
 
 ## Windows
 

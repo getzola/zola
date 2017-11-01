@@ -16,9 +16,15 @@ in the `docs/content` folder of the repository.
 - [Philipp Oppermann's blog](https://os.phil-opp.com/): https://github.com/phil-opp/blog_os/tree/master/blog
 - [seventeencups](https://www.seventeencups.net): https://github.com/17cupsofcoffee/seventeencups.net
 
-## Adding syntax highlighting languages and themes
+## Contributing
+As the documentation site is automatically built on commits to master, all development
+should happen on the `next` branch, unless it is fixing the current documentation.
 
-### Adding a syntax
+If you want a feature added or modified, please open an issue to discuss it before doing a PR.
+
+### Adding syntax highlighting languages and themes
+
+#### Adding a syntax
 Syntax highlighting depends on submodules so ensure you load them first:
 
 ```bash
@@ -51,7 +57,7 @@ And finally from the root of the components/rendering crate run the following co
 $ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump ../../sublime_syntaxes/nonewlines.packdump
 ```
 
-### Adding a theme
+#### Adding a theme
 A gallery containing lots of themes is located at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
 More themes can be easily added to gutenberg, just make a PR with the wanted theme added in the `sublime_themes` directory
 and run the following command from the root of the components/rendering:
