@@ -203,7 +203,7 @@ impl Default for Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 17)?;
+        let mut state = serializer.serialize_struct("page", 18)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
@@ -222,6 +222,7 @@ impl ser::Serialize for Page {
         state.serialize_field("previous", &self.previous)?;
         state.serialize_field("next", &self.next)?;
         state.serialize_field("toc", &self.toc)?;
+        state.serialize_field("draft", &self.is_draft())?;
         state.end()
     }
 }
