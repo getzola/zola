@@ -20,6 +20,7 @@ description: String?;
 date: String?;
 slug: String;
 path: String;
+draft: Bool;
 // the path, split on '/'
 components: Array<String>;
 permalink: String;
