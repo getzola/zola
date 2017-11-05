@@ -14,9 +14,6 @@ use templates::GUTENBERG_TERA;
 use rendering::{Context, markdown_to_html};
 
 
-#[cfg(pending)]
-mod pending {
-
 #[test]
 fn can_do_markdown_to_html_simple() {
     let tera_ctx = Tera::default();
@@ -25,6 +22,9 @@ fn can_do_markdown_to_html_simple() {
     let res = markdown_to_html("hello", &context).unwrap();
     assert_eq!(res.0, "<p>hello</p>\n");
 }
+
+#[cfg(pending)]
+mod pending {
 
 #[test]
 fn doesnt_highlight_code_block_with_highlighting_off() {

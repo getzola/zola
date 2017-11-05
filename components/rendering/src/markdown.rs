@@ -13,9 +13,42 @@ use highlighting::{SYNTAX_SET, THEME_SET};
 use short_code::{SHORTCODE_RE, ShortCode, parse_shortcode, render_simple_shortcode};
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 
+struct GutenbergFlavoredMarkdownParser<'a> {
+    parser: Parser<'a>,
+}
+
+impl<'a> GutenbergFlavoredMarkdownParser<'a> {
+    fn new(parser: Parser<'a>) -> GutenbergFlavoredMarkdownParser<'a> {
+        GutenbergFlavoredMarkdownParser { parser: parser}
+    }
+}
+
+impl<'a> Iterator for GutenbergFlavoredMarkdownParser<'a> {
+    type Item = Event<'a>;
+
+    fn next(&mut self) -> Option<Event<'a>> {
+        loop {
+            match self.parser.next() {
+                Some(event) => return Some(event),
+                None => return None,
+            }
+        }
+    }
+}
+
 #[allow(unused_variables)]
 pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec<Header>)> {
-    Ok(("".to_string(),vec![]))
+    let mut opts = Options::empty();
+    opts.insert(OPTION_ENABLE_TABLES);
+    opts.insert(OPTION_ENABLE_FOOTNOTES);
+
+    let parser = Parser::new_ext(content, opts);
+    let mut headers = vec![];
+    let gfmp = GutenbergFlavoredMarkdownParser::new(parser);
+
+    let mut html = String::new();
+    cmark::html::push_html(&mut html, gfmp);
+    Ok((html, make_table_of_contents(&headers)))
 }
 
 #[allow(dead_code)]
