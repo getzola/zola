@@ -31,20 +31,20 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
 
     fn process_link(&mut self, link: Tag<'b>) -> Event<'b> {
         match link {
-            Tag::Link(ref link, ref title) => {
-                if link.starts_with("./") {
-                    match resolve_internal_link(link, self.context.permalinks) {
+            Tag::Link(ref href, ref text) => {
+                if href.starts_with("./") {
+                    match resolve_internal_link(href, self.context.permalinks) {
                         Ok(url) => {
-                            return Event::Start(Tag::Link(Owned(url), title.clone()));
+                            return Event::Start(Tag::Link(Owned(url), text.clone()));
                         },
                         Err(_) => {
-                            self.errors.push(format!("Relative link {} not found.", link).into());
+                            self.errors.push(format!("Relative link {} not found.", href).into());
                             return Event::Html(Owned("".to_string()));
                         }
                     };
                 }
 
-                Event::Start(Tag::Link(link.clone(), title.clone()))
+                Event::Start(Tag::Link(href.clone(), text.clone()))
             },
             _ => unreachable!()
         }
