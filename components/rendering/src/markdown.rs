@@ -1,4 +1,5 @@
 use std::borrow::Cow::Owned;
+use std::iter::Peekable;
 
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
@@ -14,12 +15,12 @@ use short_code::{SHORTCODE_RE, ShortCode, parse_shortcode, render_simple_shortco
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 
 struct GutenbergFlavoredMarkdownParser<'a> {
-    parser: Parser<'a>,
+    parser: Peekable<Parser<'a>>,
 }
 
 impl<'a> GutenbergFlavoredMarkdownParser<'a> {
     fn new(parser: Parser<'a>) -> GutenbergFlavoredMarkdownParser<'a> {
-        GutenbergFlavoredMarkdownParser { parser: parser}
+        GutenbergFlavoredMarkdownParser { parser: parser.peekable()}
     }
 }
 
