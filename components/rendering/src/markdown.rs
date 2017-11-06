@@ -20,6 +20,10 @@ struct GutenbergFlavoredMarkdownParser<'a, 'b> {
     parser: Peekable<Parser<'b>>,
 }
 
+fn is_internal_link(link: &str) -> bool {
+    link.starts_with("./")
+}
+
 impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
     fn new(context: &'a Context<'a>, parser: Parser<'b>) -> GutenbergFlavoredMarkdownParser<'a, 'b> {
         GutenbergFlavoredMarkdownParser {
@@ -32,7 +36,7 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
     fn process_link(&mut self, link: Tag<'b>) -> Event<'b> {
         match link {
             Tag::Link(ref href, ref text) => {
-                if href.starts_with("./") {
+                if is_internal_link(href) {
                     match resolve_internal_link(href, self.context.permalinks) {
                         Ok(url) => {
                             return Event::Start(Tag::Link(Owned(url), text.clone()));
