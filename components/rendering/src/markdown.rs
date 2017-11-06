@@ -62,10 +62,15 @@ impl<'a, 'b, 'c> GutenbergFlavoredMarkdownParser<'a, 'b, 'c> {
         }
     }
 
+    fn add_id_to_header(&mut self, num: i32) -> Event<'b> {
+        Event::Start(Tag::Header(num))
+    }
+
     // TODO: Find a better name for this function.
     fn process_event(&mut self, event: Event<'b>) -> Event<'b> {
         match event {
             Event::Start(link @ Tag::Link(_, _)) => self.process_link(link),
+            Event::Start(Tag::Header(num)) => self.add_id_to_header(num),
             _ => event,
         }
     }
