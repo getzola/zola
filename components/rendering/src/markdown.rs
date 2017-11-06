@@ -7,7 +7,7 @@ use slug::slugify;
 use syntect::easy::HighlightLines;
 use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, IncludeBackground};
 
-use errors::Result;
+use errors::{Result, Error};
 use utils::site::resolve_internal_link;
 use context::Context;
 use highlighting::{SYNTAX_SET, THEME_SET};
@@ -16,6 +16,7 @@ use table_of_contents::{TempHeader, Header, make_table_of_contents};
 
 struct GutenbergFlavoredMarkdownParser<'a, 'b> {
     context: &'a Context<'a>,
+    errors: Vec<Error>,
     parser: Peekable<Parser<'b>>,
 }
 
@@ -23,22 +24,38 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
     fn new(context: &'a Context<'a>, parser: Parser<'b>) -> GutenbergFlavoredMarkdownParser<'a, 'b> {
         GutenbergFlavoredMarkdownParser {
             context: context,
+            errors: vec![],
             parser: parser.peekable()
         }
     }
 
     // TODO: Find a better name for this function.
-    fn process_event(&self, event: Event<'b>) -> Vec<Event<'b>> {
+    fn process_event(&mut self, event: Event<'b>) -> Event<'b> {
         match event {
-            _ => vec![event],
+            Event::Start(Tag::Link(ref link, ref title)) => {
+                if link.starts_with("./") {
+                    match resolve_internal_link(link, self.context.permalinks) {
+                        Ok(url) => {
+                            return Event::Start(Tag::Link(Owned(url), title.clone()));
+                        },
+                        Err(_) => {
+                            self.errors.push(format!("Relative link {} not found.", link).into());
+                            return Event::Html(Owned("".to_string()));
+                        }
+                    };
+                }
+
+                Event::Start(Tag::Link(link.clone(), title.clone()))
+            }
+            _ => event,
         }
     }
 }
 
 impl<'a, 'b> Iterator for GutenbergFlavoredMarkdownParser<'a, 'b> {
-    type Item = Vec<Event<'b>>;
+    type Item = Event<'b>;
 
-    fn next(&mut self) -> Option<Vec<Event<'b>>> {
+    fn next(&mut self) -> Option<Event<'b>> {
         match self.parser.next() {
             Some(event) => Some(self.process_event(event)),
             None => None,
@@ -58,7 +75,7 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     let mut html = String::new();
     let mut headers = vec![];
 
-    cmark::html::push_html(&mut html, gfmp.flat_map(|x| x));
+    cmark::html::push_html(&mut html, gfmp);
     Ok((html, make_table_of_contents(&headers)))
 }
 
