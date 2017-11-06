@@ -39,16 +39,16 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
                 if is_internal_link(href) {
                     match resolve_internal_link(href, self.context.permalinks) {
                         Ok(url) => {
-                            return Event::Start(Tag::Link(Owned(url), text.clone()));
+                            Event::Start(Tag::Link(Owned(url), text.clone()))
                         },
                         Err(_) => {
                             self.errors.push(format!("Relative link {} not found.", href).into());
-                            return Event::Html(Owned("".to_string()));
+                            Event::Html(Owned("".to_string()))
                         }
-                    };
+                    }
+                } else{
+                    Event::Start(Tag::Link(href.clone(), text.clone()))
                 }
-
-                Event::Start(Tag::Link(href.clone(), text.clone()))
             },
             _ => unreachable!()
         }
