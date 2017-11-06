@@ -61,6 +61,15 @@ fn errors_relative_link_inexistant() {
     assert!(res.is_err());
 }
 
+#[test]
+fn can_add_id_to_headers() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let res = markdown_to_html(r#"# Hello"#, &context).unwrap();
+    assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n");
+}
+
 #[cfg(pending)]
 mod pending {
 
@@ -304,15 +313,6 @@ fn errors_rendering_unknown_shortcode() {
     let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
     let res = markdown_to_html("{{ hello(flash=true) }}", &context);
     assert!(res.is_err());
-}
-
-#[test]
-fn can_add_id_to_headers() {
-    let tera_ctx = Tera::default();
-    let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html(r#"# Hello"#, &context).unwrap();
-    assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n");
 }
 
 #[test]
