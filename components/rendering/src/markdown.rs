@@ -27,11 +27,9 @@ impl<'a> Iterator for GutenbergFlavoredMarkdownParser<'a> {
     type Item = Event<'a>;
 
     fn next(&mut self) -> Option<Event<'a>> {
-        loop {
-            match self.parser.next() {
-                Some(event) => return Some(event),
-                None => return None,
-            }
+        match self.parser.next() {
+            Some(event) => Some(event),
+            None => None,
         }
     }
 }
