@@ -39,6 +39,10 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
         (*self.errors).borrow_mut().push(error.into());
     }
 
+    fn empty_event(&self) -> Event<'b> {
+        Event::Html(Owned("".to_string()))
+    }
+
     fn process_link(&self, link: Tag<'b>) -> Event<'b> {
         match link {
             Tag::Link(ref href, ref text) => {
@@ -49,7 +53,7 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
                         },
                         Err(_) => {
                             self.push_error(format!("Relative link {} not found.", href));
-                            Event::Html(Owned("".to_string()))
+                            self.empty_event()
                         }
                     }
                 } else{
