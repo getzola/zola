@@ -25,14 +25,14 @@ impl<'a> GutenbergFlavoredMarkdownParser<'a> {
 }
 
 // TODO: Find a better name for this function.
-fn process_event(event: Event) -> Event {
-    return event
+fn process_event(event: Event) -> Vec<Event> {
+    return vec![event]
 }
 
 impl<'a> Iterator for GutenbergFlavoredMarkdownParser<'a> {
-    type Item = Event<'a>;
+    type Item = Vec<Event<'a>>;
 
-    fn next(&mut self) -> Option<Event<'a>> {
+    fn next(&mut self) -> Option<Vec<Event<'a>>> {
         match self.parser.next() {
             Some(event) => Some(process_event(event)),
             None => None,
@@ -49,9 +49,8 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     let parser = Parser::new_ext(content, opts);
     let mut headers = vec![];
     let gfmp = GutenbergFlavoredMarkdownParser::new(parser);
-
     let mut html = String::new();
-    cmark::html::push_html(&mut html, gfmp);
+    cmark::html::push_html(&mut html, gfmp.flat_map(|x| x));
     Ok((html, make_table_of_contents(&headers)))
 }
 
