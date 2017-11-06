@@ -29,10 +29,9 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
         }
     }
 
-    // TODO: Find a better name for this function.
-    fn process_event(&mut self, event: Event<'b>) -> Event<'b> {
-        match event {
-            Event::Start(Tag::Link(ref link, ref title)) => {
+    fn process_link(&mut self, link: Tag<'b>) -> Event<'b> {
+        match link {
+            Tag::Link(ref link, ref title) => {
                 if link.starts_with("./") {
                     match resolve_internal_link(link, self.context.permalinks) {
                         Ok(url) => {
@@ -46,7 +45,15 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
                 }
 
                 Event::Start(Tag::Link(link.clone(), title.clone()))
-            }
+            },
+            _ => unreachable!()
+        }
+    }
+
+    // TODO: Find a better name for this function.
+    fn process_event(&mut self, event: Event<'b>) -> Event<'b> {
+        match event {
+            Event::Start(link @ Tag::Link(_, _)) => self.process_link(link),
             _ => event,
         }
     }
