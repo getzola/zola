@@ -14,27 +14,33 @@ use highlighting::{SYNTAX_SET, THEME_SET};
 use short_code::{SHORTCODE_RE, ShortCode, parse_shortcode, render_simple_shortcode};
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 
-struct GutenbergFlavoredMarkdownParser<'a> {
-    parser: Peekable<Parser<'a>>,
+struct GutenbergFlavoredMarkdownParser<'a, 'b> {
+    context: &'a Context<'a>,
+    parser: Peekable<Parser<'b>>,
 }
 
-impl<'a> GutenbergFlavoredMarkdownParser<'a> {
-    fn new(parser: Parser<'a>) -> GutenbergFlavoredMarkdownParser<'a> {
-        GutenbergFlavoredMarkdownParser { parser: parser.peekable()}
+impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
+    fn new(context: &'a Context<'a>, parser: Parser<'b>) -> GutenbergFlavoredMarkdownParser<'a, 'b> {
+        GutenbergFlavoredMarkdownParser {
+            context: context,
+            parser: parser.peekable()
+        }
     }
 }
 
 // TODO: Find a better name for this function.
-fn process_event(event: Event) -> Vec<Event> {
-    return vec![event]
+fn process_event<'a, 'b>(context: &'a Context<'a>, event: Event<'b>) -> Vec<Event<'b>> {
+    match event {
+        _ => vec![event],
+    }
 }
 
-impl<'a> Iterator for GutenbergFlavoredMarkdownParser<'a> {
-    type Item = Vec<Event<'a>>;
+impl<'a, 'b> Iterator for GutenbergFlavoredMarkdownParser<'a, 'b> {
+    type Item = Vec<Event<'b>>;
 
-    fn next(&mut self) -> Option<Vec<Event<'a>>> {
+    fn next(&mut self) -> Option<Vec<Event<'b>>> {
         match self.parser.next() {
-            Some(event) => Some(process_event(event)),
+            Some(event) => Some(process_event(self.context, event)),
             None => None,
         }
     }
@@ -47,9 +53,11 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     opts.insert(OPTION_ENABLE_FOOTNOTES);
 
     let parser = Parser::new_ext(content, opts);
-    let mut headers = vec![];
-    let gfmp = GutenbergFlavoredMarkdownParser::new(parser);
+    let gfmp = GutenbergFlavoredMarkdownParser::new(context, parser);
+
     let mut html = String::new();
+    let mut headers = vec![];
+
     cmark::html::push_html(&mut html, gfmp.flat_map(|x| x));
     Ok((html, make_table_of_contents(&headers)))
 }
