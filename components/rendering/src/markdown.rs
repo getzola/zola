@@ -90,16 +90,22 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     opts.insert(OPTION_ENABLE_TABLES);
     opts.insert(OPTION_ENABLE_FOOTNOTES);
 
-    let error_cell = Rc::new(RefCell::new(vec![]));
-
-    let parser = Parser::new_ext(content, opts);
-    let gfmp = GutenbergFlavoredMarkdownParser::new(context, parser, error_cell.clone());
-
+    let errors_cell = Rc::new(RefCell::new(vec![]));
     let mut html = String::new();
-    let mut headers = vec![];
+    let headers = vec![];
 
-    cmark::html::push_html(&mut html, gfmp);
-    Ok((html, make_table_of_contents(&headers)))
+    {
+        let parser = Parser::new_ext(content, opts);
+        let gfmp = GutenbergFlavoredMarkdownParser::new(context, parser, errors_cell.clone());
+
+        cmark::html::push_html(&mut html, gfmp);
+    }
+
+    // TODO: show all errors
+    match Rc::try_unwrap(errors_cell).ok().and_then(|c| c.into_inner().pop()) {
+        Some(error) => Err(error),
+        None => Ok((html, make_table_of_contents(&headers))),
+    }
 }
 
 #[allow(dead_code)]

@@ -39,6 +39,28 @@ fn can_make_valid_relative_link() {
     );
 }
 
+#[test]
+fn can_make_relative_links_with_anchors() {
+    let mut permalinks = HashMap::new();
+    permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
+    let tera_ctx = Tera::default();
+    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks, InsertAnchor::None);
+    let res = markdown_to_html(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
+
+    assert!(
+        res.0.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
+    );
+}
+
+#[test]
+fn errors_relative_link_inexistant() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let res = markdown_to_html("[rel link](./pages/about.md)", &context);
+    assert!(res.is_err());
+}
+
 #[cfg(pending)]
 mod pending {
 
@@ -281,28 +303,6 @@ fn errors_rendering_unknown_shortcode() {
     let permalinks_ctx = HashMap::new();
     let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
     let res = markdown_to_html("{{ hello(flash=true) }}", &context);
-    assert!(res.is_err());
-}
-
-#[test]
-fn can_make_relative_links_with_anchors() {
-    let mut permalinks = HashMap::new();
-    permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
-    let tera_ctx = Tera::default();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks, InsertAnchor::None);
-    let res = markdown_to_html(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
-
-    assert!(
-        res.0.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
-    );
-}
-
-#[test]
-fn errors_relative_link_inexistant() {
-    let tera_ctx = Tera::default();
-    let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("[rel link](./pages/about.md)", &context);
     assert!(res.is_err());
 }
 
