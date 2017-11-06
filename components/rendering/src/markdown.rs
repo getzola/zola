@@ -26,12 +26,12 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
             parser: parser.peekable()
         }
     }
-}
 
-// TODO: Find a better name for this function.
-fn process_event<'a, 'b>(context: &'a Context<'a>, event: Event<'b>) -> Vec<Event<'b>> {
-    match event {
-        _ => vec![event],
+    // TODO: Find a better name for this function.
+    fn process_event(&self, event: Event<'b>) -> Vec<Event<'b>> {
+        match event {
+            _ => vec![event],
+        }
     }
 }
 
@@ -40,7 +40,7 @@ impl<'a, 'b> Iterator for GutenbergFlavoredMarkdownParser<'a, 'b> {
 
     fn next(&mut self) -> Option<Vec<Event<'b>>> {
         match self.parser.next() {
-            Some(event) => Some(process_event(self.context, event)),
+            Some(event) => Some(self.process_event(event)),
             None => None,
         }
     }
