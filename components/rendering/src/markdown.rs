@@ -24,12 +24,17 @@ impl<'a> GutenbergFlavoredMarkdownParser<'a> {
     }
 }
 
+// TODO: Find a better name for this function.
+fn process_event(event: Event) -> Event {
+    return event
+}
+
 impl<'a> Iterator for GutenbergFlavoredMarkdownParser<'a> {
     type Item = Event<'a>;
 
     fn next(&mut self) -> Option<Event<'a>> {
         match self.parser.next() {
-            Some(event) => Some(event),
+            Some(event) => Some(process_event(event)),
             None => None,
         }
     }
