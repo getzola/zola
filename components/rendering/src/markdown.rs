@@ -1,5 +1,7 @@
 use std::borrow::Cow::Owned;
+use std::cell::RefCell;
 use std::iter::Peekable;
+use std::rc::Rc;
 
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
@@ -16,7 +18,7 @@ use table_of_contents::{TempHeader, Header, make_table_of_contents};
 
 struct GutenbergFlavoredMarkdownParser<'a, 'b> {
     context: &'a Context<'a>,
-    errors: Vec<Error>,
+    errors: Rc<RefCell<Vec<Error>>>,
     parser: Peekable<Parser<'b>>,
 }
 
@@ -25,15 +27,19 @@ fn is_internal_link(link: &str) -> bool {
 }
 
 impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
-    fn new(context: &'a Context<'a>, parser: Parser<'b>) -> GutenbergFlavoredMarkdownParser<'a, 'b> {
+    fn new(context: &'a Context<'a>, parser: Parser<'b>, errors_cell: Rc<RefCell<Vec<Error>>>) -> GutenbergFlavoredMarkdownParser<'a, 'b> {
         GutenbergFlavoredMarkdownParser {
             context: context,
-            errors: vec![],
+            errors: errors_cell,
             parser: parser.peekable()
         }
     }
 
-    fn process_link(&mut self, link: Tag<'b>) -> Event<'b> {
+    fn push_error<E: Into<Error>>(&self, error: E) {
+        (*self.errors).borrow_mut().push(error.into());
+    }
+
+    fn process_link(&self, link: Tag<'b>) -> Event<'b> {
         match link {
             Tag::Link(ref href, ref text) => {
                 if is_internal_link(href) {
@@ -42,7 +48,7 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
                             Event::Start(Tag::Link(Owned(url), text.clone()))
                         },
                         Err(_) => {
-                            self.errors.push(format!("Relative link {} not found.", href).into());
+                            self.push_error(format!("Relative link {} not found.", href));
                             Event::Html(Owned("".to_string()))
                         }
                     }
@@ -55,7 +61,7 @@ impl<'a, 'b> GutenbergFlavoredMarkdownParser<'a, 'b> {
     }
 
     // TODO: Find a better name for this function.
-    fn process_event(&mut self, event: Event<'b>) -> Event<'b> {
+    fn process_event(&self, event: Event<'b>) -> Event<'b> {
         match event {
             Event::Start(link @ Tag::Link(_, _)) => self.process_link(link),
             _ => event,
@@ -80,8 +86,10 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     opts.insert(OPTION_ENABLE_TABLES);
     opts.insert(OPTION_ENABLE_FOOTNOTES);
 
+    let error_cell = Rc::new(RefCell::new(vec![]));
+
     let parser = Parser::new_ext(content, opts);
-    let gfmp = GutenbergFlavoredMarkdownParser::new(context, parser);
+    let gfmp = GutenbergFlavoredMarkdownParser::new(context, parser, error_cell.clone());
 
     let mut html = String::new();
     let mut headers = vec![];
