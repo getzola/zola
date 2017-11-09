@@ -30,6 +30,14 @@ Use your favourite AUR helper to install the `gutenberg-bin` package.
 $ yaourt -S gutenberg-bin
 ```
 
+## Void Linux
+
+From the terminal, run the following command:
+
+```bash
+$ xbps-install -S gutenberg
+```
+
 ## From source
 To build it from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/)
 installed.
