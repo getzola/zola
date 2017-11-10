@@ -59,7 +59,13 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
             .map_or(false, |c| {
                 from_value::<bool>(c.clone()).unwrap_or(false)
             });
-
+        
+        let trailing_slash = args
+            .get("trailing_slash")
+            .map_or(true, |c| {
+                from_value::<bool>(c.clone()).unwrap_or(true)
+            });
+        
         match args.get("path") {
             Some(val) => match from_value::<String>(val.clone()) {
                 Ok(v) => {
@@ -72,6 +78,10 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
                     } else {
                         // anything else
                         let mut permalink = config.make_permalink(&v);
+                        if !trailing_slash && permalink.ends_with("/") {
+                            permalink.pop(); // Removes the slash
+                        }
+
                         if cachebust {
                             permalink = format!("{}?t={}", permalink, config.build_timestamp.unwrap());
                         }
