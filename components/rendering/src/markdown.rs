@@ -94,14 +94,17 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
     opts.insert(OPTION_ENABLE_FOOTNOTES);
 
     let mut errors = vec![];
-    let mut html = String::new();
+    let mut buf = String::new();
     let headers = vec![];
 
     {
         let parser = Parser::new_ext(content, opts);
         let gfmp = GutenbergFlavoredMarkdownParser::new(context, parser, &mut errors);
 
-        cmark::html::push_html(&mut html, gfmp);
+        let html = HtmlRenderer::new(gfmp);
+        html.render(&mut buf);
+
+//        cmark::html::push_html(&mut html, gfmp);
     }
 
     // TODO: show all errors
