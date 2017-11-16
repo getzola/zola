@@ -7,7 +7,8 @@ Gutenberg has built-in support for basic taxonomies: tags and categories.
 
 Those taxonomies are automatically built across the whole site based on
 the `tags` and `category` fields of the front-matter: you do not need to define
-that a tag or a category exists.
+that a tag or a category exists. You have to set `generate_tags_pages` and/or 
+`generate_categories_pages` in your [config.toml](./documentation/getting-started/configuration.md).
 
 The taxonomy pages will only be created if at least one item is found and
 are available at the following paths:
