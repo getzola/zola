@@ -44,7 +44,7 @@ impl TaxonomyItem {
         let (mut pages, ignored_pages) = sort_pages(pages, SortBy::Date);
         let slug = slugify(name);
         let permalink = {
-            let kind_path = if kind == TaxonomyKind::Tags { "tag" } else { "category" };
+            let kind_path = if kind == TaxonomyKind::Tags { "tags" } else { "categories" };
             config.make_permalink(&format!("/{}/{}", kind_path, slug))
         };
 

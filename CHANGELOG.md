@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.3 (unreleased)
+
+- Add `get_taxonomy_url` to retrieve the permalink of a tag/category
+- Fix bug when generating permalinks for taxonomies
+
 ## 0.2.2 (2017-11-01)
 
 - Fix shortcodes without arguments being ignored

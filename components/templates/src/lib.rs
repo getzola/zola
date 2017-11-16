@@ -5,10 +5,12 @@ extern crate tera;
 extern crate base64;
 extern crate pulldown_cmark;
 
+#[macro_use]
 extern crate errors;
 extern crate utils;
 extern crate content;
 extern crate config;
+extern crate taxonomies;
 
 pub mod filters;
 pub mod global_fns;
