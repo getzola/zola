@@ -35,7 +35,7 @@ directory. Here are a few examples of that, assuming the theme name is `simple-b
 ```plain
 templates/pages/post.html -> replace themes/simple-blog/pages/post.html
 templates/macros.html -> replace themes/simple-blog/macros.html
-static/js/site.js -> replace themes/simple-blog/static/js/site.jss
+static/js/site.js -> replace themes/simple-blog/static/js/site.js
 ```
 
 Most themes will also provide some variables that are meant to be overriden: this happens in the `extra` section
