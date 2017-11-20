@@ -296,6 +296,10 @@ mod tests {
                 (ChangeKind::Content, "/content/posts/hello.md".to_string()),
                 "/home/vincent/site", Path::new("/home/vincent/site/content/posts/hello.md")
             ),
+            (
+                (ChangeKind::Sass, "/sass/print.scss".to_string()),
+                "/home/vincent/site", Path::new("/home/vincent/site/sass/print.scss")
+            )
         ];
 
         for (expected, pwd, path) in test_cases {
