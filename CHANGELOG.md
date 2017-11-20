@@ -4,6 +4,7 @@
 
 - Add `get_taxonomy_url` to retrieve the permalink of a tag/category
 - Fix bug when generating permalinks for taxonomies
+- Change names of individual taxonomies to be plural (ie `tags/my-tag` instead of `tag/my-tag`)
 
 ## 0.2.2 (2017-11-01)
 

@@ -15,9 +15,9 @@ are available at the following paths:
 
 ```plain
 $BASE_URL/tags/
-$BASE_URL/tag/$TAG_SLUG
+$BASE_URL/tags/$TAG_SLUG
 $BASE_URL/categories/
-$BASE_URL/category/$CATEGORY_SLUG
+$BASE_URL/categories/$CATEGORY_SLUG
 ```
 
 It is currently not possible to change those paths or to create custom taxonomies.
