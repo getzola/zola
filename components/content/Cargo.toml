@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 
 [dependencies]
-tera = "0.10"
+tera = "0.11.0-beta"
 serde = "1.0"
 slug = "0.1"
 rayon = "0.8"
