@@ -22,8 +22,8 @@ fn setup_site(name: &str) -> Site {
 fn bench_render_aliases(b: &mut test::Bencher) {
     let mut site = setup_site("huge-blog");
     let tmp_dir = TempDir::new("benches").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     b.iter(|| site.render_aliases().unwrap());
 }
 
@@ -31,8 +31,8 @@ fn bench_render_aliases(b: &mut test::Bencher) {
 fn bench_render_sitemap(b: &mut test::Bencher) {
     let mut site = setup_site("huge-blog");
     let tmp_dir = TempDir::new("benches").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     b.iter(|| site.render_sitemap().unwrap());
 }
 
@@ -40,8 +40,8 @@ fn bench_render_sitemap(b: &mut test::Bencher) {
 fn bench_render_rss_feed(b: &mut test::Bencher) {
     let mut site = setup_site("huge-blog");
     let tmp_dir = TempDir::new("benches").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     b.iter(|| site.render_rss_feed().unwrap());
 }
 
@@ -49,8 +49,8 @@ fn bench_render_rss_feed(b: &mut test::Bencher) {
 fn bench_render_categories(b: &mut test::Bencher) {
     let mut site = setup_site("huge-blog");
     let tmp_dir = TempDir::new("benches").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     b.iter(|| site.render_categories().unwrap());
 }
 
@@ -58,9 +58,9 @@ fn bench_render_categories(b: &mut test::Bencher) {
 fn bench_render_paginated(b: &mut test::Bencher) {
     let mut site = setup_site("medium-blog");
     let tmp_dir = TempDir::new("benches").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     let section = site.sections.values().collect::<Vec<_>>()[0];
 
-    b.iter(|| site.render_paginated(public, section));
+    b.iter(|| site.render_paginated(output_dir, section));
 }

@@ -12,7 +12,7 @@ _gutenberg() {
             gutenberg)
                 cmd="gutenberg"
                 ;;
-            
+
             build)
                 cmd+="__build"
                 ;;
@@ -38,7 +38,7 @@ _gutenberg() {
                 return 0
             fi
             case "${prev}" in
-                
+
                 *)
                     COMPREPLY=()
                     ;;
@@ -46,7 +46,7 @@ _gutenberg() {
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
             ;;
-        
+
         gutenberg__build)
             opts=" -h -V -u  --help --version --base-url  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -54,7 +54,6 @@ _gutenberg() {
                 return 0
             fi
             case "${prev}" in
-                
                 --base-url)
                     COMPREPLY=("<base_url>")
                     return 0
@@ -63,7 +62,15 @@ _gutenberg() {
                     COMPREPLY=("<base_url>")
                     return 0
                     ;;
-                *)
+                --output-dirl)
+                    COMPREPLY=("<output-dir>")
+                    return 0
+                    ;;
+                    -o)
+                    COMPREPLY=("<output-dir>")
+                    return 0
+                    ;;
+                 *)
                     COMPREPLY=()
                     ;;
             esac
@@ -77,7 +84,7 @@ _gutenberg() {
                 return 0
             fi
             case "${prev}" in
-                
+
                 *)
                     COMPREPLY=()
                     ;;
@@ -92,7 +99,7 @@ _gutenberg() {
                 return 0
             fi
             case "${prev}" in
-                
+
                 *)
                     COMPREPLY=()
                     ;;
@@ -107,7 +114,7 @@ _gutenberg() {
                 return 0
             fi
             case "${prev}" in
-                
+
                 --interface)
                     COMPREPLY=("<interface>")
                     return 0
@@ -124,7 +131,15 @@ _gutenberg() {
                     COMPREPLY=("<port>")
                     return 0
                     ;;
-                *)
+                --output-dir)
+                    COMPREPLY=("<output-dir>")
+                    return 0
+                    ;;
+                    -o)
+                    COMPREPLY=("<output-dir>")
+                    return 0
+                    ;;
+                 *)
                     COMPREPLY=()
                     ;;
             esac

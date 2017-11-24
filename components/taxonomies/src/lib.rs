@@ -44,7 +44,7 @@ impl TaxonomyItem {
         let (mut pages, ignored_pages) = sort_pages(pages, SortBy::Date);
         let slug = slugify(name);
         let permalink = {
-            let kind_path = if kind == TaxonomyKind::Tags { "tag" } else { "category" };
+            let kind_path = if kind == TaxonomyKind::Tags { "tags" } else { "categories" };
             config.make_permalink(&format!("/{}/{}", kind_path, slug))
         };
 
@@ -188,27 +188,27 @@ mod tests {
 
         assert_eq!(tags.items[0].name, "db");
         assert_eq!(tags.items[0].slug, "db");
-        assert_eq!(tags.items[0].permalink, "http://a-website.com/tag/db/");
+        assert_eq!(tags.items[0].permalink, "http://a-website.com/tags/db/");
         assert_eq!(tags.items[0].pages.len(), 1);
 
         assert_eq!(tags.items[1].name, "js");
         assert_eq!(tags.items[1].slug, "js");
-        assert_eq!(tags.items[1].permalink, "http://a-website.com/tag/js/");
+        assert_eq!(tags.items[1].permalink, "http://a-website.com/tags/js/");
         assert_eq!(tags.items[1].pages.len(), 2);
 
         assert_eq!(tags.items[2].name, "rust");
         assert_eq!(tags.items[2].slug, "rust");
-        assert_eq!(tags.items[2].permalink, "http://a-website.com/tag/rust/");
+        assert_eq!(tags.items[2].permalink, "http://a-website.com/tags/rust/");
         assert_eq!(tags.items[2].pages.len(), 2);
 
         assert_eq!(categories.items[0].name, "Other");
         assert_eq!(categories.items[0].slug, "other");
-        assert_eq!(categories.items[0].permalink, "http://a-website.com/category/other/");
+        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/other/");
         assert_eq!(categories.items[0].pages.len(), 1);
 
         assert_eq!(categories.items[1].name, "Programming tutorials");
         assert_eq!(categories.items[1].slug, "programming-tutorials");
-        assert_eq!(categories.items[1].permalink, "http://a-website.com/category/programming-tutorials/");
+        assert_eq!(categories.items[1].permalink, "http://a-website.com/categories/programming-tutorials/");
         assert_eq!(categories.items[1].pages.len(), 1);
     }
 }

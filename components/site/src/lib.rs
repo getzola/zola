@@ -252,6 +252,10 @@ impl Site {
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
+            "get_taxonomy_url",
+            global_fns::make_get_taxonomy_url(self.tags.clone(), self.categories.clone())
+        );
+        self.tera.register_global_function(
             "get_url",
             global_fns::make_get_url(self.permalinks.clone(), self.config.clone())
         );
@@ -700,9 +704,9 @@ impl Site {
     /// Renders a single section
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
-        let public = self.output_path.clone();
+        let output_dir = self.output_path.clone();
 
-        let mut output_path = public.to_path_buf();
+        let mut output_path = output_dir.to_path_buf();
         for component in &section.file.components {
             output_path.push(component);
 
