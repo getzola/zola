@@ -5,12 +5,10 @@ extern crate tera;
 extern crate base64;
 extern crate pulldown_cmark;
 
-#[macro_use]
 extern crate errors;
 extern crate utils;
 extern crate content;
 extern crate config;
-extern crate taxonomies;
 
 pub mod filters;
 pub mod global_fns;
@@ -27,6 +25,7 @@ lazy_static! {
             ("sitemap.xml", include_str!("builtins/sitemap.xml")),
             ("robots.txt", include_str!("builtins/robots.txt")),
             ("anchor-link.html", include_str!("builtins/anchor-link.html")),
+            ("index.html", include_str!("builtins/index.html")),
 
             ("shortcodes/youtube.html", include_str!("builtins/shortcodes/youtube.html")),
             ("shortcodes/vimeo.html", include_str!("builtins/shortcodes/vimeo.html")),
