@@ -20,7 +20,9 @@ pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: Option
     }
 
     if name == "index.html" || name == "section.html" || name == "page.html" {
-        return Ok(String::new());
+        return tera
+            .render("index.html", &{})
+            .map_err(|e| e.into());
     }
 
     bail!("Tried to render `{}` but the template wasn't found", name)
