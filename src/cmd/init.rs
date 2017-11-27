@@ -57,8 +57,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
     println!();
     console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));
     println!();
-    console::info("Get started by using the built-in server: `gutenberg serve`");
-    println!("There is no built-in theme so you will see a white page.");
-    println!("Visit https://github.com/Keats/gutenberg for the full documentation.");
+    console::info("Get started by moving into the directory and using the built-in server: `gutenberg serve`");
+    println!("Visit https://www.getgutenberg.io for the full documentation.");
     Ok(())
 }

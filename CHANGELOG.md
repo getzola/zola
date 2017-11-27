@@ -1,10 +1,12 @@
 # Changelog
 
-## 0.2.3 (unreleased)
+## 0.3.0 (unreleased)
 
 - Add `get_taxonomy_url` to retrieve the permalink of a tag/category
 - Fix bug when generating permalinks for taxonomies
 - Change names of individual taxonomies to be plural (ie `tags/my-tag` instead of `tag/my-tag`)
+- Update to Tera 0.11
+- Better UX on first `serve` thanks to some default templates.
 
 ## 0.2.2 (2017-11-01)
 
