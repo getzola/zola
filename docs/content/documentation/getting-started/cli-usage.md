@@ -42,8 +42,6 @@ You can override the default output directory 'public' by passing a other value 
 $ gutenberg build --output-dir $DOCUMENT_ROOT
 ```
 
-This is useful for example when you want to generate a site to a different document-root.
-
 ## serve
 
 This will build and serve the site using a local server. You can also specify

@@ -5,9 +5,9 @@ use site::Site;
 
 use console;
 
-pub fn build(config_file: &str, base_url: Option<&str>, public: &str) -> Result<()> {
+pub fn build(config_file: &str, base_url: Option<&str>, output_dir: &str) -> Result<()> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
-    site.set_output_path(public);
+    site.set_output_path(output_dir);
     if let Some(b) = base_url {
         site.config.base_url = b.to_string();
     }
