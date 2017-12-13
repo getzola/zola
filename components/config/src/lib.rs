@@ -120,6 +120,8 @@ impl Config {
             format!("{}{}{}", self.base_url, &path[1..], trailing_bit)
         } else if self.base_url.ends_with('/') {
             format!("{}{}{}", self.base_url, path, trailing_bit)
+        } else if path.starts_with('/') {
+            format!("{}{}{}", self.base_url, path, trailing_bit)
         } else {
             format!("{}/{}{}", self.base_url, path, trailing_bit)
         }
@@ -270,6 +272,13 @@ hello = "world"
         let mut config = Config::default();
         config.base_url = "http://vincent.is/".to_string();
         assert_eq!(config.make_permalink("/hello"), "http://vincent.is/hello/");
+    }
+
+    #[test]
+    fn can_make_url_with_localhost() {
+        let mut config = Config::default();
+        config.base_url = "http://127.0.0.1:1111".to_string();
+        assert_eq!(config.make_permalink("/tags/rust"), "http://127.0.0.1:1111/tags/rust/");
     }
 
     #[test]

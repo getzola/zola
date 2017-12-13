@@ -70,5 +70,23 @@ we want to link to the file that is located at `static/css/app.css`:
 {{ get_url(path="css/app.css") }}
 ```
 
+For assets it is reccommended that you pass `trailing_slash=false` to the `get_url` function. This prevents errors
+when dealing with certain hosting providers. An example is:
+
+```jinja2
+{{ get_url(path="css/app.css", trailing_slash=false) }}
+```
+
 In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
 by passing `cachebust=true` to the `get_url` function.
+
+
+### ` get_taxonomy_url`
+Gets the permalink for the tag or category given.
+
+```jinja2
+{% set url = get_taxonomy_url(kind="category", name=page.category) %}
+```
+
+The `name` will almost come from a variable but in case you want to do it manually,
+the value should be the same as the one in the front-matter, not the slugified version.
