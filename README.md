@@ -17,6 +17,7 @@ in the `docs/content` folder of the repository.
 - [seventeencups](https://www.seventeencups.net): https://github.com/17cupsofcoffee/seventeencups.net
 - [j1m.net](https://j1m.net): https://gitlab.com/jwcampbell/j1mnet
 - [vaporsoft.net](http://vaporsoft.net): https://github.com/piedoom/vaporsoft
+- [bharatkalluri.in](https://bharatkalluri.in): https://github.com/BharatKalluri/Blog
 
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
