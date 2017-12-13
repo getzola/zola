@@ -32,6 +32,8 @@ _arguments -s -S -C \
 _arguments -s -S -C \
 '-u+[Force the base URL to be that value (default to the one in config.toml)]' \
 '--base-url+[Force the base URL to be that value (default to the one in config.toml)]' \
+'-o+[Force the base URL to be that value (default to the one in config.toml)]' \
+'--output-dir+[Force the output dir to be that value (default is "public")]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
@@ -45,6 +47,10 @@ _arguments -s -S -C \
 '-p+[Which port to use]' \
 '--port+[Which port to use]' \
 '-h[Prints help information]' \
+'-p+[Which port to use]' \
+'--port+[Which port to use]' \
+'-o+[Force the base URL to be that value (default to the one in config.toml)]' \
+'--output-dir+[Force the output dir to be that value (default is "public")]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
@@ -76,14 +82,14 @@ _gutenberg_commands() {
 (( $+functions[_gutenberg__build_commands] )) ||
 _gutenberg__build_commands() {
     local commands; commands=(
-        
+
     )
     _describe -t commands 'gutenberg build commands' commands "$@"
 }
 (( $+functions[_gutenberg__help_commands] )) ||
 _gutenberg__help_commands() {
     local commands; commands=(
-        
+
     )
     _describe -t commands 'gutenberg help commands' commands "$@"
 }
@@ -97,7 +103,7 @@ _gutenberg__init_commands() {
 (( $+functions[_gutenberg__serve_commands] )) ||
 _gutenberg__serve_commands() {
     local commands; commands=(
-        
+
     )
     _describe -t commands 'gutenberg serve commands' commands "$@"
 }

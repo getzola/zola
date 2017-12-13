@@ -96,58 +96,58 @@ fn can_build_site_without_live_reload() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
-    assert!(file_exists!(public, "index.html"));
-    assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_exists!(public, "robots.txt"));
-    assert!(file_exists!(public, "a-fixed-url/index.html"));
+    assert!(Path::new(&output_dir).exists());
+    assert!(file_exists!(output_dir, "index.html"));
+    assert!(file_exists!(output_dir, "sitemap.xml"));
+    assert!(file_exists!(output_dir, "robots.txt"));
+    assert!(file_exists!(output_dir, "a-fixed-url/index.html"));
 
-    assert!(file_exists!(public, "posts/python/index.html"));
+    assert!(file_exists!(output_dir, "posts/python/index.html"));
     // Shortcodes work
-    assert!(file_contains!(public, "posts/python/index.html", "Basic shortcode"));
-    assert!(file_contains!(public, "posts/python/index.html", "Arrrh Bob"));
-    assert!(file_contains!(public, "posts/python/index.html", "Arrrh Bob_Sponge"));
-    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(public, "posts/with-assets/index.html"));
-    assert!(file_exists!(public, "posts/no-section/simple/index.html"));
+    assert!(file_contains!(output_dir, "posts/python/index.html", "Basic shortcode"));
+    assert!(file_contains!(output_dir, "posts/python/index.html", "Arrrh Bob"));
+    assert!(file_contains!(output_dir, "posts/python/index.html", "Arrrh Bob_Sponge"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(output_dir, "posts/with-assets/index.html"));
+    assert!(file_exists!(output_dir, "posts/no-section/simple/index.html"));
 
     // Sections
-    assert!(file_exists!(public, "posts/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
+    assert!(file_exists!(output_dir, "posts/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/programming/index.html"));
     // Ensure subsection pages are correctly filled
-    assert!(file_contains!(public, "posts/tutorials/index.html", "Sub-pages: 2"));
+    assert!(file_contains!(output_dir, "posts/tutorials/index.html", "Sub-pages: 2"));
     // TODO: add assertion for syntax highlighting
 
     // aliases work
-    assert!(file_exists!(public, "an-old-url/old-page/index.html"));
-    assert!(file_contains!(public, "an-old-url/old-page/index.html", "something-else"));
+    assert!(file_exists!(output_dir, "an-old-url/old-page/index.html"));
+    assert!(file_contains!(output_dir, "an-old-url/old-page/index.html", "something-else"));
 
     // redirect_to works
-    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
-    assert!(file_contains!(public, "posts/tutorials/devops/index.html", "docker"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/index.html"));
+    assert!(file_contains!(output_dir, "posts/tutorials/devops/index.html", "docker"));
 
     // No tags or categories
-    assert_eq!(file_exists!(public, "categories/index.html"), false);
-    assert_eq!(file_exists!(public, "tags/index.html"), false);
+    assert_eq!(file_exists!(output_dir, "categories/index.html"), false);
+    assert_eq!(file_exists!(output_dir, "tags/index.html"), false);
 
     // Theme files are there
-    assert!(file_exists!(public, "sample.css"));
-    assert!(file_exists!(public, "some.js"));
+    assert!(file_exists!(output_dir, "sample.css"));
+    assert!(file_exists!(output_dir, "some.js"));
 
     // no live reload code
-    assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
+    assert_eq!(file_contains!(output_dir, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
 
     // Both pages and sections are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
+    assert!(file_contains!(output_dir, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"));
+    assert!(file_contains!(output_dir, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
     // Drafts are not in the sitemap
-    assert!(!file_contains!(public, "sitemap.xml", "draft"));
+    assert!(!file_contains!(output_dir, "sitemap.xml", "draft"));
 }
 
 #[test]
@@ -157,35 +157,35 @@ fn can_build_site_with_live_reload() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.enable_live_reload();
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(Path::new(&output_dir).exists());
 
-    assert!(file_exists!(public, "index.html"));
-    assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_exists!(public, "robots.txt"));
-    assert!(file_exists!(public, "a-fixed-url/index.html"));
+    assert!(file_exists!(output_dir, "index.html"));
+    assert!(file_exists!(output_dir, "sitemap.xml"));
+    assert!(file_exists!(output_dir, "robots.txt"));
+    assert!(file_exists!(output_dir, "a-fixed-url/index.html"));
 
-    assert!(file_exists!(public, "posts/python/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(public, "posts/with-assets/index.html"));
+    assert!(file_exists!(output_dir, "posts/python/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(output_dir, "posts/with-assets/index.html"));
 
     // Sections
-    assert!(file_exists!(public, "posts/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
+    assert!(file_exists!(output_dir, "posts/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/programming/index.html"));
     // TODO: add assertion for syntax highlighting
 
     // No tags or categories
-    assert_eq!(file_exists!(public, "categories/index.html"), false);
-    assert_eq!(file_exists!(public, "tags/index.html"), false);
+    assert_eq!(file_exists!(output_dir, "categories/index.html"), false);
+    assert_eq!(file_exists!(output_dir, "tags/index.html"), false);
 
     // no live reload code
-    assert!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"));
+    assert!(file_contains!(output_dir, "index.html", "/livereload.js?port=1112&mindelay=10"));
 }
 
 #[test]
@@ -205,41 +205,41 @@ fn can_build_site_with_categories() {
     }
     site.populate_tags_and_categories();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(Path::new(&output_dir).exists());
     assert_eq!(site.categories.unwrap().len(), 2);
 
-    assert!(file_exists!(public, "index.html"));
-    assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_exists!(public, "robots.txt"));
-    assert!(file_exists!(public, "a-fixed-url/index.html"));
+    assert!(file_exists!(output_dir, "index.html"));
+    assert!(file_exists!(output_dir, "sitemap.xml"));
+    assert!(file_exists!(output_dir, "robots.txt"));
+    assert!(file_exists!(output_dir, "a-fixed-url/index.html"));
 
-    assert!(file_exists!(public, "posts/python/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(public, "posts/with-assets/index.html"));
+    assert!(file_exists!(output_dir, "posts/python/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(output_dir, "posts/with-assets/index.html"));
 
     // Sections
-    assert!(file_exists!(public, "posts/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
+    assert!(file_exists!(output_dir, "posts/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/programming/index.html"));
     // TODO: add assertion for syntax highlighting
 
     // Categories are there
-    assert!(file_exists!(public, "categories/index.html"));
-    assert!(file_exists!(public, "categories/a/index.html"));
-    assert!(file_exists!(public, "categories/b/index.html"));
+    assert!(file_exists!(output_dir, "categories/index.html"));
+    assert!(file_exists!(output_dir, "categories/a/index.html"));
+    assert!(file_exists!(output_dir, "categories/b/index.html"));
     // Extending from a theme works
-    assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
+    assert!(file_contains!(output_dir, "categories/a/index.html", "EXTENDED"));
     // Tags aren't
-    assert_eq!(file_exists!(public, "tags/index.html"), false);
+    assert_eq!(file_exists!(output_dir, "tags/index.html"), false);
 
     // Categories are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"));
+    assert!(file_contains!(output_dir, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/</loc>"));
+    assert!(file_contains!(output_dir, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"));
 }
 
 #[test]
@@ -260,38 +260,38 @@ fn can_build_site_with_tags() {
     site.populate_tags_and_categories();
 
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(Path::new(&output_dir).exists());
     assert_eq!(site.tags.unwrap().len(), 3);
 
-    assert!(file_exists!(public, "index.html"));
-    assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_exists!(public, "robots.txt"));
-    assert!(file_exists!(public, "a-fixed-url/index.html"));
-    assert!(file_exists!(public, "posts/python/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(public, "posts/with-assets/index.html"));
+    assert!(file_exists!(output_dir, "index.html"));
+    assert!(file_exists!(output_dir, "sitemap.xml"));
+    assert!(file_exists!(output_dir, "robots.txt"));
+    assert!(file_exists!(output_dir, "a-fixed-url/index.html"));
+    assert!(file_exists!(output_dir, "posts/python/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(output_dir, "posts/with-assets/index.html"));
 
     // Sections
-    assert!(file_exists!(public, "posts/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
+    assert!(file_exists!(output_dir, "posts/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/programming/index.html"));
     // TODO: add assertion for syntax highlighting
 
     // Tags are there
-    assert!(file_exists!(public, "tags/index.html"));
-    assert!(file_exists!(public, "tags/tag1/index.html"));
-    assert!(file_exists!(public, "tags/tag2/index.html"));
-    assert!(file_exists!(public, "tags/tag-with-space/index.html"));
+    assert!(file_exists!(output_dir, "tags/index.html"));
+    assert!(file_exists!(output_dir, "tags/tag1/index.html"));
+    assert!(file_exists!(output_dir, "tags/tag2/index.html"));
+    assert!(file_exists!(output_dir, "tags/tag-with-space/index.html"));
     // Categories aren't
-    assert_eq!(file_exists!(public, "categories/index.html"), false);
+    assert_eq!(file_exists!(output_dir, "categories/index.html"), false);
     // Tags are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/tag-with-space/</loc>"));
+    assert!(file_contains!(output_dir, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/</loc>"));
+    assert!(file_contains!(output_dir, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/tag-with-space/</loc>"));
 }
 
 #[test]
@@ -302,13 +302,13 @@ fn can_build_site_and_insert_anchor_links() {
     site.load().unwrap();
 
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(Path::new(&output_dir).exists());
     // anchor link inserted
-    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"gutenberg-anchor\" href=\"#title\""));
+    assert!(file_contains!(output_dir, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"gutenberg-anchor\" href=\"#title\""));
 }
 
 #[test]
@@ -325,49 +325,49 @@ fn can_build_site_with_pagination_for_section() {
         section.meta.template = Some("section_paginated.html".to_string());
     }
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(Path::new(&output_dir).exists());
 
-    assert!(file_exists!(public, "index.html"));
-    assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_exists!(public, "robots.txt"));
-    assert!(file_exists!(public, "a-fixed-url/index.html"));
-    assert!(file_exists!(public, "posts/python/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(public, "posts/with-assets/index.html"));
+    assert!(file_exists!(output_dir, "index.html"));
+    assert!(file_exists!(output_dir, "sitemap.xml"));
+    assert!(file_exists!(output_dir, "robots.txt"));
+    assert!(file_exists!(output_dir, "a-fixed-url/index.html"));
+    assert!(file_exists!(output_dir, "posts/python/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(output_dir, "posts/with-assets/index.html"));
 
     // Sections
-    assert!(file_exists!(public, "posts/index.html"));
+    assert!(file_exists!(output_dir, "posts/index.html"));
     // And pagination!
-    assert!(file_exists!(public, "posts/page/1/index.html"));
+    assert!(file_exists!(output_dir, "posts/page/1/index.html"));
     // even if there is no pages, only the section!
-    assert!(file_exists!(public, "paginated/page/1/index.html"));
-    assert!(file_exists!(public, "paginated/index.html"));
+    assert!(file_exists!(output_dir, "paginated/page/1/index.html"));
+    assert!(file_exists!(output_dir, "paginated/index.html"));
     // should redirect to posts/
     assert!(file_contains!(
-        public,
+        output_dir,
         "posts/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts/\""
     ));
-    assert!(file_contains!(public, "posts/index.html", "Num pagers: 3"));
-    assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
-    assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
-    assert!(file_contains!(public, "posts/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
-    assert_eq!(file_contains!(public, "posts/index.html", "has_prev"), false);
+    assert!(file_contains!(output_dir, "posts/index.html", "Num pagers: 3"));
+    assert!(file_contains!(output_dir, "posts/index.html", "Page size: 2"));
+    assert!(file_contains!(output_dir, "posts/index.html", "Current index: 1"));
+    assert!(file_contains!(output_dir, "posts/index.html", "has_next"));
+    assert!(file_contains!(output_dir, "posts/index.html", "First: https://replace-this-with-your-url.com/posts/"));
+    assert!(file_contains!(output_dir, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
+    assert_eq!(file_contains!(output_dir, "posts/index.html", "has_prev"), false);
 
-    assert!(file_exists!(public, "posts/page/2/index.html"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 3"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Page size: 2"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
+    assert!(file_exists!(output_dir, "posts/page/2/index.html"));
+    assert!(file_contains!(output_dir, "posts/page/2/index.html", "Num pagers: 3"));
+    assert!(file_contains!(output_dir, "posts/page/2/index.html", "Page size: 2"));
+    assert!(file_contains!(output_dir, "posts/page/2/index.html", "Current index: 2"));
+    assert!(file_contains!(output_dir, "posts/page/2/index.html", "has_prev"));
+    assert!(file_contains!(output_dir, "posts/page/2/index.html", "has_next"));
+    assert!(file_contains!(output_dir, "posts/page/2/index.html", "First: https://replace-this-with-your-url.com/posts/"));
+    assert!(file_contains!(output_dir, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
 }
 
 #[test]
@@ -382,37 +382,37 @@ fn can_build_site_with_pagination_for_index() {
         index.meta.template = Some("index_paginated.html".to_string());
     }
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(Path::new(&output_dir).exists());
 
-    assert!(file_exists!(public, "index.html"));
-    assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_exists!(public, "robots.txt"));
-    assert!(file_exists!(public, "a-fixed-url/index.html"));
-    assert!(file_exists!(public, "posts/python/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(public, "posts/with-assets/index.html"));
+    assert!(file_exists!(output_dir, "index.html"));
+    assert!(file_exists!(output_dir, "sitemap.xml"));
+    assert!(file_exists!(output_dir, "robots.txt"));
+    assert!(file_exists!(output_dir, "a-fixed-url/index.html"));
+    assert!(file_exists!(output_dir, "posts/python/index.html"));
+    assert!(file_exists!(output_dir, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(output_dir, "posts/with-assets/index.html"));
 
     // And pagination!
-    assert!(file_exists!(public, "page/1/index.html"));
+    assert!(file_exists!(output_dir, "page/1/index.html"));
     // even if there is no pages, only the section!
-    assert!(file_exists!(public, "paginated/page/1/index.html"));
-    assert!(file_exists!(public, "paginated/index.html"));
+    assert!(file_exists!(output_dir, "paginated/page/1/index.html"));
+    assert!(file_exists!(output_dir, "paginated/index.html"));
     // should redirect to index
     assert!(file_contains!(
-        public,
+        output_dir,
         "page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
     ));
-    assert!(file_contains!(public, "index.html", "Num pages: 1"));
-    assert!(file_contains!(public, "index.html", "Current index: 1"));
-    assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
-    assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
-    assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
-    assert_eq!(file_contains!(public, "index.html", "has_next"), false);
+    assert!(file_contains!(output_dir, "index.html", "Num pages: 1"));
+    assert!(file_contains!(output_dir, "index.html", "Current index: 1"));
+    assert!(file_contains!(output_dir, "index.html", "First: https://replace-this-with-your-url.com/"));
+    assert!(file_contains!(output_dir, "index.html", "Last: https://replace-this-with-your-url.com/"));
+    assert_eq!(file_contains!(output_dir, "index.html", "has_prev"), false);
+    assert_eq!(file_contains!(output_dir, "index.html", "has_next"), false);
 }
 
 #[test]
@@ -422,14 +422,14 @@ fn can_build_rss_feed() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     let tmp_dir = TempDir::new("example").expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    let output_dir = &tmp_dir.path().join("public");
+    site.set_output_path(&output_dir);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
-    assert!(file_exists!(public, "rss.xml"));
+    assert!(Path::new(&output_dir).exists());
+    assert!(file_exists!(output_dir, "rss.xml"));
     // latest article is posts/simple.md
-    assert!(file_contains!(public, "rss.xml", "Simple article with shortcodes"));
+    assert!(file_contains!(output_dir, "rss.xml", "Simple article with shortcodes"));
     // Next is posts/python.md
-    assert!(file_contains!(public, "rss.xml", "Python in posts"));
+    assert!(file_contains!(output_dir, "rss.xml", "Python in posts"));
 }

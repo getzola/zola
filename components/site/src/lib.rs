@@ -704,9 +704,9 @@ impl Site {
     /// Renders a single section
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
-        let public = self.output_path.clone();
+        let output_dir = self.output_path.clone();
 
-        let mut output_path = public.to_path_buf();
+        let mut output_path = output_dir.to_path_buf();
         for component in &section.file.components {
             output_path.push(component);
 
