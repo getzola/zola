@@ -40,8 +40,7 @@ toc: Array<Header>;
 ```
 
 ## Section variables
-By default, Gutenberg will try to load `templates/index.html` for `content/_index.md` 
-and `templates/section.html` for others `_index.md` files. If there isn't
+By default, Gutenberg will try to load `templates/section.html` If there isn't
 one, it will render the built-in template: a blank page.
 
 Whichever template you decide to render, you will get a `section` variable in your template
