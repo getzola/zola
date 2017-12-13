@@ -337,7 +337,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_exists!(output_dir, "a-fixed-url/index.html"));
     assert!(file_exists!(output_dir, "posts/python/index.html"));
     assert!(file_exists!(output_dir, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(output_dioutput_dirsts/with-assets/index.html"));
+    assert!(file_exists!(output_dir, "posts/with-assets/index.html"));
 
     // Sections
     assert!(file_exists!(output_dir, "posts/index.html"));
@@ -399,7 +399,7 @@ fn can_build_site_with_pagination_for_index() {
     // And pagination!
     assert!(file_exists!(output_dir, "page/1/index.html"));
     // even if there is no pages, only the section!
-    assert!(file_exists!(output_dioutput_dirginated/page/1/index.html"));
+    assert!(file_exists!(output_dir, "paginated/page/1/index.html"));
     assert!(file_exists!(output_dir, "paginated/index.html"));
     // should redirect to index
     assert!(file_contains!(
