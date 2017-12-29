@@ -7,11 +7,10 @@ authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 tera = "0.11.0-beta"
 glob = "0.2"
 walkdir = "2"
-rayon = "0.8"
+rayon = "0.9"
 serde = "1.0"
 serde_derive = "1.0"
 sass-rs = "0.2"
-#sass-rs = { git = "https://github.com/compass-rs/sass-rs.git" }
 
 errors = { path = "../errors" }
 config = { path = "../config" }
