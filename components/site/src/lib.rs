@@ -151,8 +151,6 @@ impl Site {
         orphans
     }
 
-    /// Used by tests to change the output path to a tmp dir
-    #[doc(hidden)]
     pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {
         self.output_path = path.as_ref().to_path_buf();
     }

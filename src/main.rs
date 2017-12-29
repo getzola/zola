@@ -43,7 +43,8 @@ fn main() {
         ("build", Some(matches)) => {
             console::info("Building site...");
             let start = Instant::now();
-            match cmd::build(config_file, matches.value_of("base_url")) {
+            let output_dir = matches.value_of("output_dir").unwrap();
+            match cmd::build(config_file, matches.value_of("base_url"), output_dir) {
                 Ok(()) => console::report_elapsed_time(start),
                 Err(e) => {
                     console::unravel_errors("Failed to build the site", &e);
@@ -54,8 +55,9 @@ fn main() {
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let port = matches.value_of("port").unwrap_or("1111");
+            let output_dir = matches.value_of("output_dir").unwrap();
             console::info("Building site...");
-            match cmd::serve(interface, port, config_file) {
+            match cmd::serve(interface, port, output_dir, config_file) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("", &e);

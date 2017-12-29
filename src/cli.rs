@@ -28,6 +28,12 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("base-url")
                         .takes_value(true)
                         .help("Force the base URL to be that value (default to the one in config.toml)"),
+                    Arg::with_name("output_dir")
+                        .short("o")
+                        .long("output-dir")
+                        .default_value("public")
+                        .takes_value(true)
+                        .help("Outputs the generated site in the given path"),
                 ]),
             SubCommand::with_name("serve")
                 .about("Serve the site. Rebuild and reload on change automatically")
@@ -42,6 +48,12 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("port")
                         .default_value("1111")
                         .help("Which port to use"),
+                    Arg::with_name("output_dir")
+                        .short("o")
+                        .long("output-dir")
+                        .default_value("public")
+                        .takes_value(true)
+                        .help("Outputs the generated site in the given path"),
                 ]),
         ])
 }

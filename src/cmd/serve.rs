@@ -77,7 +77,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
-pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
+pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
@@ -88,7 +88,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     } else {
         format!("http://{}", address)
     };
-
+    site.set_output_path(output_dir);
     site.load()?;
     site.enable_live_reload();
     console::notify_site_size(&site);
@@ -116,9 +116,9 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     let ws_address = format!("{}:{}", interface, "1112");
 
-    // Start a webserver that serves the `public` directory
+    // Start a webserver that serves the `output_dir` directory
     let mut mount = Mount::new();
-    mount.mount("/", Static::new(Path::new("public/")));
+    mount.mount("/", Static::new(Path::new(output_dir)));
     mount.mount("/livereload.js", livereload_handler);
     // Starts with a _ to not trigger the unused lint
     // we need to assign to a variable otherwise it will block
