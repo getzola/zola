@@ -7,7 +7,7 @@ authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 tera = "0.11.0-beta"
 regex = "0.2"
 lazy_static = "1"
-syntect = { version = "1", features = ["static-onig"] }
+syntect = "2"
 pulldown-cmark = "0"
 slug = "0.1"
 serde = "1.0"
