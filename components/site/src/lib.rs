@@ -217,31 +217,43 @@ impl Site {
             self.add_page(p, false)?;
         }
 
-        {
-            // Another silly thing needed to not borrow &self in parallel and
-            // make the borrow checker happy
-            let permalinks = &self.permalinks;
-            let tera = &self.tera;
-            let config = &self.config;
-
-            self.pages.par_iter_mut()
-                .map(|(_, page)| {
-                    let insert_anchor = pages_insert_anchors[&page.file.path];
-                    page.render_markdown(permalinks, tera, config, insert_anchor)
-                })
-                .fold(|| Ok(()), Result::and)
-                .reduce(|| Ok(()), Result::and)?;
-
-            self.sections.par_iter_mut()
-                .map(|(_, section)| section.render_markdown(permalinks, tera, config))
-                .fold(|| Ok(()), Result::and)
-                .reduce(|| Ok(()), Result::and)?;
-        }
-
+        self.render_markdown()?;
         self.populate_sections();
         self.populate_tags_and_categories();
 
         self.register_tera_global_fns();
+
+        Ok(())
+    }
+
+    /// Render the markdown of all pages/sections
+    /// Used in a build and in `serve` if a shortcode has changed
+    pub fn render_markdown(&mut self) -> Result<()> {
+        // Another silly thing needed to not borrow &self in parallel and
+        // make the borrow checker happy
+        let permalinks = &self.permalinks;
+        let tera = &self.tera;
+        let config = &self.config;
+
+        // TODO: avoid the duplication with function above for that part
+        // This is needed in the first place because of silly borrow checker
+        let mut pages_insert_anchors = HashMap::new();
+        for (_, p) in &self.pages {
+            pages_insert_anchors.insert(p.file.path.clone(), self.find_parent_section_insert_anchor(&p.file.parent.clone()));
+        }
+
+        self.pages.par_iter_mut()
+            .map(|(_, page)| {
+                let insert_anchor = pages_insert_anchors[&page.file.path];
+                page.render_markdown(permalinks, tera, config, insert_anchor)
+            })
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)?;
+
+        self.sections.par_iter_mut()
+            .map(|(_, section)| section.render_markdown(permalinks, tera, config))
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)?;
 
         Ok(())
     }
@@ -320,6 +332,8 @@ impl Site {
             section.ignored_pages = vec![];
         }
 
+        // TODO: use references instead of cloning to avoid having to call populate_section on
+        // content change
         for page in self.pages.values() {
             let parent_section_path = page.file.parent.join("_index.md");
             if self.sections.contains_key(&parent_section_path) {

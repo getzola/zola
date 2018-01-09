@@ -12,6 +12,7 @@
 - Better UX on first `serve` thanks to some default templates.
 - Add `output-dir` to `build` and `serve` to generate the site in a folder other than `public`
 - Add Prolog syntax highlighting and update all current syntaxes
+- Live reloading now works on shortcode template changes
 
 ## 0.2.2 (2017-11-01)
 
