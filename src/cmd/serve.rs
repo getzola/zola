@@ -78,8 +78,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
-pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
-    let start = Instant::now();
+pub fn create_new_site(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
     let address = format!("{}:{}", interface, port);
@@ -95,6 +94,13 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
     console::notify_site_size(&site);
     console::warn_about_ignored_pages(&site);
     site.build()?;
+    Ok((site, address))
+}
+
+pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
+    let start = Instant::now();
+    let (mut site, address) = create_new_site(interface, port, output_dir, config_file).unwrap();
+
     console::report_elapsed_time(start);
     let mut watching_static = false;
 
@@ -200,9 +206,8 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
                                 rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p);
                             },
                             (ChangeKind::Config, _) => {
-                                console::info(&format!("-> Config changed {}", path.display()));
-                                let path = env::current_dir().unwrap();
-                                site = rebuild::after_config_change(&path, interface, port, config_file).unwrap();
+                                console::info(&format!("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible."));
+                                site = rebuild::after_config_change(interface, port, output_dir, config_file).unwrap();
                             }
                         };
                         console::report_elapsed_time(start);
@@ -257,7 +262,7 @@ fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
         ChangeKind::StaticFiles
     } else if path_str.starts_with("/sass") {
         ChangeKind::Sass
-    } else if path_str.starts_with("/config.toml") {
+    } else if path_str == "/config.toml" {
         ChangeKind::Config
     } else {
         unreachable!("Got a change in an unexpected path: {}", path_str)

@@ -1,6 +1,7 @@
 use std::path::{Path, Component};
 
 use errors::Result;
+use cmd::serve::create_new_site;
 use site::Site;
 use content::{Page, Section};
 use front_matter::{PageFrontMatter, SectionFrontMatter};
@@ -265,19 +266,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
 }
 
 /// What happens when the config is changed
-pub fn after_config_change(path: &Path, interface: &str, port: &str, config_file: &str) -> Result<Site> {
-    let mut site = Site::new(path, config_file)?;
-
-    let address = format!("{}:{}", interface, port);
-    // Override the base url so links work in localhost
-    site.config.base_url = if site.config.base_url.ends_with('/') {
-        format!("http://{}/", address)
-    } else {
-        format!("http://{}", address)
-    };
-
-    site.load()?;
-    site.enable_live_reload();
-    site.build()?;
+pub fn after_config_change(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<Site> {
+    let (site, _) = create_new_site(interface, port, output_dir, config_file).unwrap();
     Ok(site)
 }

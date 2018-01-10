@@ -1,6 +1,6 @@
 mod init;
 mod build;
-mod serve;
+pub mod serve;
 
 pub use self::init::create_new_project;
 pub use self::build::build;
