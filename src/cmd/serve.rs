@@ -45,6 +45,7 @@ enum ChangeKind {
     Templates,
     StaticFiles,
     Sass,
+    Config,
 }
 
 // Uglified using uglifyjs
@@ -77,8 +78,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
-pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
-    let start = Instant::now();
+fn create_new_site(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
     let address = format!("{}:{}", interface, port);
@@ -94,6 +94,13 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
     console::notify_site_size(&site);
     console::warn_about_ignored_pages(&site);
     site.build()?;
+    Ok((site, address))
+}
+
+pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
+    let start = Instant::now();
+    let (mut site, address) = create_new_site(interface, port, output_dir, config_file).unwrap();
+
     console::report_elapsed_time(start);
     let mut watching_static = false;
 
@@ -104,6 +111,8 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
     watcher.watch("templates/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
+    watcher.watch("config.toml", RecursiveMode::Recursive)
+        .chain_err(|| "Can't watch the `config.toml` file. Does it exist?")?;
 
     if Path::new("static").exists() {
         watching_static = true;
@@ -147,7 +156,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
 
     let pwd = format!("{}", env::current_dir().unwrap().display());
 
-    let mut watchers = vec!["content", "templates"];
+    let mut watchers = vec!["content", "templates", "config.toml"];
     if watching_static {
         watchers.push("static");
     }
@@ -196,6 +205,10 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
                                 console::info(&format!("-> Sass file changed {}", path.display()));
                                 rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p);
                             },
+                            (ChangeKind::Config, _) => {
+                                console::info(&format!("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible."));
+                                site = create_new_site(interface, port, output_dir, config_file).unwrap().0;
+                            }
                         };
                         console::report_elapsed_time(start);
                     }
@@ -249,6 +262,8 @@ fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
         ChangeKind::StaticFiles
     } else if path_str.starts_with("/sass") {
         ChangeKind::Sass
+    } else if path_str == "/config.toml" {
+        ChangeKind::Config
     } else {
         unreachable!("Got a change in an unexpected path: {}", path_str)
     };
@@ -299,7 +314,11 @@ mod tests {
             (
                 (ChangeKind::Sass, "/sass/print.scss".to_string()),
                 "/home/vincent/site", Path::new("/home/vincent/site/sass/print.scss")
-            )
+            ),
+            (
+                (ChangeKind::Config, "/config.toml".to_string()),
+                "/home/vincent/site", Path::new("/home/vincent/site/config.toml")
+            ),
         ];
 
         for (expected, pwd, path) in test_cases {
