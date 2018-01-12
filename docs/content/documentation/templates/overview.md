@@ -23,8 +23,6 @@ A few variables are available on all templates minus RSS and sitemap:
 - `current_path`: the path (full URL without the `base_url`) of the current page, never starting with a `/`
 - `current_url`: the full URL for that page
 
-> Please note that [include paths](https://tera.netlify.com/docs/templates/#include) can only be used in used in normal templates. Theme templates should use [macro's](https://tera.netlify.com/docs/templates/#macros) instead.
-
 ## Built-in filters
 Gutenberg adds a few filters, in addition of the ones already present in Tera.
 
