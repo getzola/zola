@@ -28,6 +28,18 @@ impl Context {
         };
         buf.push_str(&format!("<{}{}>", tag_closer, tag));
     }
+
+    fn render_nested_tags(&self, tags: &[&str], buf: &mut String) {
+        match self.tag_type {
+            Some(TagType::Opening) => {
+                tags.into_iter().for_each(|t| self.render_tag(t, buf));
+            },
+            Some(TagType::Closing) => {
+                tags.into_iter().rev().for_each(|t| self.render_tag(t, buf));
+            },
+            None => (),
+        };
+    }
 }
 
 impl<'a> IntoHtml<Context> for Tag<'a> {
@@ -35,6 +47,7 @@ impl<'a> IntoHtml<Context> for Tag<'a> {
         match *self {
             Tag::Paragraph => context.render_tag("p", buf),
             Tag::Header(n) => context.render_tag(&format!("h{}", n), buf),
+            Tag::CodeBlock(ref _info_string) => context.render_nested_tags(&["pre", "code"], buf),
             _ => (),
         }
     }

@@ -65,3 +65,22 @@ fn renders_h2_headings() {
     into_html(&mut content, &mut buf);
     assert_eq!("<h2>Hello</h2>\n", buf);
 }
+
+#[test]
+fn renders_code() {
+    let original = r#"```javascript
+let wat = 5 + '3';
+```"#;
+
+    let p = Parser::new(&original);
+    for i in p {
+        println!("{:?}", i);
+    }
+    println!("\n\n");
+
+    let p = Parser::new(&original);
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!("<pre><code>let wat = 5 + '3';\n</code></pre>\n", buf);
+}
