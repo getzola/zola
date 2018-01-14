@@ -8,23 +8,22 @@ pub trait IntoHtml<C> {
 enum TagType {
     Opening,
     Closing,
-    None,
 }
 
 struct Context {
-    tag_type: TagType,
+    tag_type: Option<TagType>,
 }
 
 impl Context {
     fn new() -> Context {
         Context {
-            tag_type: TagType::None,
+            tag_type: None,
         }
     }
 
     fn render_tag(&self, tag: &str, buf: &mut String) {
         let tag_closer = match self.tag_type {
-            TagType::Closing => "/",
+           Some(TagType::Closing) => "/",
             _ => "",
         };
         buf.push_str(&format!("<{}{}>", tag_closer, tag));
@@ -55,16 +54,16 @@ impl<'a> IntoHtml<Context> for Node<'a> {
     fn render(&mut self, context: &mut Context, buf: &mut String) {
         match *self {
             Node::Block(ref mut tag, ref mut content) => {
-                context.tag_type = TagType::Opening;
+                context.tag_type = Some(TagType::Opening);
                 tag.render(context, buf);
 
-                context.tag_type = TagType::None;
+                context.tag_type = None;
                 content.render(context, buf);
 
-                context.tag_type = TagType::Closing;
+                context.tag_type = Some(TagType::Closing);
                 tag.render(context, buf);
                 buf.push('\n');
-                context.tag_type = TagType::None;
+                context.tag_type = None;
             },
             Node::Item(ref mut event) => event.render(context, buf),
         }
