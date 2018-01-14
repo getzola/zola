@@ -31,6 +31,32 @@ World
 }
 
 #[test]
+fn renders_html() {
+    let original = r#"<article>
+<header>This is an article header.</header>
+</article>"#;
+
+    let p = Parser::new(&original);
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!(original, buf);
+
+}
+
+#[test]
+fn renders_inline_html() {
+    let original = r#"Hello, <em>World</em>!"#;
+
+    let p = Parser::new(&original);
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!("<p>Hello, <em>World</em>!</p>\n", buf);
+
+}
+
+#[test]
 fn renders_headings() {
     let original = r##"# Hello
 "##;

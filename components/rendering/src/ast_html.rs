@@ -56,8 +56,8 @@ impl<'a> IntoHtml<Context> for Tag<'a> {
 impl<'a> IntoHtml<Context> for Event<'a> {
     fn render(&mut self, _context: &mut Context, buf: &mut String) {
         match *self {
+            Event::Text(ref text) | Event::Html(ref text) | Event::InlineHtml(ref text) => buf.push_str(text),
             Event::Start(_) | Event::End(_) => unreachable!(),
-            Event::Text(ref text) => buf.push_str(text),
             _ => panic!("AHHHHHHH!!!!!!!!!!"),
         }
     }
