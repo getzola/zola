@@ -17,9 +17,9 @@ extern crate utils;
 #[cfg(test)]
 extern crate templates;
 
-mod ast;
-mod ast_html;
-mod collect_while;
+pub mod ast;
+pub mod ast_html;
+pub mod collect_while;
 mod context;
 mod markdown;
 mod short_code;
