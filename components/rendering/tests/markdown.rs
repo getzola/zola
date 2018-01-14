@@ -61,6 +61,9 @@ fn errors_relative_link_inexistant() {
     assert!(res.is_err());
 }
 
+#[cfg(pending)]
+mod pending {
+
 #[test]
 fn can_add_id_to_headers() {
     let tera_ctx = Tera::default();
@@ -69,9 +72,6 @@ fn can_add_id_to_headers() {
     let res = markdown_to_html(r#"# Hello"#, &context).unwrap();
     assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n");
 }
-
-#[cfg(pending)]
-mod pending {
 
 #[test]
 fn doesnt_highlight_code_block_with_highlighting_off() {
