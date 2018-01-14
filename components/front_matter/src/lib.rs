@@ -92,7 +92,7 @@ mod tests {
 +++
 title = "Title"
 description = "hey there"
-date = "2002/10/12"
+date = 2002-10-12
 +++
 Hello
 "#;
@@ -120,7 +120,7 @@ Hello
 +++
 title = "Title"
 description = "hey there"
-date = "2002/10/12"
+date = 2002-10-12
 +++"#;
         let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
         assert_eq!(content, "");
@@ -133,7 +133,7 @@ date = "2002/10/12"
 +++
 title = "Title"
 description = "hey there"
-date = "2002-10-02T15:00:00Z"
+date = 2002-10-02T15:00:00Z
 +++
 +++"#;
         let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
@@ -147,7 +147,7 @@ date = "2002-10-02T15:00:00Z"
 +++
 title = "Title"
 description = "hey there"
-date = "2002/10/12""#;
+date = 2002-10-12"#;
         let res = split_page_content(Path::new(""), content);
         assert!(res.is_err());
     }

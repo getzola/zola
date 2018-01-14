@@ -4,6 +4,8 @@
 
 ### Breaking
 - Change names of individual taxonomies to be plural (ie `tags/my-tag` instead of `tag/my-tag`)
+- Front matter now uses TOML dates rather strings: remove quotes from your date value to fix it.
+For example: `date = "2001-10-10"` becomes `date = 2001-10-10`
 
 ### Others
 - Add `get_taxonomy_url` to retrieve the permalink of a tag/category
@@ -13,6 +15,7 @@
 - Add `output-dir` to `build` and `serve` to generate the site in a folder other than `public`
 - Add Prolog syntax highlighting and update all current syntaxes
 - Live reloading now works on shortcode template changes
+- `gutenberg serve` now reloads site on `config.toml` changes: you will need to F5 to see them though
 
 ## 0.2.2 (2017-11-01)
 

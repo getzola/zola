@@ -17,3 +17,4 @@ front_matter = { path = "../front_matter" }
 
 [dev-dependencies]
 tempdir = "0.3"
+toml = "0.4"
