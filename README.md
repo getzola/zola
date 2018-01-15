@@ -18,6 +18,9 @@ in the `docs/content` folder of the repository.
 - [j1m.net](https://j1m.net): https://gitlab.com/jwcampbell/j1mnet
 - [vaporsoft.net](http://vaporsoft.net): https://github.com/piedoom/vaporsoft
 - [bharatkalluri.in](https://bharatkalluri.in): https://github.com/BharatKalluri/Blog
+- [verpeteren.nl](http://www.verpeteren.nl)
+- [atlasreports.nl](http://www.atlasreports.nl)
+- [groksome.com](http://www.groksome.com)
 
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
