@@ -1,9 +1,9 @@
 extern crate pulldown_cmark;
 extern crate rendering;
 
-use pulldown_cmark::{Parser};
+use pulldown_cmark::{Parser, Options, OPTION_ENABLE_FOOTNOTES};
 use rendering::ast::{Content};
-use rendering::ast_html::{into_html, IntoHtml};
+use rendering::ast_html::{into_html};
 
 #[test]
 fn renders_text() {
@@ -54,6 +54,34 @@ fn renders_inline_html() {
     into_html(&mut content, &mut buf);
     assert_eq!("<p>Hello, <em>World</em>!</p>\n", buf);
 
+}
+
+#[test]
+fn renders_footnotes() {
+    let original = r#"Footnote reference.[^a]
+
+[^a]: Footnote definition."#;
+
+    let expected = r##"<p>Footnote reference.<sup class="footnote-reference"><a href="#a">1</a></sup></p>
+<div class="footnote-definition" id="a"><sup class="footnote-definition-label">1</sup>
+<p>Footnote definition.</p>
+</div>
+"##;
+
+    let mut options = Options::empty();
+    options.insert(OPTION_ENABLE_FOOTNOTES);
+
+    let p = Parser::new_ext(&original, options);
+    for i in p {
+        println!("{:?}", i);
+    }
+    println!("\n\n");
+
+    let p = Parser::new_ext(&original, options);
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!(expected, buf);
 }
 
 #[test]
