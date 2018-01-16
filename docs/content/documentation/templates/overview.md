@@ -81,7 +81,7 @@ In the case of non-internal links, you can also add a cachebust of the format `?
 by passing `cachebust=true` to the `get_url` function.
 
 
-### ` get_taxonomy_url`
+### `get_taxonomy_url`
 Gets the permalink for the tag or category given.
 
 ```jinja2
@@ -90,3 +90,11 @@ Gets the permalink for the tag or category given.
 
 The `name` will almost come from a variable but in case you want to do it manually,
 the value should be the same as the one in the front-matter, not the slugified version.
+
+### `trans`
+Gets the translation of the given `key`, for the `default_language` or the `language given
+
+```jinja2
+{{ trans(key="title") }}
+{{ trans(key="title", lang="fr") }}
+```

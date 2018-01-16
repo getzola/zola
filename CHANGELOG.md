@@ -6,6 +6,7 @@
 - Change names of individual taxonomies to be plural (ie `tags/my-tag` instead of `tag/my-tag`)
 - Front matter now uses TOML dates rather strings: remove quotes from your date value to fix it.
 For example: `date = "2001-10-10"` becomes `date = 2001-10-10`
+- `language_code` has been renamed `default_language` in preparations of i18n support
 
 ### Others
 - Add `get_taxonomy_url` to retrieve the permalink of a tag/category
@@ -16,6 +17,8 @@ For example: `date = "2001-10-10"` becomes `date = 2001-10-10`
 - Add Prolog syntax highlighting and update all current syntaxes
 - Live reloading now works on shortcode template changes
 - `gutenberg serve` now reloads site on `config.toml` changes: you will need to F5 to see them though
+- Add a `trans` global function that will get return the translation of the given key for the given lang, defaulting
+to `config.default_language` if not given
 
 ## 0.2.2 (2017-11-01)
 
