@@ -21,6 +21,21 @@ macro_rules! required_string_arg {
     };
 }
 
+
+pub fn make_trans(config: Config) -> GlobalFn {
+    let translations_config = config.translations.unwrap();
+    let default_lang = to_value(config.default_language.unwrap()).unwrap();
+
+    Box::new(move |args| -> Result<Value> {
+        let key = required_string_arg!(args.get("key"), "`trans` requires a `key` argument.");
+        let lang_arg = args.get("lang").unwrap_or(&default_lang).clone();
+        let lang = from_value::<String>(lang_arg).unwrap();
+        let translations = &translations_config[lang.as_str()];
+        Ok(to_value(&translations[key.as_str()]).unwrap())
+    })
+}
+
+
 pub fn make_get_page(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {
     let mut pages = HashMap::new();
     for page in all_pages.values() {
@@ -111,7 +126,7 @@ pub fn make_get_taxonomy_url(tags: Option<Taxonomy>, categories: Option<Taxonomy
 
 #[cfg(test)]
 mod tests {
-    use super::{make_get_url, make_get_taxonomy_url};
+    use super::{make_get_url, make_get_taxonomy_url, make_trans};
 
     use std::collections::HashMap;
 
@@ -185,5 +200,34 @@ mod tests {
         args.insert("kind".to_string(), to_value("tag").unwrap());
         args.insert("name".to_string(), to_value("random").unwrap());
         assert!(static_fn(args).is_err());
+    }
+
+    #[test]
+    fn can_translate_a_string() {
+        let trans_config = r#"
+base_url = "https://remplace-par-ton-url.fr"
+default_language = "fr"
+
+[translations]
+[translations.fr]
+title = "Un titre"
+
+[translations.en]
+title = "A title"
+
+        "#;
+
+        let config = Config::parse(trans_config).unwrap();
+        let static_fn = make_trans(config);
+        let mut args = HashMap::new();
+
+        args.insert("key".to_string(), to_value("title").unwrap());
+        assert_eq!(static_fn(args.clone()).unwrap(), "Un titre");
+
+        args.insert("lang".to_string(), to_value("en").unwrap());
+        assert_eq!(static_fn(args.clone()).unwrap(), "A title");
+
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        assert_eq!(static_fn(args.clone()).unwrap(), "Un titre");
     }
 }

@@ -259,6 +259,7 @@ impl Site {
     }
 
     pub fn register_tera_global_fns(&mut self) {
+        self.tera.register_global_function("trans", global_fns::make_trans(self.config.clone()));
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
