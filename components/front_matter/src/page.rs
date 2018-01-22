@@ -241,4 +241,14 @@ mod tests {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
+
+    #[test]
+    fn cannot_parse_date_as_string() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = "2002-14-01""#;
+        let res = PageFrontMatter::parse(content);
+        assert!(res.is_err());
+    }
 }

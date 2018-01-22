@@ -99,7 +99,7 @@ fn create_new_site(interface: &str, port: &str, output_dir: &str, config_file: &
 
 pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
-    let (mut site, address) = create_new_site(interface, port, output_dir, config_file).unwrap();
+    let (mut site, address) = create_new_site(interface, port, output_dir, config_file)?;
 
     console::report_elapsed_time(start);
     let mut watching_static = false;
