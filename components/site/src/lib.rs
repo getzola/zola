@@ -704,7 +704,6 @@ impl Site {
         context.add("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
          // limit to the last n elements)
         context.add("pages", &sorted_pages.iter().take(self.config.rss_limit.unwrap()).collect::<Vec<_>>());
-        println!("{:?}", context.as_json());
         context.add("config", &self.config);
 
         let rss_feed_url = if self.config.base_url.ends_with('/') {
