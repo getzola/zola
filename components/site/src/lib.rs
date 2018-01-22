@@ -460,7 +460,7 @@ impl Site {
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
             // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path).chain_err(|| "Couldn't delete `public` directory")?;
+            remove_dir_all(&self.output_path).chain_err(|| "Couldn't delete output directory")?;
         }
 
         Ok(())

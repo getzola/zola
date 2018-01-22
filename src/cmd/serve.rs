@@ -22,6 +22,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
+use std::fs::remove_dir_all;
 use std::path::Path;
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
@@ -33,6 +34,8 @@ use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket, Sender, Message};
+use ctrlc;
+
 use site::Site;
 use errors::{Result, ResultExt};
 
@@ -100,11 +103,10 @@ fn create_new_site(interface: &str, port: &str, output_dir: &str, config_file: &
 pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, config_file)?;
-
     console::report_elapsed_time(start);
-    let mut watching_static = false;
 
     // Setup watchers
+    let mut watching_static = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
     watcher.watch("content/", RecursiveMode::Recursive)
@@ -167,6 +169,12 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
     println!("Listening for changes in {}/{{{}}}", pwd, watchers.join(", "));
     println!("Web server is available at http://{}", address);
     println!("Press Ctrl+C to stop\n");
+    // Delete the output folder on ctrl+C
+    let output_path = Path::new(output_dir).to_path_buf();
+    ctrlc::set_handler(move || {
+        remove_dir_all(&output_path).expect("Failed to delete output directory");
+        ::std::process::exit(0);
+    }).expect("Error setting Ctrl-C handler");
 
     use notify::DebouncedEvent::*;
 

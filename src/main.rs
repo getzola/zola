@@ -8,6 +8,7 @@ extern crate mount;
 extern crate notify;
 extern crate url;
 extern crate ws;
+extern crate ctrlc;
 
 extern crate site;
 #[macro_use]

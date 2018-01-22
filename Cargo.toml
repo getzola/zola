@@ -29,6 +29,7 @@ iron = "0.6"
 mount = "0.4"
 notify = "4"
 ws = "0.7"
+ctrlc = "3"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
