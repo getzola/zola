@@ -19,6 +19,7 @@ For example: `date = "2001-10-10"` becomes `date = 2001-10-10`
 - `gutenberg serve` now reloads site on `config.toml` changes: you will need to F5 to see them though
 - Add a `trans` global function that will get return the translation of the given key for the given lang, defaulting
 to `config.default_language` if not given
+- `gutenberg serve` cleans after itself and deletes the output directory on CTRL+C
 
 ## 0.2.2 (2017-11-01)
 
