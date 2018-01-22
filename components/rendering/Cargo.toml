@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 
 [dependencies]
-tera = "0.11.0-beta"
+tera = "0.11.0"
 regex = "0.2"
 lazy_static = "1"
 syntect = "2"

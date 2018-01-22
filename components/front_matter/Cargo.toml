@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 
 [dependencies]
-tera = "0.11.0-beta"
+tera = "0.11.0"
 chrono = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
