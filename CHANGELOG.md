@@ -16,7 +16,7 @@ For example: `date = "2001-10-10"` becomes `date = 2001-10-10`
 - Add `output-dir` to `build` and `serve` to generate the site in a folder other than `public`
 - Add Prolog syntax highlighting and update all current syntaxes
 - Live reloading now works on shortcode template changes
-- `gutenberg serve` now reloads site on `config.toml` changes: you will need to F5 to see them though
+- `gutenberg serve` now reloads site on `config.toml` changes: you will need to F5 to see any changes though
 - Add a `trans` global function that will get return the translation of the given key for the given lang, defaulting
 to `config.default_language` if not given
 - `gutenberg serve` cleans after itself and deletes the output directory on CTRL+C
