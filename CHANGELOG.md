@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 (unreleased)
+
+- Update Tera to fix regression
+
 ## 0.3.0 (2018-01-25)
 
 ### Breaking
