@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (2017-01-25)
+## 0.3.0 (2018-01-25)
 
 ### Breaking
 - Change names of individual taxonomies to be plural (ie `tags/my-tag` instead of `tag/my-tag`)
