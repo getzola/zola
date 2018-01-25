@@ -7,8 +7,8 @@
         <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
         <meta name="author" content="{{ config.extra.author }}">
         <title>{% block title %}{{ config.title }}{% endblock title %}</title>
-        <link rel="stylesheet" href="{{ get_url(path="site.css") }}"/>
-        <link rel="icon" href="{{ get_url(path="favicon.ico") }}">
+        <link rel="stylesheet" href="{{ get_url(path="site.css", trailing_slash=false) }}"/>
+        <link rel="icon" href="{{ get_url(path="favicon.ico", trailing_slash=false) }}">
     </head>
     <body>
 

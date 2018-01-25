@@ -25,7 +25,7 @@ contexts:
           captures:
             1: keyword.operator.other.elixir
             2: keyword.control.elixir
-            3: punctuation.definition.parameters.elixir
+            3: punctuation.section.function.elixir
           pop: true
         - include: core_syntax
     - include: core_syntax
@@ -37,7 +37,7 @@ contexts:
           captures:
             1: keyword.operator.other.elixir
             2: keyword.control.elixir
-            3: punctuation.definition.parameters.elixir
+            3: punctuation.section.function.elixir
           pop: true
         - include: core_syntax
   core_syntax:
@@ -78,7 +78,7 @@ contexts:
       captures:
         1: keyword.control.module.elixir
         2: entity.name.function.public.elixir
-        4: punctuation.definition.parameters.elixir
+        4: punctuation.section.function.elixir
       push:
         - meta_scope: meta.function.public.elixir
         - match: (\bdo:)|(\bdo\b)|(?=\s+(def|defmacro)\b)
@@ -100,7 +100,7 @@ contexts:
       captures:
         1: keyword.control.module.elixir
         2: entity.name.function.private.elixir
-        4: punctuation.definition.parameters.elixir
+        4: punctuation.section.function.elixir
       push:
         - meta_scope: meta.function.private.elixir
         - match: (\bdo:)|(\bdo\b)|(?=\s+(defp|defmacrop)\b)
@@ -157,18 +157,6 @@ contexts:
           pop: true
         - include: interpolated_elixir
         - include: escaped_char
-    - match: (::)
-      captures:
-        0: punctuation.binary.elixir
-      push:
-        - match: (,|>>|$)
-          captures:
-            0: punctuation.binary.elixir
-          pop: true
-        - match: '\b[a-z]\w*\b'
-          scope: support.type.binary.elixir
-        - match: '\b(0x[0-9A-Fa-f](?>_?[0-9A-Fa-f])*|\d(?>_?\d)*(\.(?![^[:space:][:digit:]])(?>_?\d)*)?([eE][-+]?\d(?>_?\d)*)?|0b[01]+|0o[0-7]+)\b'
-          scope: constant.numeric.elixir
     - match: '(?<!\.)\b(do|end|case|bc|lc|for|if|cond|unless|try|receive|fn|defmodule|defp?|defprotocol|defimpl|defrecord|defstruct|defmacrop?|defdelegate|defcallback|defmacrocallback|defexception|defoverridable|exit|after|rescue|catch|else|raise|throw|import|require|alias|use|quote|unquote|super|with)\b(?![?!:])'
       scope: keyword.control.elixir
     - match: (?<!\.)\b(and|not|or|when|xor|in)\b
@@ -433,6 +421,14 @@ contexts:
               the negative lookbehind prevents against matching
               p(42.tainted?)
       scope: constant.numeric.elixir
+    - match: \+\+|\-\-|<\|>
+      scope: keyword.operator.concatenation.elixir
+    - match: \|\>|<~>|<>|<<<|>>>|~>>|<<~|~>|<~|<\|>
+      scope: keyword.operator.sigils_1.elixir
+    - match: "&&&|&&"
+      scope: keyword.operator.sigils_2.elixir
+    - match: <\-|\\\\
+      scope: keyword.operator.sigils_3.elixir
     - match: "===?|!==?|<=?|>=?"
       scope: keyword.operator.comparison.elixir
     - match: (\|\|\||&&&|^^^|<<<|>>>|~~~)

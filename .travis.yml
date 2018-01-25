@@ -1,7 +1,6 @@
 dist: trusty
 language: rust
 services: docker
-sudo: required
 
 env:
   global:
@@ -20,6 +19,9 @@ matrix:
       rust: beta
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: nightly
+    # The earliest stable Rust version that works
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: 1.23.0
 
 
 before_install: set -e

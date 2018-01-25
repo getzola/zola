@@ -38,7 +38,7 @@ pub struct Config {
     /// Description of the site
     pub description: Option<String>,
     /// The language used in the site. Defaults to "en"
-    pub language_code: Option<String>,
+    pub default_language: Option<String>,
     /// Whether to generate RSS. Defaults to false
     pub generate_rss: Option<bool>,
     /// The number of articles to include in the RSS feed. Defaults to unlimited
@@ -49,6 +49,9 @@ pub struct Config {
     pub generate_categories_pages: Option<bool>,
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: Option<bool>,
+
+    /// Languages list and translated strings
+    pub translations: Option<HashMap<String, Toml>>,
 
     /// All user params set in [extra] in the config
     pub extra: Option<HashMap<String, Toml>>,
@@ -74,13 +77,14 @@ impl Config {
             Err(e) => bail!(e)
         };
 
-        set_default!(config.language_code, "en".to_string());
+        set_default!(config.default_language, "en".to_string());
         set_default!(config.highlight_code, false);
         set_default!(config.generate_rss, false);
         set_default!(config.rss_limit, 20);
         set_default!(config.generate_tags_pages, false);
         set_default!(config.generate_categories_pages, false);
         set_default!(config.compile_sass, false);
+        set_default!(config.translations, HashMap::new());
         set_default!(config.extra, HashMap::new());
 
         match config.highlight_theme {
@@ -119,6 +123,8 @@ impl Config {
         } else if self.base_url.ends_with('/') && path.starts_with('/') {
             format!("{}{}{}", self.base_url, &path[1..], trailing_bit)
         } else if self.base_url.ends_with('/') {
+            format!("{}{}{}", self.base_url, path, trailing_bit)
+        } else if path.starts_with('/') {
             format!("{}{}{}", self.base_url, path, trailing_bit)
         } else {
             format!("{}/{}{}", self.base_url, path, trailing_bit)
@@ -164,12 +170,13 @@ impl Default for Config {
             highlight_code: Some(true),
             highlight_theme: Some("base16-ocean-dark".to_string()),
             description: None,
-            language_code: Some("en".to_string()),
+            default_language: Some("en".to_string()),
             generate_rss: Some(false),
             rss_limit: Some(10_000),
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
             compile_sass: Some(false),
+            translations: None,
             extra: None,
             build_timestamp: Some(1),
         }
@@ -273,6 +280,13 @@ hello = "world"
     }
 
     #[test]
+    fn can_make_url_with_localhost() {
+        let mut config = Config::default();
+        config.base_url = "http://127.0.0.1:1111".to_string();
+        assert_eq!(config.make_permalink("/tags/rust"), "http://127.0.0.1:1111/tags/rust/");
+    }
+
+    #[test]
     fn can_merge_with_theme_data_and_preserve_config_value() {
         let config_str = r#"
 title = "My site"
@@ -293,4 +307,27 @@ a_value = 10
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
     }
+
+    #[test]
+    fn can_use_language_configuration() {
+        let config = r#"
+base_url = "https://remplace-par-ton-url.fr"
+default_language = "fr"
+
+[translations]
+[translations.fr]
+title = "Un titre"
+
+[translations.en]
+title = "A title"
+
+        "#;
+
+        let config = Config::parse(config);
+        assert!(config.is_ok());
+        let translations = config.unwrap().translations.unwrap();
+        assert_eq!(translations["fr"]["title"].as_str().unwrap(), "Un titre");
+        assert_eq!(translations["en"]["title"].as_str().unwrap(), "A title");
+    }
+
 }

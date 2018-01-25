@@ -24,32 +24,32 @@ contexts:
             0: punctuation.definition.comment.ts
           pop: true
         - include: docblock
-    - match: /\*
+    - match: (/\*)(?:\s*((@)internal)(?=\s|(\*/)))?
       captures:
-        0: punctuation.definition.comment.ts
+        1: punctuation.definition.comment.ts
+        2: storage.type.internaldeclaration.ts
+        3: punctuation.decorator.internaldeclaration.ts
       push:
         - meta_scope: comment.block.ts
         - match: \*/
           captures:
             0: punctuation.definition.comment.ts
           pop: true
-    - match: '(^[ \t]+)?(?=//)'
+    - match: '(^[ \t]+)?((//)(?:\s*((@)internal)(?=\s|$))?)'
       captures:
         1: punctuation.whitespace.comment.leading.ts
+        2: comment.line.double-slash.ts
+        3: punctuation.definition.comment.ts
+        4: storage.type.internaldeclaration.ts
+        5: punctuation.decorator.internaldeclaration.ts
       push:
-        - match: (?=$)
+        - meta_content_scope: comment.line.double-slash.ts
+        - match: (?=^)
           pop: true
-        - match: //
-          captures:
-            0: punctuation.definition.comment.ts
-          push:
-            - meta_scope: comment.line.double-slash.ts
-            - match: (?=$)
-              pop: true
   access-modifier:
-    - match: (?<!\.|\$)\b(abstract|public|protected|private|readonly|static)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(abstract|public|protected|private|readonly|static)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: storage.modifier.ts
-  after-operator-block:
+  after-operator-block-as-object-literal:
     - match: '(?<=[=(,\[?+!]|await|return|yield|throw|in|of|typeof|&&|\|\||\*)\s*(\{)'
       captures:
         1: punctuation.definition.block.ts
@@ -85,42 +85,41 @@ contexts:
         - include: expression
         - include: punctuation-comma
   arrow-function:
-    - match: '(?:(?<!\.|\$)(\basync)\s*)?([_$[:alpha:]][_$[:alnum:]]*)\s*(?==>)'
+    - match: '(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(\basync)\s+)?([_$[:alpha:]][_$[:alnum:]]*)\s*(?==>)'
       scope: meta.arrow.ts
       captures:
         1: storage.modifier.async.ts
         2: variable.parameter.ts
     - match: |-
         (?x) (?:
-          (?<!\.|\$)(\basync)(?=\s*[<(])
-        ) | ((?<![})\]])\s*
+          (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(\basync)
+        )? ((?<![})!\]])\s*
           (?=
             # sure shot arrow functions even if => is on new line
-            (
-              [(]\s*
-              (
-                ([)]\s*:) |                               # ():
-                ([_$[:alpha:]][_$[:alnum:]]*\s*:) |       # [(]param:
-                (\.\.\.)                                  # [(]...
-              )
-            ) |
-            (
-              [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>] # < typeparam extends
-            ) |
-            # arrow function possible to detect only with => on same line
-            (
-              (<([^<>]|\<[^<>]+\>)+>\s*)?                 # typeparameters
-              \(([^()]|\([^()]*\))*\)                     # parameteres
-              (\s*:\s*(.)*)?                              # return type
-              \s*=>                                       # arrow operator
-            )
+        (
+          [(]\s*
+          (
+            ([)]\s*:) |                                                                 # ():
+            ((\.\.\.\s*)?[_$[:alpha:]][_$[:alnum:]]*\s*:)                                            # [(]param: | [(]...param:
+          )
+        ) |
+        (
+          [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>]                                        # < typeparam extends
+        ) |
+        # arrow function possible to detect only with => on same line
+        (
+          (<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<]|\<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<])*\>)*>\s*)?                                                           # typeparameters
+          \(\s*([_$[:alpha:]\{\[]([^()]|\((\s*[^()]*)?\))*)?\)                          # parameteres
+          (\s*:\s*([^<>\(\)]|\<[^<>]+\>|\([^\(\)]+\))+)?                                # return type
+          \s*=>                                                                         # arrow operator
+        )
           )
         )
       captures:
         1: storage.modifier.async.ts
       push:
         - meta_scope: meta.arrow.ts
-        - match: '(?==>|\{)'
+        - match: '(?==>|\{|(^\s*(export|function|class|interface|let|var|const|import|enum|namespace|module|type|abstract|declare)\s+))'
           pop: true
         - include: comment
         - include: type-parameters
@@ -131,7 +130,7 @@ contexts:
         0: storage.type.function.arrow.ts
       push:
         - meta_scope: meta.arrow.ts
-        - match: '(?<=\})|((?!\{)(?=\S))'
+        - match: '(?<=\}|\S)(?<!=>)|((?!\{)(?=\S))'
           pop: true
         - include: decl-block
         - include: expression
@@ -141,18 +140,13 @@ contexts:
         1: keyword.operator.type.annotation.ts
       push:
         - meta_scope: meta.return.type.arrow.ts
-        - match: '(?==>|\{)'
+        - match: '(?==>|\{|(^\s*(export|function|class|interface|let|var|const|import|enum|namespace|module|type|abstract|declare)\s+))'
           pop: true
-        - match: '(?<=:)\s*(\{)'
-          captures:
-            1: punctuation.definition.block.ts
+        - match: '(?<=[:])(?=\s*\{)'
           push:
-            - meta_scope: meta.object.type.ts
-            - match: '\}'
-              captures:
-                0: punctuation.definition.block.ts
+            - match: '(?<=\})'
               pop: true
-            - include: type-object-members
+            - include: type-object
         - include: type-predicate-operator
         - include: type
   binding-element:
@@ -162,32 +156,70 @@ contexts:
     - include: destructuring-variable-rest
     - include: variable-initializer
   boolean-literal:
-    - match: (?<!\.|\$)\btrue\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))true(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: constant.language.boolean.true.ts
-    - match: (?<!\.|\$)\bfalse\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))false(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: constant.language.boolean.false.ts
-  case-clause:
-    - match: (?<!\.|\$)\b(case|default(?=:))\b(?!\$)
-      captures:
-        1: keyword.control.switch.ts
+  brackets:
+    - match: "{"
       push:
-        - meta_scope: case-clause.expr.ts
-        - match: ":"
-          captures:
-            0: punctuation.definition.section.case-statement.ts
+        - match: '}|(?=\*/)'
           pop: true
-        - include: expression
+        - include: brackets
+    - match: '\['
+      push:
+        - match: '\]|(?=\*/)'
+          pop: true
+        - include: brackets
   cast:
-    - match: '(?:(?<=return|throw|yield|await|default|^|[=(,:>*]))\s*(<)(?!<?\=)'
+    - match: '(?:(?<=return|throw|yield|await|default|[=(,:>*?\&\|\^]|[^_$[:alnum:]](?:\+\+|\-\-)|[^\+]\+|[^\-]\-))\s*(<)(?!<?\=)'
       captures:
         1: meta.brace.angle.ts
       push:
         - meta_scope: cast.expr.ts
-        - match: \>
+        - match: (\>)\s*
           captures:
-            0: meta.brace.angle.ts
+            1: meta.brace.angle.ts
           pop: true
         - include: type
+    - match: '(?:(?<=^))\s*(<)(?=[_$[:alpha:]][_$[:alnum:]]*\s*>)'
+      captures:
+        1: meta.brace.angle.ts
+      push:
+        - meta_scope: cast.expr.ts
+        - match: (\>)\s*
+          captures:
+            1: meta.brace.angle.ts
+          pop: true
+        - include: type
+  class-declaration:
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(export)\s+)?\b(?:(abstract)\s+)?\b(class)\b(?=\s+|/[/*])'
+      captures:
+        1: keyword.control.export.ts
+        2: storage.modifier.ts
+        3: storage.type.class.ts
+      push:
+        - meta_scope: meta.class.ts
+        - match: '(?<=\})'
+          pop: true
+        - include: class-declaration-or-expression-patterns
+  class-declaration-or-expression-patterns:
+    - include: comment
+    - include: class-or-interface-heritage
+    - match: "[_$[:alpha:]][_$[:alnum:]]*"
+      captures:
+        0: entity.name.type.class.ts
+    - include: type-parameters
+    - include: class-or-interface-body
+  class-expression:
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(class)\b(?=\s+|[<{]|/[/*])'
+      captures:
+        1: storage.type.class.ts
+      push:
+        - meta_scope: meta.class.ts
+        - match: '(?<=\})'
+          pop: true
+        - include: class-declaration-or-expression-patterns
   class-or-interface-body:
     - match: '\{'
       captures:
@@ -207,67 +239,49 @@ contexts:
         - include: variable-initializer
         - include: access-modifier
         - include: property-accessor
-        - include: after-operator-block
+        - include: after-operator-block-as-object-literal
         - include: decl-block
         - include: expression
         - include: punctuation-comma
         - include: punctuation-semicolon
-  class-or-interface-declaration:
-    - match: '(?<!\.|\$)\b(?:(export)\s+)?\b(?:(abstract)\s+)?\b(?:(class)|(interface))\b(?=\s+|/[/*])'
-      captures:
-        1: keyword.control.export.ts
-        2: storage.modifier.ts
-        3: storage.type.class.ts
-        4: storage.type.interface.ts
-      push:
-        - meta_scope: meta.class.ts
-        - match: '(?<=\})'
-          captures:
-            1: punctuation.definition.block.ts
-          pop: true
-        - include: comment
-        - include: class-or-interface-heritage
-        - match: "[_$[:alpha:]][_$[:alnum:]]*"
-          captures:
-            0: entity.name.type.class.ts
-        - include: type-parameters
-        - include: class-or-interface-body
   class-or-interface-heritage:
-    - match: (?<!\.|\$)(?:\b(extends|implements)\b)(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:\b(extends|implements)\b)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       captures:
         1: storage.modifier.ts
       push:
         - match: '(?=\{)'
-          captures:
-            1: punctuation.definition.block.ts
           pop: true
         - include: comment
         - include: class-or-interface-heritage
         - include: type-parameters
-        - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(\.)(?=\s*[_$[:alpha:]][_$[:alnum:]]*(\s*\.\s*[_$[:alpha:]][_$[:alnum:]]*)*\s*([,<{]|extends|implements|//|/\*))'
+        - include: expressionWithoutIdentifiers
+        - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(?:(\.)|(\?\.(?!\s*[[:digit:]])))(?=\s*[_$[:alpha:]][_$[:alnum:]]*(\s*\??\.\s*[_$[:alpha:]][_$[:alnum:]]*)*\s*)'
           captures:
             1: entity.name.type.module.ts
             2: punctuation.accessor.ts
-        - match: '([_$[:alpha:]][_$[:alnum:]]*)(?=\s*([,<{]|extends|implements|//|/\*))'
+            3: punctuation.accessor.optional.ts
+        - match: "([_$[:alpha:]][_$[:alnum:]]*)"
           captures:
             1: entity.other.inherited-class.ts
-        - include: expression
+        - include: expressionPunctuations
   control-statement:
-    - match: (?<!\.|\$)\b(catch|finally|throw|try)\b(?!\$)
+    - include: switch-statement
+    - include: for-loop
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(catch|finally|throw|try)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.control.trycatch.ts
-    - match: (?<!\.|\$)\b(break|continue|do|goto|while)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(break|continue|do|goto|while)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.control.loop.ts
-    - match: (?<!\.|\$)\b(return)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(return)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.control.flow.ts
-    - match: (?<!\.|\$)\b(case|default|switch)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(case|default|switch)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.control.switch.ts
-    - match: (?<!\.|\$)\b(else|if)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(else|if)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.control.conditional.ts
-    - match: (?<!\.|\$)\b(with)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(with)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.control.with.ts
-    - match: (?<!\.|\$)\b(debugger)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(debugger)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.other.debugger.ts
-    - match: (?<!\.|\$)\b(declare)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(declare)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: storage.modifier.ts
   decl-block:
     - match: '\{'
@@ -284,15 +298,16 @@ contexts:
     - include: decorator
     - include: var-expr
     - include: function-declaration
-    - include: class-or-interface-declaration
-    - include: type-declaration
+    - include: class-declaration
+    - include: interface-declaration
     - include: enum-declaration
     - include: namespace-declaration
+    - include: type-alias-declaration
     - include: import-equals-declaration
     - include: import-declaration
     - include: export-declaration
   decorator:
-    - match: (?<!\.|\$)\@
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))\@'
       captures:
         0: punctuation.decorator.ts
       push:
@@ -331,7 +346,7 @@ contexts:
     - match: '(?<!=|:|of|in)\s*(?=\{)'
       push:
         - meta_scope: meta.object-binding-pattern-variable.ts
-        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+        - match: '(?=$|^|[;,=}]|(\s+(of|in)\s+))'
           pop: true
         - include: object-binding-pattern
         - include: type-annotation
@@ -339,7 +354,7 @@ contexts:
     - match: '(?<!=|:|of|in)\s*(?=\[)'
       push:
         - meta_scope: meta.array-binding-pattern-variable.ts
-        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+        - match: '(?=$|^|[;,=}]|(\s+(of|in)\s+))'
           pop: true
         - include: array-binding-pattern
         - include: type-annotation
@@ -350,12 +365,12 @@ contexts:
         1: keyword.operator.rest.ts
         2: meta.definition.variable.ts variable.other.readwrite.ts
   directives:
-    - match: '^(///)\s*(?=<(reference|amd-dependency|amd-module)(\s+(path|types|no-default-lib|name)\s*=\s*((\''[^'']*\'')|(\"[^"]*\")))+\s*/>\s*$)'
+    - match: '^(///)\s*(?=<(reference|amd-dependency|amd-module)(\s+(path|types|no-default-lib|name)\s*=\s*((\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")))+\s*/>\s*$)'
       captures:
         1: punctuation.definition.comment.ts
       push:
         - meta_scope: comment.line.triple-slash.directive.ts
-        - match: (?=$)
+        - match: (?=^)
           pop: true
         - match: (<)(reference|amd-dependency|amd-module)
           captures:
@@ -374,270 +389,251 @@ contexts:
             - include: string
   docblock:
     - match: |-
-        (?x)(?<!\w)@(
-        abstract|access|alias|arg|argument|async|attribute|augments|author|beta|borrows|bubbes|callback|chainable|class
-        |classdesc|code|config|const|constant|constructor|constructs|copyright|default|defaultvalue|define|deprecated|desc
-        |description|dict|emits|enum|event|example|exports?|extends|extension|extension_for|extensionfor|external|file
-        |fileoverview|final|fires|for|function|global|host|ignore|implements|implicitCast|inherit[Dd]oc|inner|instance
-        |interface|kind|lends|license|listens|main|member|memberof|method|mixex|mixins?|modifies|module|name|namespace
-        |noalias|nocollapse|nocompile|nosideeffects|override|overview|package|param|preserve|private|prop|property
-        |protected|public|read[Oo]nly|record|require[ds]|returns?|see|since|static|struct|submodule|summary|suppress
-        |template|this|throws|todo|type|typedef|unrestricted|uses|var|variation|version|virtual|writeOnce)\b
-      scope: storage.type.class.jsdoc
+        (?x)
+        ((@)(?:access|api))
+        \s+
+        (private|protected|public)
+        \b
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: constant.language.access-type.jsdoc
     - match: |-
         (?x)
+        ((@)author)
+        \s+
         (
-          \[
-            [^\]]+            # Optional [link text] preceding {@link syntax}
-          \]
-
-          (?!                  # Check to avoid highlighting two sets of link text
-            {
-              @\w+            # Tagname
-              \s+
-              [^\s|}]+        # Namepath/URL
-              [\s|]           # Whitespace or bar delimiting description
-              [^}]*
-            }
-          )
-        )?
-
+          [^@\s<>*/]
+          (?:[^@<>*/]|\*[^/])*
+        )
         (?:
-          {
-            (
-              @
-              (?: link         # Name of tag
-                | linkcode
-                | linkplain
-                | tutorial
-              )
-            )
-
-            \s+
-
-            ([^\s|}]+)        # Namepath or URL
-
-            (?:                # Optional link text following link target
-              [\s|]           # Bar or space separating target and text
-              [^}]*            # Actual text
-            )?
-          }
-        )
-      scope: other.meta.jsdoc
+          \s*
+          (<)
+          ([^>\s]+)
+          (>)
+        )?
       captures:
-        0: entity.name.type.instance.jsdoc
-        1: constant.other.description.jsdoc
-        2: storage.type.class.jsdoc
-        3: variable.other.description.jsdoc
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: entity.name.type.instance.jsdoc
+        4: punctuation.definition.bracket.angle.begin.jsdoc
+        5: constant.other.email.link.underline.jsdoc
+        6: punctuation.definition.bracket.angle.end.jsdoc
     - match: |-
         (?x)
-
-        (?:(?<=@param)|(?<=@arg)|(?<=@argument)|(?<=@type)|(?<=@property)|(?<=@prop))
-
+        ((@)borrows) \s+
+        ((?:[^@\s*/]|\*[^/])+)    # <that namepath>
+        \s+ (as) \s+              # as
+        ((?:[^@\s*/]|\*[^/])+)    # <this namepath>
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: entity.name.type.instance.jsdoc
+        4: keyword.operator.control.jsdoc
+        5: entity.name.type.instance.jsdoc
+    - match: ((@)example)\s+
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - meta_scope: meta.example.jsdoc
+        - match: (?=@|\*/)
+          pop: true
+        - match: ^\s\*\s+
+        - match: \G(<)caption(>)
+          captures:
+            0: entity.name.tag.inline.jsdoc
+            1: punctuation.definition.bracket.angle.begin.jsdoc
+            2: punctuation.definition.bracket.angle.end.jsdoc
+          push:
+            - meta_content_scope: constant.other.description.jsdoc
+            - match: (</)caption(>)|(?=\*/)
+              captures:
+                0: entity.name.tag.inline.jsdoc
+                1: punctuation.definition.bracket.angle.begin.jsdoc
+                2: punctuation.definition.bracket.angle.end.jsdoc
+              pop: true
+        - match: '[^\s@*](?:[^*]|\*[^/])*'
+          captures:
+            0: source.embedded.ts
+    - match: (?x) ((@)kind) \s+ (class|constant|event|external|file|function|member|mixin|module|namespace|typedef) \b
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: constant.language.symbol-type.jsdoc
+    - match: |-
+        (?x)
+        ((@)see)
         \s+
-
-        ({(?:
-          \* |                                       # {*} any type
-          \? |                                       # {?} unknown type
-
-          (?:
-            (?:                                       # Check for a prefix
-              \? |                                   # {?string} nullable type
-              !   |                                   # {!string} non-nullable type
-              \.{3}                                  # {...string} variable number of parameters
-            )?
-
-            (?:
-              (?:
-                function                              # {function(string, number)} function type
-                \s*
-                \(
-                \s*
-                (?:
-                  [a-zA-Z_$][\w$]*
-                  (?:
-                    \s*,\s*
-                    [a-zA-Z_$][\w$]*
-                  )*
-                )?
-                \s*
-                \)
-                (?:                                   # {function(): string} function return type
-                  \s*:\s*
-                  [a-zA-Z_$][\w$]*
-                )?
-              )?
-              |
-              (?:
-                \(                                   # Opening bracket of multiple types with parenthesis {(string|number)}
-                  [a-zA-Z_$]+
-                  (?:
-                    (?:
-                      [\w$]*
-                      (?:\[\])?                     # {(string[]|number)} type application, an array of strings or a number
-                    ) |
-                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
-                  )
-                  (?:
-                    [\.|~]                           # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
-                    [a-zA-Z_$]+
-                    (?:
-                      (?:
-                        [\w$]*
-                        (?:\[\])?                   # {(string|number[])} type application, a string or an array of numbers
-                      ) |
-                      \.?<[\w$]+(?:,\s+[\w$]+)*>  # {Array<string>} or {Object<string, number>} type application (optional .)
-                    )
-                  )*
-                \) |
-                [a-zA-Z_$]+
-                (?:
-                  (?:
-                    [\w$]*
-                    (?:\[\])?                       # {(string|number[])} type application, a string or an array of numbers
-                  ) |
-                  \.?<[\w$]+(?:,\s+[\w$]+)*>      # {Array<string>} or {Object<string, number>} type application (optional .)
-                )
-                (?:
-                  [\.|~]                             # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
-                  [a-zA-Z_$]+
-                  (?:
-                    [\w$]* |
-                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
-                  )
-                )*
-              )
-            )
-                                                      # Check for suffix
-            (?:\[\])?                               # {string[]} type application, an array of strings
-            =?                                        # {string=} optional parameter
+        (?:
+          # URL
+          (
+            (?=https?://)
+            (?:[^\s*]|\*[^/])+
           )
-        )})
-
+          |
+          # JSDoc namepath
+          (
+            (?!
+              # Avoid matching bare URIs (also acceptable as links)
+              https?://
+              |
+              # Avoid matching {@inline tags}; we match those below
+              (?:\[[^\[\]]*\])? # Possible description [preceding]{@tag}
+              {@(?:link|linkcode|linkplain|tutorial)\b
+            )
+            # Matched namepath
+            (?:[^@\s*/]|\*[^/])+
+          )
+        )
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.link.underline.jsdoc
+        4: entity.name.type.instance.jsdoc
+    - match: |-
+        (?x)
+        ((@)template)
         \s+
-
+        # One or more valid identifiers
         (
-          \[                                         # [foo] optional parameter
-            \s*
-            (?:
-              [a-zA-Z_$][\w$]*
-              (?:
-                (?:\[\])?                           # Foo[].bar properties within an array
-                \.                                   # Foo.Bar namespaced parameter
-                [a-zA-Z_$][\w$]*
-              )*
-              (?:
-                \s*
-                =                                     # [foo=bar] Default parameter value
-                \s*
-                [\w$\s]*
-              )?
-            )
-            \s*
-          \] |
-          (?:
-            [a-zA-Z_$][\w$]*
-            (?:
-              (?:\[\])?                             # Foo[].bar properties within an array
-              \.                                     # Foo.Bar namespaced parameter
-              [a-zA-Z_$][\w$]*
-            )*
-          )?
+          [A-Za-z_$]         # First character: non-numeric word character
+          [\w$.\[\]]*        # Rest of identifier
+          (?:                # Possible list of additional identifiers
+            \s* , \s*
+            [A-Za-z_$]
+            [\w$.\[\]]*
+          )*
         )
-
-        \s+
-
-        (?:-\s+)?                                     # optional hyphen before the description
-
-        ((?:(?!\*\/).)*)                             # The type description
       captures:
-        0: other.meta.jsdoc
-        1: entity.name.type.instance.jsdoc
-        2: variable.other.jsdoc
-        3: other.description.jsdoc
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
     - match: |-
         (?x)
-
-        ({(?:
-          \* |                                       # {*} any type
-          \? |                                       # {?} unknown type
-
-          (?:
-            (?:                                       # Check for a prefix
-              \? |                                   # {?string} nullable type
-              !   |                                   # {!string} non-nullable type
-              \.{3}                                  # {...string} variable number of parameters
-            )?
-
+        (
+          (@)
+          (?:arg|argument|const|constant|member|namespace|param|var)
+        )
+        \s+
+        (
+          [A-Za-z_$]
+          [\w$.\[\]]*
+        )
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
+    - match: '((@)typedef)\s+(?={)'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - match: '(?=\s|\*/|[^{}\[\]A-Za-z_$])'
+          pop: true
+        - include: jsdoctype
+        - match: '(?:[^@\s*/]|\*[^/])+'
+          scope: entity.name.type.instance.jsdoc
+    - match: '((@)(?:arg|argument|const|constant|member|namespace|param|prop|property|var))\s+(?={)'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - match: '(?=\s|\*/|[^{}\[\]A-Za-z_$])'
+          pop: true
+        - include: jsdoctype
+        - match: '([A-Za-z_$][\w$.\[\]]*)'
+          scope: variable.other.jsdoc
+        - match: |-
+            (?x)
+            (\[)\s*
+            [\w$]+
             (?:
-              (?:
-                function                              # {function(string, number)} function type
-                \s*
-                \(
-                \s*
-                (?:
-                  [a-zA-Z_$][\w$]*
-                  (?:
-                    \s*,\s*
-                    [a-zA-Z_$][\w$]*
-                  )*
-                )?
-                \s*
-                \)
-                (?:                                   # {function(): string} function return type
-                  \s*:\s*
-                  [a-zA-Z_$][\w$]*
-                )?
-              )?
-              |
-              (?:
-                \(                                   # Opening bracket of multiple types with parenthesis {(string|number)}
-                  [a-zA-Z_$]+
-                  (?:
-                    [\w$]* |
-                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
-                  )
-                  (?:
-                    [\.|~]                           # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
-                    [a-zA-Z_$]+
-                    (?:
-                      [\w$]* |
-                      \.?<[\w$]+(?:,\s+[\w$]+)*>  # {Array<string>} or {Object<string, number>} type application (optional .)
-                    )
-                  )*
-                \) |
-                [a-zA-Z_$]+
-                (?:
-                  [\w$]* |
-                  \.?<[\w$]+(?:,\s+[\w$]+)*>      # {Array<string>} or {Object<string, number>} type application (optional .)
-                )
-                (?:
-                  [\.|~]                             # {Foo.bar} namespaced, {string|number} multiple, {Foo~bar} class-specific callback
-                  [a-zA-Z_$]+
-                  (?:
-                    [\w$]* |
-                    \.?<[\w$]+(?:,\s+[\w$]+)*>    # {Array<string>} or {Object<string, number>} type application (optional .)
-                  )
+              (?:\[\])?                                        # Foo[ ].bar properties within an array
+              \.                                                # Foo.Bar namespaced parameter
+              [\w$]+
+            )*
+            (?:
+              \s*
+              (=)                                                # [foo=bar] Default parameter value
+              \s*
+              (
+                # The inner regexes are to stop the match early at */ and to not stop at escaped quotes
+                (?>
+                  "(?:(?:\*(?!/))|(?:\\(?!"))|[^*\\])*?" |                      # [foo="bar"] Double-quoted
+                  '(?:(?:\*(?!/))|(?:\\(?!'))|[^*\\])*?' |                      # [foo='bar'] Single-quoted
+                  \[ (?:(?:\*(?!/))|[^*])*? \] |                                # [foo=[1,2]] Array literal
+                  (?:(?:\*(?!/))|\s(?!\s*\])|\[.*?(?:\]|(?=\*/))|[^*\s\[\]])*   # Everything else
                 )*
               )
-            )
-                                                      # Check for suffix
-            (?:\[\])?                               # {string[]} type application, an array of strings
-            =?                                        # {string=} optional parameter
-          )
-        )})
-
-        \s+
-
-        (?:-\s+)?                                    # optional hyphen before the description
-
-        ((?:(?!\*\/).)*)                            # The type description
+            )?
+            \s*(?:(\])((?:[^*\s]|\*[^\s/])+)?|(?=\*/))
+          scope: variable.other.jsdoc
+          captures:
+            1: punctuation.definition.optional-value.begin.bracket.square.jsdoc
+            2: keyword.operator.assignment.jsdoc
+            3: source.embedded.ts
+            4: punctuation.definition.optional-value.end.bracket.square.jsdoc
+            5: invalid.illegal.syntax.jsdoc
+    - match: |-
+        (?x)
+        (
+          (@)
+          (?:define|enum|exception|export|extends|lends|implements|modifies
+          |namespace|private|protected|returns?|suppress|this|throws|type
+          |yields?)
+        )
+        \s+(?={)
       captures:
-        0: other.meta.jsdoc
-        1: entity.name.type.instance.jsdoc
-        2: other.description.jsdoc
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - match: '(?=\s|\*/|[^{}\[\]A-Za-z_$])'
+          pop: true
+        - include: jsdoctype
+    - match: |-
+        (?x)
+        (
+          (@)
+          (?:alias|augments|callback|constructs|emits|event|fires|exports?
+          |extends|external|function|func|host|lends|listens|interface|memberof!?
+          |method|module|mixes|mixin|name|requires|see|this|typedef|uses)
+        )
+        \s+
+        (
+          (?:
+            [^{}@\s*] | \*[^/]
+          )+
+        )
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: entity.name.type.instance.jsdoc
+    - match: '((@)(?:default(?:value)?|license|version))\s+(([''''"]))'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
+        4: punctuation.definition.string.begin.jsdoc
+      push:
+        - meta_content_scope: variable.other.jsdoc
+        - match: (\3)|(?=$|\*/)
+          captures:
+            0: variable.other.jsdoc
+            1: punctuation.definition.string.end.jsdoc
+          pop: true
+    - match: '((@)(?:default(?:value)?|license|tutorial|variation|version))\s+([^\s*]+)'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
+    - match: '(?x) (@) (?:abstract|access|alias|api|arg|argument|async|attribute|augments|author|beta|borrows|bubbles |callback|chainable|class|classdesc|code|config|const|constant|constructor|constructs|copyright |default|defaultvalue|define|deprecated|desc|description|dict|emits|enum|event|example|exception |exports?|extends|extension(?:_?for)?|external|externs|file|fileoverview|final|fires|for|func |function|generator|global|hideconstructor|host|ignore|implements|implicitCast|inherit[Dd]oc |inner|instance|interface|internal|kind|lends|license|listens|main|member|memberof!?|method |mixes|mixins?|modifies|module|name|namespace|noalias|nocollapse|nocompile|nosideeffects |override|overview|package|param|polymer(?:Behavior)?|preserve|private|prop|property|protected |public|read[Oo]nly|record|require[ds]|returns?|see|since|static|struct|submodule|summary |suppress|template|this|throws|todo|tutorial|type|typedef|unrestricted|uses|var|variation |version|virtual|writeOnce|yields?) \b'
+      scope: storage.type.class.jsdoc
+      captures:
+        1: punctuation.definition.block.tag.jsdoc
+    - include: inline-tags
   enum-declaration:
-    - match: '(?<!\.|\$)(?:(\bexport)\s+)?(?:\b(const)\s+)?\b(enum)\s+([_$[:alpha:]][_$[:alnum:]]*)'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:\b(const)\s+)?\b(enum)\s+([_$[:alpha:]][_$[:alnum:]]*)'
       captures:
         1: keyword.control.export.ts
         2: storage.modifier.ts
@@ -665,7 +661,7 @@ contexts:
                   pop: true
                 - include: comment
                 - include: variable-initializer
-            - match: '(?=((\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\])))'
+            - match: '(?=((\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\])))'
               push:
                 - match: '(?=,|\}|$)'
                   pop: true
@@ -675,75 +671,59 @@ contexts:
                 - include: variable-initializer
             - include: punctuation-comma
   export-declaration:
-    - match: '(?<!\.|\$)\b(export)\s+(as)\s+(namespace)\s+([_$[:alpha:]][_$[:alnum:]]*)'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(export)\s+(as)\s+(namespace)\s+([_$[:alpha:]][_$[:alnum:]]*)'
       captures:
         1: keyword.control.export.ts
         2: keyword.control.as.ts
         3: storage.type.namespace.ts
         4: entity.name.type.module.ts
-    - match: (?<!\.|\$)\b(export)(?:(?:\s*(=))|(?:\s+(default)(?=\s+)))
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(export)(?:(?:\s*(=))|(?:\s+(default)(?=\s+)))'
       captures:
         1: keyword.control.export.ts
         2: keyword.operator.assignment.ts
         3: keyword.control.default.ts
       push:
         - meta_scope: meta.export.default.ts
-        - match: (?=;|\bexport\b|\bfunction\b|\bclass\b|\binterface\b|\blet\b|\bvar\b|\bconst\b|\bimport\b|\benum\b|\bnamespace\b|\bmodule\b|\btype\b|\babstract\b|\bdeclare\b|\basync\b|$)
+        - match: (?=;|$|\babstract\b|\basync\b|\bclass\b|\bconst\b|\bdeclare\b|\benum\b|\bexport\b|\bfunction\b|\bimport\b|\binterface\b|\blet\b|\bmodule\b|\bnamespace\b|\btype\b|\bvar\b)
           pop: true
         - include: expression
-    - match: (?<!\.|\$)\b(export)(?!(\s*:)|(\$))\b
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(export)(?!\s*:)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       captures:
         0: keyword.control.export.ts
       push:
         - meta_scope: meta.export.ts
-        - match: (?=;|\bexport\b|\bfunction\b|\bclass\b|\binterface\b|\blet\b|\bvar\b|\bconst\b|\bimport\b|\benum\b|\bnamespace\b|\bmodule\b|\btype\b|\babstract\b|\bdeclare\b|\basync\b|$)
+        - match: (?=;|$|\babstract\b|\basync\b|\bclass\b|\bconst\b|\bdeclare\b|\benum\b|\bexport\b|\bfunction\b|\bimport\b|\binterface\b|\blet\b|\bmodule\b|\bnamespace\b|\btype\b|\bvar\b)
           pop: true
         - include: import-export-declaration
   expression:
-    - include: string
-    - include: regex
-    - include: template
-    - include: comment
-    - include: function-expression
-    - include: class-or-interface-declaration
-    - include: arrow-function
-    - include: cast
-    - include: ternary-expression
-    - include: new-expr
-    - include: object-literal
-    - include: expression-operators
-    - include: function-call
-    - include: literal
-    - include: support-objects
+    - include: expressionWithoutIdentifiers
     - include: identifiers
-    - include: paren-expression
-    - include: punctuation-comma
-    - include: punctuation-accessor
+    - include: expressionPunctuations
   expression-operators:
-    - match: (?<!\.|\$)\b(await)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(await)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.control.flow.ts
-    - match: (?<!\.|\$)\b(yield)\b(?!\$)(?:\s*(\*))?
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(yield)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))(?:\s*(\*))?'
       captures:
         1: keyword.control.flow.ts
         2: keyword.generator.asterisk.ts
-    - match: (?<!\.|\$)\bdelete\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))delete(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.delete.ts
-    - match: (?<!\.|\$)\bin\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))in(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.in.ts
-    - match: (?<!\.|\$)\bof\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))of(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.of.ts
-    - match: (?<!\.|\$)\binstanceof\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))instanceof(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.instanceof.ts
-    - match: (?<!\.|\$)\bnew\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))new(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.new.ts
     - include: typeof-operator
-    - match: (?<!\.|\$)\bvoid\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))void(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.void.ts
-    - match: (?<!\.|\$)\bas\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(as)\s+'
       captures:
-        0: keyword.control.as.ts
+        1: keyword.control.as.ts
       push:
-        - match: '(?=$|[;,:})\]])'
+        - match: '(?=$|^|[;,:})\]]|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(as)\s+))'
           pop: true
         - include: type
     - match: \.\.\.
@@ -773,18 +753,38 @@ contexts:
     - match: '(?<=[_$[:alnum:])])\s*(/)(?![/*])'
       captures:
         1: keyword.operator.arithmetic.ts
+  expressionPunctuations:
+    - include: punctuation-comma
+    - include: punctuation-accessor
+  expressionWithoutIdentifiers:
+    - include: string
+    - include: regex
+    - include: template
+    - include: comment
+    - include: function-expression
+    - include: class-expression
+    - include: arrow-function
+    - include: cast
+    - include: ternary-expression
+    - include: new-expr
+    - include: object-literal
+    - include: expression-operators
+    - include: function-call
+    - include: literal
+    - include: support-objects
+    - include: paren-expression
   field-declaration:
-    - match: '(?<!\()(?:(?<!\.|\$)\b(readonly)\s+)?(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))'
+    - match: '(?<!\()(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(readonly)\s+)?(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))'
       captures:
         1: storage.modifier.ts
       push:
         - meta_scope: meta.field.declaration.ts
-        - match: '(?=\}|;|,|$)|(?<=\})'
+        - match: '(?=\}|;|,|$|(^(?!(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))))|(?<=\})'
           pop: true
         - include: variable-initializer
-        - match: '(?=((?:[_$[:alpha:]][_$[:alnum:]]*)|(?:\''[^'']*\'')|(?:\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))'
+        - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))'
           push:
-            - match: '(?=[};,=]|$)|(?<=\})'
+            - match: '(?=[};,=]|$|(^(?!(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\?\s*)?(=|:))))|(?<=\})'
               pop: true
             - include: type-annotation
             - include: string
@@ -792,34 +792,53 @@ contexts:
             - include: comment
             - match: |-
                 (?x)([_$[:alpha:]][_$[:alnum:]]*)(?=(\?\s*)?\s*
-                  (=\s*(
-                    (async\s+) |
-                    (function\s*[(<]) |
+                # function assignment |
+                (=\s*(
+                  ((async\s+)?(
+                    (function\s*[(<*]) |
                     (function\s+) |
-                    ([_$[:alpha:]][_$[:alnum:]]*\s*=>) |
-                    ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
-                    ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
-                    ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))
-                  ) |
-                  (:\s*(
-                    (<) |
-                    ([(]\s*(
-                      ([)]) |
-                      (\.\.\.) |
-                      ([_$[:alnum:]]+\s*(
-                        ([:,?=])|
-                        ([)]\s*=>)
-                      ))
-                    )))
+                    ([_$[:alpha:]][_$[:alnum:]]*\s*=>)
+                  )) |
+                  ((async\s*)?(
+                    # sure shot arrow functions even if => is on new line
+                (
+                  [(]\s*
+                  (
+                    ([)]\s*:) |                                                                 # ():
+                    ((\.\.\.\s*)?[_$[:alpha:]][_$[:alnum:]]*\s*:)                                            # [(]param: | [(]...param:
                   )
+                ) |
+                (
+                  [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>]                                        # < typeparam extends
+                ) |
+                # arrow function possible to detect only with => on same line
+                (
+                  (<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<]|\<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<])*\>)*>\s*)?                                                           # typeparameters
+                  \(\s*([_$[:alpha:]\{\[]([^()]|\((\s*[^()]*)?\))*)?\)                          # parameteres
+                  (\s*:\s*([^<>\(\)]|\<[^<>]+\>|\([^\(\)]+\))+)?                                # return type
+                  \s*=>                                                                         # arrow operator
                 )
+                  ))
+                )) |
+                # typeannotation is fn type: < | () | (... | (param: | (param, | (param? | (param= | (param) =>
+                (:\s*(
+                  (<) |
+                  ([(]\s*(
+                    ([)]) |
+                    (\.\.\.) |
+                    ([_$[:alnum:]]+\s*(
+                      ([:,?=])|
+                      ([)]\s*=>)
+                    ))
+                  ))
+                )))
               scope: meta.definition.property.ts entity.name.function.ts
             - match: "[_$[:alpha:]][_$[:alnum:]]*"
               scope: meta.definition.property.ts variable.object.property.ts
             - match: \?
               scope: keyword.operator.optional.ts
   for-loop:
-    - match: (?<!\.|\$)\b(for)(?:\s+(await))?\s*(\()
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(for)(?:\s+(await))?\s*(\()'
       captures:
         1: keyword.control.loop.ts
         2: keyword.control.loop.ts
@@ -832,18 +851,33 @@ contexts:
         - include: var-expr
         - include: expression
         - include: punctuation-semicolon
+  function-body:
+    - include: comment
+    - include: type-parameters
+    - include: function-parameters
+    - include: return-type
+    - include: decl-block
   function-call:
-    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*\s*\.\s*)*|(\.\s*)?)([_$[:alpha:]][_$[:alnum:]]*)\s*(<([^<>]|\<[^<>]+\>)+>\s*)?\()'
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*\s*\??\.\s*)*|(\??\.\s*)?)([_$[:alpha:]][_$[:alnum:]]*)\s*(\?\.\s*)?(<\s*(([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))|(\''[^\'']*\'')|(\"[^\"]*\")|(\`[^\`]*\`))([^<>\(]|(\([^\(\)]*\))|\<\s*(([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))|(\''[^\'']*\'')|(\"[^\"]*\")|(\`[^\`]*\`))([^<>\(]|(\([^\(\)]*\)))*\>)*>\s*)?\()'
       push:
-        - match: '(?<=\))(?!(([_$[:alpha:]][_$[:alnum:]]*\s*\.\s*)*|(\.\s*)?)([_$[:alpha:]][_$[:alnum:]]*)\s*(<([^<>]|\<[^<>]+\>)+>\s*)?\()'
+        - match: '(?<=\))(?!(([_$[:alpha:]][_$[:alnum:]]*\s*\??\.\s*)*|(\??\.\s*)?)([_$[:alpha:]][_$[:alnum:]]*)\s*(\?\.\s*)?(<\s*(([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))|(\''[^\'']*\'')|(\"[^\"]*\")|(\`[^\`]*\`))([^<>\(]|(\([^\(\)]*\))|\<\s*(([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))|(\''[^\'']*\'')|(\"[^\"]*\")|(\`[^\`]*\`))([^<>\(]|(\([^\(\)]*\)))*\>)*>\s*)?\()'
           pop: true
-        - include: literal
-        - include: support-objects
-        - include: object-identifiers
-        - include: punctuation-accessor
-        - match: "([_$[:alpha:]][_$[:alnum:]]*)"
-          scope: entity.name.function.ts
+        - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*\s*\??\.\s*)*|(\??\.\s*)?)([_$[:alpha:]][_$[:alnum:]]*))'
+          push:
+            - meta_scope: meta.function-call.ts
+            - match: '(?=\s*(\?\.\s*)?(<\s*(([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))|(\''[^\'']*\'')|(\"[^\"]*\")|(\`[^\`]*\`))([^<>\(]|(\([^\(\)]*\))|\<\s*(([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))|(\''[^\'']*\'')|(\"[^\"]*\")|(\`[^\`]*\`))([^<>\(]|(\([^\(\)]*\)))*\>)*>\s*)?\()'
+              pop: true
+            - include: literal
+            - include: support-objects
+            - include: object-identifiers
+            - include: punctuation-accessor
+            - match: '(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))import(?=\s*[\(]\s*[\"\''\`]))'
+              scope: keyword.operator.expression.import.ts
+            - match: "([_$[:alpha:]][_$[:alnum:]]*)"
+              scope: entity.name.function.ts
         - include: comment
+        - match: \?\.
+          scope: meta.function-call.ts punctuation.accessor.optional.ts
         - match: \<
           captures:
             0: punctuation.definition.typeparameters.begin.ts
@@ -857,7 +891,7 @@ contexts:
             - include: punctuation-comma
         - include: paren-expression
   function-declaration:
-    - match: '(?<!\.|\$)\b(?:(export)\s+)?(?:(async)\s+)?(function\b)(?:\s*(\*))?(?:(?:\s+|(?<=\*))([_$[:alpha:]][_$[:alnum:]]*))?\s*'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(export)\s+)?(?:(async)\s+)?(function\b)(?:\s*(\*))?(?:(?:\s+|(?<=\*))([_$[:alpha:]][_$[:alnum:]]*))?\s*'
       captures:
         1: keyword.control.export.ts
         2: storage.modifier.async.ts
@@ -866,15 +900,11 @@ contexts:
         5: meta.definition.function.ts entity.name.function.ts
       push:
         - meta_scope: meta.function.ts
-        - match: '(?=$|;)|(?<=\})'
+        - match: '(?=$|^|;)|(?<=\})'
           pop: true
-        - include: comment
-        - include: type-parameters
-        - include: function-parameters
-        - include: return-type
-        - include: decl-block
+        - include: function-body
   function-expression:
-    - match: '(?<!\.|\$)\b(?:(async)\s+)?(function\b)(?:\s*(\*))?(?:(?:\s+|(?<=\*))([_$[:alpha:]][_$[:alnum:]]*))?\s*'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(async)\s+)?(function\b)(?:\s*(\*))?(?:(?:\s+|(?<=\*))([_$[:alpha:]][_$[:alnum:]]*))?\s*'
       captures:
         1: storage.modifier.async.ts
         2: storage.type.function.ts
@@ -884,11 +914,7 @@ contexts:
         - meta_scope: meta.function.expression.ts
         - match: '(?<=\})'
           pop: true
-        - include: comment
-        - include: type-parameters
-        - include: function-parameters
-        - include: return-type
-        - include: decl-block
+        - include: function-body
   function-parameters:
     - match: \(
       captures:
@@ -910,39 +936,63 @@ contexts:
   identifiers:
     - include: object-identifiers
     - match: |-
-        (?x)(?:(\.)\s*)?([_$[:alpha:]][_$[:alnum:]]*)(?=\s*=\s*(
-        (async\s+)|(function\s*[(<])|(function\s+)|
-        ([_$[:alpha:]][_$[:alnum:]]*\s*=>)|
-        ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
-        ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
-        ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>)))
+        (?x)(?:(?:(\.)|(\?\.(?!\s*[[:digit:]])))\s*)?([_$[:alpha:]][_$[:alnum:]]*)(?=\s*=\s*(
+          ((async\s+)?(
+            (function\s*[(<*]) |
+            (function\s+) |
+            ([_$[:alpha:]][_$[:alnum:]]*\s*=>)
+          )) |
+          ((async\s*)?(
+            # sure shot arrow functions even if => is on new line
+        (
+          [(]\s*
+          (
+            ([)]\s*:) |                                                                 # ():
+            ((\.\.\.\s*)?[_$[:alpha:]][_$[:alnum:]]*\s*:)                                            # [(]param: | [(]...param:
+          )
+        ) |
+        (
+          [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>]                                        # < typeparam extends
+        ) |
+        # arrow function possible to detect only with => on same line
+        (
+          (<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<]|\<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<])*\>)*>\s*)?                                                           # typeparameters
+          \(\s*([_$[:alpha:]\{\[]([^()]|\((\s*[^()]*)?\))*)?\)                          # parameteres
+          (\s*:\s*([^<>\(\)]|\<[^<>]+\>|\([^\(\)]+\))+)?                                # return type
+          \s*=>                                                                         # arrow operator
+        )
+          ))
+        ))
       captures:
         1: punctuation.accessor.ts
-        2: entity.name.function.ts
-    - match: '(\.)\s*([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])'
+        2: punctuation.accessor.optional.ts
+        3: entity.name.function.ts
+    - match: '(?:(\.)|(\?\.(?!\s*[[:digit:]])))\s*([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])'
       captures:
         1: punctuation.accessor.ts
-        2: variable.other.constant.property.ts
-    - match: '(\.)\s*([_$[:alpha:]][_$[:alnum:]]*)'
+        2: punctuation.accessor.optional.ts
+        3: variable.other.constant.property.ts
+    - match: '(?:(\.)|(\?\.(?!\s*[[:digit:]])))\s*([_$[:alpha:]][_$[:alnum:]]*)'
       captures:
         1: punctuation.accessor.ts
-        2: variable.other.property.ts
+        2: punctuation.accessor.optional.ts
+        3: variable.other.property.ts
     - match: "([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])"
       scope: variable.other.constant.ts
     - match: "[_$[:alpha:]][_$[:alnum:]]*"
       scope: variable.other.readwrite.ts
   import-declaration:
-    - match: (?<!\.|\$)(?:(\bexport)\s+)?\b(import)(?!(\s*:)|(\$))\b
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?\b(import)(?!\s*[:\(])(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       captures:
         1: keyword.control.export.ts
         2: keyword.control.import.ts
       push:
         - meta_scope: meta.import.ts
-        - match: (?=;|$)
+        - match: (?=;|$|^)
           pop: true
         - include: import-export-declaration
   import-equals-declaration:
-    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(import)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*(=)\s*(require)\s*(\()'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?\b(import)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*(=)\s*(require)\s*(\()'
       captures:
         1: keyword.control.export.ts
         2: keyword.control.import.ts
@@ -958,7 +1008,7 @@ contexts:
           pop: true
         - include: comment
         - include: string
-    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(import)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*(=)\s*(?!require\b)'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?\b(import)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*(=)\s*(?!require\b)'
       captures:
         1: keyword.control.export.ts
         2: keyword.control.import.ts
@@ -966,13 +1016,14 @@ contexts:
         4: keyword.operator.assignment.ts
       push:
         - meta_scope: meta.import-equals.internal.ts
-        - match: (?=;|$)
+        - match: (?=;|$|^)
           pop: true
         - include: comment
-        - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(\.)'
+        - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(?:(\.)|(\?\.(?!\s*[[:digit:]])))'
           captures:
             1: entity.name.type.module.ts
             2: punctuation.accessor.ts
+            3: punctuation.accessor.optional.ts
         - match: "([_$[:alpha:]][_$[:alnum:]]*)"
           scope: variable.other.readwrite.ts
   import-export-block:
@@ -988,17 +1039,13 @@ contexts:
         - include: import-export-clause
   import-export-clause:
     - include: comment
-    - match: |-
-        (?x) (?: \b(default)\b | (\*) | ([_$[:alpha:]][_$[:alnum:]]*)) \s+
-        (as) \s+ (?: (\b default \b | \*) | ([_$[:alpha:]][_$[:alnum:]]*))
-      comment: (default|*|name) as alias
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bdefault)|(\*)|(\b[_$[:alpha:]][_$[:alnum:]]*))\s+(as)\s+(\b[_$[:alpha:]][_$[:alnum:]]*)'
       captures:
         1: keyword.control.default.ts
         2: constant.language.import-export-all.ts
         3: variable.other.readwrite.ts
         4: keyword.control.as.ts
-        5: invalid.illegal.ts
-        6: variable.other.readwrite.alias.ts
+        5: variable.other.readwrite.alias.ts
     - include: punctuation-comma
     - match: \*
       scope: constant.language.import-export-all.ts
@@ -1014,7 +1061,7 @@ contexts:
       scope: keyword.control.from.ts
     - include: import-export-clause
   indexer-declaration:
-    - match: '(?:(?<!\.|\$)\b(readonly)\s*)?(\[)\s*([_$[:alpha:]][_$[:alnum:]]*)\s*(?=:)'
+    - match: '(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(readonly)\s*)?(\[)\s*([_$[:alpha:]][_$[:alnum:]]*)\s*(?=:)'
       captures:
         1: storage.modifier.ts
         2: meta.brace.square.ts
@@ -1028,7 +1075,7 @@ contexts:
           pop: true
         - include: type-annotation
   indexer-mapped-type-declaration:
-    - match: '(?:(?<!\.|\$)\b(readonly)\s*)?(\[)\s*([_$[:alpha:]][_$[:alnum:]]*)\s+(in)\s+'
+    - match: '(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(readonly)\s*)?(\[)\s*([_$[:alpha:]][_$[:alnum:]]*)\s+(in)\s+'
       captures:
         1: storage.modifier.ts
         2: meta.brace.square.ts
@@ -1042,6 +1089,63 @@ contexts:
             2: keyword.operator.optional.ts
           pop: true
         - include: type
+  inline-tags:
+    - match: '(\[)[^\]]+(\])(?={@(?:link|linkcode|linkplain|tutorial))'
+      scope: constant.other.description.jsdoc
+      captures:
+        1: punctuation.definition.bracket.square.begin.jsdoc
+        2: punctuation.definition.bracket.square.end.jsdoc
+    - match: '({)((@)(?:link(?:code|plain)?|tutorial))\s*'
+      captures:
+        1: punctuation.definition.bracket.curly.begin.jsdoc
+        2: storage.type.class.jsdoc
+        3: punctuation.definition.inline.tag.jsdoc
+      push:
+        - meta_scope: entity.name.type.instance.jsdoc
+        - match: '}|(?=\*/)'
+          captures:
+            0: punctuation.definition.bracket.curly.end.jsdoc
+          pop: true
+        - match: '\G((?=https?://)(?:[^|}\s*]|\*[/])+)(\|)?'
+          captures:
+            1: variable.other.link.underline.jsdoc
+            2: punctuation.separator.pipe.jsdoc
+        - match: '\G((?:[^{}@\s|*]|\*[^/])+)(\|)?'
+          captures:
+            1: variable.other.description.jsdoc
+            2: punctuation.separator.pipe.jsdoc
+  interface-declaration:
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(export)\s+)?\b(?:(abstract)\s+)?\b(interface)\b(?=\s+|/[/*])'
+      captures:
+        1: keyword.control.export.ts
+        2: storage.modifier.ts
+        3: storage.type.interface.ts
+      push:
+        - meta_scope: meta.interface.ts
+        - match: '(?<=\})'
+          pop: true
+        - include: comment
+        - include: class-or-interface-heritage
+        - match: "[_$[:alpha:]][_$[:alnum:]]*"
+          captures:
+            0: entity.name.type.interface.ts
+        - include: type-parameters
+        - include: class-or-interface-body
+  jsdoctype:
+    - match: '\G{(?:[^}*]|\*[^/}])+$'
+      scope: invalid.illegal.type.jsdoc
+    - match: '\G({)'
+      captures:
+        0: entity.name.type.instance.jsdoc
+        1: punctuation.definition.bracket.curly.begin.jsdoc
+      push:
+        - meta_content_scope: entity.name.type.instance.jsdoc
+        - match: '((}))\s*|(?=\*/)'
+          captures:
+            1: entity.name.type.instance.jsdoc
+            2: punctuation.definition.bracket.curly.end.jsdoc
+          pop: true
+        - include: brackets
   literal:
     - include: numeric-literal
     - include: boolean-literal
@@ -1052,27 +1156,35 @@ contexts:
     - include: this-literal
     - include: super-literal
   method-declaration:
-    - match: '(?<!\.|\$)(?:\b(public|private|protected)\s+)?(?:\b(abstract)\s+)?(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(?:\b(?:(new)|(constructor))\b(?!\$|:))|(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))?\s*[\(\<]))'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:\b(public|private|protected)\s+)?(?:\b(abstract)\s+)?(?:\b(async)\s+)?(?:\b(get|set)\s+)(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))\s*[\(\<])'
       captures:
         1: storage.modifier.ts
         2: storage.modifier.ts
         3: storage.modifier.async.ts
         4: storage.type.property.ts
-        5: keyword.operator.new.ts
-        6: storage.type.ts
-        7: keyword.generator.asterisk.ts
+        5: keyword.generator.asterisk.ts
       push:
         - meta_scope: meta.method.declaration.ts
         - match: '(?=\}|;|,|$)|(?<=\})'
           pop: true
         - include: method-declaration-name
-        - include: comment
-        - include: type-parameters
-        - include: function-parameters
-        - include: return-type
-        - include: decl-block
+        - include: function-body
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:\b(public|private|protected)\s+)?(?:\b(abstract)\s+)?(?:\b(async)\s+)?(?:(?:\b(?:(new)|(constructor))\b(?!:)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))|(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))?\s*[\(\<]))'
+      captures:
+        1: storage.modifier.ts
+        2: storage.modifier.ts
+        3: storage.modifier.async.ts
+        4: keyword.operator.new.ts
+        5: storage.type.ts
+        6: keyword.generator.asterisk.ts
+      push:
+        - meta_scope: meta.method.declaration.ts
+        - match: '(?=\}|;|,|$)|(?<=\})'
+          pop: true
+        - include: method-declaration-name
+        - include: function-body
   method-declaration-name:
-    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??)\s*[\(\<])'
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??)\s*[\(\<])'
       push:
         - match: (?=\(|\<)
           pop: true
@@ -1083,32 +1195,33 @@ contexts:
         - match: \?
           scope: keyword.operator.optional.ts
   namespace-declaration:
-    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(namespace|module)\s+(?=[_$[:alpha:]"''`])'
+    - match: '(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?\b(namespace|module)\s+(?=[_$[:alpha:]"''`]))'
       captures:
         1: keyword.control.export.ts
         2: storage.type.namespace.ts
       push:
         - meta_scope: meta.namespace.declaration.ts
-        - match: '(?=$|\{)'
+        - match: '(?<=\})|(?=;|\babstract\b|\basync\b|\bclass\b|\bconst\b|\bdeclare\b|\benum\b|\bexport\b|\bfunction\b|\bimport\b|\binterface\b|\blet\b|\bmodule\b|\bnamespace\b|\btype\b|\bvar\b)'
           pop: true
         - include: comment
         - include: string
         - match: "([_$[:alpha:]][_$[:alnum:]]*)"
           scope: entity.name.type.module.ts
         - include: punctuation-accessor
+        - include: decl-block
   new-expr:
-    - match: (?<!\.|\$)\b(new)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(new)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       captures:
         1: keyword.operator.new.ts
       push:
         - meta_scope: new.expr.ts
-        - match: '(?<=\))|(?=[;),}]|$|((?<!\.|\$)\bnew\b(?!\$)))'
+        - match: '(?<=\))|(?=[;),}\]]|$|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))new(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))function((\s+[_$[:alpha:]][_$[:alnum:]]*)|(\s*[\(]))))'
           pop: true
         - include: paren-expression
-        - include: class-or-interface-declaration
+        - include: class-declaration
         - include: type
   null-literal:
-    - match: (?<!\.|\$)\bnull\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))null(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: constant.language.null.ts
   numeric-literal:
     - match: '\b(?<!\$)0(x|X)[0-9a-fA-F]+\b(?!\$)'
@@ -1123,7 +1236,7 @@ contexts:
           (?:\b[0-9]+(\.)[0-9]+[eE][+-]?[0-9]+\b)| # 1.1E+3
           (?:\b[0-9]+(\.)[eE][+-]?[0-9]+\b)|       # 1.E+3
           (?:\B(\.)[0-9]+[eE][+-]?[0-9]+\b)|       # .1E+3
-          (?:\b[0-9]+[eE][+-]?[0-9]+\b)|            # 1E+3
+          (?:\b[0-9]+[eE][+-]?[0-9]+\b)|           # 1E+3
           (?:\b[0-9]+(\.)[0-9]+\b)|                # 1.1
           (?:\b[0-9]+(\.)\B)|                      # 1.
           (?:\B(\.)[0-9]+\b)|                      # .1
@@ -1138,13 +1251,13 @@ contexts:
         5: meta.delimiter.decimal.period.ts
         6: meta.delimiter.decimal.period.ts
   numericConstant-literal:
-    - match: (?<!\.|\$)\bNaN\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))NaN(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: constant.language.nan.ts
-    - match: (?<!\.|\$)\bInfinity\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))Infinity(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: constant.language.infinity.ts
   object-binding-element:
     - include: comment
-    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
       push:
         - match: '(?=,|\})'
           pop: true
@@ -1155,7 +1268,7 @@ contexts:
     - include: variable-initializer
     - include: punctuation-comma
   object-binding-element-propertyName:
-    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
       push:
         - match: (:)
           captures:
@@ -1177,22 +1290,23 @@ contexts:
           pop: true
         - include: object-binding-element
   object-identifiers:
-    - match: '([_$[:alpha:]][_$[:alnum:]]*)(?=\s*\.\s*prototype\b(?!\$))'
+    - match: '([_$[:alpha:]][_$[:alnum:]]*)(?=\s*\??\.\s*prototype\b(?!\$))'
       scope: support.class.ts
     - match: |-
-        (?x)(\.)\s*(?:
+        (?x)(?:(\.)|(\?\.(?!\s*[[:digit:]])))\s*(?:
           ([[:upper:]][_$[:digit:][:upper:]]*) |
           ([_$[:alpha:]][_$[:alnum:]]*)
-        )(?=\s*\.\s*[_$[:alpha:]][_$[:alnum:]]*)
+        )(?=\s*\??\.\s*[_$[:alpha:]][_$[:alnum:]]*)
       captures:
         1: punctuation.accessor.ts
-        2: variable.other.constant.object.property.ts
-        3: variable.other.object.property.ts
+        2: punctuation.accessor.optional.ts
+        3: variable.other.constant.object.property.ts
+        4: variable.other.object.property.ts
     - match: |-
         (?x)(?:
           ([[:upper:]][_$[:digit:][:upper:]]*) |
           ([_$[:alpha:]][_$[:alnum:]]*)
-        )(?=\s*\.\s*[_$[:alpha:]][_$[:alnum:]]*)
+        )(?=\s*\??\.\s*[_$[:alpha:]][_$[:alnum:]]*)
       captures:
         1: variable.other.constant.object.ts
         2: variable.other.object.ts
@@ -1208,7 +1322,7 @@ contexts:
           pop: true
         - include: object-member
   object-literal-method-declaration:
-    - match: '(?<!\.|\$)(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))?\s*[\(\<])'
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))\s*[\(\<])'
       captures:
         1: storage.modifier.async.ts
         2: storage.type.property.ts
@@ -1218,65 +1332,72 @@ contexts:
         - match: '(?=\}|;|,)|(?<=\})'
           pop: true
         - include: method-declaration-name
-        - include: comment
-        - include: type-parameters
-        - include: function-parameters
-        - include: return-type
-        - include: object-literal-method-overload-declaration
-        - include: decl-block
-  object-literal-method-overload-declaration:
-    - match: '(?<!\.|\$)(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))?\s*[\(\<])'
-      captures:
-        1: storage.modifier.async.ts
-        2: storage.type.property.ts
-        3: keyword.generator.asterisk.ts
-      push:
-        - match: (?=\(|\<)
-          pop: true
-        - include: method-declaration-name
+        - include: function-body
+        - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:\b(async)\s+)?(?:\b(get|set)\s+)?(?:(\*)\s*)?(?=((([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(\??))\s*[\(\<])'
+          captures:
+            1: storage.modifier.async.ts
+            2: storage.type.property.ts
+            3: keyword.generator.asterisk.ts
+          push:
+            - match: (?=\(|\<)
+              pop: true
+            - include: method-declaration-name
   object-member:
     - include: comment
     - include: object-literal-method-declaration
-    - match: '(?=(?:(?:\''[^'']*\'')|(?:\"[^"]*\")|(?:\[([^\[\]]|\[[^\[\]]*\])+\]))\s*:)'
+    - match: '(?=\[)'
       push:
-        - meta_scope: meta.object.member.ts
-        - match: '(?=,|\})'
+        - meta_scope: meta.object.member.ts meta.object-literal.key.ts
+        - match: (?=:)
           pop: true
-        - match: '(?=(?:(?:\''[^'']*\'')|(?:\"[^"]*\")|(?:\[([^\[\]]|\[[^\[\]]*\])+\]))\s*:)'
-          push:
-            - meta_scope: meta.object-literal.key.ts
-            - match: ":"
-              captures:
-                0: punctuation.separator.key-value.ts
-              pop: true
-            - include: string
-            - include: array-literal
-        - include: expression
+        - include: array-literal
+    - match: '(?=[\''\"])'
+      push:
+        - meta_scope: meta.object.member.ts meta.object-literal.key.ts
+        - match: (?=:)
+          pop: true
+        - include: string
+    - match: '(?![_$[:alpha:]])([[:digit:]]+)\s*(?=:)'
+      scope: meta.object.member.ts
+      captures:
+        0: meta.object-literal.key.ts
+        1: constant.numeric.decimal.ts
     - match: |-
-        (?x)(?:([_$[:alpha:]][_$[:alnum:]]*)\s*(:)(?=\s*(
-        (async\s+)|(function\s*[(<])|(function\s+)|
-        ([_$[:alpha:]][_$[:alnum:]]*\s*=>)|
-        ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
-        ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
-        ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))))
+        (?x)(?:([_$[:alpha:]][_$[:alnum:]]*)\s*(?=:\s*(
+          ((async\s+)?(
+            (function\s*[(<*]) |
+            (function\s+) |
+            ([_$[:alpha:]][_$[:alnum:]]*\s*=>)
+          )) |
+          ((async\s*)?(
+            # sure shot arrow functions even if => is on new line
+        (
+          [(]\s*
+          (
+            ([)]\s*:) |                                                                 # ():
+            ((\.\.\.\s*)?[_$[:alpha:]][_$[:alnum:]]*\s*:)                                            # [(]param: | [(]...param:
+          )
+        ) |
+        (
+          [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>]                                        # < typeparam extends
+        ) |
+        # arrow function possible to detect only with => on same line
+        (
+          (<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<]|\<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<])*\>)*>\s*)?                                                           # typeparameters
+          \(\s*([_$[:alpha:]\{\[]([^()]|\((\s*[^()]*)?\))*)?\)                          # parameteres
+          (\s*:\s*([^<>\(\)]|\<[^<>]+\>|\([^\(\)]+\))+)?                                # return type
+          \s*=>                                                                         # arrow operator
+        )
+          ))
+        )))
+      scope: meta.object.member.ts
       captures:
         0: meta.object-literal.key.ts
         1: entity.name.function.ts
-        2: punctuation.separator.key-value.ts
-      push:
-        - meta_scope: meta.object.member.ts
-        - match: '(?=,|\})'
-          pop: true
-        - include: expression
-    - match: '(?:[_$[:alpha:]][_$[:alnum:]]*)\s*(:)'
+    - match: '(?:[_$[:alpha:]][_$[:alnum:]]*)\s*(?=:)'
+      scope: meta.object.member.ts
       captures:
         0: meta.object-literal.key.ts
-        1: punctuation.separator.key-value.ts
-      push:
-        - meta_scope: meta.object.member.ts
-        - match: '(?=,|\})'
-          pop: true
-        - include: expression
     - match: \.\.\.
       captures:
         0: keyword.operator.spread.ts
@@ -1289,6 +1410,20 @@ contexts:
       scope: meta.object.member.ts
       captures:
         1: variable.other.readwrite.ts
+    - match: '(?=[_$[:alpha:]][_$[:alnum:]]*\s*=)'
+      push:
+        - meta_scope: meta.object.member.ts
+        - match: '(?=,|\}|$)'
+          pop: true
+        - include: expression
+    - match: ":"
+      captures:
+        0: meta.object-literal.key.ts punctuation.separator.key-value.ts
+      push:
+        - meta_scope: meta.object.member.ts
+        - match: '(?=,|\})'
+          pop: true
+        - include: expression
     - include: punctuation-comma
   parameter-array-binding-pattern:
     - match: '(?:(\.\.\.)\s*)?(\[)'
@@ -1313,42 +1448,63 @@ contexts:
       captures:
         1: storage.modifier.ts
     - match: |-
-        (?x)(?:\s*\b(public|private|protected|readonly)\s+)?(\.\.\.)?\s*(?<!=|:)([_$[:alpha:]][_$[:alnum:]]*)\s*(\??)(?=\s*
-          (=\s*(
-            (async\s+) |
-            (function\s*[(<]) |
+        (?x)(?:\s*\b(public|private|protected|readonly)\s+)?(\.\.\.)?\s*(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)(?=\s*
+        # function assignment |
+        (=\s*(
+          ((async\s+)?(
+            (function\s*[(<*]) |
             (function\s+) |
-            ([_$[:alpha:]][_$[:alnum:]]*\s*=>) |
-            ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
-            ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
-            ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))
-          ) |
-          (:\s*(
-            (<) |
-            ([(]\s*(
-              ([)]) |
-              (\.\.\.) |
-              ([_$[:alnum:]]+\s*(
-                ([:,?=])|
-                ([)]\s*=>)
-              ))
-            )))
+            ([_$[:alpha:]][_$[:alnum:]]*\s*=>)
+          )) |
+          ((async\s*)?(
+            # sure shot arrow functions even if => is on new line
+        (
+          [(]\s*
+          (
+            ([)]\s*:) |                                                                 # ():
+            ((\.\.\.\s*)?[_$[:alpha:]][_$[:alnum:]]*\s*:)                                            # [(]param: | [(]...param:
           )
+        ) |
+        (
+          [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>]                                        # < typeparam extends
+        ) |
+        # arrow function possible to detect only with => on same line
+        (
+          (<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<]|\<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<])*\>)*>\s*)?                                                           # typeparameters
+          \(\s*([_$[:alpha:]\{\[]([^()]|\((\s*[^()]*)?\))*)?\)                          # parameteres
+          (\s*:\s*([^<>\(\)]|\<[^<>]+\>|\([^\(\)]+\))+)?                                # return type
+          \s*=>                                                                         # arrow operator
         )
+          ))
+        )) |
+        # typeannotation is fn type: < | () | (... | (param: | (param, | (param? | (param= | (param) =>
+        (:\s*(
+          (<) |
+          ([(]\s*(
+            ([)]) |
+            (\.\.\.) |
+            ([_$[:alnum:]]+\s*(
+              ([:,?=])|
+              ([)]\s*=>)
+            ))
+          ))
+        )))
       captures:
         1: storage.modifier.ts
         2: keyword.operator.rest.ts
-        3: entity.name.function.ts
-        4: keyword.operator.optional.ts
-    - match: '(?:\s*\b(public|private|protected|readonly)\s+)?(\.\.\.)?\s*(?<!=|:)([_$[:alpha:]][_$[:alnum:]]*)\s*(\??)'
+        3: entity.name.function.ts variable.language.this.ts
+        4: entity.name.function.ts
+        5: keyword.operator.optional.ts
+    - match: '(?x)(?:\s*\b(public|private|protected|readonly)\s+)?(\.\.\.)?\s*(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)'
       captures:
         1: storage.modifier.ts
         2: keyword.operator.rest.ts
-        3: variable.parameter.ts
-        4: keyword.operator.optional.ts
+        3: variable.parameter.ts variable.language.this.ts
+        4: variable.parameter.ts
+        5: keyword.operator.optional.ts
   parameter-object-binding-element:
     - include: comment
-    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''[^'']*\'')|(\"[^"]*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
+    - match: '(?=(([_$[:alpha:]][_$[:alnum:]]*)|(\''([^\''\\]|\\\''|\\)*\'')|(\"([^\"\\]|\\\"|\\)*\")|(\[([^\[\]]|\[[^\[\]]*\])+\]))\s*(:))'
       push:
         - match: '(?=,|\})'
           pop: true
@@ -1381,11 +1537,13 @@ contexts:
         - include: expression
         - include: punctuation-comma
   property-accessor:
-    - match: (?<!\.|\$)\b(get|set)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(get|set)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: storage.type.property.ts
   punctuation-accessor:
-    - match: \.
-      scope: punctuation.accessor.ts
+    - match: '(?:(\.)|(\?\.(?!\s*[[:digit:]])))'
+      captures:
+        1: punctuation.accessor.ts
+        2: punctuation.accessor.optional.ts
   punctuation-comma:
     - match: ","
       scope: punctuation.separator.comma.ts
@@ -1417,7 +1575,7 @@ contexts:
           pop: true
         - include: string-character-escape
   regex:
-    - match: '(?<=[=(:,\[?+!]|return|case|=>|&&|\|\||\*\/)\s*(/)(?![/*])(?=(?:[^/\\\[]|\\.|\[([^\]\\]|\\.)+\])+/(?![/*])[gimy]*(?!\s*[a-zA-Z0-9_$]))'
+    - match: '(?<=[=(:,\[?+!]|return|case|=>|&&|\|\||\*\/)\s*(\/)(?![\/*])(?=(?:[^\/\\\[]|\\.|\[([^\]\\]|\\.)+\])+\/(?![\/*])[gimuy]*(?!\s*[a-zA-Z0-9_$]))'
       captures:
         1: punctuation.definition.string.begin.ts
       push:
@@ -1428,7 +1586,7 @@ contexts:
             2: keyword.other.ts
           pop: true
         - include: regexp
-    - match: '(?<![_$[:alnum:]])/(?![/*])(?=(?:[^/\\\[]|\\.|\[([^\]\\]|\\.)+\])+/(?![/*])[gimy]*(?!\s*[a-zA-Z0-9_$]))'
+    - match: '(?<![_$[:alnum:])])\/(?![\/*])(?=(?:[^\/\\\[]|\\.|\[([^\]\\]|\\.)+\])+\/(?![\/*])[gimuy]*(?!\s*[a-zA-Z0-9_$]))'
       captures:
         0: punctuation.definition.string.begin.ts
       push:
@@ -1442,7 +1600,7 @@ contexts:
   regex-character-class:
     - match: '\\[wWsSdDtrnvf]|\.'
       scope: constant.other.character-class.regexp
-    - match: '\\([0-7]{3}|x\h\h|u\h\h\h\h)'
+    - match: '\\([0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4})'
       scope: constant.character.numeric.regexp
     - match: '\\c[A-Z]'
       scope: constant.character.control.regexp
@@ -1473,7 +1631,7 @@ contexts:
     - match: \((\?:)?
       captures:
         0: punctuation.definition.group.regexp
-        1: punctuation.definition.group.capture.regexp
+        1: punctuation.definition.group.no-capture.regexp
       push:
         - meta_scope: meta.group.regexp
         - match: \)
@@ -1491,7 +1649,7 @@ contexts:
           captures:
             1: punctuation.definition.character-class.regexp
           pop: true
-        - match: '(?:.|(\\(?:[0-7]{3}|x\h\h|u\h\h\h\h))|(\\c[A-Z])|(\\.))\-(?:[^\]\\]|(\\(?:[0-7]{3}|x\h\h|u\h\h\h\h))|(\\c[A-Z])|(\\.))'
+        - match: '(?:.|(\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\c[A-Z])|(\\.))\-(?:[^\]\\]|(\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\c[A-Z])|(\\.))'
           scope: constant.other.character-class.range.regexp
           captures:
             1: constant.character.numeric.regexp
@@ -1503,64 +1661,67 @@ contexts:
         - include: regex-character-class
     - include: regex-character-class
   return-type:
+    - match: (?<=\))\s*(:)(?=\s*\S)
+      captures:
+        1: keyword.operator.type.annotation.ts
+      push:
+        - meta_scope: meta.return.type.ts
+        - match: "(?<![:|&])(?=$|^|[{};,]|//)"
+          pop: true
+        - include: return-type-core
     - match: (?<=\))\s*(:)
       captures:
         1: keyword.operator.type.annotation.ts
       push:
         - meta_scope: meta.return.type.ts
-        - match: "(?<!:)((?=$)|(?=[{};,]|//))"
+        - match: '(?<![:|&])((?=[{};,]|//|^\s*$)|((?<=\S)(?=\s*$)))'
           pop: true
-        - include: comment
-        - match: '(?<=:)\s*(\{)'
-          captures:
-            1: punctuation.definition.block.ts
-          push:
-            - meta_scope: meta.object.type.ts
-            - match: '\}'
-              captures:
-                0: punctuation.definition.block.ts
-              pop: true
-            - include: type-object-members
-        - include: type-predicate-operator
-        - include: type
+        - include: return-type-core
+  return-type-core:
+    - include: comment
+    - match: '(?<=[:|&])(?=\s*\{)'
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: type-object
+    - include: type-predicate-operator
+    - include: type
   statements:
     - include: string
     - include: template
     - include: comment
     - include: declaration
-    - include: switch-statement
-    - include: for-loop
-    - include: after-operator-block
-    - include: decl-block
     - include: control-statement
+    - include: after-operator-block-as-object-literal
+    - include: decl-block
     - include: expression
     - include: punctuation-semicolon
   string:
     - include: qstring-single
     - include: qstring-double
   string-character-escape:
-    - match: '\\(x\h{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)'
+    - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)'
       scope: constant.character.escape.ts
   super-literal:
-    - match: (?<!\.|\$)\bsuper\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))super\b(?!\$)'
       scope: variable.language.super.ts
   support-objects:
-    - match: (?<!\.|\$)\b(arguments)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(arguments)\b(?!\$)'
       scope: variable.language.arguments.ts
     - match: |-
-        (?x)(?<!\.|\$)\b(Array|ArrayBuffer|Atomics|Boolean|DataView|Date|Float32Array|Float64Array|Function|Generator
+        (?x)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(Array|ArrayBuffer|Atomics|Boolean|DataView|Date|Float32Array|Float64Array|Function|Generator
         |GeneratorFunction|Int8Array|Int16Array|Int32Array|Intl|Map|Number|Object|Promise|Proxy
         |Reflect|RegExp|Set|SharedArrayBuffer|SIMD|String|Symbol|TypedArray
         |Uint8Array|Uint16Array|Uint32Array|Uint8ClampedArray|WeakMap|WeakSet)\b(?!\$)
       scope: support.class.builtin.ts
-    - match: (?<!\.|\$)\b((Eval|Internal|Range|Reference|Syntax|Type|URI)?Error)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))((Eval|Internal|Range|Reference|Syntax|Type|URI)?Error)\b(?!\$)'
       scope: support.class.error.ts
     - match: |-
-        (?x)(?<!\.|\$)\b(clear(Interval|Timeout)|decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|escape|eval|
+        (?x)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(clear(Interval|Timeout)|decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|escape|eval|
         isFinite|isNaN|parseFloat|parseInt|require|set(Interval|Timeout)|super|unescape|uneval)(?=\s*\()
       scope: support.function.ts
     - match: |-
-        (?x)(?<!\.|\$)\b(Math)(?:\s*(\.)\s*(?:
+        (?x)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(Math)(?:\s*(?:(\.)|(\?\.(?!\s*[[:digit:]])))\s*(?:
         (abs|acos|acosh|asin|asinh|atan|atan2|atanh|cbrt|ceil|clz32|cos|cosh|exp|
         expm1|floor|fround|hypot|imul|log|log10|log1p|log2|max|min|pow|random|
         round|sign|sin|sinh|sqrt|tan|tanh|trunc)
@@ -1569,32 +1730,36 @@ contexts:
       captures:
         1: support.constant.math.ts
         2: punctuation.accessor.ts
-        3: support.function.math.ts
-        4: support.constant.property.math.ts
+        3: punctuation.accessor.optional.ts
+        4: support.function.math.ts
+        5: support.constant.property.math.ts
     - match: |-
-        (?x)(?<!\.|\$)\b(console)(?:\s*(\.)\s*(
+        (?x)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(console)(?:\s*(?:(\.)|(\?\.(?!\s*[[:digit:]])))\s*(
         assert|clear|count|debug|dir|error|group|groupCollapsed|groupEnd|info|log
         |profile|profileEnd|table|time|timeEnd|timeStamp|trace|warn))?\b(?!\$)
       captures:
         1: support.class.console.ts
         2: punctuation.accessor.ts
-        3: support.function.console.ts
-    - match: (?<!\.|\$)\b(JSON)(?:\s*(\.)\s*(parse|stringify))?\b(?!\$)
+        3: punctuation.accessor.optional.ts
+        4: support.function.console.ts
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(JSON)(?:\s*(?:(\.)|(\?\.(?!\s*[[:digit:]])))\s*(parse|stringify))?\b(?!\$)'
       captures:
         1: support.constant.json.ts
         2: punctuation.accessor.ts
-        3: support.function.json.ts
+        3: punctuation.accessor.optional.ts
+        4: support.function.json.ts
     - match: |-
-        (?x) (\.) \s* (?:
+        (?x) (?:(\.)|(\?\.(?!\s*[[:digit:]]))) \s* (?:
         (constructor|length|prototype|__proto__)
         |
         (EPSILON|MAX_SAFE_INTEGER|MAX_VALUE|MIN_SAFE_INTEGER|MIN_VALUE|NEGATIVE_INFINITY|POSITIVE_INFINITY))\b(?!\$)
       captures:
         1: punctuation.accessor.ts
-        2: support.variable.property.ts
-        3: support.constant.ts
+        2: punctuation.accessor.optional.ts
+        3: support.variable.property.ts
+        4: support.constant.ts
     - match: |-
-        (?x) (?<!\.|\$) \b (?:
+        (?x) (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.)) \b (?:
         (document|event|navigator|performance|screen|window)
         |
         (AnalyserNode|ArrayBufferView|Attr|AudioBuffer|AudioBufferSourceNode|AudioContext|AudioDestinationNode|AudioListener
@@ -1660,7 +1825,7 @@ contexts:
         1: support.variable.dom.ts
         2: support.class.dom.ts
     - match: |-
-        (?x) (\.) \s* (?:
+        (?x) (?:(\.)|(\?\.(?!\s*[[:digit:]]))) \s* (?:
         (ATTRIBUTE_NODE|CDATA_SECTION_NODE|COMMENT_NODE|DOCUMENT_FRAGMENT_NODE|DOCUMENT_NODE|DOCUMENT_TYPE_NODE
         |DOMSTRING_SIZE_ERR|ELEMENT_NODE|ENTITY_NODE|ENTITY_REFERENCE_NODE|HIERARCHY_REQUEST_ERR|INDEX_SIZE_ERR
         |INUSE_ATTRIBUTE_ERR|INVALID_CHARACTER_ERR|NO_DATA_ALLOWED_ERR|NO_MODIFICATION_ALLOWED_ERR|NOT_FOUND_ERR
@@ -1691,17 +1856,18 @@ contexts:
         |siblingBelow|size|source|specified|standby|start|status|statusbar|statusText|style|styleSheets|suffixes|summary
         |systemId|systemLanguage|tagName|tags|target|tBodies|text|textAlign|textDecoration|textIndent|textTransform|tFoot|tHead
         |title|toolbar|top|type|undefined|uniqueID|updateInterval|URL|URLUnencoded|useMap|userAgent|userLanguage|userProfile
-        |vAlign|value|valueType|vendor|vendorSub|version|visibility|vspace|whiteSpace|width|X[MS]LDocument|zIndex))\b(?!\$|\s*(<([^<>]|\<[^<>]+\>)+>\s*)?\()
+        |vAlign|value|valueType|vendor|vendorSub|version|visibility|vspace|whiteSpace|width|X[MS]LDocument|zIndex))\b(?!\$|\s*(<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<]|\<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<])*\>)*>\s*)?\()
       captures:
         1: punctuation.accessor.ts
-        2: support.constant.dom.ts
-        3: support.variable.property.dom.ts
+        2: punctuation.accessor.optional.ts
+        3: support.constant.dom.ts
+        4: support.variable.property.dom.ts
     - match: |-
-        (?x)(?<!\.|\$)\b(Buffer|EventEmitter|Server|Pipe|Socket|REPLServer|ReadStream|WriteStream|Stream
+        (?x)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(Buffer|EventEmitter|Server|Pipe|Socket|REPLServer|ReadStream|WriteStream|Stream
         |Inflate|Deflate|InflateRaw|DeflateRaw|GZip|GUnzip|Unzip|Zip)\b(?!\$)
       scope: support.class.node.ts
     - match: |-
-        (?x)(?<!\.|\$)\b(process)(?:(\.)(?:
+        (?x)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(process)(?:(?:(\.)|(\?\.(?!\s*[[:digit:]])))(?:
           (arch|argv|config|connected|env|execArgv|execPath|exitCode|mainModule|pid|platform|release|stderr|stdin|stdout|title|version|versions)
           |
           (abort|chdir|cwd|disconnect|exit|[sg]ete?[gu]id|send|[sg]etgroups|initgroups|kill|memoryUsage|nextTick|umask|uptime|hrtime)
@@ -1709,18 +1875,20 @@ contexts:
       captures:
         1: support.variable.object.process.ts
         2: punctuation.accessor.ts
-        3: support.variable.property.process.ts
-        4: support.function.process.ts
-    - match: (?<!\.|\$)\b(?:(exports)|(module)(?:(\.)(exports|id|filename|loaded|parent|children))?)\b(?!\$)
+        3: punctuation.accessor.optional.ts
+        4: support.variable.property.process.ts
+        5: support.function.process.ts
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(exports)|(module)(?:(?:(\.)|(\?\.(?!\s*[[:digit:]])))(exports|id|filename|loaded|parent|children))?)\b(?!\$)'
       captures:
         1: support.type.object.module.ts
         2: support.type.object.module.ts
         3: punctuation.accessor.ts
-        4: support.type.object.module.ts
-    - match: (?<!\.|\$)\b(global|GLOBAL|root|__dirname|__filename)\b(?!\$)
+        4: punctuation.accessor.optional.ts
+        5: support.type.object.module.ts
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(global|GLOBAL|root|__dirname|__filename)\b(?!\$)'
       scope: support.variable.object.node.ts
     - match: |-
-        (?x) (\.) \s*
+        (?x) (?:(\.)|(\?\.(?!\s*[[:digit:]]))) \s*
         (?:
          (on(?:Rowsinserted|Rowsdelete|Rowenter|Rowexit|Resize|Resizestart|Resizeend|Reset|
            Readystatechange|Mouseout|Mouseover|Mousedown|Mouseup|Mousemove|
@@ -1797,41 +1965,47 @@ contexts:
         )(?=\s*\()
       captures:
         1: punctuation.accessor.ts
-        2: support.function.event-handler.ts
-        3: support.function.ts
-        4: support.function.dom.ts
-  switch-block:
-    - match: '\{'
-      captures:
-        0: punctuation.definition.block.ts
-      push:
-        - meta_scope: switch-block.expr.ts
-        - match: '(?=\})'
-          pop: true
-        - include: case-clause
-        - include: statements
-  switch-expression:
-    - match: (?<!\.|\$)\b(switch)\s*(\()
-      captures:
-        1: keyword.control.switch.ts
-        2: meta.brace.round.ts
-      push:
-        - meta_scope: switch-expression.expr.ts
-        - match: \)
-          captures:
-            0: meta.brace.round.ts
-          pop: true
-        - include: expression
+        2: punctuation.accessor.optional.ts
+        3: support.function.event-handler.ts
+        4: support.function.ts
+        5: support.function.dom.ts
   switch-statement:
-    - match: (?<!\.|\$)(?=\bswitch\s*\()
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?=\bswitch\s*\()'
       push:
         - meta_scope: switch-statement.expr.ts
         - match: '\}'
           captures:
             0: punctuation.definition.block.ts
           pop: true
-        - include: switch-expression
-        - include: switch-block
+        - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(switch)\s*(\()'
+          captures:
+            1: keyword.control.switch.ts
+            2: meta.brace.round.ts
+          push:
+            - meta_scope: switch-expression.expr.ts
+            - match: \)
+              captures:
+                0: meta.brace.round.ts
+              pop: true
+            - include: expression
+        - match: '\{'
+          captures:
+            0: punctuation.definition.block.ts
+          push:
+            - meta_scope: switch-block.expr.ts
+            - match: '(?=\})'
+              pop: true
+            - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(case|default(?=:))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
+              captures:
+                1: keyword.control.switch.ts
+              push:
+                - meta_scope: case-clause.expr.ts
+                - match: ":"
+                  captures:
+                    0: punctuation.definition.section.case-statement.ts
+                  pop: true
+                - include: expression
+            - include: statements
   template:
     - match: "([_$[:alpha:]][_$[:alnum:]]*)?(`)"
       captures:
@@ -1851,15 +2025,16 @@ contexts:
         0: punctuation.definition.template-expression.begin.ts
       push:
         - meta_scope: meta.template.expression.ts
+        - meta_content_scope: meta.embedded.line.ts
         - match: '\}'
           captures:
             0: punctuation.definition.template-expression.end.ts
           pop: true
         - include: expression
   ternary-expression:
-    - match: (\?)
+    - match: '(?!\?\.\s*[^[:digit:]])(\?)'
       captures:
-        0: keyword.operator.ternary.ts
+        1: keyword.operator.ternary.ts
       push:
         - match: (:)
           captures:
@@ -1867,7 +2042,7 @@ contexts:
           pop: true
         - include: expression
   this-literal:
-    - match: (?<!\.|\$)\bthis\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))this\b(?!\$)'
       scope: variable.language.this.ts
   type:
     - include: comment
@@ -1883,28 +2058,15 @@ contexts:
     - include: type-paren-or-function-parameters
     - include: type-function-return-type
     - include: type-name
-  type-annotation:
-    - match: ":"
-      captures:
-        0: keyword.operator.type.annotation.ts
-      push:
-        - meta_scope: meta.type.annotation.ts
-        - match: '(?=$|[,);\}\]]|//)|(?==[^>])|(?<=[\}>\]\)]|[_$[:alpha:]])\s*(?=\{)'
-          pop: true
-        - include: comment
-        - include: type
-  type-builtin-literals:
-    - match: (?<!\.|\$)\b(this|true|false|undefined|null|object)\b(?!\$)
-      scope: support.type.builtin.ts
-  type-declaration:
-    - match: '(?<!\.|\$)(?:(\bexport)\s+)?\b(type)\b\s+([_$[:alpha:]][_$[:alnum:]]*)\s*'
+  type-alias-declaration:
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?\b(type)\b\s+([_$[:alpha:]][_$[:alnum:]]*)\s*'
       captures:
         1: keyword.control.export.ts
         2: storage.type.type.ts
-        3: entity.name.type.ts
+        3: entity.name.type.alias.ts
       push:
         - meta_scope: meta.type.declaration.ts
-        - match: '(?=[};]|\bvar\b|\blet\b|\bconst\b|\btype\b|\bfunction\b|\bclass\b|\binterface\b|\bnamespace\b|\bmodule\b|\bimport\b|\benum\b|\bdeclare\b|\bexport\b|\babstract\b|\basync\b)'
+        - match: '(?=[};]|\babstract\b|\basync\b|\bclass\b|\bconst\b|\bdeclare\b|\benum\b|\bexport\b|\bfunction\b|\bimport\b|\binterface\b|\blet\b|\bmodule\b|\bnamespace\b|\btype\b|\bvar\b)'
           pop: true
         - include: comment
         - include: type-parameters
@@ -1912,12 +2074,32 @@ contexts:
         - match: (=)\s*
           captures:
             1: keyword.operator.assignment.ts
+  type-annotation:
+    - match: (:)(?=\s*\S)
+      captures:
+        1: keyword.operator.type.annotation.ts
+      push:
+        - meta_scope: meta.type.annotation.ts
+        - match: '(?<![:|&])((?=$|^|[,);\}\]]|//)|(?==[^>])|((?<=[\}>\]\)]|[_$[:alpha:]])\s*(?=\{)))'
+          pop: true
+        - include: type
+    - match: (:)
+      captures:
+        1: keyword.operator.type.annotation.ts
+      push:
+        - meta_scope: meta.type.annotation.ts
+        - match: '(?<![:|&])((?=[,);\}\]]|//)|(?==[^>])|(?=^\s*$)|((?<=\S)(?=\s*$))|((?<=[\}>\]\)]|[_$[:alpha:]])\s*(?=\{)))'
+          pop: true
+        - include: type
+  type-builtin-literals:
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(this|true|false|undefined|null|object)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
+      scope: support.type.builtin.ts
   type-fn-type-parameters:
-    - match: (?<!\.|\$)\b(new)\b(?=\s*\<)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(new)\b(?=\s*\<)'
       scope: meta.type.constructor.ts
       captures:
         1: keyword.control.new.ts
-    - match: (?<!\.|\$)\b(new)\b\s*(?=\()
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(new)\b\s*(?=\()'
       captures:
         1: keyword.control.new.ts
       push:
@@ -1944,31 +2126,37 @@ contexts:
           pop: true
         - include: function-parameters
   type-function-return-type:
+    - match: (=>)(?=\s*\S)
+      captures:
+        1: storage.type.function.arrow.ts
+      push:
+        - meta_scope: meta.type.function.return.ts
+        - match: '(?<!=>)(?<![|&])(?=[,\]\)\{\}=;>]|//|$)'
+          pop: true
+        - include: type-function-return-type-core
     - match: "=>"
       captures:
         0: storage.type.function.arrow.ts
       push:
         - meta_scope: meta.type.function.return.ts
-        - match: '(?<!=>)(?=[,\]\)\{\}=;>]|//|$)'
+        - match: '(?<!=>)(?<![|&])((?=[,\]\)\{\}=;>]|//|^\s*$)|((?<=\S)(?=\s*$)))'
           pop: true
-        - include: comment
-        - match: '(?<==>)\s*(\{)'
-          captures:
-            1: punctuation.definition.block.ts
-          push:
-            - meta_scope: meta.object.type.ts
-            - match: '\}'
-              captures:
-                0: punctuation.definition.block.ts
-              pop: true
-            - include: type-object-members
-        - include: type-predicate-operator
-        - include: type
+        - include: type-function-return-type-core
+  type-function-return-type-core:
+    - include: comment
+    - match: '(?<==>)(?=\s*\{)'
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: type-object
+    - include: type-predicate-operator
+    - include: type
   type-name:
-    - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(\.)'
+    - match: '([_$[:alpha:]][_$[:alnum:]]*)\s*(?:(\.)|(\?\.(?!\s*[[:digit:]])))'
       captures:
         1: entity.name.type.module.ts
         2: punctuation.accessor.ts
+        3: punctuation.accessor.optional.ts
     - match: "[_$[:alpha:]][_$[:alnum:]]*"
       scope: entity.name.type.ts
   type-object:
@@ -1981,29 +2169,38 @@ contexts:
           captures:
             0: punctuation.definition.block.ts
           pop: true
-        - include: type-object-members
-  type-object-members:
-    - include: comment
-    - include: method-declaration
-    - include: indexer-declaration
-    - include: indexer-mapped-type-declaration
-    - include: field-declaration
-    - include: type-annotation
-    - match: \.\.\.
-      captures:
-        0: keyword.operator.spread.ts
-      push:
-        - match: '(?=\}|;|,|$)|(?<=\})'
-          pop: true
+        - include: comment
+        - include: method-declaration
+        - include: indexer-declaration
+        - include: indexer-mapped-type-declaration
+        - include: field-declaration
+        - include: type-annotation
+        - match: \.\.\.
+          captures:
+            0: keyword.operator.spread.ts
+          push:
+            - match: '(?=\}|;|,|$)|(?<=\})'
+              pop: true
+            - include: type
+        - include: punctuation-comma
+        - include: punctuation-semicolon
         - include: type
-    - include: punctuation-comma
-    - include: punctuation-semicolon
-    - include: type
   type-operators:
     - include: typeof-operator
+    - match: '([&|])(?=\s*\{)'
+      captures:
+        0: keyword.operator.type.ts
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: type-object
     - match: "[&|]"
-      scope: keyword.operator.type.ts
-    - match: (?<!\.|\$)\bkeyof\b(?!\$)
+      captures:
+        0: keyword.operator.type.ts
+      push:
+        - match: (?=\S)
+          pop: true
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))keyof(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.keyof.ts
   type-parameters:
     - match: (<)
@@ -2011,12 +2208,12 @@ contexts:
         1: punctuation.definition.typeparameters.begin.ts
       push:
         - meta_scope: meta.type.parameters.ts
-        - match: (?=$)|(>)
+        - match: (>)
           captures:
             1: punctuation.definition.typeparameters.end.ts
           pop: true
         - include: comment
-        - match: (?<!\.|\$)\b(extends)\b(?!\$)
+        - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(extends)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
           scope: storage.modifier.ts
         - match: \=(?!>)
           scope: keyword.operator.assignment.ts
@@ -2035,10 +2232,10 @@ contexts:
         - include: type
         - include: function-parameters
   type-predicate-operator:
-    - match: (?<!\.|\$)\bis\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))is(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.is.ts
   type-primitive:
-    - match: (?<!\.|\$)\b(string|number|boolean|symbol|any|void|never)\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(string|number|boolean|symbol|any|void|never)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: support.type.primitive.ts
   type-tuple:
     - match: '\['
@@ -2053,54 +2250,83 @@ contexts:
         - include: type
         - include: punctuation-comma
   typeof-operator:
-    - match: (?<!\.|\$)\btypeof\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))typeof(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: keyword.operator.expression.typeof.ts
   undefined-literal:
-    - match: (?<!\.|\$)\bundefined\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))undefined(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       scope: constant.language.undefined.ts
   var-expr:
-    - match: (?<!\.|\$)(?:(\bexport)\s+)?\b(var|let|const(?!\s+enum\b))\b(?!\$)
+    - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?\b(var|let|const(?!\s+enum\b))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))'
       captures:
         1: keyword.control.export.ts
         2: storage.type.ts
       push:
         - meta_scope: meta.var.expr.ts
-        - match: '(?=$|;|}|(\s+(of|in)\s+))'
+        - match: '(?=$|^|;|}|(\s+(of|in)\s+))'
           pop: true
         - include: destructuring-variable
         - include: var-single-variable
         - include: variable-initializer
         - include: comment
+        - match: (,)\s*(?!\S)
+          captures:
+            1: punctuation.separator.comma.ts
+          push:
+            - match: '(?<!,)((?==|;|}|(\s+(of|in)\s+)|^\s*$))|((?<=\S)(?=\s*$))'
+              pop: true
+            - include: comment
+            - include: destructuring-variable
+            - include: var-single-variable
+            - include: punctuation-comma
         - include: punctuation-comma
   var-single-variable:
     - match: |-
         (?x)([_$[:alpha:]][_$[:alnum:]]*)(?=\s*
-          (=\s*(
-            (async\s+) |
-            (function\s*[(<]) |
+        # function assignment |
+        (=\s*(
+          ((async\s+)?(
+            (function\s*[(<*]) |
             (function\s+) |
-            ([_$[:alpha:]][_$[:alnum:]]*\s*=>) |
-            ([(]\s*(([)]\s*:)|([_$[:alpha:]][_$[:alnum:]]*\s*:)|(\.\.\.) )) |
-            ([<]\s*[_$[:alpha:]][_$[:alnum:]]*((\s+extends\s*[^=>])|(\s*[,]))) |
-            ((<([^<>]|\<[^<>]+\>)+>\s*)?\(([^()]|\([^()]*\))*\)(\s*:\s*(.)*)?\s*=>))
-          ) |
-          (:\s*(
-            (<) |
-            ([(]\s*(
-              ([)]) |
-              (\.\.\.) |
-              ([_$[:alnum:]]+\s*(
-                ([:,?=])|
-                ([)]\s*=>)
-              ))
-            )))
+            ([_$[:alpha:]][_$[:alnum:]]*\s*=>)
+          )) |
+          ((async\s*)?(
+            # sure shot arrow functions even if => is on new line
+        (
+          [(]\s*
+          (
+            ([)]\s*:) |                                                                 # ():
+            ((\.\.\.\s*)?[_$[:alpha:]][_$[:alnum:]]*\s*:)                                            # [(]param: | [(]...param:
           )
+        ) |
+        (
+          [<]\s*[_$[:alpha:]][_$[:alnum:]]*\s+extends\s*[^=>]                                        # < typeparam extends
+        ) |
+        # arrow function possible to detect only with => on same line
+        (
+          (<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<]|\<\s*([_$[:alpha:]]|(\{[^\{\}]*\})|(\([^\(\)]*\))|(\[[^\[\]]*\]))([^=<>]|=[^<])*\>)*>\s*)?                                                           # typeparameters
+          \(\s*([_$[:alpha:]\{\[]([^()]|\((\s*[^()]*)?\))*)?\)                          # parameteres
+          (\s*:\s*([^<>\(\)]|\<[^<>]+\>|\([^\(\)]+\))+)?                                # return type
+          \s*=>                                                                         # arrow operator
         )
+          ))
+        )) |
+        # typeannotation is fn type: < | () | (... | (param: | (param, | (param? | (param= | (param) =>
+        (:\s*(
+          (<) |
+          ([(]\s*(
+            ([)]) |
+            (\.\.\.) |
+            ([_$[:alnum:]]+\s*(
+              ([:,?=])|
+              ([)]\s*=>)
+            ))
+          ))
+        )))
       captures:
         1: meta.definition.variable.ts entity.name.function.ts
       push:
         - meta_scope: meta.var-single-variable.expr.ts
-        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+        - match: '(?=$|^|[;,=}]|(\s+(of|in)\s+))'
           pop: true
         - include: var-single-variable-type-annotation
     - match: "([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])"
@@ -2108,7 +2334,7 @@ contexts:
         1: meta.definition.variable.ts variable.other.constant.ts
       push:
         - meta_scope: meta.var-single-variable.expr.ts
-        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+        - match: '(?=$|^|[;,=}]|(\s+(of|in)\s+))'
           pop: true
         - include: var-single-variable-type-annotation
     - match: "([_$[:alpha:]][_$[:alnum:]]*)"
@@ -2116,7 +2342,7 @@ contexts:
         1: meta.definition.variable.ts variable.other.readwrite.ts
       push:
         - meta_scope: meta.var-single-variable.expr.ts
-        - match: '(?=$|[;,=}]|(\s+(of|in)\s+))'
+        - match: '(?=$|^|[;,=}]|(\s+(of|in)\s+))'
           pop: true
         - include: var-single-variable-type-annotation
   var-single-variable-type-annotation:
@@ -2128,13 +2354,13 @@ contexts:
       captures:
         1: keyword.operator.assignment.ts
       push:
-        - match: '(?=$|[,);}\]])'
+        - match: '(?=$|^|[,);}\]])'
           pop: true
         - include: expression
     - match: (?<!=|!)(=)(?!=)
       captures:
         1: keyword.operator.assignment.ts
       push:
-        - match: '(?=[,);}\]])|(?=^\s*$)'
+        - match: '(?=[,);}\]])|(?=^\s*$)|(?<=\S)(?<!=)(?=\s*$)'
           pop: true
         - include: expression

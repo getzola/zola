@@ -1,10 +1,10 @@
 [package]
 name = "gutenberg"
-version = "0.2.2"
-authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+version = "0.3.0"
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-description = "Static site generator"
+description = "A static site generator with everything built-in"
 homepage = "https://github.com/Keats/gutenberg"
 repository = "https://github.com/Keats/gutenberg"
 keywords = ["static", "site", "generator", "blog"]
@@ -24,11 +24,12 @@ term-painter = "0.2"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
 # Below is for the serve cmd
-staticfile = "0.4"
-iron = "0.5"
-mount = "0.3"
+staticfile = "0.5"
+iron = "0.6"
+mount = "0.4"
 notify = "4"
 ws = "0.7"
+ctrlc = "3"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }

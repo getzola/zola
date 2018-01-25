@@ -57,3 +57,8 @@ To be featured on this site, the theme will require two more things:
 of importance
 
 A simple theme you can use as example is [Hyde](https://github.com/Keats/hyde).
+
+# Caveat
+
+Please note that [include paths](https://tera.netlify.com/docs/templates/#include) can only be used in used in normal templates. Theme templates should use [macro's](https://tera.netlify.com/docs/templates/#macros) instead.
+

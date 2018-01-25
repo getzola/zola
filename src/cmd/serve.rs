@@ -22,6 +22,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
+use std::fs::remove_dir_all;
 use std::path::Path;
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
@@ -33,6 +34,8 @@ use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket, Sender, Message};
+use ctrlc;
+
 use site::Site;
 use errors::{Result, ResultExt};
 
@@ -45,6 +48,7 @@ enum ChangeKind {
     Templates,
     StaticFiles,
     Sass,
+    Config,
 }
 
 // Uglified using uglifyjs
@@ -77,8 +81,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
-pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
-    let start = Instant::now();
+fn create_new_site(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
     let address = format!("{}:{}", interface, port);
@@ -88,22 +91,30 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     } else {
         format!("http://{}", address)
     };
-
+    site.set_output_path(output_dir);
     site.load()?;
     site.enable_live_reload();
     console::notify_site_size(&site);
     console::warn_about_ignored_pages(&site);
     site.build()?;
+    Ok((site, address))
+}
+
+pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
+    let start = Instant::now();
+    let (mut site, address) = create_new_site(interface, port, output_dir, config_file)?;
     console::report_elapsed_time(start);
-    let mut watching_static = false;
 
     // Setup watchers
+    let mut watching_static = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
     watcher.watch("content/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
     watcher.watch("templates/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
+    watcher.watch("config.toml", RecursiveMode::Recursive)
+        .chain_err(|| "Can't watch the `config.toml` file. Does it exist?")?;
 
     if Path::new("static").exists() {
         watching_static = true;
@@ -116,9 +127,9 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     let ws_address = format!("{}:{}", interface, "1112");
 
-    // Start a webserver that serves the `public` directory
+    // Start a webserver that serves the `output_dir` directory
     let mut mount = Mount::new();
-    mount.mount("/", Static::new(Path::new("public/")));
+    mount.mount("/", Static::new(Path::new(output_dir)));
     mount.mount("/livereload.js", livereload_handler);
     // Starts with a _ to not trigger the unused lint
     // we need to assign to a variable otherwise it will block
@@ -147,7 +158,7 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
 
     let pwd = format!("{}", env::current_dir().unwrap().display());
 
-    let mut watchers = vec!["content", "templates"];
+    let mut watchers = vec!["content", "templates", "config.toml"];
     if watching_static {
         watchers.push("static");
     }
@@ -158,6 +169,12 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
     println!("Listening for changes in {}/{{{}}}", pwd, watchers.join(", "));
     println!("Web server is available at http://{}", address);
     println!("Press Ctrl+C to stop\n");
+    // Delete the output folder on ctrl+C
+    let output_path = Path::new(output_dir).to_path_buf();
+    ctrlc::set_handler(move || {
+        remove_dir_all(&output_path).expect("Failed to delete output directory");
+        ::std::process::exit(0);
+    }).expect("Error setting Ctrl-C handler");
 
     use notify::DebouncedEvent::*;
 
@@ -196,6 +213,10 @@ pub fn serve(interface: &str, port: &str, config_file: &str) -> Result<()> {
                                 console::info(&format!("-> Sass file changed {}", path.display()));
                                 rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p);
                             },
+                            (ChangeKind::Config, _) => {
+                                console::info(&format!("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible."));
+                                site = create_new_site(interface, port, output_dir, config_file).unwrap().0;
+                            }
                         };
                         console::report_elapsed_time(start);
                     }
@@ -249,6 +270,8 @@ fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
         ChangeKind::StaticFiles
     } else if path_str.starts_with("/sass") {
         ChangeKind::Sass
+    } else if path_str == "/config.toml" {
+        ChangeKind::Config
     } else {
         unreachable!("Got a change in an unexpected path: {}", path_str)
     };
@@ -299,7 +322,11 @@ mod tests {
             (
                 (ChangeKind::Sass, "/sass/print.scss".to_string()),
                 "/home/vincent/site", Path::new("/home/vincent/site/sass/print.scss")
-            )
+            ),
+            (
+                (ChangeKind::Config, "/config.toml".to_string()),
+                "/home/vincent/site", Path::new("/home/vincent/site/config.toml")
+            ),
         ];
 
         for (expected, pwd, path) in test_cases {

@@ -6,6 +6,7 @@ use toml;
 
 use errors::Result;
 
+
 /// The front matter of every page
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PageFrontMatter {
@@ -14,7 +15,7 @@ pub struct PageFrontMatter {
     /// Description in <meta> that appears when linked, e.g. on twitter
     pub description: Option<String>,
     /// Date if we want to order pages (ie blog post)
-    pub date: Option<String>,
+    pub date: Option<toml::value::Datetime>,
     /// Whether this page is a draft and should be ignored for pagination etc
     pub draft: Option<bool>,
     /// The page slug. Will be used instead of the filename if present
@@ -71,17 +72,17 @@ impl PageFrontMatter {
         Ok(f)
     }
 
-    /// Converts the date in the front matter, which can be in 2 formats, into a NaiveDateTime
+    /// Converts the TOML datetime to a Chrono naive datetime
     pub fn date(&self) -> Option<NaiveDateTime> {
-        match self.date {
-            Some(ref d) => {
-                if d.contains('T') {
-                    DateTime::parse_from_rfc3339(d).ok().and_then(|s| Some(s.naive_local()))
-                } else {
-                    NaiveDate::parse_from_str(d, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0,0,0)))
-                }
-            },
-            None => None,
+        if let Some(ref d) = self.date {
+            let d2 = d.to_string();
+            if d2.contains('T') {
+                DateTime::parse_from_rfc3339(&d2).ok().and_then(|s| Some(s.naive_local()))
+            } else {
+                NaiveDate::parse_from_str(&d2, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0, 0, 0)))
+            }
+        } else {
+            None
         }
     }
 
@@ -120,6 +121,7 @@ impl Default for PageFrontMatter {
         }
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -203,9 +205,10 @@ mod tests {
         let content = r#"
     title = "Hello"
     description = "hey there"
-    date = "2016-10-10""#;
+    date = 2016-10-10
+    "#;
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.date().is_some());
+        assert!(res.date.is_some());
     }
 
     #[test]
@@ -213,9 +216,10 @@ mod tests {
         let content = r#"
     title = "Hello"
     description = "hey there"
-    date = "2002-10-02T15:00:00Z""#;
+    date = 2002-10-02T15:00:00Z
+    "#;
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.date().is_some());
+        assert!(res.date.is_some());
     }
 
     #[test]
@@ -223,9 +227,28 @@ mod tests {
         let content = r#"
     title = "Hello"
     description = "hey there"
-    date = "2002/10/12""#;
-        let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.date().is_none());
+    date = 2002/10/12"#;
+        let res = PageFrontMatter::parse(content);
+        assert!(res.is_err());
     }
 
+    #[test]
+    fn cannot_parse_invalid_date_format() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-14-01"#;
+        let res = PageFrontMatter::parse(content);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn cannot_parse_date_as_string() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = "2002-14-01""#;
+        let res = PageFrontMatter::parse(content);
+        assert!(res.is_err());
+    }
 }

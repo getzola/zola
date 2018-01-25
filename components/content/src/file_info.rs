@@ -8,7 +8,7 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
     let mut components = vec![];
 
     for section in path.parent().unwrap().components() {
-        let component = section.as_ref().to_string_lossy();
+        let component = section.as_os_str().to_string_lossy();
 
         if is_in_content {
             components.push(component.to_string());

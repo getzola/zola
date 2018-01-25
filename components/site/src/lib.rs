@@ -151,8 +151,6 @@ impl Site {
         orphans
     }
 
-    /// Used by tests to change the output path to a tmp dir
-    #[doc(hidden)]
     pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {
         self.output_path = path.as_ref().to_path_buf();
     }
@@ -219,27 +217,7 @@ impl Site {
             self.add_page(p, false)?;
         }
 
-        {
-            // Another silly thing needed to not borrow &self in parallel and
-            // make the borrow checker happy
-            let permalinks = &self.permalinks;
-            let tera = &self.tera;
-            let config = &self.config;
-
-            self.pages.par_iter_mut()
-                .map(|(_, page)| {
-                    let insert_anchor = pages_insert_anchors[&page.file.path];
-                    page.render_markdown(permalinks, tera, config, insert_anchor)
-                })
-                .fold(|| Ok(()), Result::and)
-                .reduce(|| Ok(()), Result::and)?;
-
-            self.sections.par_iter_mut()
-                .map(|(_, section)| section.render_markdown(permalinks, tera, config))
-                .fold(|| Ok(()), Result::and)
-                .reduce(|| Ok(()), Result::and)?;
-        }
-
+        self.render_markdown()?;
         self.populate_sections();
         self.populate_tags_and_categories();
 
@@ -248,9 +226,46 @@ impl Site {
         Ok(())
     }
 
+    /// Render the markdown of all pages/sections
+    /// Used in a build and in `serve` if a shortcode has changed
+    pub fn render_markdown(&mut self) -> Result<()> {
+        // Another silly thing needed to not borrow &self in parallel and
+        // make the borrow checker happy
+        let permalinks = &self.permalinks;
+        let tera = &self.tera;
+        let config = &self.config;
+
+        // TODO: avoid the duplication with function above for that part
+        // This is needed in the first place because of silly borrow checker
+        let mut pages_insert_anchors = HashMap::new();
+        for (_, p) in &self.pages {
+            pages_insert_anchors.insert(p.file.path.clone(), self.find_parent_section_insert_anchor(&p.file.parent.clone()));
+        }
+
+        self.pages.par_iter_mut()
+            .map(|(_, page)| {
+                let insert_anchor = pages_insert_anchors[&page.file.path];
+                page.render_markdown(permalinks, tera, config, insert_anchor)
+            })
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)?;
+
+        self.sections.par_iter_mut()
+            .map(|(_, section)| section.render_markdown(permalinks, tera, config))
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)?;
+
+        Ok(())
+    }
+
     pub fn register_tera_global_fns(&mut self) {
+        self.tera.register_global_function("trans", global_fns::make_trans(self.config.clone()));
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
+        self.tera.register_global_function(
+            "get_taxonomy_url",
+            global_fns::make_get_taxonomy_url(self.tags.clone(), self.categories.clone())
+        );
         self.tera.register_global_function(
             "get_url",
             global_fns::make_get_url(self.permalinks.clone(), self.config.clone())
@@ -318,6 +333,8 @@ impl Site {
             section.ignored_pages = vec![];
         }
 
+        // TODO: use references instead of cloning to avoid having to call populate_section on
+        // content change
         for page in self.pages.values() {
             let parent_section_path = page.file.parent.join("_index.md");
             if self.sections.contains_key(&parent_section_path) {
@@ -443,7 +460,7 @@ impl Site {
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
             // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path).chain_err(|| "Couldn't delete `public` directory")?;
+            remove_dir_all(&self.output_path).chain_err(|| "Couldn't delete output directory")?;
         }
 
         Ok(())
@@ -620,7 +637,13 @@ impl Site {
             &self.pages
                 .values()
                 .filter(|p| !p.is_draft())
-                .map(|p| SitemapEntry::new(p.permalink.clone(), p.meta.date.clone()))
+                .map(|p| {
+                    let date = match p.meta.date {
+                        Some(ref d) => Some(d.to_string()),
+                        None => None,
+                    };
+                    SitemapEntry::new(p.permalink.clone(), date)
+                })
                 .collect::<Vec<_>>()
         );
         context.add(
@@ -678,7 +701,7 @@ impl Site {
         }
 
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
-        context.add("last_build_date", &sorted_pages[0].meta.date);
+        context.add("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
          // limit to the last n elements)
         context.add("pages", &sorted_pages.iter().take(self.config.rss_limit.unwrap()).collect::<Vec<_>>());
         context.add("config", &self.config);

@@ -32,6 +32,8 @@ _arguments -s -S -C \
 _arguments -s -S -C \
 '-u+[Force the base URL to be that value (default to the one in config.toml)]' \
 '--base-url+[Force the base URL to be that value (default to the one in config.toml)]' \
+'-o+[Outputs the generated site in the given path]' \
+'--output-dir+[Outputs the generated site in the given path]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
@@ -44,6 +46,8 @@ _arguments -s -S -C \
 '--interface+[Interface to bind on]' \
 '-p+[Which port to use]' \
 '--port+[Which port to use]' \
+'-o+[Outputs the generated site in the given path]' \
+'--output-dir+[Outputs the generated site in the given path]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \

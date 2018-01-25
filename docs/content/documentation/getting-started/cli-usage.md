@@ -36,6 +36,11 @@ $ gutenberg build --base-url $DEPLOY_URL
 This is useful for example when you want to deploy previews of a site to a dynamic URL, such as Netlify 
 deploy previews.
 
++You can override the default output directory 'public' by passing a other value to the `output-dir` flag.
+```bash
+$ gutenberg build --output-dir $DOCUMENT_ROOT
+```
+
 ## serve
 
 This will build and serve the site using a local server. You can also specify
@@ -46,6 +51,7 @@ $ gutenberg serve
 $ gutenberg serve --port 2000
 $ gutenberg serve --interface 0.0.0.0 
 $ gutenberg serve --interface 0.0.0.0 --port 2000
+$ gutenberg serve --interface 0.0.0.0 --port 2000 --output-dir www/public
 ```
 
 The serve command will watch all your content and will provide live reload, without

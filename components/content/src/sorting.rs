@@ -98,13 +98,16 @@ pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+    use toml::value::Datetime;
+
     use front_matter::{PageFrontMatter, SortBy};
     use page::Page;
     use super::{sort_pages, populate_previous_and_next_pages};
 
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
-        front_matter.date = Some(date.to_string());
+        front_matter.date = Some(Datetime::from_str(date).unwrap());
         Page::new("content/hello.md", front_matter)
     }
 
@@ -136,9 +139,9 @@ mod tests {
         ];
         let (pages, _) = sort_pages(input, SortBy::Date);
         // Should be sorted by date
-        assert_eq!(pages[0].clone().meta.date.unwrap(), "2019-01-01");
-        assert_eq!(pages[1].clone().meta.date.unwrap(), "2018-01-01");
-        assert_eq!(pages[2].clone().meta.date.unwrap(), "2017-01-01");
+        assert_eq!(pages[0].clone().meta.date.unwrap().to_string(), "2019-01-01");
+        assert_eq!(pages[1].clone().meta.date.unwrap().to_string(), "2018-01-01");
+        assert_eq!(pages[2].clone().meta.date.unwrap().to_string(), "2017-01-01");
     }
 
     #[test]

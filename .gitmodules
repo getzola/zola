@@ -7,9 +7,6 @@
 [submodule "sublime_syntaxes/LESS-sublime"]
 	path = sublime_syntaxes/LESS-sublime
 	url = https://github.com/danro/LESS-sublime.git
-[submodule "sublime_syntaxes/TypeScript-Sublime-Plugin"]
-	path = sublime_syntaxes/TypeScript-Sublime-Plugin
-	url = https://github.com/Microsoft/TypeScript-Sublime-Plugin.git
 [submodule "sublime_syntaxes/Handlebars"]
 	path = sublime_syntaxes/Handlebars
 	url = https://github.com/daaain/Handlebars.git
@@ -31,3 +28,6 @@
 [submodule "sublime_syntaxes/Sublime-VimL"]
 	path = sublime_syntaxes/Sublime-VimL
 	url = https://github.com/SalGnt/Sublime-VimL.git
+[submodule "sublime_syntaxes/TypeScript-TmLanguage"]
+	path = sublime_syntaxes/TypeScript-TmLanguage
+	url = https://github.com/Microsoft/TypeScript-TmLanguage

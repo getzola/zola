@@ -4,10 +4,10 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 
 [dependencies]
-tera = "0.10"
+tera = "0.11.0"
 regex = "0.2"
-lazy_static = "0.2"
-syntect = { version = "1", features = ["static-onig"] }
+lazy_static = "1"
+syntect = "2"
 pulldown-cmark = "0"
 slug = "0.1"
 serde = "1.0"

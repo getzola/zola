@@ -21,7 +21,8 @@ base_url = "mywebsite.com"
 # Used in RSS by default
 title = ""
 description = ""
-language_code = "en"
+# the default language, used in RSS and coming i18n
+default_language = "en"
 
 # Theme name to use
 theme = ""
@@ -49,6 +50,9 @@ generate_categories_pages = false
 
 # Whether to compile the Sass files found in the `sass` directory
 compile_sass = false
+
+# Optional translation object. The key if present should be a language code
+[translations]
 
 # You can put any kind of data in there and it 
 # will be accessible in all templates

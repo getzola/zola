@@ -4,5 +4,5 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 
 [dependencies]
-lazy_static = "0.2"
-syntect = { version = "1", features = ["static-onig"] }
+lazy_static = "1"
+syntect = "2"

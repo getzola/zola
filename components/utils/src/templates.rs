@@ -2,6 +2,20 @@ use tera::{Tera, Context};
 
 use errors::Result;
 
+static DEFAULT_TPL: &str = include_str!("default_tpl.html");
+
+
+macro_rules! render_default_tpl {
+    ($filename: expr, $url: expr) => {
+        {
+            let mut context = Context::new();
+            context.add("filename", $filename);
+            context.add("url", $url);
+            Tera::one_off(DEFAULT_TPL, &context, true).map_err(|e| e.into())
+        }
+    };
+}
+
 /// Renders the given template with the given context, but also ensures that, if the default file
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string
@@ -19,11 +33,19 @@ pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: Option
             .map_err(|e| e.into());
     }
 
-    if name == "index.html" || name == "section.html" || name == "page.html" {
-        return Ok(String::new());
+    // maybe it's a default one?
+    match name {
+        "index.html" | "section.html" => {
+            render_default_tpl!(name, "https://www.getgutenberg.io/documentation/templates/pages-sections/#section-variables")
+        },
+        "page.html" => {
+            render_default_tpl!(name, "https://www.getgutenberg.io/documentation/templates/pages-sections/#page-variables")
+        },
+        "tag.html" | "tags.html" | "category.html" | "categories.html" => {
+            render_default_tpl!(name, "https://www.getgutenberg.io/documentation/templates/tags-categories/")
+        },
+        _ => bail!("Tried to render `{}` but the template wasn't found", name)
     }
-
-    bail!("Tried to render `{}` but the template wasn't found", name)
 }
 
 
@@ -55,7 +77,7 @@ mod tests {
 
     #[test]
     fn can_rewrite_all_paths_of_theme() {
-        let mut tera = Tera::parse("templates/*.html").unwrap();
+        let mut tera = Tera::parse("test-templates/*.html").unwrap();
         rewrite_theme_paths(&mut tera, "hyde");
         // special case to make the test work: we also rename the files to
         // match the imports

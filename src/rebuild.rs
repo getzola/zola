@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, Component};
 
 use errors::Result;
 use site::Site;
@@ -231,8 +231,9 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
 /// What happens when a template is changed
 pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
     site.tera.full_reload()?;
+    let filename = path.file_name().unwrap().to_str().unwrap();
 
-    match path.file_name().unwrap().to_str().unwrap() {
+    match filename {
         "sitemap.xml" => site.render_sitemap(),
         "rss.xml" => site.render_rss_feed(),
         "robots.txt" => site.render_robots(),
@@ -247,6 +248,14 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
         // We can't really know what this change affects so rebuild all
         // the things
         _ => {
+            // If we are updating a shortcode, re-render the markdown of all pages/site
+            // because we have no clue which one needs rebuilding
+            // TODO: look if there the shortcode is used in the markdown instead of re-rendering
+            // everything
+            if path.components().collect::<Vec<_>>().contains(&Component::Normal("shortcodes".as_ref())) {
+                site.render_markdown()?;
+            }
+            site.populate_sections();
             site.render_sections()?;
             site.render_orphan_pages()?;
             site.render_categories()?;

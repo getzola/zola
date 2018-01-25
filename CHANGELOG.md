@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0 (2017-01-25)
+
+### Breaking
+- Change names of individual taxonomies to be plural (ie `tags/my-tag` instead of `tag/my-tag`)
+- Front matter now uses TOML dates rather strings: remove quotes from your date value to fix it.
+For example: `date = "2001-10-10"` becomes `date = 2001-10-10`
+- `language_code` has been renamed `default_language` in preparations of i18n support
+
+### Others
+- Add `get_taxonomy_url` to retrieve the permalink of a tag/category
+- Fix bug when generating permalinks for taxonomies
+- Update to Tera 0.11
+- Better UX on first `serve` thanks to some default templates.
+- Add `output-dir` to `build` and `serve` to generate the site in a folder other than `public`
+- Add Prolog syntax highlighting and update all current syntaxes
+- Live reloading now works on shortcode template changes
+- `gutenberg serve` now reloads site on `config.toml` changes: you will need to F5 to see any changes though
+- Add a `trans` global function that will get return the translation of the given key for the given lang, defaulting
+to `config.default_language` if not given
+- `gutenberg serve` cleans after itself and deletes the output directory on CTRL+C
+
 ## 0.2.2 (2017-11-01)
 
 - Fix shortcodes without arguments being ignored
