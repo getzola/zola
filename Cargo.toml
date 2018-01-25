@@ -1,10 +1,10 @@
 [package]
 name = "gutenberg"
 version = "0.3.0"
-authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-description = "Static site generator"
+description = "A static site generator with everything built-in"
 homepage = "https://github.com/Keats/gutenberg"
 repository = "https://github.com/Keats/gutenberg"
 keywords = ["static", "site", "generator", "blog"]
