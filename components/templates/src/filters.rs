@@ -5,12 +5,24 @@ use pulldown_cmark as cmark;
 use tera::{Value, to_value, Result as TeraResult};
 
 
-pub fn markdown(value: Value, _: HashMap<String, Value>) -> TeraResult<Value> {
+pub fn markdown(value: Value, args: HashMap<String, Value>) -> TeraResult<Value> {
     let s = try_get_value!("markdown", "value", String, value);
+    let inline = match args.get("inline") {
+        Some(val) => try_get_value!("markdown", "inline", bool, val),
+        None => false,
+    };
 
     let mut html = String::new();
     let parser = cmark::Parser::new(&s);
     cmark::html::push_html(&mut html, parser);
+
+    if inline {
+        html = html
+            .trim_left_matches("<p>")
+            // pulldown_cmark finishes a paragraph with `</p>\n`
+            .trim_right_matches("</p>\n")
+            .to_string();
+    }
 
     Ok(to_value(&html).unwrap())
 }
@@ -48,6 +60,15 @@ mod tests {
         let result = markdown(to_value(&"# Hey").unwrap(), HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1>Hey</h1>\n").unwrap());
+    }
+
+    #[test]
+    fn markdown_filter_inline() {
+        let mut args = HashMap::new();
+        args.insert("inline".to_string(), to_value(true).unwrap());
+        let result = markdown(to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(), args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
     }
 
     #[test]
