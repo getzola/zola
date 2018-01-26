@@ -14,7 +14,7 @@ CATEGORIES = ["c1", "c2", "c3", "c4"]
 PAGE = """
 +++
 title = "Hello"
-date = "REPLACE_DATE"
+date = REPLACE_DATE
 tags = REPLACE_TAG
 category = "REPLACE_CATEGORY"
 +++
@@ -105,6 +105,7 @@ title = "My site"
 base_url = "https://replace-this-with-your-url.com"
 generate_tags_pages = true
 generate_categories_pages = true
+theme = "sample"
 
 [extra.author]
 name = "Vincent Prouillet"
@@ -113,14 +114,15 @@ name = "Vincent Prouillet"
             f.write("""
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
+theme = "sample"
 
 [extra.author]
 name = "Vincent Prouillet"
 """)
 
-
     # Re-use the test templates
     shutil.copytree("../test_site/templates", os.path.join(name, "templates"))
+    shutil.copytree("../test_site/themes", os.path.join(name, "themes"))
 
 
 def gen_section(path, num_pages, is_blog):
