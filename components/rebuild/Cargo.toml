@@ -1,0 +1,15 @@
+[package]
+name = "rebuild"
+version = "0.1.0"
+authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+
+[dependencies]
+errors = { path = "../errors" }
+front_matter = { path = "../front_matter" }
+highlighting = { path = "../highlighting" }
+content = { path = "../content" }
+site = { path = "../site" }
+
+[dev-dependencies]
+tempdir = "0.3"
+fs_extra = "1.1.0"

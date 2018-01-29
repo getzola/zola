@@ -52,7 +52,7 @@ paginate_path = "page"
 # Options are "left", "right" and "none"
 insert_anchor_links = "none"
 
-# Whether to render that section or not. 
+# Whether to render that section homepage or not. 
 # Useful when the section is only there to organize things but is not meant
 # to be used directly
 render = true
