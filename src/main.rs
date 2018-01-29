@@ -57,8 +57,9 @@ fn main() {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let port = matches.value_of("port").unwrap_or("1111");
             let output_dir = matches.value_of("output_dir").unwrap();
+            let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");
-            match cmd::serve(interface, port, output_dir, config_file) {
+            match cmd::serve(interface, port, output_dir, base_url, config_file) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("", &e);

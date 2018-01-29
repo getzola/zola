@@ -81,16 +81,18 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
-fn create_new_site(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<(Site, String)> {
+fn create_new_site(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
+    let base_address = format!("{}:{}", base_url, port);
     let address = format!("{}:{}", interface, port);
-    // Override the base url so links work in localhost
+
     site.config.base_url = if site.config.base_url.ends_with('/') {
-        format!("http://{}/", address)
+        format!("http://{}/", base_address)
     } else {
-        format!("http://{}", address)
+        format!("http://{}", base_address)
     };
+
     site.set_output_path(output_dir);
     site.load()?;
     site.enable_live_reload();
@@ -100,9 +102,9 @@ fn create_new_site(interface: &str, port: &str, output_dir: &str, config_file: &
     Ok((site, address))
 }
 
-pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -> Result<()> {
+pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
-    let (mut site, address) = create_new_site(interface, port, output_dir, config_file)?;
+    let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
     console::report_elapsed_time(start);
 
     // Setup watchers
@@ -215,7 +217,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, config_file: &str) -
                             },
                             (ChangeKind::Config, _) => {
                                 console::info(&format!("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible."));
-                                site = create_new_site(interface, port, output_dir, config_file).unwrap().0;
+                                site = create_new_site(interface, port, output_dir, base_url, config_file).unwrap().0;
                             }
                         };
                         console::report_elapsed_time(start);

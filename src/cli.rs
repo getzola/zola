@@ -54,6 +54,12 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("public")
                         .takes_value(true)
                         .help("Outputs the generated site in the given path"),
+                    Arg::with_name("base_url")
+                        .short("u")
+                        .long("base-url")
+                        .default_value("127.0.0.1")
+                        .takes_value(true)
+                        .help("Changes the base_url. Defaults to 127.0.0.1"),
                 ]),
         ])
 }
