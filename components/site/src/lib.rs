@@ -275,7 +275,7 @@ impl Site {
     /// Add a page to the site
     /// The `render` parameter is used in the serve command, when rebuilding a page.
     /// If `true`, it will also render the markdown for that page
-    /// Returns the previous page struct if there was one
+    /// Returns the previous page struct if there was one at the same path
     pub fn add_page(&mut self, page: Page, render: bool) -> Result<Option<Page>> {
         let path = page.file.path.clone();
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
@@ -293,7 +293,7 @@ impl Site {
     /// Add a section to the site
     /// The `render` parameter is used in the serve command, when rebuilding a page.
     /// If `true`, it will also render the markdown for that page
-    /// Returns the previous section struct if there was one
+    /// Returns the previous section struct if there was one at the same path
     pub fn add_section(&mut self, section: Section, render: bool) -> Result<Option<Section>> {
         let path = section.file.path.clone();
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
@@ -333,11 +333,11 @@ impl Site {
             section.ignored_pages = vec![];
         }
 
-        // TODO: use references instead of cloning to avoid having to call populate_section on
-        // content change
         for page in self.pages.values() {
             let parent_section_path = page.file.parent.join("_index.md");
             if self.sections.contains_key(&parent_section_path) {
+                // TODO: use references instead of cloning to avoid having to call populate_section on
+                // content change
                 self.sections.get_mut(&parent_section_path).unwrap().pages.push(page.clone());
             }
         }

@@ -54,11 +54,15 @@ pub fn make_get_page(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {
 pub fn make_get_section(all_sections: &HashMap<PathBuf, Section>) -> GlobalFn {
     let mut sections = HashMap::new();
     for section in all_sections.values() {
+        if section.file.components == vec!["rebuild".to_string()] {
+            //println!("Setting sections:\n{:#?}", section.pages[0]);
+        }
         sections.insert(section.file.relative.clone(), section.clone());
     }
 
     Box::new(move |args| -> Result<Value> {
         let path = required_string_arg!(args.get("path"), "`get_section` requires a `path` argument with a string value");
+        //println!("Found {:#?}", sections.get(&path).unwrap().pages[0]);
         match sections.get(&path) {
             Some(p) => Ok(to_value(p).unwrap()),
             None => Err(format!("Section `{}` not found.", path).into())

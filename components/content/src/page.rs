@@ -59,7 +59,7 @@ impl Page {
 
         Page {
             file: FileInfo::new_page(file_path),
-            meta: meta,
+            meta,
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),
