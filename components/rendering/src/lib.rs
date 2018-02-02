@@ -34,7 +34,7 @@ pub use context::RenderContext;
 pub fn render_content(content: &str,  context: &RenderContext) -> Result<(String, Vec<Header>)> {
     // Don't do anything if there is nothing like a shortcode in the content
     if content.contains("{{") || content.contains("{%") {
-        let rendered = render_shortcodes(content, context.tera, context.config)?;
+        let rendered = render_shortcodes(content, context)?;
         return markdown_to_html(&rendered, context);
     }
 

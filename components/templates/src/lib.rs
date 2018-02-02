@@ -11,6 +11,7 @@ extern crate utils;
 extern crate content;
 extern crate config;
 extern crate taxonomies;
+extern crate imageproc;
 
 pub mod filters;
 pub mod global_fns;

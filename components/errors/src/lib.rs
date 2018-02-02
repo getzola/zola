@@ -4,6 +4,7 @@
 extern crate error_chain;
 extern crate tera;
 extern crate toml;
+extern crate image;
 
 error_chain! {
     errors {}
@@ -15,6 +16,7 @@ error_chain! {
     foreign_links {
         Io(::std::io::Error);
         Toml(toml::de::Error);
+        Image(image::ImageError);
     }
 }
 

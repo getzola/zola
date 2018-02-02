@@ -7,6 +7,7 @@ extern crate errors;
 extern crate config;
 extern crate front_matter;
 extern crate rendering;
+extern crate imageproc;
 extern crate utils;
 
 #[cfg(test)]

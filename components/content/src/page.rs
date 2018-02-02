@@ -15,6 +15,7 @@ use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
 use rendering::{RenderContext, Header, render_content};
+use imageproc;
 
 use file_info::FileInfo;
 
@@ -162,13 +163,16 @@ impl Page {
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, anchor_insert: InsertAnchor) -> Result<()> {
-        let context = RenderContext::new(
+        let mut context = RenderContext::new(
             tera,
             config,
             &self.permalink,
             permalinks,
             anchor_insert
         );
+
+        context.teracontext.add("page", self);
+
         let res = render_content(
             &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),
             &context
@@ -201,6 +205,23 @@ impl Page {
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
+    }
+
+    /// Creates two vectors of asset URLs. The first one contains all asset files,
+    /// the second one that which appear to be an image file.
+    fn serialize_assets(&self) -> (Vec<String>, Vec<String>) {
+        let mut assets = vec![];
+        let mut images = vec![];
+        for asset in self.assets.iter() {
+            if let Some(filename) = asset.file_name().and_then(|f| f.to_str()) {
+                let url = self.path.clone() + filename;
+                if imageproc::file_is_img(&asset) {
+                    images.push(url.clone());
+                }
+                assets.push(url);
+            }
+        }
+        (assets, images)
     }
 }
 
@@ -246,6 +267,9 @@ impl ser::Serialize for Page {
         state.serialize_field("next", &self.next)?;
         state.serialize_field("toc", &self.toc)?;
         state.serialize_field("draft", &self.is_draft())?;
+        let (assets, assets_imgs) = self.serialize_assets();
+        state.serialize_field("assets", &assets)?;
+        state.serialize_field("assets_imgs", &assets_imgs)?;
         state.end()
     }
 }

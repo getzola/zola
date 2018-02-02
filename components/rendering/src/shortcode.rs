@@ -1,9 +1,9 @@
 use pest::Parser;
 use pest::iterators::Pair;
-use tera::{Tera, Map, Context, Value, to_value};
+use tera::{Map, Context, Value, to_value};
 
 use errors::{Result, ResultExt};
-use config::Config;
+use ::context::RenderContext;
 
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file
@@ -84,20 +84,20 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
 }
 
 
-fn render_shortcode(name: String, args: Map<String, Value>, tera: &Tera, config: &Config, body: Option<&str>) -> Result<String> {
-    let mut context = Context::new();
+fn render_shortcode(name: String, args: Map<String, Value>, context: &RenderContext, body: Option<&str>) -> Result<String> {
+    let mut teracontext = Context::new();
     for (key, value) in args.iter() {
-        context.insert(key, value);
+        teracontext.insert(key, value);
     }
     if let Some(ref b) = body {
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
-        context.insert("body", b.trim_right());
+        teracontext.insert("body", b.trim_right());
     }
-    context.insert("config", config);
+    teracontext.extend(context.teracontext.clone());
     let tpl_name = format!("shortcodes/{}.html", name);
 
-    let res = tera
-        .render(&tpl_name, &context)
+    let res = context.tera
+        .render(&tpl_name, &teracontext)
         .chain_err(|| format!("Failed to render {} shortcode", name))?;
 
     // We trim left every single line of a shortcode to avoid the accidental
@@ -105,7 +105,7 @@ fn render_shortcode(name: String, args: Map<String, Value>, tera: &Tera, config:
     Ok(res.lines().map(|s| s.trim_left()).collect())
 }
 
-pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<String> {
+pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
     let mut res = String::with_capacity(content.len());
 
     let mut pairs = match ContentParser::parse(Rule::page, content) {
@@ -138,7 +138,7 @@ pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<
             Rule::text | Rule::text_in_ignored_body_sc | Rule::text_in_body_sc => res.push_str(p.into_span().as_str()),
             Rule::inline_shortcode => {
                 let (name, args) = parse_shortcode_call(p);
-                res.push_str(&render_shortcode(name, args, tera, config, None)?);
+                res.push_str(&render_shortcode(name, args, context, None)?);
             },
             Rule::shortcode_with_body => {
                 let mut inner = p.into_inner();
@@ -146,7 +146,7 @@ pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<
                 // we don't care about the closing tag
                 let (name, args) = parse_shortcode_call(inner.next().unwrap());
                 let body = inner.next().unwrap().into_span().as_str();
-                res.push_str(&render_shortcode(name, args, tera, config, Some(body))?);
+                res.push_str(&render_shortcode(name, args, context, Some(body))?);
             },
             Rule::ignored_inline_shortcode => {
               res.push_str(
@@ -179,6 +179,10 @@ pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+    use tera::Tera;
+    use config::Config;
+    use front_matter::InsertAnchor;
     use super::*;
 
     macro_rules! assert_lex_rule {
@@ -193,6 +197,13 @@ mod tests {
             assert!(res.is_ok());
             assert_eq!(res.unwrap().last().unwrap().into_span().end(), $input.len());
         };
+    }
+
+    fn render_shortcodes(code: &str, tera: &Tera) -> String {
+        let config = Config::default();
+        let permalinks = HashMap::new();
+        let context = RenderContext::new(&tera, &config, "", &permalinks, InsertAnchor::None);
+        super::render_shortcodes(code, &context).unwrap()
     }
 
     #[test]
@@ -281,26 +292,22 @@ mod tests {
 
     #[test]
     fn does_nothing_with_no_shortcodes() {
-        let res = render_shortcodes("Hello World", &Tera::default(), &Config::default());
-        assert_eq!(res.unwrap(), "Hello World");
+        let res = render_shortcodes("Hello World", &Tera::default());
+        assert_eq!(res, "Hello World");
     }
 
     #[test]
     fn can_unignore_inline_shortcode() {
-        let res = render_shortcodes(
-            "Hello World {{/* youtube() */}}",
-            &Tera::default(),
-            &Config::default(),
-        );
-        assert_eq!(res.unwrap(), "Hello World {{ youtube() }}");
+        let res = render_shortcodes("Hello World {{/* youtube() */}}", &Tera::default());
+        assert_eq!(res, "Hello World {{ youtube() }}");
     }
 
     #[test]
     fn can_unignore_shortcode_with_body() {
         let res = render_shortcodes(r#"
 Hello World
-{%/* youtube() */%}Some body {{ hello() }}{%/* end */%}"#, &Tera::default(), &Config::default());
-        assert_eq!(res.unwrap(), "\nHello World\n{% youtube() %}Some body {{ hello() }}{% end %}");
+{%/* youtube() */%}Some body {{ hello() }}{%/* end */%}"#, &Tera::default());
+        assert_eq!(res, "\nHello World\n{% youtube() %}Some body {{ hello() }}{% end %}");
     }
 
     #[test]
@@ -343,7 +350,7 @@ Hello World
     fn can_render_inline_shortcodes() {
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "Hello {{id}}").unwrap();
-        let res = render_shortcodes("Inline {{ youtube(id=1) }}.", &tera, &Config::default()).unwrap();
+        let res = render_shortcodes("Inline {{ youtube(id=1) }}.", &tera);
         assert_eq!(res, "Inline Hello 1.");
     }
 
@@ -351,7 +358,7 @@ Hello World
     fn can_render_shortcodes_with_body() {
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "{{body}}").unwrap();
-        let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera, &Config::default()).unwrap();
+        let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera);
         assert_eq!(res, "Body\n Hey!");
     }
 }
