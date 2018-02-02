@@ -2,8 +2,9 @@
 
 ## 0.3.1 (unreleased)
 
-- Update Tera to fix regression
+- Update Tera and other dependencies
 - Add option for inline in markdown filter
+- Allow to specify both interface and base_url in `gutenberg serve` for usage in Docker
 
 ## 0.3.0 (2018-01-25)
 
