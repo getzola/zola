@@ -27,6 +27,7 @@ complete -c gutenberg -n "__fish_using_command gutenberg build" -s V -l version 
 complete -c gutenberg -n "__fish_using_command gutenberg serve" -s i -l interface -d 'Interface to bind on'
 complete -c gutenberg -n "__fish_using_command gutenberg serve" -s p -l port -d 'Which port to use'
 complete -c gutenberg -n "__fish_using_command gutenberg serve" -s o -l output-dir -d 'Outputs the generated site in the given path'
+complete -c gutenberg -n "__fish_using_command gutenberg serve" -s u -l base-url -d 'Changes the base_url'
 complete -c gutenberg -n "__fish_using_command gutenberg serve" -s h -l help -d 'Prints help information'
 complete -c gutenberg -n "__fish_using_command gutenberg serve" -s V -l version -d 'Prints version information'
 complete -c gutenberg -n "__fish_using_command gutenberg help" -s h -l help -d 'Prints help information'

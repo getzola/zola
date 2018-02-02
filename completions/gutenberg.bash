@@ -109,7 +109,7 @@ _gutenberg() {
             return 0
             ;;
         gutenberg__serve)
-            opts=" -h -V -i -p -o  --help --version --interface --port --output-dir  "
+            opts=" -h -V -i -p -o -u  --help --version --interface --port --output-dir --base-url  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -138,6 +138,14 @@ _gutenberg() {
                     ;;
                     -o)
                     COMPREPLY=("<output_dir>")
+                    return 0
+                    ;;
+                --base-url)
+                    COMPREPLY=("<base_url>")
+                    return 0
+                    ;;
+                    -u)
+                    COMPREPLY=("<base_url>")
                     return 0
                     ;;
                 *)

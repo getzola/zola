@@ -1,39 +1,50 @@
 #compdef gutenberg
 
+autoload -U is-at-least
+
 _gutenberg() {
     typeset -A opt_args
+    typeset -a _arguments_options
     local ret=1
 
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
     local context curcontext="$curcontext" state line
-    _arguments -s -S -C \
+    _arguments "${_arguments_options[@]}" \
 '-c[Path to a config file other than config.toml]' \
 '--config[Path to a config file other than config.toml]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-"1:: :_gutenberg_commands" \
-"*:: :->gutenberg" \
+":: :_gutenberg_commands" \
+"*::: :->gutenberg" \
 && ret=0
     case $state in
     (gutenberg)
-        curcontext="${curcontext%:*:*}:gutenberg-command-$words[1]:"
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gutenberg-command-$line[1]:"
         case $line[1] in
             (init)
-_arguments -s -S -C \
+_arguments "${_arguments_options[@]}" \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-"1:: :_gutenberg__init_commands" \
+':name -- Name of the project. Will create a new directory with that name in the current directory:_files' \
 && ret=0
 ;;
 (build)
-_arguments -s -S -C \
+_arguments "${_arguments_options[@]}" \
 '-u+[Force the base URL to be that value (default to the one in config.toml)]' \
-'--base-url+[Force the base URL to be that value (default to the one in config.toml)]' \
+'--base-url=[Force the base URL to be that value (default to the one in config.toml)]' \
 '-o+[Outputs the generated site in the given path]' \
-'--output-dir+[Outputs the generated site in the given path]' \
+'--output-dir=[Outputs the generated site in the given path]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
@@ -41,13 +52,15 @@ _arguments -s -S -C \
 && ret=0
 ;;
 (serve)
-_arguments -s -S -C \
+_arguments "${_arguments_options[@]}" \
 '-i+[Interface to bind on]' \
-'--interface+[Interface to bind on]' \
+'--interface=[Interface to bind on]' \
 '-p+[Which port to use]' \
-'--port+[Which port to use]' \
+'--port=[Which port to use]' \
 '-o+[Outputs the generated site in the given path]' \
-'--output-dir+[Outputs the generated site in the given path]' \
+'--output-dir=[Outputs the generated site in the given path]' \
+'-u+[Changes the base_url]' \
+'--base-url=[Changes the base_url]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
@@ -55,7 +68,7 @@ _arguments -s -S -C \
 && ret=0
 ;;
 (help)
-_arguments -s -S -C \
+_arguments "${_arguments_options[@]}" \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
@@ -94,7 +107,7 @@ _gutenberg__help_commands() {
 (( $+functions[_gutenberg__init_commands] )) ||
 _gutenberg__init_commands() {
     local commands; commands=(
-        "NAME:Name of the project. Will create a new directory with that name in the current directory" \
+        
     )
     _describe -t commands 'gutenberg init commands' commands "$@"
 }

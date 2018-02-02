@@ -57,7 +57,7 @@
             }
 
             '_gutenberg_serve' {
-                $completions = @('-h', '-V', '-i', '-p', '-o', '--help', '--version', '--interface', '--port', '--output-dir')
+                $completions = @('-h', '-V', '-i', '-p', '-o', '-u', '--help', '--version', '--interface', '--port', '--output-dir', '--base-url')
             }
 
             '_gutenberg_help' {
