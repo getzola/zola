@@ -30,6 +30,13 @@ Gutenberg adds a few filters, in addition of the ones already present in Tera.
 Converts the given variable to HTML using Markdown. This doesn't apply any of the
 features that Gutenberg adds to Markdown: internal links, shortcodes etc won't work.
 
+By default, the filter will wrap all text into a paragraph. To disable that, you can
+pass `true` to the inline argument:
+
+```jinja2
+{{ some_text | markdown(inline=true) }}
+```
+
 ### base64_encode
 Encode the variable to base64.
 
