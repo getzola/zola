@@ -36,6 +36,7 @@ errors = { path = "components/errors" }
 content = { path = "components/content" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
+rebuild = { path = "components/rebuild" }
 
 [workspace]
 members = [
@@ -45,6 +46,7 @@ members = [
     "components/front_matter",
     "components/highlighting",
     "components/pagination",
+    "components/rebuild",
     "components/rendering",
     "components/site",
     "components/taxonomies",

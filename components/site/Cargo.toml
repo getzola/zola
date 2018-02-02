@@ -21,6 +21,5 @@ pagination = { path = "../pagination" }
 taxonomies = { path = "../taxonomies" }
 content = { path = "../content" }
 
-
 [dev-dependencies]
 tempdir = "0.3"

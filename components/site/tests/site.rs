@@ -12,13 +12,13 @@ use site::Site;
 
 #[test]
 fn can_parse_site() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
-    assert_eq!(site.pages.len(), 12);
+    assert_eq!(site.pages.len(), 14);
     let posts_path = path.join("content").join("posts");
 
     // Make sure we remove all the pwd + content from the sections
@@ -34,11 +34,11 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.sections.len(), 6);
+    assert_eq!(site.sections.len(), 7);
 
     // And that the sections are correct
     let index_section = &site.sections[&path.join("content").join("_index.md")];
-    assert_eq!(index_section.subsections.len(), 2);
+    assert_eq!(index_section.subsections.len(), 3);
     assert_eq!(index_section.pages.len(), 1);
 
     let posts_section = &site.sections[&posts_path.join("_index.md")];
@@ -91,7 +91,7 @@ macro_rules! file_contains {
 
 #[test]
 fn can_build_site_without_live_reload() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
@@ -152,7 +152,7 @@ fn can_build_site_without_live_reload() {
 
 #[test]
 fn can_build_site_with_live_reload() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
@@ -190,7 +190,7 @@ fn can_build_site_with_live_reload() {
 
 #[test]
 fn can_build_site_with_categories() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.config.generate_categories_pages = Some(true);
@@ -244,7 +244,7 @@ fn can_build_site_with_categories() {
 
 #[test]
 fn can_build_site_with_tags() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.config.generate_tags_pages = Some(true);
@@ -296,7 +296,7 @@ fn can_build_site_with_tags() {
 
 #[test]
 fn can_build_site_and_insert_anchor_links() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
@@ -313,7 +313,7 @@ fn can_build_site_and_insert_anchor_links() {
 
 #[test]
 fn can_build_site_with_pagination_for_section() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
@@ -372,7 +372,7 @@ fn can_build_site_with_pagination_for_section() {
 
 #[test]
 fn can_build_site_with_pagination_for_index() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
@@ -417,7 +417,7 @@ fn can_build_site_with_pagination_for_index() {
 
 #[test]
 fn can_build_rss_feed() {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();

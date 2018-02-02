@@ -45,7 +45,7 @@ You can also add a submodule to the repository of the wanted syntax:
 
 ```bash
 $ cd sublime_syntaxes
-$ git submodule add https://github.com/elm-community/Elm.tmLanguage.git
+$ git submodule add https://github.com/elm-community/SublimeElmLanguageSupport
 ```
 
 Note that you can also only copy manually the updated syntax definition file but this means

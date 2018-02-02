@@ -62,7 +62,6 @@ fn livereload_handler(_: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, LIVE_RELOAD.to_string())))
 }
 
-
 fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
     match res {
         Ok(_) => {

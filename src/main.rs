@@ -16,12 +16,12 @@ extern crate errors;
 extern crate content;
 extern crate front_matter;
 extern crate utils;
+extern crate rebuild;
 
 use std::time::Instant;
 
 mod cmd;
 mod console;
-mod rebuild;
 mod cli;
 mod prompt;
 
