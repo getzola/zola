@@ -59,7 +59,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("base-url")
                         .default_value("127.0.0.1")
                         .takes_value(true)
-                        .help("Changes the base_url. Defaults to 127.0.0.1"),
+                        .help("Changes the base_url"),
                 ]),
         ])
 }
