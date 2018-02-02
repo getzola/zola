@@ -46,11 +46,14 @@ $ gutenberg build --output-dir $DOCUMENT_ROOT
 This will build and serve the site using a local server. You can also specify
 the interface/port combination to use if you want something different than the default (`127.0.0.1:1111`).
 
+You can also specify different addresses for the interface and base_url using `-u`/`--base-url`.
+
 ```bash
 $ gutenberg serve
 $ gutenberg serve --port 2000
 $ gutenberg serve --interface 0.0.0.0 
 $ gutenberg serve --interface 0.0.0.0 --port 2000
+$ gutenberg serve --interface 0.0.0.0 --base-url 127.0.0.1
 $ gutenberg serve --interface 0.0.0.0 --port 2000 --output-dir www/public
 ```
 
