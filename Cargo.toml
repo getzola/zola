@@ -53,4 +53,5 @@ members = [
     "components/templates",
     "components/utils",
     "components/search",
+    "components/imageproc",
 ]

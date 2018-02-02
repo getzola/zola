@@ -20,6 +20,7 @@ pagination = { path = "../pagination" }
 taxonomies = { path = "../taxonomies" }
 content = { path = "../content" }
 search = { path = "../search" }
+imageproc = { path = "../imageproc" }
 
 [dev-dependencies]
 tempfile = "3"

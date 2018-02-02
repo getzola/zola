@@ -98,13 +98,16 @@ impl Section {
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
-        let context = RenderContext::new(
+        let mut context = RenderContext::new(
             tera,
             config,
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links,
         );
+
+        context.teracontext.add("section", self);
+
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.0;

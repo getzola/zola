@@ -16,6 +16,7 @@ extern crate pagination;
 extern crate taxonomies;
 extern crate content;
 extern crate search;
+extern crate imageproc;
 
 #[cfg(test)]
 extern crate tempfile;
@@ -24,6 +25,7 @@ use std::collections::HashMap;
 use std::fs::{create_dir_all, remove_dir_all, copy};
 use std::mem;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 use glob::glob;
 use tera::{Tera, Context};
@@ -66,9 +68,11 @@ pub struct Site {
     pub pages: HashMap<PathBuf, Page>,
     pub sections: HashMap<PathBuf, Section>,
     pub tera: Tera,
+    imageproc: Arc<Mutex<imageproc::Processor>>,
     // the live reload port to be used if there is one
     pub live_reload: Option<u16>,
     pub output_path: PathBuf,
+    content_path: PathBuf,
     pub static_path: PathBuf,
     pub tags: Option<Taxonomy>,
     pub categories: Option<Taxonomy>,
@@ -109,15 +113,21 @@ impl Site {
         // the `extend` above already does it but hey
         tera.build_inheritance_chains()?;
 
+        let content_path = path.join("content");
+        let static_path = path.join("static");
+        let imageproc = imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
+
         let site = Site {
             base_path: path.to_path_buf(),
             config,
             tera,
             pages: HashMap::new(),
             sections: HashMap::new(),
+            imageproc: Arc::new(Mutex::new(imageproc)),
             live_reload: None,
             output_path: path.join("public"),
-            static_path: path.join("static"),
+            content_path,
+            static_path,
             tags: None,
             categories: None,
             permalinks: HashMap::new(),
@@ -128,7 +138,7 @@ impl Site {
 
     /// The index section is ALWAYS at that path
     pub fn index_section_path(&self) -> PathBuf {
-        self.base_path.join("content").join("_index.md")
+        self.content_path.join("_index.md")
     }
 
     pub fn enable_live_reload(&mut self) {
@@ -151,6 +161,12 @@ impl Site {
         }
 
         orphans
+    }
+
+    pub fn set_base_url(&mut self, base_url: String) {
+        let mut imageproc = self.imageproc.lock().unwrap();
+        imageproc.set_base_url(&base_url);
+        self.config.base_url = base_url;
     }
 
     pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {
@@ -217,7 +233,7 @@ impl Site {
         if !self.sections.contains_key(&index_path) {
             let mut index_section = Section::default();
             index_section.permalink = self.config.make_permalink("");
-            index_section.file.parent = self.base_path.join("content");
+            index_section.file.parent = self.content_path.clone();
             index_section.file.relative = "_index.md".to_string();
             self.sections.insert(index_path, index_section);
         }
@@ -229,10 +245,10 @@ impl Site {
             self.add_page(p, false)?;
         }
 
+        self.register_early_global_fns();
         self.render_markdown()?;
         self.populate_sections();
         self.populate_tags_and_categories();
-
         self.register_tera_global_fns();
 
         Ok(())
@@ -270,6 +286,16 @@ impl Site {
         Ok(())
     }
 
+    /// Adds global fns that are to be available to shortcodes while rendering markdown
+    pub fn register_early_global_fns(&mut self) {
+        self.tera.register_global_function(
+            "get_url", global_fns::make_get_url(self.permalinks.clone(), self.config.clone())
+        );
+        self.tera.register_global_function(
+            "resize_image", global_fns::make_resize_image(self.imageproc.clone())
+        );
+    }
+
     pub fn register_tera_global_fns(&mut self) {
         self.tera.register_global_function("trans", global_fns::make_trans(self.config.clone()));
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
@@ -277,10 +303,6 @@ impl Site {
         self.tera.register_global_function(
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(self.tags.clone(), self.categories.clone())
-        );
-        self.tera.register_global_function(
-            "get_url",
-            global_fns::make_get_url(self.permalinks.clone(), self.config.clone())
         );
     }
 
@@ -441,6 +463,17 @@ impl Site {
         Ok(())
     }
 
+    pub fn num_img_ops(&self) -> usize {
+        let imageproc = self.imageproc.lock().unwrap();
+        imageproc.num_img_ops()
+    }
+
+    pub fn process_images(&self) -> Result<()> {
+        let mut imageproc = self.imageproc.lock().unwrap();
+        imageproc.prune()?;
+        imageproc.do_process()
+    }
+
     /// Deletes the `public` directory if it exists
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
@@ -510,6 +543,7 @@ impl Site {
             self.compile_sass(&self.base_path)?;
         }
 
+        self.process_images()?;
         self.copy_static_directories()?;
 
         if self.config.build_search_index {
@@ -820,7 +854,7 @@ impl Site {
     /// Used only on reload
     pub fn render_index(&self) -> Result<()> {
         self.render_section(
-            &self.sections[&self.base_path.join("content").join("_index.md")],
+            &self.sections[&self.content_path.join("_index.md")],
             false
         )
     }

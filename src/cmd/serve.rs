@@ -86,13 +86,13 @@ fn create_new_site(interface: &str, port: &str, output_dir: &str, base_url: &str
 
     let base_address = format!("{}:{}", base_url, port);
     let address = format!("{}:{}", interface, port);
-
-    site.config.base_url = if site.config.base_url.ends_with('/') {
+    let base_url = if site.config.base_url.ends_with('/') {
         format!("http://{}/", base_address)
     } else {
         format!("http://{}", base_address)
     };
 
+    site.set_base_url(base_url);
     site.set_output_path(output_dir);
     site.load()?;
     site.enable_live_reload();

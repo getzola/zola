@@ -14,3 +14,4 @@ utils = { path = "../utils" }
 content = { path = "../content" }
 config = { path = "../config" }
 taxonomies = { path = "../taxonomies" }
+imageproc = { path = "../imageproc" }

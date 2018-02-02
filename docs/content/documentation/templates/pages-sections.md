@@ -37,6 +37,7 @@ previous: Page?;
 next: Page?;
 // See the Table of contents section below for more details
 toc: Array<Header>;
+// TODO: add assets & assets_imgs   (also draft is missing?)
 ```
 
 ## Section variables
