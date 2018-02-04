@@ -5,11 +5,21 @@ use pulldown_cmark::{Parser, Options, OPTION_ENABLE_FOOTNOTES};
 use rendering::ast::{Content};
 use rendering::ast_html::{into_html};
 
+fn print_parser(parser: Parser) {
+    for event in parser {
+        println!("{:?}", event);
+    }
+    println!("\n\n");
+}
+
 #[test]
 fn renders_text() {
     let original = r##"Hello"##;
 
     let p = Parser::new(&original);
+    print_parser(p);
+    let p = Parser::new(&original);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
@@ -24,6 +34,9 @@ World
 "##;
 
     let p = Parser::new(&original);
+    print_parser(p);
+    let p = Parser::new(&original);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
@@ -37,6 +50,9 @@ fn renders_html() {
 </article>"#;
 
     let p = Parser::new(&original);
+    print_parser(p);
+    let p = Parser::new(&original);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
@@ -49,6 +65,9 @@ fn renders_inline_html() {
     let original = r#"Hello, <em>World</em>!"#;
 
     let p = Parser::new(&original);
+    print_parser(p);
+    let p = Parser::new(&original);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
@@ -72,12 +91,9 @@ fn renders_footnotes() {
     options.insert(OPTION_ENABLE_FOOTNOTES);
 
     let p = Parser::new_ext(&original, options);
-    for i in p {
-        println!("{:?}", i);
-    }
-    println!("\n\n");
-
+    print_parser(p);
     let p = Parser::new_ext(&original, options);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
@@ -90,12 +106,9 @@ fn renders_headings() {
 "##;
 
     let p = Parser::new(&original);
-    for i in p {
-        println!("{:?}", i);
-    }
-    println!("\n\n");
-
+    print_parser(p);
     let p = Parser::new(&original);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
@@ -108,12 +121,9 @@ fn renders_h2_headings() {
 "##;
 
     let p = Parser::new(&original);
-    for i in p {
-        println!("{:?}", i);
-    }
-    println!("\n\n");
-
+    print_parser(p);
     let p = Parser::new(&original);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
@@ -127,12 +137,9 @@ let wat = 5 + '3';
 ```"#;
 
     let p = Parser::new(&original);
-    for i in p {
-        println!("{:?}", i);
-    }
-    println!("\n\n");
-
+    print_parser(p);
     let p = Parser::new(&original);
+
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
