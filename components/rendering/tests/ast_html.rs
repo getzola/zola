@@ -103,7 +103,14 @@ fn renders_footnotes() {
 #[test]
 fn renders_headings() {
     let original = r##"# Hello
+
+Hello Again
+===========
 "##;
+
+    let expected = r#"<h1>Hello</h1>
+<h1>Hello Again</h1>
+"#;
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -112,13 +119,20 @@ fn renders_headings() {
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
-    assert_eq!("<h1>Hello</h1>\n", buf);
+    assert_eq!(expected, buf);
 }
 
 #[test]
 fn renders_h2_headings() {
     let original = r##"## Hello
+
+Hello Again
+-----------
 "##;
+
+    let expected = r#"<h2>Hello</h2>
+<h2>Hello Again</h2>
+"#;
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -127,7 +141,7 @@ fn renders_h2_headings() {
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
-    assert_eq!("<h2>Hello</h2>\n", buf);
+    assert_eq!(expected, buf);
 }
 
 #[test]
