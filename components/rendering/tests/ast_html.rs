@@ -103,7 +103,51 @@ fn renders_table_with_only_thead() {
     let original = r##"Test|Table
 ----|-----
 "##;
-    let expected = r#"<table><thead><tr><td>Test</td><td>Table</td></tr></thead></table>"#;
+    let expected = r#"<table><thead><tr><th>Test</th><th>Table</th></tr></thead><tbody></tbody></table>"#;
+    let mut options = Options::empty();
+    options.insert(OPTION_ENABLE_TABLES);
+
+    let p = Parser::new_ext(&original, options);
+    print_parser(p);
+    let p = Parser::new_ext(&original, options);
+
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!(expected, buf);
+}
+
+#[test]
+fn renders_table_with_body_rows() {
+    let original = r#"Test|Table
+----|-----
+Test|row 1
+Test|row 2
+
+"#;
+    let expected = "<table><thead><tr><th>Test</th><th>Table</th></tr></thead><tbody><tr><td>Test</td><td>row 1</td></tr><tr><td>Test</td><td>row 2</td></tr></tbody></table>";
+    let mut options = Options::empty();
+    options.insert(OPTION_ENABLE_TABLES);
+
+    let p = Parser::new_ext(&original, options);
+    print_parser(p);
+    let p = Parser::new_ext(&original, options);
+
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!(expected, buf);
+
+}
+
+#[test]
+fn renders_table_with_body_row_spanning_columns() {
+    let original = r#"Test|Table
+----|-----
+Test row
+
+"#;
+    let expected = "<table><thead><tr><th>Test</th><th>Table</th></tr></thead><tbody><tr><td>Test row</td></tr></tbody></table>";
     let mut options = Options::empty();
     options.insert(OPTION_ENABLE_TABLES);
 

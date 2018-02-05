@@ -16,6 +16,7 @@ enum TagType {
 struct Context<'a> {
     tag_type: Option<TagType>,
     footnote_indices: HashMap<Cow<'a, str>, usize>,
+    in_thead: bool,
 }
 
 impl<'a> Context<'a> {
@@ -23,6 +24,7 @@ impl<'a> Context<'a> {
         Context {
             tag_type: None,
             footnote_indices: HashMap::new(),
+            in_thead: false,
         }
     }
 
@@ -80,6 +82,40 @@ impl<'a> Context<'a> {
             None => (),
         }
     }
+
+    fn render_table(&self, buf: &mut String) {
+        match self.tag_type {
+            Some(TagType::Opening) => buf.push_str("<table>"),
+            // The parser does not emit tbody events, so for now we are forced
+            // to insert a closing tbody tag. This is gross. We feel bad.
+            Some(TagType::Closing) => buf.push_str("</tbody></table>"),
+            None => (),
+        }
+    }
+
+    fn render_table_head(&mut self, buf: &mut String) {
+        // The parser does not emit tr events inside thead (whyyyy?), so for
+        // now we are forced to insert an opening and closing tr tag. This is
+        // gross. We feel bad.
+        match self.tag_type {
+            Some(TagType::Opening) => {
+                buf.push_str("<thead><tr>");
+                self.in_thead = true;
+            },
+            // The parser does not emit tbody events, so for now we are forced
+            // to insert an opening tbody tag. This is gross. We feel bad.
+            Some(TagType::Closing) => {
+                buf.push_str("</tr></thead><tbody>");
+                self.in_thead = false;
+            },
+            None => (),
+        }
+    }
+
+    fn render_table_cell(&mut self, buf: &mut String) {
+        let tag = if self.in_thead { "th" } else { "td" };
+        self.render_tag(tag, buf);
+    }
 }
 
 impl<'a> IntoHtml<Context<'a>> for Tag<'a> {
@@ -89,9 +125,10 @@ impl<'a> IntoHtml<Context<'a>> for Tag<'a> {
             Tag::Header(n) => context.render_tag(&format!("h{}", n), buf),
             Tag::CodeBlock(ref _info_string) => context.render_nested_tags(&["pre", "code"], buf),
             Tag::FootnoteDefinition(ref id) => context.render_footnote_definition(id.clone(), buf),
-            Tag::Table(ref alignments) => context.render_tag("table", buf),
-            Tag::TableHead => context.render_nested_tags(&["thead", "tr"], buf),
-            Tag::TableCell => context.render_tag("td", buf),
+            Tag::Table(ref alignments) => context.render_table(buf),
+            Tag::TableHead => context.render_table_head(buf),
+            Tag::TableCell => context.render_table_cell(buf),
+            Tag::TableRow => context.render_tag("tr", buf),
             _ => (),
         }
     }
