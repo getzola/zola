@@ -1,7 +1,7 @@
 extern crate pulldown_cmark;
 extern crate rendering;
 
-use pulldown_cmark::{Parser, Options, OPTION_ENABLE_FOOTNOTES};
+use pulldown_cmark::{Parser, Options, OPTION_ENABLE_FOOTNOTES, OPTION_ENABLE_TABLES};
 use rendering::ast::{Content};
 use rendering::ast_html::{into_html};
 
@@ -87,6 +87,25 @@ fn renders_footnotes() {
 
     let mut options = Options::empty();
     options.insert(OPTION_ENABLE_FOOTNOTES);
+
+    let p = Parser::new_ext(&original, options);
+    print_parser(p);
+    let p = Parser::new_ext(&original, options);
+
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!(expected, buf);
+}
+
+#[test]
+fn renders_table_with_only_thead() {
+    let original = r##"Test|Table
+----|-----
+"##;
+    let expected = r#"<table><thead><tr><td>Test</td><td>Table</td></tr></thead></table>"#;
+    let mut options = Options::empty();
+    options.insert(OPTION_ENABLE_TABLES);
 
     let p = Parser::new_ext(&original, options);
     print_parser(p);

@@ -89,6 +89,9 @@ impl<'a> IntoHtml<Context<'a>> for Tag<'a> {
             Tag::Header(n) => context.render_tag(&format!("h{}", n), buf),
             Tag::CodeBlock(ref _info_string) => context.render_nested_tags(&["pre", "code"], buf),
             Tag::FootnoteDefinition(ref id) => context.render_footnote_definition(id.clone(), buf),
+            Tag::Table(ref alignments) => context.render_tag("table", buf),
+            Tag::TableHead => context.render_nested_tags(&["thead", "tr"], buf),
+            Tag::TableCell => context.render_tag("td", buf),
             _ => (),
         }
     }
