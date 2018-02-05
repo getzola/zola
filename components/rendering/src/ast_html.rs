@@ -111,14 +111,14 @@ impl<'a> Context<'a> {
         // gross. We feel bad.
         match self.tag_type {
             Some(TagType::Opening) => {
-                buf.push_str("<thead><tr>");
                 self.in_thead = true;
+                buf.push_str("<thead><tr>");
             },
             // The parser does not emit tbody events, so for now we are forced
             // to insert an opening tbody tag. This is gross. We feel bad.
             Some(TagType::Closing) => {
-                buf.push_str("</tr></thead><tbody>");
                 self.in_thead = false;
+                buf.push_str("</tr></thead><tbody>");
             },
             None => (),
         }
@@ -145,8 +145,8 @@ impl<'a> Context<'a> {
                     },
                     None => unreachable!(),
                 };
-                buf.push_str(&format!("<{}{}>", tag, attr));
                 self.table_column_index += 1;
+                buf.push_str(&format!("<{}{}>", tag, attr));
             },
             Some(TagType::Closing) => {
                 buf.push_str(&format!("</{}>", tag));
