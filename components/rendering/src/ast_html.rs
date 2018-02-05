@@ -21,6 +21,7 @@ struct Context<'a> {
     table_column_alignments: Option<Vec<Alignment>>,
 }
 
+// TODO: Revisit which of these methods should be public.
 impl<'a> Context<'a> {
     fn new() -> Context<'a> {
         Context {
@@ -48,7 +49,9 @@ impl<'a> Context<'a> {
             Some(TagType::Closing) => {
                 tags.into_iter().rev().for_each(|t| self.render_tag(t, buf));
             },
-            None => (),
+            None => {
+                unreachable!("render_nested_tags should never be called without setting a TagType on the Context");
+            },
         };
     }
 
@@ -83,7 +86,9 @@ impl<'a> Context<'a> {
             Some(TagType::Closing) => {
                 buf.push_str("</div>")
             },
-            None => (),
+            None => {
+                unreachable!("render_footnote_definition should never be called without setting a TagType on the Context")
+            },
         }
     }
 
@@ -101,7 +106,9 @@ impl<'a> Context<'a> {
                 self.table_column_alignments = None;
                 buf.push_str("</tbody></table>")
             },
-            None => (),
+            None => {
+                unreachable!("render_table should never be called without setting a TagType on the Context")
+            },
         }
     }
 
@@ -120,7 +127,9 @@ impl<'a> Context<'a> {
                 self.in_thead = false;
                 buf.push_str("</tr></thead><tbody>");
             },
-            None => (),
+            None => {
+                unreachable!("render_table_head should never be called without setting a TagType on the Context")
+            },
         }
     }
 
@@ -143,7 +152,10 @@ impl<'a> Context<'a> {
                             Some(&Alignment::None) | None => "",
                         }
                     },
-                    None => unreachable!(),
+                    // There is no alignments vector on the context, probably
+                    // because we didn't see a Start(Table) before this
+                    // Start(TableCell).
+                    None => "",
                 };
                 self.table_column_index += 1;
                 buf.push_str(&format!("<{}{}>", tag, attr));
@@ -151,8 +163,9 @@ impl<'a> Context<'a> {
             Some(TagType::Closing) => {
                 buf.push_str(&format!("</{}>", tag));
             },
-            // TODO: Consider unreachable! vs. doing nothing.
-            None => (),
+            None => {
+                unreachable!("render_table_cell should never be called without setting a TagType on the Context")
+            },
         }
     }
 }
@@ -178,7 +191,9 @@ impl<'a> IntoHtml<Context<'a>> for Event<'a> {
         match *self {
             Event::Text(ref text) | Event::Html(ref text) | Event::InlineHtml(ref text) => buf.push_str(text),
             Event::FootnoteReference(ref id) => context.render_footnote_reference(id.clone(), buf),
-            Event::Start(_) | Event::End(_) => unreachable!(),
+            Event::Start(_) | Event::End(_) => {
+                unreachable!("Nodes should never be created with Event::Start or Event::End")
+            },
             _ => panic!("AHHHHHHH!!!!!!!!!!"),
         }
     }
