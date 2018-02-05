@@ -28,7 +28,7 @@ impl<'a> Context<'a> {
 
     fn render_tag(&self, tag: &str, buf: &mut String) {
         let tag_closer = match self.tag_type {
-           Some(TagType::Closing) => "/",
+            Some(TagType::Closing) => "/",
             _ => "",
         };
         buf.push_str(&format!("<{}{}>", tag_closer, tag));
@@ -72,7 +72,7 @@ impl<'a> Context<'a> {
                 escape_html(buf, &*id).unwrap();
                 buf.push_str("\"><sup class=\"footnote-definition-label\">");
                 buf.push_str(&*format!("{}", self.get_footnote_index(id)));
-                buf.push_str("</sup>\n");
+                buf.push_str("</sup>");
             },
             Some(TagType::Closing) => {
                 buf.push_str("</div>")
@@ -117,7 +117,6 @@ impl<'a> IntoHtml<Context<'a>> for Node<'a> {
 
                 context.tag_type = Some(TagType::Closing);
                 tag.render(context, buf);
-                buf.push('\n');
                 context.tag_type = None;
             },
             Node::Item(ref mut event) => event.render(context, buf),

@@ -14,7 +14,8 @@ fn print_parser(parser: Parser) {
 
 #[test]
 fn renders_text() {
-    let original = r##"Hello"##;
+    let original = "Hello";
+    let expected = "<p>Hello</p>";
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -23,15 +24,16 @@ fn renders_text() {
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
-    assert_eq!("<p>Hello</p>\n", buf);
+    assert_eq!(expected, buf);
 }
 
 #[test]
 fn renders_multiple_text() {
-    let original = r##"Hello
+    let original = r#"Hello
 
 World
-"##;
+"#;
+    let expected = "<p>Hello</p><p>World</p>";
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -40,7 +42,7 @@ World
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
-    assert_eq!("<p>Hello</p>\n<p>World</p>\n", buf);
+    assert_eq!(expected, buf);
 }
 
 #[test]
@@ -62,7 +64,8 @@ fn renders_html() {
 
 #[test]
 fn renders_inline_html() {
-    let original = r#"Hello, <em>World</em>!"#;
+    let original = "Hello, <em>World</em>!";
+    let expected = "<p>Hello, <em>World</em>!</p>";
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -71,7 +74,7 @@ fn renders_inline_html() {
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
-    assert_eq!("<p>Hello, <em>World</em>!</p>\n", buf);
+    assert_eq!(expected, buf);
 
 }
 
@@ -80,12 +83,7 @@ fn renders_footnotes() {
     let original = r#"Footnote reference.[^a]
 
 [^a]: Footnote definition."#;
-
-    let expected = r##"<p>Footnote reference.<sup class="footnote-reference"><a href="#a">1</a></sup></p>
-<div class="footnote-definition" id="a"><sup class="footnote-definition-label">1</sup>
-<p>Footnote definition.</p>
-</div>
-"##;
+    let expected = r##"<p>Footnote reference.<sup class="footnote-reference"><a href="#a">1</a></sup></p><div class="footnote-definition" id="a"><sup class="footnote-definition-label">1</sup><p>Footnote definition.</p></div>"##;
 
     let mut options = Options::empty();
     options.insert(OPTION_ENABLE_FOOTNOTES);
@@ -107,10 +105,7 @@ fn renders_headings() {
 Hello Again
 ===========
 "##;
-
-    let expected = r#"<h1>Hello</h1>
-<h1>Hello Again</h1>
-"#;
+    let expected = "<h1>Hello</h1><h1>Hello Again</h1>";
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -129,10 +124,7 @@ fn renders_h2_headings() {
 Hello Again
 -----------
 "##;
-
-    let expected = r#"<h2>Hello</h2>
-<h2>Hello Again</h2>
-"#;
+    let expected = "<h2>Hello</h2><h2>Hello Again</h2>";
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -149,6 +141,7 @@ fn renders_code() {
     let original = r#"```javascript
 let wat = 5 + '3';
 ```"#;
+    let expected = "<pre><code>let wat = 5 + '3';\n</code></pre>";
 
     let p = Parser::new(&original);
     print_parser(p);
@@ -157,5 +150,5 @@ let wat = 5 + '3';
     let mut content = Content::new(p);
     let mut buf = String::new();
     into_html(&mut content, &mut buf);
-    assert_eq!("<pre><code>let wat = 5 + '3';\n</code></pre>\n", buf);
+    assert_eq!(expected, buf);
 }
