@@ -162,6 +162,48 @@ Test row
 }
 
 #[test]
+fn renders_table_with_alignments() {
+    let original = r#"Four|Types|Of|Columns
+:---|-----|::|------:
+Left|None|Center|Right
+"#;
+    let expected = r#"<table><thead><tr><th style="text-align: left;">Four</th><th>Types</th><th style="text-align: center;">Of</th><th style="text-align: right;">Columns</th></tr></thead><tbody><tr><td style="text-align: left;">Left</td><td>None</td><td style="text-align: center;">Center</td><td style="text-align: right;">Right</td></tr></tbody></table>"#;
+    let mut options = Options::empty();
+    options.insert(OPTION_ENABLE_TABLES);
+
+    let p = Parser::new_ext(&original, options);
+    print_parser(p);
+    let p = Parser::new_ext(&original, options);
+
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!(expected, buf);
+
+}
+
+#[test]
+fn renders_table_with_unspecified_alignments() {
+    let original = r#"Two|Types
+:---|----:
+Of|Alignment|More|Columns
+"#;
+    let expected = r#"<table><thead><tr><th style="text-align: left;">Two</th><th style="text-align: right;">Types</th></tr></thead><tbody><tr><td style="text-align: left;">Of</td><td style="text-align: right;">Alignment</td><td>More</td><td>Columns</td></tr></tbody></table>"#;
+    let mut options = Options::empty();
+    options.insert(OPTION_ENABLE_TABLES);
+
+    let p = Parser::new_ext(&original, options);
+    print_parser(p);
+    let p = Parser::new_ext(&original, options);
+
+    let mut content = Content::new(p);
+    let mut buf = String::new();
+    into_html(&mut content, &mut buf);
+    assert_eq!(expected, buf);
+
+}
+
+#[test]
 fn renders_headings() {
     let original = r##"# Hello
 

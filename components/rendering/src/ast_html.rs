@@ -2,7 +2,7 @@ use std::fmt::{self, Write};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use ast::{Content, Node};
-use pulldown_cmark::{Event, Tag};
+use pulldown_cmark::{Alignment, Event, Tag};
 
 pub trait IntoHtml<C> {
     fn render(&mut self, ctx: &mut C, buf: &mut String);
@@ -17,6 +17,8 @@ struct Context<'a> {
     tag_type: Option<TagType>,
     footnote_indices: HashMap<Cow<'a, str>, usize>,
     in_thead: bool,
+    table_column_index: usize,
+    table_column_alignments: Option<Vec<Alignment>>,
 }
 
 impl<'a> Context<'a> {
@@ -25,6 +27,8 @@ impl<'a> Context<'a> {
             tag_type: None,
             footnote_indices: HashMap::new(),
             in_thead: false,
+            table_column_index: 0,
+            table_column_alignments: None,
         }
     }
 
@@ -83,12 +87,20 @@ impl<'a> Context<'a> {
         }
     }
 
-    fn render_table(&self, buf: &mut String) {
+    fn render_table(&mut self, alignments: Vec<Alignment>, buf: &mut String) {
         match self.tag_type {
-            Some(TagType::Opening) => buf.push_str("<table>"),
+            Some(TagType::Opening) => {
+                self.table_column_index = 0;
+                self.table_column_alignments = Some(alignments);
+                buf.push_str("<table>");
+            },
             // The parser does not emit tbody events, so for now we are forced
             // to insert a closing tbody tag. This is gross. We feel bad.
-            Some(TagType::Closing) => buf.push_str("</tbody></table>"),
+            Some(TagType::Closing) => {
+                self.table_column_index = 0;
+                self.table_column_alignments = None;
+                buf.push_str("</tbody></table>")
+            },
             None => (),
         }
     }
@@ -112,9 +124,36 @@ impl<'a> Context<'a> {
         }
     }
 
+    fn render_table_row(&mut self, buf: &mut String) {
+        self.table_column_index = 0;
+        self.render_tag("tr", buf);
+    }
+
     fn render_table_cell(&mut self, buf: &mut String) {
+        // TODO: Consider self.render_tag_with_attr().
         let tag = if self.in_thead { "th" } else { "td" };
-        self.render_tag(tag, buf);
+        match self.tag_type {
+            Some(TagType::Opening) => {
+                let attr = match self.table_column_alignments {
+                    Some(ref alignments) => {
+                        match alignments.get(self.table_column_index) {
+                            Some(&Alignment::Left) => " style=\"text-align: left;\"",
+                            Some(&Alignment::Center) => " style=\"text-align: center;\"",
+                            Some(&Alignment::Right) => " style=\"text-align: right;\"",
+                            Some(&Alignment::None) | None => "",
+                        }
+                    },
+                    None => unreachable!(),
+                };
+                buf.push_str(&format!("<{}{}>", tag, attr));
+                self.table_column_index += 1;
+            },
+            Some(TagType::Closing) => {
+                buf.push_str(&format!("</{}>", tag));
+            },
+            // TODO: Consider unreachable! vs. doing nothing.
+            None => (),
+        }
     }
 }
 
@@ -125,10 +164,10 @@ impl<'a> IntoHtml<Context<'a>> for Tag<'a> {
             Tag::Header(n) => context.render_tag(&format!("h{}", n), buf),
             Tag::CodeBlock(ref _info_string) => context.render_nested_tags(&["pre", "code"], buf),
             Tag::FootnoteDefinition(ref id) => context.render_footnote_definition(id.clone(), buf),
-            Tag::Table(ref alignments) => context.render_table(buf),
+            Tag::Table(ref alignments) => context.render_table(alignments.clone(), buf),
             Tag::TableHead => context.render_table_head(buf),
             Tag::TableCell => context.render_table_cell(buf),
-            Tag::TableRow => context.render_tag("tr", buf),
+            Tag::TableRow => context.render_table_row(buf),
             _ => (),
         }
     }
