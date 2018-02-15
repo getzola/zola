@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 
 [dependencies]
 errors = { path = "../errors" }
-tera = "0.11.0"
+tera = "0.11"
 
 
 [dev-dependencies]

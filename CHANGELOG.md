@@ -1,9 +1,9 @@
 # Changelog
 
-## 0.3.1 (unreleased)
+## 0.3.1 (2018-02-15)
 
 - Update Tera and other dependencies
-- Add option for inline in markdown filter
+- Add option for inline (ie no `<p>...</p>` wrapping) in markdown filter
 - Allow to specify both interface and base_url in `gutenberg serve` for usage in Docker
 
 ## 0.3.0 (2018-01-25)

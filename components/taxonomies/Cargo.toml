@@ -4,10 +4,10 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
 
 [dependencies]
-tera = "0.11.0"
+tera = "0.11"
 slug = "0.1"
-serde = "1.0"
-serde_derive = "1.0"
+serde = "1"
+serde_derive = "1"
 
 errors = { path = "../errors" }
 config = { path = "../config" }
