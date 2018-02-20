@@ -50,3 +50,5 @@ after_success: |
 
 If your site is using a custom domain, you will need to mention it in the `ghp-import` command: `ghp-import -c vaporsoft.net -n public`
 for example.
+
+Credits: this page is based on the article https://vaporsoft.net/publishing-gutenberg-to-github/
