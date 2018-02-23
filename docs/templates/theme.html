@@ -1,0 +1,19 @@
+{% extends "themes.html" %}
+
+{% block title %}{{ page.title }} | Gutenberg {% endblock title %}
+{% block theme_content %}
+    <div class="theme-info">
+        <img src="{{page.permalink}}screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>{{ page.title }}</h1>
+            <p>{{ page.description }}</p>
+            <p><b>Author:</b> {{page.extra.author.name}}</p>
+            <p><b>License:</b> {{page.extra.license}}</p>
+            <p><b>Homepage:</b> {{page.extra.homepage}}</p>
+            <p><b>Last updated:</b> {{page.extra.updated }}</p>
+        </div>
+    </div>
+
+    <hr>
+    {{page.content | safe}}
+{% endblock theme_content %}
