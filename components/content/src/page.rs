@@ -223,12 +223,7 @@ impl ser::Serialize for Page {
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
-        // From a TOML datetime to a String first
-        let date = match self.meta.date {
-            Some(ref d) => Some(d.to_string()),
-            None => None,
-        };
-        state.serialize_field("date", &date)?;
+        state.serialize_field("date", &self.meta.date)?;
         state.serialize_field("slug", &self.slug)?;
         state.serialize_field("path", &self.path)?;
         state.serialize_field("components", &self.components)?;

@@ -3,6 +3,8 @@
 ## 0.3.2 (unreleased)
 
 - Fix `serve` command trying to read all files as markdown
+- Add many syntax highlighting themes
+- Fix date being serialised incorrectly in page `extra` section of front-matter
 
 ## 0.3.1 (2018-02-15)
 

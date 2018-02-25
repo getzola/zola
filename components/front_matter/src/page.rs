@@ -1,10 +1,63 @@
-use std::collections::HashMap;
+use std::result::{Result as StdResult};
 
 use chrono::prelude::*;
-use tera::Value;
+use tera::{Map, Value};
+use serde::{Deserialize, Deserializer};
 use toml;
 
 use errors::Result;
+
+
+fn from_toml_datetime<'de, D>(deserializer: D) -> StdResult<Option<String>, D::Error>
+    where
+        D: Deserializer<'de>,
+{
+    toml::value::Datetime::deserialize(deserializer)
+        .map(|s| Some(s.to_string()))
+}
+
+/// Returns key/value for a converted date from TOML.
+/// If the table itself is the TOML struct, only return its value without the key
+fn convert_toml_date(table: Map<String, Value>) -> Value {
+    let mut new = Map::new();
+
+    for (k, v) in table.into_iter() {
+        if k == "$__toml_private_datetime" {
+            return v;
+        }
+
+        match v {
+            Value::Object(mut o) => {
+                // that was a toml datetime object, just return the date
+                if let Some(toml_date) = o.remove("$__toml_private_datetime") {
+                    new.insert(k, toml_date);
+                    return Value::Object(new);
+                }
+                new.insert(k, convert_toml_date(o));
+            },
+            _ => { new.insert(k, v); }
+        }
+    }
+
+    Value::Object(new)
+}
+
+/// TOML datetimes will be serialized as a struct but we want the
+/// stringified version for json, otherwise they are going to be weird
+fn fix_toml_dates(table: Map<String, Value>) -> Value {
+    let mut new = Map::new();
+
+    for (key, value) in table {
+        match value {
+            Value::Object(mut o) => {
+                new.insert(key, convert_toml_date(o));
+            },
+            _ => { new.insert(key, value); },
+        }
+    }
+
+    Value::Object(new)
+}
 
 
 /// The front matter of every page
@@ -15,7 +68,8 @@ pub struct PageFrontMatter {
     /// Description in <meta> that appears when linked, e.g. on twitter
     pub description: Option<String>,
     /// Date if we want to order pages (ie blog post)
-    pub date: Option<toml::value::Datetime>,
+    #[serde(default, deserialize_with = "from_toml_datetime")]
+    pub date: Option<String>,
     /// Whether this page is a draft and should be ignored for pagination etc
     pub draft: Option<bool>,
     /// The page slug. Will be used instead of the filename if present
@@ -41,12 +95,13 @@ pub struct PageFrontMatter {
     #[serde(skip_serializing)]
     pub template: Option<String>,
     /// Any extra parameter present in the front matter
-    pub extra: Option<HashMap<String, Value>>,
+    #[serde(default)]
+    pub extra: Map<String, Value>,
 }
 
 impl PageFrontMatter {
     pub fn parse(toml: &str) -> Result<PageFrontMatter> {
-        let f: PageFrontMatter = match toml::from_str(toml) {
+        let mut f: PageFrontMatter = match toml::from_str(toml) {
             Ok(d) => d,
             Err(e) => bail!(e),
         };
@@ -69,17 +124,20 @@ impl PageFrontMatter {
             }
         }
 
+        f.extra = match fix_toml_dates(f.extra) {
+            Value::Object(o) => o,
+            _ => unreachable!("Got something other than a table in page extra"),
+        };
         Ok(f)
     }
 
     /// Converts the TOML datetime to a Chrono naive datetime
     pub fn date(&self) -> Option<NaiveDateTime> {
         if let Some(ref d) = self.date {
-            let d2 = d.to_string();
-            if d2.contains('T') {
-                DateTime::parse_from_rfc3339(&d2).ok().and_then(|s| Some(s.naive_local()))
+            if d.contains('T') {
+                DateTime::parse_from_rfc3339(&d).ok().and_then(|s| Some(s.naive_local()))
             } else {
-                NaiveDate::parse_from_str(&d2, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0, 0, 0)))
+                NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0, 0, 0)))
             }
         } else {
             None
@@ -117,7 +175,7 @@ impl Default for PageFrontMatter {
             weight: None,
             aliases: None,
             template: None,
-            extra: None,
+            extra: Map::new(),
         }
     }
 }
@@ -125,12 +183,14 @@ impl Default for PageFrontMatter {
 
 #[cfg(test)]
 mod tests {
+    use tera::to_value;
     use super::PageFrontMatter;
 
     #[test]
     fn can_have_empty_front_matter() {
         let content = r#"  "#;
         let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
         assert!(res.is_ok());
     }
 
@@ -250,5 +310,33 @@ mod tests {
     date = "2002-14-01""#;
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn can_parse_dates_in_extra() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+
+    [extra]
+    some-date = 2002-14-01"#;
+        let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap().extra["some-date"], to_value("2002-14-01").unwrap());
+    }
+
+    #[test]
+    fn can_parse_nested_dates_in_extra() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+
+    [extra.something]
+    some-date = 2002-14-01"#;
+        let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-14-01").unwrap());
     }
 }
