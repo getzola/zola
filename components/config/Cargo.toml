@@ -8,6 +8,7 @@ toml = "0.4"
 serde = "1"
 serde_derive = "1"
 chrono = "0.4"
+globset = "0.3.0"
 
 errors = { path = "../errors" }
 highlighting = { path = "../highlighting"}

@@ -13,6 +13,8 @@ extern crate utils;
 extern crate tempdir;
 #[cfg(test)]
 extern crate toml;
+#[cfg(test)]
+extern crate globset;
 
 mod file_info;
 mod page;
