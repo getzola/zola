@@ -291,7 +291,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
         }
 
         // Added another .md in a assets directory
-        if index.exists() && path.exists() {
+        if index.exists() && path.exists() && path != index {
             bail!(
                 "Change on {:?} detected but there is already an `index.md` in the same folder",
                 path.display()
