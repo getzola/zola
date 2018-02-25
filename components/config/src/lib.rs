@@ -115,14 +115,12 @@ impl Config {
         let mut glob_set_builder = GlobSetBuilder::new();
 
         if let Some(ref v) = config.ignored_content {
-            if v.len() > 0 {
-                for pat in v {
-                    let glob = match Glob::new(pat) {
-                        Ok(g) => g,
-                        Err(e) => bail!("Invalid ignored_content glob pattern: {}, error = {}", pat, e)
-                    };
-                    glob_set_builder.add(glob);
-                }
+            for pat in v {
+                let glob = match Glob::new(pat) {
+                    Ok(g) => g,
+                    Err(e) => bail!("Invalid ignored_content glob pattern: {}, error = {}", pat, e)
+                };
+                glob_set_builder.add(glob);
             }
         }
         config.ignored_content_globber = Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
