@@ -3,10 +3,10 @@ title = "Configuration"
 weight = 4
 +++
 
-The default configuration will be enough to get Gutenberg running locally but not more than that. 
+The default configuration will be enough to get Gutenberg running locally but not more than that.
 It follows the philosophy of only paying for what you need: almost everything is turned off by default.
 
-To change the config, edit the `config.toml` file. 
+To change the config, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML Spec](https://github.com/toml-lang/toml)
 to learn about it.
 
@@ -30,7 +30,7 @@ theme = ""
 # Highlight all code blocks found
 highlight_code = false
 
-# Which theme to use for the code highlighting. 
+# Which theme to use for the code highlighting.
 # See below for list of accepted values
 highlight_theme = "base16-ocean-dark"
 
@@ -40,21 +40,27 @@ generate_rss = false
 # The number of articles to include in the RSS feed
 rss_limit = 20
 
-# Whether to generate a tags page and individual 
+# Whether to generate a tags page and individual
 # tag pages for pages with tags
 generate_tags_pages = false
 
-# Whether to generate a categories page and individual 
+# Whether to generate a categories page and individual
 # category pages for pages with a category
 generate_categories_pages = false
 
 # Whether to compile the Sass files found in the `sass` directory
 compile_sass = false
 
+# A list of glob patterns specifying asset files to ignore when
+# copying content. Defaults to none, which means all asset files
+# are copied over to the public folder. Example:
+#     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
+ignored_content = []
+
 # Optional translation object. The key if present should be a language code
 [translations]
 
-# You can put any kind of data in there and it 
+# You can put any kind of data in there and it
 # will be accessible in all templates
 [extra]
 ```
@@ -76,5 +82,5 @@ Gutenberg currently has the following highlight themes available:
 - solarized-light
 - 1337
 
-Gutenberg uses the Sublime Text themes, making it very easy to add more. 
+Gutenberg uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).

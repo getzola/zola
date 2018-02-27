@@ -18,3 +18,4 @@ front_matter = { path = "../front_matter" }
 [dev-dependencies]
 tempdir = "0.3"
 toml = "0.4"
+globset = "0.3.0"

@@ -5,6 +5,7 @@ extern crate toml;
 extern crate errors;
 extern crate highlighting;
 extern crate chrono;
+extern crate globset;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -13,6 +14,7 @@ use std::path::{Path, PathBuf};
 
 use toml::{Value as Toml};
 use chrono::Utc;
+use globset::{Glob, GlobSet, GlobSetBuilder};
 
 use errors::{Result, ResultExt};
 use highlighting::THEME_SET;
@@ -22,7 +24,7 @@ mod theme;
 
 use theme::Theme;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
     pub base_url: String,
@@ -49,6 +51,12 @@ pub struct Config {
     pub generate_categories_pages: Option<bool>,
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: Option<bool>,
+    /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
+    /// Had to remove the PartialEq derive because GlobSet does not implement it. No impact
+    /// because it's unused anyway (who wants to sort Configs?).
+    pub ignored_content: Option<Vec<String>>,
+    #[serde(skip_serializing, skip_deserializing)]
+    pub ignored_content_globber: Option<GlobSet>,
 
     /// Languages list and translated strings
     pub translations: Option<HashMap<String, Toml>>,
@@ -84,6 +92,7 @@ impl Config {
         set_default!(config.generate_tags_pages, false);
         set_default!(config.generate_categories_pages, false);
         set_default!(config.compile_sass, false);
+        set_default!(config.ignored_content, Vec::new());
         set_default!(config.translations, HashMap::new());
         set_default!(config.extra, HashMap::new());
 
@@ -97,6 +106,25 @@ impl Config {
         };
 
         config.build_timestamp = Some(Utc::now().timestamp());
+
+        // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
+        // at program initialization, rather than for every page, for example. We arrange for the
+        // globset matcher to always exist (even though it has to be an inside an Option at the
+        // moment because of the TOML serializer); if the glob set is empty the `is_match` function
+        // of the globber always returns false.
+        let mut glob_set_builder = GlobSetBuilder::new();
+
+        if let Some(ref v) = config.ignored_content {
+            for pat in v {
+                let glob = match Glob::new(pat) {
+                    Ok(g) => g,
+                    Err(e) => bail!("Invalid ignored_content glob pattern: {}, error = {}", pat, e)
+                };
+                glob_set_builder.add(glob);
+            }
+        }
+        config.ignored_content_globber = Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
+
         Ok(config)
     }
 
@@ -176,6 +204,8 @@ impl Default for Config {
             generate_tags_pages: Some(true),
             generate_categories_pages: Some(true),
             compile_sass: Some(false),
+            ignored_content: Some(Vec::new()),
+            ignored_content_globber: Some(GlobSetBuilder::new().build().unwrap()),
             translations: None,
             extra: None,
             build_timestamp: Some(1),
@@ -330,4 +360,51 @@ title = "A title"
         assert_eq!(translations["en"]["title"].as_str().unwrap(), "A title");
     }
 
+    #[test]
+    fn missing_ignored_content_results_in_empty_vector_and_empty_globber() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        let v = config.ignored_content.unwrap();
+        assert_eq!(v.len(), 0);
+        assert!(config.ignored_content_globber.unwrap().is_empty());
+    }
+
+    #[test]
+    fn empty_ignored_content_results_in_empty_vector_and_empty_globber() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+ignored_content = []
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.ignored_content.unwrap().len(), 0);
+        assert!(config.ignored_content_globber.unwrap().is_empty());
+    }
+
+    #[test]
+    fn non_empty_ignored_content_results_in_vector_of_patterns_and_configured_globber() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+ignored_content = ["*.{graphml,iso}", "*.py?"]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        let v = config.ignored_content.unwrap();
+        assert_eq!(v, vec!["*.{graphml,iso}", "*.py?"]);
+
+        let g = config.ignored_content_globber.unwrap();
+        assert_eq!(g.len(), 2);
+        assert!(g.is_match("foo.graphml"));
+        assert!(g.is_match("foo.iso"));
+        assert!(!g.is_match("foo.png"));
+        assert!(g.is_match("foo.py2"));
+        assert!(g.is_match("foo.py3"));
+        assert!(!g.is_match("foo.py"));
+    }
 }

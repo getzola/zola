@@ -128,10 +128,27 @@ impl Page {
         let path = path.as_ref();
         let content = read_file(path)?;
         let mut page = Page::parse(path, &content, config)?;
-        page.assets = vec![];
 
         if page.file.name == "index" {
-            page.assets = find_related_assets(path.parent().unwrap());
+            // `find_related_assets` only scans the immediate directory (it is not recursive) so our
+            // filtering only needs to work against the file_name component, not the full suffix. If
+            // `find_related_assets` was changed to also return files in subdirectories, we could
+            // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
+            // against the remaining path. Note that the current behaviour effectively means that
+            // the `ignored_content` setting in the config file is limited to single-file glob
+            // patterns (no "**" patterns).
+            let globber = config.ignored_content_globber.as_ref().unwrap();
+            let parent_dir = path.parent().unwrap();
+            page.assets = find_related_assets(parent_dir).into_iter()
+                .filter(|path|
+                    match path.file_name() {
+                        None => true,
+                        Some(file) => !globber.is_match(file)
+                    }
+                ).collect();
+
+        } else {
+            page.assets = vec![];
         }
 
         Ok(page)
@@ -240,6 +257,7 @@ mod tests {
 
     use tera::Tera;
     use tempdir::TempDir;
+    use globset::{Glob, GlobSetBuilder};
 
     use config::Config;
     use super::Page;
@@ -418,5 +436,35 @@ Hello world
         assert_eq!(page.slug, "hey");
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.permalink, "http://a-website.com/posts/hey/");
+    }
+
+    #[test]
+    fn page_with_ignored_assets_filters_out_correct_files() {
+        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("with-assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
+        File::create(nested_path.join("example.js")).unwrap();
+        File::create(nested_path.join("graph.jpg")).unwrap();
+        File::create(nested_path.join("fail.png")).unwrap();
+
+        let mut gsb = GlobSetBuilder::new();
+        gsb.add(Glob::new("*.{js,png}").unwrap());
+        let mut config = Config::default();
+        config.ignored_content_globber = Some(gsb.build().unwrap());
+
+        let res = Page::from_file(
+            nested_path.join("index.md").as_path(),
+            &config
+        );
+
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.assets.len(), 1);
+        assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
     }
 }
