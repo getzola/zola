@@ -22,6 +22,7 @@ in the `docs/content` folder of the repository.
 - [atlasreports.nl](http://www.atlasreports.nl)
 - [groksome.com](http://www.groksome.com)
 - [tuckersiemens.com](https://tuckersiemens.com): https://github.com/reillysiemens/tuckersiemens.com
+- [andrei.blue](https://andrei.blue): https://github.com/azah/personal-blog
 
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
