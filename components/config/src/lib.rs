@@ -55,7 +55,7 @@ pub struct Config {
     /// Had to remove the PartialEq derive because GlobSet does not implement it. No impact
     /// because it's unused anyway (who wants to sort Configs?).
     pub ignored_content: Option<Vec<String>>,
-    #[serde(skip_serializing, skip_deserializing)]
+    #[serde(skip_serializing, skip_deserializing)]  // not a typo, 2 are needed
     pub ignored_content_globber: Option<GlobSet>,
 
     /// Languages list and translated strings
