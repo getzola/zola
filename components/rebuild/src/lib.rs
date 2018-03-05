@@ -1,4 +1,5 @@
 extern crate site;
+#[macro_use]
 extern crate errors;
 extern crate content;
 extern crate front_matter;
@@ -266,19 +267,51 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
 }
 
 
-// What happens when a section or a page is changed
+/// What happens when a section or a page is changed
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let is_section = path.file_name().unwrap() == "_index.md";
+    let is_md = path.extension().unwrap() == "md";
+    let index = path.parent().unwrap().join("index.md");
 
-    // A page or section got deleted
-    if !path.exists() {
-        delete_element(site, path, is_section)?;
-    }
+    // A few situations can happen:
+    // 1. Change on .md files
+    //    a. Is there an `index.md`? Return an error if it's something other than delete
+    //    b. Deleted? remove the element
+    //    c. Edited?
+    //       1. filename is `_index.md`, this is a section
+    //       1. it's a page otherwise
+    // 2. Change on non .md files
+    //    a. Try to find a corresponding `_index.md`
+    //       1. Nothing? Return Ok
+    //       2. Something? Update the page
+    if is_md {
+        // only delete if it was able to be added in the first place
+        if !index.exists() && !path.exists() {
+            delete_element(site, path, is_section)?;
+        }
 
-    if is_section {
-        handle_section_editing(site, path)
+        // Added another .md in a assets directory
+        if index.exists() && path.exists() && path != index {
+            bail!(
+                "Change on {:?} detected but there is already an `index.md` in the same folder",
+                path.display()
+            );
+        } else if index.exists() && !path.exists() {
+            // deleted the wrong .md, do nothing
+            return Ok(());
+        }
+
+        if is_section {
+            handle_section_editing(site, path)
+        } else {
+            handle_page_editing(site, path)
+        }
     } else {
-        handle_page_editing(site, path)
+        if index.exists()  {
+            handle_page_editing(site, &index)
+        } else {
+            Ok(())
+        }
     }
 }
 
