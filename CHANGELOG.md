@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.2 (unreleased)
+## 0.3.2 (2018-03-05)
 
 - Fix `serve` command trying to read all files as markdown
 - Add many syntax highlighting themes
