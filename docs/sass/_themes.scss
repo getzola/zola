@@ -1,9 +1,18 @@
 
 .themes-container {
   padding: 3rem;
+  width: 80%;
+  margin: 0 auto;
 
   img {
     max-width: 100%;
+  }
+}
+
+@media only screen and (max-width: 1000px)  {
+  .themes-container {
+    width: 100%;
+    margin: 0 1rem;
   }
 }
 
@@ -49,4 +58,22 @@
   }
 
   padding: 1rem;
+}
+
+
+@media only screen and (max-width: 1000px)  {
+  .themes .theme {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 1000px)  {
+  .theme-info {
+    flex-direction: column;
+    align-items: center;
+
+    img {
+      margin-bottom: 1rem;
+    }
+  }
 }
