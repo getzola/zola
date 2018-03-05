@@ -6,7 +6,7 @@ template = "theme.html"
 date = 2017-10-24T15:01:52+02:00
 
 [extra]
-created = 2018-01-25T18:45:36+01:00
+created = 2018-02-28T19:41:16+01:00
 updated = 2017-10-24T15:01:52+02:00
 repository = "https://github.com/Keats/hyde"
 homepage = "https://github.com/Keats/gutenberg-hyde"
