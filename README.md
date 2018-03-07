@@ -7,6 +7,26 @@ An opinionated static site generator written in Rust.
 Documentation is available on [its site](https://www.getgutenberg.io/documentation/getting-started/installation/) or
 in the `docs/content` folder of the repository.
 
+## Comparisons with other static site generators
+
+|                          | Gutenberg | Cobalt | Hugo | Pelican |
+|--------------------------|-----------|--------|------|---------|
+| Single binary            |     ✔     |    ✔   |   ✔  |    ✕    |
+| Language                 |    Rust   |  Rust  |  Go  |  Python |
+| Syntax highlighting      |     ✔     |    ✔   |   ✔  |    ✔    |
+| Sass compilation         |     ✔     |    ✔   |   ✕  |    ✔    |
+| Assets co-location       |     ✔     |    ✕   |   ✔  |    ✕    |
+| i18n                     |     ✕     |    ✕   |   ✔  |    ✔    |
+| Image processing         |     ✕     |    ✕   |   ✔  |    ✔    |
+| Search                   |     ✕     |    ✕   |   ✕  |    ✔    |
+| Sane template engine     |     ✔     |    ✔   |  ✕✕✕ |    ✔    |
+| Themes                   |     ✔     |    ✕   |   ✔  |    ✔    |
+| Shortcodes               |     ✔     |    ✕   |   ✔  |    ✔    |
+| Internal links           |     ✔     |    ✕   |   ✔  |    ✔    |
+| Table of contents        |     ✔     |    ✕   |   ✔  |    ✔    |
+| Automatic header anchors |     ✔     |    ✕   |   ✔  |    ✔    |
+
+
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
 should happen on the `next` branch, unless it is fixing the current documentation.
