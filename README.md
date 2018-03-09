@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/Keats/gutenberg.svg?branch=master)](https://travis-ci.org/Keats/gutenberg)
 [![Build status](https://ci.appveyor.com/api/projects/status/h4t9r6h5gom839q0/branch/master?svg=true)](https://ci.appveyor.com/project/Keats/gutenberg/branch/master)
 
-An opinionated static site generator written in Rust.
+A fast static site generator in a single binary with everything built-in.
 
 Documentation is available on [its site](https://www.getgutenberg.io/documentation/getting-started/installation/) or
 in the `docs/content` folder of the repository.
