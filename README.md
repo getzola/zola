@@ -30,6 +30,13 @@ in the `docs/content` folder of the repository.
 | Custom taxonomies        |     ✕     |    ✕   |   ✔  |    ✕    |
 | Data files               |     ✕     |    ✔   |   ✔  |    ✕    |
 
+Supported content formats:
+
+- Gutenberg: markdown
+- Cobalt: markdown
+- Hugo: markdown, asciidoc, org-mode
+- Pelican: reStructuredText, markdown, asciidoc, org-mode, whatever-you-want
+
 
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
