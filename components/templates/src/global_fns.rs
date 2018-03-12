@@ -23,8 +23,8 @@ macro_rules! required_string_arg {
 
 
 pub fn make_trans(config: Config) -> GlobalFn {
-    let translations_config = config.translations.unwrap();
-    let default_lang = to_value(config.default_language.unwrap()).unwrap();
+    let translations_config = config.translations;
+    let default_lang = to_value(config.default_language).unwrap();
 
     Box::new(move |args| -> Result<Value> {
         let key = required_string_arg!(args.get("key"), "`trans` requires a `key` argument.");

@@ -100,8 +100,8 @@ impl Section {
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
         let context = Context::new(
             tera,
-            config.highlight_code.unwrap(),
-            config.highlight_theme.clone().unwrap(),
+            config.highlight_code,
+            config.highlight_theme.clone(),
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links.unwrap()

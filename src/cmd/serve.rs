@@ -163,7 +163,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
     if watching_static {
         watchers.push("static");
     }
-    if site.config.compile_sass.unwrap() {
+    if site.config.compile_sass {
         watchers.push("sass");
     }
 

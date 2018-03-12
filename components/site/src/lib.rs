@@ -376,8 +376,8 @@ impl Site {
 
     /// Find all the tags and categories if it's asked in the config
     pub fn populate_tags_and_categories(&mut self) {
-        let generate_tags_pages = self.config.generate_tags_pages.unwrap();
-        let generate_categories_pages = self.config.generate_categories_pages.unwrap();
+        let generate_tags_pages = self.config.generate_tags_pages;
+        let generate_categories_pages = self.config.generate_categories_pages;
         if !generate_tags_pages && !generate_categories_pages {
             return;
         }
@@ -505,7 +505,7 @@ impl Site {
         self.render_sections()?;
         self.render_orphan_pages()?;
         self.render_sitemap()?;
-        if self.config.generate_rss.unwrap() {
+        if self.config.generate_rss {
             self.render_rss_feed()?;
         }
         self.render_robots()?;
@@ -521,7 +521,7 @@ impl Site {
             }
         }
 
-        if self.config.compile_sass.unwrap() {
+        if self.config.compile_sass {
             self.compile_sass(&self.base_path)?;
         }
 
@@ -703,7 +703,7 @@ impl Site {
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
         context.add("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
          // limit to the last n elements)
-        context.add("pages", &sorted_pages.iter().take(self.config.rss_limit.unwrap()).collect::<Vec<_>>());
+        context.add("pages", &sorted_pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
         context.add("config", &self.config);
 
         let rss_feed_url = if self.config.base_url.ends_with('/') {
