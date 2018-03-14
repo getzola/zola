@@ -445,3 +445,10 @@ fn can_build_rss_feed() {
     // Next is posts/python.md
     assert!(file_contains!(public, "rss.xml", "Python in posts"));
 }
+
+
+#[test]
+fn can_build_search_index() {
+    // TODO: generate an index somehow and check for correctness with
+    // another one
+}

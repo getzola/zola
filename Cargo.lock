@@ -1153,7 +1153,6 @@ dependencies = [
  "templates 0.1.0",
  "tera 0.11.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
- "walkdir 2.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1465,6 +1464,7 @@ dependencies = [
  "errors 0.1.0",
  "tempdir 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "tera 0.11.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "walkdir 2.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

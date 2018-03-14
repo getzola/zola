@@ -6,6 +6,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 [dependencies]
 errors = { path = "../errors" }
 tera = "0.11"
+walkdir = "2"
 
 
 [dev-dependencies]

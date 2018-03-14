@@ -1,8 +1,11 @@
 use std::io::prelude::*;
-use std::fs::{File, create_dir_all, read_dir};
+use std::fs::{File, create_dir_all, read_dir, copy};
 use std::path::{Path, PathBuf};
 
+use walkdir::WalkDir;
+
 use errors::{Result, ResultExt};
+
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
@@ -58,6 +61,36 @@ pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
     }
 
     assets
+}
+
+/// Copy a file but takes into account where to start the copy as
+/// there might be folders we need to create on the way
+pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf) -> Result<()> {
+    let relative_path = src.strip_prefix(base_path).unwrap();
+    let target_path = dest.join(relative_path);
+
+    if let Some(parent_directory) = target_path.parent() {
+        create_dir_all(parent_directory)?;
+    }
+
+    copy(src, target_path)?;
+    Ok(())
+}
+
+pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
+    for entry in WalkDir::new(src).into_iter().filter_map(|e| e.ok()) {
+        let relative_path = entry.path().strip_prefix(src).unwrap();
+        let target_path = dest.join(relative_path);
+
+        if entry.path().is_dir() {
+            if !target_path.exists() {
+                create_directory(&target_path)?;
+            }
+        } else {
+            copy_file(entry.path(), dest, src)?;
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]

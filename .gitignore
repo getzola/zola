@@ -1,6 +1,6 @@
 target
 .idea/
-components/site/test_site/public
+test_site/public
 docs/public
 
 small-blog

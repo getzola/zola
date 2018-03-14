@@ -1,7 +1,6 @@
 extern crate tera;
 extern crate rayon;
 extern crate glob;
-extern crate walkdir;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -21,7 +20,7 @@ extern crate content;
 extern crate tempdir;
 
 use std::collections::HashMap;
-use std::fs::{remove_dir_all, copy, create_dir_all};
+use std::fs::{remove_dir_all, copy};
 use std::mem;
 use std::path::{Path, PathBuf};
 
@@ -32,7 +31,7 @@ use sass_rs::{Options as SassOptions, OutputStyle, compile_file};
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
-use utils::fs::{create_file, create_directory, ensure_directory_exists};
+use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
 use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
@@ -67,7 +66,7 @@ pub struct Site {
     pub sections: HashMap<PathBuf, Section>,
     pub tera: Tera,
     live_reload: bool,
-    output_path: PathBuf,
+    pub output_path: PathBuf,
     pub static_path: PathBuf,
     pub tags: Option<Taxonomy>,
     pub categories: Option<Taxonomy>,
@@ -123,6 +122,11 @@ impl Site {
         };
 
         Ok(site)
+    }
+
+    /// The index section is ALWAYS at that path
+    pub fn index_section_path(&self) -> PathBuf {
+        self.base_path.join("content").join("_index.md")
     }
 
     /// What the function name says
@@ -198,7 +202,17 @@ impl Site {
 
         // Insert a default index section if necessary so we don't need to create
         // a _index.md to render the index page
-        let index_path = self.base_path.join("content").join("_index.md");
+        let index_path = self.index_section_path();
+        if let Some(ref index_section) = self.sections.get(&index_path) {
+            if self.config.build_search_index && index_section.meta.in_search_index {
+                bail!(
+                    "You have enabled search in the config but disabled it in the index section: \
+                    either turn off the search in the config or remote `in_search_index = true` from the \
+                    section front-matter."
+                )
+            }
+        }
+        // Not in else because of borrow checker
         if !self.sections.contains_key(&index_path) {
             let mut index_section = Section::default();
             index_section.permalink = self.config.make_permalink("");
@@ -409,45 +423,18 @@ impl Site {
         html
     }
 
-    /// Copy the file at the given path into the public folder
-    pub fn copy_static_file<P: AsRef<Path>>(&self, path: P, base_path: &PathBuf) -> Result<()> {
-        let relative_path = path.as_ref().strip_prefix(base_path).unwrap();
-        let target_path = self.output_path.join(relative_path);
-        if let Some(parent_directory) = target_path.parent() {
-            create_dir_all(parent_directory)?;
-        }
-        copy(path.as_ref(), &target_path)?;
-        Ok(())
-    }
-
-    /// Copy the content of the given folder into the `public` folder
-    fn copy_static_directory(&self, path: &PathBuf) -> Result<()> {
-        for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
-            let relative_path = entry.path().strip_prefix(path).unwrap();
-            let target_path = self.output_path.join(relative_path);
-            if entry.path().is_dir() {
-                if !target_path.exists() {
-                    create_directory(&target_path)?;
-                }
-            } else {
-                let entry_fullpath = self.base_path.join(entry.path());
-                self.copy_static_file(entry_fullpath, path)?;
-            }
-        }
-        Ok(())
-    }
-
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
         if let Some(ref theme) = self.config.theme {
-            self.copy_static_directory(
-                &self.base_path.join("themes").join(theme).join("static")
+            copy_directory(
+                &self.base_path.join("themes").join(theme).join("static"),
+                &self.output_path
             )?;
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
-            self.copy_static_directory(&self.static_path)?;
+            copy_directory(&self.static_path, &self.output_path)?;
         }
 
         Ok(())

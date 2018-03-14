@@ -48,7 +48,7 @@ pub struct SectionFrontMatter {
     #[serde(skip_serializing)]
     pub redirect_to: Option<String>,
     /// Whether the section content and its pages/subsections are included in the index.
-    /// Defaults to `true` but is only used if search if explicitely enabled in the config.
+    /// Defaults to `true` but is only used if search if explicitly enabled in the config.
     #[serde(skip_serializing)]
     pub in_search_index: bool,
     /// Any extra parameter present in the front matter

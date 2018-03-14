@@ -6,7 +6,6 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 [dependencies]
 tera = "0.11"
 glob = "0.2"
-walkdir = "2"
 rayon = "1"
 serde = "1"
 serde_derive = "1"

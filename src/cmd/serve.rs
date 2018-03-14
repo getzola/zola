@@ -38,6 +38,7 @@ use ctrlc;
 
 use site::Site;
 use errors::{Result, ResultExt};
+use utils::fs::copy_file;
 
 use console;
 use rebuild;
@@ -207,7 +208,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {
                                     console::info(&format!("-> Static file changes detected {}", path.display()));
-                                    rebuild_done_handling(&broadcaster, site.copy_static_file(&path, &site.static_path), &p);
+                                    rebuild_done_handling(&broadcaster, copy_file(&path, &site.output_path, &site.static_path), &p);
                                 }
                             },
                             (ChangeKind::Sass, p) => {
