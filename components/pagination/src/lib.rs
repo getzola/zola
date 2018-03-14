@@ -72,13 +72,9 @@ impl<'a> Paginator<'a> {
     /// It will always at least create one pager (the first) even if there are no pages to paginate
     pub fn new(all_pages: &'a [Page], section: &'a Section) -> Paginator<'a> {
         let paginate_by = section.meta.paginate_by.unwrap();
-        let paginate_path = match section.meta.paginate_path {
-            Some(ref p) => p,
-            None => unreachable!(),
-        };
-
         let mut pages = vec![];
         let mut current_page = vec![];
+
         for page in all_pages {
             current_page.push(page);
 
@@ -99,7 +95,7 @@ impl<'a> Paginator<'a> {
                 continue;
             }
 
-            let page_path = format!("{}/{}/", paginate_path, index + 1);
+            let page_path = format!("{}/{}/", section.meta.paginate_path, index + 1);
             let permalink = format!("{}{}", section.permalink, page_path);
             let pager_path = if section.is_index() {
                 page_path
@@ -189,7 +185,7 @@ mod tests {
     fn create_section(is_index: bool) -> Section {
         let mut f = SectionFrontMatter::default();
         f.paginate_by = Some(2);
-        f.paginate_path = Some("page".to_string());
+        f.paginate_path = "page".to_string();
         let mut s = Section::new("content/_index.md", f);
         if !is_index {
             s.path = "posts/".to_string();

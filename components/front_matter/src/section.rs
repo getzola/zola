@@ -12,6 +12,7 @@ static DEFAULT_PAGINATE_PATH: &'static str = "page";
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct SectionFrontMatter {
     /// <title> of the page
     pub title: Option<String>,
@@ -19,11 +20,11 @@ pub struct SectionFrontMatter {
     pub description: Option<String>,
     /// Whether to sort by "date", "order", "weight" or "none". Defaults to `none`.
     #[serde(skip_serializing)]
-    pub sort_by: Option<SortBy>,
+    pub sort_by: SortBy,
     /// Used by the parent section to order its subsections.
-    /// Higher values means it will be at the end.
+    /// Higher values means it will be at the end. Defaults to `0`
     #[serde(skip_serializing)]
-    pub weight: Option<usize>,
+    pub weight: usize,
     /// Optional template, if we want to specify which template to render for that section
     #[serde(skip_serializing)]
     pub template: Option<String>,
@@ -32,57 +33,36 @@ pub struct SectionFrontMatter {
     pub paginate_by: Option<usize>,
     /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
     #[serde(skip_serializing)]
-    pub paginate_path: Option<String>,
+    pub paginate_path: String,
     /// Whether to insert a link for each header like the ones you can see in this site if you hover one
     /// The default template can be overridden by creating a `anchor-link.html` in the `templates` directory
-    pub insert_anchor_links: Option<InsertAnchor>,
+    pub insert_anchor_links: InsertAnchor,
     /// Whether to render that section or not. Defaults to `true`.
     /// Useful when the section is only there to organize things but is not meant
     /// to be used directly, like a posts section in a personal site
     #[serde(skip_serializing)]
-    pub render: Option<bool>,
+    pub render: bool,
     /// Whether to redirect when landing on that section. Defaults to `None`.
     /// Useful for the same reason as `render` but when you don't want a 404 when
     /// landing on the root section page
     #[serde(skip_serializing)]
     pub redirect_to: Option<String>,
+    /// Whether the section content and its pages/subsections are included in the index.
+    /// Defaults to `true` but is only used if search if explicitely enabled in the config.
+    #[serde(skip_serializing)]
+    pub in_search_index: bool,
     /// Any extra parameter present in the front matter
-    pub extra: Option<HashMap<String, Value>>,
+    pub extra: HashMap<String, Value>,
 }
 
 impl SectionFrontMatter {
     pub fn parse(toml: &str) -> Result<SectionFrontMatter> {
-        let mut f: SectionFrontMatter = match toml::from_str(toml) {
+        let f: SectionFrontMatter = match toml::from_str(toml) {
             Ok(d) => d,
             Err(e) => bail!(e),
         };
 
-        if f.paginate_path.is_none() {
-            f.paginate_path = Some(DEFAULT_PAGINATE_PATH.to_string());
-        }
-
-        if f.render.is_none() {
-            f.render = Some(true);
-        }
-
-        if f.sort_by.is_none() {
-            f.sort_by = Some(SortBy::None);
-        }
-
-        if f.insert_anchor_links.is_none() {
-            f.insert_anchor_links = Some(InsertAnchor::None);
-        }
-
-        if f.weight.is_none() {
-            f.weight = Some(0);
-        }
-
         Ok(f)
-    }
-
-    /// Returns the current sorting method, defaults to `None` (== no sorting)
-    pub fn sort_by(&self) -> SortBy {
-        self.sort_by.unwrap()
     }
 
     /// Only applies to section, whether it is paginated or not.
@@ -92,10 +72,6 @@ impl SectionFrontMatter {
             None => false
         }
     }
-
-    pub fn should_render(&self) -> bool {
-        self.render.unwrap()
-    }
 }
 
 impl Default for SectionFrontMatter {
@@ -103,15 +79,16 @@ impl Default for SectionFrontMatter {
         SectionFrontMatter {
             title: None,
             description: None,
-            sort_by: Some(SortBy::None),
-            weight: Some(0),
+            sort_by: SortBy::None,
+            weight: 0,
             template: None,
             paginate_by: None,
-            paginate_path: Some(DEFAULT_PAGINATE_PATH.to_string()),
-            render: Some(true),
+            paginate_path: DEFAULT_PAGINATE_PATH.to_string(),
+            render: true,
             redirect_to: None,
-            insert_anchor_links: Some(InsertAnchor::None),
-            extra: None,
+            insert_anchor_links: InsertAnchor::None,
+            in_search_index: true,
+            extra: HashMap::new(),
         }
     }
 }

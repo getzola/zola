@@ -308,7 +308,7 @@ impl Site {
     /// Defaults to `AnchorInsert::None` if no parent section found
     pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
         match self.sections.get(&parent_path.join("_index.md")) {
-            Some(s) => s.meta.insert_anchor_links.unwrap(),
+            Some(s) => s.meta.insert_anchor_links,
             None => InsertAnchor::None
         }
     }
@@ -350,7 +350,7 @@ impl Site {
                     .map(|p| sections[p].clone())
                     .collect::<Vec<_>>();
                 section.subsections
-                    .sort_by(|a, b| a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()));
+                    .sort_by(|a, b| a.meta.weight.cmp(&b.meta.weight));
             }
         }
     }
@@ -365,7 +365,7 @@ impl Site {
                 }
             }
             let pages = mem::replace(&mut section.pages, vec![]);
-            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by());
+            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by);
             section.pages = populate_previous_and_next_pages(&sorted_pages);
             section.ignored_pages = cannot_be_sorted_pages;
         }
@@ -773,7 +773,7 @@ impl Site {
                 .reduce(|| Ok(()), Result::and)?;
         }
 
-        if !section.meta.should_render() {
+        if !section.meta.render {
             return Ok(());
         }
 
@@ -827,13 +827,8 @@ impl Site {
     pub fn render_paginated(&self, output_path: &Path, section: &Section) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let paginate_path = match section.meta.paginate_path {
-            Some(ref s) => s.clone(),
-            None => unreachable!()
-        };
-
         let paginator = Paginator::new(&section.pages, section);
-        let folder_path = output_path.join(&paginate_path);
+        let folder_path = output_path.join(&section.meta.paginate_path);
         create_directory(&folder_path)?;
 
         paginator
