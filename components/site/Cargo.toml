@@ -19,6 +19,7 @@ front_matter = { path = "../front_matter" }
 pagination = { path = "../pagination" }
 taxonomies = { path = "../taxonomies" }
 content = { path = "../content" }
+search = { path = "../search" }
 
 [dev-dependencies]
 tempdir = "0.3"

@@ -62,6 +62,7 @@ fn fix_toml_dates(table: Map<String, Value>) -> Value {
 
 /// The front matter of every page
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct PageFrontMatter {
     /// <title> of the page
     pub title: Option<String>,
@@ -96,10 +97,9 @@ pub struct PageFrontMatter {
     pub template: Option<String>,
     /// Whether the page is included in the search index
     /// Defaults to `true` but is only used if search if explicitly enabled in the config.
-    #[serde(default, skip_serializing)]
+    #[serde(skip_serializing)]
     pub in_search_index: bool,
     /// Any extra parameter present in the front matter
-    #[serde(default)]
     pub extra: Map<String, Value>,
 }
 

@@ -449,6 +449,17 @@ fn can_build_rss_feed() {
 
 #[test]
 fn can_build_search_index() {
-    // TODO: generate an index somehow and check for correctness with
-    // another one
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.load().unwrap();
+    site.config.build_search_index = true;
+    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+    assert!(file_exists!(public, "elasticlunr.min.js"));
+    assert!(file_exists!(public, "search_index.js"));
 }

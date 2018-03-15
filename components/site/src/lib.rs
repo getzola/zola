@@ -15,6 +15,7 @@ extern crate templates;
 extern crate pagination;
 extern crate taxonomies;
 extern crate content;
+extern crate search;
 
 #[cfg(test)]
 extern crate tempdir;
@@ -509,7 +510,32 @@ impl Site {
             self.compile_sass(&self.base_path)?;
         }
 
-        self.copy_static_directories()
+        self.copy_static_directories()?;
+
+        if self.config.build_search_index {
+            self.build_search_index()?;
+        }
+
+        Ok(())
+    }
+
+    pub fn build_search_index(&self) -> Result<()> {
+        // index first
+        create_file(
+            &self.output_path.join("search_index.js"),
+            &format!(
+                "window.searchIndex = {};",
+                search::build_index(&self.sections)
+            ),
+        )?;
+
+        // then elasticlunr.min.js
+        create_file(
+            &self.output_path.join("elasticlunr.min.js"),
+            search::ELASTICLUNR_JS,
+        )?;
+
+        Ok(())
     }
 
     pub fn compile_sass(&self, base_path: &Path) -> Result<()> {

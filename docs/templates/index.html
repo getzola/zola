@@ -18,8 +18,14 @@
                 <a class="white" href="{{ get_url(path="./documentation/_index.md") }}" class="nav-link">Docs</a>
                 <a class="white" href="{{ get_url(path="./themes/_index.md") }}" class="nav-link">Themes</a>
                 <a class="white" href="https://github.com/Keats/gutenberg" class="nav-link">GitHub</a>
+                <input id="search" type="search" placeholder="Search the docs">
             </nav>
         </header>
+
+        <div class="search-results">
+            <h2 class="search-results__header"></h2>
+            <div class="search-results__items"></div>
+        </div>
 
         <div class="content {% block extra_content_class %}{% endblock extra_content_class %}">
             {% block content %}
@@ -93,5 +99,9 @@
         <footer>
             ©2017-2018 — <a class="white" href="https://vincent.is">Vincent Prouillet</a> and <a class="white" href="https://github.com/Keats/gutenberg/graphs/contributors">contributors</a>
         </footer>
+
+        <script type="text/javascript" src="{{ get_url(path="elasticlunr.min.js", trailing_slash=false) }}"></script>
+        <script type="text/javascript" src="{{ get_url(path="search_index.js", trailing_slash=false) }}"></script>
+        <script type="text/javascript" src="{{ get_url(path="search.js", trailing_slash=false) }}"></script>
     </body>
 </html>
