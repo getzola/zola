@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.3 (unreleased)
+
+- Fixed config flag in CLI
+
+
 ## 0.3.2 (2018-03-05)
 
 - Fix `serve` command trying to read all files as markdown

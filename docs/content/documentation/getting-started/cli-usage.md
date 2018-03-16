@@ -13,7 +13,7 @@ the command help by running `gutenberg <cmd> --help`.
 Creates the directory structure used by Gutenberg at the given directory.
 
 ```bash
-$ gutenberg init <my_site>
+$ gutenberg init my_site
 ```
 
 will create a new folder named `my_site` and the files/folders needed by
@@ -37,8 +37,15 @@ This is useful for example when you want to deploy previews of a site to a dynam
 deploy previews.
 
 +You can override the default output directory 'public' by passing a other value to the `output-dir` flag.
+
 ```bash
 $ gutenberg build --output-dir $DOCUMENT_ROOT
+```
+
+You can also point to another config file than `config.toml` like so - the position of the `config` option is important:
+
+```bash
+$ gutenberg --config config.staging.toml build
 ```
 
 ## serve
@@ -63,3 +70,10 @@ hard refresh if possible.
 
 Gutenberg does a best-effort to live reload but some changes cannot be handled automatically. If you
 fail to see your change, you will need to restart `gutenberg serve`.
+
+
+You can also point to another config file than `config.toml` like so - the position of the `config` option is important:
+
+```bash
+$ gutenberg --config config.staging.toml serve
+```

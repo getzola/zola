@@ -123,8 +123,10 @@ impl Config {
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let mut content = String::new();
+        let path = path.as_ref();
+        let file_name = path.file_name().unwrap();
         File::open(path)
-            .chain_err(|| "No `config.toml` file found. Are you in the right directory?")?
+            .chain_err(|| format!("No `{:?}` file found. Are you in the right directory?", file_name))?
             .read_to_string(&mut content)?;
 
         Config::parse(&content)

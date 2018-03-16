@@ -32,13 +32,21 @@ _gutenberg() {
 
     case "${cmd}" in
         gutenberg)
-            opts=" -c -h -V  --config --help --version   init build serve help"
+            opts=" -h -V -c  --help --version --config   init build serve help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
             fi
             case "${prev}" in
                 
+                --config)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                    -c)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -56,19 +64,19 @@ _gutenberg() {
             case "${prev}" in
                 
                 --base-url)
-                    COMPREPLY=("<base_url>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -u)
-                    COMPREPLY=("<base_url>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 --output-dir)
-                    COMPREPLY=("<output_dir>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -o)
-                    COMPREPLY=("<output_dir>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 *)
@@ -117,35 +125,35 @@ _gutenberg() {
             case "${prev}" in
                 
                 --interface)
-                    COMPREPLY=("<interface>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -i)
-                    COMPREPLY=("<interface>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 --port)
-                    COMPREPLY=("<port>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -p)
-                    COMPREPLY=("<port>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 --output-dir)
-                    COMPREPLY=("<output_dir>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -o)
-                    COMPREPLY=("<output_dir>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 --base-url)
-                    COMPREPLY=("<base_url>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -u)
-                    COMPREPLY=("<base_url>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 *)

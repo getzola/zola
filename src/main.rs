@@ -29,7 +29,7 @@ mod prompt;
 fn main() {
     let matches = cli::build_cli().get_matches();
 
-    let config_file = matches.value_of("config").unwrap_or("config.toml");
+    let config_file = matches.value_of("config").unwrap();
 
     match matches.subcommand() {
         ("init", Some(matches)) => {
