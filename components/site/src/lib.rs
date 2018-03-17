@@ -632,27 +632,26 @@ impl Site {
 
         let mut context = Context::new();
 
-        context.add(
-            "pages",
-            &self.pages
-                .values()
-                .filter(|p| !p.is_draft())
-                .map(|p| {
-                    let date = match p.meta.date {
-                        Some(ref d) => Some(d.to_string()),
-                        None => None,
-                    };
-                    SitemapEntry::new(p.permalink.clone(), date)
-                })
-                .collect::<Vec<_>>()
-        );
-        context.add(
-            "sections",
-            &self.sections
+        let mut pages = self.pages
+            .values()
+            .filter(|p| !p.is_draft())
+            .map(|p| {
+                let date = match p.meta.date {
+                    Some(ref d) => Some(d.to_string()),
+                    None => None,
+                };
+                SitemapEntry::new(p.permalink.clone(), date)
+            })
+            .collect::<Vec<_>>();
+        pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
+        context.add("pages", &pages);
+
+        let mut sections = self.sections
                 .values()
                 .map(|s| SitemapEntry::new(s.permalink.clone(), None))
-                .collect::<Vec<_>>()
-        );
+                .collect::<Vec<_>>();
+        sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
+        context.add("sections", &sections);
 
         let mut categories = vec![];
         if let Some(ref c) = self.categories {
@@ -664,6 +663,7 @@ impl Site {
                 );
             }
         }
+        categories.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.add("categories", &categories);
 
         let mut tags = vec![];
@@ -676,6 +676,7 @@ impl Site {
                 );
             }
         }
+        tags.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.add("tags", &tags);
         context.add("config", &self.config);
 
