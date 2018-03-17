@@ -23,7 +23,7 @@ description = ""
 # The date of the post.
 # 2 formats are allowed: YYYY-MM-DD (2012-10-02) and RFC3339 (2002-10-02T15:00:00Z)
 # Do not wrap dates in quotes, the line below only indicates that there is no default date
-date = ""
+date = 
 
 # A draft page will not be present in prev/next pagination
 draft = false
