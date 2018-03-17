@@ -528,11 +528,16 @@ impl Site {
         self.copy_static_directories()
     }
 
-    pub fn compile_sass(&self, base_path: &PathBuf) -> Result<()> {
+    pub fn compile_sass(&self, base_path: &Path) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let base_path = base_path.to_string_lossy().replace("\\", "/");
-        let sass_glob = format!("{}/{}", base_path, "sass/**/*.scss");
+        let sass_path = {
+            let mut sass_path = PathBuf::from(base_path);
+            sass_path.push("sass");
+            sass_path
+        };
+
+        let sass_glob = format!("{}/**/*.scss", sass_path.display());
         let files = glob(&sass_glob)
             .unwrap()
             .filter_map(|e| e.ok())
@@ -542,13 +547,16 @@ impl Site {
         let mut sass_options = Options::default();
         sass_options.output_style = OutputStyle::Compressed;
         for file in files {
-            let name = file.as_path().file_stem().unwrap().to_string_lossy();
-            let css = match compile_file(file.as_path(), sass_options.clone()) {
-                Ok(c) => c,
-                Err(e) => bail!(e)
-            };
+            let css = compile_file(&file, sass_options.clone())?;
 
-            create_file(&self.output_path.join(format!("{}.css", name)), &css)?;
+            let path_inside_sass = file.strip_prefix(&sass_path).unwrap();
+            let parent_inside_sass = path_inside_sass.parent();
+            let css_output_path = self.output_path.join(path_inside_sass).with_extension("css");
+
+            if parent_inside_sass.is_some() {
+                create_dir_all(&css_output_path.parent().unwrap())?;
+            }
+            create_file(&css_output_path, &css)?;
         }
 
         Ok(())

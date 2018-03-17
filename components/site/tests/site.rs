@@ -100,7 +100,7 @@ fn can_build_site_without_live_reload() {
     site.set_output_path(&public);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
     assert!(file_exists!(public, "robots.txt"));
@@ -139,6 +139,16 @@ fn can_build_site_without_live_reload() {
     // Theme files are there
     assert!(file_exists!(public, "sample.css"));
     assert!(file_exists!(public, "some.js"));
+
+    // SASS and SCSS files compile correctly
+    assert!(file_exists!(public, "blog.css"));
+    assert!(file_contains!(public, "blog.css", "red"));
+    assert!(file_contains!(public, "blog.css", "blue"));
+    assert!(!file_contains!(public, "blog.css", "@import \"included\""));
+    assert!(file_contains!(public, "blog.css", "2rem")); // check include
+    assert!(!file_exists!(public, "_included.css"));
+    assert!(file_exists!(public, "scss.css"));
+    assert!(file_exists!(public, "nested_sass/scss.css"));
 
     // no live reload code
     assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
