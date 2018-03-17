@@ -78,6 +78,9 @@ is enabled by setting the `sort_by` front-matter variable.
 Any page that cannot be sorted, for example if missing the date variable while sorting by `date`, will be ignored and
 won't be rendered. The terminal will warn you if this is happening.
 
+If several pages have the same date/weight/order, their permalink will be used to break the tie following
+an alphabetical order.
+
 ### `date`
 This will sort all pages by their `date` field, from the most recent to the oldest.
 
