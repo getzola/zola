@@ -148,6 +148,8 @@ fn can_build_site_without_live_reload() {
     assert!(file_contains!(public, "blog.css", "2rem")); // check include
     assert!(!file_exists!(public, "_included.css"));
     assert!(file_exists!(public, "scss.css"));
+    assert!(file_exists!(public, "sass.css"));
+    assert!(file_exists!(public, "nested_sass/sass.css"));
     assert!(file_exists!(public, "nested_sass/scss.css"));
 
     // no live reload code

@@ -537,17 +537,34 @@ impl Site {
             sass_path
         };
 
-        let sass_glob = format!("{}/**/*.scss", sass_path.display());
-        let files = glob(&sass_glob)
+        let mut options = Options::default();
+        options.output_style = OutputStyle::Compressed;
+        let mut compiled_paths = self.compile_sass_glob(&sass_path, "scss", options.clone())?;
+
+        options.indented_syntax = true;
+        compiled_paths.extend(self.compile_sass_glob(&sass_path, "sass", options)?);
+
+        compiled_paths.sort();
+        for window in compiled_paths.windows(2) {
+            if window[0].1 == window[1].1 {
+                bail!("SASS path conflict: \"{}\" and \"{}\" both compile to \"{}\"", window[0].0.display(), window[1].0.display(), window[0].1.display());
+            }
+        }
+
+        Ok(())
+    }
+
+    fn compile_sass_glob(&self, sass_path: &Path, extension: &str, options: Options) -> Result<Vec<(PathBuf, PathBuf)>> {
+        let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
+        let files = glob(&glob_string)
             .unwrap()
             .filter_map(|e| e.ok())
             .filter(|entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_'))
             .collect::<Vec<_>>();
 
-        let mut sass_options = Options::default();
-        sass_options.output_style = OutputStyle::Compressed;
+        let mut compiled_paths = Vec::new();
         for file in files {
-            let css = compile_file(&file, sass_options.clone())?;
+            let css = compile_file(&file, options.clone())?;
 
             let path_inside_sass = file.strip_prefix(&sass_path).unwrap();
             let parent_inside_sass = path_inside_sass.parent();
@@ -556,10 +573,12 @@ impl Site {
             if parent_inside_sass.is_some() {
                 create_dir_all(&css_output_path.parent().unwrap())?;
             }
+
             create_file(&css_output_path, &css)?;
+            compiled_paths.push((path_inside_sass.to_owned(), css_output_path));
         }
 
-        Ok(())
+        Ok(compiled_paths)
     }
 
     pub fn render_aliases(&self) -> Result<()> {
