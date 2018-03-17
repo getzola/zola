@@ -4,7 +4,8 @@
 
 - Fixed config flag in CLI
 - Sitemap entries are now sorted by permalinks to avoid random ordering
-
+- Preserve directory structure from sass folder when copying compiled css files
+to the public directory
 
 ## 0.3.2 (2018-03-05)
 
