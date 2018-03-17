@@ -71,6 +71,15 @@ Some content
 
 Keep in mind that any configuration apply only to the direct pages, not to the subsections' pages.
 
+## Pagination
+
+To enable pagination for a section's pages, simply set `paginate_by` to a positive number and it will automatically
+paginate by this much. See [pagination template documentation](./documentation/templates/pagination.md) for more information
+on what will be available in the template.
+
+You can also change the pagination path - the word displayed while paginated in the URL, like `page/1` - 
+by setting the `paginate_path` variable, which defaults to `page`.
+
 ## Sorting
 Sections' pages can be sorted three different ways, not counting the unsorted default and 
 is enabled by setting the `sort_by` front-matter variable.
@@ -87,3 +96,4 @@ This will be sort all pages by their `weight` field. Heavier weights fall at the
 ### `order`
 This will be sort all pages by their `order` field. Order is the opposite of weight, think of it as enumerating 
 the content: this is my first post, my second, etc. A page with `order: 5` will appear after a page with `order: 10` in the sorted list.
+
