@@ -92,13 +92,10 @@ impl Site {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
 
-            // Test that the {templates,static} folder exist for that theme
+            // Test that the templates folder exist for that theme
             let theme_path = path.join("themes").join(&theme);
             if !theme_path.join("templates").exists() {
                 bail!("Theme `{}` is missing a templates folder", theme);
-            }
-            if !theme_path.join("static").exists() {
-                bail!("Theme `{}` is missing a static folder", theme);
             }
 
             let theme_tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "themes/**/*.html");

@@ -33,6 +33,8 @@ To learn more, read [the content overview](./documentation/content/overview.md).
 
 ## `sass`
 Contains the [Sass](http://sass-lang.com) files to be compiled. Non-Sass files will be ignored.
+The directory structure of the `sass` folder will be preserved when copying over the compiled files: a file at
+`sass/something/site.scss` will be compiled to `public/something/site.css`.
 
 ## `static`
 Contains any kind of files. All the files/folders in the `static` folder will be copied as-is in the output directory.

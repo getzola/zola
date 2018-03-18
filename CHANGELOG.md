@@ -6,6 +6,7 @@
 - Sitemap entries are now sorted by permalinks to avoid random ordering
 - Preserve directory structure from sass folder when copying compiled css files
 to the public directory
+- Do not require themes to have a static folder
 
 ## 0.3.2 (2018-03-05)
 
