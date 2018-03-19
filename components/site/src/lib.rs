@@ -28,7 +28,7 @@ use std::path::{Path, PathBuf};
 use glob::glob;
 use tera::{Tera, Context};
 use walkdir::WalkDir;
-use sass_rs::{Options, OutputStyle, compile_file};
+use sass_rs::{Options as SassOptions, OutputStyle, compile_file};
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
@@ -537,7 +537,7 @@ impl Site {
             sass_path
         };
 
-        let mut options = Options::default();
+        let mut options = SassOptions::default();
         options.output_style = OutputStyle::Compressed;
         let mut compiled_paths = self.compile_sass_glob(&sass_path, "scss", options.clone())?;
 
@@ -547,14 +547,19 @@ impl Site {
         compiled_paths.sort();
         for window in compiled_paths.windows(2) {
             if window[0].1 == window[1].1 {
-                bail!("SASS path conflict: \"{}\" and \"{}\" both compile to \"{}\"", window[0].0.display(), window[1].0.display(), window[0].1.display());
+                bail!(
+                    "SASS path conflict: \"{}\" and \"{}\" both compile to \"{}\"",
+                    window[0].0.display(),
+                    window[1].0.display(),
+                    window[0].1.display(),
+                );
             }
         }
 
         Ok(())
     }
 
-    fn compile_sass_glob(&self, sass_path: &Path, extension: &str, options: Options) -> Result<Vec<(PathBuf, PathBuf)>> {
+    fn compile_sass_glob(&self, sass_path: &Path, extension: &str, options: SassOptions) -> Result<Vec<(PathBuf, PathBuf)>> {
         let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
         let files = glob(&glob_string)
             .unwrap()
