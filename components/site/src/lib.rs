@@ -204,7 +204,7 @@ impl Site {
         // a _index.md to render the index page
         let index_path = self.index_section_path();
         if let Some(ref index_section) = self.sections.get(&index_path) {
-            if self.config.build_search_index && index_section.meta.in_search_index {
+            if self.config.build_search_index && !index_section.meta.in_search_index {
                 bail!(
                     "You have enabled search in the config but disabled it in the index section: \
                     either turn off the search in the config or remote `in_search_index = true` from the \
