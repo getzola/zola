@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
-elasticlunr-rs = "1"
+elasticlunr-rs = "2"
 ammonia = "1"
 lazy_static = "1"
 

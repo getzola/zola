@@ -21,13 +21,12 @@ extern crate search;
 extern crate tempdir;
 
 use std::collections::HashMap;
-use std::fs::{remove_dir_all, copy};
+use std::fs::{create_dir_all, remove_dir_all, copy};
 use std::mem;
 use std::path::{Path, PathBuf};
 
 use glob::glob;
 use tera::{Tera, Context};
-use walkdir::WalkDir;
 use sass_rs::{Options as SassOptions, OutputStyle, compile_file};
 
 use errors::{Result, ResultExt};
@@ -522,10 +521,10 @@ impl Site {
     pub fn build_search_index(&self) -> Result<()> {
         // index first
         create_file(
-            &self.output_path.join("search_index.js"),
+            &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
             &format!(
                 "window.searchIndex = {};",
-                search::build_index(&self.sections)
+                search::build_index(&self.sections, &self.config.default_language)?
             ),
         )?;
 

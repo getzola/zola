@@ -1,3 +1,30 @@
+.search-container {
+  display: inline-block;
+  position: relative;
+  width: 300px;
+
+  input {
+    width: 100%;
+  }
+}
+
 .search-results {
   display: none;
+  position: absolute;
+  background: white;
+  color: black;
+  padding: 1rem;
+  width: 100%;
+  box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.5);
+  max-height: 500px;
+  overflow: auto;
+
+  &__items {
+    list-style: none;
+  }
+
+  &__item {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
 }
