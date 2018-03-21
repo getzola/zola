@@ -156,6 +156,11 @@ function initSearch() {
     }
 
     var results = index.search(term, options);
+    if (results.length === 0) {
+      $searchResults.style.display = "none";
+      return;
+    }
+
     currentTerm = term;
     for (var i = 0; i < Math.min(results.length, MAX_ITEMS); i++) {
       var item = document.createElement("li");
