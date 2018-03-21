@@ -75,7 +75,7 @@ impl Page {
     }
 
     pub fn is_draft(&self) -> bool {
-        self.meta.draft.unwrap_or(false)
+        self.meta.draft
     }
 
     /// Parse a page given the content of the .md file

@@ -68,7 +68,7 @@ fn add_section_to_index(index: &mut Index, section: &Section) {
     }
 
     for page in &section.pages {
-        if !page.meta.in_search_index {
+        if !page.meta.in_search_index || page.meta.draft {
             continue;
         }
 

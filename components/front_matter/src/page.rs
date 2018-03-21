@@ -72,7 +72,7 @@ pub struct PageFrontMatter {
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub date: Option<String>,
     /// Whether this page is a draft and should be ignored for pagination etc
-    pub draft: Option<bool>,
+    pub draft: bool,
     /// The page slug. Will be used instead of the filename if present
     /// Can't be an empty string if present
     pub slug: Option<String>,
@@ -91,7 +91,7 @@ pub struct PageFrontMatter {
     /// All aliases for that page. Gutenberg will create HTML templates that will
     /// redirect to this
     #[serde(skip_serializing)]
-    pub aliases: Option<Vec<String>>,
+    pub aliases: Vec<String>,
     /// Specify a template different from `page.html` to use for that page
     #[serde(skip_serializing)]
     pub template: Option<String>,
@@ -170,14 +170,14 @@ impl Default for PageFrontMatter {
             title: None,
             description: None,
             date: None,
-            draft: None,
+            draft: false,
             slug: None,
             path: None,
             tags: None,
             category: None,
             order: None,
             weight: None,
-            aliases: None,
+            aliases: Vec::new(),
             in_search_index: true,
             template: None,
             extra: Map::new(),

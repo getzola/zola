@@ -597,18 +597,16 @@ impl Site {
 
     pub fn render_aliases(&self) -> Result<()> {
         for page in self.pages.values() {
-            if let Some(ref aliases) = page.meta.aliases {
-                for alias in aliases {
-                    let mut output_path = self.output_path.to_path_buf();
-                    for component in alias.split('/') {
-                        output_path.push(&component);
+            for alias in &page.meta.aliases {
+                let mut output_path = self.output_path.to_path_buf();
+                for component in alias.split('/') {
+                    output_path.push(&component);
 
-                        if !output_path.exists() {
-                            create_directory(&output_path)?;
-                        }
+                    if !output_path.exists() {
+                        create_directory(&output_path)?;
                     }
-                    create_file(&output_path.join("index.html"), &render_redirect_template(&page.permalink, &self.tera)?)?;
                 }
+                create_file(&output_path.join("index.html"), &render_redirect_template(&page.permalink, &self.tera)?)?;
             }
         }
         Ok(())
