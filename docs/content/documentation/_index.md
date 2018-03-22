@@ -17,6 +17,7 @@ Content
  - Internal links & deep linking
  - Table of contents
  - Syntax highlighting
+ - Sass
  
 Templates
  - Intro
