@@ -104,7 +104,7 @@ impl Section {
             config.highlight_theme.clone(),
             &self.permalink,
             permalinks,
-            self.meta.insert_anchor_links.unwrap()
+            self.meta.insert_anchor_links,
         );
         let res = markdown_to_html(&self.raw_content, &context)?;
         self.content = res.0;

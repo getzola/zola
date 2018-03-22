@@ -58,7 +58,6 @@ pub fn create_new_project(name: &str) -> Result<()> {
     if compile_sass {
         create_dir(path.join("sass"))?;
     }
-    // TODO: if search == true, copy a lunr js file embedded in gutenberg
 
     println!();
     console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));

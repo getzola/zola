@@ -51,6 +51,10 @@ generate_categories_pages = false
 # Whether to compile the Sass files found in the `sass` directory
 compile_sass = false
 
+# Whether to build a search index out of the pages and section
+# content for the `default_language`
+build_search_index = false
+
 # A list of glob patterns specifying asset files to ignore when
 # processing the content directory. 
 # Defaults to none, which means all asset files are copied over to the public folder.

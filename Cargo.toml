@@ -52,4 +52,5 @@ members = [
     "components/taxonomies",
     "components/templates",
     "components/utils",
+    "components/search",
 ]

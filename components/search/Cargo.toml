@@ -1,16 +1,12 @@
 [package]
-name = "templates"
+name = "search"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
-tera = "0.11"
-base64 = "0.9"
+elasticlunr-rs = "2"
+ammonia = "1"
 lazy_static = "1"
-pulldown-cmark = "0"
 
 errors = { path = "../errors" }
-utils = { path = "../utils" }
 content = { path = "../content" }
-config = { path = "../config" }
-taxonomies = { path = "../taxonomies" }

@@ -60,7 +60,7 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &Section
 
     // We want to hide the section
     // TODO: what to do on redirect_path change?
-    if current.should_render() && !new.should_render() {
+    if current.render && !new.render {
         changes_needed.push(SectionChangesNeeded::Delete);
         // Nothing else we can do
         return changes_needed;
@@ -383,14 +383,14 @@ mod tests {
 
     #[test]
     fn can_find_sort_changes_in_section_frontmatter() {
-        let new = SectionFrontMatter { sort_by: Some(SortBy::Date), ..SectionFrontMatter::default() };
+        let new = SectionFrontMatter { sort_by: SortBy::Date, ..SectionFrontMatter::default() };
         let changes = find_section_front_matter_changes(&SectionFrontMatter::default(), &new);
         assert_eq!(changes, vec![SectionChangesNeeded::Sort, SectionChangesNeeded::Render]);
     }
 
     #[test]
     fn can_find_render_changes_in_section_frontmatter() {
-        let new = SectionFrontMatter { render: Some(false), ..SectionFrontMatter::default() };
+        let new = SectionFrontMatter { render: false, ..SectionFrontMatter::default() };
         let changes = find_section_front_matter_changes(&SectionFrontMatter::default(), &new);
         assert_eq!(changes, vec![SectionChangesNeeded::Delete]);
     }

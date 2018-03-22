@@ -149,7 +149,7 @@ mod tests {
     fn create_draft_page_with_order(order: usize) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.order = Some(order);
-        front_matter.draft = Some(true);
+        front_matter.draft = true;
         Page::new("content/hello.md", front_matter)
     }
 
