@@ -22,12 +22,12 @@ structure and base name into the `public` folder:
 └── sass
     ├── style.scss // -> ./public/style.css
     ├── indented_style.sass // -> ./public/indented_style.css
-    ├── _include.scss // This file won't get put into the `public` folder, but other files can @import it.
+    ├── _include.scss # This file won't get put into the `public` folder, but other files can @import it.
     ├── assets
     │   ├── fancy.scss // -> ./public/assets/fancy.css
     │   ├── same_name.scss // -> ./public/assets/same_name.css
-    │   ├── same_name.sass // CONFLICT! This has the same base name as the file above, so Gutenberg will return an error.
-    │   └── _common_mixins.scss // This file won't get put into the `public` folder, but other files can @import it.
+    │   ├── same_name.sass # CONFLICT! This has the same base name as the file above, so Gutenberg will return an error.
+    │   └── _common_mixins.scss # This file won't get put into the `public` folder, but other files can @import it.
     └── secret-side-project
         └── style.scss // -> ./public/secret-side-project/fancy.css
 ```
