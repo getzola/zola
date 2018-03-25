@@ -170,7 +170,7 @@ impl Page {
             permalinks,
             anchor_insert
         );
-        let res = markdown_to_html(&self.raw_content, &context)?;
+        let res = markdown_to_html(&self.raw_content.replacen("<!-- more -->", "<a name=\"more\"></a>", 1), &context)?;
         self.content = res.0;
         self.toc = res.1;
         if self.raw_content.contains("<!-- more -->") {
