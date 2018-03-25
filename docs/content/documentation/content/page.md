@@ -77,3 +77,7 @@ paragraph of each page in a list for example.
 To do so, add `<!-- more -->` in your content at the point where you want the
 summary to end and the content up to that point will be also available separately
 in the [template](./documentation/templates/pages-sections.md#page-variables).
+
+An anchor link to this position is created so you can link directly to it if needed
+for example:
+`<a href="{{ page.permalink }}#more">Continue Reading</a>`
