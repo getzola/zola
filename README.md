@@ -37,6 +37,8 @@ Supported content formats:
 - Hugo: markdown, asciidoc, org-mode
 - Pelican: reStructuredText, markdown, asciidoc, org-mode, whatever-you-want
 
+Note that many features of Pelican are coming from plugins, which might be tricky
+to use because of version mismatch or lacking documentation.
 
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
