@@ -80,4 +80,4 @@ in the [template](./documentation/templates/pages-sections.md#page-variables).
 
 An anchor link to this position is created so you can link directly to it if needed
 for example:
-`<a href="{{ page.permalink }}#more">Continue Reading</a>`
+`<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`
