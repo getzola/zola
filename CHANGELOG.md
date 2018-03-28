@@ -12,6 +12,7 @@ to the public directory
 - Update Tera: now has `break` and `continue` in loops
 - Gutenberg now creates an anchor link at the position of the `<!-- more -->` tag if you
 want to link directly to it
+- Fix many shortcode parsing issues
 
 ## 0.3.2 (2018-03-05)
 
