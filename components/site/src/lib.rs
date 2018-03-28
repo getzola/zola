@@ -109,10 +109,10 @@ impl Site {
 
         let site = Site {
             base_path: path.to_path_buf(),
-            config: config,
+            config,
+            tera,
             pages: HashMap::new(),
             sections: HashMap::new(),
-            tera: tera,
             live_reload: false,
             output_path: path.join("public"),
             static_path: path.join("static"),

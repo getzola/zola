@@ -9,6 +9,9 @@ to the public directory
 - Do not require themes to have a static folder
 - Now supports indented Sass syntax
 - Add search index building
+- Update Tera: now has `break` and `continue` in loops
+- Gutenberg now creates an anchor link at the position of the `<!-- more -->` tag if you
+want to link directly to it
 
 ## 0.3.2 (2018-03-05)
 
