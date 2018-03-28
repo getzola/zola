@@ -168,7 +168,7 @@ impl<'a> Paginator<'a> {
         context.add("current_path", &pager.path);
         context.add("paginator", &self.build_paginator_context(pager));
 
-        render_template(&self.section.get_template_name(), tera, &context, config.theme.clone())
+        render_template(&self.section.get_template_name(), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render pager {} of section '{}'", pager.index, self.section.file.path.display()))
     }
 }

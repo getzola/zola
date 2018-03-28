@@ -20,14 +20,14 @@ macro_rules! render_default_tpl {
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string
 /// to avoid an error if there isn't a template with that name
-pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: Option<String>) -> Result<String> {
+pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: &Option<String>) -> Result<String> {
     if tera.templates.contains_key(name) {
         return tera
             .render(name, context)
             .map_err(|e| e.into());
     }
 
-    if let Some(ref t) = theme {
+    if let &Some(ref t) = theme {
         return tera
             .render(&format!("{}/templates/{}", t, name), context)
             .map_err(|e| e.into());
@@ -53,7 +53,11 @@ pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: Option
 /// that they will point to the right place (theme/templates/...)
 /// Include is NOT supported as it would be a pain to add and using blocks
 /// or macros is always better anyway for themes
+/// This will also rename the shortcodes to NOT have the themes in the path
+/// so themes shortcodes can be used.
 pub fn rewrite_theme_paths(tera: &mut Tera, theme: &str) {
+    let mut shortcodes_to_move = vec![];
+
     // We want to match the paths in the templates to the new names
     for tpl in tera.templates.values_mut() {
         // First the parent if there is none
@@ -67,13 +71,25 @@ pub fn rewrite_theme_paths(tera: &mut Tera, theme: &str) {
             updated.push((format!("{}/templates/{}", theme, filename), namespace.to_string()));
         }
         tpl.imported_macro_files = updated;
+
+        if tpl.name.starts_with(&format!("{}/templates/shortcodes", theme)) {
+            let new_name = tpl.name.replace(&format!("{}/templates/", theme), "");
+            shortcodes_to_move.push((tpl.name.clone(), new_name.clone()));
+            tpl.name = new_name;
+        }
+    }
+
+    // and then replace shortcodes in the Tera instance using the new names
+    for (old_name, new_name) in shortcodes_to_move {
+        let tpl = tera.templates.remove(&old_name).unwrap();
+        tera.templates.insert(new_name, tpl);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use tera::Tera;
-    use super::{rewrite_theme_paths};
+    use super::rewrite_theme_paths;
 
     #[test]
     fn can_rewrite_all_paths_of_theme() {

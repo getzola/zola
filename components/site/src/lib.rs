@@ -617,7 +617,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         create_file(
             &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, &Context::new(), self.config.theme.clone())?
+            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme)?
         )
     }
 
@@ -719,7 +719,7 @@ impl Site {
         context.add("tags", &tags);
         context.add("config", &self.config);
 
-        let sitemap = &render_template("sitemap.xml", &self.tera, &context, self.config.theme.clone())?;
+        let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
 
         create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
 
@@ -753,7 +753,7 @@ impl Site {
         };
         context.add("feed_url", &rss_feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, &context, self.config.theme.clone())?;
+        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
         create_file(&self.output_path.join("rss.xml"), feed)?;
 
