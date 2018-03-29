@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.3 (unreleased)
+## 0.3.3 (2018-03-29)
 
 - Fixed config flag in CLI
 - Sitemap entries are now sorted by permalinks to avoid random ordering
