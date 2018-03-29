@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.3 (2018-03-29)
+
+- Fixed config flag in CLI
+- Sitemap entries are now sorted by permalinks to avoid random ordering
+- Preserve directory structure from sass folder when copying compiled css files
+to the public directory
+- Do not require themes to have a static folder
+- Now supports indented Sass syntax
+- Add search index building
+- Update Tera: now has `break` and `continue` in loops
+- Gutenberg now creates an anchor link at the position of the `<!-- more -->` tag if you
+want to link directly to it
+- Fix many shortcode parsing issues
+- Correctly copy themes shortcodes so they are useable in content
+- Fix internal links not working for markdown files directly in `content` directory
+
 ## 0.3.2 (2018-03-05)
 
 - Fix `serve` command trying to read all files as markdown

@@ -6,7 +6,15 @@ use tera::{Tera, Context, Value, to_value};
 use errors::{Result, ResultExt};
 
 lazy_static!{
-    pub static ref SHORTCODE_RE: Regex = Regex::new(r#"\{(?:%|\{)\s+([[:word:]]+?)\(([[:word:]]+?="?.+?"?)?\)\s+(?:%|\})\}"#).unwrap();
+    // Does this look like a shortcode?
+    pub static ref SHORTCODE_RE: Regex = Regex::new(
+        r#"\{(?:%|\{)\s+(\w+?)\((\w+?="?(?:.|\n)+?"?)?\)\s+(?:%|\})\}"#
+    ).unwrap();
+
+    // Parse the shortcode args with capture groups named after their type
+    pub static ref SHORTCODE_ARGS_RE: Regex = Regex::new(
+        r#"(?P<name>\w+)=\s*((?P<str>".*?")|(?P<float>[-+]?[0-9]+\.[0-9]+)|(?P<int>[-+]?[0-9]+)|(?P<bool>true|false))"#
+    ).unwrap();
 }
 
 /// A shortcode that has a body
@@ -52,40 +60,27 @@ pub fn parse_shortcode(input: &str) -> (String, HashMap<String, Value>) {
     let name = &caps[1];
 
     if let Some(arg_list) = caps.get(2) {
-        for arg in arg_list.as_str().split(',') {
-            let bits = arg.split('=').collect::<Vec<_>>();
-            let arg_name = bits[0].trim().to_string();
-            let arg_val = bits[1].replace("\"", "");
+        for arg_cap in SHORTCODE_ARGS_RE.captures_iter(arg_list.as_str()) {
+            let arg_name = arg_cap["name"].trim().to_string();
 
-            // Regex captures will be str so we need to figure out if they are
-            // actually str or bool/number
-            if input.contains(&format!("{}=\"{}\"", arg_name, arg_val)) {
-                // that's a str, just add it
-                args.insert(arg_name, to_value(arg_val).unwrap());
+            if let Some(arg_val) = arg_cap.name("str") {
+                args.insert(arg_name, to_value(arg_val.as_str().replace("\"", "")).unwrap());
                 continue;
             }
 
-            if input.contains(&format!("{}=true", arg_name)) {
-                args.insert(arg_name, to_value(true).unwrap());
+            if let Some(arg_val) = arg_cap.name("int") {
+                args.insert(arg_name, to_value(arg_val.as_str().parse::<i64>().unwrap()).unwrap());
                 continue;
             }
 
-            if input.contains(&format!("{}=false", arg_name)) {
-                args.insert(arg_name, to_value(false).unwrap());
+            if let Some(arg_val) = arg_cap.name("float") {
+                args.insert(arg_name, to_value(arg_val.as_str().parse::<f64>().unwrap()).unwrap());
                 continue;
             }
 
-            // Not a string or a bool, a number then?
-            if arg_val.contains('.') {
-                if let Ok(float) = arg_val.parse::<f64>() {
-                    args.insert(arg_name, to_value(float).unwrap());
-                }
+            if let Some(arg_val) = arg_cap.name("bool") {
+                args.insert(arg_name, to_value(arg_val.as_str() == "true").unwrap());
                 continue;
-            }
-
-            // must be an integer
-            if let Ok(int) = arg_val.parse::<i64>() {
-                args.insert(arg_name, to_value(int).unwrap());
             }
         }
     }
@@ -122,12 +117,25 @@ mod tests {
             "{% basic() %}",
             "{% quo_te(author=\"Bob\") %}",
             "{{ quo_te(author=\"Bob\") }}",
+            // https://github.com/Keats/gutenberg/issues/229
+            r#"{{ youtube(id="dQw4w9WgXcQ",
+
+           autoplay=true) }}"#,
         ];
 
         for i in inputs {
             println!("{}", i);
             assert!(SHORTCODE_RE.is_match(i));
         }
+    }
+
+    // https://github.com/Keats/gutenberg/issues/228
+    #[test]
+    fn doesnt_panic_on_invalid_shortcode() {
+        let (name, args) = parse_shortcode(r#"{{ youtube(id="dQw4w9WgXcQ", autoplay) }}"#);
+        assert_eq!(name, "youtube");
+        assert_eq!(args["id"], "dQw4w9WgXcQ");
+        assert!(args.get("autoplay").is_none());
     }
 
     #[test]
@@ -162,10 +170,21 @@ mod tests {
 
     #[test]
     fn can_parse_shortcode_number() {
-        let (name, args) = parse_shortcode(r#"{% test(int=42, float=42.0, autoplay=true) %}"#);
+        let (name, args) = parse_shortcode(r#"{% test(int=42, float=42.0, autoplay=false) %}"#);
         assert_eq!(name, "test");
         assert_eq!(args["int"], 42);
         assert_eq!(args["float"], 42.0);
-        assert_eq!(args["autoplay"], true);
+        assert_eq!(args["autoplay"], false);
+    }
+
+    // https://github.com/Keats/gutenberg/issues/249
+    #[test]
+    fn can_parse_shortcode_with_comma_in_it() {
+        let (name, args) = parse_shortcode(
+            r#"{% quote(author="C++ Standard Core Language Defect Reports and Accepted Issues, Revision 82, delete and user-written deallocation function", href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#348") %}"#
+        );
+        assert_eq!(name, "quote");
+        assert_eq!(args["author"], "C++ Standard Core Language Defect Reports and Accepted Issues, Revision 82, delete and user-written deallocation function");
+        assert_eq!(args["href"], "http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#348");
     }
 }

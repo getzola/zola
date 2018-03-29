@@ -24,7 +24,12 @@ mod theme;
 
 use theme::Theme;
 
+// We want a default base url for tests
+static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
+
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
     pub base_url: String,
@@ -33,48 +38,47 @@ pub struct Config {
     pub theme: Option<String>,
     /// Title of the site. Defaults to None
     pub title: Option<String>,
-    /// Whether to highlight all code blocks found in markdown files. Defaults to false
-    pub highlight_code: Option<bool>,
-    /// Which themes to use for code highlighting. See Readme for supported themes
-    pub highlight_theme: Option<String>,
     /// Description of the site
     pub description: Option<String>,
+
     /// The language used in the site. Defaults to "en"
-    pub default_language: Option<String>,
+    pub default_language: String,
+    /// Languages list and translated strings
+    pub translations: HashMap<String, Toml>,
+
+    /// Whether to highlight all code blocks found in markdown files. Defaults to false
+    pub highlight_code: bool,
+    /// Which themes to use for code highlighting. See Readme for supported themes
+    /// Defaults to "base16-ocean-dark"
+    pub highlight_theme: String,
+
     /// Whether to generate RSS. Defaults to false
-    pub generate_rss: Option<bool>,
-    /// The number of articles to include in the RSS feed. Defaults to unlimited
-    pub rss_limit: Option<usize>,
+    pub generate_rss: bool,
+    /// The number of articles to include in the RSS feed. Defaults to 10_000
+    pub rss_limit: usize,
     /// Whether to generate tags and individual tag pages if some pages have them. Defaults to true
-    pub generate_tags_pages: Option<bool>,
+    pub generate_tags_pages: bool,
     /// Whether to generate categories and individual tag categories if some pages have them. Defaults to true
-    pub generate_categories_pages: Option<bool>,
+    pub generate_categories_pages: bool,
+
     /// Whether to compile the `sass` directory and output the css files into the static folder
-    pub compile_sass: Option<bool>,
+    pub compile_sass: bool,
+    /// Whether to build the search index for the content
+    pub build_search_index: bool,
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
     /// Had to remove the PartialEq derive because GlobSet does not implement it. No impact
     /// because it's unused anyway (who wants to sort Configs?).
-    pub ignored_content: Option<Vec<String>>,
+    pub ignored_content: Vec<String>,
     #[serde(skip_serializing, skip_deserializing)]  // not a typo, 2 are needed
-    pub ignored_content_globber: Option<GlobSet>,
-
-    /// Languages list and translated strings
-    pub translations: Option<HashMap<String, Toml>>,
+    pub ignored_content_globset: Option<GlobSet>,
 
     /// All user params set in [extra] in the config
-    pub extra: Option<HashMap<String, Toml>>,
+    pub extra: HashMap<String, Toml>,
 
     /// Set automatically when instantiating the config. Used for cachebusting
     pub build_timestamp: Option<i64>,
 }
 
-macro_rules! set_default {
-    ($key: expr, $default: expr) => {
-        if $key.is_none() {
-            $key = Some($default);
-        }
-    }
-}
 
 impl Config {
     /// Parses a string containing TOML to our Config struct
@@ -85,45 +89,33 @@ impl Config {
             Err(e) => bail!(e)
         };
 
-        set_default!(config.default_language, "en".to_string());
-        set_default!(config.highlight_code, false);
-        set_default!(config.generate_rss, false);
-        set_default!(config.rss_limit, 20);
-        set_default!(config.generate_tags_pages, false);
-        set_default!(config.generate_categories_pages, false);
-        set_default!(config.compile_sass, false);
-        set_default!(config.ignored_content, Vec::new());
-        set_default!(config.translations, HashMap::new());
-        set_default!(config.extra, HashMap::new());
+        if config.base_url.is_empty() || config.base_url == DEFAULT_BASE_URL {
+            bail!("A base URL is required in config.toml with key `base_url`");
+        }
 
-        match config.highlight_theme {
-            Some(ref t) => {
-                if !THEME_SET.themes.contains_key(t) {
-                    bail!("Theme {} not available", t)
-                }
-            }
-            None => config.highlight_theme = Some("base16-ocean-dark".to_string())
-        };
+        if !THEME_SET.themes.contains_key(&config.highlight_theme) {
+            bail!("Highlight theme {} not available", config.highlight_theme)
+        }
 
         config.build_timestamp = Some(Utc::now().timestamp());
 
-        // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
-        // at program initialization, rather than for every page, for example. We arrange for the
-        // globset matcher to always exist (even though it has to be an inside an Option at the
-        // moment because of the TOML serializer); if the glob set is empty the `is_match` function
-        // of the globber always returns false.
-        let mut glob_set_builder = GlobSetBuilder::new();
 
-        if let Some(ref v) = config.ignored_content {
-            for pat in v {
+        if !config.ignored_content.is_empty() {
+            // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
+            // at program initialization, rather than for every page, for example. We arrange for the
+            // globset matcher to always exist (even though it has to be an inside an Option at the
+            // moment because of the TOML serializer); if the glob set is empty the `is_match` function
+            // of the globber always returns false.
+            let mut glob_set_builder = GlobSetBuilder::new();
+            for pat in &config.ignored_content {
                 let glob = match Glob::new(pat) {
                     Ok(g) => g,
                     Err(e) => bail!("Invalid ignored_content glob pattern: {}, error = {}", pat, e)
                 };
                 glob_set_builder.add(glob);
             }
+            config.ignored_content_globset = Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
         }
-        config.ignored_content_globber = Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
 
         Ok(config)
     }
@@ -131,8 +123,10 @@ impl Config {
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let mut content = String::new();
+        let path = path.as_ref();
+        let file_name = path.file_name().unwrap();
         File::open(path)
-            .chain_err(|| "No `config.toml` file found. Are you in the right directory?")?
+            .chain_err(|| format!("No `{:?}` file found. Are you in the right directory?", file_name))?
             .read_to_string(&mut content)?;
 
         Config::parse(&content)
@@ -161,19 +155,17 @@ impl Config {
 
     /// Merges the extra data from the theme with the config extra data
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
-        if let Some(ref mut config_extra) = self.extra {
-            // 3 pass merging
-            // 1. save config to preserve user
-            let original = config_extra.clone();
-            // 2. inject theme extra values
-            for (key, val) in &theme.extra {
-                config_extra.entry(key.to_string()).or_insert_with(|| val.clone());
-            }
+        // 3 pass merging
+        // 1. save config to preserve user
+        let original = self.extra.clone();
+        // 2. inject theme extra values
+        for (key, val) in &theme.extra {
+            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
+        }
 
-            // 3. overwrite with original config
-            for (key, val) in &original {
-                config_extra.entry(key.to_string()).or_insert_with(|| val.clone());
-            }
+        // 3. overwrite with original config
+        for (key, val) in &original {
+            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
         }
 
         Ok(())
@@ -187,27 +179,26 @@ impl Config {
     }
 }
 
-/// Exists only for testing purposes
-#[doc(hidden)]
 impl Default for Config {
     fn default() -> Config {
         Config {
-            title: Some("".to_string()),
-            theme: None,
-            base_url: "http://a-website.com/".to_string(),
-            highlight_code: Some(true),
-            highlight_theme: Some("base16-ocean-dark".to_string()),
+            base_url: DEFAULT_BASE_URL.to_string(),
+            title: None,
             description: None,
-            default_language: Some("en".to_string()),
-            generate_rss: Some(false),
-            rss_limit: Some(10_000),
-            generate_tags_pages: Some(true),
-            generate_categories_pages: Some(true),
-            compile_sass: Some(false),
-            ignored_content: Some(Vec::new()),
-            ignored_content_globber: Some(GlobSetBuilder::new().build().unwrap()),
-            translations: None,
-            extra: None,
+            theme: None,
+            highlight_code: true,
+            highlight_theme: "base16-ocean-dark".to_string(),
+            default_language: "en".to_string(),
+            generate_rss: false,
+            rss_limit: 10_000,
+            generate_tags_pages: true,
+            generate_categories_pages: true,
+            compile_sass: false,
+            build_search_index: false,
+            ignored_content: Vec::new(),
+            ignored_content_globset: None,
+            translations: HashMap::new(),
+            extra: HashMap::new(),
             build_timestamp: Some(1),
         }
     }
@@ -277,7 +268,7 @@ hello = "world"
 
         let config = Config::parse(config);
         assert!(config.is_ok());
-        assert_eq!(config.unwrap().extra.unwrap().get("hello").unwrap().as_str().unwrap(), "world");
+        assert_eq!(config.unwrap().extra.get("hello").unwrap().as_str().unwrap(), "world");
     }
 
     #[test]
@@ -333,7 +324,7 @@ a_value = 10
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         assert!(config.add_theme_extra(&theme).is_ok());
-        let extra = config.extra.unwrap();
+        let extra = config.extra;
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
     }
@@ -355,26 +346,26 @@ title = "A title"
 
         let config = Config::parse(config);
         assert!(config.is_ok());
-        let translations = config.unwrap().translations.unwrap();
+        let translations = config.unwrap().translations;
         assert_eq!(translations["fr"]["title"].as_str().unwrap(), "Un titre");
         assert_eq!(translations["en"]["title"].as_str().unwrap(), "A title");
     }
 
     #[test]
-    fn missing_ignored_content_results_in_empty_vector_and_empty_globber() {
+    fn missing_ignored_content_results_in_empty_vector_and_empty_globset() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
         "#;
 
         let config = Config::parse(config_str).unwrap();
-        let v = config.ignored_content.unwrap();
+        let v = config.ignored_content;
         assert_eq!(v.len(), 0);
-        assert!(config.ignored_content_globber.unwrap().is_empty());
+        assert!(config.ignored_content_globset.is_none());
     }
 
     #[test]
-    fn empty_ignored_content_results_in_empty_vector_and_empty_globber() {
+    fn empty_ignored_content_results_in_empty_vector_and_empty_globset() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
@@ -382,12 +373,12 @@ ignored_content = []
         "#;
 
         let config = Config::parse(config_str).unwrap();
-        assert_eq!(config.ignored_content.unwrap().len(), 0);
-        assert!(config.ignored_content_globber.unwrap().is_empty());
+        assert_eq!(config.ignored_content.len(), 0);
+        assert!(config.ignored_content_globset.is_none());
     }
 
     #[test]
-    fn non_empty_ignored_content_results_in_vector_of_patterns_and_configured_globber() {
+    fn non_empty_ignored_content_results_in_vector_of_patterns_and_configured_globset() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
@@ -395,10 +386,10 @@ ignored_content = ["*.{graphml,iso}", "*.py?"]
         "#;
 
         let config = Config::parse(config_str).unwrap();
-        let v = config.ignored_content.unwrap();
+        let v = config.ignored_content;
         assert_eq!(v, vec!["*.{graphml,iso}", "*.py?"]);
 
-        let g = config.ignored_content_globber.unwrap();
+        let g = config.ignored_content_globset.unwrap();
         assert_eq!(g.len(), 2);
         assert!(g.is_match("foo.graphml"));
         assert!(g.is_match("foo.iso"));

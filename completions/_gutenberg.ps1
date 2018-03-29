@@ -1,74 +1,79 @@
 
-@('gutenberg', './gutenberg') | %{
-    Register-ArgumentCompleter -Native -CommandName $_ -ScriptBlock {
-        param($wordToComplete, $commandAst, $cursorPosition)
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
 
-        $command = '_gutenberg'
-        $commandAst.CommandElements |
-            Select-Object -Skip 1 |
-            %{
-                switch ($_.ToString()) {
+Register-ArgumentCompleter -Native -CommandName 'gutenberg' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
 
-                    'gutenberg' {
-                        $command += '_gutenberg'
-                        break
-                    }
-
-                    'init' {
-                        $command += '_init'
-                        break
-                    }
-
-                    'build' {
-                        $command += '_build'
-                        break
-                    }
-
-                    'serve' {
-                        $command += '_serve'
-                        break
-                    }
-
-                    'help' {
-                        $command += '_help'
-                        break
-                    }
-
-                    default { 
-                        break
-                    }
-                }
-            }
-
-        $completions = @()
-
-        switch ($command) {
-
-            '_gutenberg' {
-                $completions = @('init', 'build', 'serve', 'help', '-c', '-h', '-V', '--config', '--help', '--version')
-            }
-
-            '_gutenberg_init' {
-                $completions = @('-h', '-V', '--help', '--version')
-            }
-
-            '_gutenberg_build' {
-                $completions = @('-h', '-V', '-u', '-o', '--help', '--version', '--base-url', '--output-dir')
-            }
-
-            '_gutenberg_serve' {
-                $completions = @('-h', '-V', '-i', '-p', '-o', '-u', '--help', '--version', '--interface', '--port', '--output-dir', '--base-url')
-            }
-
-            '_gutenberg_help' {
-                $completions = @('-h', '-V', '--help', '--version')
-            }
-
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        'gutenberg'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+            $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-')) {
+                break
         }
+        $element.Value
+    }) -join ';'
 
-        $completions |
-            ?{ $_ -like "$wordToComplete*" } |
-            Sort-Object |
-            %{ New-Object System.Management.Automation.CompletionResult $_, $_, 'ParameterValue', $_ }
-    }
+    $completions = @(switch ($command) {
+        'gutenberg' {
+            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml')
+            [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Create a new Gutenberg project')
+            [CompletionResult]::new('build', 'build', [CompletionResultType]::ParameterValue, 'Builds the site')
+            [CompletionResult]::new('serve', 'serve', [CompletionResultType]::ParameterValue, 'Serve the site. Rebuild and reload on change automatically')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Prints this message or the help of the given subcommand(s)')
+            break
+        }
+        'gutenberg;init' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'gutenberg;build' {
+            [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Force the base URL to be that value (default to the one in config.toml)')
+            [CompletionResult]::new('--base-url', 'base-url', [CompletionResultType]::ParameterName, 'Force the base URL to be that value (default to the one in config.toml)')
+            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
+            [CompletionResult]::new('--output-dir', 'output-dir', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'gutenberg;serve' {
+            [CompletionResult]::new('-i', 'i', [CompletionResultType]::ParameterName, 'Interface to bind on')
+            [CompletionResult]::new('--interface', 'interface', [CompletionResultType]::ParameterName, 'Interface to bind on')
+            [CompletionResult]::new('-p', 'p', [CompletionResultType]::ParameterName, 'Which port to use')
+            [CompletionResult]::new('--port', 'port', [CompletionResultType]::ParameterName, 'Which port to use')
+            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
+            [CompletionResult]::new('--output-dir', 'output-dir', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
+            [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Changes the base_url')
+            [CompletionResult]::new('--base-url', 'base-url', [CompletionResultType]::ParameterName, 'Changes the base_url')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'gutenberg;help' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+    })
+
+    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } |
+        Sort-Object -Property ListItemText
 }

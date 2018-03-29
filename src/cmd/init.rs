@@ -19,6 +19,9 @@ compile_sass = %COMPILE_SASS%
 # Theme can be customised by setting the `highlight_theme` variable to a theme supported by Gutenberg
 highlight_code = %HIGHLIGHT%
 
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = %SEARCH%
+
 [extra]
 # Put all your custom variables here
 "#;
@@ -37,11 +40,13 @@ pub fn create_new_project(name: &str) -> Result<()> {
     let base_url = ask_url("> What is the URL of your site?", "https://example.com")?;
     let compile_sass = ask_bool("> Do you want to enable Sass compilation?", true)?;
     let highlight = ask_bool("> Do you want to enable syntax highlighting?", false)?;
+    let search = ask_bool("> Do you want to build a search index of the content?", false)?;
 
     let config = CONFIG
         .trim_left()
         .replace("%BASE_URL%", &base_url)
         .replace("%COMPILE_SASS%", &format!("{}", compile_sass))
+        .replace("%SEARCH%", &format!("{}", search))
         .replace("%HIGHLIGHT%", &format!("{}", highlight));
 
     create_file(&path.join("config.toml"), &config)?;

@@ -241,7 +241,7 @@ fn doesnt_render_shortcode_in_code_block() {
 fn can_render_shortcode_with_body() {
     let mut tera = Tera::default();
     tera.extend(&GUTENBERG_TERA).unwrap();
-    tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
+    tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author }}</blockquote>").unwrap();
     let permalinks_ctx = HashMap::new();
     let context = Context::new(&tera, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
 

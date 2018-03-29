@@ -15,8 +15,8 @@ _gutenberg() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'-c[Path to a config file other than config.toml]' \
-'--config[Path to a config file other than config.toml]' \
+'-c+[Path to a config file other than config.toml]' \
+'--config=[Path to a config file other than config.toml]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \

@@ -1,7 +1,7 @@
 [package]
 name = "content"
 version = "0.1.0"
-authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
 tera = "0.11"

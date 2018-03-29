@@ -21,3 +21,5 @@ all the variables above are arrays of `SitemapEntry` with the following type:
 permalink: String;
 date: String?;
 ```
+
+All `SitemapEntry` are sorted in each variable by their permalink.

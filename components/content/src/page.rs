@@ -75,7 +75,7 @@ impl Page {
     }
 
     pub fn is_draft(&self) -> bool {
-        self.meta.draft.unwrap_or(false)
+        self.meta.draft
     }
 
     /// Parse a page given the content of the .md file
@@ -130,23 +130,27 @@ impl Page {
         let mut page = Page::parse(path, &content, config)?;
 
         if page.file.name == "index" {
-            // `find_related_assets` only scans the immediate directory (it is not recursive) so our
-            // filtering only needs to work against the file_name component, not the full suffix. If
-            // `find_related_assets` was changed to also return files in subdirectories, we could
-            // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
-            // against the remaining path. Note that the current behaviour effectively means that
-            // the `ignored_content` setting in the config file is limited to single-file glob
-            // patterns (no "**" patterns).
-            let globber = config.ignored_content_globber.as_ref().unwrap();
             let parent_dir = path.parent().unwrap();
-            page.assets = find_related_assets(parent_dir).into_iter()
-                .filter(|path|
-                    match path.file_name() {
-                        None => true,
-                        Some(file) => !globber.is_match(file)
-                    }
-                ).collect();
+            let assets = find_related_assets(parent_dir);
 
+            if let Some(ref globset) = config.ignored_content_globset {
+                // `find_related_assets` only scans the immediate directory (it is not recursive) so our
+                // filtering only needs to work against the file_name component, not the full suffix. If
+                // `find_related_assets` was changed to also return files in subdirectories, we could
+                // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
+                // against the remaining path. Note that the current behaviour effectively means that
+                // the `ignored_content` setting in the config file is limited to single-file glob
+                // patterns (no "**" patterns).
+                page.assets = assets.into_iter()
+                    .filter(|path|
+                        match path.file_name() {
+                            None => true,
+                            Some(file) => !globset.is_match(file)
+                        }
+                    ).collect();
+            } else {
+                page.assets = assets;
+            }
         } else {
             page.assets = vec![];
         }
@@ -160,13 +164,13 @@ impl Page {
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, anchor_insert: InsertAnchor) -> Result<()> {
         let context = Context::new(
             tera,
-            config.highlight_code.unwrap(),
-            config.highlight_theme.clone().unwrap(),
+            config.highlight_code,
+            config.highlight_theme.clone(),
             &self.permalink,
             permalinks,
             anchor_insert
         );
-        let res = markdown_to_html(&self.raw_content, &context)?;
+        let res = markdown_to_html(&self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1), &context)?;
         self.content = res.0;
         self.toc = res.1;
         if self.raw_content.contains("<!-- more -->") {
@@ -192,7 +196,7 @@ impl Page {
         context.add("current_url", &self.permalink);
         context.add("current_path", &self.path);
 
-        render_template(&tpl_name, tera, &context, config.theme.clone())
+        render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 }
@@ -450,7 +454,7 @@ Hello world
         let mut gsb = GlobSetBuilder::new();
         gsb.add(Glob::new("*.{js,png}").unwrap());
         let mut config = Config::default();
-        config.ignored_content_globber = Some(gsb.build().unwrap());
+        config.ignored_content_globset = Some(gsb.build().unwrap());
 
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),

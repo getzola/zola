@@ -52,6 +52,10 @@ paginate_path = "page"
 # Options are "left", "right" and "none"
 insert_anchor_links = "none"
 
+# Whether the section pages should be in the search index. This is only used if
+# `build_search_index` is set to true in the config
+in_search_index = true
+
 # Whether to render that section homepage or not. 
 # Useful when the section is only there to organize things but is not meant
 # to be used directly
@@ -86,6 +90,9 @@ is enabled by setting the `sort_by` front-matter variable.
 
 Any page that cannot be sorted, for example if missing the date variable while sorting by `date`, will be ignored and
 won't be rendered. The terminal will warn you if this is happening.
+
+If several pages have the same date/weight/order, their permalink will be used to break the tie following
+an alphabetical order.
 
 ### `date`
 This will sort all pages by their `date` field, from the most recent to the oldest.

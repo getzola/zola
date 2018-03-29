@@ -144,7 +144,7 @@ impl Taxonomy {
         context.add("current_url", &config.make_permalink(&format!("{}/{}", name, item.slug)));
         context.add("current_path", &format!("/{}/{}", name, item.slug));
 
-        render_template(&format!("{}.html", name), tera, &context, config.theme.clone())
+        render_template(&format!("{}.html", name), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render {} page.", name))
     }
 
@@ -156,7 +156,7 @@ impl Taxonomy {
         context.add("current_url", &config.make_permalink(&name));
         context.add("current_path", &name);
 
-        render_template(&format!("{}.html", name), tera, &context, config.theme.clone())
+        render_template(&format!("{}.html", name), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render {} page.", name))
     }
 }

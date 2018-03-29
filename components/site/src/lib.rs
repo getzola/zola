@@ -1,7 +1,6 @@
 extern crate tera;
 extern crate rayon;
 extern crate glob;
-extern crate walkdir;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -16,23 +15,23 @@ extern crate templates;
 extern crate pagination;
 extern crate taxonomies;
 extern crate content;
+extern crate search;
 
 #[cfg(test)]
 extern crate tempdir;
 
 use std::collections::HashMap;
-use std::fs::{remove_dir_all, copy, create_dir_all};
+use std::fs::{create_dir_all, remove_dir_all, copy};
 use std::mem;
 use std::path::{Path, PathBuf};
 
 use glob::glob;
 use tera::{Tera, Context};
-use walkdir::WalkDir;
-use sass_rs::{Options, OutputStyle, compile_file};
+use sass_rs::{Options as SassOptions, OutputStyle, compile_file};
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
-use utils::fs::{create_file, create_directory, ensure_directory_exists};
+use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
 use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
@@ -67,7 +66,7 @@ pub struct Site {
     pub sections: HashMap<PathBuf, Section>,
     pub tera: Tera,
     live_reload: bool,
-    output_path: PathBuf,
+    pub output_path: PathBuf,
     pub static_path: PathBuf,
     pub tags: Option<Taxonomy>,
     pub categories: Option<Taxonomy>,
@@ -92,13 +91,10 @@ impl Site {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
 
-            // Test that the {templates,static} folder exist for that theme
+            // Test that the templates folder exist for that theme
             let theme_path = path.join("themes").join(&theme);
             if !theme_path.join("templates").exists() {
                 bail!("Theme `{}` is missing a templates folder", theme);
-            }
-            if !theme_path.join("static").exists() {
-                bail!("Theme `{}` is missing a static folder", theme);
             }
 
             let theme_tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "themes/**/*.html");
@@ -113,10 +109,10 @@ impl Site {
 
         let site = Site {
             base_path: path.to_path_buf(),
-            config: config,
+            config,
+            tera,
             pages: HashMap::new(),
             sections: HashMap::new(),
-            tera: tera,
             live_reload: false,
             output_path: path.join("public"),
             static_path: path.join("static"),
@@ -126,6 +122,11 @@ impl Site {
         };
 
         Ok(site)
+    }
+
+    /// The index section is ALWAYS at that path
+    pub fn index_section_path(&self) -> PathBuf {
+        self.base_path.join("content").join("_index.md")
     }
 
     /// What the function name says
@@ -201,7 +202,17 @@ impl Site {
 
         // Insert a default index section if necessary so we don't need to create
         // a _index.md to render the index page
-        let index_path = self.base_path.join("content").join("_index.md");
+        let index_path = self.index_section_path();
+        if let Some(ref index_section) = self.sections.get(&index_path) {
+            if self.config.build_search_index && !index_section.meta.in_search_index {
+                bail!(
+                    "You have enabled search in the config but disabled it in the index section: \
+                    either turn off the search in the config or remote `in_search_index = true` from the \
+                    section front-matter."
+                )
+            }
+        }
+        // Not in else because of borrow checker
         if !self.sections.contains_key(&index_path) {
             let mut index_section = Section::default();
             index_section.permalink = self.config.make_permalink("");
@@ -311,7 +322,7 @@ impl Site {
     /// Defaults to `AnchorInsert::None` if no parent section found
     pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
         match self.sections.get(&parent_path.join("_index.md")) {
-            Some(s) => s.meta.insert_anchor_links.unwrap(),
+            Some(s) => s.meta.insert_anchor_links,
             None => InsertAnchor::None
         }
     }
@@ -353,7 +364,7 @@ impl Site {
                     .map(|p| sections[p].clone())
                     .collect::<Vec<_>>();
                 section.subsections
-                    .sort_by(|a, b| a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()));
+                    .sort_by(|a, b| a.meta.weight.cmp(&b.meta.weight));
             }
         }
     }
@@ -368,7 +379,7 @@ impl Site {
                 }
             }
             let pages = mem::replace(&mut section.pages, vec![]);
-            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by());
+            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by);
             section.pages = populate_previous_and_next_pages(&sorted_pages);
             section.ignored_pages = cannot_be_sorted_pages;
         }
@@ -376,8 +387,8 @@ impl Site {
 
     /// Find all the tags and categories if it's asked in the config
     pub fn populate_tags_and_categories(&mut self) {
-        let generate_tags_pages = self.config.generate_tags_pages.unwrap();
-        let generate_categories_pages = self.config.generate_categories_pages.unwrap();
+        let generate_tags_pages = self.config.generate_tags_pages;
+        let generate_categories_pages = self.config.generate_categories_pages;
         if !generate_tags_pages && !generate_categories_pages {
             return;
         }
@@ -412,45 +423,18 @@ impl Site {
         html
     }
 
-    /// Copy the file at the given path into the public folder
-    pub fn copy_static_file<P: AsRef<Path>>(&self, path: P, base_path: &PathBuf) -> Result<()> {
-        let relative_path = path.as_ref().strip_prefix(base_path).unwrap();
-        let target_path = self.output_path.join(relative_path);
-        if let Some(parent_directory) = target_path.parent() {
-            create_dir_all(parent_directory)?;
-        }
-        copy(path.as_ref(), &target_path)?;
-        Ok(())
-    }
-
-    /// Copy the content of the given folder into the `public` folder
-    fn copy_static_directory(&self, path: &PathBuf) -> Result<()> {
-        for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
-            let relative_path = entry.path().strip_prefix(path).unwrap();
-            let target_path = self.output_path.join(relative_path);
-            if entry.path().is_dir() {
-                if !target_path.exists() {
-                    create_directory(&target_path)?;
-                }
-            } else {
-                let entry_fullpath = self.base_path.join(entry.path());
-                self.copy_static_file(entry_fullpath, path)?;
-            }
-        }
-        Ok(())
-    }
-
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
         if let Some(ref theme) = self.config.theme {
-            self.copy_static_directory(
-                &self.base_path.join("themes").join(theme).join("static")
+            copy_directory(
+                &self.base_path.join("themes").join(theme).join("static"),
+                &self.output_path
             )?;
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
-            self.copy_static_directory(&self.static_path)?;
+            copy_directory(&self.static_path, &self.output_path)?;
         }
 
         Ok(())
@@ -505,7 +489,7 @@ impl Site {
         self.render_sections()?;
         self.render_orphan_pages()?;
         self.render_sitemap()?;
-        if self.config.generate_rss.unwrap() {
+        if self.config.generate_rss {
             self.render_rss_feed()?;
         }
         self.render_robots()?;
@@ -521,53 +505,108 @@ impl Site {
             }
         }
 
-        if self.config.compile_sass.unwrap() {
+        if self.config.compile_sass {
             self.compile_sass(&self.base_path)?;
         }
 
-        self.copy_static_directories()
-    }
+        self.copy_static_directories()?;
 
-    pub fn compile_sass(&self, base_path: &PathBuf) -> Result<()> {
-        ensure_directory_exists(&self.output_path)?;
-
-        let base_path = base_path.to_string_lossy().replace("\\", "/");
-        let sass_glob = format!("{}/{}", base_path, "sass/**/*.scss");
-        let files = glob(&sass_glob)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_'))
-            .collect::<Vec<_>>();
-
-        let mut sass_options = Options::default();
-        sass_options.output_style = OutputStyle::Compressed;
-        for file in files {
-            let name = file.as_path().file_stem().unwrap().to_string_lossy();
-            let css = match compile_file(file.as_path(), sass_options.clone()) {
-                Ok(c) => c,
-                Err(e) => bail!(e)
-            };
-
-            create_file(&self.output_path.join(format!("{}.css", name)), &css)?;
+        if self.config.build_search_index {
+            self.build_search_index()?;
         }
 
         Ok(())
     }
 
+    pub fn build_search_index(&self) -> Result<()> {
+        // index first
+        create_file(
+            &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
+            &format!(
+                "window.searchIndex = {};",
+                search::build_index(&self.sections, &self.config.default_language)?
+            ),
+        )?;
+
+        // then elasticlunr.min.js
+        create_file(
+            &self.output_path.join("elasticlunr.min.js"),
+            search::ELASTICLUNR_JS,
+        )?;
+
+        Ok(())
+    }
+
+    pub fn compile_sass(&self, base_path: &Path) -> Result<()> {
+        ensure_directory_exists(&self.output_path)?;
+
+        let sass_path = {
+            let mut sass_path = PathBuf::from(base_path);
+            sass_path.push("sass");
+            sass_path
+        };
+
+        let mut options = SassOptions::default();
+        options.output_style = OutputStyle::Compressed;
+        let mut compiled_paths = self.compile_sass_glob(&sass_path, "scss", options.clone())?;
+
+        options.indented_syntax = true;
+        compiled_paths.extend(self.compile_sass_glob(&sass_path, "sass", options)?);
+
+        compiled_paths.sort();
+        for window in compiled_paths.windows(2) {
+            if window[0].1 == window[1].1 {
+                bail!(
+                    "SASS path conflict: \"{}\" and \"{}\" both compile to \"{}\"",
+                    window[0].0.display(),
+                    window[1].0.display(),
+                    window[0].1.display(),
+                );
+            }
+        }
+
+        Ok(())
+    }
+
+    fn compile_sass_glob(&self, sass_path: &Path, extension: &str, options: SassOptions) -> Result<Vec<(PathBuf, PathBuf)>> {
+        let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
+        let files = glob(&glob_string)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_'))
+            .collect::<Vec<_>>();
+
+        let mut compiled_paths = Vec::new();
+        for file in files {
+            let css = compile_file(&file, options.clone())?;
+
+            let path_inside_sass = file.strip_prefix(&sass_path).unwrap();
+            let parent_inside_sass = path_inside_sass.parent();
+            let css_output_path = self.output_path.join(path_inside_sass).with_extension("css");
+
+            if parent_inside_sass.is_some() {
+                create_dir_all(&css_output_path.parent().unwrap())?;
+            }
+
+            create_file(&css_output_path, &css)?;
+            compiled_paths.push((path_inside_sass.to_owned(), css_output_path));
+        }
+
+        Ok(compiled_paths)
+    }
+
     pub fn render_aliases(&self) -> Result<()> {
         for page in self.pages.values() {
-            if let Some(ref aliases) = page.meta.aliases {
-                for alias in aliases {
-                    let mut output_path = self.output_path.to_path_buf();
-                    for component in alias.split('/') {
-                        output_path.push(&component);
+            for alias in &page.meta.aliases {
+                let mut output_path = self.output_path.to_path_buf();
+                for component in alias.split('/') {
+                    output_path.push(&component);
 
-                        if !output_path.exists() {
-                            create_directory(&output_path)?;
-                        }
+                    if !output_path.exists() {
+                        create_directory(&output_path)?;
                     }
-                    create_file(&output_path.join("index.html"), &render_redirect_template(&page.permalink, &self.tera)?)?;
                 }
+                create_file(&output_path.join("index.html"), &render_redirect_template(&page.permalink, &self.tera)?)?;
             }
         }
         Ok(())
@@ -578,7 +617,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         create_file(
             &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, &Context::new(), self.config.theme.clone())?
+            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme)?
         )
     }
 
@@ -632,27 +671,26 @@ impl Site {
 
         let mut context = Context::new();
 
-        context.add(
-            "pages",
-            &self.pages
-                .values()
-                .filter(|p| !p.is_draft())
-                .map(|p| {
-                    let date = match p.meta.date {
-                        Some(ref d) => Some(d.to_string()),
-                        None => None,
-                    };
-                    SitemapEntry::new(p.permalink.clone(), date)
-                })
-                .collect::<Vec<_>>()
-        );
-        context.add(
-            "sections",
-            &self.sections
+        let mut pages = self.pages
+            .values()
+            .filter(|p| !p.is_draft())
+            .map(|p| {
+                let date = match p.meta.date {
+                    Some(ref d) => Some(d.to_string()),
+                    None => None,
+                };
+                SitemapEntry::new(p.permalink.clone(), date)
+            })
+            .collect::<Vec<_>>();
+        pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
+        context.add("pages", &pages);
+
+        let mut sections = self.sections
                 .values()
                 .map(|s| SitemapEntry::new(s.permalink.clone(), None))
-                .collect::<Vec<_>>()
-        );
+                .collect::<Vec<_>>();
+        sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
+        context.add("sections", &sections);
 
         let mut categories = vec![];
         if let Some(ref c) = self.categories {
@@ -664,6 +702,7 @@ impl Site {
                 );
             }
         }
+        categories.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.add("categories", &categories);
 
         let mut tags = vec![];
@@ -676,10 +715,11 @@ impl Site {
                 );
             }
         }
+        tags.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.add("tags", &tags);
         context.add("config", &self.config);
 
-        let sitemap = &render_template("sitemap.xml", &self.tera, &context, self.config.theme.clone())?;
+        let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
 
         create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
 
@@ -703,7 +743,7 @@ impl Site {
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
         context.add("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
          // limit to the last n elements)
-        context.add("pages", &sorted_pages.iter().take(self.config.rss_limit.unwrap()).collect::<Vec<_>>());
+        context.add("pages", &sorted_pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
         context.add("config", &self.config);
 
         let rss_feed_url = if self.config.base_url.ends_with('/') {
@@ -713,7 +753,7 @@ impl Site {
         };
         context.add("feed_url", &rss_feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, &context, self.config.theme.clone())?;
+        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
         create_file(&self.output_path.join("rss.xml"), feed)?;
 
@@ -743,7 +783,7 @@ impl Site {
                 .reduce(|| Ok(()), Result::and)?;
         }
 
-        if !section.meta.should_render() {
+        if !section.meta.render {
             return Ok(());
         }
 
@@ -797,13 +837,8 @@ impl Site {
     pub fn render_paginated(&self, output_path: &Path, section: &Section) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let paginate_path = match section.meta.paginate_path {
-            Some(ref s) => s.clone(),
-            None => unreachable!()
-        };
-
         let paginator = Paginator::new(&section.pages, section);
-        let folder_path = output_path.join(&paginate_path);
+        let folder_path = output_path.join(&section.meta.paginate_path);
         create_directory(&folder_path)?;
 
         paginator

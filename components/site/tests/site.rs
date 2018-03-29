@@ -100,7 +100,7 @@ fn can_build_site_without_live_reload() {
     site.set_output_path(&public);
     site.build().unwrap();
 
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
     assert!(file_exists!(public, "robots.txt"));
@@ -139,6 +139,18 @@ fn can_build_site_without_live_reload() {
     // Theme files are there
     assert!(file_exists!(public, "sample.css"));
     assert!(file_exists!(public, "some.js"));
+
+    // SASS and SCSS files compile correctly
+    assert!(file_exists!(public, "blog.css"));
+    assert!(file_contains!(public, "blog.css", "red"));
+    assert!(file_contains!(public, "blog.css", "blue"));
+    assert!(!file_contains!(public, "blog.css", "@import \"included\""));
+    assert!(file_contains!(public, "blog.css", "2rem")); // check include
+    assert!(!file_exists!(public, "_included.css"));
+    assert!(file_exists!(public, "scss.css"));
+    assert!(file_exists!(public, "sass.css"));
+    assert!(file_exists!(public, "nested_sass/sass.css"));
+    assert!(file_exists!(public, "nested_sass/scss.css"));
 
     // no live reload code
     assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
@@ -186,6 +198,10 @@ fn can_build_site_with_live_reload() {
 
     // no live reload code
     assert!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"));
+
+    // the summary anchor link has been created
+    assert!(file_contains!(public, "posts/python/index.html", r#"<a name="continue-reading"></a>"#));
+    assert!(file_contains!(public, "posts/draft/index.html", r#"THEME_SHORTCODE"#));
 }
 
 #[test]
@@ -193,7 +209,7 @@ fn can_build_site_with_categories() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.generate_categories_pages = Some(true);
+    site.config.generate_categories_pages = true;
     site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
@@ -247,7 +263,7 @@ fn can_build_site_with_tags() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.generate_tags_pages = Some(true);
+    site.config.generate_tags_pages = true;
     site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
@@ -432,4 +448,22 @@ fn can_build_rss_feed() {
     assert!(file_contains!(public, "rss.xml", "Simple article with shortcodes"));
     // Next is posts/python.md
     assert!(file_contains!(public, "rss.xml", "Python in posts"));
+}
+
+
+#[test]
+fn can_build_search_index() {
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.load().unwrap();
+    site.config.build_search_index = true;
+    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+    assert!(file_exists!(public, "elasticlunr.min.js"));
+    assert!(file_exists!(public, "search_index.en.js"));
 }

@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use rayon::prelude::*;
 
 use page::Page;
@@ -24,9 +26,36 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
         });
 
     match sort_by {
-        SortBy::Date => can_be_sorted.par_sort_unstable_by(|a, b| b.meta.date().unwrap().cmp(&a.meta.date().unwrap())),
-        SortBy::Order => can_be_sorted.par_sort_unstable_by(|a, b| b.meta.order().cmp(&a.meta.order())),
-        SortBy::Weight => can_be_sorted.par_sort_unstable_by(|a, b| a.meta.weight().cmp(&b.meta.weight())),
+        SortBy::Date => {
+            can_be_sorted.par_sort_unstable_by(|a, b| {
+                let ord = b.meta.date().unwrap().cmp(&a.meta.date().unwrap());
+                if ord == Ordering::Equal {
+                    a.permalink.cmp(&b.permalink)
+                } else {
+                    ord
+                }
+            })
+        },
+        SortBy::Order => {
+            can_be_sorted.par_sort_unstable_by(|a, b| {
+                let ord = b.meta.order().cmp(&a.meta.order());
+                if ord == Ordering::Equal {
+                    a.permalink.cmp(&b.permalink)
+                } else {
+                    ord
+                }
+            })
+        },
+        SortBy::Weight => {
+            can_be_sorted.par_sort_unstable_by(|a, b| {
+                let ord = a.meta.weight().cmp(&b.meta.weight());
+                if ord == Ordering::Equal {
+                    a.permalink.cmp(&b.permalink)
+                } else {
+                    ord
+                }
+            })
+        },
         _ => unreachable!()
     };
 
@@ -108,16 +137,19 @@ mod tests {
         Page::new("content/hello.md", front_matter)
     }
 
-    fn create_page_with_order(order: usize) -> Page {
+    fn create_page_with_order(order: usize, filename: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.order = Some(order);
-        Page::new("content/hello.md", front_matter)
+        let mut p = Page::new("content/".to_string() + filename, front_matter);
+        // Faking a permalink to test sorting with equal order
+        p.permalink = filename.to_string();
+        p
     }
 
     fn create_draft_page_with_order(order: usize) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.order = Some(order);
-        front_matter.draft = Some(true);
+        front_matter.draft = true;
         Page::new("content/hello.md", front_matter)
     }
 
@@ -144,15 +176,32 @@ mod tests {
     #[test]
     fn can_sort_by_order() {
         let input = vec![
-            create_page_with_order(2),
-            create_page_with_order(3),
-            create_page_with_order(1),
+            create_page_with_order(2, "hello.md"),
+            create_page_with_order(3, "hello2.md"),
+            create_page_with_order(1, "hello3.md"),
         ];
         let (pages, _) = sort_pages(input, SortBy::Order);
-        // Should be sorted by date
+        // Should be sorted by order
         assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
         assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
         assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
+    }
+
+    #[test]
+    fn can_sort_by_order_uses_permalink_to_break_ties() {
+        let input = vec![
+            create_page_with_order(3, "b.md"),
+            create_page_with_order(3, "a.md"),
+            create_page_with_order(3, "c.md"),
+        ];
+        let (pages, _) = sort_pages(input, SortBy::Order);
+        // Should be sorted by order
+        assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
+        assert_eq!(pages[0].clone().permalink, "a.md");
+        assert_eq!(pages[1].clone().meta.order.unwrap(), 3);
+        assert_eq!(pages[1].clone().permalink, "b.md");
+        assert_eq!(pages[2].clone().meta.order.unwrap(), 3);
+        assert_eq!(pages[2].clone().permalink, "c.md");
     }
 
     #[test]
@@ -163,7 +212,7 @@ mod tests {
             create_page_with_weight(1),
         ];
         let (pages, _) = sort_pages(input, SortBy::Weight);
-        // Should be sorted by date
+        // Should be sorted by weight
         assert_eq!(pages[0].clone().meta.weight.unwrap(), 1);
         assert_eq!(pages[1].clone().meta.weight.unwrap(), 2);
         assert_eq!(pages[2].clone().meta.weight.unwrap(), 3);
@@ -172,9 +221,9 @@ mod tests {
     #[test]
     fn can_sort_by_none() {
         let input = vec![
-            create_page_with_order(2),
-            create_page_with_order(3),
-            create_page_with_order(1),
+            create_page_with_order(2, "a.md"),
+            create_page_with_order(3, "a.md"),
+            create_page_with_order(1, "a.md"),
         ];
         let (pages, _) = sort_pages(input, SortBy::None);
         // Should be sorted by date
@@ -186,8 +235,8 @@ mod tests {
     #[test]
     fn ignore_page_with_missing_field() {
         let input = vec![
-            create_page_with_order(2),
-            create_page_with_order(3),
+            create_page_with_order(2, "a.md"),
+            create_page_with_order(3, "a.md"),
             create_page_with_date("2019-01-01"),
         ];
         let (pages, unsorted) = sort_pages(input, SortBy::Order);
@@ -198,9 +247,9 @@ mod tests {
     #[test]
     fn can_populate_previous_and_next_pages() {
         let input = vec![
-            create_page_with_order(1),
-            create_page_with_order(2),
-            create_page_with_order(3),
+            create_page_with_order(1, "a.md"),
+            create_page_with_order(2, "b.md"),
+            create_page_with_order(3, "a.md"),
         ];
         let pages = populate_previous_and_next_pages(&input);
 
@@ -222,9 +271,9 @@ mod tests {
     fn can_populate_previous_and_next_pages_skip_drafts() {
         let input = vec![
             create_draft_page_with_order(0),
-            create_page_with_order(1),
-            create_page_with_order(2),
-            create_page_with_order(3),
+            create_page_with_order(1, "a.md"),
+            create_page_with_order(2, "b.md"),
+            create_page_with_order(3, "c.md"),
             create_draft_page_with_order(4),
         ];
         let pages = populate_previous_and_next_pages(&input);

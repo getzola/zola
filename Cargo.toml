@@ -1,10 +1,10 @@
 [package]
 name = "gutenberg"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-description = "A static site generator with everything built-in"
+description = "A fast static site generator with everything built-in"
 homepage = "https://github.com/Keats/gutenberg"
 repository = "https://github.com/Keats/gutenberg"
 keywords = ["static", "site", "generator", "blog"]
@@ -52,4 +52,5 @@ members = [
     "components/taxonomies",
     "components/templates",
     "components/utils",
+    "components/search",
 ]

@@ -1,12 +1,11 @@
 [package]
 name = "site"
 version = "0.1.0"
-authors = ["Vincent Prouillet <vincent@wearewizards.io>"]
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
 tera = "0.11"
 glob = "0.2"
-walkdir = "2"
 rayon = "1"
 serde = "1"
 serde_derive = "1"
@@ -20,6 +19,7 @@ front_matter = { path = "../front_matter" }
 pagination = { path = "../pagination" }
 taxonomies = { path = "../taxonomies" }
 content = { path = "../content" }
+search = { path = "../search" }
 
 [dev-dependencies]
 tempdir = "0.3"
