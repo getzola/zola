@@ -14,6 +14,7 @@ to the public directory
 want to link directly to it
 - Fix many shortcode parsing issues
 - Correctly copy themes shortcodes so they are useable in content
+- Fix internal links not working for markdown files directly in `content` directory
 
 ## 0.3.2 (2018-03-05)
 

@@ -48,7 +48,11 @@ impl FileInfo {
         let mut parent = file_path.parent().unwrap().to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
         let mut components = find_content_components(&file_path);
-        let relative = format!("{}/{}.md", components.join("/"), name);
+        let relative = if !components.is_empty() {
+            format!("{}/{}.md", components.join("/"), name)
+        } else {
+            format!("{}.md", name)
+        };
 
         // If we have a folder with an asset, don't consider it as a component
         if !components.is_empty() && name == "index" {

@@ -47,6 +47,14 @@ mod tests {
     }
 
     #[test]
+    fn can_resolve_valid_root_internal_link() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert("about.md".to_string(), "https://vincent.is/about".to_string());
+        let res = resolve_internal_link("./about.md", &permalinks).unwrap();
+        assert_eq!(res, "https://vincent.is/about");
+    }
+
+    #[test]
     fn can_resolve_internal_links_with_anchors() {
         let mut permalinks = HashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
