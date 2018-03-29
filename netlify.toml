@@ -4,7 +4,7 @@
     command = "gutenberg build"
 
 [build.environment]
-    GUTENBERG_VERSION = "0.3.1"
+    GUTENBERG_VERSION = "0.3.3"
 
 [context.deploy-preview]
     command = "gutenberg build --base-url $DEPLOY_PRIME_URL"
