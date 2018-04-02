@@ -46,12 +46,12 @@ A simple theme you can use as example is [Hyde](https://github.com/Keats/hyde).
 As a theme is just a site, you can simply use `gutenberg serve` and make changes to your
 theme, with live reloading working as expected.
 
-Make sure to commit every directory (including `content`) in order for other people 
+Make sure to commit every directory (including `content`) in order for other people
 to be able to build the theme from your repository.
 
 ### Caveat
 
-Please note that [include paths](https://tera.netlify.com/docs/templates/#include) can only be used in used in normal templates. 
+Please note that [include paths](https://tera.netlify.com/docs/templates/#include) can only be used in normal templates.
 Theme templates should use [macros](https://tera.netlify.com/docs/templates/#macros) instead.
 
 ## Submitting a theme to the gallery

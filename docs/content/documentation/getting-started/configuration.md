@@ -56,7 +56,7 @@ compile_sass = false
 build_search_index = false
 
 # A list of glob patterns specifying asset files to ignore when
-# processing the content directory. 
+# processing the content directory.
 # Defaults to none, which means all asset files are copied over to the public folder.
 # Example:
 #     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
@@ -74,34 +74,34 @@ ignored_content = []
 
 Gutenberg currently has the following highlight themes available:
 
-- 1337: https://tmtheme-editor.herokuapp.com/#!/editor/theme/1337
-- agola-dark: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark
-- ascetic-white: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Ascetic%20White
-- axar: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Axar
+- [1337](https://tmtheme-editor.herokuapp.com/#!/editor/theme/1337)
+- [agola-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark)
+- [ascetic-white](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Ascetic%20White)
+- [axar](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Axar)
 - base16-ocean-dark
-- base16-ocean-light 
-- bbedit: https://tmtheme-editor.herokuapp.com/#!/editor/theme/BBEdit
-- boron: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Boron
-- charcoal: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Charcoal
-- cheerfully-light: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Cheerfully%20Light
-- classic-modified: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Classic%20Modified
-- demain: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Demain
-- dimmed-fluid: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Dimmed%20Fluid
-- gray-matter-dark: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Gray%20Matter%20Dark
-- gruvbox-dark: https://github.com/morhetz/gruvbox
-- gruvbox-light: https://github.com/morhetz/gruvbox
-- idle: https://tmtheme-editor.herokuapp.com/#!/editor/theme/IDLE
-- inspired-github: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Inspiredgithub
-- ir-white: https://tmtheme-editor.herokuapp.com/#!/editor/theme/IR_White
-- kronuz: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Kronuz
-- material-dark: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Material%20Dark
-- material-light: https://github.com/morhetz/gruvbox
-- monokai: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Monokai
-- solarized-dark: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(dark)
-- solarized-light: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(light)
-- subway-madrid: https://github.com/idleberg/Subway.tmTheme
-- subway-moscow: https://github.com/idleberg/Subway.tmTheme
-- visual-studio-dark: https://tmtheme-editor.herokuapp.com/#!/editor/theme/Visual%20Studio%20Dark
+- base16-ocean-light
+- [bbedit](https://tmtheme-editor.herokuapp.com/#!/editor/theme/BBEdit)
+- [boron](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Boron)
+- [charcoal](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Charcoal)
+- [cheerfully-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Cheerfully%20Light)
+- [classic-modified](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Classic%20Modified)
+- [demain](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Demain)
+- [dimmed-fluid](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Dimmed%20Fluid)
+- [gray-matter-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Gray%20Matter%20Dark)
+- [gruvbox-dark](https://github.com/morhetz/gruvbox)
+- [gruvbox-light](https://github.com/morhetz/gruvbox)
+- [idle](https://tmtheme-editor.herokuapp.com/#!/editor/theme/IDLE)
+- [inspired-github](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Inspiredgithub)
+- [ir-white](https://tmtheme-editor.herokuapp.com/#!/editor/theme/IR_White)
+- [kronuz](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Kronuz)
+- [material-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Material%20Dark)
+- [material-light](https://github.com/morhetz/gruvbox)
+- [monokai](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Monokai)
+- [solarized-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(dark))
+- [solarized-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(light))
+- [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
+- [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
+- [visual-studio-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Visual%20Studio%20Dark)
 
 Gutenberg uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
