@@ -28,6 +28,7 @@ in the `docs/content` folder of the repository.
 | Aliases                  |     ✔     |    ✕   |   ✔  |    ✔    |
 | Pagination               |     ✔     |    ✕   |   ✔  |    ✔    |
 | Custom taxonomies        |     ✕     |    ✕   |   ✔  |    ✕    |
+| Search                   |     ✔     |    ✕   |   ✕  |    ✔    |
 | Data files               |     ✕     |    ✔   |   ✔  |    ✕    |
 
 Supported content formats:
