@@ -37,7 +37,10 @@ previous: Page?;
 next: Page?;
 // See the Table of contents section below for more details
 toc: Array<Header>;
-// TODO: add assets & assets_imgs   (also draft is missing?)
+// Paths of colocated assets, relative to the content directory
+assets: Array<String>;
+// Paths of colocated image assets, ie. files with an extension of "jpg", "jpeg", "png", "gif", or "bmp"
+assets_imgs: Array<String>;
 ```
 
 ## Section variables
