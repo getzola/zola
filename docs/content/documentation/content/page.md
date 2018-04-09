@@ -74,9 +74,10 @@ Some content
 You can ask Gutenberg to create a summary if you only want to show the first 
 paragraph of each page in a list for example.
 
-To do so, add `<!-- more -->` in your content at the point where you want the
-summary to end and the content up to that point will be also available separately
-in the [template](./documentation/templates/pages-sections.md#page-variables).
+To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
+where you want the summary to end and the content up to that point will be also
+available separately in the
+[template](./documentation/templates/pages-sections.md#page-variables).
 
 An anchor link to this position named `continue-reading` is created so you can link 
 directly to it if needed for example:
