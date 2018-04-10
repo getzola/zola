@@ -11,6 +11,16 @@ We are going to use [TravisCI](https://travis-ci.org) to automatically publish t
 you will need to login with the GitHub OAuth and activate Travis for the repository.
 Don't forget to also check if your repository allows GitHub Pages in its settings.
 
+## Ensure Travis can access your theme
+
+Depending on how you added your theme Travis may not exactly know how to access
+it. The best way to ensure it will have full access to the theme is to use git
+submodules. When doing this ensure you are using the `https` version of the URL. 
+
+```shell
+$ git submodule add {THEME_URL} themes/{THEME_NAME}
+```
+
 ## Allowing Travis to push to GitHub
 
 Before pushing anything, Travis needs a Github private access key in order to make changes to your repository. 
