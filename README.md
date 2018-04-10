@@ -18,7 +18,6 @@ in the `docs/content` folder of the repository.
 | Assets co-location       |     ✔     |    ✔   |   ✔  |    ✔    |
 | i18n                     |     ✕     |    ✕   |   ✔  |    ✔    |
 | Image processing         |     ✕     |    ✕   |   ✔  |    ✔    |
-| Search                   |     ✕     |    ✕   |   ✕  |    ✔    |
 | Sane template engine     |     ✔     |    ✔   |  ✕✕✕ |    ✔    |
 | Themes                   |     ✔     |    ✕   |   ✔  |    ✔    |
 | Shortcodes               |     ✔     |    ✕   |   ✔  |    ✔    |
