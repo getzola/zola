@@ -31,3 +31,6 @@
 [submodule "sublime_syntaxes/SublimeElmLanguageSupport"]
 	path = sublime_syntaxes/SublimeElmLanguageSupport
 	url = https://github.com/elm-community/SublimeElmLanguageSupport
+[submodule "sublime_syntaxes/Sublime-CMakeLists"]
+	path = sublime_syntaxes/Sublime-CMakeLists
+	url = https://github.com/zyxar/Sublime-CMakeLists

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 (unreleased)
+
+- Add CMake syntax highlighting
+
+
 ## 0.3.3 (2018-03-29)
 
 - Fixed config flag in CLI
@@ -102,7 +107,7 @@ to `config.default_language` if not given
 root page
 - Make `title` in config optional
 - Improved `gutenberg init` UX and users first experience
-- Make `get_url` work for any path with optional cachebusting. 
+- Make `get_url` work for any path with optional cachebusting.
 - Deprecates `link` param of `get_url` in favour of `path` to be consistent
 
 ## 0.1.1 (2017-07-16)
