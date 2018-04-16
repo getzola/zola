@@ -183,3 +183,30 @@ Usage example:
 Result example:
 
 {{ gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57") }}
+
+### Twitch
+Embed a Twitch stream with or without chat.
+
+The arguments are:
+
+- `channel`: the channel name (mandatory)
+- `chat`: shows the stream chat next to the video embed 
+- `class`: a class to add the `div` surrounding the iframe
+- `videoWidth`: the px **width** the video embed should have 
+- `videoHeight`: the px **height** the video embed should have
+- `chatWidth`: the px **width** the chat embed should have 
+- `chatHeight`: the px **height** the chat embed should have
+
+Usage example:
+
+```md
+{{ twitch(channel="twitch") }}
+
+{{ twitch(channel="twitch", class="some-class", chat=true) }}
+
+{{ twitch(channel="twitch", chat=true, videoWidth=300. videoHeight=100, chatWidth=100, chatHeight=100) }}
+```
+
+Result example:
+
+{{ twitch(channel="twitch", chat=true, videoWidth=300, videoHeight=100, chatWidth=100, chatHeight=100, class="twitch-shortcode") }}
