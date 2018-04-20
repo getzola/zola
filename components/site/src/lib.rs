@@ -600,14 +600,27 @@ impl Site {
         for page in self.pages.values() {
             for alias in &page.meta.aliases {
                 let mut output_path = self.output_path.to_path_buf();
-                for component in alias.split('/') {
+                let mut split = alias.split('/').collect::<Vec<_>>();
+
+                // If the alias ends with an html file name, use that instead of mapping
+                // as a path containing an `index.html`
+                let page_name: String = match split.pop() {
+                    Some(part) if part.ends_with(".html") => part.to_string(),
+                    Some(part) => {
+                        split.push(part);
+                        "index.html".into()
+                    }
+                    None => "index.html".into()
+                };
+
+                for component in split {
                     output_path.push(&component);
 
                     if !output_path.exists() {
                         create_directory(&output_path)?;
                     }
                 }
-                create_file(&output_path.join("index.html"), &render_redirect_template(&page.permalink, &self.tera)?)?;
+                create_file(&output_path.join(&page_name), &render_redirect_template(&page.permalink, &self.tera)?)?;
             }
         }
         Ok(())
