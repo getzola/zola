@@ -604,13 +604,13 @@ impl Site {
 
                 // If the alias ends with an html file name, use that instead of mapping
                 // as a path containing an `index.html`
-                let page_name: String = match split.pop() {
-                    Some(part) if part.ends_with(".html") => part.to_string(),
+                let page_name = match split.pop() {
+                    Some(part) if part.ends_with(".html") => part,
                     Some(part) => {
                         split.push(part);
-                        "index.html".into()
+                        "index.html"
                     }
-                    None => "index.html".into()
+                    None => "index.html"
                 };
 
                 for component in split {
@@ -620,7 +620,7 @@ impl Site {
                         create_directory(&output_path)?;
                     }
                 }
-                create_file(&output_path.join(&page_name), &render_redirect_template(&page.permalink, &self.tera)?)?;
+                create_file(&output_path.join(page_name), &render_redirect_template(&page.permalink, &self.tera)?)?;
             }
         }
         Ok(())
