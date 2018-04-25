@@ -18,7 +18,7 @@ extern crate content;
 extern crate search;
 
 #[cfg(test)]
-extern crate tempdir;
+extern crate tempfile;
 
 use std::collections::HashMap;
 use std::fs::{create_dir_all, remove_dir_all, copy};

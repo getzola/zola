@@ -22,4 +22,4 @@ content = { path = "../content" }
 search = { path = "../search" }
 
 [dev-dependencies]
-tempdir = "0.3"
+tempfile = "3"

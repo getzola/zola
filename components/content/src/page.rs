@@ -255,7 +255,7 @@ mod tests {
     use std::path::Path;
 
     use tera::Tera;
-    use tempdir::TempDir;
+    use tempfile::tempdir;
     use globset::{Glob, GlobSetBuilder};
 
     use config::Config;
@@ -387,7 +387,7 @@ Hello world
 
     #[test]
     fn page_with_assets_gets_right_info() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         create_dir(&path.join("content")).expect("create content temp dir");
         create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
@@ -413,7 +413,7 @@ Hello world
 
     #[test]
     fn page_with_assets_and_slug_overrides_path() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         create_dir(&path.join("content")).expect("create content temp dir");
         create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
@@ -439,7 +439,7 @@ Hello world
 
     #[test]
     fn page_with_ignored_assets_filters_out_correct_files() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         create_dir(&path.join("content")).expect("create content temp dir");
         create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
