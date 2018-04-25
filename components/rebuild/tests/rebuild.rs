@@ -1,6 +1,6 @@
 extern crate rebuild;
 extern crate site;
-extern crate tempdir;
+extern crate tempfile;
 extern crate fs_extra;
 
 use std::env;
@@ -8,7 +8,7 @@ use std::fs::{remove_dir_all, File};
 use std::io::prelude::*;
 
 use fs_extra::dir;
-use tempdir::TempDir;
+use tempfile::tempdir;
 use site::Site;
 
 use rebuild::after_content_change;
@@ -74,7 +74,7 @@ macro_rules! file_contains {
 
 #[test]
 fn can_rebuild_after_simple_change_to_page_content() {
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let (site_path, mut site) = load_and_build_site!(tmp_dir);
     let file_path = edit_file!(site_path, "content/rebuild/first.md", br#"
 +++
@@ -92,7 +92,7 @@ Some content"#);
 
 #[test]
 fn can_rebuild_after_title_change_page_global_func_usage() {
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let (site_path, mut site) = load_and_build_site!(tmp_dir);
     let file_path = edit_file!(site_path, "content/rebuild/first.md", br#"
 +++
@@ -110,7 +110,7 @@ date = 2017-01-01
 
 #[test]
 fn can_rebuild_after_sort_change_in_section() {
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let (site_path, mut site) = load_and_build_site!(tmp_dir);
     let file_path = edit_file!(site_path, "content/rebuild/_index.md", br#"
 +++

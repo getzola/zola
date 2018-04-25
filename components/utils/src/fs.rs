@@ -97,13 +97,13 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
 mod tests {
     use std::fs::File;
 
-    use tempdir::TempDir;
+    use tempfile::tempdir;
 
     use super::{find_related_assets};
 
     #[test]
     fn can_find_related_assets() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         File::create(tmp_dir.path().join("index.md")).unwrap();
         File::create(tmp_dir.path().join("example.js")).unwrap();
         File::create(tmp_dir.path().join("graph.jpg")).unwrap();

@@ -2,7 +2,7 @@
 extern crate errors;
 
 #[cfg(test)]
-extern crate tempdir;
+extern crate tempfile;
 extern crate tera;
 extern crate walkdir;
 

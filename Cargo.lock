@@ -208,7 +208,7 @@ dependencies = [
  "rendering 0.1.0",
  "serde 1.0.43 (registry+https://github.com/rust-lang/crates.io-index)",
  "slug 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tempfile 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tera 0.11.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
@@ -1022,7 +1022,7 @@ dependencies = [
  "fs_extra 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "highlighting 0.1.0",
  "site 0.1.0",
- "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tempfile 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1228,7 +1228,7 @@ dependencies = [
  "serde 1.0.43 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.43 (registry+https://github.com/rust-lang/crates.io-index)",
  "taxonomies 0.1.0",
- "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tempfile 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "templates 0.1.0",
  "tera 0.11.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
@@ -1382,12 +1382,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "tempdir"
-version = "0.3.7"
+name = "tempfile"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
+ "libc 0.2.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "redox_syscall 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "remove_dir_all 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1609,7 +1612,7 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "errors 0.1.0",
- "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tempfile 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tera 0.11.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 2.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1853,7 +1856,7 @@ dependencies = [
 "checksum syn 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)" = "91b52877572087400e83d24b9178488541e3d535259e04ff17a63df1e5ceff59"
 "checksum synom 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a393066ed9010ebaed60b9eafa373d4b1baac186dd7e008555b0f702b51945b6"
 "checksum syntect 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "db9fffcb25a761118df53811bd1cfcd54cf57fcbc51e1ea3167ae263477129ad"
-"checksum tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)" = "15f2b5fb00ccdf689e0149d1b1b3c03fead81c2b37735d812fa8bddbbf41b6d8"
+"checksum tempfile 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8cddbd26c5686ece823b507f304c8f188daef548b4cb753512d929ce478a093c"
 "checksum tendril 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9de21546595a0873061940d994bbbc5c35f024ae4fd61ec5c5b159115684f508"
 "checksum tera 0.11.7 (registry+https://github.com/rust-lang/crates.io-index)" = "e815b67d44c26feb06630011fb58b5b243f4e9585aac1ed0592c5795de64cd75"
 "checksum term 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)" = "fa63644f74ce96fbeb9b794f66aff2a52d601cbd5e80f4b97123e3899f4570f1"

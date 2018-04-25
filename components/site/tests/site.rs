@@ -1,12 +1,12 @@
 extern crate site;
-extern crate tempdir;
+extern crate tempfile;
 
 use std::env;
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
 
-use tempdir::TempDir;
+use tempfile::tempdir;
 use site::Site;
 
 
@@ -95,7 +95,7 @@ fn can_build_site_without_live_reload() {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
@@ -168,7 +168,7 @@ fn can_build_site_with_live_reload() {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.enable_live_reload();
@@ -220,7 +220,7 @@ fn can_build_site_with_categories() {
         };
     }
     site.populate_tags_and_categories();
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
@@ -275,7 +275,7 @@ fn can_build_site_with_tags() {
     }
     site.populate_tags_and_categories();
 
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
@@ -317,7 +317,7 @@ fn can_build_site_and_insert_anchor_links() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
 
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
@@ -340,7 +340,7 @@ fn can_build_site_with_pagination_for_section() {
         section.meta.paginate_by = Some(2);
         section.meta.template = Some("section_paginated.html".to_string());
     }
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
@@ -397,7 +397,7 @@ fn can_build_site_with_pagination_for_index() {
         index.meta.paginate_by = Some(2);
         index.meta.template = Some("index_paginated.html".to_string());
     }
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
@@ -437,7 +437,7 @@ fn can_build_rss_feed() {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
@@ -458,7 +458,7 @@ fn can_build_search_index() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     site.config.build_search_index = true;
-    let tmp_dir = TempDir::new("example").expect("create temp dir");
+    let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();

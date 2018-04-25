@@ -10,7 +10,7 @@ extern crate rendering;
 extern crate utils;
 
 #[cfg(test)]
-extern crate tempdir;
+extern crate tempfile;
 #[cfg(test)]
 extern crate toml;
 #[cfg(test)]
