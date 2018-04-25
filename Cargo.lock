@@ -812,7 +812,7 @@ dependencies = [
 
 [[package]]
 name = "onig"
-version = "3.2.1"
+version = "3.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1356,7 +1356,7 @@ dependencies = [
  "flate2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "onig 3.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "onig 3.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "plist 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex-syntax 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.43 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1798,7 +1798,7 @@ dependencies = [
 "checksum num-integer 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)" = "f8d26da319fb45674985c78f1d1caf99aa4941f785d384a2ae36d0740bc3e2fe"
 "checksum num-traits 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "dee092fcdf725aee04dd7da1d21debff559237d49ef1cb3e69bcb8ece44c7364"
 "checksum num_cpus 1.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c51a3322e4bca9d212ad9a158a02abc6934d005490c054a2778df73a70aa0a30"
-"checksum onig 3.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "be6b3b3411efa38b2cff84a1925df1bb8b048d4c1d60656617ed7aca9a966dd9"
+"checksum onig 3.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f5eeb268a4620c74ea5768c6d2ccd492d60a47a8754666b91a46bfc35cd4d1ba"
 "checksum onig_sys 68.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "5c6be7c4f985508684e54f18dd37f71e66f3e1ad9318336a520d7e42f0d3ea8e"
 "checksum os_pipe 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7f547689aea1f11fac90333d573854a8e3e52a9160df1c42aefa8cd16734a3c0"
 "checksum percent-encoding 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "31010dd2e1ac33d5b46a5b413495239882813e0369f8ed8a5e266f173602f831"
