@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 0.4.0 (unreleased)
+
+- Fix `serve` not working with the config flag
+
 ## 0.3.4 (2018-06-22)
 
 - `cargo update` as some dependencies didn't compile with current Rust version

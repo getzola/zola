@@ -115,8 +115,8 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
     watcher.watch("templates/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
-    watcher.watch("config.toml", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `config.toml` file. Does it exist?")?;
+    watcher.watch(config_file, RecursiveMode::Recursive)
+        .chain_err(|| "Can't watch the `config` file. Does it exist?")?;
 
     if Path::new("static").exists() {
         watching_static = true;
