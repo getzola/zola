@@ -3,7 +3,7 @@
 ## 0.4.0 (unreleased)
 
 - Add CMake syntax highlighting
-
+- Fix `serve` not working with the config flag
 
 ## 0.3.3 (2018-03-29)
 
