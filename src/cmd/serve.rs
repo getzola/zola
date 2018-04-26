@@ -22,7 +22,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
-use std::fs::remove_dir_all;
+use std::fs::{File, remove_dir_all};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
@@ -58,6 +58,31 @@ enum ChangeKind {
 // errors
 const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
+struct ErrCatcher;
+
+impl AfterMiddleware for ErrCatcher {
+
+    fn catch(&self, _: &mut Request, err: IronError) -> IronResult<Response> {
+
+        let err_status = err.response.status.unwrap_or(status::InternalServerError);
+
+        // Search for e.g. "static/error/404.html"
+        let err_page = File::open( format!("static/error/{}.html", err_status.to_u16()) );
+
+        if err_page.is_ok() {
+            let mut err_res = Response::with(( err_status, err_page.unwrap() ));
+            err_res.headers.set(ContentType::html());
+
+            return Ok(err_res);
+        }
+
+        // No custom error page, serve default
+        let mut err_res = Response::with(( err_status, format!("Error: {}.", err_status) ));
+        err_res.headers.set(ContentType::plaintext());
+
+        Ok(err_res)
+    }
+}
 
 fn livereload_handler(_: HttpRequest) -> &'static str {
     LIVE_RELOAD
