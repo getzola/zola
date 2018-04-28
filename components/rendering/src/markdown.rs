@@ -1,4 +1,5 @@
 use std::borrow::Cow::Owned;
+use std::iter::Peekable;
 
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
@@ -6,15 +7,112 @@ use slug::slugify;
 use syntect::easy::HighlightLines;
 use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, IncludeBackground};
 
-use errors::Result;
+use errors::{Result, Error};
 use utils::site::resolve_internal_link;
 use context::Context;
 use highlighting::{SYNTAX_SET, THEME_SET};
 use short_code::{SHORTCODE_RE, ShortCode, parse_shortcode, render_simple_shortcode};
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 
+struct GutenbergFlavoredMarkdownParser<'a, 'b, 'c> {
+    context: &'a Context<'a>,
+    errors: &'c mut Vec<Error>,
+    parser: Peekable<Parser<'b>>,
+}
 
+fn is_internal_link(link: &str) -> bool {
+    link.starts_with("./")
+}
+
+impl<'a, 'b, 'c> GutenbergFlavoredMarkdownParser<'a, 'b, 'c> {
+    fn new(context: &'a Context<'a>, parser: Parser<'b>, errors: &'c mut Vec<Error>) -> GutenbergFlavoredMarkdownParser<'a, 'b, 'c> {
+        GutenbergFlavoredMarkdownParser {
+            context: context,
+            errors: errors,
+            parser: parser.peekable()
+        }
+    }
+
+    fn push_error<E: Into<Error>>(&mut self, error: E) {
+        self.errors.push(error.into());
+    }
+
+    fn empty_event(&self) -> Event<'b> {
+        Event::Html(Owned("".to_string()))
+    }
+
+    fn process_link(&mut self, link: Tag<'b>) -> Event<'b> {
+        match link {
+            Tag::Link(ref href, ref text) => {
+                if is_internal_link(href) {
+                    match resolve_internal_link(href, self.context.permalinks) {
+                        Ok(url) => {
+                            Event::Start(Tag::Link(Owned(url), text.clone()))
+                        },
+                        Err(_) => {
+                            self.push_error(format!("Relative link {} not found.", href));
+                            self.empty_event()
+                        }
+                    }
+                } else{
+                    Event::Start(Tag::Link(href.clone(), text.clone()))
+                }
+            },
+            _ => unreachable!()
+        }
+    }
+
+    fn add_id_to_header(&mut self, num: i32) -> Event<'b> {
+        Event::Start(Tag::Header(num))
+    }
+
+    // TODO: Find a better name for this function.
+    fn process_event(&mut self, event: Event<'b>) -> Event<'b> {
+        match event {
+            Event::Start(link @ Tag::Link(_, _)) => self.process_link(link),
+            Event::Start(Tag::Header(num)) => self.add_id_to_header(num),
+            _ => event,
+        }
+    }
+}
+
+impl<'a, 'b, 'c> Iterator for GutenbergFlavoredMarkdownParser<'a, 'b, 'c> {
+    type Item = Event<'b>;
+
+    fn next(&mut self) -> Option<Event<'b>> {
+        match self.parser.next() {
+            Some(event) => Some(self.process_event(event)),
+            None => None,
+        }
+    }
+}
+
+#[allow(unused_variables)]
 pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec<Header>)> {
+    let mut opts = Options::empty();
+    opts.insert(OPTION_ENABLE_TABLES);
+    opts.insert(OPTION_ENABLE_FOOTNOTES);
+
+    let mut errors = vec![];
+    let mut html = String::new();
+    let headers = vec![];
+
+    {
+        let parser = Parser::new_ext(content, opts);
+        let gfmp = GutenbergFlavoredMarkdownParser::new(context, parser, &mut errors);
+
+        cmark::html::push_html(&mut html, gfmp);
+    }
+
+    // TODO: show all errors
+    match errors.pop() {
+        Some(error) => Err(error),
+        None => Ok((html, make_table_of_contents(&headers))),
+    }
+}
+
+#[allow(dead_code)]
+pub fn markdown_to_html_old(content: &str, context: &Context) -> Result<(String, Vec<Header>)> {
     // We try to be smart about highlighting code as it can be time-consuming
     // If the global config disables it, then we do nothing. However,
     // if we see a code block in the content, we assume that this page needs
@@ -85,204 +183,204 @@ pub fn markdown_to_html(content: &str, context: &Context) -> Result<(String, Vec
             }
 
             match event {
-            Event::Text(mut text) => {
-                // Header first
-                if in_header {
-                    if header_created {
-                        temp_header.push(&text);
+                Event::Text(mut text) => {
+                    // Header first
+                    if in_header {
+                        if header_created {
+                            temp_header.push(&text);
+                            return Event::Html(Owned(String::new()));
+                        }
+                        let id = find_anchor(&anchors, slugify(&text), 0);
+                        anchors.push(id.clone());
+                        // update the header and add it to the list
+                        temp_header.id = id.clone();
+                        // += as we might have some <code> or other things already there
+                        temp_header.title += &text;
+                        temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
+                        header_created = true;
                         return Event::Html(Owned(String::new()));
                     }
-                    let id = find_anchor(&anchors, slugify(&text), 0);
-                    anchors.push(id.clone());
-                    // update the header and add it to the list
-                    temp_header.id = id.clone();
-                    // += as we might have some <code> or other things already there
-                    temp_header.title += &text;
-                    temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
-                    header_created = true;
-                    return Event::Html(Owned(String::new()));
-                }
 
-                // if we are in the middle of a code block
-                if let Some(ref mut highlighter) = highlighter {
-                    let highlighted = &highlighter.highlight(&text);
-                    let html = styles_to_coloured_html(highlighted, IncludeBackground::Yes);
-                    return Event::Html(Owned(html));
-                }
-
-                if in_code_block {
-                    return Event::Text(text);
-                }
-
-                // Are we in the middle of a shortcode that somehow got cut off
-                // by the markdown parser?
-                if current_shortcode.is_empty() {
-                    if text.starts_with("{{") && !text.ends_with("}}") {
-                        current_shortcode += &text;
-                    } else if text.starts_with("{%") && !text.ends_with("%}") {
-                        current_shortcode += &text;
+                    // if we are in the middle of a code block
+                    if let Some(ref mut highlighter) = highlighter {
+                        let highlighted = &highlighter.highlight(&text);
+                        let html = styles_to_coloured_html(highlighted, IncludeBackground::Yes);
+                        return Event::Html(Owned(html));
                     }
-                } else {
-                    current_shortcode += &text;
-                }
 
-                if current_shortcode.ends_with("}}") || current_shortcode.ends_with("%}") {
-                    text = Owned(current_shortcode.clone());
-                    current_shortcode = String::new();
-                }
+                    if in_code_block {
+                        return Event::Text(text);
+                    }
 
-                // Shortcode without body
-                if shortcode_block.is_none() && text.starts_with("{{") && text.ends_with("}}") && SHORTCODE_RE.is_match(&text) {
-                    let (name, args) = parse_shortcode(&text);
-
-                    added_shortcode = true;
-                    match render_simple_shortcode(context.tera, &name, &args) {
-                        // Make before and after cleaning up of extra <p> / </p> tags more parallel.
-                        // Or, in other words:
-                        // TERRIBLE HORRIBLE NO GOOD VERY BAD HACK
-                        Ok(s) => return Event::Html(Owned(format!("</p>{}<p>", s))),
-                        Err(e) => {
-                            error = Some(e);
-                            return Event::Html(Owned(String::new()));
+                    // Are we in the middle of a shortcode that somehow got cut off
+                    // by the markdown parser?
+                    if current_shortcode.is_empty() {
+                        if text.starts_with("{{") && !text.ends_with("}}") {
+                            current_shortcode += &text;
+                        } else if text.starts_with("{%") && !text.ends_with("%}") {
+                            current_shortcode += &text;
                         }
+                    } else {
+                        current_shortcode += &text;
                     }
-                }
 
-                // Shortcode with a body
-                if shortcode_block.is_none() && text.starts_with("{%") && text.ends_with("%}") {
-                    if SHORTCODE_RE.is_match(&text) {
+                    if current_shortcode.ends_with("}}") || current_shortcode.ends_with("%}") {
+                        text = Owned(current_shortcode.clone());
+                        current_shortcode = String::new();
+                    }
+
+                    // Shortcode without body
+                    if shortcode_block.is_none() && text.starts_with("{{") && text.ends_with("}}") && SHORTCODE_RE.is_match(&text) {
                         let (name, args) = parse_shortcode(&text);
-                        shortcode_block = Some(ShortCode::new(&name, args));
-                    }
-                    // Don't return anything
-                    return Event::Text(Owned(String::new()));
-                }
 
-                // If we have some text while in a shortcode, it's either the body
-                // or the end tag
-                if shortcode_block.is_some() {
-                    if let Some(ref mut shortcode) = shortcode_block {
-                        if text.trim() == "{% end %}" {
-                            added_shortcode = true;
-                            clear_shortcode_block = true;
-                            match shortcode.render(context.tera) {
-                                Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
-                                Err(e) => {
-                                    error = Some(e);
-                                    return Event::Html(Owned(String::new()));
-                                }
+                        added_shortcode = true;
+                        match render_simple_shortcode(context.tera, &name, &args) {
+                            // Make before and after cleaning up of extra <p> / </p> tags more parallel.
+                            // Or, in other words:
+                            // TERRIBLE HORRIBLE NO GOOD VERY BAD HACK
+                            Ok(s) => return Event::Html(Owned(format!("</p>{}<p>", s))),
+                            Err(e) => {
+                                error = Some(e);
+                                return Event::Html(Owned(String::new()));
                             }
-                        } else {
-                            shortcode.append(&text);
-                            return Event::Html(Owned(String::new()));
                         }
                     }
-                }
 
-                // Business as usual
-                Event::Text(text)
-            },
-            Event::Start(Tag::CodeBlock(ref info)) => {
-                in_code_block = true;
-                if !should_highlight {
-                    return Event::Html(Owned("<pre><code>".to_owned()));
-                }
-                let theme = &THEME_SET.themes[&context.highlight_theme];
-                highlighter = SYNTAX_SET.with(|ss| {
-                    let syntax = info
-                        .split(' ')
-                        .next()
-                        .and_then(|lang| ss.find_syntax_by_token(lang))
-                        .unwrap_or_else(|| ss.find_syntax_plain_text());
-                    Some(HighlightLines::new(syntax, theme))
-                });
-                let snippet = start_coloured_html_snippet(theme);
-                Event::Html(Owned(snippet))
-            },
-            Event::End(Tag::CodeBlock(_)) => {
-                in_code_block = false;
-                if !should_highlight{
-                    return Event::Html(Owned("</code></pre>\n".to_owned()))
-                }
-                // reset highlight and close the code block
-                highlighter = None;
-                Event::Html(Owned("</pre>".to_owned()))
-            },
-            // Need to handle relative links
-            Event::Start(Tag::Link(ref link, ref title)) => {
-                if in_header {
-                    return Event::Html(Owned("".to_owned()));
-                }
-                if link.starts_with("./") {
-                    match resolve_internal_link(link, context.permalinks) {
-                        Ok(url) => {
-                            return Event::Start(Tag::Link(Owned(url), title.clone()));
-                        },
-                        Err(_) => {
-                            error = Some(format!("Relative link {} not found.", link).into());
-                            return Event::Html(Owned("".to_string()));
+                    // Shortcode with a body
+                    if shortcode_block.is_none() && text.starts_with("{%") && text.ends_with("%}") {
+                        if SHORTCODE_RE.is_match(&text) {
+                            let (name, args) = parse_shortcode(&text);
+                            shortcode_block = Some(ShortCode::new(&name, args));
                         }
-                    };
-                }
+                        // Don't return anything
+                        return Event::Text(Owned(String::new()));
+                    }
 
-                Event::Start(Tag::Link(link.clone(), title.clone()))
-            },
-            Event::End(Tag::Link(_, _)) => {
-                if in_header {
-                    return Event::Html(Owned("".to_owned()));
+                    // If we have some text while in a shortcode, it's either the body
+                    // or the end tag
+                    if shortcode_block.is_some() {
+                        if let Some(ref mut shortcode) = shortcode_block {
+                            if text.trim() == "{% end %}" {
+                                added_shortcode = true;
+                                clear_shortcode_block = true;
+                                match shortcode.render(context.tera) {
+                                    Ok(s) => return Event::Html(Owned(format!("</p>{}", s))),
+                                    Err(e) => {
+                                        error = Some(e);
+                                        return Event::Html(Owned(String::new()));
+                                    }
+                                }
+                            } else {
+                                shortcode.append(&text);
+                                return Event::Html(Owned(String::new()));
+                            }
+                        }
+                    }
+
+                    // Business as usual
+                    Event::Text(text)
+                },
+                Event::Start(Tag::CodeBlock(ref info)) => {
+                    in_code_block = true;
+                    if !should_highlight {
+                        return Event::Html(Owned("<pre><code>".to_owned()));
+                    }
+                    let theme = &THEME_SET.themes[&context.highlight_theme];
+                    highlighter = SYNTAX_SET.with(|ss| {
+                        let syntax = info
+                            .split(' ')
+                            .next()
+                            .and_then(|lang| ss.find_syntax_by_token(lang))
+                            .unwrap_or_else(|| ss.find_syntax_plain_text());
+                        Some(HighlightLines::new(syntax, theme))
+                    });
+                    let snippet = start_coloured_html_snippet(theme);
+                    Event::Html(Owned(snippet))
+                },
+                Event::End(Tag::CodeBlock(_)) => {
+                    in_code_block = false;
+                    if !should_highlight{
+                        return Event::Html(Owned("</code></pre>\n".to_owned()))
+                    }
+                    // reset highlight and close the code block
+                    highlighter = None;
+                    Event::Html(Owned("</pre>".to_owned()))
+                },
+                // Need to handle relative links
+                Event::Start(Tag::Link(ref link, ref title)) => {
+                    if in_header {
+                        return Event::Html(Owned("".to_owned()));
+                    }
+                    if link.starts_with("./") {
+                        match resolve_internal_link(link, context.permalinks) {
+                            Ok(url) => {
+                                return Event::Start(Tag::Link(Owned(url), title.clone()));
+                            },
+                            Err(_) => {
+                                error = Some(format!("Relative link {} not found.", link).into());
+                                return Event::Html(Owned("".to_string()));
+                            }
+                        };
+                    }
+
+                    Event::Start(Tag::Link(link.clone(), title.clone()))
+                },
+                Event::End(Tag::Link(_, _)) => {
+                    if in_header {
+                        return Event::Html(Owned("".to_owned()));
+                    }
+                    event
                 }
-                event
-            }
-            // need to know when we are in a code block to disable shortcodes in them
-            Event::Start(Tag::Code) => {
-                in_code_block = true;
-                if in_header {
-                    temp_header.push("<code>");
-                    return Event::Html(Owned(String::new()));
-                }
-                event
-            },
-            Event::End(Tag::Code) => {
-                in_code_block = false;
-                if in_header {
-                    temp_header.push("</code>");
-                    return Event::Html(Owned(String::new()));
-                }
-                event
-            },
-            Event::Start(Tag::Header(num)) => {
-                in_header = true;
-                temp_header = TempHeader::new(num);
-                Event::Html(Owned(String::new()))
-            },
-            Event::End(Tag::Header(_)) => {
-                // End of a header, reset all the things and return the stringified version of the header
-                in_header = false;
-                header_created = false;
-                let val = temp_header.to_string(context);
-                headers.push(temp_header.clone());
-                temp_header = TempHeader::default();
-                Event::Html(Owned(val))
-            },
-            // If we added shortcodes, don't close a paragraph since there's none
-            Event::End(Tag::Paragraph) => {
-                if added_shortcode {
-                    added_shortcode = false;
-                    return Event::Html(Owned("".to_owned()));
-                }
-                event
-            },
-            // Ignore softbreaks inside shortcodes
-            Event::SoftBreak => {
-                if shortcode_block.is_some() {
-                    return Event::Html(Owned("".to_owned()));
-                }
-                event
-            },
-             _ => {
-                 // println!("event = {:?}", event);
-                 event
-             },
+                // need to know when we are in a code block to disable shortcodes in them
+                Event::Start(Tag::Code) => {
+                    in_code_block = true;
+                    if in_header {
+                        temp_header.push("<code>");
+                        return Event::Html(Owned(String::new()));
+                    }
+                    event
+                },
+                Event::End(Tag::Code) => {
+                    in_code_block = false;
+                    if in_header {
+                        temp_header.push("</code>");
+                        return Event::Html(Owned(String::new()));
+                    }
+                    event
+                },
+                Event::Start(Tag::Header(num)) => {
+                    in_header = true;
+                    temp_header = TempHeader::new(num);
+                    Event::Html(Owned(String::new()))
+                },
+                Event::End(Tag::Header(_)) => {
+                    // End of a header, reset all the things and return the stringified version of the header
+                    in_header = false;
+                    header_created = false;
+                    let val = temp_header.to_string(context);
+                    headers.push(temp_header.clone());
+                    temp_header = TempHeader::default();
+                    Event::Html(Owned(val))
+                },
+                // If we added shortcodes, don't close a paragraph since there's none
+                Event::End(Tag::Paragraph) => {
+                    if added_shortcode {
+                        added_shortcode = false;
+                        return Event::Html(Owned("".to_owned()));
+                    }
+                    event
+                },
+                // Ignore softbreaks inside shortcodes
+                Event::SoftBreak => {
+                    if shortcode_block.is_some() {
+                        return Event::Html(Owned("".to_owned()));
+                    }
+                    event
+                },
+                _ => {
+                    // println!("event = {:?}", event);
+                    event
+                },
             }});
 
         cmark::html::push_html(&mut html, parser);
