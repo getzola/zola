@@ -1,0 +1,74 @@
+// Partly taken from Tera
+
+whitespace = _{ " " | "\t" | "\r" | "\n" }
+
+/// LITERALS
+int   = @{ "-" ? ~ ("0" | '1'..'9' ~ '0'..'9' * ) }
+float = @{
+    "-" ? ~
+    (
+        "0" ~ "." ~ '0'..'9' + |
+        '1'..'9' ~ '0'..'9' * ~ "." ~ '0'..'9' +
+    )
+}
+// matches anything between 2 double quotes
+double_quoted_string  = @{ "\"" ~ (!("\"") ~ any)* ~ "\""}
+// matches anything between 2 single quotes
+single_quoted_string  = @{ "\'" ~ (!("\'") ~ any)* ~ "\'"}
+// matches anything between 2 backquotes\backticks
+backquoted_quoted_string  = @{ "`" ~ (!("`") ~ any)* ~ "`"}
+
+string = @{
+    double_quoted_string |
+    single_quoted_string |
+    backquoted_quoted_string
+}
+
+boolean = { "true" | "false" }
+
+literal = { boolean | string | float | int }
+array = { "[" ~ (literal  ~ ",")* ~ literal? ~ "]"}
+
+/// Idents
+
+all_chars = _{'a'..'z' | 'A'..'Z' | "_" | '0'..'9'}
+ident = @{
+    ('a'..'z' | 'A'..'Z' | "_") ~
+    all_chars*
+}
+
+/// Now specific to Gutenberg
+
+// shortcode is abbreviated to sc to keep things short
+
+kwarg   = { ident ~ "=" ~ (literal | array) }
+kwargs  = _{ kwarg ~ ("," ~ kwarg )* }
+sc_def  = _{ ident ~ "(" ~ kwargs* ~ ")" }
+
+//sc_start = _{ "{{/*" | "{{" | "{%/*" | "{%" }
+
+inline_shortcode         = !{ "{{" ~ sc_def ~ "}}" }
+ignored_inline_shortcode = !{ "{{/*" ~ sc_def ~ "*/}}" }
+
+sc_body_start         = !{ "{%" ~ sc_def ~ "%}" }
+sc_body_end           = !{ "{%" ~ "end" ~ "%}" }
+ignored_sc_body_start = !{ "{%/*" ~ sc_def ~ "*/%}" }
+ignored_sc_body_end   = !{ "{%/*" ~ "end" ~ "*/%}" }
+
+shortcode_with_body         = !{ sc_body_start ~ text_in_body_sc ~ sc_body_end }
+ignored_shortcode_with_body = !{ ignored_sc_body_start ~ text_in_ignored_body_sc ~ ignored_sc_body_end }
+
+text_in_body_sc         = ${ (!("{%") ~ any)+ }
+text_in_ignored_body_sc = ${ (!("{%/*") ~ any)+ }
+text                    = ${ (!("{{/*" | "{{" | "{%/*" | "{%") ~ any)+ }
+
+content = _{
+    ignored_inline_shortcode |
+    inline_shortcode |
+    ignored_shortcode_with_body |
+    shortcode_with_body |
+    text
+}
+
+
+page = ${ soi ~ content* ~ eoi }
