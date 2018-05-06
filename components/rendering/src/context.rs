@@ -1,41 +1,35 @@
 use std::collections::HashMap;
 
 use tera::Tera;
-
 use front_matter::InsertAnchor;
+use config::Config;
 
 
 /// All the information from the gutenberg site that is needed to render HTML from markdown
 #[derive(Debug)]
-pub struct Context<'a> {
+pub struct RenderContext<'a> {
     pub tera: &'a Tera,
-    pub highlight_code: bool,
-    pub highlight_theme: String,
-    pub current_page_permalink: String,
+    pub config: &'a Config,
+    pub current_page_permalink: &'a str,
     pub permalinks: &'a HashMap<String, String>,
     pub insert_anchor: InsertAnchor,
 }
 
-impl<'a> Context<'a> {
+impl<'a> RenderContext<'a> {
     pub fn new(
         tera: &'a Tera,
-        highlight_code: bool,
-        highlight_theme: String,
-        current_page_permalink: &str,
+        config: &'a Config,
+        current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
-    ) -> Context<'a> {
-        Context {
+    ) -> RenderContext<'a> {
+        RenderContext {
             tera,
-            current_page_permalink: current_page_permalink.to_string(),
+            current_page_permalink,
             permalinks,
             insert_anchor,
-            highlight_code,
-            highlight_theme,
+            config,
         }
     }
 
-    pub fn should_insert_anchor(&self) -> bool {
-        self.insert_anchor != InsertAnchor::None
-    }
 }

@@ -21,7 +21,7 @@ fn from_toml_datetime<'de, D>(deserializer: D) -> StdResult<Option<String>, D::E
 fn convert_toml_date(table: Map<String, Value>) -> Value {
     let mut new = Map::new();
 
-    for (k, v) in table.into_iter() {
+    for (k, v) in table {
         if k == "$__toml_private_datetime" {
             return v;
         }
