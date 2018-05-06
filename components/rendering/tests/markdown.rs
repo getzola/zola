@@ -2,22 +2,25 @@ extern crate tera;
 extern crate front_matter;
 extern crate templates;
 extern crate rendering;
+extern crate config;
 
 use std::collections::HashMap;
 
 use tera::Tera;
 
+use config::Config;
 use front_matter::InsertAnchor;
 use templates::GUTENBERG_TERA;
-use rendering::{Context, markdown_to_html};
+use rendering::{RenderContext, render_content};
 
 
 #[test]
-fn can_do_markdown_to_html_simple() {
+fn can_do_render_content_simple() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("hello", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("hello", &context).unwrap();
     assert_eq!(res.0, "<p>hello</p>\n");
 }
 
@@ -25,9 +28,10 @@ fn can_do_markdown_to_html_simple() {
 fn doesnt_highlight_code_block_with_highlighting_off() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    context.highlight_code = false;
-    let res = markdown_to_html("```\n$ gutenberg server\n```", &context).unwrap();
+    let mut config = Config::default();
+    config.highlight_code = false;
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("```\n$ gutenberg server\n```", &context).unwrap();
     assert_eq!(
         res.0,
         "<pre><code>$ gutenberg server\n</code></pre>\n"
@@ -38,8 +42,9 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
 fn can_highlight_code_block_no_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
         res.0,
         "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">$ ping\n</span></pre>"
@@ -50,8 +55,9 @@ fn can_highlight_code_block_no_lang() {
 fn can_highlight_code_block_with_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("```python\nlist.append(1)\n```", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("```python\nlist.append(1)\n```", &context).unwrap();
     assert_eq!(
         res.0,
         "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list.</span><span style=\"background-color:#2b303b;color:#bf616a;\">append</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">(</span><span style=\"background-color:#2b303b;color:#d08770;\">1</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">)\n</span></pre>"
@@ -62,8 +68,9 @@ fn can_highlight_code_block_with_lang() {
 fn can_higlight_code_block_with_unknown_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("```yolo\nlist.append(1)\n```", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("```yolo\nlist.append(1)\n```", &context).unwrap();
     // defaults to plain text
     assert_eq!(
         res.0,
@@ -74,8 +81,9 @@ fn can_higlight_code_block_with_unknown_lang() {
 #[test]
 fn can_render_shortcode() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html(r#"
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"
 Hello
 
 {{ youtube(id="ub36ffWAqgQ") }}
@@ -87,7 +95,8 @@ Hello
 #[test]
 fn can_render_shortcode_with_markdown_char_in_args_name() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let input = vec![
         "name",
         "na_me",
@@ -95,7 +104,7 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
         "n1",
     ];
     for i in input {
-        let res = markdown_to_html(&format!("{{{{ youtube(id=\"hey\", {}=1) }}}}", i), &context).unwrap();
+        let res = render_content(&format!("{{{{ youtube(id=\"hey\", {}=1) }}}}", i), &context).unwrap();
         assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/hey""#));
     }
 }
@@ -103,7 +112,8 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
 #[test]
 fn can_render_shortcode_with_markdown_char_in_args_value() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let input = vec![
         "ub36ffWAqgQ-hey",
         "ub36ffWAqgQ_hey",
@@ -112,7 +122,7 @@ fn can_render_shortcode_with_markdown_char_in_args_value() {
         "ub36ffWAqgQ#hey",
     ];
     for i in input {
-        let res = markdown_to_html(&format!("{{{{ youtube(id=\"{}\") }}}}", i), &context).unwrap();
+        let res = render_content(&format!("{{{{ youtube(id=\"{}\") }}}}", i), &context).unwrap();
         assert!(res.0.contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i)));
     }
 }
@@ -126,12 +136,13 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
         "quo_te",
         "qu_o_te",
     ];
+    let config = Config::default();
 
     for i in input {
         tera.add_raw_template(&format!("shortcodes/{}.html", i), "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
-        let context = Context::new(&tera, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+        let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
-        let res = markdown_to_html(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context).unwrap();
+        let res = render_content(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context).unwrap();
         println!("{:?}", res);
         assert!(res.0.contains("<blockquote>hey - Bob</blockquote>"));
     }
@@ -157,9 +168,10 @@ Here is another paragraph.
 ";
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
-    let context = Context::new(&tera, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
-    let res = markdown_to_html(markdown_string, &context).unwrap();
+    let res = render_content(markdown_string, &context).unwrap();
     println!("{:?}", res);
     assert_eq!(res.0, expected);
 }
@@ -189,9 +201,10 @@ Here is another paragraph.
 ";
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
-    let context = Context::new(&tera, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
-    let res = markdown_to_html(markdown_string, &context).unwrap();
+    let res = render_content(markdown_string, &context).unwrap();
     println!("{:?}", res);
     assert_eq!(res.0, expected);
 }
@@ -199,8 +212,9 @@ Here is another paragraph.
 #[test]
 fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html(r#"
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"
 Hello
 
 {{ youtube(id="ub36ffWAqgQ") }}
@@ -222,18 +236,12 @@ Hello
 }
 
 #[test]
-fn errors_if_unterminated_shortcode() {
+fn doesnt_render_ignored_shortcodes() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html(r#"{{ youtube(id="w7Ft2ym_a"#, &context);
-    assert!(res.is_err());
-}
-
-#[test]
-fn doesnt_render_shortcode_in_code_block() {
-    let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html(r#"```{{ youtube(id="w7Ft2ymGmfc") }}```"#, &context).unwrap();
+    let mut config = Config::default();
+    config.highlight_code = false;
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"```{{/* youtube(id="w7Ft2ymGmfc") */}}```"#, &context).unwrap();
     assert_eq!(res.0, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
 }
 
@@ -243,23 +251,25 @@ fn can_render_shortcode_with_body() {
     tera.extend(&GUTENBERG_TERA).unwrap();
     tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author }}</blockquote>").unwrap();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
-    let res = markdown_to_html(r#"
+    let res = render_content(r#"
 Hello
 {% quote(author="Keats") %}
 A quote
 {% end %}
     "#, &context).unwrap();
-    assert_eq!(res.0, "<p>Hello\n</p><blockquote>A quote - Keats</blockquote>");
+    assert_eq!(res.0, "<p>Hello</p>\n<blockquote>A quote - Keats</blockquote>\n");
 }
 
 #[test]
 fn errors_rendering_unknown_shortcode() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("{{ hello(flash=true) }}", &context);
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("{{ hello(flash=true) }}", &context);
     assert!(res.is_err());
 }
 
@@ -268,8 +278,9 @@ fn can_make_valid_relative_link() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
     let tera_ctx = Tera::default();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks, InsertAnchor::None);
-    let res = markdown_to_html(
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
+    let res = render_content(
         r#"[rel link](./pages/about.md), [abs link](https://vincent.is/about)"#,
         &context
     ).unwrap();
@@ -284,8 +295,9 @@ fn can_make_relative_links_with_anchors() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
     let tera_ctx = Tera::default();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks, InsertAnchor::None);
-    let res = markdown_to_html(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
+    let res = render_content(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
 
     assert!(
         res.0.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
@@ -296,8 +308,9 @@ fn can_make_relative_links_with_anchors() {
 fn errors_relative_link_inexistant() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("[rel link](./pages/about.md)", &context);
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("[rel link](./pages/about.md)", &context);
     assert!(res.is_err());
 }
 
@@ -305,8 +318,9 @@ fn errors_relative_link_inexistant() {
 fn can_add_id_to_headers() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html(r#"# Hello"#, &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"# Hello"#, &context).unwrap();
     assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n");
 }
 
@@ -314,16 +328,18 @@ fn can_add_id_to_headers() {
 fn can_add_id_to_headers_same_slug() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("# Hello\n# Hello", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# Hello\n# Hello", &context).unwrap();
     assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
 }
 
 #[test]
 fn can_insert_anchor_left() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::Left);
-    let res = markdown_to_html("# Hello", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
         res.0,
         "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
@@ -333,8 +349,9 @@ fn can_insert_anchor_left() {
 #[test]
 fn can_insert_anchor_right() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::Right);
-    let res = markdown_to_html("# Hello", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Right);
+    let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
         res.0,
         "<h1 id=\"hello\">Hello<a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
@@ -345,8 +362,9 @@ fn can_insert_anchor_right() {
 #[test]
 fn can_insert_anchor_with_exclamation_mark() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::Left);
-    let res = markdown_to_html("# Hello!", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let res = render_content("# Hello!", &context).unwrap();
     assert_eq!(
         res.0,
         "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
@@ -357,8 +375,9 @@ fn can_insert_anchor_with_exclamation_mark() {
 #[test]
 fn can_insert_anchor_with_link() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::Left);
-    let res = markdown_to_html("## [](#xresources)Xresources", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let res = render_content("## [](#xresources)Xresources", &context).unwrap();
     assert_eq!(
         res.0,
         "<h2 id=\"xresources\"><a class=\"gutenberg-anchor\" href=\"#xresources\" aria-label=\"Anchor link for: xresources\">🔗</a>\nXresources</h2>\n"
@@ -368,8 +387,9 @@ fn can_insert_anchor_with_link() {
 #[test]
 fn can_insert_anchor_with_other_special_chars() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::Left);
-    let res = markdown_to_html("# Hello*_()", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let res = render_content("# Hello*_()", &context).unwrap();
     assert_eq!(
         res.0,
         "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
@@ -379,16 +399,16 @@ fn can_insert_anchor_with_other_special_chars() {
 #[test]
 fn can_make_toc() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(
+    let config = Config::default();
+    let context = RenderContext::new(
         &GUTENBERG_TERA,
-        true,
-        "base16-ocean-dark".to_string(),
+        &config,
         "https://mysite.com/something",
         &permalinks_ctx,
         InsertAnchor::Left
     );
 
-    let res = markdown_to_html(r#"
+    let res = render_content(r#"
 # Header 1
 
 ## Header 2
@@ -408,8 +428,9 @@ fn can_make_toc() {
 #[test]
 fn can_understand_backtick_in_titles() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("# `Hello`", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# `Hello`", &context).unwrap();
     assert_eq!(
         res.0,
         "<h1 id=\"hello\"><code>Hello</code></h1>\n"
@@ -419,8 +440,9 @@ fn can_understand_backtick_in_titles() {
 #[test]
 fn can_understand_backtick_in_paragraphs() {
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&GUTENBERG_TERA, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    let res = markdown_to_html("Hello `world`", &context).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("Hello `world`", &context).unwrap();
     assert_eq!(
         res.0,
         "<p>Hello <code>world</code></p>\n"

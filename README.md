@@ -52,7 +52,7 @@ If you want a feature added or modified, please open an issue to discuss it befo
 Syntax highlighting depends on submodules so ensure you load them first:
 
 ```bash
-$ git submodule update --init 
+$ git submodule update --init
 ```
 
 Gutenberg only works with syntaxes in the `.sublime-syntax` format. If your syntax
@@ -75,7 +75,7 @@ You can check for any updates to the current packages by running:
 $ git submodule update --remote --merge
 ```
 
-And finally from the root of the components/rendering crate run the following command:
+And finally from the root of the components/highlighting crate run the following command:
 
 ```bash
 $ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump ../../sublime_syntaxes/nonewlines.packdump

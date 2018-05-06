@@ -5,8 +5,6 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
 tera = "0.11"
-regex = "0.2"
-lazy_static = "1"
 syntect = "2"
 pulldown-cmark = "0"
 slug = "0.1"

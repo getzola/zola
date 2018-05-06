@@ -90,7 +90,8 @@ fn render_shortcode(name: String, args: Map<String, Value>, tera: &Tera, config:
         context.insert(key, value);
     }
     if let Some(ref b) = body {
-        context.insert("body", b);
+        // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
+        context.insert("body", b.trim_right());
     }
     context.insert("config", config);
     let tpl_name = format!("shortcodes/{}.html", name);
@@ -99,16 +100,25 @@ fn render_shortcode(name: String, args: Map<String, Value>, tera: &Tera, config:
 }
 
 pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<String> {
-    // Don't do anything if there is nothing like a shortcode in the content
-    if !content.contains("{{") && !content.contains("{%") {
-        return Ok(content.to_string());
-    }
-
     let mut res = String::with_capacity(content.len());
 
     let mut pairs = match ContentParser::parse(Rule::page, content) {
         Ok(p) => p,
-        Err(_) => panic!("TODO"),   // TODO: error handling
+        Err(e) => {
+            let fancy_e = e.renamed_rules(|rule| {
+                match *rule {
+                    Rule::int => "an integer".to_string(),
+                    Rule::float => "a float".to_string(),
+                    Rule::string => "a string".to_string(),
+                    Rule::literal => "a literal (int, float, string, bool)".to_string(),
+                    Rule::array => "an array".to_string(),
+                    Rule::kwarg => "a keyword argument".to_string(),
+                    Rule::ident => "an identifier".to_string(),
+                    _ => format!("TODO error: {:?}", rule).to_string(),
+                }
+            });
+            bail!("{}", fancy_e);
+        },
     };
 
     // We have at least a `page` pair
@@ -332,5 +342,11 @@ Hello World
         tera.add_raw_template("shortcodes/youtube.html", "{{body}}").unwrap();
         let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera, &Config::default()).unwrap();
         assert_eq!(res, "Body\n Hey!");
+    }
+
+    #[test]
+    fn errors_on_unterminated_shortcode() {
+        let res = render_shortcodes("{{ youtube(", &Tera::default(), &Config::default());
+        assert!(res.is_err());
     }
 }
