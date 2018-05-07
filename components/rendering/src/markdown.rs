@@ -30,10 +30,15 @@ fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
     find_anchor(anchors, name, level + 1)
 }
 
+fn is_colocated_asset_link(link: &str) -> bool {
+    !link.contains("/")  // http://, ftp://, ../ etc
+        && !link.starts_with("mailto:")
+}
+
 
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(String, Vec<Header>)> {
     // the rendered html
-    let mut html = String::new();
+    let mut html = String::with_capacity(content.len());
     // Set while parsing
     let mut error = None;
 
@@ -104,29 +109,37 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     Event::Html(Owned("</pre>".to_string()))
                 },
                 // Need to handle relative links
-                Event::Start(Tag::Link(ref link, ref title)) => {
-                    if in_header {
-                        if !title.is_empty() {
-                            temp_header.push(&format!("<a href=\"{}\" title=\"{}\">", link, title));
-                        } else {
-                            temp_header.push(&format!("<a href=\"{}\">", link));
-                        }
-                        return Event::Html(Owned(String::new()));
-                    }
-
-                    if link.starts_with("./") {
-                        match resolve_internal_link(link, context.permalinks) {
-                            Ok(url) => {
-                                return Event::Start(Tag::Link(Owned(url), title.clone()));
-                            },
+                Event::Start(Tag::Link(link, title)) => {
+                    // A few situations here:
+                    // - it could be a relative link (starting with `./`)
+                    // - it could be a link to a co-located asset
+                    // - it could be a normal link
+                    // - any of those can be in a header or not: if it's in a header we need to append to a string
+                    let fixed_link = if link.starts_with("./") {
+                        match resolve_internal_link(&link, context.permalinks) {
+                            Ok(url) => url,
                             Err(_) => {
                                 error = Some(format!("Relative link {} not found.", link).into());
                                 return Event::Html(Owned(String::new()));
                             }
+                        }
+                    } else if is_colocated_asset_link(&link) {
+                        format!("{}{}", context.current_page_permalink, link)
+                    } else {
+                        link.to_string()
+                    };
+
+                    if in_header {
+                        let html = if title.is_empty() {
+                            format!("<a href=\"{}\">", fixed_link)
+                        } else {
+                            format!("<a href=\"{}\" title=\"{}\">", fixed_link, title)
                         };
+                        temp_header.push(&html);
+                        return Event::Html(Owned(String::new()));
                     }
 
-                    Event::Start(Tag::Link(link.clone(), title.clone()))
+                    Event::Start(Tag::Link(Owned(fixed_link), title))
                 },
                 Event::End(Tag::Link(_, _)) => {
                     if in_header {
