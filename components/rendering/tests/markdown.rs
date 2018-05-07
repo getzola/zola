@@ -377,10 +377,10 @@ fn can_insert_anchor_with_link() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
-    let res = render_content("## [](#xresources)Xresources", &context).unwrap();
+    let res = render_content("## [Rust](https://rust-lang.org)", &context).unwrap();
     assert_eq!(
         res.0,
-        "<h2 id=\"xresources\"><a class=\"gutenberg-anchor\" href=\"#xresources\" aria-label=\"Anchor link for: xresources\">🔗</a>\nXresources</h2>\n"
+        "<h2 id=\"rust\"><a class=\"gutenberg-anchor\" href=\"#rust\" aria-label=\"Anchor link for: rust\">🔗</a>\n<a href=\"https://rust-lang.org\">Rust</a></h2>\n"
     );
 }
 
@@ -446,5 +446,30 @@ fn can_understand_backtick_in_paragraphs() {
     assert_eq!(
         res.0,
         "<p>Hello <code>world</code></p>\n"
+    );
+}
+
+// https://github.com/Keats/gutenberg/issues/297
+#[test]
+fn can_understand_links_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# [Rust](https://rust-lang.org)", &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<h1 id=\"rust\"><a href=\"https://rust-lang.org\">Rust</a></h1>\n"
+    );
+}
+
+#[test]
+fn can_understand_link_with_title_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# [Rust](https://rust-lang.org \"Rust homepage\")", &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<h1 id=\"rust\"><a href=\"https://rust-lang.org\" title=\"Rust homepage\">Rust</a></h1>\n"
     );
 }

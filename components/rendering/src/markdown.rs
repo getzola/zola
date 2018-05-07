@@ -67,10 +67,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                         let id = find_anchor(&anchors, slugify(&text), 0);
                         anchors.push(id.clone());
                         // update the header and add it to the list
-                        temp_header.id = id.clone();
+                        temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
+                        temp_header.id = id;
                         // += as we might have some <code> or other things already there
                         temp_header.title += &text;
-                        temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
                         header_created = true;
                         return Event::Html(Owned(String::new()));
                     }
@@ -87,8 +87,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                 },
                 Event::Start(Tag::CodeBlock(ref info)) => {
                     if !context.config.highlight_code {
-                        return Event::Html(Owned("<pre><code>".to_owned()));
+                        return Event::Html(Owned("<pre><code>".to_string()));
                     }
+
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
                     highlighter = Some(get_highlighter(&theme, info));
                     let snippet = start_coloured_html_snippet(theme);
@@ -96,17 +97,23 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                 },
                 Event::End(Tag::CodeBlock(_)) => {
                     if !context.config.highlight_code {
-                        return Event::Html(Owned("</code></pre>\n".to_owned()))
+                        return Event::Html(Owned("</code></pre>\n".to_string()))
                     }
                     // reset highlight and close the code block
                     highlighter = None;
-                    Event::Html(Owned("</pre>".to_owned()))
+                    Event::Html(Owned("</pre>".to_string()))
                 },
                 // Need to handle relative links
                 Event::Start(Tag::Link(ref link, ref title)) => {
                     if in_header {
-                        return Event::Html(Owned("".to_owned()));
+                        if !title.is_empty() {
+                            temp_header.push(&format!("<a href=\"{}\" title=\"{}\">", link, title));
+                        } else {
+                            temp_header.push(&format!("<a href=\"{}\">", link));
+                        }
+                        return Event::Html(Owned(String::new()));
                     }
+
                     if link.starts_with("./") {
                         match resolve_internal_link(link, context.permalinks) {
                             Ok(url) => {
@@ -114,7 +121,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                             },
                             Err(_) => {
                                 error = Some(format!("Relative link {} not found.", link).into());
-                                return Event::Html(Owned("".to_string()));
+                                return Event::Html(Owned(String::new()));
                             }
                         };
                     }
@@ -123,10 +130,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                 },
                 Event::End(Tag::Link(_, _)) => {
                     if in_header {
-                        return Event::Html(Owned("".to_owned()));
+                        temp_header.push("</a>");
+                        return Event::Html(Owned(String::new()));
                     }
                     event
-                }
+                },
                 Event::Start(Tag::Code) => {
                     if in_header {
                         temp_header.push("<code>");
