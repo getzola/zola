@@ -108,7 +108,15 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     highlighter = None;
                     Event::Html(Owned("</pre>".to_string()))
                 },
-                // Need to handle relative links
+                Event::Start(Tag::Image(src, title)) => {
+                    if is_colocated_asset_link(&src) {
+                        return Event::Start(
+                            Tag::Image(Owned(format!("{}{}", context.current_page_permalink, src)), title)
+                        );
+                    }
+
+                    Event::Start(Tag::Link(src, title))
+                },
                 Event::Start(Tag::Link(link, title)) => {
                     // A few situations here:
                     // - it could be a relative link (starting with `./`)

@@ -492,9 +492,8 @@ fn can_make_valid_relative_link_in_header() {
     );
 }
 
-
 #[test]
-fn can_make_permalinks_with_colocated_assets() {
+fn can_make_permalinks_with_colocated_assets_for_link() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
@@ -502,5 +501,17 @@ fn can_make_permalinks_with_colocated_assets() {
     assert_eq!(
         res.0,
         "<p><a href=\"https://vincent.is/about/image.jpg\">an image</a></p>\n"
+    );
+}
+
+#[test]
+fn can_make_permalinks_with_colocated_assets_for_image() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("![alt text](image.jpg)", &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<p><img src=\"https://vincent.is/about/image.jpg\" alt=\"alt text\" /></p>\n"
     );
 }
