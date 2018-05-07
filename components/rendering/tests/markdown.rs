@@ -473,3 +473,34 @@ fn can_understand_link_with_title_in_header() {
         "<h1 id=\"rust\"><a href=\"https://rust-lang.org\" title=\"Rust homepage\">Rust</a></h1>\n"
     );
 }
+
+#[test]
+fn can_make_valid_relative_link_in_header() {
+    let mut permalinks = HashMap::new();
+    permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about/".to_string());
+    let tera_ctx = Tera::default();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
+    let res = render_content(
+        r#" # [rel link](./pages/about.md)"#,
+        &context
+    ).unwrap();
+
+    assert_eq!(
+        res.0,
+        "<h1 id=\"rel-link\"><a href=\"https://vincent.is/about/\">rel link</a></h1>\n"
+    );
+}
+
+
+#[test]
+fn can_make_permalinks_with_colocated_assets() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("[an image](image.jpg)", &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<p><a href=\"https://vincent.is/about/image.jpg\">an image</a></p>\n"
+    );
+}
