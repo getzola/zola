@@ -33,6 +33,7 @@ use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
+use utils::net::get_available_port;
 use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::{SortBy, InsertAnchor};
@@ -65,7 +66,8 @@ pub struct Site {
     pub pages: HashMap<PathBuf, Page>,
     pub sections: HashMap<PathBuf, Section>,
     pub tera: Tera,
-    live_reload: bool,
+    // the live reload port to be used if there is one
+    pub live_reload: Option<u16>,
     pub output_path: PathBuf,
     pub static_path: PathBuf,
     pub tags: Option<Taxonomy>,
@@ -113,7 +115,7 @@ impl Site {
             tera,
             pages: HashMap::new(),
             sections: HashMap::new(),
-            live_reload: false,
+            live_reload: None,
             output_path: path.join("public"),
             static_path: path.join("static"),
             tags: None,
@@ -129,9 +131,8 @@ impl Site {
         self.base_path.join("content").join("_index.md")
     }
 
-    /// What the function name says
     pub fn enable_live_reload(&mut self) {
-        self.live_reload = true;
+        self.live_reload = get_available_port();
     }
 
     /// Get all the orphan (== without section) pages in the site
@@ -413,10 +414,10 @@ impl Site {
 
     /// Inject live reload script tag if in live reload mode
     fn inject_livereload(&self, html: String) -> String {
-        if self.live_reload {
+        if let Some(port) = self.live_reload {
             return html.replace(
                 "</body>",
-                r#"<script src="/livereload.js?port=1112&mindelay=10"></script></body>"#
+                &format!(r#"<script src="/livereload.js?port={}&mindelay=10"></script></body>"#, port)
             );
         }
 

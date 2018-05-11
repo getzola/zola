@@ -127,7 +127,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
     // Sass support is optional so don't make it an error to no have a sass folder
     let _ = watcher.watch("sass/", RecursiveMode::Recursive);
 
-    let ws_address = format!("{}:{}", interface, "1112");
+    let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
 
     // Start a webserver that serves the `output_dir` directory
     let mut mount = Mount::new();

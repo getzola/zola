@@ -27,7 +27,7 @@ pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: &Optio
             .map_err(|e| e.into());
     }
 
-    if let &Some(ref t) = theme {
+    if let Some(ref t) = *theme {
         return tera
             .render(&format!("{}/templates/{}", t, name), context)
             .map_err(|e| e.into());

@@ -4,6 +4,7 @@
 ## 0.4.0 (unreleased)
 
 - Fix `serve` not working with the config flag
+- Websocket port on `live` will not get the first available port instead of a fixed one
 
 ## 0.3.4 (2018-06-22)
 
