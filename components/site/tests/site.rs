@@ -197,7 +197,7 @@ fn can_build_site_with_live_reload() {
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
     // no live reload code
-    assert!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"));
+    assert!(file_contains!(public, "index.html", "/livereload.js"));
 
     // the summary anchor link has been created
     assert!(file_contains!(public, "posts/python/index.html", r#"<a name="continue-reading"></a>"#));

@@ -2,8 +2,9 @@
 
 ## 0.4.0 (unreleased)
 
-- Add CMake syntax highlighting
+- Add CMake syntax highlighting and update other syntaxes
 - Fix `serve` not working with the config flag
+- Websocket port on `live` will not get the first available port instead of a fixed one
 
 ## 0.3.3 (2018-03-29)
 
