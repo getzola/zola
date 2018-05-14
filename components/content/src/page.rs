@@ -14,7 +14,7 @@ use utils::fs::{read_file, find_related_assets};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
-use rendering::{Context, Header, markdown_to_html};
+use rendering::{RenderContext, Header, render_content};
 
 use file_info::FileInfo;
 
@@ -162,21 +162,23 @@ impl Page {
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, anchor_insert: InsertAnchor) -> Result<()> {
-        let context = Context::new(
+        let context = RenderContext::new(
             tera,
-            config.highlight_code,
-            config.highlight_theme.clone(),
+            config,
             &self.permalink,
             permalinks,
             anchor_insert
         );
-        let res = markdown_to_html(&self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1), &context)?;
+        let res = render_content(
+            &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),
+            &context
+        )?;
         self.content = res.0;
         self.toc = res.1;
         if self.raw_content.contains("<!-- more -->") {
             self.summary = Some({
                 let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, &context)?.0
+                render_content(summary, &context)?.0
             })
         }
 

@@ -1,7 +1,5 @@
-use tera::{Context as TeraContext};
+use tera::{Tera, Context as TeraContext};
 use front_matter::InsertAnchor;
-
-use context::Context;
 
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
@@ -50,16 +48,16 @@ impl TempHeader {
     }
 
     /// Transform all the information we have about this header into the HTML string for it
-    pub fn to_string(&self, context: &Context) -> String {
-        let anchor_link = if context.should_insert_anchor() {
+    pub fn to_string(&self, tera: &Tera, insert_anchor: InsertAnchor) -> String {
+        let anchor_link = if insert_anchor != InsertAnchor::None {
             let mut c = TeraContext::new();
             c.add("id", &self.id);
-            context.tera.render("anchor-link.html", &c).unwrap()
+            tera.render("anchor-link.html", &c).unwrap()
         } else {
             String::new()
         };
 
-        match context.insert_anchor {
+        match insert_anchor {
             InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl=self.level, t=self.title, id=self.id),
             InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl=self.level, a=anchor_link, t=self.title, id=self.id),
             InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl=self.level, a=anchor_link, t=self.title, id=self.id),

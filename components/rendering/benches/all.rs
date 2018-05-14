@@ -3,13 +3,15 @@ extern crate test;
 extern crate tera;
 
 extern crate rendering;
+extern crate config;
 extern crate front_matter;
 
 use std::collections::HashMap;
 
 use tera::Tera;
-use rendering::{Context, markdown_to_html};
+use rendering::{RenderContext, render_content, render_shortcodes};
 use front_matter::InsertAnchor;
+use config::Config;
 
 static CONTENT: &'static str = r#"
 # Modus cognitius profanam ne duae virtutis mundi
@@ -84,17 +86,43 @@ if __name__ == "__main__":
 "#;
 
 #[bench]
-fn bench_markdown_to_html_with_highlighting(b: &mut test::Bencher) {
-    let tera_ctx = Tera::default();
+fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
+    let mut tera = Tera::default();
+    tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, true, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    b.iter(|| markdown_to_html(CONTENT, &context));
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+    b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
 #[bench]
-fn bench_markdown_to_html_without_highlighting(b: &mut test::Bencher) {
-    let tera_ctx = Tera::default();
+fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
+    let mut tera = Tera::default();
+    tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let permalinks_ctx = HashMap::new();
-    let context = Context::new(&tera_ctx, false, "base16-ocean-dark".to_string(), "", &permalinks_ctx, InsertAnchor::None);
-    b.iter(|| markdown_to_html(CONTENT, &context));
+    let mut config = Config::default();
+    config.highlight_code = false;
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+    b.iter(|| render_content(CONTENT, &context).unwrap());
 }
+
+#[bench]
+fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
+    let tera = Tera::default();
+    let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
+    let mut config = Config::default();
+    config.highlight_code = false;
+    let permalinks_ctx = HashMap::new();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    b.iter(|| render_content(&content2, &context).unwrap());
+}
+
+#[bench]
+fn bench_render_shortcodes_one_present(b: &mut test::Bencher) {
+    let mut tera = Tera::default();
+    tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
+
+    b.iter(|| render_shortcodes(CONTENT, &tera, &Config::default()));
+}
+
