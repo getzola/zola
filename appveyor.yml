@@ -1,29 +1,24 @@
 # Based on the "trust" template v0.1.1
 # https://github.com/japaric/trust/tree/v0.1.1
 
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 environment:
   global:
-  # TODO This is the Rust channel that build jobs will use by default but can be
-  # overridden on a case by case basis down below
     RUST_VERSION: stable
-
-    # TODO Update this to match the name of your project.
     CRATE_NAME: gutenberg
 
   matrix:
     # GNU
-    - channel: stable
-      target: x86_64-pc-windows-msvc
-      TOOLCHAIN: msvc
-      PLATFORM: x86_64
+    - target: x86_64-pc-windows-msvc
+      RUST_VERSION: 1.24.0
+    - target: x86_64-pc-windows-msvc
+      RUST_VERSION: 1.25.0
+    - target: x86_64-pc-windows-msvc
+      RUST_VERSION: 1.26.0
 
 install:
-  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "i686" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat"
-  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86_amd64
-  - if "%TOOLCHAIN%" == "msys" set PATH=C:\msys64\mingw%MSYS_BITS%\bin;C:\msys64\usr\bin;%PATH%
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/
   - rustup-init.exe -y --default-host %TARGET% --default-toolchain %RUST_VERSION%
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
