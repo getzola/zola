@@ -128,6 +128,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "an-old-url/old-page/index.html"));
     assert!(file_contains!(public, "an-old-url/old-page/index.html", "something-else"));
 
+    // html aliases work
+    assert!(file_exists!(public, "an-old-url/an-old-alias.html"));
+    assert!(file_contains!(public, "an-old-url/an-old-alias.html", "something-else"));
+
     // redirect_to works
     assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
     assert!(file_contains!(public, "posts/tutorials/devops/index.html", "docker"));
