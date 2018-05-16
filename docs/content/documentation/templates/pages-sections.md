@@ -63,7 +63,7 @@ extra: HashMap<String, Any>;
 pages: Array<Pages>;
 // Direct subsections to this section, sorted by subsections weight
 subsections: Array<Section>;
-// Naive word count, will not work for languages without whitespace
+// Unicode word count
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;
