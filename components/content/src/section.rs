@@ -105,7 +105,8 @@ impl Section {
             permalinks,
             self.meta.insert_anchor_links,
         );
-        let res = render_content(&self.raw_content, &context)?;
+        let res = render_content(&self.raw_content, &context)
+            .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.0;
         self.toc = res.1;
         Ok(())
