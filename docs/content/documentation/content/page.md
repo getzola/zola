@@ -23,7 +23,7 @@ description = ""
 # The date of the post.
 # 2 formats are allowed: YYYY-MM-DD (2012-10-02) and RFC3339 (2002-10-02T15:00:00Z)
 # Do not wrap dates in quotes, the line below only indicates that there is no default date
-date = 
+date =
 
 # A draft page will not be present in prev/next pagination
 draft = false
@@ -50,12 +50,17 @@ order = 0
 # The weight as defined in the Section page
 weight = 0
 
-# Use aliases if you are moving content but want to redirect previous URLs to the 
-# current one. This takes an array of path, not URLs.
+# Use aliases if you are moving content but want to redirect previous URLs to the
+# current one. Each element in the array of aliases may take one of two forms:
+#   * "some/alias/path", which will generate "some/alias/path/index.html"
+#   * "some/alias/path.html", which will generate "some/alias/path.html"
+#
+# The former is useful if your previous site had the form "example.com/some/alias/path",
+# the latter is useful if your previous site had the form "example.com/some/alias/path.html"
 aliases = []
 
 # Whether the page should be in the search index. This is only used if
-# `build_search_index` is set to true in the config and the parent section 
+# `build_search_index` is set to true in the config and the parent section
 # hasn't set `in_search_index` to false in its front-matter
 in_search_index = true
 
@@ -71,7 +76,7 @@ Some content
 
 ## Summary
 
-You can ask Gutenberg to create a summary if you only want to show the first 
+You can ask Gutenberg to create a summary if you only want to show the first
 paragraph of each page in a list for example.
 
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
@@ -79,6 +84,6 @@ where you want the summary to end and the content up to that point will be also
 available separately in the
 [template](./documentation/templates/pages-sections.md#page-variables).
 
-An anchor link to this position named `continue-reading` is created so you can link 
+An anchor link to this position named `continue-reading` is created so you can link
 directly to it if needed for example:
 `<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`
