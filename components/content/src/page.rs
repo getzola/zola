@@ -172,13 +172,14 @@ impl Page {
         let res = render_content(
             &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),
             &context
-        )?;
+        ).chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.0;
         self.toc = res.1;
         if self.raw_content.contains("<!-- more -->") {
             self.summary = Some({
                 let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                render_content(summary, &context)?.0
+                render_content(summary, &context)
+                    .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?.0
             })
         }
 
