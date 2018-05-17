@@ -45,8 +45,6 @@ kwarg   = { ident ~ "=" ~ (literal | array) }
 kwargs  = _{ kwarg ~ ("," ~ kwarg )* }
 sc_def  = _{ ident ~ "(" ~ kwargs* ~ ")" }
 
-//sc_start = _{ "{{/*" | "{{" | "{%/*" | "{%" }
-
 inline_shortcode         = !{ "{{" ~ sc_def ~ "}}" }
 ignored_inline_shortcode = !{ "{{/*" ~ sc_def ~ "*/}}" }
 
@@ -58,9 +56,9 @@ ignored_sc_body_end   = !{ "{%/*" ~ "end" ~ "*/%}" }
 shortcode_with_body         = !{ sc_body_start ~ text_in_body_sc ~ sc_body_end }
 ignored_shortcode_with_body = !{ ignored_sc_body_start ~ text_in_ignored_body_sc ~ ignored_sc_body_end }
 
-text_in_body_sc         = ${ (!("{%") ~ any)+ }
-text_in_ignored_body_sc = ${ (!("{%/*") ~ any)+ }
-text                    = ${ (!("{{/*" | "{{" | "{%/*" | "{%") ~ any)+ }
+text_in_body_sc         = ${ (!(sc_body_end) ~ any)+ }
+text_in_ignored_body_sc = ${ (!(ignored_sc_body_end) ~ any)+ }
+text                    = ${ (!(inline_shortcode | ignored_inline_shortcode | sc_body_start | ignored_sc_body_start) ~ any)+ }
 
 content = _{
     ignored_inline_shortcode |
