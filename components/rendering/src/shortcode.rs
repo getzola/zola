@@ -7,7 +7,7 @@ use config::Config;
 
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file
-// const _GRAMMAR: &str = include_str!("content.pest");
+ const _GRAMMAR: &str = include_str!("content.pest");
 
 #[derive(Parser)]
 #[grammar = "content.pest"]
@@ -114,6 +114,11 @@ pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<
                     Rule::array => "an array".to_string(),
                     Rule::kwarg => "a keyword argument".to_string(),
                     Rule::ident => "an identifier".to_string(),
+                    Rule::inline_shortcode => "an inline shortcode".to_string(),
+                    Rule::ignored_inline_shortcode => "an ignored inline shortcode".to_string(),
+                    Rule::sc_body_start => "the start of a shortcode".to_string(),
+                    Rule::ignored_sc_body_start => "the start of an ignored shortcode".to_string(),
+                    Rule::text => "some text".to_string(),
                     _ => format!("TODO error: {:?}", rule).to_string(),
                 }
             });
@@ -342,11 +347,5 @@ Hello World
         tera.add_raw_template("shortcodes/youtube.html", "{{body}}").unwrap();
         let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera, &Config::default()).unwrap();
         assert_eq!(res, "Body\n Hey!");
-    }
-
-    #[test]
-    fn errors_on_unterminated_shortcode() {
-        let res = render_shortcodes("{{ youtube(", &Tera::default(), &Config::default());
-        assert!(res.is_err());
     }
 }

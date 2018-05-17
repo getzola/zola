@@ -74,14 +74,14 @@ This can also be used to get the permalinks for static assets for example if
 we want to link to the file that is located at `static/css/app.css`:
 
 ```jinja2
-{{ get_url(path="css/app.css") }}
+{{/* get_url(path="css/app.css") */}}
 ```
 
 For assets it is reccommended that you pass `trailing_slash=false` to the `get_url` function. This prevents errors
 when dealing with certain hosting providers. An example is:
 
 ```jinja2
-{{ get_url(path="css/app.css", trailing_slash=false) }}
+{{/* get_url(path="css/app.css", trailing_slash=false) */}}
 ```
 
 In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
@@ -102,6 +102,6 @@ the value should be the same as the one in the front-matter, not the slugified v
 Gets the translation of the given `key`, for the `default_language` or the `language given
 
 ```jinja2
-{{ trans(key="title") }}
-{{ trans(key="title", lang="fr") }}
+{{/* trans(key="title") */}}
+{{/* trans(key="title", lang="fr") */}}
 ```

@@ -11,8 +11,6 @@ environment:
   matrix:
     # GNU
     - target: x86_64-pc-windows-msvc
-      RUST_VERSION: 1.24.0
-    - target: x86_64-pc-windows-msvc
       RUST_VERSION: 1.25.0
     - target: x86_64-pc-windows-msvc
       RUST_VERSION: 1.26.0

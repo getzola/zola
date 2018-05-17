@@ -6,7 +6,7 @@ weight = 40
 While Markdown is good at writing, it isn't great when you need write inline
 HTML to add some styling for example.
 
-To solve this, Gutenberg borrows the concept of [shortcodes](https://codex.wordpress.org/Shortcode_API) 
+To solve this, Gutenberg borrows the concept of [shortcodes](https://codex.wordpress.org/Shortcode_API)
 from WordPress.
 In our case, the shortcode corresponds to a template that is defined in the `templates/shortcodes` directory or a built-in one.
 
@@ -17,10 +17,10 @@ following:
 
 ```jinja2
 <div {% if class %}class="{{class}}"{% endif %}>
-    <iframe 
-        src="https://www.youtube.com/embed/{{id}}{% if autoplay %}?autoplay=1{% endif %}" 
-        webkitallowfullscreen 
-        mozallowfullscreen 
+    <iframe
+        src="https://www.youtube.com/embed/{{id}}{% if autoplay %}?autoplay=1{% endif %}"
+        webkitallowfullscreen
+        mozallowfullscreen
         allowfullscreen>
     </iframe>
 </div>
@@ -34,7 +34,7 @@ That's it, Gutenberg will now recognise this template as a shortcode named `yout
 
 ## Using shortcodes
 
-There are two kinds of shortcodes: 
+There are two kinds of shortcodes:
 
 - ones that do not take a body like the YouTube example above
 - ones that do, a quote for example
@@ -43,7 +43,7 @@ In both cases, their arguments must be named and they will all be passed to the 
 
 Any shortcodes in code blocks will be ignored.
 
-Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the arguments name 
+Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the arguments name
 can only contain numbers, letters and underscores, or in Regex terms the following: `[0-9A-Za-z_]`.
 While theoretically an argument name could be a number, it will not be possible to use it in the template in that case.
 
@@ -64,11 +64,11 @@ calls of the YouTube shortcode.
 ```md
 Here is a YouTube video:
 
-{{ youtube(id="dQw4w9WgXcQ") }}
+{{/* youtube(id="dQw4w9WgXcQ") */}}
 
-{{ youtube(id="dQw4w9WgXcQ", autoplay=true) }}
+{{/* youtube(id="dQw4w9WgXcQ", autoplay=true) */}}
 
-{{ youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") }}
+{{/* youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") */}}
 ```
 
 ### Shortcodes with body
@@ -86,9 +86,9 @@ We could use it in our markup file like so:
 ```md
 As someone said:
 
-{% quote(author="Vincent") %}
+{%/* quote(author="Vincent") */%}
 A quote
-{% end %}
+{%/* end */%}
 ```
 
 The body of the shortcode will be automatically passed down to the rendering context as the `body` variable and needs
@@ -112,11 +112,11 @@ The arguments are:
 Usage example:
 
 ```md
-{{ youtube(id="dQw4w9WgXcQ") }}
+{{/* youtube(id="dQw4w9WgXcQ") */}}
 
-{{ youtube(id="dQw4w9WgXcQ", autoplay=true) }}
+{{/* youtube(id="dQw4w9WgXcQ", autoplay=true) */}}
 
-{{ youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") }}
+{{/* youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") */}}
 ```
 
 Result example:
@@ -134,9 +134,9 @@ The arguments are:
 Usage example:
 
 ```md
-{{ vimeo(id="124313553") }}
+{{/* vimeo(id="124313553") */}}
 
-{{ vimeo(id="124313553", class="vimeo") }}
+{{/* vimeo(id="124313553", class="vimeo") */}}
 ```
 
 Result example:
@@ -145,7 +145,7 @@ Result example:
 
 ### Streamable
 Embed a player for a Streamable video.
- 
+
 The arguments are:
 
 - `id`: the video id (mandatory)
@@ -154,9 +154,9 @@ The arguments are:
 Usage example:
 
 ```md
-{{ streamable(id="2zt0") }}
+{{/* streamable(id="2zt0") */}}
 
-{{ streamable(id="2zt0", class="streamble") }}
+{{/* streamable(id="2zt0", class="streamble") */}}
 ```
 
 Result example:
@@ -164,7 +164,7 @@ Result example:
 {{ streamable(id="2zt0") }}
 
 ### Gist
-Embed a [Github gist]().
+Embed a [Github gist](https://gist.github.com).
 
 The arguments are:
 
@@ -175,9 +175,9 @@ The arguments are:
 Usage example:
 
 ```md
-{{ gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57") }}
+{{/* gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57") */}}
 
-{{ gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57", class="gist") }}
+{{/* gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57", class="gist") */}}
 ```
 
 Result example:
