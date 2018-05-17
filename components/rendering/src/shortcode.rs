@@ -153,14 +153,14 @@ pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<
                 for p2 in p.into_inner() {
                     match p2.as_rule() {
                         Rule::ignored_sc_body_start | Rule::ignored_sc_body_end => {
-                          res.push_str(
-                              &p2.into_span().as_str()
-                                  .replacen("{%/*", "{%", 1)
-                                  .replacen("*/%}", "%}", 1)
-                          );
+                            res.push_str(
+                                &p2.into_span().as_str()
+                                    .replacen("{%/*", "{%", 1)
+                                    .replacen("*/%}", "%}", 1)
+                            );
                         },
                         Rule::text_in_ignored_body_sc => res.push_str(p2.into_span().as_str()),
-                        _ => unreachable!("Got something weird in an ignored shortcode"),
+                        _ => unreachable!("Got something weird in an ignored shortcode: {:?}", p2),
                     }
                 }
             },

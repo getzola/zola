@@ -41,24 +41,23 @@ There are two kinds of shortcodes:
 
 In both cases, their arguments must be named and they will all be passed to the template.
 
-Any shortcodes in code blocks will be ignored.
-
 Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the arguments name
 can only contain numbers, letters and underscores, or in Regex terms the following: `[0-9A-Za-z_]`.
 While theoretically an argument name could be a number, it will not be possible to use it in the template in that case.
 
-Argument values can be of 4 types:
+Argument values can be of 5 types:
 
-- string: surrounded by double quotes `"..."`
+- string: surrounded by double quotes, single quotes or backticks
 - bool: `true` or `false`
 - float: a number with a `.` in it
 - integer: a number without a `.` in it
+- array: an array of any kind of values, except arrays
 
 Malformed values will be silently ignored.
 
 ### Shortcodes without body
 
-On a new line, call the shortcode as if it was a Tera function in a variable block. All the examples below are valid
+Simply call the shortcode as if it was a Tera function in a variable block. All the examples below are valid
 calls of the YouTube shortcode.
 
 ```md
@@ -68,8 +67,11 @@ Here is a YouTube video:
 
 {{/* youtube(id="dQw4w9WgXcQ", autoplay=true) */}}
 
-{{/* youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") */}}
+An inline {{/* youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") */}} shortcode
 ```
+
+Note that if you want to have some content that looks like a shortcode but not have Gutenberg try to render it,
+you will need to escape it by using `{{/*` and `*/}}` instead of `{{` and `}}`.
 
 ### Shortcodes with body
 For example, let's imagine we have the following shortcode `quote.html` template:
@@ -93,6 +95,10 @@ A quote
 
 The body of the shortcode will be automatically passed down to the rendering context as the `body` variable and needs
 to be in a newline.
+
+If you want to have some content that looks like a shortcode but not have Gutenberg try to render it,
+you will need to escape it by using `{%/*` and `*/%}` instead of `{%` and `%}`. You won't need to escape
+anything else until the closing tag.
 
 ## Built-in shortcodes
 
@@ -154,14 +160,14 @@ The arguments are:
 Usage example:
 
 ```md
-{{/* streamable(id="2zt0") */}}
+{{/* streamable(id="92ok4") */}}
 
-{{/* streamable(id="2zt0", class="streamble") */}}
+{{/* streamable(id="92ok4", class="streamble") */}}
 ```
 
 Result example:
 
-{{ streamable(id="2zt0") }}
+{{ streamable(id="92ok4") }}
 
 ### Gist
 Embed a [Github gist](https://gist.github.com).

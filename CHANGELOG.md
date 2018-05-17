@@ -5,6 +5,10 @@
 
 - Fix `serve` not working with the config flag
 - Websocket port on `live` will not get the first available port instead of a fixed one
+- Rewrite markdown rendering to fix all known issues with shortcodes
+- Add array arguments to shortcodes and allow single-quote/backtick strings
+- Co-located assets are now permalinks
+- Words are now counted using unicode rather than whitespaces
 
 ## 0.3.4 (2018-06-22)
 
