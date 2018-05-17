@@ -5,6 +5,7 @@ extern crate errors;
 extern crate tempfile;
 extern crate tera;
 extern crate walkdir;
+extern crate unicode_segmentation;
 
 pub mod fs;
 pub mod site;
