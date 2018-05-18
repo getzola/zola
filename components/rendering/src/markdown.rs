@@ -115,7 +115,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                         );
                     }
 
-                    Event::Start(Tag::Link(src, title))
+                    Event::Start(Tag::Image(src, title))
                 },
                 Event::Start(Tag::Link(link, title)) => {
                     // A few situations here:
