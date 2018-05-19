@@ -32,6 +32,9 @@ are in a `if` statement, we can assume they are optional.
 
 That's it, Gutenberg will now recognise this template as a shortcode named `youtube` (the filename minus the `.html` extension).
 
+The markdown renderer will wrap an inline HTML node like `<a>` or `<span>` into a paragraph. If you want to disable that,
+simply wrap your shortcode in a `div`.
+
 ## Using shortcodes
 
 There are two kinds of shortcodes:

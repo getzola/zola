@@ -96,7 +96,13 @@ fn render_shortcode(name: String, args: Map<String, Value>, tera: &Tera, config:
     context.insert("config", config);
     let tpl_name = format!("shortcodes/{}.html", name);
 
-    tera.render(&tpl_name, &context).chain_err(|| format!("Failed to render {} shortcode", name))
+    let res = tera
+        .render(&tpl_name, &context)
+        .chain_err(|| format!("Failed to render {} shortcode", name))?;
+
+    // We trim left every single line of a shortcode to avoid the accidental
+    // shortcode counted as code block because of 4 spaces left padding
+    Ok(res.lines().map(|s| s.trim_left()).collect())
 }
 
 pub fn render_shortcodes(content: &str, tera: &Tera, config: &Config) -> Result<String> {
