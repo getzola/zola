@@ -515,3 +515,25 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
         "<p><img src=\"https://vincent.is/about/image.jpg\" alt=\"alt text\" /></p>\n"
     );
 }
+
+#[test]
+fn markdown_doesnt_wrap_html_in_paragraph() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"
+Some text
+
+<h1>Helo</h1>
+
+<div>
+<a href="mobx-flow.png">
+        <img src="mobx-flow.png" alt="MobX flow">
+    </a>
+</div>
+    "#, &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<p>Some text</p>\n<h1>Helo</h1>\n<div>\n<a href=\"mobx-flow.png\">\n        <img src=\"mobx-flow.png\" alt=\"MobX flow\">\n    </a>\n</div>\n"
+    );
+}
