@@ -22,14 +22,16 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
-use std::fs::remove_dir_all;
+use std::fs::{File, remove_dir_all};
 use std::path::Path;
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
 use std::thread;
 
 use chrono::prelude::*;
-use iron::{Iron, Request, IronResult, Response, status};
+use iron::{Iron, IronError, Request, IronResult, Response, status, AfterMiddleware};
+use iron::prelude::Chain;
+use iron::headers::ContentType;
 use mount::Mount;
 use staticfile::Static;
 use notify::{Watcher, RecursiveMode, watcher};
@@ -58,6 +60,31 @@ enum ChangeKind {
 // errors
 const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
+struct ErrCatcher;
+
+impl AfterMiddleware for ErrCatcher {
+
+    fn catch(&self, _: &mut Request, err: IronError) -> IronResult<Response> {
+
+        let err_status = err.response.status.unwrap_or(status::InternalServerError);
+
+        // Search for e.g. "static/error/404.html"
+        let err_page = File::open( format!("static/error/{}.html", err_status.to_u16()) );
+
+        if err_page.is_ok() {
+            let mut err_res = Response::with(( err_status, err_page.unwrap() ));
+            err_res.headers.set(ContentType::html());
+
+            return Ok(err_res);
+        }
+
+        // No custom error page, serve default
+        let mut err_res = Response::with(( err_status, format!("Error: {}.", err_status) ));
+        err_res.headers.set(ContentType::plaintext());
+
+        Ok(err_res)
+    }
+}
 
 fn livereload_handler(_: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, LIVE_RELOAD.to_string())))
@@ -133,9 +160,13 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new(output_dir)));
     mount.mount("/livereload.js", livereload_handler);
+
+    let mut chain = Chain::new(mount);
+    chain.link_after(ErrCatcher);
+    
     // Starts with a _ to not trigger the unused lint
     // we need to assign to a variable otherwise it will block
-    let _iron = Iron::new(mount).http(address.as_str())
+    let _iron = Iron::new(chain).http(address.as_str())
         .chain_err(|| "Can't start the webserver")?;
 
     // The websocket for livereload
