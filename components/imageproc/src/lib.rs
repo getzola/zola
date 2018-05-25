@@ -52,8 +52,8 @@ impl ResizeOp {
 
         // Validate args:
         match op {
-            "fitwidth" => if width.is_none() { return Err(format!("op=fitwidth requires a `width` argument").into()) },
-            "fitheight" => if height.is_none() { return Err(format!("op=fitwidth requires a `height` argument").into()) },
+            "fit_width" => if width.is_none() { return Err(format!("op=\"fit_width\" requires a `width` argument").into()) },
+            "fit_height" => if height.is_none() { return Err(format!("op=\"fit_height\" requires a `height` argument").into()) },
             "scale" | "fit" | "fill" => if width.is_none() || height.is_none() {
                 return Err(format!("op={} requires a `width` and `height` argument", op).into())
             },
@@ -62,8 +62,8 @@ impl ResizeOp {
 
         Ok(match op {
             "scale" => Scale(width.unwrap(), height.unwrap()),
-            "fitwidth" => FitWidth(width.unwrap()),
-            "fitheight" => FitHeight(height.unwrap()),
+            "fit_width" => FitWidth(width.unwrap()),
+            "fit_height" => FitHeight(height.unwrap()),
             "fit" => Fit(width.unwrap(), height.unwrap()),
             "fill" => Fill(width.unwrap(), height.unwrap()),
             _ => unreachable!(),
@@ -123,6 +123,7 @@ pub struct ImageOp {
     source: String,
     op: ResizeOp,
     quality: u8,
+    /// Hash of the above parameters
     hash: u64,
     collision: Option<u32>,
 }
@@ -143,7 +144,7 @@ impl ImageOp {
         Ok(Self::new(source, op, quality))
     }
 
-    fn num_colli(&self) -> u32 { self.collision.unwrap_or(0) }
+    fn num_collisions(&self) -> u32 { self.collision.unwrap_or(0) }
 
     fn perform(&self, content_path: &Path, target_path: &Path) -> Result<()> {
         use ResizeOp::*;
@@ -165,24 +166,30 @@ impl ImageOp {
             FitHeight(h) => img.resize(u32::max_value(), h, RESIZE_FILTER),
             Fit(w, h) => img.resize(w, h, RESIZE_FILTER),
             Fill(w, h) => {
-                let fw = img_w as f32 / w as f32;
-                let fh = img_h as f32 / h as f32;
+                let factor_w = img_w as f32 / w as f32;
+                let factor_h = img_h as f32 / h as f32;
 
-                if (fw - fh).abs() <= RATIO_EPSILLION {
-                    // The aspect is similar enough that there's not much point in cropping
+                if (factor_w - factor_h).abs() <= RATIO_EPSILLION {
+                    // If the horizontal and vertical factor is very similar, that means the aspect is similar enough
+                    // that there's not much point in cropping, so just perform a simple scale in this case.
                     img.resize_exact(w, h, RESIZE_FILTER)
                 } else {
                     // We perform the fill such that a crop is performed first and then resize_exact can be used,
                     // which should be cheaper than resizing and then cropping (smaller number of pixels to resize).
-                    let (crop_w, crop_h) = match fw < fh {
-                        true  => (img_w, (fw * h as f32).round() as u32),
-                        false => ((fh * w as f32).round() as u32, img_h),
+
+                    let (crop_w, crop_h) = if factor_w < factor_h {
+                        (img_w, (factor_w * h as f32).round() as u32)
+                    } else {
+                        ((factor_h * w as f32).round() as u32, img_h)
                     };
-                    let (off_w, off_h) = match fw < fh {
-                        true  => (0, (img_h - crop_h) / 2),
-                        false => ((img_w - crop_w) / 2, 0),
+
+                    let (offset_w, offset_h) = if factor_w < factor_h {
+                        (0, (img_h - crop_h) / 2)
+                    } else {
+                        ((img_w - crop_w) / 2, 0)
                     };
-                    img.crop(off_w, off_h, crop_w, crop_h).resize_exact(w, h, RESIZE_FILTER)
+
+                    img.crop(offset_w, offset_h, crop_w, crop_h).resize_exact(w, h, RESIZE_FILTER)
                 }
             },
         };
@@ -204,9 +211,12 @@ pub struct Processor {
     content_path: PathBuf,
     resized_path: PathBuf,
     resized_url: String,
+    /// A map of a ImageOps by their stored hash.
+    /// Note that this cannot be a HashSet, because hashest handles collisions and we don't want that,
+    /// we need to be aware of and handle collisions ourselves.
     img_ops: HashMap<u64, ImageOp>,
-    // Hash collisions go here:
-    img_ops_colls: Vec<ImageOp>,
+    /// Hash collisions go here:
+    img_ops_collisions: Vec<ImageOp>,
 }
 
 impl Processor {
@@ -216,14 +226,15 @@ impl Processor {
             resized_path: static_path.join(RESIZED_SUBDIR),
             resized_url: Self::resized_url(base_url),
             img_ops: HashMap::new(),
-            img_ops_colls: Vec::new(),
+            img_ops_collisions: Vec::new(),
         }
     }
 
     fn resized_url(base_url: &str) -> String {
-        match base_url.ends_with('/') {
-            true  => format!("{}{}", base_url, RESIZED_SUBDIR),
-            false => format!("{}/{}", base_url, RESIZED_SUBDIR),
+        if base_url.ends_with('/') {
+             format!("{}{}", base_url, RESIZED_SUBDIR)
+        } else {
+             format!("{}/{}", base_url, RESIZED_SUBDIR)
         }
     }
 
@@ -236,10 +247,10 @@ impl Processor {
     }
 
     pub fn num_img_ops(&self) -> usize {
-        self.img_ops.len() + self.img_ops_colls.len()
+        self.img_ops.len() + self.img_ops_collisions.len()
     }
 
-    fn insert_with_colls(&mut self, mut img_op: ImageOp) -> u32 {
+    fn insert_with_collisions(&mut self, mut img_op: ImageOp) -> u32 {
         match self.img_ops.entry(img_op.hash) {
             HEntry::Occupied(entry) => if *entry.get() == img_op { return 0; },
             HEntry::Vacant(entry) => {
@@ -249,37 +260,43 @@ impl Processor {
         }
 
         // If we get here, that means a hash collision.
+        // This is detected when there is an ImageOp with the same hash in the `img_ops` map but which is not equal to this one.
+        // To deal with this, all collisions get a (random) sequential ID number.
+
+        // First try to look up this ImageOp in `img_ops_collisions`, maybe we've already seen the same ImageOp
         let mut num = 1;
-        for op in self.img_ops_colls.iter().filter(|op| op.hash == img_op.hash) {
+        for op in self.img_ops_collisions.iter().filter(|op| op.hash == img_op.hash) {
             if *op == img_op {
+                // This is a colliding ImageOp, but we've already seen the very same one, so just return its ID
                 return num;
             } else {
                 num += 1;
             }
         }
 
+        // If we get here, that means this is a new colliding ImageOp and `num` has the next free ID
         if num == 1 {
             self.img_ops.get_mut(&img_op.hash).unwrap().collision = Some(0);
         }
         img_op.collision = Some(num);
-        self.img_ops_colls.push(img_op);
+        self.img_ops_collisions.push(img_op);
         num
     }
 
-    fn op_filename(hash: u64, colli_num: u32) -> String {
+    fn op_filename(hash: u64, num_collisions: u32) -> String {
         // Please keep this in sync with RESIZED_FILENAME
-        assert!(colli_num < 256, "Unexpectedly large number of collisions: {}", colli_num);
-        format!("{:016x}{:02x}.jpg", hash, colli_num)
+        assert!(num_collisions < 256, "Unexpectedly large number of collisions: {}", num_collisions);
+        format!("{:016x}{:02x}.jpg", hash, num_collisions)
     }
 
-    fn op_url(&self, hash: u64, colli_num: u32) -> String {
-        format!("{}/{}", &self.resized_url, Self::op_filename(hash, colli_num))
+    fn op_url(&self, hash: u64, num_collisions: u32) -> String {
+        format!("{}/{}", &self.resized_url, Self::op_filename(hash, num_collisions))
     }
 
     pub fn insert(&mut self, img_op: ImageOp) -> String {
         let hash = img_op.hash;
-        let num_colli = self.insert_with_colls(img_op);
-        self.op_url(hash, num_colli)
+        let num_collisions = self.insert_with_collisions(img_op);
+        self.op_url(hash, num_collisions)
     }
 
     pub fn prune(&self) -> Result<()> {
@@ -291,8 +308,8 @@ impl Processor {
                 let filename = entry_path.file_name().unwrap().to_string_lossy();
                 if let Some(capts) = RESIZED_FILENAME.captures(filename.as_ref()) {
                     let hash = u64::from_str_radix(capts.get(1).unwrap().as_str(), 16).unwrap();
-                    let num_colli = u32::from_str_radix(capts.get(2).unwrap().as_str(), 16).unwrap();
-                    if num_colli > 0 || !self.img_ops.contains_key(&hash) {
+                    let num_collisions = u32::from_str_radix(capts.get(2).unwrap().as_str(), 16).unwrap();
+                    if num_collisions > 0 || !self.img_ops.contains_key(&hash) {
                         fs::remove_file(&entry_path)?;
                     }
                 }
@@ -303,7 +320,7 @@ impl Processor {
 
     pub fn do_process(&mut self) -> Result<()> {
         self.img_ops.par_iter().map(|(hash, op)| {
-            let target = self.resized_path.join(Self::op_filename(*hash, op.num_colli()));
+            let target = self.resized_path.join(Self::op_filename(*hash, op.num_collisions()));
             op.perform(&self.content_path, &target)
                 .chain_err(|| format!("Failed to process image: {}", op.source))
         })
