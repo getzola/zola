@@ -267,9 +267,9 @@ impl ser::Serialize for Page {
         state.serialize_field("next", &self.next)?;
         state.serialize_field("toc", &self.toc)?;
         state.serialize_field("draft", &self.is_draft())?;
-        let (assets, assets_imgs) = self.serialize_assets();
+        let (assets, images) = self.serialize_assets();
         state.serialize_field("assets", &assets)?;
-        state.serialize_field("assets_imgs", &assets_imgs)?;
+        state.serialize_field("images", &images)?;
         state.end()
     }
 }

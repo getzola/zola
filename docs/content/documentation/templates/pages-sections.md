@@ -40,11 +40,11 @@ toc: Array<Header>;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
 // Paths of colocated image assets, ie. files with an extension of "jpg", "jpeg", "png", "gif", or "bmp"
-assets_imgs: Array<String>;
+images: Array<String>;
 ```
 
 ## Section variables
-By default, Gutenberg will try to load `templates/index.html` for `content/_index.md` 
+By default, Gutenberg will try to load `templates/index.html` for `content/_index.md`
 and `templates/section.html` for others `_index.md` files. If there isn't
 one, it will render the built-in template: a blank page.
 

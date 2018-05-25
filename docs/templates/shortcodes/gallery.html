@@ -1,4 +1,4 @@
-{% for img in page.assets_imgs %}
+{% for img in page.images %}
   <a href="{{ config.base_url }}/{{ img }}">
     <img src="{{ resize_image(path=img, width=240, height=180, op="fill") }}" />
   </a>
