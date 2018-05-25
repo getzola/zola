@@ -125,7 +125,10 @@ pub struct ImageOp {
     quality: u8,
     /// Hash of the above parameters
     hash: u64,
-    collision: Option<u32>,
+    /// If there is a hash collision with another ImageOp, this contains a sequential ID > 1
+    /// identifying the collision in the order as encountered (which is essentially random).
+    /// Therefore, ImageOps with collisions (ie. collision_id > 0) are always considered out of date.
+    collision_id: u32,
 }
 
 impl ImageOp {
@@ -136,15 +139,13 @@ impl ImageOp {
         hasher.write_u8(quality);
         let hash = hasher.finish();
 
-        ImageOp { source, op, quality, hash, collision: None }
+        ImageOp { source, op, quality, hash, collision_id: 0 }
     }
 
     pub fn from_args(source: String, op: &str, width: Option<u32>, height: Option<u32>, quality: u8) -> Result<ImageOp> {
         let op = ResizeOp::from_args(op, width, height)?;
         Ok(Self::new(source, op, quality))
     }
-
-    fn num_collisions(&self) -> u32 { self.collision.unwrap_or(0) }
 
     fn perform(&self, content_path: &Path, target_path: &Path) -> Result<()> {
         use ResizeOp::*;
@@ -263,40 +264,44 @@ impl Processor {
         // This is detected when there is an ImageOp with the same hash in the `img_ops` map but which is not equal to this one.
         // To deal with this, all collisions get a (random) sequential ID number.
 
-        // First try to look up this ImageOp in `img_ops_collisions`, maybe we've already seen the same ImageOp
-        let mut num = 1;
+        // First try to look up this ImageOp in `img_ops_collisions`, maybe we've already seen the same ImageOp.
+        // At the same time, count IDs to figure out the next free one.
+        // Start with the ID of 2, because we'll need to use 1 for the ImageOp already present in the map:
+        let mut collision_id = 2;
         for op in self.img_ops_collisions.iter().filter(|op| op.hash == img_op.hash) {
             if *op == img_op {
-                // This is a colliding ImageOp, but we've already seen the very same one, so just return its ID
-                return num;
+                // This is a colliding ImageOp, but we've already seen an equal one (not just by hash, but by content too),
+                // so just return its ID:
+                return collision_id;
             } else {
-                num += 1;
+                collision_id += 1;
             }
         }
 
-        // If we get here, that means this is a new colliding ImageOp and `num` has the next free ID
-        if num == 1 {
-            self.img_ops.get_mut(&img_op.hash).unwrap().collision = Some(0);
+        // If we get here, that means this is a new colliding ImageOp and `collision_id` is the next free ID
+        if collision_id == 2 {
+            // This is the first collision found with this hash, update the ID of the matching ImageOp in the map.
+            self.img_ops.get_mut(&img_op.hash).unwrap().collision_id = 1;
         }
-        img_op.collision = Some(num);
+        img_op.collision_id = collision_id;
         self.img_ops_collisions.push(img_op);
-        num
+        collision_id
     }
 
-    fn op_filename(hash: u64, num_collisions: u32) -> String {
+    fn op_filename(hash: u64, collision_id: u32) -> String {
         // Please keep this in sync with RESIZED_FILENAME
-        assert!(num_collisions < 256, "Unexpectedly large number of collisions: {}", num_collisions);
-        format!("{:016x}{:02x}.jpg", hash, num_collisions)
+        assert!(collision_id < 256, "Unexpectedly large number of collisions: {}", collision_id);
+        format!("{:016x}{:02x}.jpg", hash, collision_id)
     }
 
-    fn op_url(&self, hash: u64, num_collisions: u32) -> String {
-        format!("{}/{}", &self.resized_url, Self::op_filename(hash, num_collisions))
+    fn op_url(&self, hash: u64, collision_id: u32) -> String {
+        format!("{}/{}", &self.resized_url, Self::op_filename(hash, collision_id))
     }
 
     pub fn insert(&mut self, img_op: ImageOp) -> String {
         let hash = img_op.hash;
-        let num_collisions = self.insert_with_collisions(img_op);
-        self.op_url(hash, num_collisions)
+        let collision_id = self.insert_with_collisions(img_op);
+        self.op_url(hash, collision_id)
     }
 
     pub fn prune(&self) -> Result<()> {
@@ -308,8 +313,8 @@ impl Processor {
                 let filename = entry_path.file_name().unwrap().to_string_lossy();
                 if let Some(capts) = RESIZED_FILENAME.captures(filename.as_ref()) {
                     let hash = u64::from_str_radix(capts.get(1).unwrap().as_str(), 16).unwrap();
-                    let num_collisions = u32::from_str_radix(capts.get(2).unwrap().as_str(), 16).unwrap();
-                    if num_collisions > 0 || !self.img_ops.contains_key(&hash) {
+                    let collision_id = u32::from_str_radix(capts.get(2).unwrap().as_str(), 16).unwrap();
+                    if collision_id > 0 || !self.img_ops.contains_key(&hash) {
                         fs::remove_file(&entry_path)?;
                     }
                 }
@@ -320,7 +325,7 @@ impl Processor {
 
     pub fn do_process(&mut self) -> Result<()> {
         self.img_ops.par_iter().map(|(hash, op)| {
-            let target = self.resized_path.join(Self::op_filename(*hash, op.num_collisions()));
+            let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id));
             op.perform(&self.content_path, &target)
                 .chain_err(|| format!("Failed to process image: {}", op.source))
         })
