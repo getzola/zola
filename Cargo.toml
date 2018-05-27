@@ -24,9 +24,8 @@ term-painter = "0.2"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
 # Below is for the serve cmd
-staticfile = "0.5"
-iron = "0.6"
-mount = "0.4"
+actix = "0.5"
+actix-web = "0.6"
 notify = "4"
 ws = "0.7"
 ctrlc = "3"
