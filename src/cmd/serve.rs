@@ -23,15 +23,15 @@
 
 use std::env;
 use std::fs::remove_dir_all;
-use std::path::Path;
+use std::io;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
 use std::thread;
 
 use chrono::prelude::*;
-use iron::{Iron, Request, IronResult, Response, status};
-use mount::Mount;
-use staticfile::Static;
+use actix;
+use actix_web::{fs, server, App, HttpRequest, HttpResponse, Responder};
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket, Sender, Message};
 use ctrlc;
@@ -59,8 +59,8 @@ enum ChangeKind {
 const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
 
-fn livereload_handler(_: &mut Request) -> IronResult<Response> {
-    Ok(Response::with((status::Ok, LIVE_RELOAD.to_string())))
+fn livereload_handler(_: HttpRequest) -> &'static str {
+    LIVE_RELOAD
 }
 
 fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
@@ -102,6 +102,24 @@ fn create_new_site(interface: &str, port: &str, output_dir: &str, base_url: &str
     Ok((site, address))
 }
 
+/// Attempt to render `index.html` when a directory is requested.
+///
+/// The default "batteries included" mechanisms for actix to handle directory
+/// listings rely on redirection which behaves oddly (the location headers
+/// seem to use relative paths for some reason).
+/// They also mean that the address in the browser will include the
+/// `index.html` on a successful redirect (rare), which is unsightly.
+///
+/// Rather than deal with all of that, we can hijack a hook for presenting a
+/// custom directory listing response and serve it up using their
+/// `NamedFile` responder.
+fn handle_directory<'a, 'b>(dir: &'a fs::Directory, req: &'b HttpRequest) -> io::Result<HttpResponse> {
+    let mut path = PathBuf::from(&dir.base);
+    path.push(&dir.path);
+    path.push("index.html");
+    Ok(fs::NamedFile::open(path).respond_to(req).unwrap())
+}
+
 pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
@@ -128,15 +146,28 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
     let _ = watcher.watch("sass/", RecursiveMode::Recursive);
 
     let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
+    let output_path = Path::new(output_dir).to_path_buf();
 
-    // Start a webserver that serves the `output_dir` directory
-    let mut mount = Mount::new();
-    mount.mount("/", Static::new(Path::new(output_dir)));
-    mount.mount("/livereload.js", livereload_handler);
-    // Starts with a _ to not trigger the unused lint
-    // we need to assign to a variable otherwise it will block
-    let _iron = Iron::new(mount).http(address.as_str())
-        .chain_err(|| "Can't start the webserver")?;
+    // output path is going to need to be moved later on, so clone it for the
+    // http closure to avoid contention.
+    let static_root = output_path.clone();
+    thread::spawn(move || {
+        let sys = actix::System::new("http-server");
+        server::new(move || {
+            App::new()
+            .resource(r"/livereload.js", |r| r.f(livereload_handler))
+            // Start a webserver that serves the `output_dir` directory
+            .handler(r"/", fs::StaticFiles::new(&static_root)
+                     .show_files_listing()
+                     .files_listing_renderer(handle_directory))
+        })
+        .bind(&address)
+        .expect("Can't start the webserver")
+        .shutdown_timeout(20)
+        .start();
+        println!("Web server is available at http://{}", &address);
+        let _ = sys.run();
+    });
 
     // The websocket for livereload
     let ws_server = WebSocket::new(|output: Sender| {
@@ -169,10 +200,9 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
     }
 
     println!("Listening for changes in {}/{{{}}}", pwd, watchers.join(", "));
-    println!("Web server is available at http://{}", address);
+
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
-    let output_path = Path::new(output_dir).to_path_buf();
     ctrlc::set_handler(move || {
         remove_dir_all(&output_path).expect("Failed to delete output directory");
         ::std::process::exit(0);
