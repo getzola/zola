@@ -2,6 +2,7 @@ extern crate tera;
 extern crate slug;
 extern crate serde;
 extern crate rayon;
+extern crate chrono;
 
 extern crate errors;
 extern crate config;

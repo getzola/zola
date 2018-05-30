@@ -37,10 +37,14 @@ previous: Page?;
 next: Page?;
 // See the Table of contents section below for more details
 toc: Array<Header>;
+// Year/month/day is only set if the page has a date and month/day are 1-indexed
+year: Number?;
+month: Number?;
+day: Number?;
 ```
 
 ## Section variables
-By default, Gutenberg will try to load `templates/index.html` for `content/_index.md` 
+By default, Gutenberg will try to load `templates/index.html` for `content/_index.md`
 and `templates/section.html` for others `_index.md` files. If there isn't
 one, it will render the built-in template: a blank page.
 
