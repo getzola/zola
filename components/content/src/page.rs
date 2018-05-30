@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
-
+use chrono::Datelike;
 use tera::{Tera, Context as TeraContext};
 use serde::ser::{SerializeStruct, self};
 use slug::slugify;
@@ -247,11 +247,21 @@ impl Default for Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 18)?;
+        let mut state = serializer.serialize_struct("page", 21)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
+        if let Some(chrono_datetime) = self.meta.date() {
+            let d = chrono_datetime.date();
+            state.serialize_field("year", &d.year())?;
+            state.serialize_field("month", &d.month())?;
+            state.serialize_field("day", &d.day())?;
+        } else {
+            state.serialize_field::<Option<usize>>("year", &None)?;
+            state.serialize_field::<Option<usize>>("month", &None)?;
+            state.serialize_field::<Option<usize>>("day", &None)?;
+        }
         state.serialize_field("slug", &self.slug)?;
         state.serialize_field("path", &self.path)?;
         state.serialize_field("components", &self.components)?;

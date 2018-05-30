@@ -210,6 +210,7 @@ dependencies = [
 name = "content"
 version = "0.1.0"
 dependencies = [
+ "chrono 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "config 0.1.0",
  "errors 0.1.0",
  "front_matter 0.1.0",

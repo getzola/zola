@@ -10,6 +10,7 @@
 - Co-located assets are now permalinks
 - Words are now counted using unicode rather than whitespaces
 - Aliases can now be pointing directly to specific HTML files
+- Add `year`, `month` and `day` variables to pages with a date
 
 ## 0.3.4 (2018-06-22)
 
