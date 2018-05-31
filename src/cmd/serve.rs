@@ -117,12 +117,7 @@ fn handle_directory<'a, 'b>(dir: &'a fs::Directory, req: &'b HttpRequest) -> io:
     let mut path = PathBuf::from(&dir.base);
     path.push(&dir.path);
     path.push("index.html");
-    fs::NamedFile::open(path)
-        .respond_to(req)
-        // Didn't see a clear path from
-        // `actix_web::error::Error` to `std::error::Error`
-        // so being "cheap" and just leveraging the Display impl to wrap it.
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))
+    fs::NamedFile::open(path)?.respond_to(req)
 }
 
 pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<()> {
