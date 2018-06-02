@@ -253,7 +253,7 @@ fn is_temp_file(path: &Path) -> bool {
             }
         },
         None => {
-            path.ends_with(".DS_STORE")
+            true
         },
     }
 }
