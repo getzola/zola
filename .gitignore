@@ -13,3 +13,9 @@ huge-kb
 
 current.bench
 now.bench
+
+# snapcraft artifacts
+snap/.snapcraft
+parts
+prime
+stage
