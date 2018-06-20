@@ -293,7 +293,8 @@ fn is_temp_file(path: &Path) -> bool {
 fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
     let path_str = format!("{}", path.display())
         .replace(pwd, "")
-        .replace("\\", "/");
+        .replace("\\", "");
+
     let change_kind = if path_str.starts_with("/templates") {
         ChangeKind::Templates
     } else if path_str.starts_with("/content") {
