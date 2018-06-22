@@ -9,8 +9,10 @@ environment:
     CRATE_NAME: gutenberg
 
   matrix:
-+    - target: x86_64-pc-windows-msvc
-+      RUST_VERSION: 1.25.0
+    - target: x86_64-pc-windows-msvc
+      RUST_VERSION: 1.25.0
+    - target: x86_64-pc-windows-msvc
+      RUST_VERSION: stable
 
 install:
   -  call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
@@ -20,7 +22,6 @@ install:
   - rustc -Vv
   - cargo -V
 
-# TODO This is the "test phase", tweak it as you see fit
 test_script:
   # we don't run the "test phase" when doing deploys
   - if [%APPVEYOR_REPO_TAG%]==[false] (
@@ -28,7 +29,6 @@ test_script:
     )
 
 before_deploy:
-  # TODO Update this to build the artifacts that matter to you
   - cargo rustc --target %TARGET% --release --bin gutenberg -- -C lto
   - ps: ci\before_deploy.ps1
 
@@ -42,11 +42,10 @@ deploy:
     secure: YCRPSTItx+m/3jnDfai52dEZNLYUTSEExF2lZoffULDzlv/t2jOR1fzSSIEi/xyB
   description: ''
   on:
-    # TODO Here you can pick which targets will generate binary releases
     # In this example, there are some targets that are tested using the stable
     # and nightly channels. This condition makes sure there is only one release
     # for such targets and that's generated using the stable channel
-    RUST_VERSION: stable
+    RUST_VERSION: 1.25.0
     appveyor_repo_tag: true
   provider: GitHub
 
