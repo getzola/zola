@@ -1,9 +1,9 @@
 # Changelog
 
-## 0.4.0 (unreleased)
+## 0.3.4 (2018-06-22)
 
-- Add CMake syntax highlighting
-
+- `cargo update` as some dependencies didn't compile with current Rust version
+- Add CMake syntax highlighting and update other syntax highlighting
 
 ## 0.3.3 (2018-03-29)
 
