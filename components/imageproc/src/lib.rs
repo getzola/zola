@@ -3,7 +3,6 @@ extern crate lazy_static;
 extern crate regex;
 extern crate image;
 extern crate rayon;
-extern crate twox_hash;
 
 extern crate utils;
 extern crate errors;
@@ -12,13 +11,13 @@ use std::path::{Path, PathBuf};
 use std::hash::{Hash, Hasher};
 use std::collections::HashMap;
 use std::collections::hash_map::Entry as HEntry;
+use std::collections::hash_map::DefaultHasher;
 use std::fs::{self, File};
 
 use regex::Regex;
 use image::{GenericImage, FilterType};
 use image::jpeg::JPEGEncoder;
 use rayon::prelude::*;
-use twox_hash::XxHash;
 
 use utils::fs as ufs;
 use errors::{Result, ResultExt};
@@ -133,7 +132,7 @@ pub struct ImageOp {
 
 impl ImageOp {
     pub fn new(source: String, op: ResizeOp, quality: u8) -> ImageOp {
-        let mut hasher = XxHash::with_seed(0);
+        let mut hasher = DefaultHasher::new();
         hasher.write(source.as_ref());
         op.hash(&mut hasher);
         hasher.write_u8(quality);
