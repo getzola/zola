@@ -213,7 +213,7 @@ pub struct Processor {
     resized_path: PathBuf,
     resized_url: String,
     /// A map of a ImageOps by their stored hash.
-    /// Note that this cannot be a HashSet, because hashest handles collisions and we don't want that,
+    /// Note that this cannot be a HashSet, because hashset handles collisions and we don't want that,
     /// we need to be aware of and handle collisions ourselves.
     img_ops: HashMap<u64, ImageOp>,
     /// Hash collisions go here:

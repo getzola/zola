@@ -39,8 +39,6 @@ next: Page?;
 toc: Array<Header>;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
-// Paths of colocated image assets, ie. files with an extension of "jpg", "jpeg", "png", "gif", or "bmp"
-images: Array<String>;
 ```
 
 ## Section variables

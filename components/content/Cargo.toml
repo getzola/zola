@@ -14,7 +14,6 @@ config = { path = "../config" }
 utils = { path = "../utils" }
 rendering = { path = "../rendering" }
 front_matter = { path = "../front_matter" }
-imageproc = { path = "../imageproc" }
 
 [dev-dependencies]
 tempfile = "3"
