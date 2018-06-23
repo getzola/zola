@@ -917,7 +917,6 @@ dependencies = [
  "rayon 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tera 0.11.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "twox-hash 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
 
@@ -2448,14 +2447,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "twox-hash"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "rand 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "ucd-util"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2927,7 +2918,6 @@ dependencies = [
 "checksum trust-dns-proto 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "32d7c204ee231f802aa821f9dc2195aa0d0269ef7e9f8c844208565c9e3981e4"
 "checksum trust-dns-resolver 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9b0a0c9d4f8dd56481209c5ae1a8965ed022461d352c81fb92466ec9d846929e"
 "checksum trust-dns-resolver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "28b094ad60c4f51f36a493201d04d6605183c62bd5f0c73008a732f23950c156"
-"checksum twox-hash 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "475352206e7a290c5fccc27624a163e8d0d115f7bb60ca18a64fc9ce056d7435"
 "checksum ucd-util 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "fd2be2d6639d0f8fe6cdda291ad456e23629558d466e2789d2c3e9892bda285d"
 "checksum unicase 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7f4765f83163b74f957c797ad9253caf97f103fb064d3999aea9568d09fc8a33"
 "checksum unicase 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "284b6d3db520d67fbe88fd778c21510d1b0ba4a551e5d0fbb023d33405f6de8a"
