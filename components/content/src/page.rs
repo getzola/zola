@@ -15,7 +15,6 @@ use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
 use rendering::{RenderContext, Header, render_content};
-use imageproc;
 
 use file_info::FileInfo;
 
@@ -207,21 +206,13 @@ impl Page {
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 
-    /// Creates two vectors of asset URLs. The first one contains all asset files,
-    /// the second one that which appear to be an image file.
-    fn serialize_assets(&self) -> (Vec<String>, Vec<String>) {
-        let mut assets = vec![];
-        let mut images = vec![];
-        for asset in self.assets.iter() {
-            if let Some(filename) = asset.file_name().and_then(|f| f.to_str()) {
-                let url = self.path.clone() + filename;
-                if imageproc::file_is_img(&asset) {
-                    images.push(url.clone());
-                }
-                assets.push(url);
-            }
-        }
-        (assets, images)
+    /// Creates a vectors of asset URLs.
+    fn serialize_assets(&self) -> Vec<String> {
+        self.assets.iter()
+            .filter_map(|asset| asset.file_name())
+            .filter_map(|filename| filename.to_str())
+            .map(|filename| self.path.clone() + filename)
+            .collect()
     }
 }
 
@@ -277,9 +268,8 @@ impl ser::Serialize for Page {
         state.serialize_field("next", &self.next)?;
         state.serialize_field("toc", &self.toc)?;
         state.serialize_field("draft", &self.is_draft())?;
-        let (assets, images) = self.serialize_assets();
+        let assets = self.serialize_assets();
         state.serialize_field("assets", &assets)?;
-        state.serialize_field("images", &images)?;
         state.end()
     }
 }

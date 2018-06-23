@@ -1,6 +1,8 @@
-{% for img in page.images %}
-  <a href="{{ config.base_url }}/{{ img }}">
-    <img src="{{ resize_image(path=img, width=240, height=180, op="fill") }}" />
-  </a>
-  &ensp;
+{% for asset in page.assets %}
+  {% if asset is ending_with(".jpg") %}
+    <a href="{{ get_url(path=asset) }}">
+      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill") }}" />
+    </a>
+    &ensp;
+  {% endif %}
 {% endfor %}
