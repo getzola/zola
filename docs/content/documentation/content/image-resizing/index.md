@@ -26,7 +26,7 @@ The function usage is as follows:
 
 Gutenberg performs image processing during the build process and places the resized images in a subdirectory in the static files directory:
 
-    static/_resized_images/
+    static/_processed_images/
 
 Resized images are JPEGs. Filename of each resized image is a hash of the function arguments,
 which means that once an image is resized in a certain way, it will be stored in the above directory and will not
