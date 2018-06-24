@@ -22,8 +22,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
-use std::fs::{File, remove_dir_all};
-use std::io;
+use std::fs::{remove_dir_all, File};
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
@@ -31,7 +31,8 @@ use std::thread;
 
 use chrono::prelude::*;
 use actix;
-use actix_web::{fs, server, App, HttpRequest, HttpResponse, Responder};
+use actix_web::{self, fs, http, server, App, HttpRequest, HttpResponse, Responder};
+use actix_web::middleware::{Middleware, Started, Response};
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket, Sender, Message};
 use ctrlc;
@@ -60,27 +61,30 @@ const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
 struct ErrCatcher;
 
-impl AfterMiddleware for ErrCatcher {
+impl<S> Middleware<S> for ErrCatcher {
+    fn start(&self, _req: &mut HttpRequest<S>) -> actix_web::Result<Started> {
+        Ok(Started::Done)
+    }
 
-    fn catch(&self, _: &mut Request, err: IronError) -> IronResult<Response> {
-
-        let err_status = err.response.status.unwrap_or(status::InternalServerError);
-
-        // Search for e.g. "static/error/404.html"
-        let err_page = File::open( format!("static/error/{}.html", err_status.to_u16()) );
-
-        if err_page.is_ok() {
-            let mut err_res = Response::with(( err_status, err_page.unwrap() ));
-            err_res.headers.set(ContentType::html());
-
-            return Ok(err_res);
+    fn response(
+        &self,
+        _req: &mut HttpRequest<S>,
+        mut resp: HttpResponse,
+    ) -> actix_web::Result<Response> {
+        if http::StatusCode::NOT_FOUND == resp.status() {
+            let not_found_page = "static/error/404.html";
+            if let Ok(mut fh) = File::open(&not_found_page) {
+                println!("Using {} to handle missing file.", &not_found_page);
+                let mut buf: Vec<u8> = vec![];
+                let _ = fh.read_to_end(&mut buf)?;
+                resp.replace_body(buf);
+                resp.headers_mut().insert(
+                    http::header::CONTENT_TYPE,
+                    http::header::HeaderValue::from_static("text/html"),
+                );
+            }
         }
-
-        // No custom error page, serve default
-        let mut err_res = Response::with(( err_status, format!("Error: {}.", err_status) ));
-        err_res.headers.set(ContentType::plaintext());
-
-        Ok(err_res)
+        Ok(Response::Done(resp))
     }
 }
 
@@ -180,6 +184,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         let sys = actix::System::new("http-server");
         server::new(move || {
             App::new()
+            .middleware(ErrCatcher)
             .resource(r"/livereload.js", |r| r.f(livereload_handler))
             // Start a webserver that serves the `output_dir` directory
             .handler(r"/", fs::StaticFiles::new(&static_root)
