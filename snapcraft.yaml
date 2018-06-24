@@ -17,5 +17,9 @@ apps:
 
 parts:
   gutenberg:
-    plugin: rust
+    plugin: x-rust
     rust-channel: stable
+    build-packages:
+    - build-essential
+    - cmake
+    - git-core
