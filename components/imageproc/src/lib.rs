@@ -23,7 +23,7 @@ use utils::fs as ufs;
 use errors::{Result, ResultExt};
 
 
-static RESIZED_SUBDIR: &'static str = "_resized_images";
+static RESIZED_SUBDIR: &'static str = "_processed_images";
 lazy_static!{
     pub static ref RESIZED_FILENAME: Regex = Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.]jpg"#).unwrap();
 }
