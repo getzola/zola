@@ -9,13 +9,12 @@ which is available in template code as well as in shortcodes.
 The function usage is as follows:
 
 ```jinja2
-    resize_image(path, width, height, op, quality)
+resize_image(path, width, height, op, quality)
 ```
 
 ### Arguments
 
 - `path`: The path to the source image relative to the `content` directory in the [directory structure](./documentation/getting-started/directory-structure.md).
-
 - `width` and `height`: The dimensions in pixels of the resized image. Usage depends on the `op` argument.
 - `op`: Resize operation. This can be one of five choices: `"scale"`, `"fit_width"`, `"fit_height"`, `"fit"`, or `"fill"`.
   What each of these does is explained below.
@@ -26,7 +25,9 @@ The function usage is as follows:
 
 Gutenberg performs image processing during the build process and places the resized images in a subdirectory in the static files directory:
 
-    static/_processed_images/
+```
+static/_processed_images/
+```
 
 Resized images are JPEGs. Filename of each resized image is a hash of the function arguments,
 which means that once an image is resized in a certain way, it will be stored in the above directory and will not
@@ -93,23 +94,26 @@ The examples above were generated using a shortcode file named `resize_image.htm
   <img src="{{ resize_image(path=path, width=width, height=height, op=op) }}" />
 ```
 
-## Creating picuture galleries
+## Creating picture galleries
 
-The `resize_image()` can be used multiple times and/or in loops (it is designed to handle this efficiently).
+The `resize_image()` can be used multiple times and/or in loops as it is designed to handle this efficiently.
 
-This can be used along with `images` [page metadata](./documentation/templates/pages-sections.md) to create picture galleries.
-The `images` variable holds paths to all images in the directory of a page with resources
-(see [Assets colocation](./documentation/content/overview.md#assets-colocation)).
+This can be used along with `assets` [page metadata](./documentation/templates/pages-sections.md) to create picture galleries.
+The `assets` variable holds paths to all assets in the directory of a page with resources
+(see [Assets colocation](./documentation/content/overview.md#assets-colocation)): if you have files other than images you
+will need to filter them out in the loop first like in the example below.
 
 This can be used in shortcodes. For example, we can create a very simple html-only clickable
 picture gallery with the following shortcode named `gallery.html`:
 
 ```jinja2
-{% for img in page.images %}
-  <a href="{{ config.base_url }}/{{ img }}">
-    <img src="{{ resize_image(path=img, width=240, height=180) }}" />
-  </a>
-  &ensp;
+{% for asset in page.assets %}
+  {% if asset is ending_with(".jpg") %}
+    <a href="{{ get_url(path=asset) }}">
+      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill") }}" />
+    </a>
+    &ensp;
+  {% endif %}
 {% endfor %}
 ```
 

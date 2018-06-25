@@ -17,7 +17,7 @@ in the `docs/content` folder of the repository.
 | Sass compilation         |     ✔     |    ✕   |   ✕  |    ✔    |
 | Assets co-location       |     ✔     |    ✔   |   ✔  |    ✔    |
 | i18n                     |     ✕     |    ✕   |   ✔  |    ✔    |
-| Image processing         |     ✕     |    ✕   |   ✔  |    ✔    |
+| Image processing         |     ✔     |    ✕   |   ✔  |    ✔    |
 | Sane template engine     |     ✔     |    ✔   |  ✕✕✕ |    ✔    |
 | Themes                   |     ✔     |    ✕   |   ✔  |    ✔    |
 | Shortcodes               |     ✔     |    ✕   |   ✔  |    ✔    |

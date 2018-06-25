@@ -85,19 +85,19 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
 
 
 fn render_shortcode(name: String, args: Map<String, Value>, context: &RenderContext, body: Option<&str>) -> Result<String> {
-    let mut teracontext = Context::new();
+    let mut tera_context = Context::new();
     for (key, value) in args.iter() {
-        teracontext.insert(key, value);
+        tera_context.insert(key, value);
     }
     if let Some(ref b) = body {
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
-        teracontext.insert("body", b.trim_right());
+        tera_context.insert("body", b.trim_right());
     }
-    teracontext.extend(context.teracontext.clone());
+    tera_context.extend(context.tera_context.clone());
     let tpl_name = format!("shortcodes/{}.html", name);
 
     let res = context.tera
-        .render(&tpl_name, &teracontext)
+        .render(&tpl_name, &tera_context)
         .chain_err(|| format!("Failed to render {} shortcode", name))?;
 
     // We trim left every single line of a shortcode to avoid the accidental

@@ -37,12 +37,12 @@ previous: Page?;
 next: Page?;
 // See the Table of contents section below for more details
 toc: Array<Header>;
-// Paths of colocated assets, relative to the content directory
-assets: Array<String>;
 // Year/month/day is only set if the page has a date and month/day are 1-indexed
 year: Number?;
 month: Number?;
 day: Number?;
+// Paths of colocated assets, relative to the content directory
+assets: Array<String>;
 ```
 
 ## Section variables

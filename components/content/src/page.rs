@@ -170,7 +170,7 @@ impl Page {
             anchor_insert
         );
 
-        context.teracontext.add("page", self);
+        context.tera_context.add("page", self);
 
         let res = render_content(
             &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),

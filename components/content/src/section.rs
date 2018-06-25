@@ -106,7 +106,7 @@ impl Section {
             self.meta.insert_anchor_links,
         );
 
-        context.teracontext.add("section", self);
+        context.tera_context.add("section", self);
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;

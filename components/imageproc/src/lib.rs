@@ -24,6 +24,7 @@ use errors::{Result, ResultExt};
 
 
 static RESIZED_SUBDIR: &'static str = "_processed_images";
+
 lazy_static!{
     pub static ref RESIZED_FILENAME: Regex = Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.]jpg"#).unwrap();
 }
@@ -33,15 +34,20 @@ lazy_static!{
 pub enum ResizeOp {
     /// A simple scale operation that doesn't take aspect ratio into account
     Scale(u32, u32),
-    /// Scales the image to a specified width with height computed such that aspect ratio is preserved
+    /// Scales the image to a specified width with height computed such
+    /// that aspect ratio is preserved
     FitWidth(u32),
-    /// Scales the image to a specified height with width computed such that aspect ratio is preserved
+    /// Scales the image to a specified height with width computed such
+    /// that aspect ratio is preserved
     FitHeight(u32),
-    /// Scales the image such that it fits within the specified width and height preserving aspect ratio.
+    /// Scales the image such that it fits within the specified width and
+    /// height preserving aspect ratio.
     /// Either dimension may end up being smaller, but never larger than specified.
     Fit(u32, u32),
-    /// Scales the image such that it fills the specified width and height. Output will always have the exact dimensions specified.
-    /// The part of the image that doesn't fit in the thumbnail due to differing aspect ratio will be cropped away, if any.
+    /// Scales the image such that it fills the specified width and height.
+    /// Output will always have the exact dimensions specified.
+    /// The part of the image that doesn't fit in the thumbnail due to differing
+    /// aspect ratio will be cropped away, if any.
     Fill(u32, u32),
 }
 
@@ -51,8 +57,12 @@ impl ResizeOp {
 
         // Validate args:
         match op {
-            "fit_width" => if width.is_none() { return Err(format!("op=\"fit_width\" requires a `width` argument").into()) },
-            "fit_height" => if height.is_none() { return Err(format!("op=\"fit_height\" requires a `height` argument").into()) },
+            "fit_width" => if width.is_none() {
+                return Err("op=\"fit_width\" requires a `width` argument".to_string().into())
+            },
+            "fit_height" => if height.is_none() {
+                return Err("op=\"fit_height\" requires a `height` argument".to_string().into())
+            },
             "scale" | "fit" | "fill" => if width.is_none() || height.is_none() {
                 return Err(format!("op={} requires a `width` and `height` argument", op).into())
             },
@@ -127,6 +137,7 @@ pub struct ImageOp {
     /// If there is a hash collision with another ImageOp, this contains a sequential ID > 1
     /// identifying the collision in the order as encountered (which is essentially random).
     /// Therefore, ImageOps with collisions (ie. collision_id > 0) are always considered out of date.
+    /// Note that this is very unlikely to happen in practice
     collision_id: u32,
 }
 
@@ -141,7 +152,13 @@ impl ImageOp {
         ImageOp { source, op, quality, hash, collision_id: 0 }
     }
 
-    pub fn from_args(source: String, op: &str, width: Option<u32>, height: Option<u32>, quality: u8) -> Result<ImageOp> {
+    pub fn from_args(
+        source: String,
+        op: &str,
+        width: Option<u32>,
+        height: Option<u32>,
+        quality: u8,
+    ) -> Result<ImageOp> {
         let op = ResizeOp::from_args(op, width, height)?;
         Ok(Self::new(source, op, quality))
     }
@@ -170,13 +187,14 @@ impl ImageOp {
                 let factor_h = img_h as f32 / h as f32;
 
                 if (factor_w - factor_h).abs() <= RATIO_EPSILLION {
-                    // If the horizontal and vertical factor is very similar, that means the aspect is similar enough
-                    // that there's not much point in cropping, so just perform a simple scale in this case.
+                    // If the horizontal and vertical factor is very similar,
+                    // that means the aspect is similar enough that there's not much point
+                    // in cropping, so just perform a simple scale in this case.
                     img.resize_exact(w, h, RESIZE_FILTER)
                 } else {
-                    // We perform the fill such that a crop is performed first and then resize_exact can be used,
-                    // which should be cheaper than resizing and then cropping (smaller number of pixels to resize).
-
+                    // We perform the fill such that a crop is performed first
+                    // and then resize_exact can be used, which should be cheaper than
+                    // resizing and then cropping (smaller number of pixels to resize).
                     let (crop_w, crop_h) = if factor_w < factor_h {
                         (img_w, (factor_w * h as f32).round() as u32)
                     } else {
@@ -189,7 +207,8 @@ impl ImageOp {
                         ((img_w - crop_w) / 2, 0)
                     };
 
-                    img.crop(offset_w, offset_h, crop_w, crop_h).resize_exact(w, h, RESIZE_FILTER)
+                    img.crop(offset_w, offset_h, crop_w, crop_h)
+                        .resize_exact(w, h, RESIZE_FILTER)
                 }
             },
         };
@@ -260,26 +279,31 @@ impl Processor {
         }
 
         // If we get here, that means a hash collision.
-        // This is detected when there is an ImageOp with the same hash in the `img_ops` map but which is not equal to this one.
+        // This is detected when there is an ImageOp with the same hash in the `img_ops`
+        // map but which is not equal to this one.
         // To deal with this, all collisions get a (random) sequential ID number.
 
-        // First try to look up this ImageOp in `img_ops_collisions`, maybe we've already seen the same ImageOp.
+        // First try to look up this ImageOp in `img_ops_collisions`, maybe we've
+        // already seen the same ImageOp.
         // At the same time, count IDs to figure out the next free one.
-        // Start with the ID of 2, because we'll need to use 1 for the ImageOp already present in the map:
+        // Start with the ID of 2, because we'll need to use 1 for the ImageOp
+        // already present in the map:
         let mut collision_id = 2;
         for op in self.img_ops_collisions.iter().filter(|op| op.hash == img_op.hash) {
             if *op == img_op {
-                // This is a colliding ImageOp, but we've already seen an equal one (not just by hash, but by content too),
-                // so just return its ID:
+                // This is a colliding ImageOp, but we've already seen an equal one
+                // (not just by hash, but by content too), so just return its ID:
                 return collision_id;
             } else {
                 collision_id += 1;
             }
         }
 
-        // If we get here, that means this is a new colliding ImageOp and `collision_id` is the next free ID
+        // If we get here, that means this is a new colliding ImageOp and
+        // `collision_id` is the next free ID
         if collision_id == 2 {
-            // This is the first collision found with this hash, update the ID of the matching ImageOp in the map.
+            // This is the first collision found with this hash, update the ID
+            // of the matching ImageOp in the map.
             self.img_ops.get_mut(&img_op.hash).unwrap().collision_id = 1;
         }
         img_op.collision_id = collision_id;
@@ -312,7 +336,10 @@ impl Processor {
                 let filename = entry_path.file_name().unwrap().to_string_lossy();
                 if let Some(capts) = RESIZED_FILENAME.captures(filename.as_ref()) {
                     let hash = u64::from_str_radix(capts.get(1).unwrap().as_str(), 16).unwrap();
-                    let collision_id = u32::from_str_radix(capts.get(2).unwrap().as_str(), 16).unwrap();
+                    let collision_id = u32::from_str_radix(
+                        capts.get(2).unwrap().as_str(), 16
+                    ).unwrap();
+
                     if collision_id > 0 || !self.img_ops.contains_key(&hash) {
                         fs::remove_file(&entry_path)?;
                     }

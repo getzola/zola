@@ -10,7 +10,7 @@ use config::Config;
 pub struct RenderContext<'a> {
     pub tera: &'a Tera,
     pub config: &'a Config,
-    pub teracontext: Context,
+    pub tera_context: Context,
     pub current_page_permalink: &'a str,
     pub permalinks: &'a HashMap<String, String>,
     pub insert_anchor: InsertAnchor,
@@ -24,11 +24,11 @@ impl<'a> RenderContext<'a> {
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
     ) -> RenderContext<'a> {
-        let mut teracontext = Context::new();
-        teracontext.insert("config", config);
+        let mut tera_context = Context::new();
+        tera_context.insert("config", config);
         RenderContext {
             tera,
-            teracontext,
+            tera_context,
             current_page_permalink,
             permalinks,
             insert_anchor,

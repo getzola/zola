@@ -58,6 +58,10 @@ Argument values can be of 5 types:
 
 Malformed values will be silently ignored.
 
+Both type of shortcodes will also get either a `page` or `section` variable depending on where they were used and a `config`
+one. Those values will overwrite any arguments passed to a shortcode so shortcodes should not use arguments called like one
+of these.
+
 ### Shortcodes without body
 
 Simply call the shortcode as if it was a Tera function in a variable block. All the examples below are valid

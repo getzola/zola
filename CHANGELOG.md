@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## 0.4.0 (unreleased)
 
 - Fix `serve` not working with the config flag
@@ -12,6 +11,7 @@
 - Aliases can now be pointing directly to specific HTML files
 - Add `year`, `month` and `day` variables to pages with a date
 - Fix panic when live reloading a change on a file without extensions
+- Add image resizing support
 
 ## 0.3.4 (2018-06-22)
 

@@ -42,7 +42,11 @@ pub fn make_trans(config: Config) -> GlobalFn {
 
     Box::new(move |args| -> Result<Value> {
         let key = required_arg!(String, args.get("key"), "`trans` requires a `key` argument.");
-        let lang = optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.").unwrap_or(default_lang.clone());
+        let lang = optional_arg!(
+            String,
+            args.get("lang"),
+            "`trans`: `lang` must be a string."
+        ).unwrap_or(default_lang.clone());
         let translations = &translations_config[lang.as_str()];
         Ok(to_value(&translations[key.as_str()]).unwrap())
     })
@@ -56,7 +60,11 @@ pub fn make_get_page(all_pages: &HashMap<PathBuf, Page>) -> GlobalFn {
     }
 
     Box::new(move |args| -> Result<Value> {
-        let path = required_arg!(String, args.get("path"), "`get_page` requires a `path` argument with a string value");
+        let path = required_arg!(
+            String,
+            args.get("path"),
+            "`get_page` requires a `path` argument with a string value"
+        );
         match pages.get(&path) {
             Some(p) => Ok(to_value(p).unwrap()),
             None => Err(format!("Page `{}` not found.", path).into())
@@ -74,7 +82,11 @@ pub fn make_get_section(all_sections: &HashMap<PathBuf, Section>) -> GlobalFn {
     }
 
     Box::new(move |args| -> Result<Value> {
-        let path = required_arg!(String, args.get("path"), "`get_section` requires a `path` argument with a string value");
+        let path = required_arg!(
+            String,
+            args.get("path"),
+            "`get_section` requires a `path` argument with a string value"
+        );
         //println!("Found {:#?}", sections.get(&path).unwrap().pages[0]);
         match sections.get(&path) {
             Some(p) => Ok(to_value(p).unwrap()),
@@ -97,7 +109,11 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
                 from_value::<bool>(c.clone()).unwrap_or(true)
             });
 
-        let path = required_arg!(String, args.get("path"), "`get_url` requires a `path` argument with a string value");
+        let path = required_arg!(
+            String,
+            args.get("path"),
+            "`get_url` requires a `path` argument with a string value"
+        );
         if path.starts_with("./") {
             match resolve_internal_link(&path, &permalinks) {
                 Ok(url) => Ok(to_value(url).unwrap()),
@@ -120,12 +136,22 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
 
 pub fn make_get_taxonomy_url(tags: Option<Taxonomy>, categories: Option<Taxonomy>) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-        let kind = required_arg!(String, args.get("kind"), "`get_taxonomy_url` requires a `kind` argument with a string value");
-        let name = required_arg!(String, args.get("name"), "`get_taxonomy_url` requires a `name` argument with a string value");
+        let kind = required_arg!(
+            String,
+            args.get("kind"),
+            "`get_taxonomy_url` requires a `kind` argument with a string value"
+        );
+        let name = required_arg!(
+            String,
+            args.get("name"),
+            "`get_taxonomy_url` requires a `name` argument with a string value"
+        );
         let container = match kind.as_ref() {
             "tag" => &tags,
             "category" => &categories,
-            _ => return Err("`get_taxonomy_url` can only get `tag` or `category` for the `kind` argument".into()),
+            _ => return Err(
+                "`get_taxonomy_url` can only get `tag` or `category` for the `kind` argument".into()
+            ),
         };
 
         if let Some(ref c) = *container {
@@ -146,11 +172,31 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
     const DEFAULT_Q: u8 = 75;
 
     Box::new(move |args| -> Result<Value> {
-        let path = required_arg!(String, args.get("path"), "`resize_image` requires a `path` argument with a string value");
-        let width = optional_arg!(u32, args.get("width"), "`resize_image`: `width` must be a non-negative integer");
-        let height = optional_arg!(u32, args.get("height"), "`resize_image`: `height` must be a non-negative integer");
-        let op = optional_arg!(String, args.get("op"), "`resize_image`: `op` must be a string").unwrap_or(DEFAULT_OP.to_owned());
-        let quality = optional_arg!(u8, args.get("quality"), "`resize_image`: `quality` must be a number").unwrap_or(DEFAULT_Q);
+        let path = required_arg!(
+            String,
+            args.get("path"),
+            "`resize_image` requires a `path` argument with a string value"
+        );
+        let width = optional_arg!(
+            u32,
+            args.get("width"),
+            "`resize_image`: `width` must be a non-negative integer"
+        );
+        let height = optional_arg!(
+            u32,
+            args.get("height"),
+            "`resize_image`: `height` must be a non-negative integer"
+        );
+        let op = optional_arg!(
+            String,
+            args.get("op"),
+            "`resize_image`: `op` must be a string"
+        ).unwrap_or(DEFAULT_OP.to_string());
+        let quality = optional_arg!(
+            u8,
+            args.get("quality"),
+            "`resize_image`: `quality` must be a number"
+        ).unwrap_or(DEFAULT_Q);
         if quality == 0 || quality > 100 {
             return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
         }
@@ -160,7 +206,8 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
             return Err(format!("`resize_image`: Cannot find path: {}", path).into());
         }
 
-        let imageop = imageproc::ImageOp::from_args(path.clone(), &op, width, height, quality).map_err(|e| format!("`resize_image`: {}", e))?;
+        let imageop = imageproc::ImageOp::from_args(path.clone(), &op, width, height, quality)
+            .map_err(|e| format!("`resize_image`: {}", e))?;
         let url = imageproc.insert(imageop);
 
         to_value(url).map_err(|err| err.into())

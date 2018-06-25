@@ -111,7 +111,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                 Event::Start(Tag::Image(src, title)) => {
                     if is_colocated_asset_link(&src) {
                         return Event::Start(
-                            Tag::Image(Owned(format!("{}{}", context.current_page_permalink, src)), title)
+                            Tag::Image(
+                                Owned(format!("{}{}", context.current_page_permalink, src)),
+                                title,
+                            )
                         );
                     }
 
@@ -122,7 +125,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     // - it could be a relative link (starting with `./`)
                     // - it could be a link to a co-located asset
                     // - it could be a normal link
-                    // - any of those can be in a header or not: if it's in a header we need to append to a string
+                    // - any of those can be in a header or not: if it's in a header
+                    //   we need to append to a string
                     let fixed_link = if link.starts_with("./") {
                         match resolve_internal_link(&link, context.permalinks) {
                             Ok(url) => url,
@@ -176,7 +180,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     Event::Html(Owned(String::new()))
                 },
                 Event::End(Tag::Header(_)) => {
-                    // End of a header, reset all the things and return the stringified version of the header
+                    // End of a header, reset all the things and return the stringified
+                    // version of the header
                     in_header = false;
                     header_created = false;
                     let val = temp_header.to_string(context.tera, context.insert_anchor);
