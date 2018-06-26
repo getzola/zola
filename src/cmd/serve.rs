@@ -59,9 +59,11 @@ enum ChangeKind {
 // errors
 const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
-struct ErrCatcher;
+struct NotFoundHandler {
+    rendered_template: PathBuf,
+}
 
-impl<S> Middleware<S> for ErrCatcher {
+impl<S> Middleware<S> for NotFoundHandler {
     fn start(&self, _req: &mut HttpRequest<S>) -> actix_web::Result<Started> {
         Ok(Started::Done)
     }
@@ -72,17 +74,14 @@ impl<S> Middleware<S> for ErrCatcher {
         mut resp: HttpResponse,
     ) -> actix_web::Result<Response> {
         if http::StatusCode::NOT_FOUND == resp.status() {
-            let not_found_page = "static/error/404.html";
-            if let Ok(mut fh) = File::open(&not_found_page) {
-                println!("Using {} to handle missing file.", &not_found_page);
-                let mut buf: Vec<u8> = vec![];
-                let _ = fh.read_to_end(&mut buf)?;
-                resp.replace_body(buf);
-                resp.headers_mut().insert(
-                    http::header::CONTENT_TYPE,
-                    http::header::HeaderValue::from_static("text/html"),
-                );
-            }
+            let mut fh = File::open(&self.rendered_template)?;
+            let mut buf: Vec<u8> = vec![];
+            let _ = fh.read_to_end(&mut buf)?;
+            resp.replace_body(buf);
+            resp.headers_mut().insert(
+                http::header::CONTENT_TYPE,
+                http::header::HeaderValue::from_static("text/html"),
+            );
         }
         Ok(Response::Done(resp))
     }
@@ -184,7 +183,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         let sys = actix::System::new("http-server");
         server::new(move || {
             App::new()
-            .middleware(ErrCatcher)
+            .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
             .resource(r"/livereload.js", |r| r.f(livereload_handler))
             // Start a webserver that serves the `output_dir` directory
             .handler(r"/", fs::StaticFiles::new(&static_root)
