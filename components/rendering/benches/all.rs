@@ -122,7 +122,10 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
 fn bench_render_shortcodes_one_present(b: &mut test::Bencher) {
     let mut tera = Tera::default();
     tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
+    let config = Config::default();
+    let permalinks_ctx = HashMap::new();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
-    b.iter(|| render_shortcodes(CONTENT, &tera, &Config::default()));
+    b.iter(|| render_shortcodes(CONTENT, &context));
 }
 
