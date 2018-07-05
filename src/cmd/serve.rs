@@ -22,8 +22,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
-use std::fs::remove_dir_all;
-use std::io;
+use std::fs::{remove_dir_all, File};
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
@@ -31,7 +31,8 @@ use std::thread;
 
 use chrono::prelude::*;
 use actix;
-use actix_web::{fs, server, App, HttpRequest, HttpResponse, Responder};
+use actix_web::{self, fs, http, server, App, HttpRequest, HttpResponse, Responder};
+use actix_web::middleware::{Middleware, Started, Response};
 use notify::{Watcher, RecursiveMode, watcher};
 use ws::{WebSocket, Sender, Message};
 use ctrlc;
@@ -58,6 +59,33 @@ enum ChangeKind {
 // errors
 const LIVE_RELOAD: &'static str = include_str!("livereload.js");
 
+struct NotFoundHandler {
+    rendered_template: PathBuf,
+}
+
+impl<S> Middleware<S> for NotFoundHandler {
+    fn start(&self, _req: &mut HttpRequest<S>) -> actix_web::Result<Started> {
+        Ok(Started::Done)
+    }
+
+    fn response(
+        &self,
+        _req: &mut HttpRequest<S>,
+        mut resp: HttpResponse,
+    ) -> actix_web::Result<Response> {
+        if http::StatusCode::NOT_FOUND == resp.status() {
+            let mut fh = File::open(&self.rendered_template)?;
+            let mut buf: Vec<u8> = vec![];
+            let _ = fh.read_to_end(&mut buf)?;
+            resp.replace_body(buf);
+            resp.headers_mut().insert(
+                http::header::CONTENT_TYPE,
+                http::header::HeaderValue::from_static("text/html"),
+            );
+        }
+        Ok(Response::Done(resp))
+    }
+}
 
 fn livereload_handler(_: HttpRequest) -> &'static str {
     LIVE_RELOAD
@@ -155,6 +183,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         let sys = actix::System::new("http-server");
         server::new(move || {
             App::new()
+            .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
             .resource(r"/livereload.js", |r| r.f(livereload_handler))
             // Start a webserver that serves the `output_dir` directory
             .handler(r"/", fs::StaticFiles::new(&static_root)

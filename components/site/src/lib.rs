@@ -526,6 +526,7 @@ impl Site {
         if self.config.generate_rss {
             self.render_rss_feed()?;
         }
+        self.render_404()?;
         self.render_robots()?;
         // `render_categories` and `render_tags` will check whether the config allows
         // them to render or not
@@ -658,6 +659,15 @@ impl Site {
             }
         }
         Ok(())
+    }
+
+    /// Renders 404.html
+    pub fn render_404(&self) -> Result<()> {
+        ensure_directory_exists(&self.output_path)?;
+        create_file(
+            &self.output_path.join("404.html"),
+            &render_template("404.html", &self.tera, &Context::new(), &self.config.theme)?
+        )
     }
 
     /// Renders robots.txt
