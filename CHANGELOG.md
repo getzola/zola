@@ -12,6 +12,8 @@
 - Add `year`, `month` and `day` variables to pages with a date
 - Fix panic when live reloading a change on a file without extensions
 - Add image resizing support
+- Add a 404 template
+- Enable preserve-order feature of Tera
 
 ## 0.3.4 (2018-06-22)
 

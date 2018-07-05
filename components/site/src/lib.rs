@@ -664,9 +664,11 @@ impl Site {
     /// Renders 404.html
     pub fn render_404(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
+        let mut context = Context::new();
+        context.insert("config", &self.config);
         create_file(
             &self.output_path.join("404.html"),
-            &render_template("404.html", &self.tera, &Context::new(), &self.config.theme)?
+            &render_template("404.html", &self.tera, &context, &self.config.theme)?
         )
     }
 
