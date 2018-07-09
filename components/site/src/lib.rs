@@ -39,7 +39,7 @@ use utils::net::get_available_port;
 use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::{SortBy, InsertAnchor};
-use taxonomies::Taxonomy;
+use taxonomies::{Taxonomy, find_taxonomies};
 use pagination::Paginator;
 
 use rayon::prelude::*;
@@ -74,8 +74,7 @@ pub struct Site {
     pub output_path: PathBuf,
     content_path: PathBuf,
     pub static_path: PathBuf,
-    pub tags: Option<Taxonomy>,
-    pub categories: Option<Taxonomy>,
+    pub taxonomies: Vec<Taxonomy>,
     /// A map of all .md files (section and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
     pub permalinks: HashMap<String, String>,
@@ -128,8 +127,7 @@ impl Site {
             output_path: path.join("public"),
             content_path,
             static_path,
-            tags: None,
-            categories: None,
+            taxonomies: Vec::new(),
             permalinks: HashMap::new(),
         };
 
@@ -248,7 +246,7 @@ impl Site {
         self.register_early_global_fns();
         self.render_markdown()?;
         self.populate_sections();
-        self.populate_tags_and_categories();
+        self.populate_taxonomies();
         self.register_tera_global_fns();
 
         Ok(())
@@ -302,7 +300,7 @@ impl Site {
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
             "get_taxonomy_url",
-            global_fns::make_get_taxonomy_url(self.tags.clone(), self.categories.clone())
+            global_fns::make_get_taxonomy_url(self.taxonomies.clone())
         );
     }
 
@@ -409,15 +407,12 @@ impl Site {
     }
 
     /// Find all the tags and categories if it's asked in the config
-    pub fn populate_tags_and_categories(&mut self) {
-        let generate_tags_pages = self.config.generate_tags_pages;
-        let generate_categories_pages = self.config.generate_categories_pages;
-        if !generate_tags_pages && !generate_categories_pages {
+    pub fn populate_taxonomies(&mut self) {
+        if self.config.taxonomies.is_empty() {
             return;
         }
 
-        // TODO: can we pass a reference?
-        let (tags, categories) = Taxonomy::find_tags_and_categories(
+        self.taxonomies = find_taxonomies(
             &self.config,
             self.pages
                 .values()
@@ -426,12 +421,6 @@ impl Site {
                 .collect::<Vec<_>>()
                 .as_slice()
         );
-        if generate_tags_pages {
-            self.tags = Some(tags);
-        }
-        if generate_categories_pages {
-            self.categories = Some(categories);
-        }
     }
 
     /// Inject live reload script tag if in live reload mode
@@ -528,10 +517,7 @@ impl Site {
         }
         self.render_404()?;
         self.render_robots()?;
-        // `render_categories` and `render_tags` will check whether the config allows
-        // them to render or not
-        self.render_categories()?;
-        self.render_tags()?;
+        self.render_taxonomies()?;
 
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
@@ -681,19 +667,10 @@ impl Site {
         )
     }
 
-    /// Renders all categories and the single category pages if there are some
-    pub fn render_categories(&self) -> Result<()> {
-        if let Some(ref categories) = self.categories {
-            self.render_taxonomy(categories)?;
-        }
-
-        Ok(())
-    }
-
-    /// Renders all tags and the single tag pages if there are some
-    pub fn render_tags(&self) -> Result<()> {
-        if let Some(ref tags) = self.tags {
-            self.render_taxonomy(tags)?;
+    /// Renders all taxonomies with at least one non-draft post
+    pub fn render_taxonomies(&self) -> Result<()> {
+        for taxonomy in &self.taxonomies {
+            self.render_taxonomy(taxonomy)?;
         }
 
         Ok(())
@@ -705,7 +682,7 @@ impl Site {
         }
 
         ensure_directory_exists(&self.output_path)?;
-        let output_path = self.output_path.join(&taxonomy.get_list_name());
+        let output_path = self.output_path.join(&taxonomy.kind.name);
         let list_output = taxonomy.render_list(&self.tera, &self.config)?;
         create_directory(&output_path)?;
         create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
@@ -752,31 +729,19 @@ impl Site {
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.add("sections", &sections);
 
-        let mut categories = vec![];
-        if let Some(ref c) = self.categories {
-            let name = c.get_list_name();
-            categories.push(SitemapEntry::new(self.config.make_permalink(&name), None));
-            for item in &c.items {
-                categories.push(
-                    SitemapEntry::new(self.config.make_permalink(&format!("{}/{}", &name, item.slug)), None),
-                );
+        let mut taxonomies = vec![];
+        for taxonomy in &self.taxonomies {
+            let name = &taxonomy.kind.name;
+            let mut terms = vec![];
+            terms.push(SitemapEntry::new(self.config.make_permalink(name), None));
+            for item in &taxonomy.items {
+                terms.push(SitemapEntry::new(self.config.make_permalink(&format!("{}/{}", &name, item.slug)), None));
             }
+            terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
+            taxonomies.push(terms);
         }
-        categories.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.add("categories", &categories);
+        context.add("taxonomies", &taxonomies);
 
-        let mut tags = vec![];
-        if let Some(ref t) = self.tags {
-            let name = t.get_list_name();
-            tags.push(SitemapEntry::new(self.config.make_permalink(&name), None));
-            for item in &t.items {
-                tags.push(
-                    SitemapEntry::new(self.config.make_permalink(&format!("{}/{}", &name, item.slug)), None),
-                );
-            }
-        }
-        tags.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.add("tags", &tags);
         context.add("config", &self.config);
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;

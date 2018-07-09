@@ -14,18 +14,12 @@ use std::collections::HashMap;
 use slug::slugify;
 use tera::{Context, Tera};
 
-use config::Config;
+use config::{Config, Taxonomy as TaxonomyConfig};
 use errors::{Result, ResultExt};
 use content::{Page, sort_pages};
 use front_matter::SortBy;
 use utils::templates::render_template;
 
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum TaxonomyKind {
-    Tags,
-    Categories,
-}
 
 /// A tag or category
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -37,15 +31,14 @@ pub struct TaxonomyItem {
 }
 
 impl TaxonomyItem {
-    pub fn new(name: &str, kind: TaxonomyKind, config: &Config, pages: Vec<Page>) -> TaxonomyItem {
+    pub fn new(name: &str, path: &str, config: &Config, pages: Vec<Page>) -> TaxonomyItem {
         // Taxonomy are almost always used for blogs so we filter by dates
         // and it's not like we can sort things across sections by anything other
         // than dates
         let (mut pages, ignored_pages) = sort_pages(pages, SortBy::Date);
         let slug = slugify(name);
         let permalink = {
-            let kind_path = if kind == TaxonomyKind::Tags { "tags" } else { "categories" };
-            config.make_permalink(&format!("/{}/{}", kind_path, slug))
+            config.make_permalink(&format!("/{}/{}", path, slug))
         };
 
         // We still append pages without dates at the end
@@ -63,47 +56,17 @@ impl TaxonomyItem {
 /// All the tags or categories
 #[derive(Debug, Clone, PartialEq)]
 pub struct Taxonomy {
-    pub kind: TaxonomyKind,
+    pub kind: TaxonomyConfig,
     // this vec is sorted by the count of item
     pub items: Vec<TaxonomyItem>,
 }
 
 impl Taxonomy {
-    pub fn find_tags_and_categories(config: &Config, all_pages: &[Page]) -> (Taxonomy, Taxonomy) {
-        let mut tags = HashMap::new();
-        let mut categories = HashMap::new();
-
-        // Find all the tags/categories first
-        for page in all_pages {
-            if let Some(ref category) = page.meta.category {
-                categories
-                    .entry(category.to_string())
-                    .or_insert_with(|| vec![])
-                    .push(page.clone());
-            }
-
-            if let Some(ref t) = page.meta.tags {
-                for tag in t {
-                    tags
-                        .entry(tag.to_string())
-                        .or_insert_with(|| vec![])
-                        .push(page.clone());
-                }
-            }
-        }
-
-        // Then make TaxonomyItem out of them, after sorting it
-        let tags_taxonomy = Taxonomy::new(TaxonomyKind::Tags, config, tags);
-        let categories_taxonomy = Taxonomy::new(TaxonomyKind::Categories, config, categories);
-
-        (tags_taxonomy, categories_taxonomy)
-    }
-
-    fn new(kind: TaxonomyKind, config: &Config, items: HashMap<String, Vec<Page>>) -> Taxonomy {
+    fn new(kind: TaxonomyConfig, config: &Config, items: HashMap<String, Vec<Page>>) -> Taxonomy {
         let mut sorted_items = vec![];
-        for (name, pages) in &items {
+        for (name, pages) in items {
             sorted_items.push(
-                TaxonomyItem::new(name, kind, config, pages.clone())
+                TaxonomyItem::new(&name, &kind.name, config, pages)
             );
         }
         sorted_items.sort_by(|a, b| a.name.cmp(&b.name));
@@ -122,69 +85,121 @@ impl Taxonomy {
         self.len() == 0
     }
 
-    pub fn get_single_item_name(&self) -> String {
-        match self.kind {
-            TaxonomyKind::Tags => "tag".to_string(),
-            TaxonomyKind::Categories => "category".to_string(),
-        }
-    }
-
-    pub fn get_list_name(&self) -> String {
-        match self.kind {
-            TaxonomyKind::Tags => "tags".to_string(),
-            TaxonomyKind::Categories => "categories".to_string(),
-        }
-    }
-
     pub fn render_single_item(&self, item: &TaxonomyItem, tera: &Tera, config: &Config) -> Result<String> {
-        let name = self.get_single_item_name();
         let mut context = Context::new();
         context.add("config", config);
-        context.add(&name, item);
-        context.add("current_url", &config.make_permalink(&format!("{}/{}", name, item.slug)));
-        context.add("current_path", &format!("/{}/{}", name, item.slug));
+        context.add("term", item);
+        context.add("current_url", &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)));
+        context.add("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
-        render_template(&format!("{}.html", name), tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render {} page.", name))
+        render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme)
+            .chain_err(|| format!("Failed to render single term {} page.", self.kind.name))
     }
 
     pub fn render_list(&self, tera: &Tera, config: &Config) -> Result<String> {
-        let name = self.get_list_name();
         let mut context = Context::new();
         context.add("config", config);
-        context.add(&name, &self.items);
-        context.add("current_url", &config.make_permalink(&name));
-        context.add("current_path", &name);
+        context.add("terms", &self.items);
+        context.add("current_url", &config.make_permalink(&self.kind.name));
+        context.add("current_path", &self.kind.name);
 
-        render_template(&format!("{}.html", name), tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render {} page.", name))
+        render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme)
+            .chain_err(|| format!("Failed to render a list of {} page.", self.kind.name))
     }
 }
+
+pub fn find_taxonomies(config: &Config, all_pages: &[Page]) -> Vec<Taxonomy> {
+    let taxonomies_def = {
+        let mut m = HashMap::new();
+        for t in &config.taxonomies {
+            m.insert(t.name.clone(), t);
+        }
+        m
+    };
+    let mut all_taxonomies = HashMap::new();
+
+    // Find all the taxonomies first
+    for page in all_pages {
+        for (name, val) in &page.meta.taxonomies {
+            if taxonomies_def.contains_key(name) {
+                all_taxonomies
+                    .entry(name)
+                    .or_insert_with(|| HashMap::new());
+
+                for v in val {
+                    all_taxonomies.get_mut(name)
+                        .unwrap()
+                        .entry(v.to_string())
+                        .or_insert_with(|| vec![])
+                        .push(page.clone());
+                }
+            } else {
+                // TODO: bail with error
+            }
+        }
+    }
+
+    let mut taxonomies = vec![];
+
+    for (name, taxo) in all_taxonomies {
+        taxonomies.push(Taxonomy::new(taxonomies_def[name].clone(), config, taxo));
+    }
+
+    taxonomies
+}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
 
-    use config::Config;
+    use config::{Config, Taxonomy};
     use content::Page;
 
     #[test]
     fn can_make_taxonomies() {
-        let config = Config::default();
+        let mut config = Config::default();
+        config.taxonomies = vec![
+            Taxonomy {name: "categories".to_string(), paginate: None, rss: None},
+            Taxonomy {name: "tags".to_string(), paginate: None, rss: None},
+            Taxonomy {name: "authors".to_string(), paginate: None, rss: None},
+        ];
         let mut page1 = Page::default();
-        page1.meta.tags = Some(vec!["rust".to_string(), "db".to_string()]);
-        page1.meta.category = Some("Programming tutorials".to_string());
+        let mut taxo_page1 = HashMap::new();
+        taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
+        taxo_page1.insert("categories".to_string(), vec!["Programming tutorials".to_string()]);
+        page1.meta.taxonomies = taxo_page1;
         let mut page2 = Page::default();
-        page2.meta.tags = Some(vec!["rust".to_string(), "js".to_string()]);
-        page2.meta.category = Some("Other".to_string());
+        let mut taxo_page2 = HashMap::new();
+        taxo_page2.insert("tags".to_string(), vec!["rust".to_string(), "js".to_string()]);
+        taxo_page2.insert("categories".to_string(), vec!["Other".to_string()]);
+        page2.meta.taxonomies = taxo_page2;
         let mut page3 = Page::default();
-        page3.meta.tags = Some(vec!["js".to_string()]);
+        let mut taxo_page3 = HashMap::new();
+        taxo_page3.insert("tags".to_string(), vec!["js".to_string()]);
+        taxo_page3.insert("authors".to_string(), vec!["Vincent Prouillet".to_string()]);
+        page3.meta.taxonomies = taxo_page3;
         let pages = vec![page1, page2, page3];
 
-        let (tags, categories) = Taxonomy::find_tags_and_categories(&config, &pages);
-
+        let taxonomies = find_taxonomies(&config, &pages);
+        let (tags, categories, authors) = {
+            let mut t = None;
+            let mut c = None;
+            let mut a = None;
+            for x in taxonomies {
+                match x.kind.name.as_ref() {
+                    "tags" => t = Some(x),
+                    "categories" => c = Some(x),
+                    "authors" => a = Some(x),
+                    _ => unreachable!(),
+                }
+            }
+            (t.unwrap(), c.unwrap(), a.unwrap())
+        };
         assert_eq!(tags.items.len(), 3);
         assert_eq!(categories.items.len(), 2);
+        assert_eq!(authors.items.len(), 1);
 
         assert_eq!(tags.items[0].name, "db");
         assert_eq!(tags.items[0].slug, "db");

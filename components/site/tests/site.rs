@@ -1,6 +1,7 @@
 extern crate site;
 extern crate tempfile;
 
+use std::collections::HashMap;
 use std::env;
 use std::path::Path;
 use std::fs::File;
@@ -209,28 +210,27 @@ fn can_build_site_with_live_reload() {
 }
 
 #[test]
-fn can_build_site_with_categories() {
+fn can_build_site_with_taxonomies() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.generate_categories_pages = true;
     site.load().unwrap();
 
     for (i, page) in site.pages.values_mut().enumerate() {
-        page.meta.category = if i % 2 == 0 {
-            Some("A".to_string())
-        } else {
-            Some("B".to_string())
+        page.meta.taxonomies = {
+            let mut taxonomies = HashMap::new();
+            taxonomies.insert("categories".to_string(), vec![if i % 2 == 0 { "A" } else { "B" }.to_string()]);
+            taxonomies
         };
     }
-    site.populate_tags_and_categories();
+    site.populate_taxonomies();
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
-    assert_eq!(site.categories.unwrap().len(), 2);
+    assert_eq!(site.taxonomies.len(), 1);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -246,7 +246,6 @@ fn can_build_site_with_categories() {
     assert!(file_exists!(public, "posts/tutorials/index.html"));
     assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
     assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
-    // TODO: add assertion for syntax highlighting
 
     // Categories are there
     assert!(file_exists!(public, "categories/index.html"));
@@ -260,58 +259,6 @@ fn can_build_site_with_categories() {
     // Categories are in the sitemap
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/</loc>"));
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"));
-}
-
-#[test]
-fn can_build_site_with_tags() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.generate_tags_pages = true;
-    site.load().unwrap();
-
-    for (i, page) in site.pages.values_mut().enumerate() {
-        page.meta.tags = if i % 2 == 0 {
-            Some(vec!["tag1".to_string(), "tag2".to_string()])
-        } else {
-            Some(vec!["tag with space".to_string()])
-        };
-    }
-    site.populate_tags_and_categories();
-
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
-
-    assert!(Path::new(&public).exists());
-    assert_eq!(site.tags.unwrap().len(), 3);
-
-    assert!(file_exists!(public, "index.html"));
-    assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_exists!(public, "robots.txt"));
-    assert!(file_exists!(public, "a-fixed-url/index.html"));
-    assert!(file_exists!(public, "posts/python/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
-    assert!(file_exists!(public, "posts/with-assets/index.html"));
-
-    // Sections
-    assert!(file_exists!(public, "posts/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
-    assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
-    // TODO: add assertion for syntax highlighting
-
-    // Tags are there
-    assert!(file_exists!(public, "tags/index.html"));
-    assert!(file_exists!(public, "tags/tag1/index.html"));
-    assert!(file_exists!(public, "tags/tag2/index.html"));
-    assert!(file_exists!(public, "tags/tag-with-space/index.html"));
-    // Categories aren't
-    assert_eq!(file_exists!(public, "categories/index.html"), false);
-    // Tags are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/tags/tag-with-space/</loc>"));
 }
 
 #[test]

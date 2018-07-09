@@ -26,10 +26,8 @@ pub fn find_parent_section<'a>(site: &'a Site, page: &Page) -> Option<&'a Sectio
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PageChangesNeeded {
-    /// Editing `tags`
-    Tags,
-    /// Editing `categories`
-    Categories,
+    /// Editing `taxonomies`
+    Taxonomies,
     /// Editing `date`, `order` or `weight`
     Sort,
     /// Editing anything causes a re-render of the page
@@ -85,12 +83,8 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &Section
 fn find_page_front_matter_changes(current: &PageFrontMatter, other: &PageFrontMatter) -> Vec<PageChangesNeeded> {
     let mut changes_needed = vec![];
 
-    if current.tags != other.tags {
-        changes_needed.push(PageChangesNeeded::Tags);
-    }
-
-    if current.category != other.category {
-        changes_needed.push(PageChangesNeeded::Categories);
+    if current.taxonomies != other.taxonomies {
+        changes_needed.push(PageChangesNeeded::Taxonomies);
     }
 
     if current.date != other.date || current.order != other.order || current.weight != other.weight {
@@ -117,8 +111,8 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
         if let Some(p) = site.pages.remove(path) {
             site.permalinks.remove(&p.file.relative);
 
-            if p.meta.has_tags() || p.meta.category.is_some() {
-                site.populate_tags_and_categories();
+            if !p.meta.taxonomies.is_empty() {
+                site.populate_taxonomies();
             }
 
             // if there is a parent section, we will need to re-render it
@@ -208,26 +202,14 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
             }
 
             // Front matter changed
-            let mut taxonomies_populated = false;
             let mut sections_populated = false;
             for changes in find_page_front_matter_changes(&site.pages[path].meta, &prev.meta) {
                 // Sort always comes first if present so the rendering will be fine
                 match changes {
-                    PageChangesNeeded::Tags => {
-                        if !taxonomies_populated {
-                            site.populate_tags_and_categories();
-                            taxonomies_populated = true;
-                        }
+                    PageChangesNeeded::Taxonomies => {
+                        site.populate_taxonomies();
                         site.register_tera_global_fns();
-                        site.render_tags()?;
-                    },
-                    PageChangesNeeded::Categories => {
-                        if !taxonomies_populated {
-                            site.populate_tags_and_categories();
-                            taxonomies_populated = true;
-                        }
-                        site.register_tera_global_fns();
-                        site.render_categories()?;
+                        site.render_taxonomies()?;
                     },
                     PageChangesNeeded::Sort => {
                         let section_path = match find_parent_section(site, &site.pages[path]) {
@@ -258,7 +240,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
         // It's a new page!
         None => {
             site.populate_sections();
-            site.populate_tags_and_categories();
+            site.populate_taxonomies();
             site.register_tera_global_fns();
             // No need to optimise that yet, we can revisit if it becomes an issue
             site.build()
@@ -324,8 +306,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
         "sitemap.xml" => site.render_sitemap(),
         "rss.xml" => site.render_rss_feed(),
         "robots.txt" => site.render_robots(),
-        "categories.html" | "category.html" => site.render_categories(),
-        "tags.html" | "tag.html" => site.render_tags(),
+        "single.html" | "list.html" => site.render_taxonomies(),
         "page.html" => {
             site.render_sections()?;
             site.render_orphan_pages()
@@ -345,8 +326,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             site.populate_sections();
             site.render_sections()?;
             site.render_orphan_pages()?;
-            site.render_categories()?;
-            site.render_tags()
+            site.render_taxonomies()
         },
     }
 }
@@ -354,6 +334,8 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use front_matter::{PageFrontMatter, SectionFrontMatter, SortBy};
     use super::{
         find_page_front_matter_changes, find_section_front_matter_changes,
@@ -361,24 +343,21 @@ mod tests {
     };
 
     #[test]
-    fn can_find_tag_changes_in_page_frontmatter() {
-        let new = PageFrontMatter { tags: Some(vec!["a tag".to_string()]), ..PageFrontMatter::default() };
+    fn can_find_taxonomy_changes_in_page_frontmatter() {
+        let mut taxonomies = HashMap::new();
+        taxonomies.insert("tags".to_string(), vec!["a tag".to_string()]);
+        let new = PageFrontMatter { taxonomies, ..PageFrontMatter::default() };
         let changes = find_page_front_matter_changes(&PageFrontMatter::default(), &new);
-        assert_eq!(changes, vec![PageChangesNeeded::Tags, PageChangesNeeded::Render]);
-    }
-
-    #[test]
-    fn can_find_category_changes_in_page_frontmatter() {
-        let current = PageFrontMatter { category: Some("a category".to_string()), ..PageFrontMatter::default() };
-        let changes = find_page_front_matter_changes(&current, &PageFrontMatter::default());
-        assert_eq!(changes, vec![PageChangesNeeded::Categories, PageChangesNeeded::Render]);
+        assert_eq!(changes, vec![PageChangesNeeded::Taxonomies, PageChangesNeeded::Render]);
     }
 
     #[test]
     fn can_find_multiple_changes_in_page_frontmatter() {
-        let current = PageFrontMatter { category: Some("a category".to_string()), order: Some(1), ..PageFrontMatter::default() };
+        let mut taxonomies = HashMap::new();
+        taxonomies.insert("categories".to_string(), vec!["a category".to_string()]);
+        let current = PageFrontMatter { taxonomies, order: Some(1), ..PageFrontMatter::default() };
         let changes = find_page_front_matter_changes(&current, &PageFrontMatter::default());
-        assert_eq!(changes, vec![PageChangesNeeded::Categories, PageChangesNeeded::Sort, PageChangesNeeded::Render]);
+        assert_eq!(changes, vec![PageChangesNeeded::Taxonomies, PageChangesNeeded::Sort, PageChangesNeeded::Render]);
     }
 
     #[test]

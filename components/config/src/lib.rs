@@ -28,6 +28,17 @@ use theme::Theme;
 static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
 
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Taxonomy {
+    /// The name used in the URL, usually the plural
+    pub name: String,
+    /// If this is set, the list of individual taxonomy term page will be paginated
+    /// by this much
+    pub paginate: Option<usize>,
+    /// Whether to generate a RSS feed only for each taxonomy term
+    pub rss: Option<bool>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -56,10 +67,8 @@ pub struct Config {
     pub generate_rss: bool,
     /// The number of articles to include in the RSS feed. Defaults to 10_000
     pub rss_limit: usize,
-    /// Whether to generate tags and individual tag pages if some pages have them. Defaults to true
-    pub generate_tags_pages: bool,
-    /// Whether to generate categories and individual tag categories if some pages have them. Defaults to true
-    pub generate_categories_pages: bool,
+
+    pub taxonomies: Vec<Taxonomy>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
@@ -191,8 +200,7 @@ impl Default for Config {
             default_language: "en".to_string(),
             generate_rss: false,
             rss_limit: 10_000,
-            generate_tags_pages: true,
-            generate_categories_pages: true,
+            taxonomies: Vec::new(),
             compile_sass: false,
             build_search_index: false,
             ignored_content: Vec::new(),

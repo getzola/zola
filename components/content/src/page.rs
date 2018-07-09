@@ -238,7 +238,7 @@ impl Default for Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 21)?;
+        let mut state = serializer.serialize_struct("page", 20)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
@@ -258,8 +258,7 @@ impl ser::Serialize for Page {
         state.serialize_field("components", &self.components)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("summary", &self.summary)?;
-        state.serialize_field("tags", &self.meta.tags)?;
-        state.serialize_field("category", &self.meta.category)?;
+        state.serialize_field("taxonomies", &self.meta.taxonomies)?;
         state.serialize_field("extra", &self.meta.extra)?;
         let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
         state.serialize_field("word_count", &word_count)?;
