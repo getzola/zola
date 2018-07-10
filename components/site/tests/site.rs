@@ -251,6 +251,8 @@ fn can_build_site_with_taxonomies() {
     assert!(file_exists!(public, "categories/index.html"));
     assert!(file_exists!(public, "categories/a/index.html"));
     assert!(file_exists!(public, "categories/b/index.html"));
+    assert!(file_exists!(public, "categories/a/rss.xml"));
+    assert!(file_contains!(public, "categories/a/rss.xml", "https://replace-this-with-your-url.com/categories/a/rss.xml"));
     // Extending from a theme works
     assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
     // Tags aren't

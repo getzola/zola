@@ -8,7 +8,7 @@ theme = "sample"
 
 taxonomies = [
     {name = "tags"},
-    {name = "categories"},
+    {name = "categories", rss = true},
 ]
 
 [extra.author]
