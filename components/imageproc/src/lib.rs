@@ -328,6 +328,11 @@ impl Processor {
     }
 
     pub fn prune(&self) -> Result<()> {
+        // Do not create folders if they don't exist
+        if !self.resized_path.exists() {
+            return Ok(());
+        }
+
         ufs::ensure_directory_exists(&self.resized_path)?;
         let entries = fs::read_dir(&self.resized_path)?;
         for entry in entries {
@@ -350,6 +355,10 @@ impl Processor {
     }
 
     pub fn do_process(&mut self) -> Result<()> {
+        if !self.img_ops.is_empty() {
+            ufs::ensure_directory_exists(&self.resized_path)?;
+        }
+
         self.img_ops.par_iter().map(|(hash, op)| {
             let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id));
             op.perform(&self.content_path, &target)
