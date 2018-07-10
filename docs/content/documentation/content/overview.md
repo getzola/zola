@@ -63,3 +63,14 @@ the public web site. You can achieve this by simply setting `ignored_content` in
 ```
 ignored_content = ["*.xlsx"]
 ```
+
+## Static assets
+
+In addition to placing content files in the `content` directory, you may also place content 
+files in the `static` directory.  Any files/folders that you place in the `static` directory
+will be copied, without modification, to the public directory.  
+
+Typically, you might put site-wide assets (such as the site favicon, site logos or site-wide
+JavaScript) in the root of the static directory.  You can also place any HTML or other files that
+you wish to be included without modification (that is, without being parsed as Markdown files)
+into the static directory.
