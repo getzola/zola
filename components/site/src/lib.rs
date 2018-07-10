@@ -669,6 +669,7 @@ impl Site {
 
     /// Renders all taxonomies with at least one non-draft post
     pub fn render_taxonomies(&self) -> Result<()> {
+        // TODO: make parallel?
         for taxonomy in &self.taxonomies {
             self.render_taxonomy(taxonomy)?;
         }
@@ -697,7 +698,6 @@ impl Site {
 
                 if let Some(rss) = taxonomy.kind.rss {
                     if rss {
-                        println!("Rendering RSS at");
                         // TODO: can we get rid of `clone()`?
                         self.render_rss_feed(
                             Some(item.pages.clone()),
@@ -804,7 +804,6 @@ impl Site {
             let mut output_path = self.output_path.clone().to_path_buf();
             for component in base.components() {
                 output_path.push(component);
-                println!("{:?}", output_path);
                 if !output_path.exists() {
                     create_directory(&output_path)?;
                 }
