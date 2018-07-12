@@ -25,7 +25,7 @@ term-painter = "0.2"
 url = "1.5"
 # Below is for the serve cmd
 actix = "~0.5"
-actix-web = { version = "~0.6", features = [] }
+actix-web = { version = "~0.6", default-features = false, features = [] }
 notify = "4"
 ws = "0.7"
 ctrlc = "3"
