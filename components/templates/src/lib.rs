@@ -5,7 +5,6 @@ extern crate tera;
 extern crate base64;
 extern crate pulldown_cmark;
 
-#[macro_use]
 extern crate errors;
 extern crate utils;
 extern crate content;

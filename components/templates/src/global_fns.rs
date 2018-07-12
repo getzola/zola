@@ -134,7 +134,7 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
     })
 }
 
-pub fn make_get_taxonomy_url(all_taxonomies: Vec<Taxonomy>) -> GlobalFn {
+pub fn make_get_taxonomy(all_taxonomies: Vec<Taxonomy>) -> GlobalFn {
     let mut taxonomies = HashMap::new();
     for taxonomy in all_taxonomies {
         taxonomies.insert(taxonomy.kind.name.clone(), taxonomy);
@@ -143,26 +143,16 @@ pub fn make_get_taxonomy_url(all_taxonomies: Vec<Taxonomy>) -> GlobalFn {
         let kind = required_arg!(
             String,
             args.get("kind"),
-            "`get_taxonomy_url` requires a `kind` argument with a string value"
-        );
-        let name = required_arg!(
-            String,
-            args.get("name"),
-            "`get_taxonomy_url` requires a `name` argument with a string value"
+            "`get_taxonomy` requires a `kind` argument with a string value"
         );
         let container = match taxonomies.get(&kind) {
             Some(c) => c,
             None => return Err(
-                format!("`get_taxonomy_url` received an unknown taxonomy as kind: {}", kind).into()
+                format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
             ),
         };
 
-        for item in &container.items {
-            if item.name == name {
-                return Ok(to_value(item.permalink.clone()).unwrap());
-            }
-        }
-        bail!("`get_taxonomy_url`: couldn't find `{}` in `{}` taxonomy", name, kind);
+        return Ok(to_value(container).unwrap());
     })
 }
 
@@ -216,7 +206,7 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
 
 #[cfg(test)]
 mod tests {
-    use super::{make_get_url, make_get_taxonomy_url, make_trans};
+    use super::{make_get_url, make_get_taxonomy, make_trans};
 
     use std::collections::HashMap;
 
@@ -267,7 +257,7 @@ mod tests {
     }
 
     #[test]
-    fn can_get_tag_url() {
+    fn can_get_taxonomy() {
         let taxo_config = TaxonomyConfig {name: "tags".to_string(), ..TaxonomyConfig::default()};
         let tag = TaxonomyItem::new(
             "Prog amming",
@@ -280,16 +270,14 @@ mod tests {
             items: vec![tag],
         };
 
-        let static_fn = make_get_taxonomy_url(vec![tags]);
+        let static_fn = make_get_taxonomy(vec![tags.clone()]);
         // can find it correctly
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
-        args.insert("name".to_string(), to_value("Prog amming").unwrap());
-        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/tags/prog-amming/");
+        assert_eq!(static_fn(args).unwrap(), to_value(&tags).unwrap());
         // and errors if it can't find it
         let mut args = HashMap::new();
-        args.insert("kind".to_string(), to_value("tags").unwrap());
-        args.insert("name".to_string(), to_value("random").unwrap());
+        args.insert("kind".to_string(), to_value("something-else").unwrap());
         assert!(static_fn(args).is_err());
     }
 

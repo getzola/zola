@@ -300,7 +300,7 @@ impl Site {
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
             "get_taxonomy_url",
-            global_fns::make_get_taxonomy_url(self.taxonomies.clone())
+            global_fns::make_get_taxonomy(self.taxonomies.clone())
         );
     }
 

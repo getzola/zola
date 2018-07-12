@@ -54,7 +54,7 @@ impl TaxonomyItem {
 }
 
 /// All the tags or categories
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Taxonomy {
     pub kind: TaxonomyConfig,
     // this vec is sorted by the count of item
