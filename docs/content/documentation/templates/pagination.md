@@ -3,9 +3,14 @@ title = "Pagination"
 weight = 30
 +++
 
+Two things can get paginated: a section or a taxonomy term.
+
 A paginated section gets the same `section` variable as a normal
-[section page](./documentation/templates/pages-sections.md#section-variables).
-In addition, a paginated section gets a `paginator` variable of the `Pager` type:
+[section page](./documentation/templates/pages-sections.md#section-variables)
+while a paginated taxonomy gets the a `taxonomy` variable of type `TaxonomyConfig`, equivalent
+to the taxonomy definition in the `config.toml`.
+
+In addition, a paginated page gets a `paginator` variable of the `Pager` type:
 
 ```ts
 // How many items per page

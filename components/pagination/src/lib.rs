@@ -6,6 +6,7 @@ extern crate errors;
 extern crate config;
 extern crate content;
 extern crate utils;
+extern crate taxonomies;
 
 #[cfg(test)]
 extern crate front_matter;
@@ -18,6 +19,14 @@ use errors::{Result, ResultExt};
 use config::Config;
 use content::{Page, Section};
 use utils::templates::render_template;
+use taxonomies::{Taxonomy, TaxonomyItem};
+
+
+#[derive(Clone, Debug, PartialEq)]
+enum PaginationRoot<'a> {
+    Section(&'a Section),
+    Taxonomy(&'a Taxonomy),
+}
 
 
 /// A list of all the pages in the paginator with their index and links
@@ -63,22 +72,62 @@ pub struct Paginator<'a> {
     pub pagers: Vec<Pager<'a>>,
     /// How many content pages on a paginated page at max
     paginate_by: usize,
-    /// The section struct we're building the paginator for
-    section: &'a Section,
+    /// The thing we are creating the paginator for: section or taxonomy
+    root: PaginationRoot<'a>,
+    // Those below can be obtained from the root but it would make the code more complex than needed
+    pub permalink: String,
+    path: String,
+    pub paginate_path: String,
+    is_index: bool,
 }
 
 impl<'a> Paginator<'a> {
-    /// Create a new paginator
+    /// Create a new paginator from a section
     /// It will always at least create one pager (the first) even if there are no pages to paginate
-    pub fn new(all_pages: &'a [Page], section: &'a Section) -> Paginator<'a> {
+    pub fn from_section(all_pages: &'a [Page], section: &'a Section) -> Paginator<'a> {
         let paginate_by = section.meta.paginate_by.unwrap();
+        let mut paginator = Paginator {
+            all_pages,
+            pagers: vec![],
+            paginate_by,
+            root: PaginationRoot::Section(section),
+            permalink: section.permalink.clone(),
+            path: section.path.clone(),
+            paginate_path: section.meta.paginate_path.clone(),
+            is_index: section.is_index(),
+        };
+
+        paginator.fill_pagers();
+        paginator
+    }
+
+    /// Create a new paginator from a taxonomy
+    /// It will always at least create one pager (the first) even if there are no pages to paginate
+    pub fn from_taxonomy(taxonomy: &'a Taxonomy, item: &'a TaxonomyItem) -> Paginator<'a> {
+        let paginate_by = taxonomy.kind.paginate.unwrap();
+        let mut paginator = Paginator {
+            all_pages: &item.pages,
+            pagers: vec![],
+            paginate_by,
+            root: PaginationRoot::Taxonomy(taxonomy),
+            permalink: item.permalink.clone(),
+            path: format!("{}/{}", taxonomy.kind.name, item.slug),
+            paginate_path: taxonomy.kind.paginate_path.clone().unwrap_or_else(|| "pages".to_string()),
+            is_index: false,
+        };
+
+        paginator.fill_pagers();
+        paginator
+    }
+
+    fn fill_pagers(&mut self) {
         let mut pages = vec![];
         let mut current_page = vec![];
 
-        for page in all_pages {
+        for page in self.all_pages {
             current_page.push(page);
 
-            if current_page.len() == paginate_by {
+            if current_page.len() == self.paginate_by {
                 pages.push(current_page);
                 current_page = vec![];
             }
@@ -91,17 +140,23 @@ impl<'a> Paginator<'a> {
         for (index, page) in pages.iter().enumerate() {
             // First page has no pagination path
             if index == 0 {
-                pagers.push(Pager::new(1, page.clone(), section.permalink.clone(), section.path.clone()));
+                pagers.push(Pager::new(1, page.clone(), self.permalink.clone(), self.path.clone()));
                 continue;
             }
 
-            let page_path = format!("{}/{}/", section.meta.paginate_path, index + 1);
-            let permalink = format!("{}{}", section.permalink, page_path);
-            let pager_path = if section.is_index() {
+            let page_path = format!("{}/{}/", self.paginate_path, index + 1);
+            let permalink = format!("{}{}", self.permalink, page_path);
+
+            let pager_path = if self.is_index {
                 page_path
             } else {
-                format!("{}{}", section.path, page_path)
+                if self.path.ends_with("/") {
+                    format!("{}{}", self.path, page_path)
+                } else {
+                    format!("{}/{}", self.path, page_path)
+                }
             };
+
             pagers.push(Pager::new(
                 index + 1,
                 page.clone(),
@@ -112,15 +167,10 @@ impl<'a> Paginator<'a> {
 
         // We always have the index one at least
         if pagers.is_empty() {
-            pagers.push(Pager::new(1, vec![], section.permalink.clone(), section.path.clone()));
+            pagers.push(Pager::new(1, vec![], self.permalink.clone(), self.path.clone()));
         }
 
-        Paginator {
-            all_pages,
-            pagers,
-            paginate_by,
-            section,
-        }
+        self.pagers = pagers;
     }
 
     pub fn build_paginator_context(&self, current_pager: &Pager) -> HashMap<&str, Value> {
@@ -130,7 +180,7 @@ impl<'a> Paginator<'a> {
 
         // Global variables
         paginator.insert("paginate_by", to_value(self.paginate_by).unwrap());
-        paginator.insert("first", to_value(&self.section.permalink).unwrap());
+        paginator.insert("first", to_value(&self.permalink).unwrap());
         let last_pager = &self.pagers[self.pagers.len() - 1];
         paginator.insert("last", to_value(&last_pager.permalink).unwrap());
         paginator.insert(
@@ -163,13 +213,22 @@ impl<'a> Paginator<'a> {
     pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera) -> Result<String> {
         let mut context = Context::new();
         context.add("config", &config);
-        context.add("section", self.section);
+        let template_name = match self.root {
+            PaginationRoot::Section(s) => {
+                context.add("section", &s);
+                s.get_template_name()
+            },
+            PaginationRoot::Taxonomy(t) => {
+                context.add("taxonomy", &t.kind);
+                format!("{}/single.html", t.kind.name)
+            },
+        };
         context.add("current_url", &pager.permalink);
         context.add("current_path", &pager.path);
         context.add("paginator", &self.build_paginator_context(pager));
 
-        render_template(&self.section.get_template_name(), tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render pager {} of section '{}'", pager.index, self.section.file.path.display()))
+        render_template(&template_name, tera, &context, &config.theme)
+            .chain_err(|| format!("Failed to render pager {}", pager.index))
     }
 }
 
@@ -179,6 +238,8 @@ mod tests {
 
     use front_matter::SectionFrontMatter;
     use content::{Page, Section};
+    use config::{Taxonomy as TaxonomyConfig};
+    use taxonomies::{Taxonomy, TaxonomyItem};
 
     use super::Paginator;
 
@@ -205,7 +266,7 @@ mod tests {
             Page::default(),
         ];
         let section = create_section(false);
-        let paginator = Paginator::new(pages.as_slice(), &section);
+        let paginator = Paginator::from_section(pages.as_slice(), &section);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -227,7 +288,7 @@ mod tests {
             Page::default(),
         ];
         let section = create_section(true);
-        let paginator = Paginator::new(pages.as_slice(), &section);
+        let paginator = Paginator::from_section(pages.as_slice(), &section);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -249,7 +310,7 @@ mod tests {
             Page::default(),
         ];
         let section = create_section(false);
-        let paginator = Paginator::new(pages.as_slice(), &section);
+        let paginator = Paginator::from_section(pages.as_slice(), &section);
         assert_eq!(paginator.pagers.len(), 2);
 
         let context = paginator.build_paginator_context(&paginator.pagers[0]);
@@ -267,5 +328,38 @@ mod tests {
         assert_eq!(context["next"], to_value::<Option<()>>(None).unwrap());
         assert_eq!(context["previous"], to_value("https://vincent.is/posts/").unwrap());
         assert_eq!(context["current_index"], to_value(2).unwrap());
+    }
+
+    #[test]
+    fn test_can_create_paginator_for_taxonomy() {
+        let pages = vec![
+            Page::default(),
+            Page::default(),
+            Page::default(),
+        ];
+        let taxonomy_def = TaxonomyConfig {
+            name: "tags".to_string(),
+            paginate: Some(2),
+            ..TaxonomyConfig::default()
+        };
+        let taxonomy_item = TaxonomyItem {
+            name: "Something".to_string(),
+            slug: "something".to_string(),
+            permalink: "https://vincent.is/tags/something/".to_string(),
+            pages,
+        };
+        let taxonomy = Taxonomy {kind: taxonomy_def, items: vec![taxonomy_item.clone()]};
+        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item);
+        assert_eq!(paginator.pagers.len(), 2);
+
+        assert_eq!(paginator.pagers[0].index, 1);
+        assert_eq!(paginator.pagers[0].pages.len(), 2);
+        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/tags/something/");
+        assert_eq!(paginator.pagers[0].path, "tags/something");
+
+        assert_eq!(paginator.pagers[1].index, 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/pages/2/");
+        assert_eq!(paginator.pagers[1].path, "tags/something/pages/2/");
     }
 }

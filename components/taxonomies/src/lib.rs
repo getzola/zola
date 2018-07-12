@@ -85,10 +85,11 @@ impl Taxonomy {
         self.len() == 0
     }
 
-    pub fn render_single_item(&self, item: &TaxonomyItem, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_term(&self, item: &TaxonomyItem, tera: &Tera, config: &Config) -> Result<String> {
         let mut context = Context::new();
         context.add("config", config);
         context.add("term", item);
+        context.add("taxonomy", &self.kind);
         context.add("current_url", &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)));
         context.add("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
@@ -96,10 +97,11 @@ impl Taxonomy {
             .chain_err(|| format!("Failed to render single term {} page.", self.kind.name))
     }
 
-    pub fn render_list(&self, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_all_terms(&self, tera: &Tera, config: &Config) -> Result<String> {
         let mut context = Context::new();
         context.add("config", config);
         context.add("terms", &self.items);
+        context.add("taxonomy", &self.kind);
         context.add("current_url", &config.make_permalink(&self.kind.name));
         context.add("current_path", &self.kind.name);
 
@@ -161,9 +163,9 @@ mod tests {
     fn can_make_taxonomies() {
         let mut config = Config::default();
         config.taxonomies = vec![
-            Taxonomy {name: "categories".to_string(), paginate: None, rss: None},
-            Taxonomy {name: "tags".to_string(), paginate: None, rss: None},
-            Taxonomy {name: "authors".to_string(), paginate: None, rss: None},
+            Taxonomy {name: "categories".to_string(), ..Taxonomy::default()},
+            Taxonomy {name: "tags".to_string(), ..Taxonomy::default()},
+            Taxonomy {name: "authors".to_string(), ..Taxonomy::default()},
         ];
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();

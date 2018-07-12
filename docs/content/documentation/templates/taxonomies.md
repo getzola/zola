@@ -5,13 +5,12 @@ weight = 40
 
 The default templates for the taxonomies pages are the following:
 
-- `$TAXONOMY_NAME/single.html`: gets a `terms` variable
-- `$TAXONOMY_NAME/list.html`: individual `term`
+- `$TAXONOMY_NAME/single.html`
+- `$TAXONOMY_NAME/list.html`
 
 You can override any of those templates by putting one with the same path in the `templates` directory.
-`terms` is an array of `TaxonomyItem` sorted alphabetically, while `term` is a single `TaxonomyItem`.
 
-A `TaxonomyItem` has the following fields:
+First, a `TaxonomyTerm` has the following fields:
 
 ```ts
 name: String;
@@ -20,4 +19,35 @@ permalink: String;
 pages: Array<Page>;
 ```
 
-As `pages` can span many sections, the `pages` array is sorted by date.
+## Non-paginated taxonomies
+If a taxonomy is not paginated, the templates get the following variables:
+
+### Single term (`single.html`)
+```ts
+// The site config
+config: Config;
+// The data of the taxonomy, from the config
+taxonomy: TaxonomyConfig;
+// The current full permalink for that page
+current_url: String;
+// The current path for that page
+current_path: String;
+// The current term being rendered
+term: TaxonomyTerm;
+```
+
+### Taxonomy list (`list.html`)
+```ts
+// The site config
+config: Config;
+// The data of the taxonomy, from the config
+taxonomy: TaxonomyConfig;
+// The current full permalink for that page
+current_url: String;
+// The current path for that page
+current_path: String;
+// All terms for that taxonomy
+terms: Array<TaxonomyTerm>;
+```
+
+## Paginated taxonomies

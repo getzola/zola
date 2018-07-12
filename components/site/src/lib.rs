@@ -684,7 +684,7 @@ impl Site {
 
         ensure_directory_exists(&self.output_path)?;
         let output_path = self.output_path.join(&taxonomy.kind.name);
-        let list_output = taxonomy.render_list(&self.tera, &self.config)?;
+        let list_output = taxonomy.render_all_terms(&self.tera, &self.config)?;
         create_directory(&output_path)?;
         create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
 
@@ -692,24 +692,25 @@ impl Site {
             .items
             .par_iter()
             .map(|item| {
-                let single_output = taxonomy.render_single_item(item, &self.tera, &self.config)?;
-                let path = output_path.join(&item.slug);
-                create_directory(&path)?;
-
-                if let Some(rss) = taxonomy.kind.rss {
-                    if rss {
-                        // TODO: can we get rid of `clone()`?
-                        self.render_rss_feed(
-                            Some(item.pages.clone()),
-                            Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug)))
-                        )?;
-                    }
+                if taxonomy.kind.rss {
+                    // TODO: can we get rid of `clone()`?
+                    self.render_rss_feed(
+                        Some(item.pages.clone()),
+                        Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug)))
+                    )?;
                 }
 
-                create_file(
-                    &path.join("index.html"),
-                    &self.inject_livereload(single_output)
-                )
+                if taxonomy.kind.is_paginated() {
+                    self.render_paginated(&output_path, &Paginator::from_taxonomy(&taxonomy, item))
+                } else {
+                    let single_output = taxonomy.render_term(item, &self.tera, &self.config)?;
+                    let path = output_path.join(&item.slug);
+                    create_directory(&path)?;
+                    create_file(
+                        &path.join("index.html"),
+                        &self.inject_livereload(single_output),
+                    )
+                }
             })
             .fold(|| Ok(()), Result::and)
             .reduce(|| Ok(()), Result::and)
@@ -850,7 +851,7 @@ impl Site {
         }
 
         if section.meta.is_paginated() {
-            self.render_paginated(&output_path, section)?;
+            self.render_paginated(&output_path, &Paginator::from_section(&section.pages, section))?;
         } else {
             let output = section.render_html(&self.tera, &self.config)?;
             create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
@@ -890,11 +891,10 @@ impl Site {
     }
 
     /// Renders a list of pages when the section/index is wanting pagination.
-    pub fn render_paginated(&self, output_path: &Path, section: &Section) -> Result<()> {
+    pub fn render_paginated(&self, output_path: &Path, paginator: &Paginator) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let paginator = Paginator::new(&section.pages, section);
-        let folder_path = output_path.join(&section.meta.paginate_path);
+        let folder_path = output_path.join(&paginator.paginate_path);
         create_directory(&folder_path)?;
 
         paginator
@@ -909,7 +909,7 @@ impl Site {
                     create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
                 } else {
                     create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
-                    create_file(&page_path.join("index.html"), &render_redirect_template(&section.permalink, &self.tera)?)?;
+                    create_file(&page_path.join("index.html"), &render_redirect_template(&paginator.permalink, &self.tera)?)?;
                 }
                 Ok(())
             })

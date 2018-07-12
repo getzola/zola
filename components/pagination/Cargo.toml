@@ -12,6 +12,7 @@ errors = { path = "../errors" }
 config = { path = "../config" }
 content = { path = "../content" }
 utils = { path = "../utils" }
+taxonomies = { path = "../taxonomies" }
 
 [dev-dependencies]
 front_matter = { path = "../front_matter" }

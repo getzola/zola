@@ -7,7 +7,6 @@ rss_limit = 2
 theme = "sample"
 
 taxonomies = [
-    {name = "tags"},
     {name = "categories", rss = true},
 ]
 

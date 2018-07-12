@@ -29,14 +29,37 @@ static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
 
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Taxonomy {
     /// The name used in the URL, usually the plural
     pub name: String,
     /// If this is set, the list of individual taxonomy term page will be paginated
     /// by this much
     pub paginate: Option<usize>,
-    /// Whether to generate a RSS feed only for each taxonomy term
-    pub rss: Option<bool>,
+    pub paginate_path: Option<String>,
+    /// Whether to generate a RSS feed only for each taxonomy term, defaults to false
+    pub rss: bool,
+}
+
+impl Taxonomy {
+    pub fn is_paginated(&self) -> bool {
+        if let Some(paginate_by) = self.paginate {
+            paginate_by > 0
+        } else {
+            false
+        }
+    }
+}
+
+impl Default for Taxonomy {
+    fn default() -> Taxonomy {
+        Taxonomy {
+            name: String::new(),
+            paginate: None,
+            paginate_path: None,
+            rss: false,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

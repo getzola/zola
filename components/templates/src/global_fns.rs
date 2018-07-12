@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn can_get_tag_url() {
-        let taxo_config = TaxonomyConfig {name: "tags".to_string(), paginate: None, rss: None};
+        let taxo_config = TaxonomyConfig {name: "tags".to_string(), ..TaxonomyConfig::default()};
         let tag = TaxonomyItem::new(
             "Prog amming",
             "tags",
