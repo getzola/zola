@@ -10,6 +10,9 @@
             <p><b>Author:</b> {{page.extra.author.name}}</p>
             <p><b>License:</b> {{page.extra.license}}</p>
             <p><b>Homepage:</b> <a href="{{page.extra.homepage}}">{{page.extra.homepage}}</a></p>
+            {% if page.extra.live_demo%}
+              <p><b>Live Demo:</b> <a href="{{page.extra.live_demo}}">{{page.extra.live_demo}}</a></p>
+            {% endif %}
             <p><b>Last updated:</b> {{page.extra.updated }}</p>
         </div>
     </div>

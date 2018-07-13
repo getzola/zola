@@ -10,6 +10,7 @@ created = 2018-02-22T19:13:36+01:00
 updated = 2017-11-07T17:39:37+01:00
 repository = "https://github.com/Keats/after-dark"
 homepage = "https://github.com/Keats/after-dark"
+live_demo = "https://after-dark--gutenberg-theme-demo.netlify.com/"
 minimum_version = "0.2"
 license = "MIT"
 
