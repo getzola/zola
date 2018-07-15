@@ -14,7 +14,7 @@ in the `docs/content` folder of the repository.
 | Single binary            |     ✔     |    ✔   |   ✔  |    ✕    |
 | Language                 |    Rust   |  Rust  |  Go  |  Python |
 | Syntax highlighting      |     ✔     |    ✔   |   ✔  |    ✔    |
-| Sass compilation         |     ✔     |    ✕   |   ✕  |    ✔    |
+| Sass compilation         |     ✔     |    ✕   |      |    ✔    |
 | Assets co-location       |     ✔     |    ✔   |   ✔  |    ✔    |
 | i18n                     |     ✕     |    ✕   |   ✔  |    ✔    |
 | Image processing         |     ✕     |    ✕   |   ✔  |    ✔    |
