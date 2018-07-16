@@ -3,6 +3,7 @@ extern crate serde_derive;
 extern crate tera;
 extern crate slug;
 
+#[macro_use]
 extern crate errors;
 extern crate config;
 extern crate content;
@@ -110,7 +111,7 @@ impl Taxonomy {
     }
 }
 
-pub fn find_taxonomies(config: &Config, all_pages: &[Page]) -> Vec<Taxonomy> {
+pub fn find_taxonomies(config: &Config, all_pages: &[Page]) -> Result<Vec<Taxonomy>> {
     let taxonomies_def = {
         let mut m = HashMap::new();
         for t in &config.taxonomies {
@@ -136,7 +137,7 @@ pub fn find_taxonomies(config: &Config, all_pages: &[Page]) -> Vec<Taxonomy> {
                         .push(page.clone());
                 }
             } else {
-                // TODO: bail with error
+                bail!("Page `{}` has taxonomy `{}` which is not defined in config.toml", page.file.path.display(), name);
             }
         }
     }
@@ -147,7 +148,7 @@ pub fn find_taxonomies(config: &Config, all_pages: &[Page]) -> Vec<Taxonomy> {
         taxonomies.push(Taxonomy::new(taxonomies_def[name].clone(), config, taxo));
     }
 
-    taxonomies
+    Ok(taxonomies)
 }
 
 
@@ -184,7 +185,7 @@ mod tests {
         page3.meta.taxonomies = taxo_page3;
         let pages = vec![page1, page2, page3];
 
-        let taxonomies = find_taxonomies(&config, &pages);
+        let taxonomies = find_taxonomies(&config, &pages).unwrap();
         let (tags, categories, authors) = {
             let mut t = None;
             let mut c = None;
@@ -227,5 +228,23 @@ mod tests {
         assert_eq!(categories.items[1].slug, "programming-tutorials");
         assert_eq!(categories.items[1].permalink, "http://a-website.com/categories/programming-tutorials/");
         assert_eq!(categories.items[1].pages.len(), 1);
+    }
+
+    #[test]
+    fn errors_on_unknown_taxonomy() {
+        let mut config = Config::default();
+        config.taxonomies = vec![
+            Taxonomy {name: "authors".to_string(), ..Taxonomy::default()},
+        ];
+        let mut page1 = Page::default();
+        let mut taxo_page1 = HashMap::new();
+        taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
+        page1.meta.taxonomies = taxo_page1;
+
+        let taxonomies = find_taxonomies(&config, &vec![page1]);
+        assert!(taxonomies.is_err());
+        let err = taxonomies.unwrap_err();
+        // no path as this is created by Default
+        assert_eq!(err.description(), "Page `` has taxonomy `tags` which is not defined in config.toml");
     }
 }

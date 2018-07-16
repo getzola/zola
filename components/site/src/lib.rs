@@ -246,7 +246,7 @@ impl Site {
         self.register_early_global_fns();
         self.render_markdown()?;
         self.populate_sections();
-        self.populate_taxonomies();
+        self.populate_taxonomies()?;
         self.register_tera_global_fns();
 
         Ok(())
@@ -407,9 +407,9 @@ impl Site {
     }
 
     /// Find all the tags and categories if it's asked in the config
-    pub fn populate_taxonomies(&mut self) {
+    pub fn populate_taxonomies(&mut self) -> Result<()> {
         if self.config.taxonomies.is_empty() {
-            return;
+            return Ok(());
         }
 
         self.taxonomies = find_taxonomies(
@@ -420,7 +420,9 @@ impl Site {
                 .cloned()
                 .collect::<Vec<_>>()
                 .as_slice()
-        );
+        )?;
+
+        Ok(())
     }
 
     /// Inject live reload script tag if in live reload mode

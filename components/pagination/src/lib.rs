@@ -104,7 +104,7 @@ impl<'a> Paginator<'a> {
     /// Create a new paginator from a taxonomy
     /// It will always at least create one pager (the first) even if there are no pages to paginate
     pub fn from_taxonomy(taxonomy: &'a Taxonomy, item: &'a TaxonomyItem) -> Paginator<'a> {
-        let paginate_by = taxonomy.kind.paginate.unwrap();
+        let paginate_by = taxonomy.kind.paginate_by.unwrap();
         let mut paginator = Paginator {
             all_pages: &item.pages,
             pagers: vec![],
@@ -339,7 +339,7 @@ mod tests {
         ];
         let taxonomy_def = TaxonomyConfig {
             name: "tags".to_string(),
-            paginate: Some(2),
+            paginate_by: Some(2),
             ..TaxonomyConfig::default()
         };
         let taxonomy_item = TaxonomyItem {

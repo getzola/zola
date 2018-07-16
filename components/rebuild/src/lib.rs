@@ -112,7 +112,7 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
             site.permalinks.remove(&p.file.relative);
 
             if !p.meta.taxonomies.is_empty() {
-                site.populate_taxonomies();
+                site.populate_taxonomies()?;
             }
 
             // if there is a parent section, we will need to re-render it
@@ -207,7 +207,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                 // Sort always comes first if present so the rendering will be fine
                 match changes {
                     PageChangesNeeded::Taxonomies => {
-                        site.populate_taxonomies();
+                        site.populate_taxonomies()?;
                         site.register_tera_global_fns();
                         site.render_taxonomies()?;
                     },
@@ -240,7 +240,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
         // It's a new page!
         None => {
             site.populate_sections();
-            site.populate_taxonomies();
+            site.populate_taxonomies()?;
             site.register_tera_global_fns();
             // No need to optimise that yet, we can revisit if it becomes an issue
             site.build()

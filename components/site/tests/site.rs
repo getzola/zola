@@ -223,7 +223,7 @@ fn can_build_site_with_taxonomies() {
             taxonomies
         };
     }
-    site.populate_taxonomies();
+    site.populate_taxonomies().unwrap();
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);

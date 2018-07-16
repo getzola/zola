@@ -35,7 +35,7 @@ pub struct Taxonomy {
     pub name: String,
     /// If this is set, the list of individual taxonomy term page will be paginated
     /// by this much
-    pub paginate: Option<usize>,
+    pub paginate_by: Option<usize>,
     pub paginate_path: Option<String>,
     /// Whether to generate a RSS feed only for each taxonomy term, defaults to false
     pub rss: bool,
@@ -43,7 +43,7 @@ pub struct Taxonomy {
 
 impl Taxonomy {
     pub fn is_paginated(&self) -> bool {
-        if let Some(paginate_by) = self.paginate {
+        if let Some(paginate_by) = self.paginate_by {
             paginate_by > 0
         } else {
             false
@@ -55,7 +55,7 @@ impl Default for Taxonomy {
     fn default() -> Taxonomy {
         Taxonomy {
             name: String::new(),
-            paginate: None,
+            paginate_by: None,
             paginate_path: None,
             rss: false,
         }
