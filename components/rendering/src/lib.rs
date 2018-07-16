@@ -15,6 +15,7 @@ extern crate front_matter;
 extern crate highlighting;
 extern crate utils;
 extern crate config;
+extern crate link_checker;
 
 #[cfg(test)]
 extern crate templates;
