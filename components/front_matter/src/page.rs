@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::result::{Result as StdResult};
 
 use chrono::prelude::*;
@@ -80,10 +81,7 @@ pub struct PageFrontMatter {
     /// otherwise is set after parsing front matter and sections
     /// Can't be an empty string if present
     pub path: Option<String>,
-    /// Tags, not to be confused with categories
-    pub tags: Option<Vec<String>>,
-    /// Only one category allowed. Can't be an empty string if present
-    pub category: Option<String>,
+    pub taxonomies: HashMap<String, Vec<String>>,
     /// Integer to use to order content. Lowest is at the bottom, highest first
     pub order: Option<usize>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
@@ -122,12 +120,6 @@ impl PageFrontMatter {
             }
         }
 
-        if let Some(ref category) = f.category {
-            if category == "" {
-                bail!("`category` can't be empty if present")
-            }
-        }
-
         f.extra = match fix_toml_dates(f.extra) {
             Value::Object(o) => o,
             _ => unreachable!("Got something other than a table in page extra"),
@@ -155,13 +147,6 @@ impl PageFrontMatter {
     pub fn weight(&self) -> usize {
         self.weight.unwrap()
     }
-
-    pub fn has_tags(&self) -> bool {
-        match self.tags {
-            Some(ref t) => !t.is_empty(),
-            None => false
-        }
-    }
 }
 
 impl Default for PageFrontMatter {
@@ -173,8 +158,7 @@ impl Default for PageFrontMatter {
             draft: false,
             slug: None,
             path: None,
-            tags: None,
-            category: None,
+            taxonomies: HashMap::new(),
             order: None,
             weight: None,
             aliases: Vec::new(),
@@ -211,36 +195,10 @@ mod tests {
         assert_eq!(res.description.unwrap(), "hey there".to_string())
     }
 
-    #[test]
-    fn can_parse_tags() {
-        let content = r#"
-    title = "Hello"
-    description = "hey there"
-    slug = "hello-world"
-    tags = ["rust", "html"]"#;
-        let res = PageFrontMatter::parse(content);
-        assert!(res.is_ok());
-        let res = res.unwrap();
-
-        assert_eq!(res.title.unwrap(), "Hello".to_string());
-        assert_eq!(res.slug.unwrap(), "hello-world".to_string());
-        assert_eq!(res.tags.unwrap(), ["rust".to_string(), "html".to_string()]);
-    }
 
     #[test]
     fn errors_with_invalid_front_matter() {
         let content = r#"title = 1\n"#;
-        let res = PageFrontMatter::parse(content);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn errors_on_non_string_tag() {
-        let content = r#"
-    title = "Hello"
-    description = "hey there"
-    slug = "hello-world"
-    tags = ["rust", 1]"#;
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
@@ -343,5 +301,22 @@ mod tests {
         println!("{:?}", res);
         assert!(res.is_ok());
         assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-14-01").unwrap());
+    }
+
+    #[test]
+    fn can_parse_taxonomies() {
+        let content = r#"
+title = "Hello World"
+
+[taxonomies]
+tags = ["Rust", "JavaScript"]
+categories = ["Dev"]
+"#;
+        let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
+        assert!(res.is_ok());
+        let res2 = res.unwrap();
+        assert_eq!(res2.taxonomies["categories"], vec!["Dev"]);
+        assert_eq!(res2.taxonomies["tags"], vec!["Rust", "JavaScript"]);
     }
 }

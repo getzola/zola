@@ -134,36 +134,25 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
     })
 }
 
-pub fn make_get_taxonomy_url(tags: Option<Taxonomy>, categories: Option<Taxonomy>) -> GlobalFn {
+pub fn make_get_taxonomy(all_taxonomies: Vec<Taxonomy>) -> GlobalFn {
+    let mut taxonomies = HashMap::new();
+    for taxonomy in all_taxonomies {
+        taxonomies.insert(taxonomy.kind.name.clone(), taxonomy);
+    }
     Box::new(move |args| -> Result<Value> {
         let kind = required_arg!(
             String,
             args.get("kind"),
-            "`get_taxonomy_url` requires a `kind` argument with a string value"
+            "`get_taxonomy` requires a `kind` argument with a string value"
         );
-        let name = required_arg!(
-            String,
-            args.get("name"),
-            "`get_taxonomy_url` requires a `name` argument with a string value"
-        );
-        let container = match kind.as_ref() {
-            "tag" => &tags,
-            "category" => &categories,
-            _ => return Err(
-                "`get_taxonomy_url` can only get `tag` or `category` for the `kind` argument".into()
+        let container = match taxonomies.get(&kind) {
+            Some(c) => c,
+            None => return Err(
+                format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
             ),
         };
 
-        if let Some(ref c) = *container {
-            for item in &c.items {
-                if item.name == name {
-                    return Ok(to_value(item.permalink.clone()).unwrap());
-                }
-            }
-            bail!("`get_taxonomy_url`: couldn't find `{}` in `{}` taxonomy", name, kind);
-        } else {
-            bail!("`get_taxonomy_url` tried to get a taxonomy of kind `{}` but there isn't any", kind);
-        }
+        return Ok(to_value(container).unwrap());
     })
 }
 
@@ -217,14 +206,14 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
 
 #[cfg(test)]
 mod tests {
-    use super::{make_get_url, make_get_taxonomy_url, make_trans};
+    use super::{make_get_url, make_get_taxonomy, make_trans};
 
     use std::collections::HashMap;
 
     use tera::to_value;
 
-    use config::Config;
-    use taxonomies::{Taxonomy, TaxonomyKind, TaxonomyItem};
+    use config::{Config, Taxonomy as TaxonomyConfig};
+    use taxonomies::{Taxonomy, TaxonomyItem};
 
 
     #[test]
@@ -268,28 +257,27 @@ mod tests {
     }
 
     #[test]
-    fn can_get_tag_url() {
+    fn can_get_taxonomy() {
+        let taxo_config = TaxonomyConfig {name: "tags".to_string(), ..TaxonomyConfig::default()};
         let tag = TaxonomyItem::new(
             "Prog amming",
-            TaxonomyKind::Tags,
+            "tags",
             &Config::default(),
             vec![],
         );
         let tags = Taxonomy {
-            kind: TaxonomyKind::Tags,
+            kind: taxo_config,
             items: vec![tag],
         };
 
-        let static_fn = make_get_taxonomy_url(Some(tags), None);
+        let static_fn = make_get_taxonomy(vec![tags.clone()]);
         // can find it correctly
         let mut args = HashMap::new();
-        args.insert("kind".to_string(), to_value("tag").unwrap());
-        args.insert("name".to_string(), to_value("Prog amming").unwrap());
-        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/tags/prog-amming/");
+        args.insert("kind".to_string(), to_value("tags").unwrap());
+        assert_eq!(static_fn(args).unwrap(), to_value(&tags).unwrap());
         // and errors if it can't find it
         let mut args = HashMap::new();
-        args.insert("kind".to_string(), to_value("tag").unwrap());
-        args.insert("name".to_string(), to_value("random").unwrap());
+        args.insert("kind".to_string(), to_value("something-else").unwrap());
         assert!(static_fn(args).is_err());
     }
 

@@ -2,6 +2,13 @@
 
 ## 0.4.0 (unreleased)
 
+### Breaking
+
+- Taxonomies have been rewritten from scratch to allow custom ones with RSS and pagination
+- `get_taxonomy_url` has been renamed to `get_taxonomy` and will now return the full taxonomy
+instead of just the URL
+
+### Others
 - Fix `serve` not working with the config flag
 - Websocket port on `live` will not get the first available port instead of a fixed one
 - Rewrite markdown rendering to fix all known issues with shortcodes

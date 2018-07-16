@@ -38,11 +38,10 @@ slug = ""
 # It should not start with a `/` and the slash will be removed if it does
 path = ""
 
-# An array of strings allowing you to group pages with them
-tags = []
-
-# An overarching category name for that page, allowing you to group pages with it
-category = ""
+# A dict of taxonomies: the key is the name of the taxonomy which must match
+# one of the taxonomy defined in `config.toml` and the value is a list of
+# strings
+[taxonomies]
 
 # The order as defined in the Section page
 order = 0
