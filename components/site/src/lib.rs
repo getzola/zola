@@ -792,7 +792,7 @@ impl Site {
         context.add("config", &self.config);
 
         let rss_feed_url = if let Some(ref base) = base_path {
-            self.config.make_permalink(&base.join("rss.xml").to_string_lossy())
+            self.config.make_permalink(&base.join("rss.xml").to_string_lossy().replace('\\', "/"))
         } else {
             self.config.make_permalink("rss.xml")
         };
