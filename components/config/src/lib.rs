@@ -104,6 +104,9 @@ pub struct Config {
     #[serde(skip_serializing, skip_deserializing)]  // not a typo, 2 are needed
     pub ignored_content_globset: Option<GlobSet>,
 
+    /// Whether to check all external links for validity
+    pub check_external_links: bool,
+
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
 
@@ -225,6 +228,7 @@ impl Default for Config {
             rss_limit: 10_000,
             taxonomies: Vec::new(),
             compile_sass: false,
+            check_external_links: false,
             build_search_index: false,
             ignored_content: Vec::new(),
             ignored_content_globset: None,

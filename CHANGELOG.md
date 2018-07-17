@@ -6,7 +6,7 @@
 
 - Taxonomies have been rewritten from scratch to allow custom ones with RSS and pagination
 - `get_taxonomy_url` has been renamed to `get_taxonomy` and will now return the full taxonomy
-instead of just the URL
+instead of just the URL of a term
 
 ### Others
 - Fix `serve` not working with the config flag
@@ -21,6 +21,7 @@ instead of just the URL
 - Add image resizing support
 - Add a 404 template
 - Enable preserve-order feature of Tera
+- Add an external link checker
 
 ## 0.3.4 (2018-06-22)
 

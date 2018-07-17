@@ -537,3 +537,28 @@ Some text
         "<p>Some text</p>\n<h1>Helo</h1>\n<div>\n<a href=\"mobx-flow.png\">\n        <img src=\"mobx-flow.png\" alt=\"MobX flow\">\n    </a>\n</div>\n"
     );
 }
+
+#[test]
+fn can_validate_valid_external_links() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.check_external_links = true;
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("[a link](http://google.com)", &context).unwrap();
+    assert_eq!(
+        res.0,
+        "<p><a href=\"http://google.com\">a link</a></p>\n"
+    );
+}
+
+#[test]
+fn can_show_error_message_for_invalid_external_links() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.check_external_links = true;
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("[a link](http://google.comy)", &context);
+    assert!(res.is_err());
+    let err = res.unwrap_err();
+    assert!(err.description().contains("Link http://google.comy is not valid"));
+}

@@ -1,0 +1,8 @@
+[package]
+name = "link_checker"
+version = "0.1.0"
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+
+[dependencies]
+reqwest = "0.8"
+lazy_static = "1"

@@ -9,6 +9,7 @@ use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, Includ
 use errors::Result;
 use utils::site::resolve_internal_link;
 use highlighting::{get_highlighter, THEME_SET};
+use link_checker::check_url;
 
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 use context::RenderContext;
@@ -138,7 +139,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     } else if is_colocated_asset_link(&link) {
                         format!("{}{}", context.current_page_permalink, link)
                     } else {
-                        link.to_string()
+                        if context.config.check_external_links && !link.starts_with('#') {
+                            println!("Checking Link {}", link);
+                            let res = check_url(&link);
+                            if res.is_valid() {
+                                link.to_string()
+                            } else {
+                                error = Some(
+                                    format!("Link {} is not valid: {}", link, res.message()).into()
+                                );
+                                String::new()
+                            }
+                        } else {
+                            link.to_string()
+                        }
                     };
 
                     if in_header {
