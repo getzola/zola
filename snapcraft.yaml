@@ -19,3 +19,7 @@ parts:
   gutenberg:
     plugin: rust
     rust-channel: stable
+    build-packages:
+    - build-essential
+    - cmake
+    - git-core
