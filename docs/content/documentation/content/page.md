@@ -20,7 +20,7 @@ content directory `about.md` would also create a page at `[base_url]/about`.
 As you can see, creating an `about.md` file is exactly equivalent to creating an 
 `about/index.md` file.  The only difference between the two methods is that creating
 the `about` folder allows you to use asset colocation, as discussed in the 
-[Overview](./overview.md) section of this documentation.
+[Overview](./documentation/content/overview.md) section of this documentation.
 
 ## Front-matter
 
