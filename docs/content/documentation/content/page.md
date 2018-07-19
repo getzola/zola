@@ -8,8 +8,19 @@ named `_index.md`.
 
 If a file ending with `.md` is named `index.md`, then it will generate a page
 with the name of the containing folder (for example, `/content/about/index.md` would
-create a page at `[base_url]/about`).  If the file is given any name *other* than
-`index.md`, then it will create a page with that name (without the `.md`).
+create a page at `[base_url]/about`).  (Note the lack of an underscore; if the file
+were named `_index.md`, then it would create a **section** ad `[base_url]/about`, as
+discussed in the prior part of this documentation.  But naming the file `index.md` will
+create a **page** at `[base_url]/about`).
+
+If the file is given any name *other* than `index.md` or `_index.md`, then it will
+create a page with that name (without the `.md`). So naming a file in the root of your
+content directory `about.md` would also create a page at `[base_url]/about`.
+
+As you can see, creating an `about.md` file is exactly equivalent to creating an 
+`about/index.md` file.  The only difference between the two methods is that creating
+the `about` folder allows you to use asset colocation, as discussed in the 
+[Overview](./overview.md) section of this documentation.
 
 ## Front-matter
 
