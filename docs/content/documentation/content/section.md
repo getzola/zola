@@ -3,18 +3,27 @@ title = "Section"
 weight = 20
 +++
 
-A section is automatically created when a folder is found in the `content` section, unless it only
-contains a `index.md` file and is actually a page with assets.
+A section is created whenever a folder (or subfolder) in the `content` section contains an 
+`_index.md` file.  If a folder does not contain an `_index.md` file, no section will be 
+created, but markdown files within that folder will still create pages (known as orphan pages).
 
-You can add `_index.md` file to a folder to augment a section and give it some metadata and/or content.
-
-The index page is actually a section created automatically like any other: you can add metadata
-and content by adding `_index.md` at the root of the `content` folder.
+The index page is actually an automatically created section.  Thus, the `index.html` template
+has access to all the content and metadata you might add in an `_index.md` file.  Even if you do
+not create an `_index.md` file in your content directory, this main content section will still be
+created—it will just not have any content or metadata.  If you would like to add content or
+metadata, you can add an `_index.md` file at the root of the `content` folder and edit it just as
+you would edit any other `_index.md` file.
 
 ## Front-matter
 
+The `_index.md` file within a folder defines the content and metadata for that section.  To set
+the metadata, add front matter to the file.
+
 The front-matter is a set of metadata embedded in a file. In Gutenberg,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
+
+After the closing `+++`, you can add content that will be parsed as markdown and will be available
+to your templates through the `section.content` variable.
 
 While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
 

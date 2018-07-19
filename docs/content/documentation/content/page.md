@@ -6,6 +6,11 @@ weight = 30
 A page is any file ending with `.md` in the `content` directory, except files
 named `_index.md`.
 
+If a file ending with `.md` is named `index.md`, then it will generate a page
+with the name of the containing folder (for example, `/content/about/index.md` would
+create a page at `[base_url]/about`).  If the file is given any name *other* than
+`index.md`, then it will create a page with that name (without the `.md`).
+
 ## Front-matter
 
 The front-matter is a set of metadata embedded in a file. In Gutenberg,
