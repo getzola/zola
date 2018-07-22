@@ -24,8 +24,7 @@ term-painter = "0.2"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
 # Below is for the serve cmd
-actix = "~0.5"
-actix-web = { version = "~0.6", default-features = false, features = [] }
+actix-web = { version = "0.7", default-features = false, features = [] }
 notify = "4"
 ws = "0.7"
 ctrlc = "3"

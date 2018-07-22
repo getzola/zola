@@ -30,7 +30,6 @@ use std::time::{Instant, Duration};
 use std::thread;
 
 use chrono::prelude::*;
-use actix;
 use actix_web::{self, fs, http, server, App, HttpRequest, HttpResponse, Responder};
 use actix_web::middleware::{Middleware, Started, Response};
 use notify::{Watcher, RecursiveMode, watcher};
@@ -64,13 +63,13 @@ struct NotFoundHandler {
 }
 
 impl<S> Middleware<S> for NotFoundHandler {
-    fn start(&self, _req: &mut HttpRequest<S>) -> actix_web::Result<Started> {
+    fn start(&self, _req: &HttpRequest<S>) -> actix_web::Result<Started> {
         Ok(Started::Done)
     }
 
     fn response(
         &self,
-        _req: &mut HttpRequest<S>,
+        _req: &HttpRequest<S>,
         mut resp: HttpResponse,
     ) -> actix_web::Result<Response> {
         if http::StatusCode::NOT_FOUND == resp.status() {
@@ -87,7 +86,7 @@ impl<S> Middleware<S> for NotFoundHandler {
     }
 }
 
-fn livereload_handler(_: HttpRequest) -> &'static str {
+fn livereload_handler(_: &HttpRequest) -> &'static str {
     LIVE_RELOAD
 }
 
@@ -180,22 +179,24 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
     // http closure to avoid contention.
     let static_root = output_path.clone();
     thread::spawn(move || {
-        let sys = actix::System::new("http-server");
-        server::new(move || {
+        let s = server::new(move || {
             App::new()
             .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
             .resource(r"/livereload.js", |r| r.f(livereload_handler))
             // Start a webserver that serves the `output_dir` directory
-            .handler(r"/", fs::StaticFiles::new(&static_root)
-                     .show_files_listing()
-                     .files_listing_renderer(handle_directory))
+            .handler(
+                r"/",
+                fs::StaticFiles::new(&static_root)
+                    .unwrap()
+                    .show_files_listing()
+                    .files_listing_renderer(handle_directory)
+            )
         })
         .bind(&address)
         .expect("Can't start the webserver")
-        .shutdown_timeout(20)
-        .start();
+        .shutdown_timeout(20);
         println!("Web server is available at http://{}", &address);
-        let _ = sys.run();
+        s.run();
     });
 
     // The websocket for livereload
