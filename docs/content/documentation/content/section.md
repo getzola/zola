@@ -92,22 +92,15 @@ You can also change the pagination path (the word displayed while paginated in t
 by setting the `paginate_path` variable, which defaults to `page`.
 
 ## Sorting
-Sections' pages can be sorted three different ways, not counting the unsorted default and
-is enabled by setting the `sort_by` front-matter variable.
+Sections' pages can be sorted three different ways, by `date`, by `weight`,
+and by `order`.  This value will alter the way templates iterate through 
+those pages using Tera's loops.  See [iterating and sorting](docs/templates/iterating-and-sorting) for details.  To specify the sorting method, set the
+`sort_by` front-matter variable in the `_index.md` file for the section.  If 
+no `sort_by` method is set, the pages will be sorted in a default order that 
+is not guaranteed to correspond to any of the explicit orders.
 
-Any page that cannot be sorted, for example if missing the date variable while sorting by `date`, will be ignored and
-won't be rendered. The terminal will warn you if this is happening.
+Any page that is missing the data it needs to be sorted will be ignored and
+won't be rendered. For example, if a page is missing the date variable the 
+containing section sets `sort_by = "date"`, then that page will be ignored.  The terminal will warn you if this is happening.
 
-If several pages have the same date/weight/order, their permalink will be used to break the tie following
-an alphabetical order.
-
-### `date`
-This will sort all pages by their `date` field, from the most recent to the oldest.
-
-### `weight`
-This will be sort all pages by their `weight` field. Heavier weights fall at the bottom: 5 would be before 10.
-
-### `order`
-This will be sort all pages by their `order` field. Order is the opposite of weight, think of it as enumerating
-the content: this is my first post, my second, etc. A page with `order: 5` will appear after a page with `order: 10` in the sorted list.
-
+If several pages have the same date/weight/order, their permalink will be used to break the tie following an alphabetical order.
