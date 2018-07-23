@@ -94,7 +94,9 @@ by setting the `paginate_path` variable, which defaults to `page`.
 ## Sorting
 Sections' pages can be sorted three different ways, by `date`, by `weight`,
 and by `order`.  This value will alter the way templates iterate through 
-those pages using Tera's loops.  See [iterating and sorting](docs/templates/iterating-and-sorting) for details.  To specify the sorting method, set the
+those pages using Tera's loops.  See
+[iterating and sorting](./documentation/templates/iterating-and-sorting.md)
+for details.  To specify the sorting method, set the
 `sort_by` front-matter variable in the `_index.md` file for the section.  If 
 no `sort_by` method is set, the pages will be sorted in a default order that 
 is not guaranteed to correspond to any of the explicit orders.
