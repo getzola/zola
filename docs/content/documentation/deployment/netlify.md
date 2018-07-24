@@ -31,11 +31,13 @@ command = "gutenberg build"
 
 [build.environment]
 # Set the version name that you want to use and Netlify will automatically use it
-GUTENBERG_VERSION = "0.3.1"
+GUTENBERG_VERSION = "0.3.3"
 
 # The magic for deploying previews of branches
-# We need to override the base url with what the url of the preview is ($DEPLOY_PRIME_URL)
-# otherwise links would not work properly
+# We need to override the base url with whatever url Netlify assigns to our 
+# preview site.  We do this using the Netlify environment variable 
+# `$DEPLOY_PRIME_URL`.
+
 [context.deploy-preview]
 command = "gutenberg build --base-url $DEPLOY_PRIME_URL"
 
