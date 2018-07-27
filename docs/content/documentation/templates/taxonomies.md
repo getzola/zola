@@ -3,12 +3,10 @@ title = "Taxonomies"
 weight = 40
 +++
 
-The default templates for the taxonomies pages are the following:
+Gutenberg will look up the following files in the `templates` directory:
 
 - `$TAXONOMY_NAME/single.html`
 - `$TAXONOMY_NAME/list.html`
-
-You can override any of those templates by putting one with the same path in the `templates` directory.
 
 First, a `TaxonomyTerm` has the following fields:
 
