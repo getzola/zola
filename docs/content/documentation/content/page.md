@@ -9,7 +9,7 @@ named `_index.md`.
 If a file ending with `.md` is named `index.md`, then it will generate a page
 with the name of the containing folder (for example, `/content/about/index.md` would
 create a page at `[base_url]/about`).  (Note the lack of an underscore; if the file
-were named `_index.md`, then it would create a **section** ad `[base_url]/about`, as
+were named `_index.md`, then it would create a **section** at `[base_url]/about`, as
 discussed in the prior part of this documentation.  But naming the file `index.md` will
 create a **page** at `[base_url]/about`).
 
