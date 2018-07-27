@@ -299,7 +299,7 @@ impl Site {
         self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
-            "get_taxonomy_url",
+            "get_taxonomy",
             global_fns::make_get_taxonomy(self.taxonomies.clone())
         );
     }
