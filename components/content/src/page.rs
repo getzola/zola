@@ -44,10 +44,14 @@ pub struct Page {
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
     pub summary: Option<String>,
-    /// The previous page, by whatever sorting is used for the index/section
-    pub previous: Option<Box<Page>>,
-    /// The next page, by whatever sorting is used for the index/section
-    pub next: Option<Box<Page>>,
+    /// The earlier page, for pages sorted by date
+    pub earlier: Option<Box<Page>>,
+    /// The later page, for pages sorted by date
+    pub later: Option<Box<Page>>,
+    /// The lighter page, for pages sorted by weight
+    pub lighter: Option<Box<Page>>,
+    /// The heavier page, for pages sorted by weight
+    pub heavier: Option<Box<Page>>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
 }
@@ -68,8 +72,10 @@ impl Page {
             components: vec![],
             permalink: "".to_string(),
             summary: None,
-            previous: None,
-            next: None,
+            earlier: None,
+            later: None,
+            lighter: None,
+            heavier: None,
             toc: vec![],
         }
     }
@@ -229,8 +235,10 @@ impl Default for Page {
             components: vec![],
             permalink: "".to_string(),
             summary: None,
-            previous: None,
-            next: None,
+            earlier: None,
+            later: None,
+            lighter: None,
+            heavier: None,
             toc: vec![],
         }
     }
@@ -263,8 +271,10 @@ impl ser::Serialize for Page {
         let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
         state.serialize_field("word_count", &word_count)?;
         state.serialize_field("reading_time", &reading_time)?;
-        state.serialize_field("previous", &self.previous)?;
-        state.serialize_field("next", &self.next)?;
+        state.serialize_field("earlier", &self.earlier)?;
+        state.serialize_field("later", &self.later)?;
+        state.serialize_field("lighter", &self.lighter)?;
+        state.serialize_field("heavier", &self.heavier)?;
         state.serialize_field("toc", &self.toc)?;
         state.serialize_field("draft", &self.is_draft())?;
         let assets = self.serialize_assets();

@@ -401,7 +401,7 @@ impl Site {
             }
             let pages = mem::replace(&mut section.pages, vec![]);
             let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by);
-            section.pages = populate_previous_and_next_pages(&sorted_pages);
+            section.pages = populate_previous_and_next_pages(&sorted_pages, section.meta.sort_by);
             section.ignored_pages = cannot_be_sorted_pages;
         }
     }

@@ -1,5 +1,5 @@
 +++
 title = "Programming"
-sort_by = "order"
+sort_by = "weight"
 weight = 1
 +++
