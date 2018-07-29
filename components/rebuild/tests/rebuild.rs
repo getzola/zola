@@ -2,7 +2,7 @@ extern crate rebuild;
 extern crate site;
 extern crate tempfile;
 extern crate fs_extra;
- 
+
 use std::env;
 use std::fs::{remove_dir_all, File};
 use std::io::prelude::*;

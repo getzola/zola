@@ -92,8 +92,7 @@ pub fn populate_previous_and_next_pages(input: &[Page], sort_by: SortBy) -> Vec<
                         next_page.later = None;
                         new_page.later = Some(Box::new(next_page));
                     },
-                    SortBy::None => {
-                    }
+                    SortBy::None => {}
                 }
                 break;
             }
@@ -191,7 +190,6 @@ mod tests {
             create_page_with_weight(1),
         ];
         let (pages, _) = sort_pages(input, SortBy::None);
-        // Should be sorted by date
         assert_eq!(pages[0].clone().meta.weight.unwrap(), 2);
         assert_eq!(pages[1].clone().meta.weight.unwrap(), 3);
         assert_eq!(pages[2].clone().meta.weight.unwrap(), 1);
