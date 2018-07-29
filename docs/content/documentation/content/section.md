@@ -3,22 +3,32 @@ title = "Section"
 weight = 20
 +++
 
-A section is automatically created when a folder is found in the `content` section, unless it only
-contains a `index.md` file and is actually a page with assets.
+A section is created whenever a folder (or subfolder) in the `content` section contains an 
+`_index.md` file.  If a folder does not contain an `_index.md` file, no section will be 
+created, but markdown files within that folder will still create pages (known as orphan pages).
 
-You can add `_index.md` file to a folder to augment a section and give it some metadata and/or content.
-
-The index page is actually a section created automatically like any other: you can add metadata
-and content by adding `_index.md` at the root of the `content` folder.
+The index page (i.e., the page displayed when a user browses to your `base_url`) is a section, 
+which is created whether or not you add an `_index.md` file at the root of your `content` folder.
+If you do not create an `_index.md` file in your content directory, this main content section will
+not have any content or metadata.  If you would like to add content or metadata, you can add an
+`_index.md` file at the root of the `content` folder and edit it just as you would edit any other
+`_index.md` file; your `index.html` template will then have access to that content and metadata.
 
 ## Front-matter
+
+The `_index.md` file within a folder defines the content and metadata for that section.  To set
+the metadata, add front matter to the file.
 
 The front-matter is a set of metadata embedded in a file. In Gutenberg,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
+After the closing `+++`, you can add content that will be parsed as markdown and will be available
+to your templates through the `section.content` variable.
+
 While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
 
-Here is an example `_index.md` with all the variables available:
+Here is an example `_index.md` with all the variables available.  The values provided below are the
+default values.
 
 
 ```md
@@ -27,7 +37,7 @@ title = ""
 
 description = ""
 
-# Whether to sort by "date", "order", "weight" or "none". More on that below
+# Whether to sort pages by "date", "weight", or "none". More on that below
 sort_by = "none"
 
 # Used by the parent section to order its subsections.
@@ -83,22 +93,66 @@ You can also change the pagination path (the word displayed while paginated in t
 by setting the `paginate_path` variable, which defaults to `page`.
 
 ## Sorting
-Sections' pages can be sorted three different ways, not counting the unsorted default and
-is enabled by setting the `sort_by` front-matter variable.
+It is very common for Gutenberg templates to iterate over pages or sections
+to display all pages/sections a given directory.  Consider a very simple 
+example: a `blog` directory with three files: `blog/Post_1.md`,
+`blog/Post_2.md`, and `blog/Post_3.md`.  To iterate over these posts and 
+create a list of links to the posts, a simple template might look like this:
 
-Any page that cannot be sorted, for example if missing the date variable while sorting by `date`, will be ignored and
-won't be rendered. The terminal will warn you if this is happening.
+```j2
+{% for post in section.pages %}
+  <h1><a href="{{ post.permalink }}">{{ post.title }}</a></h1>
+{% endfor %}
+```
 
-If several pages have the same date/weight/order, their permalink will be used to break the tie following
-an alphabetical order.
+This would iterate over the posts, and would do so in a specific order 
+based on the `sort_by` variable set in the `_index.md` page for the 
+containing section.  The `sort_by` variable can be given three values: `date`,
+`weight`, and `none`.  If no `sort_by` method is set, the pages will be
+sorted in the `none` order, which is not intended to be used for sorted content.
+
+Any page that is missing the data it needs to be sorted will be ignored and
+won't be rendered. For example, if a page is missing the date variable the 
+containing section sets `sort_by = "date"`, then that page will be ignored.  
+The terminal will warn you if this is happening.
+
+If several pages have the same date/weight/order, their permalink will be used
+to break the tie following an alphabetical order.
+
+## Sorting Pages
+The `sort_by` front-matter variable can have the following values:
 
 ### `date`
-This will sort all pages by their `date` field, from the most recent to the oldest.
+This will sort all pages by their `date` field, from the most recent (at the
+top of the list) to the oldest (at the bottom of the list).  Each page will
+get `page.earlier` and `page.later` variables that contain the pages with 
+earlier and later dates, respectively.
 
 ### `weight`
-This will be sort all pages by their `weight` field. Heavier weights fall at the bottom: 5 would be before 10.
+This will be sort all pages by their `weight` field, from lightest weight 
+(at the top of the list) to heaviest (at the bottom of the list).  Each 
+page gets `page.lighter` and `page.heavier` variables that contain the 
+pages with lighter and heavier weights, respectively.
 
-### `order`
-This will be sort all pages by their `order` field. Order is the opposite of weight, think of it as enumerating
-the content: this is my first post, my second, etc. A page with `order: 5` will appear after a page with `order: 10` in the sorted list.
+When iterating through pages, you may wish to use the Tera `reverse` filter, 
+which reverses the order of the pages.  Thus, after using the `reverse` filter,
+pages sorted by weight will be sorted from lightest (at the top) to heaviest 
+(at the bottom); pages sorted by date will be sorted from oldest (at the top)
+to newest (at the bottom).
 
+`reverse` has no effect on `page.later`/`page.earlier`/`page.heavier`/`page.lighter`.
+
+## Sorting Subsections
+Sorting sections is a bit less flexible: sections are always sorted by `weight`,
+and do not have any variables that point to the next heavier/lighter sections.
+
+Based on this, by default the lightest (lowest `weight`) subsections will be at
+the top of the list and the heaviest (highest `weight`) will be at the top;
+the `reverse` filter reverses this order.
+
+**Note**: Unlike pages, permalinks will **not** be used to break ties between
+equally weighted sections.  Thus, if the `weight` variable for your section is not set (or if it 
+is set in a way that produces ties), then your sections will be sorted in 
+**random** order. Moreover, that order is determined at build time and will
+change with each site rebuild.  Thus, if there is any chance that you will 
+iterate over your sections, you should always assign them weight.
