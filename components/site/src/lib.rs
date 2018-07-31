@@ -302,6 +302,10 @@ impl Site {
             "get_taxonomy",
             global_fns::make_get_taxonomy(self.taxonomies.clone()),
         );
+        self.tera.register_global_function(
+            "get_taxonomy_url",
+            global_fns::make_get_taxonomy_url(self.taxonomies.clone()),
+        );
     }
 
     /// Add a page to the site

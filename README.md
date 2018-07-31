@@ -26,7 +26,7 @@ in the `docs/content` folder of the repository.
 | Automatic header anchors |     ✔     |    ✕   |   ✔  |    ✔    |
 | Aliases                  |     ✔     |    ✕   |   ✔  |    ✔    |
 | Pagination               |     ✔     |    ✕   |   ✔  |    ✔    |
-| Custom taxonomies        |     ✕     |    ✕   |   ✔  |    ✕    |
+| Custom taxonomies        |     ✔     |    ✕   |   ✔  |    ✕    |
 | Search                   |     ✔     |    ✕   |   ✕  |    ✔    |
 | Data files               |     ✕     |    ✔   |   ✔  |    ✕    |
 

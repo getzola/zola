@@ -16,7 +16,16 @@ For example the default would be page/1
 - `rss`: if set to `true`, a RSS feed will be generated for each individual term.
 
 Once this is done, you can then set taxonomies in your content and Gutenberg will pick
-them up.
+them up:
+
+```toml
++++
+...
+[taxonomies]
+tags = ["rust", "web"]
+categories = ["programming"]
++++
+```
 
 The taxonomy pages will only be created if at least one non-draft page is found and
 are available at the following paths:

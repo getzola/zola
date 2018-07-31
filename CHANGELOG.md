@@ -5,8 +5,6 @@
 ### Breaking
 
 - Taxonomies have been rewritten from scratch to allow custom ones with RSS and pagination
-- `get_taxonomy_url` has been renamed to `get_taxonomy` and will now return the full taxonomy
-instead of just the URL of a term
 - `order` sorting has been removed in favour of only having `weight`
 
 ### Others
@@ -23,6 +21,7 @@ instead of just the URL of a term
 - Add a 404 template
 - Enable preserve-order feature of Tera
 - Add an external link checker
+- Add `get_taxonomy` global function to return the full taxonomy
 
 ## 0.3.4 (2018-06-22)
 
