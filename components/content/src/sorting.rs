@@ -53,7 +53,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
 
 /// Horribly inefficient way to set previous and next on each pages that skips drafts
 /// So many clones
-pub fn populate_previous_and_next_pages(input: &[Page], sort_by: SortBy) -> Vec<Page> {
+pub fn populate_siblings(input: &[Page], sort_by: SortBy) -> Vec<Page> {
     let mut res = Vec::with_capacity(input.len());
 
     // The input is already sorted
@@ -140,7 +140,7 @@ pub fn populate_previous_and_next_pages(input: &[Page], sort_by: SortBy) -> Vec<
 mod tests {
     use front_matter::{PageFrontMatter, SortBy};
     use page::Page;
-    use super::{sort_pages, populate_previous_and_next_pages};
+    use super::{sort_pages, populate_siblings};
 
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
@@ -208,13 +208,13 @@ mod tests {
     }
 
     #[test]
-    fn can_populate_previous_and_next_pages() {
+    fn can_populate_siblings() {
         let input = vec![
             create_page_with_weight(1),
             create_page_with_weight(2),
             create_page_with_weight(3),
         ];
-        let pages = populate_previous_and_next_pages(&input, SortBy::Weight);
+        let pages = populate_siblings(&input, SortBy::Weight);
 
         assert!(pages[0].clone().lighter.is_none());
         assert!(pages[0].clone().heavier.is_some());

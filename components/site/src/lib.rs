@@ -36,7 +36,7 @@ use config::{Config, get_config};
 use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
 use utils::net::get_available_port;
-use content::{Page, Section, populate_previous_and_next_pages, sort_pages};
+use content::{Page, Section, populate_siblings, sort_pages};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::{SortBy, InsertAnchor};
 use taxonomies::{Taxonomy, find_taxonomies};
@@ -401,7 +401,7 @@ impl Site {
             }
             let pages = mem::replace(&mut section.pages, vec![]);
             let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by);
-            section.pages = populate_previous_and_next_pages(&sorted_pages, section.meta.sort_by);
+            section.pages = populate_siblings(&sorted_pages, section.meta.sort_by);
             section.ignored_pages = cannot_be_sorted_pages;
         }
     }
