@@ -22,6 +22,7 @@ in the `docs/content` folder of the repository.
 | Themes                   |     ✔     |    ✕   |   ✔  |    ✔    |
 | Shortcodes               |     ✔     |    ✕   |   ✔  |    ✔    |
 | Internal links           |     ✔     |    ✕   |   ✔  |    ✔    |
+| Link checker             |     ✔     |    ✕   |   ✕  |    ✔    |
 | Table of contents        |     ✔     |    ✕   |   ✔  |    ✔    |
 | Automatic header anchors |     ✔     |    ✕   |   ✔  |    ✔    |
 | Aliases                  |     ✔     |    ✕   |   ✔  |    ✔    |
@@ -29,6 +30,8 @@ in the `docs/content` folder of the repository.
 | Custom taxonomies        |     ✔     |    ✕   |   ✔  |    ✕    |
 | Search                   |     ✔     |    ✕   |   ✕  |    ✔    |
 | Data files               |     ✕     |    ✔   |   ✔  |    ✕    |
+| LiveReload               |     ✔     |    ✕   |   ✔  |    ✔    |
+| Netlify support          |     ✔     |    ✕   |   ✔  |    ✔    |
 
 Supported content formats:
 
