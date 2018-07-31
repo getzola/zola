@@ -41,7 +41,8 @@ Supported content formats:
 - Pelican: reStructuredText, markdown, asciidoc, org-mode, whatever-you-want
 
 Note that many features of Pelican are coming from plugins, which might be tricky
-to use because of version mismatch or lacking documentation.
+to use because of version mismatch or lacking documentation. Netlify supports Python
+and Pipenv but you still need to install your dependencies manually.
 
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
