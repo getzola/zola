@@ -7,7 +7,7 @@ use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{ThemeSet, Theme};
 use syntect::easy::HighlightLines;
 
-thread_local!{
+thread_local! {
     pub static SYNTAX_SET: SyntaxSet = {
         let mut ss: SyntaxSet = from_binary(include_bytes!("../../../sublime_syntaxes/newlines.packdump"));
         ss.link_syntaxes();
@@ -15,7 +15,7 @@ thread_local!{
     };
 }
 
-lazy_static!{
+lazy_static! {
     pub static ref THEME_SET: ThemeSet = from_binary(include_bytes!("../../../sublime_themes/all.themedump"));
 }
 

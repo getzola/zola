@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::result::{Result as StdResult};
+use std::result::Result as StdResult;
 
 use chrono::prelude::*;
 use tera::{Map, Value};
@@ -35,7 +35,7 @@ fn convert_toml_date(table: Map<String, Value>) -> Value {
                     return Value::Object(new);
                 }
                 new.insert(k, convert_toml_date(o));
-            },
+            }
             _ => { new.insert(k, v); }
         }
     }
@@ -52,8 +52,8 @@ fn fix_toml_dates(table: Map<String, Value>) -> Value {
         match value {
             Value::Object(mut o) => {
                 new.insert(key, convert_toml_date(o));
-            },
-            _ => { new.insert(key, value); },
+            }
+            _ => { new.insert(key, value); }
         }
     }
 

@@ -162,7 +162,6 @@ impl Page {
         }
 
         Ok(page)
-
     }
 
     /// We need access to all pages url to render links relative to content
@@ -173,14 +172,14 @@ impl Page {
             config,
             &self.permalink,
             permalinks,
-            anchor_insert
+            anchor_insert,
         );
 
         context.tera_context.add("page", self);
 
         let res = render_content(
             &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),
-            &context
+            &context,
         ).chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.0;
         self.toc = res.1;
@@ -437,7 +436,7 @@ Hello world
 
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            &Config::default()
+            &Config::default(),
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -463,7 +462,7 @@ Hello world
 
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            &Config::default()
+            &Config::default(),
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -494,7 +493,7 @@ Hello world
 
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            &config
+            &config,
         );
 
         assert!(res.is_ok());

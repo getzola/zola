@@ -5,7 +5,7 @@ extern crate lazy_static;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
-use reqwest::{StatusCode};
+use reqwest::StatusCode;
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -48,7 +48,7 @@ lazy_static! {
 
 pub fn check_url(url: &str) -> LinkResult {
     {
-       let guard = LINKS.read().unwrap();
+        let guard = LINKS.read().unwrap();
         if let Some(res) = guard.get(url) {
             return res.clone();
         }

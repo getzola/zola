@@ -12,7 +12,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use toml::{Value as Toml};
+use toml::Value as Toml;
 use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 

@@ -25,7 +25,7 @@ use errors::{Result, ResultExt};
 
 static RESIZED_SUBDIR: &'static str = "_processed_images";
 
-lazy_static!{
+lazy_static! {
     pub static ref RESIZED_FILENAME: Regex = Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.]jpg"#).unwrap();
 }
 
@@ -58,13 +58,13 @@ impl ResizeOp {
         // Validate args:
         match op {
             "fit_width" => if width.is_none() {
-                return Err("op=\"fit_width\" requires a `width` argument".to_string().into())
+                return Err("op=\"fit_width\" requires a `width` argument".to_string().into());
             },
             "fit_height" => if height.is_none() {
-                return Err("op=\"fit_height\" requires a `height` argument".to_string().into())
+                return Err("op=\"fit_height\" requires a `height` argument".to_string().into());
             },
             "scale" | "fit" | "fill" => if width.is_none() || height.is_none() {
-                return Err(format!("op={} requires a `width` and `height` argument", op).into())
+                return Err(format!("op={} requires a `width` and `height` argument", op).into());
             },
             _ => return Err(format!("Invalid image resize operation: {}", op).into())
         };
@@ -121,7 +121,7 @@ impl From<ResizeOp> for u8 {
 impl Hash for ResizeOp {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         hasher.write_u8(u8::from(*self));
-        if let Some(w) = self.width()  { hasher.write_u32(w); }
+        if let Some(w) = self.width() { hasher.write_u32(w); }
         if let Some(h) = self.height() { hasher.write_u32(h); }
     }
 }
@@ -168,7 +168,7 @@ impl ImageOp {
 
         let src_path = content_path.join(&self.source);
         if !ufs::file_stale(&src_path, target_path) {
-            return Ok(())
+            return Ok(());
         }
 
         let mut img = image::open(&src_path)?;
@@ -210,7 +210,7 @@ impl ImageOp {
                     img.crop(offset_w, offset_h, crop_w, crop_h)
                         .resize_exact(w, h, RESIZE_FILTER)
                 }
-            },
+            }
         };
 
         let mut f = File::create(target_path)?;
@@ -251,9 +251,9 @@ impl Processor {
 
     fn resized_url(base_url: &str) -> String {
         if base_url.ends_with('/') {
-             format!("{}{}", base_url, RESIZED_SUBDIR)
+            format!("{}{}", base_url, RESIZED_SUBDIR)
         } else {
-             format!("{}/{}", base_url, RESIZED_SUBDIR)
+            format!("{}/{}", base_url, RESIZED_SUBDIR)
         }
     }
 
@@ -275,7 +275,7 @@ impl Processor {
             HEntry::Vacant(entry) => {
                 entry.insert(img_op);
                 return 0;
-            },
+            }
         }
 
         // If we get here, that means a hash collision.
@@ -342,7 +342,7 @@ impl Processor {
                 if let Some(capts) = RESIZED_FILENAME.captures(filename.as_ref()) {
                     let hash = u64::from_str_radix(capts.get(1).unwrap().as_str(), 16).unwrap();
                     let collision_id = u32::from_str_radix(
-                        capts.get(2).unwrap().as_str(), 16
+                        capts.get(2).unwrap().as_str(), 16,
                     ).unwrap();
 
                     if collision_id > 0 || !self.img_ops.contains_key(&hash) {
@@ -364,8 +364,8 @@ impl Processor {
             op.perform(&self.content_path, &target)
                 .chain_err(|| format!("Failed to process image: {}", op.source))
         })
-        .fold(|| Ok(()), Result::and)
-        .reduce(|| Ok(()), Result::and)
+            .fold(|| Ok(()), Result::and)
+            .reduce(|| Ok(()), Result::and)
     }
 }
 

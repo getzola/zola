@@ -23,8 +23,8 @@ fn create_pages(number: usize, sort_by: SortBy) -> Vec<Page> {
     for i in 0..number {
         let mut page = Page::default();
         match sort_by {
-            SortBy::Weight => { page.meta.weight = Some(i); },
-            SortBy::Order => { page.meta.order = Some(i); },
+            SortBy::Weight => { page.meta.weight = Some(i); }
+            SortBy::Order => { page.meta.order = Some(i); }
             _ => (),
         };
         page.raw_content = r#"

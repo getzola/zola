@@ -58,9 +58,9 @@ impl TempHeader {
         };
 
         match insert_anchor {
-            InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl=self.level, t=self.title, id=self.id),
-            InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl=self.level, a=anchor_link, t=self.title, id=self.id),
-            InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl=self.level, a=anchor_link, t=self.title, id=self.id),
+            InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl = self.level, t = self.title, id = self.id),
+            InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.title, id = self.id),
+            InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.title, id = self.id),
         }
     }
 }

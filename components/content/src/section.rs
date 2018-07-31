@@ -91,7 +91,7 @@ impl Section {
                     return "index.html".to_string();
                 }
                 "section.html".to_string()
-            },
+            }
         }
     }
 

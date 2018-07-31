@@ -164,9 +164,9 @@ mod tests {
     fn can_make_taxonomies() {
         let mut config = Config::default();
         config.taxonomies = vec![
-            Taxonomy {name: "categories".to_string(), ..Taxonomy::default()},
-            Taxonomy {name: "tags".to_string(), ..Taxonomy::default()},
-            Taxonomy {name: "authors".to_string(), ..Taxonomy::default()},
+            Taxonomy { name: "categories".to_string(), ..Taxonomy::default() },
+            Taxonomy { name: "tags".to_string(), ..Taxonomy::default() },
+            Taxonomy { name: "authors".to_string(), ..Taxonomy::default() },
         ];
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();
@@ -234,7 +234,7 @@ mod tests {
     fn errors_on_unknown_taxonomy() {
         let mut config = Config::default();
         config.taxonomies = vec![
-            Taxonomy {name: "authors".to_string(), ..Taxonomy::default()},
+            Taxonomy { name: "authors".to_string(), ..Taxonomy::default() },
         ];
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();

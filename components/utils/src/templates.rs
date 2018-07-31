@@ -37,13 +37,13 @@ pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: &Optio
     match name {
         "index.html" | "section.html" => {
             render_default_tpl!(name, "https://www.getgutenberg.io/documentation/templates/pages-sections/#section-variables")
-        },
+        }
         "page.html" => {
             render_default_tpl!(name, "https://www.getgutenberg.io/documentation/templates/pages-sections/#page-variables")
-        },
+        }
         "single.html" | "list.html" => {
             render_default_tpl!(name, "https://www.getgutenberg.io/documentation/templates/taxonomies/")
-        },
+        }
         _ => bail!("Tried to render `{}` but the template wasn't found", name)
     }
 }

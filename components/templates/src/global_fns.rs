@@ -258,7 +258,7 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy() {
-        let taxo_config = TaxonomyConfig {name: "tags".to_string(), ..TaxonomyConfig::default()};
+        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let tag = TaxonomyItem::new(
             "Prog amming",
             "tags",

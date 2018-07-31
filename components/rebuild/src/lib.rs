@@ -16,7 +16,7 @@ use front_matter::{PageFrontMatter, SectionFrontMatter};
 pub fn find_parent_section<'a>(site: &'a Site, page: &Page) -> Option<&'a Section> {
     for section in site.sections.values() {
         if section.is_child_page(&page.file.path) {
-            return Some(section)
+            return Some(section);
         }
     }
 
@@ -149,18 +149,18 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
                     SectionChangesNeeded::Sort => {
                         site.sort_sections_pages(Some(path));
                         site.register_tera_global_fns();
-                    },
+                    }
                     SectionChangesNeeded::Render => site.render_section(&site.sections[path], false)?,
                     SectionChangesNeeded::RenderWithPages => site.render_section(&site.sections[path], true)?,
                     // not a common enough operation to make it worth optimizing
                     SectionChangesNeeded::Delete => {
                         site.populate_sections();
                         site.build()?;
-                    },
+                    }
                 };
             }
             return Ok(());
-        },
+        }
         // New section, only render that one
         None => {
             site.populate_sections();
@@ -198,7 +198,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                 // I can't think of a valid usecase where you would need the content
                 // of a page through a global fn so it's commented out for now
                 // site.register_tera_global_fns();
-                return site.render_page(& site.pages[path]);
+                return site.render_page(&site.pages[path]);
             }
 
             // Front matter changed
@@ -210,7 +210,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                         site.populate_taxonomies()?;
                         site.register_tera_global_fns();
                         site.render_taxonomies()?;
-                    },
+                    }
                     PageChangesNeeded::Sort => {
                         let section_path = match find_parent_section(site, &site.pages[path]) {
                             Some(s) => s.file.path.clone(),
@@ -223,7 +223,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                         site.sort_sections_pages(Some(&section_path));
                         site.register_tera_global_fns();
                         site.render_index()?;
-                    },
+                    }
                     PageChangesNeeded::Render => {
                         if !sections_populated {
                             site.populate_sections();
@@ -232,11 +232,11 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                         site.register_tera_global_fns();
                         render_parent_section!(site, path);
                         site.render_page(&site.pages[path])?;
-                    },
+                    }
                 };
             }
             Ok(())
-        },
+        }
         // It's a new page!
         None => {
             site.populate_sections();
@@ -289,7 +289,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
             handle_page_editing(site, path)
         }
     } else {
-        if index.exists()  {
+        if index.exists() {
             handle_page_editing(site, &index)
         } else {
             Ok(())
@@ -310,7 +310,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
         "page.html" => {
             site.render_sections()?;
             site.render_orphan_pages()
-        },
+        }
         "section.html" => site.render_sections(),
         // Either the index or some unknown template changed
         // We can't really know what this change affects so rebuild all
@@ -327,7 +327,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             site.render_sections()?;
             site.render_orphan_pages()?;
             site.render_taxonomies()
-        },
+        }
     }
 }
 
@@ -339,7 +339,7 @@ mod tests {
     use front_matter::{PageFrontMatter, SectionFrontMatter, SortBy};
     use super::{
         find_page_front_matter_changes, find_section_front_matter_changes,
-        PageChangesNeeded, SectionChangesNeeded
+        PageChangesNeeded, SectionChangesNeeded,
     };
 
     #[test]

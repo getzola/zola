@@ -287,10 +287,10 @@ impl Site {
     /// Adds global fns that are to be available to shortcodes while rendering markdown
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_global_function(
-            "get_url", global_fns::make_get_url(self.permalinks.clone(), self.config.clone())
+            "get_url", global_fns::make_get_url(self.permalinks.clone(), self.config.clone()),
         );
         self.tera.register_global_function(
-            "resize_image", global_fns::make_resize_image(self.imageproc.clone())
+            "resize_image", global_fns::make_resize_image(self.imageproc.clone()),
         );
     }
 
@@ -300,7 +300,7 @@ impl Site {
         self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
         self.tera.register_global_function(
             "get_taxonomy",
-            global_fns::make_get_taxonomy(self.taxonomies.clone())
+            global_fns::make_get_taxonomy(self.taxonomies.clone()),
         );
     }
 
@@ -419,7 +419,7 @@ impl Site {
                 .filter(|p| !p.is_draft())
                 .cloned()
                 .collect::<Vec<_>>()
-                .as_slice()
+                .as_slice(),
         )?;
 
         Ok(())
@@ -430,7 +430,7 @@ impl Site {
         if let Some(port) = self.live_reload {
             return html.replace(
                 "</body>",
-                &format!(r#"<script src="/livereload.js?port={}&mindelay=10"></script></body>"#, port)
+                &format!(r#"<script src="/livereload.js?port={}&mindelay=10"></script></body>"#, port),
             );
         }
 
@@ -443,7 +443,7 @@ impl Site {
         if let Some(ref theme) = self.config.theme {
             copy_directory(
                 &self.base_path.join("themes").join(theme).join("static"),
-                &self.output_path
+                &self.output_path,
             )?;
         }
         // We're fine with missing static folders
@@ -656,7 +656,7 @@ impl Site {
         context.insert("config", &self.config);
         create_file(
             &self.output_path.join("404.html"),
-            &render_template("404.html", &self.tera, &context, &self.config.theme)?
+            &render_template("404.html", &self.tera, &context, &self.config.theme)?,
         )
     }
 
@@ -665,7 +665,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         create_file(
             &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme)?
+            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme)?,
         )
     }
 
@@ -681,7 +681,7 @@ impl Site {
 
     fn render_taxonomy(&self, taxonomy: &Taxonomy) -> Result<()> {
         if taxonomy.items.is_empty() {
-            return Ok(())
+            return Ok(());
         }
 
         ensure_directory_exists(&self.output_path)?;
@@ -698,7 +698,7 @@ impl Site {
                     // TODO: can we get rid of `clone()`?
                     self.render_rss_feed(
                         Some(item.pages.clone()),
-                        Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug)))
+                        Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
                     )?;
                 }
 
@@ -739,9 +739,9 @@ impl Site {
         context.add("pages", &pages);
 
         let mut sections = self.sections
-                .values()
-                .map(|s| SitemapEntry::new(s.permalink.clone(), None))
-                .collect::<Vec<_>>();
+            .values()
+            .map(|s| SitemapEntry::new(s.permalink.clone(), None))
+            .collect::<Vec<_>>();
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.add("sections", &sections);
 
@@ -789,7 +789,7 @@ impl Site {
 
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
         context.add("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
-         // limit to the last n elements
+        // limit to the last n elements
         context.add("pages", &sorted_pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
         context.add("config", &self.config);
 
@@ -866,7 +866,7 @@ impl Site {
     pub fn render_index(&self) -> Result<()> {
         self.render_section(
             &self.sections[&self.content_path.join("_index.md")],
-            false
+            false,
         )
     }
 

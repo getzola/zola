@@ -99,7 +99,7 @@ pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Pa
     let p_source = p_source.as_ref();
     let p_target = p_target.as_ref();
 
-    if ! p_target.exists() {
+    if !p_target.exists() {
         return true;
     }
 
@@ -125,7 +125,7 @@ mod tests {
 
     use tempfile::tempdir;
 
-    use super::{find_related_assets};
+    use super::find_related_assets;
 
     #[test]
     fn can_find_related_assets() {

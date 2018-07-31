@@ -11,7 +11,7 @@ use front_matter::SortBy;
 /// will be ignored.
 pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
     if sort_by == SortBy::None {
-        return (pages,  vec![]);
+        return (pages, vec![]);
     }
 
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) = pages
@@ -34,7 +34,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                     ord
                 }
             })
-        },
+        }
         SortBy::Weight => {
             can_be_sorted.par_sort_unstable_by(|a, b| {
                 let ord = a.meta.weight().cmp(&b.meta.weight());
@@ -44,7 +44,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                     ord
                 }
             })
-        },
+        }
         _ => unreachable!()
     };
 
@@ -86,13 +86,13 @@ pub fn populate_siblings(input: &[Page], sort_by: SortBy) -> Vec<Page> {
                         next_page.lighter = None;
                         next_page.heavier = None;
                         new_page.lighter = Some(Box::new(next_page));
-                    },
+                    }
                     SortBy::Date => {
                         next_page.earlier = None;
                         next_page.later = None;
                         new_page.later = Some(Box::new(next_page));
-                    },
-                    SortBy::None => {}
+                    }
+                    SortBy::None => ()
                 }
                 break;
             }
@@ -118,14 +118,13 @@ pub fn populate_siblings(input: &[Page], sort_by: SortBy) -> Vec<Page> {
                         previous_page.lighter = None;
                         previous_page.heavier = None;
                         new_page.heavier = Some(Box::new(previous_page));
-                    },
+                    }
                     SortBy::Date => {
                         previous_page.earlier = None;
                         previous_page.later = None;
                         new_page.earlier = Some(Box::new(previous_page));
-                    },
-                    SortBy::None => {
                     }
+                    SortBy::None => {}
                 }
                 break;
             }

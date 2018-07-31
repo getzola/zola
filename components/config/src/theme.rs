@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 
-use toml::{Value as Toml};
+use toml::Value as Toml;
 
 use errors::{Result, ResultExt};
 
@@ -37,7 +37,7 @@ impl Theme {
         }
 
 
-        Ok(Theme {extra})
+        Ok(Theme { extra })
     }
 
     /// Parses a theme file from the given path

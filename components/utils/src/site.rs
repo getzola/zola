@@ -26,7 +26,7 @@ pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -
             } else {
                 Ok(p.to_string())
             }
-        },
+        }
         None => bail!(format!("Relative link {} not found.", link)),
     }
 }

@@ -90,7 +90,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
 
                     // Business as usual
                     Event::Text(text)
-                },
+                }
                 Event::Start(Tag::CodeBlock(ref info)) => {
                     if !context.config.highlight_code {
                         return Event::Html(Owned("<pre><code>".to_string()));
@@ -100,15 +100,15 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     highlighter = Some(get_highlighter(&theme, info));
                     let snippet = start_coloured_html_snippet(theme);
                     Event::Html(Owned(snippet))
-                },
+                }
                 Event::End(Tag::CodeBlock(_)) => {
                     if !context.config.highlight_code {
-                        return Event::Html(Owned("</code></pre>\n".to_string()))
+                        return Event::Html(Owned("</code></pre>\n".to_string()));
                     }
                     // reset highlight and close the code block
                     highlighter = None;
                     Event::Html(Owned("</pre>".to_string()))
-                },
+                }
                 Event::Start(Tag::Image(src, title)) => {
                     if is_colocated_asset_link(&src) {
                         return Event::Start(
@@ -120,7 +120,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     }
 
                     Event::Start(Tag::Image(src, title))
-                },
+                }
                 Event::Start(Tag::Link(link, title)) => {
                     // A few situations here:
                     // - it could be a relative link (starting with `./`)
@@ -166,33 +166,33 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     }
 
                     Event::Start(Tag::Link(Owned(fixed_link), title))
-                },
+                }
                 Event::End(Tag::Link(_, _)) => {
                     if in_header {
                         temp_header.push("</a>");
                         return Event::Html(Owned(String::new()));
                     }
                     event
-                },
+                }
                 Event::Start(Tag::Code) => {
                     if in_header {
                         temp_header.push("<code>");
                         return Event::Html(Owned(String::new()));
                     }
                     event
-                },
+                }
                 Event::End(Tag::Code) => {
                     if in_header {
                         temp_header.push("</code>");
                         return Event::Html(Owned(String::new()));
                     }
                     event
-                },
+                }
                 Event::Start(Tag::Header(num)) => {
                     in_header = true;
                     temp_header = TempHeader::new(num);
                     Event::Html(Owned(String::new()))
-                },
+                }
                 Event::End(Tag::Header(_)) => {
                     // End of a header, reset all the things and return the stringified
                     // version of the header
@@ -202,7 +202,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     headers.push(temp_header.clone());
                     temp_header = TempHeader::default();
                     Event::Html(Owned(val))
-                },
+                }
                 _ => event,
             }
         });

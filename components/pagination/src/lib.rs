@@ -39,7 +39,7 @@ pub struct Pager<'a> {
     /// Path to that page
     path: String,
     /// All pages for the pager
-    pages: Vec<&'a Page>
+    pages: Vec<&'a Page>,
 }
 
 impl<'a> Pager<'a> {
@@ -187,7 +187,7 @@ impl<'a> Paginator<'a> {
             "pagers",
             to_value(
                 &self.pagers.iter().map(|p| p.clone_without_pages()).collect::<Vec<_>>()
-            ).unwrap()
+            ).unwrap(),
         );
 
         // Variables for this specific page
@@ -217,11 +217,11 @@ impl<'a> Paginator<'a> {
             PaginationRoot::Section(s) => {
                 context.add("section", &s);
                 s.get_template_name()
-            },
+            }
             PaginationRoot::Taxonomy(t) => {
                 context.add("taxonomy", &t.kind);
                 format!("{}/single.html", t.kind.name)
-            },
+            }
         };
         context.add("current_url", &pager.permalink);
         context.add("current_path", &pager.path);
@@ -238,7 +238,7 @@ mod tests {
 
     use front_matter::SectionFrontMatter;
     use content::{Page, Section};
-    use config::{Taxonomy as TaxonomyConfig};
+    use config::Taxonomy as TaxonomyConfig;
     use taxonomies::{Taxonomy, TaxonomyItem};
 
     use super::Paginator;
@@ -348,7 +348,7 @@ mod tests {
             permalink: "https://vincent.is/tags/something/".to_string(),
             pages,
         };
-        let taxonomy = Taxonomy {kind: taxonomy_def, items: vec![taxonomy_item.clone()]};
+        let taxonomy = Taxonomy { kind: taxonomy_def, items: vec![taxonomy_item.clone()] };
         let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item);
         assert_eq!(paginator.pagers.len(), 2);
 
