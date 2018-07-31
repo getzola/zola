@@ -1,6 +1,6 @@
 +++
 title = "Nix"
-order = 2
+weight = 2
 date = 2017-01-01
 +++
 

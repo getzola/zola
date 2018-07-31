@@ -1,6 +1,6 @@
 +++
 title = "Python tutorial"
-order = 1
+weight = 1
 date = 2017-01-01
 +++
 

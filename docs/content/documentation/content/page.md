@@ -6,6 +6,22 @@ weight = 30
 A page is any file ending with `.md` in the `content` directory, except files
 named `_index.md`.
 
+If a file ending with `.md` is named `index.md`, then it will generate a page
+with the name of the containing folder (for example, `/content/about/index.md` would
+create a page at `[base_url]/about`).  (Note the lack of an underscore; if the file
+were named `_index.md`, then it would create a **section** at `[base_url]/about`, as
+discussed in the prior part of this documentation.  But naming the file `index.md` will
+create a **page** at `[base_url]/about`).
+
+If the file is given any name *other* than `index.md` or `_index.md`, then it will
+create a page with that name (without the `.md`). So naming a file in the root of your
+content directory `about.md` would also create a page at `[base_url]/about`.
+
+As you can see, creating an `about.md` file is exactly equivalent to creating an 
+`about/index.md` file.  The only difference between the two methods is that creating
+the `about` folder allows you to use asset colocation, as discussed in the 
+[Overview](./documentation/content/overview.md) section of this documentation.
+
 ## Front-matter
 
 The front-matter is a set of metadata embedded in a file. In Gutenberg,
@@ -13,7 +29,8 @@ it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
 While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
 
-Here is an example page with all the variables available:
+Here is an example page with all the variables available.  The values provided below are the default
+values.
 
 ```md
 +++
@@ -22,8 +39,15 @@ description = ""
 
 # The date of the post.
 # 2 formats are allowed: YYYY-MM-DD (2012-10-02) and RFC3339 (2002-10-02T15:00:00Z)
-# Do not wrap dates in quotes, the line below only indicates that there is no default date
-date =
+# Do not wrap dates in quotes, the line below only indicates that there is no default date.
+# If the section variable `sort_by` is set to `date`, then any page that lacks a `date`
+# will not be rendered.
+date = 
+
+# The weight as defined in the Section page
+# If the section variable `sort_by` is set to `weight`, then any page that lacks a `weight`
+# will not be rendered.
+weight = 0
 
 # A draft page will not be present in prev/next pagination
 draft = false
@@ -38,28 +62,18 @@ slug = ""
 # It should not start with a `/` and the slash will be removed if it does
 path = ""
 
-# A dict of taxonomies: the key is the name of the taxonomy which must match
-# one of the taxonomy defined in `config.toml` and the value is a list of
-# strings
-[taxonomies]
+# An array of strings allowing you to group pages with them
+tags = []
 
-# The order as defined in the Section page
-order = 0
+# An overarching category name for that page, allowing you to group pages with it
+category = ""
 
-# The weight as defined in the Section page
-weight = 0
-
-# Use aliases if you are moving content but want to redirect previous URLs to the
-# current one. Each element in the array of aliases may take one of two forms:
-#   * "some/alias/path", which will generate "some/alias/path/index.html"
-#   * "some/alias/path.html", which will generate "some/alias/path.html"
-#
-# The former is useful if your previous site had the form "example.com/some/alias/path",
-# the latter is useful if your previous site had the form "example.com/some/alias/path.html"
+# Use aliases if you are moving content but want to redirect previous URLs to the 
+# current one. This takes an array of path, not URLs.
 aliases = []
 
 # Whether the page should be in the search index. This is only used if
-# `build_search_index` is set to true in the config and the parent section
+# `build_search_index` is set to true in the config and the parent section 
 # hasn't set `in_search_index` to false in its front-matter
 in_search_index = true
 
@@ -75,7 +89,7 @@ Some content
 
 ## Summary
 
-You can ask Gutenberg to create a summary if you only want to show the first
+You can ask Gutenberg to create a summary if you only want to show the first 
 paragraph of each page in a list for example.
 
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
@@ -83,6 +97,6 @@ where you want the summary to end and the content up to that point will be also
 available separately in the
 [template](./documentation/templates/pages-sections.md#page-variables).
 
-An anchor link to this position named `continue-reading` is created so you can link
+An anchor link to this position named `continue-reading` is created so you can link 
 directly to it if needed for example:
 `<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`

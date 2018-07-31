@@ -79,7 +79,7 @@ fn can_rebuild_after_simple_change_to_page_content() {
     let file_path = edit_file!(site_path, "content/rebuild/first.md", br#"
 +++
 title = "first"
-order = 1
+weight = 1
 date = 2017-01-01
 +++
 
@@ -97,7 +97,7 @@ fn can_rebuild_after_title_change_page_global_func_usage() {
     let file_path = edit_file!(site_path, "content/rebuild/first.md", br#"
 +++
 title = "Premier"
-order = 10
+weight = 10
 date = 2017-01-01
 +++
 
@@ -115,12 +115,12 @@ fn can_rebuild_after_sort_change_in_section() {
     let file_path = edit_file!(site_path, "content/rebuild/_index.md", br#"
 +++
 paginate_by = 1
-sort_by = "order"
+sort_by = "weight"
 template = "rebuild.html"
 +++
 "#);
 
     let res = after_content_change(&mut site, &file_path);
     assert!(res.is_ok());
-    assert!(file_contains!(site_path, "public/rebuild/index.html", "<h1>second</h1><h1>first</h1>"));
+    assert!(file_contains!(site_path, "public/rebuild/index.html", "<h1>first</h1><h1>second</h1>"));
 }
