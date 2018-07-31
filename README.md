@@ -31,7 +31,7 @@ in the `docs/content` folder of the repository.
 | Search                   |     ✔     |    ✕   |   ✕  |    ✔    |
 | Data files               |     ✕     |    ✔   |   ✔  |    ✕    |
 | LiveReload               |     ✔     |    ✕   |   ✔  |    ✔    |
-| Netlify support          |     ✔     |    ✕   |   ✔  |    ✔    |
+| Netlify support          |     ✔     |    ✕   |   ✔  |    ✕    |
 
 Supported content formats:
 
