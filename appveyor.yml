@@ -34,18 +34,11 @@ before_deploy:
 
 deploy:
   artifact: /.*\.zip/
-  # TODO update `auth_token.secure`
-  # - Create a `public_repo` GitHub token. Go to: https://github.com/settings/tokens/new
-  # - Encrypt it. Go to https://ci.appveyor.com/tools/encrypt
-  # - Paste the output down here
   auth_token:
     secure: YCRPSTItx+m/3jnDfai52dEZNLYUTSEExF2lZoffULDzlv/t2jOR1fzSSIEi/xyB
   description: ''
   on:
-    # In this example, there are some targets that are tested using the stable
-    # and nightly channels. This condition makes sure there is only one release
-    # for such targets and that's generated using the stable channel
-    RUST_VERSION: 1.25.0
+    RUST_VERSION: stable
     appveyor_repo_tag: true
   provider: GitHub
 
