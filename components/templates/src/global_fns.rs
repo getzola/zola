@@ -337,7 +337,7 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
         args.insert("name".to_string(), to_value("Programming").unwrap());
-        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/tags/prog-amming/");
+        assert_eq!(static_fn(args).unwrap(), to_value("http://a-website.com/tags/programming/").unwrap());
         // and errors if it can't find it
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
