@@ -140,7 +140,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                         format!("{}{}", context.current_page_permalink, link)
                     } else {
                         if context.config.check_external_links && !link.starts_with('#') {
-                            println!("Checking Link {}", link);
                             let res = check_url(&link);
                             if res.is_valid() {
                                 link.to_string()

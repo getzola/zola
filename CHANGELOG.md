@@ -6,6 +6,7 @@
 
 - Taxonomies have been rewritten from scratch to allow custom ones with RSS and pagination
 - `order` sorting has been removed in favour of only having `weight`
+- `page.next/page.previous` have been renamed to `page.later/page.earlier` and `page.heavier/page.lighter` depending on the sort method
 
 ### Others
 - Fix `serve` not working with the config flag

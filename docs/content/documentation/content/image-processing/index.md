@@ -1,5 +1,5 @@
 +++
-title = "Image Resizing"
+title = "Image processing"
 weight = 120
 +++
 
@@ -47,7 +47,7 @@ The source for all examples is this 300 × 380 pixels image:
 
   `resize_image(..., width=150, height=150, op="scale")`
 
-  {{ resize_image(path="documentation/content/image-resizing/gutenberg.jpg", width=150, height=150, op="scale") }}
+  {{ resize_image(path="documentation/content/image-processing/gutenberg.jpg", width=150, height=150, op="scale") }}
 
 ### **`"fit_width"`**
   Resizes the image such that the resulting width is `width` and height is whatever will preserve the aspect ratio.
@@ -55,7 +55,7 @@ The source for all examples is this 300 × 380 pixels image:
 
   `resize_image(..., width=100, op="fit_width")`
 
-  {{ resize_image(path="documentation/content/image-resizing/gutenberg.jpg", width=100, height=0, op="fit_width") }}
+  {{ resize_image(path="documentation/content/image-processing/gutenberg.jpg", width=100, height=0, op="fit_width") }}
 
 ### **`"fit_height"`**
   Resizes the image such that the resulting height is `height` and width is whatever will preserve the aspect ratio.
@@ -63,7 +63,7 @@ The source for all examples is this 300 × 380 pixels image:
 
   `resize_image(..., height=150, op="fit_height")`
 
-  {{ resize_image(path="documentation/content/image-resizing/gutenberg.jpg", width=0, height=150, op="fit_height") }}
+  {{ resize_image(path="documentation/content/image-processing/gutenberg.jpg", width=0, height=150, op="fit_height") }}
 
 ### **`"fit"`**
   Like `"fit_width"` and `"fit_height"` combined.
@@ -72,7 +72,7 @@ The source for all examples is this 300 × 380 pixels image:
 
   `resize_image(..., width=150, height=150, op="fit")`
 
-  {{ resize_image(path="documentation/content/image-resizing/gutenberg.jpg", width=150, height=150, op="fit") }}
+  {{ resize_image(path="documentation/content/image-processing/gutenberg.jpg", width=150, height=150, op="fit") }}
 
 ### **`"fill"`**
   This is the default operation. It takes the image's center part with the same aspect ratio as the `width` & `height` given and resizes that
@@ -80,7 +80,7 @@ The source for all examples is this 300 × 380 pixels image:
 
   `resize_image(..., width=150, height=150, op="fill")`
 
-  {{ resize_image(path="documentation/content/image-resizing/gutenberg.jpg", width=150, height=150, op="fill") }}
+  {{ resize_image(path="documentation/content/image-processing/gutenberg.jpg", width=150, height=150, op="fill") }}
 
 
 ## Using `resize_image` in markdown via shortcodes

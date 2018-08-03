@@ -44,7 +44,8 @@ rss_limit = 20
 # Example:
 #     taxonomies = [
 #       {name: "tags", rss: true}, # each tag will have its own RSS feed
-#       {name: "categories", paginate_by: 5},  # 5 terms per page
+#       {name: "categories", paginate_by: 5},  # 5 items per page for a term
+#       {name: "authors"}, # Basic definition: no RSS or pagination
 #     ]
 #
 taxonomies = []

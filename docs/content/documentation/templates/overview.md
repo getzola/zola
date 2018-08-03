@@ -146,4 +146,4 @@ Gets the translation of the given `key`, for the `default_language` or the `lang
 
 ### `resize_image`
 Resizes an image file.
-Pease refer to [_Content / Image Resizing_](./documentation/content/image-resizing/index.md) for complete documentation.
+Pease refer to [_Content / Image Processing_](./documentation/content/image-processing/index.md) for complete documentation.
