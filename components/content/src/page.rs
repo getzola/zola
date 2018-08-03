@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
-
+use chrono::Datelike;
 use tera::{Tera, Context as TeraContext};
 use serde::ser::{SerializeStruct, self};
 use slug::slugify;
@@ -14,7 +14,7 @@ use utils::fs::{read_file, find_related_assets};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
-use rendering::{Context, Header, markdown_to_html};
+use rendering::{RenderContext, Header, render_content};
 
 use file_info::FileInfo;
 
@@ -44,10 +44,14 @@ pub struct Page {
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
     pub summary: Option<String>,
-    /// The previous page, by whatever sorting is used for the index/section
-    pub previous: Option<Box<Page>>,
-    /// The next page, by whatever sorting is used for the index/section
-    pub next: Option<Box<Page>>,
+    /// The earlier page, for pages sorted by date
+    pub earlier: Option<Box<Page>>,
+    /// The later page, for pages sorted by date
+    pub later: Option<Box<Page>>,
+    /// The lighter page, for pages sorted by weight
+    pub lighter: Option<Box<Page>>,
+    /// The heavier page, for pages sorted by weight
+    pub heavier: Option<Box<Page>>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
 }
@@ -68,8 +72,10 @@ impl Page {
             components: vec![],
             permalink: "".to_string(),
             summary: None,
-            previous: None,
-            next: None,
+            earlier: None,
+            later: None,
+            lighter: None,
+            heavier: None,
             toc: vec![],
         }
     }
@@ -156,27 +162,32 @@ impl Page {
         }
 
         Ok(page)
-
     }
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, anchor_insert: InsertAnchor) -> Result<()> {
-        let context = Context::new(
+        let mut context = RenderContext::new(
             tera,
-            config.highlight_code,
-            config.highlight_theme.clone(),
+            config,
             &self.permalink,
             permalinks,
-            anchor_insert
+            anchor_insert,
         );
-        let res = markdown_to_html(&self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1), &context)?;
+
+        context.tera_context.add("page", self);
+
+        let res = render_content(
+            &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),
+            &context,
+        ).chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.0;
         self.toc = res.1;
         if self.raw_content.contains("<!-- more -->") {
             self.summary = Some({
                 let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                markdown_to_html(summary, &context)?.0
+                render_content(summary, &context)
+                    .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?.0
             })
         }
 
@@ -199,6 +210,15 @@ impl Page {
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
+
+    /// Creates a vectors of asset URLs.
+    fn serialize_assets(&self) -> Vec<String> {
+        self.assets.iter()
+            .filter_map(|asset| asset.file_name())
+            .filter_map(|filename| filename.to_str())
+            .map(|filename| self.path.clone() + filename)
+            .collect()
+    }
 }
 
 impl Default for Page {
@@ -214,8 +234,10 @@ impl Default for Page {
             components: vec![],
             permalink: "".to_string(),
             summary: None,
-            previous: None,
-            next: None,
+            earlier: None,
+            later: None,
+            lighter: None,
+            heavier: None,
             toc: vec![],
         }
     }
@@ -223,26 +245,39 @@ impl Default for Page {
 
 impl ser::Serialize for Page {
     fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 18)?;
+        let mut state = serializer.serialize_struct("page", 20)?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
+        if let Some(chrono_datetime) = self.meta.date() {
+            let d = chrono_datetime.date();
+            state.serialize_field("year", &d.year())?;
+            state.serialize_field("month", &d.month())?;
+            state.serialize_field("day", &d.day())?;
+        } else {
+            state.serialize_field::<Option<usize>>("year", &None)?;
+            state.serialize_field::<Option<usize>>("month", &None)?;
+            state.serialize_field::<Option<usize>>("day", &None)?;
+        }
         state.serialize_field("slug", &self.slug)?;
         state.serialize_field("path", &self.path)?;
         state.serialize_field("components", &self.components)?;
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("summary", &self.summary)?;
-        state.serialize_field("tags", &self.meta.tags)?;
-        state.serialize_field("category", &self.meta.category)?;
+        state.serialize_field("taxonomies", &self.meta.taxonomies)?;
         state.serialize_field("extra", &self.meta.extra)?;
         let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
         state.serialize_field("word_count", &word_count)?;
         state.serialize_field("reading_time", &reading_time)?;
-        state.serialize_field("previous", &self.previous)?;
-        state.serialize_field("next", &self.next)?;
+        state.serialize_field("earlier", &self.earlier)?;
+        state.serialize_field("later", &self.later)?;
+        state.serialize_field("lighter", &self.lighter)?;
+        state.serialize_field("heavier", &self.heavier)?;
         state.serialize_field("toc", &self.toc)?;
         state.serialize_field("draft", &self.is_draft())?;
+        let assets = self.serialize_assets();
+        state.serialize_field("assets", &assets)?;
         state.end()
     }
 }
@@ -255,7 +290,7 @@ mod tests {
     use std::path::Path;
 
     use tera::Tera;
-    use tempdir::TempDir;
+    use tempfile::tempdir;
     use globset::{Glob, GlobSetBuilder};
 
     use config::Config;
@@ -387,7 +422,7 @@ Hello world
 
     #[test]
     fn page_with_assets_gets_right_info() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         create_dir(&path.join("content")).expect("create content temp dir");
         create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
@@ -401,7 +436,7 @@ Hello world
 
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            &Config::default()
+            &Config::default(),
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -413,7 +448,7 @@ Hello world
 
     #[test]
     fn page_with_assets_and_slug_overrides_path() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         create_dir(&path.join("content")).expect("create content temp dir");
         create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
@@ -427,7 +462,7 @@ Hello world
 
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            &Config::default()
+            &Config::default(),
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -439,7 +474,7 @@ Hello world
 
     #[test]
     fn page_with_ignored_assets_filters_out_correct_files() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         create_dir(&path.join("content")).expect("create content temp dir");
         create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
@@ -458,7 +493,7 @@ Hello world
 
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            &config
+            &config,
         );
 
         assert!(res.is_ok());

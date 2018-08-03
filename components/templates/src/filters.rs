@@ -51,7 +51,7 @@ pub fn base64_decode(value: Value, _: HashMap<String, Value>) -> TeraResult<Valu
 mod tests {
     use std::collections::HashMap;
 
-    use tera::{to_value};
+    use tera::to_value;
 
     use super::{markdown, base64_decode, base64_encode};
 

@@ -27,7 +27,8 @@ to your templates through the `section.content` variable.
 
 While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
 
-Here is an example `_index.md` with all the variables available:
+Here is an example `_index.md` with all the variables available.  The values provided below are the
+default values.
 
 
 ```md
@@ -36,7 +37,7 @@ title = ""
 
 description = ""
 
-# Whether to sort by "date", "order", "weight" or "none". More on that below
+# Whether to sort pages by "date", "weight", or "none". More on that below
 sort_by = "none"
 
 # Used by the parent section to order its subsections.
@@ -107,16 +108,16 @@ create a list of links to the posts, a simple template might look like this:
 This would iterate over the posts, and would do so in a specific order 
 based on the `sort_by` variable set in the `_index.md` page for the 
 containing section.  The `sort_by` variable can be given three values: `date`,
-`weight`, and `order`.  If no `sort_by` method is set, the pages will be
-sorted in a default order that is not guaranteed to correspond to any of the
-explicit orders.  The value of `sort_by` will also determine which pages
-are listed stored in the `page.next` and `page.previous` variables.  The effects of these values is explained below.
+`weight`, and `none`.  If no `sort_by` method is set, the pages will be
+sorted in the `none` order, which is not intended to be used for sorted content.
 
 Any page that is missing the data it needs to be sorted will be ignored and
 won't be rendered. For example, if a page is missing the date variable the 
-containing section sets `sort_by = "date"`, then that page will be ignored.  The terminal will warn you if this is happening.
+containing section sets `sort_by = "date"`, then that page will be ignored.  
+The terminal will warn you if this is happening.
 
-If several pages have the same date/weight/order, their permalink will be used to break the tie following an alphabetical order.
+If several pages have the same date/weight/order, their permalink will be used
+to break the tie following an alphabetical order.
 
 ## Sorting Pages
 The `sort_by` front-matter variable can have the following values:
@@ -124,68 +125,33 @@ The `sort_by` front-matter variable can have the following values:
 ### `date`
 This will sort all pages by their `date` field, from the most recent (at the
 top of the list) to the oldest (at the bottom of the list).  Each page will
-get a `page.next` variable that points *down* the list (to the page just 
-older than the current page) and a `page.previous` variable that points up
-the list (to the just newer page).
+get `page.earlier` and `page.later` variables that contain the pages with 
+earlier and later dates, respectively.
 
 ### `weight`
 This will be sort all pages by their `weight` field, from lightest weight 
 (at the top of the list) to heaviest (at the bottom of the list).  Each 
-page gets a `page.next` variable that points *up* the list (to the page that
-is just lighter than the current page) and a `page.previous` variable that 
-points down the list (to the page that is just heavier than the current page).
+page gets `page.lighter` and `page.heavier` variables that contain the 
+pages with lighter and heavier weights, respectively.
 
-### `order`
-This will be sort all pages by their `order` field. Order is the opposite of weight; think of it as listing the order in which pages were posted, with the 
-oldest (first) at the bottom of the list. Each page also gets a 
-`page.next` variable that points *up* the list (to the page with a higher order
-than the current page) and a `page.previous` variable that points down the list
-(to the page just lower in order).
+When iterating through pages, you may wish to use the Tera `reverse` filter, 
+which reverses the order of the pages.  Thus, after using the `reverse` filter,
+pages sorted by weight will be sorted from lightest (at the top) to heaviest 
+(at the bottom); pages sorted by date will be sorted from oldest (at the top)
+to newest (at the bottom).
 
-To make this a bit more concrete, let's play out the simple example raised 
-above.  Imagine that we set the `weight` and `order` both to 1 in `Post_1`,
-both to 2 in `Post_2` and both to 3 in `Post_3`.  (In practice, there would
-typically be no reason to set *both* `order` and `weight`). 
-
-If we then set `sort_by = "weight"` in the `blog/_index.md` file, we would
-get the following order from a Tera for loop:
-
- *  Page_1 [`page.next = null`, `page.previous = Page_2`]
- *  Page_2 [`page.next = Page_1`, `page.previous = Page_2`]
- *  Page_3 [`page.next = Page_2`, `page.previous = Page_2`]
-
-If, however, we set the `sort_by` front-matter variable to `order`, we 
-would get:
- *  Page_3 [`page.next = null`, `page.previous = Page_2`]
- *  Page_2 [`page.next = Page_3`, `page.previous = Page_1`]
- *  Page_1 [`page.next = Page_2`, `page.previous = null`]
-
-Note that the order is reversed but in *both* cases the `page.previous` is
-pointing *up* the list, and `page.next` is pointing *down* the list.  This 
-fits many common use cases, including when Gutenberg is used for a blog as
-in this simple example.
-
-However, Gutenberg is flexible enough to accommodate alternate use cases as
-well.  If you would prefer the `page.next` and `page.previous` variables 
-to point in the opposite direction, you can use Tera's `reverse` filter. 
-`reverse` causes the order to be reversed but does *not* alter the behaviour 
-of `next` and `previous`.  Thus, combining `sort_by = "weight"` with `reverse`
-gives you the same sequence as using `sort_by = "order"` but with `next` 
-and `previous` pointing in the other direction.  By combining `sort_by` and
-`reverse`, you can achieve any combination of sorting order and
-`next`/`previous` values.
+`reverse` has no effect on `page.later`/`page.earlier`/`page.heavier`/`page.lighter`.
 
 ## Sorting Subsections
-Sorting sections is a bit less flexible but also much simpler.  This is 
-because sections do not have `next` or `previous` values.  Further, they can
-only be sorted by `weight`—thus, the `sort_by` value in the containing section
-has no impact at all on any subsections (only on pages).
+Sorting sections is a bit less flexible: sections are always sorted by `weight`,
+and do not have any variables that point to the next heavier/lighter sections.
 
 Based on this, by default the lightest (lowest `weight`) subsections will be at
 the top of the list and the heaviest (highest `weight`) will be at the top;
 the `reverse` filter reverses this order.
 
-**Note**: If the `weight` variable for your section is not set (or if it 
+**Note**: Unlike pages, permalinks will **not** be used to break ties between
+equally weighted sections.  Thus, if the `weight` variable for your section is not set (or if it 
 is set in a way that produces ties), then your sections will be sorted in 
 **random** order. Moreover, that order is determined at build time and will
 change with each site rebuild.  Thus, if there is any chance that you will 

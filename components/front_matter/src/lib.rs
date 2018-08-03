@@ -30,8 +30,6 @@ lazy_static! {
 pub enum SortBy {
     /// Most recent to oldest
     Date,
-    /// Lower order comes last
-    Order,
     /// Lower weight comes first
     Weight,
     /// No sorting
@@ -151,5 +149,4 @@ date = 2002-10-12"#;
         let res = split_page_content(Path::new(""), content);
         assert!(res.is_err());
     }
-
 }

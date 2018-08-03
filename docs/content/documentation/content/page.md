@@ -17,9 +17,9 @@ If the file is given any name *other* than `index.md` or `_index.md`, then it wi
 create a page with that name (without the `.md`). So naming a file in the root of your
 content directory `about.md` would also create a page at `[base_url]/about`.
 
-As you can see, creating an `about.md` file is exactly equivalent to creating an 
+As you can see, creating an `about.md` file is exactly equivalent to creating an
 `about/index.md` file.  The only difference between the two methods is that creating
-the `about` folder allows you to use asset colocation, as discussed in the 
+the `about` folder allows you to use asset colocation, as discussed in the
 [Overview](./documentation/content/overview.md) section of this documentation.
 
 ## Front-matter
@@ -29,7 +29,8 @@ it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
 While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
 
-Here is an example page with all the variables available:
+Here is an example page with all the variables available.  The values provided below are the default
+values.
 
 ```md
 +++
@@ -38,8 +39,15 @@ description = ""
 
 # The date of the post.
 # 2 formats are allowed: YYYY-MM-DD (2012-10-02) and RFC3339 (2002-10-02T15:00:00Z)
-# Do not wrap dates in quotes, the line below only indicates that there is no default date
-date = 
+# Do not wrap dates in quotes, the line below only indicates that there is no default date.
+# If the section variable `sort_by` is set to `date`, then any page that lacks a `date`
+# will not be rendered.
+date =
+
+# The weight as defined in the Section page
+# If the section variable `sort_by` is set to `weight`, then any page that lacks a `weight`
+# will not be rendered.
+weight = 0
 
 # A draft page will not be present in prev/next pagination
 draft = false
@@ -54,29 +62,22 @@ slug = ""
 # It should not start with a `/` and the slash will be removed if it does
 path = ""
 
-# An array of strings allowing you to group pages with them
-tags = []
-
-# An overarching category name for that page, allowing you to group pages with it
-category = ""
-
-# The order as defined in the Section page
-order = 0
-
-# The weight as defined in the Section page
-weight = 0
-
-# Use aliases if you are moving content but want to redirect previous URLs to the 
+# Use aliases if you are moving content but want to redirect previous URLs to the
 # current one. This takes an array of path, not URLs.
 aliases = []
 
 # Whether the page should be in the search index. This is only used if
-# `build_search_index` is set to true in the config and the parent section 
+# `build_search_index` is set to true in the config and the parent section
 # hasn't set `in_search_index` to false in its front-matter
 in_search_index = true
 
 # Template to use to render this page
 template = "page.html"
+
+# The taxonomies for that page. The keys need to be the same as the taxonomies
+# name configured in `config.toml` and the values an array of String like
+# tags = ["rust", "web"]
+[taxonomies]
 
 # Your own data
 [extra]
@@ -87,7 +88,7 @@ Some content
 
 ## Summary
 
-You can ask Gutenberg to create a summary if you only want to show the first 
+You can ask Gutenberg to create a summary if you only want to show the first
 paragraph of each page in a list for example.
 
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
@@ -95,6 +96,6 @@ where you want the summary to end and the content up to that point will be also
 available separately in the
 [template](./documentation/templates/pages-sections.md#page-variables).
 
-An anchor link to this position named `continue-reading` is created so you can link 
+An anchor link to this position named `continue-reading` is created so you can link
 directly to it if needed for example:
 `<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`

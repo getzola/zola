@@ -11,7 +11,7 @@ use errors::{Result, ResultExt};
 use utils::fs::read_file;
 use utils::templates::render_template;
 use utils::site::get_reading_analytics;
-use rendering::{Context, Header, markdown_to_html};
+use rendering::{RenderContext, Header, render_content};
 
 use page::Page;
 use file_info::FileInfo;
@@ -91,22 +91,25 @@ impl Section {
                     return "index.html".to_string();
                 }
                 "section.html".to_string()
-            },
+            }
         }
     }
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
     pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
-        let context = Context::new(
+        let mut context = RenderContext::new(
             tera,
-            config.highlight_code,
-            config.highlight_theme.clone(),
+            config,
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links,
         );
-        let res = markdown_to_html(&self.raw_content, &context)?;
+
+        context.tera_context.add("section", self);
+
+        let res = render_content(&self.raw_content, &context)
+            .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.0;
         self.toc = res.1;
         Ok(())

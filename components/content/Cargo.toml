@@ -8,6 +8,7 @@ tera = "0.11"
 serde = "1"
 slug = "0.1"
 rayon = "1"
+chrono = "0.4"
 
 errors = { path = "../errors" }
 config = { path = "../config" }
@@ -16,6 +17,6 @@ rendering = { path = "../rendering" }
 front_matter = { path = "../front_matter" }
 
 [dev-dependencies]
-tempdir = "0.3"
+tempfile = "3"
 toml = "0.4"
 globset = "0.4"

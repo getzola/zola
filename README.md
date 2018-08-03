@@ -14,21 +14,24 @@ in the `docs/content` folder of the repository.
 | Single binary            |     ✔     |    ✔   |   ✔  |    ✕    |
 | Language                 |    Rust   |  Rust  |  Go  |  Python |
 | Syntax highlighting      |     ✔     |    ✔   |   ✔  |    ✔    |
-| Sass compilation         |     ✔     |    ✕   |   ✔  |    ✔    |
+| Sass compilation         |     ✔     |    ✔   |   ✔  |    ✔    |
 | Assets co-location       |     ✔     |    ✔   |   ✔  |    ✔    |
 | i18n                     |     ✕     |    ✕   |   ✔  |    ✔    |
-| Image processing         |     ✕     |    ✕   |   ✔  |    ✔    |
+| Image processing         |     ✔     |    ✕   |   ✔  |    ✔    |
 | Sane template engine     |     ✔     |    ✔   |  ✕✕✕ |    ✔    |
 | Themes                   |     ✔     |    ✕   |   ✔  |    ✔    |
 | Shortcodes               |     ✔     |    ✕   |   ✔  |    ✔    |
 | Internal links           |     ✔     |    ✕   |   ✔  |    ✔    |
+| Link checker             |     ✔     |    ✕   |   ✕  |    ✔    |
 | Table of contents        |     ✔     |    ✕   |   ✔  |    ✔    |
 | Automatic header anchors |     ✔     |    ✕   |   ✔  |    ✔    |
 | Aliases                  |     ✔     |    ✕   |   ✔  |    ✔    |
 | Pagination               |     ✔     |    ✕   |   ✔  |    ✔    |
-| Custom taxonomies        |     ✕     |    ✕   |   ✔  |    ✕    |
+| Custom taxonomies        |     ✔     |    ✕   |   ✔  |    ✕    |
 | Search                   |     ✔     |    ✕   |   ✕  |    ✔    |
 | Data files               |     ✕     |    ✔   |   ✔  |    ✕    |
+| LiveReload               |     ✔     |    ✕   |   ✔  |    ✔    |
+| Netlify support          |     ✔     |    ✕   |   ✔  |    ✕    |
 
 Supported content formats:
 
@@ -38,7 +41,8 @@ Supported content formats:
 - Pelican: reStructuredText, markdown, asciidoc, org-mode, whatever-you-want
 
 Note that many features of Pelican are coming from plugins, which might be tricky
-to use because of version mismatch or lacking documentation.
+to use because of version mismatch or lacking documentation. Netlify supports Python
+and Pipenv but you still need to install your dependencies manually.
 
 ## Contributing
 As the documentation site is automatically built on commits to master, all development
@@ -52,7 +56,7 @@ If you want a feature added or modified, please open an issue to discuss it befo
 Syntax highlighting depends on submodules so ensure you load them first:
 
 ```bash
-$ git submodule update --init 
+$ git submodule update --init
 ```
 
 Gutenberg only works with syntaxes in the `.sublime-syntax` format. If your syntax
@@ -75,7 +79,7 @@ You can check for any updates to the current packages by running:
 $ git submodule update --remote --merge
 ```
 
-And finally from the root of the components/rendering crate run the following command:
+And finally from the root of the components/highlighting crate run the following command:
 
 ```bash
 $ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump ../../sublime_syntaxes/nonewlines.packdump

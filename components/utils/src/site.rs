@@ -1,11 +1,11 @@
 use std::collections::HashMap;
+use unicode_segmentation::UnicodeSegmentation;
 
 use errors::Result;
 
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
-    // Only works for latin language but good enough for a start
-    let word_count: usize = content.split_whitespace().count();
+    let word_count: usize = content.unicode_words().count();
 
     // https://help.medium.com/hc/en-us/articles/214991667-Read-time
     // 275 seems a bit too high though
@@ -26,7 +26,7 @@ pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -
             } else {
                 Ok(p.to_string())
             }
-        },
+        }
         None => bail!(format!("Relative link {} not found.", link)),
     }
 }

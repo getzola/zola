@@ -12,7 +12,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use toml::{Value as Toml};
+use toml::Value as Toml;
 use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 
@@ -27,6 +27,40 @@ use theme::Theme;
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
 
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Taxonomy {
+    /// The name used in the URL, usually the plural
+    pub name: String,
+    /// If this is set, the list of individual taxonomy term page will be paginated
+    /// by this much
+    pub paginate_by: Option<usize>,
+    pub paginate_path: Option<String>,
+    /// Whether to generate a RSS feed only for each taxonomy term, defaults to false
+    pub rss: bool,
+}
+
+impl Taxonomy {
+    pub fn is_paginated(&self) -> bool {
+        if let Some(paginate_by) = self.paginate_by {
+            paginate_by > 0
+        } else {
+            false
+        }
+    }
+}
+
+impl Default for Taxonomy {
+    fn default() -> Taxonomy {
+        Taxonomy {
+            name: String::new(),
+            paginate_by: None,
+            paginate_path: None,
+            rss: false,
+        }
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -56,10 +90,8 @@ pub struct Config {
     pub generate_rss: bool,
     /// The number of articles to include in the RSS feed. Defaults to 10_000
     pub rss_limit: usize,
-    /// Whether to generate tags and individual tag pages if some pages have them. Defaults to true
-    pub generate_tags_pages: bool,
-    /// Whether to generate categories and individual tag categories if some pages have them. Defaults to true
-    pub generate_categories_pages: bool,
+
+    pub taxonomies: Vec<Taxonomy>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
@@ -71,6 +103,9 @@ pub struct Config {
     pub ignored_content: Vec<String>,
     #[serde(skip_serializing, skip_deserializing)]  // not a typo, 2 are needed
     pub ignored_content_globset: Option<GlobSet>,
+
+    /// Whether to check all external links for validity
+    pub check_external_links: bool,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -191,9 +226,9 @@ impl Default for Config {
             default_language: "en".to_string(),
             generate_rss: false,
             rss_limit: 10_000,
-            generate_tags_pages: true,
-            generate_categories_pages: true,
+            taxonomies: Vec::new(),
             compile_sass: false,
+            check_external_links: false,
             build_search_index: false,
             ignored_content: Vec::new(),
             ignored_content_globset: None,

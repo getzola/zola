@@ -27,10 +27,11 @@ pub fn error(message: &str) {
 /// Display in the console the number of pages/sections in the site
 pub fn notify_site_size(site: &Site) {
     println!(
-        "-> Creating {} pages ({} orphan) and {} sections",
+        "-> Creating {} pages ({} orphan), {} sections, and processing {} images",
         site.pages.len(),
         site.get_all_orphan_pages().len(),
         site.sections.len() - 1, // -1 since we do not the index as a section
+        site.num_img_ops(),
     );
 }
 
@@ -43,7 +44,7 @@ pub fn warn_about_ignored_pages(site: &Site) {
 
     if !ignored_pages.is_empty() {
         warn(&format!(
-            "{} page(s) ignored (missing date or order in a sorted section):",
+            "{} page(s) ignored (missing date or weight in a sorted section):",
             ignored_pages.len()
         ));
         for path in ignored_pages {

@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use config::Config;
 use tera::Tera;
 use front_matter::{SortBy, InsertAnchor};
-use content::{Page, sort_pages, populate_previous_and_next_pages};
+use content::{Page, sort_pages, populate_siblings};
 
 
 fn create_pages(number: usize, sort_by: SortBy) -> Vec<Page> {
@@ -23,8 +23,8 @@ fn create_pages(number: usize, sort_by: SortBy) -> Vec<Page> {
     for i in 0..number {
         let mut page = Page::default();
         match sort_by {
-            SortBy::Weight => { page.meta.weight = Some(i); },
-            SortBy::Order => { page.meta.order = Some(i); },
+            SortBy::Weight => { page.meta.weight = Some(i); }
+            SortBy::Order => { page.meta.order = Some(i); }
             _ => (),
         };
         page.raw_content = r#"
@@ -128,17 +128,17 @@ fn bench_sorting_order(b: &mut test::Bencher) {
 }
 
 #[bench]
-fn bench_populate_previous_and_next_pages(b: &mut test::Bencher) {
+fn bench_populate_siblings(b: &mut test::Bencher) {
     let pages = create_pages(250, SortBy::Order);
     let (sorted_pages, _) = sort_pages(pages, SortBy::Order);
-    b.iter(|| populate_previous_and_next_pages(&sorted_pages.clone()));
+    b.iter(|| populate_siblings(&sorted_pages.clone()));
 }
 
 #[bench]
 fn bench_page_render_html(b: &mut test::Bencher) {
     let pages = create_pages(10, SortBy::Order);
     let (mut sorted_pages, _) = sort_pages(pages, SortBy::Order);
-    sorted_pages = populate_previous_and_next_pages(&sorted_pages);
+    sorted_pages = populate_siblings(&sorted_pages);
 
     let config = Config::default();
     let mut tera = Tera::default();

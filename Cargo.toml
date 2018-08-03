@@ -1,6 +1,6 @@
 [package]
 name = "gutenberg"
-version = "0.3.4"
+version = "0.4.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -24,9 +24,7 @@ term-painter = "0.2"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
 # Below is for the serve cmd
-staticfile = "0.5"
-iron = "0.6"
-mount = "0.4"
+actix-web = { version = "0.7", default-features = false, features = [] }
 notify = "4"
 ws = "0.7"
 ctrlc = "3"
@@ -53,4 +51,6 @@ members = [
     "components/templates",
     "components/utils",
     "components/search",
+    "components/imageproc",
+    "components/link_checker",
 ]

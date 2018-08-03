@@ -1,6 +1,6 @@
 +++
 title = "first"
-order = 10
+weight = 10
 date = 2017-01-01
 +++
 

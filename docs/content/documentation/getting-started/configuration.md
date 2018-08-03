@@ -40,13 +40,15 @@ generate_rss = false
 # The number of articles to include in the RSS feed
 rss_limit = 20
 
-# Whether to generate a tags page and individual
-# tag pages for pages with tags
-generate_tags_pages = false
-
-# Whether to generate a categories page and individual
-# category pages for pages with a category
-generate_categories_pages = false
+# The taxonomies to be rendered for that site and their configuration
+# Example:
+#     taxonomies = [
+#       {name: "tags", rss: true}, # each tag will have its own RSS feed
+#       {name: "categories", paginate_by: 5},  # 5 items per page for a term
+#       {name: "authors"}, # Basic definition: no RSS or pagination
+#     ]
+#
+taxonomies = []
 
 # Whether to compile the Sass files found in the `sass` directory
 compile_sass = false
@@ -54,6 +56,12 @@ compile_sass = false
 # Whether to build a search index out of the pages and section
 # content for the `default_language`
 build_search_index = false
+
+# Go through every links in all content and check if the links are valid
+# If a link is invalid (404, 500, etc), the build will error.
+# Link checking can take a very long time if you have many links so this should
+# only enabled once in a while to catch any dead links.
+check_external_links = false
 
 # A list of glob patterns specifying asset files to ignore when
 # processing the content directory.

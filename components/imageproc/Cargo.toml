@@ -1,0 +1,14 @@
+[package]
+name = "imageproc"
+version = "0.1.0"
+authors = ["Vojtěch Král <vojtech@kral.hk>"]
+
+[dependencies]
+lazy_static = "1"
+regex = "1.0"
+tera = "0.11"
+image = "0.19"
+rayon = "1"
+
+errors = { path = "../errors" }
+utils = { path = "../utils" }

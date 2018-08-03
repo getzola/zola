@@ -32,15 +32,24 @@ extra: HashMap<String, Any>;
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;
-// `previous` and `next` are only filled if the content can be sorted
-previous: Page?;
-next: Page?;
+// `earlier` and `later` are only populated if the section variable `sort_by` is set to `date`
+earlier: Page?;
+later: Page?;
+// `heavier` and `lighter` are only populated if the section variable `sort_by` is set to `weight`
+heavier: Page?;
+lighter: Page?;
 // See the Table of contents section below for more details
 toc: Array<Header>;
+// Year/month/day is only set if the page has a date and month/day are 1-indexed
+year: Number?;
+month: Number?;
+day: Number?;
+// Paths of colocated assets, relative to the content directory
+assets: Array<String>;
 ```
 
 ## Section variables
-By default, Gutenberg will try to load `templates/index.html` for `content/_index.md` 
+By default, Gutenberg will try to load `templates/index.html` for `content/_index.md`
 and `templates/section.html` for others `_index.md` files. If there isn't
 one, it will render the built-in template: a blank page.
 
@@ -63,7 +72,7 @@ extra: HashMap<String, Any>;
 pages: Array<Pages>;
 // Direct subsections to this section, sorted by subsections weight
 subsections: Array<Section>;
-// Naive word count, will not work for languages without whitespace
+// Unicode word count
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;

@@ -93,17 +93,43 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
     Ok(())
 }
 
+/// Compares source and target files' timestamps and returns true if the source file
+/// has been created _or_ updated after the target file has
+pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Path>, PT: AsRef<Path> {
+    let p_source = p_source.as_ref();
+    let p_target = p_target.as_ref();
+
+    if !p_target.exists() {
+        return true;
+    }
+
+    let get_time = |path: &Path| path.metadata().ok().and_then(|meta| {
+        Some(match (meta.created().ok(), meta.modified().ok()) {
+            (Some(tc), Some(tm)) => tc.max(tm),
+            (Some(tc), None) => tc,
+            (None, Some(tm)) => tm,
+            (None, None) => return None,
+        })
+    });
+
+    let time_source = get_time(p_source);
+    let time_target = get_time(p_target);
+
+    time_source.and_then(|ts| time_target.map(|tt| ts > tt)).unwrap_or(true)
+}
+
+
 #[cfg(test)]
 mod tests {
     use std::fs::File;
 
-    use tempdir::TempDir;
+    use tempfile::tempdir;
 
-    use super::{find_related_assets};
+    use super::find_related_assets;
 
     #[test]
     fn can_find_related_assets() {
-        let tmp_dir = TempDir::new("example").expect("create temp dir");
+        let tmp_dir = tempdir().expect("create temp dir");
         File::create(tmp_dir.path().join("index.md")).unwrap();
         File::create(tmp_dir.path().join("example.js")).unwrap();
         File::create(tmp_dir.path().join("graph.jpg")).unwrap();

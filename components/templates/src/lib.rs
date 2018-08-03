@@ -5,12 +5,12 @@ extern crate tera;
 extern crate base64;
 extern crate pulldown_cmark;
 
-#[macro_use]
 extern crate errors;
 extern crate utils;
 extern crate content;
 extern crate config;
 extern crate taxonomies;
+extern crate imageproc;
 
 pub mod filters;
 pub mod global_fns;
@@ -23,6 +23,7 @@ lazy_static! {
     pub static ref GUTENBERG_TERA: Tera = {
         let mut tera = Tera::default();
         tera.add_raw_templates(vec![
+            ("404.html", include_str!("builtins/404.html")),
             ("rss.xml", include_str!("builtins/rss.xml")),
             ("sitemap.xml", include_str!("builtins/sitemap.xml")),
             ("robots.txt", include_str!("builtins/robots.txt")),

@@ -1,11 +1,11 @@
 #![feature(test)]
 extern crate test;
 extern crate site;
-extern crate tempdir;
+extern crate tempfile;
 
 use std::env;
 
-use tempdir::TempDir;
+use tempfile::tempdir;
 use site::Site;
 
 

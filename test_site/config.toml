@@ -6,5 +6,9 @@ generate_rss = true
 rss_limit = 2
 theme = "sample"
 
+taxonomies = [
+    {name = "categories", rss = true},
+]
+
 [extra.author]
 name = "Vincent Prouillet"

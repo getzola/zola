@@ -7,11 +7,11 @@ use front_matter::SortBy;
 
 /// Sort pages by the given criteria
 ///
-/// Any pages that doesn't have a the required field when the sorting method is other than none
+/// Any pages that doesn't have a required field when the sorting method is other than none
 /// will be ignored.
 pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
     if sort_by == SortBy::None {
-        return (pages,  vec![]);
+        return (pages, vec![]);
     }
 
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) = pages
@@ -19,7 +19,6 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
         .partition(|page| {
             match sort_by {
                 SortBy::Date => page.meta.date.is_some(),
-                SortBy::Order => page.meta.order.is_some(),
                 SortBy::Weight => page.meta.weight.is_some(),
                 _ => unreachable!()
             }
@@ -35,17 +34,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                     ord
                 }
             })
-        },
-        SortBy::Order => {
-            can_be_sorted.par_sort_unstable_by(|a, b| {
-                let ord = b.meta.order().cmp(&a.meta.order());
-                if ord == Ordering::Equal {
-                    a.permalink.cmp(&b.permalink)
-                } else {
-                    ord
-                }
-            })
-        },
+        }
         SortBy::Weight => {
             can_be_sorted.par_sort_unstable_by(|a, b| {
                 let ord = a.meta.weight().cmp(&b.meta.weight());
@@ -55,7 +44,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
                     ord
                 }
             })
-        },
+        }
         _ => unreachable!()
     };
 
@@ -64,7 +53,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
 
 /// Horribly inefficient way to set previous and next on each pages that skips drafts
 /// So many clones
-pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
+pub fn populate_siblings(input: &[Page], sort_by: SortBy) -> Vec<Page> {
     let mut res = Vec::with_capacity(input.len());
 
     // The input is already sorted
@@ -91,9 +80,20 @@ pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
 
                 // Remove prev/next otherwise we serialise the whole thing...
                 let mut next_page = input[j].clone();
-                next_page.previous = None;
-                next_page.next = None;
-                new_page.next = Some(Box::new(next_page));
+
+                match sort_by {
+                    SortBy::Weight => {
+                        next_page.lighter = None;
+                        next_page.heavier = None;
+                        new_page.lighter = Some(Box::new(next_page));
+                    }
+                    SortBy::Date => {
+                        next_page.earlier = None;
+                        next_page.later = None;
+                        new_page.later = Some(Box::new(next_page));
+                    }
+                    SortBy::None => ()
+                }
                 break;
             }
         }
@@ -113,9 +113,19 @@ pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
 
                 // Remove prev/next otherwise we serialise the whole thing...
                 let mut previous_page = input[j].clone();
-                previous_page.previous = None;
-                previous_page.next = None;
-                new_page.previous = Some(Box::new(previous_page));
+                match sort_by {
+                    SortBy::Weight => {
+                        previous_page.lighter = None;
+                        previous_page.heavier = None;
+                        new_page.heavier = Some(Box::new(previous_page));
+                    }
+                    SortBy::Date => {
+                        previous_page.earlier = None;
+                        previous_page.later = None;
+                        new_page.earlier = Some(Box::new(previous_page));
+                    }
+                    SortBy::None => {}
+                }
                 break;
             }
         }
@@ -129,27 +139,11 @@ pub fn populate_previous_and_next_pages(input: &[Page]) -> Vec<Page> {
 mod tests {
     use front_matter::{PageFrontMatter, SortBy};
     use page::Page;
-    use super::{sort_pages, populate_previous_and_next_pages};
+    use super::{sort_pages, populate_siblings};
 
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.date = Some(date.to_string());
-        Page::new("content/hello.md", front_matter)
-    }
-
-    fn create_page_with_order(order: usize, filename: &str) -> Page {
-        let mut front_matter = PageFrontMatter::default();
-        front_matter.order = Some(order);
-        let mut p = Page::new("content/".to_string() + filename, front_matter);
-        // Faking a permalink to test sorting with equal order
-        p.permalink = filename.to_string();
-        p
-    }
-
-    fn create_draft_page_with_order(order: usize) -> Page {
-        let mut front_matter = PageFrontMatter::default();
-        front_matter.order = Some(order);
-        front_matter.draft = true;
         Page::new("content/hello.md", front_matter)
     }
 
@@ -174,37 +168,6 @@ mod tests {
     }
 
     #[test]
-    fn can_sort_by_order() {
-        let input = vec![
-            create_page_with_order(2, "hello.md"),
-            create_page_with_order(3, "hello2.md"),
-            create_page_with_order(1, "hello3.md"),
-        ];
-        let (pages, _) = sort_pages(input, SortBy::Order);
-        // Should be sorted by order
-        assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
-        assert_eq!(pages[1].clone().meta.order.unwrap(), 2);
-        assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
-    }
-
-    #[test]
-    fn can_sort_by_order_uses_permalink_to_break_ties() {
-        let input = vec![
-            create_page_with_order(3, "b.md"),
-            create_page_with_order(3, "a.md"),
-            create_page_with_order(3, "c.md"),
-        ];
-        let (pages, _) = sort_pages(input, SortBy::Order);
-        // Should be sorted by order
-        assert_eq!(pages[0].clone().meta.order.unwrap(), 3);
-        assert_eq!(pages[0].clone().permalink, "a.md");
-        assert_eq!(pages[1].clone().meta.order.unwrap(), 3);
-        assert_eq!(pages[1].clone().permalink, "b.md");
-        assert_eq!(pages[2].clone().meta.order.unwrap(), 3);
-        assert_eq!(pages[2].clone().permalink, "c.md");
-    }
-
-    #[test]
     fn can_sort_by_weight() {
         let input = vec![
             create_page_with_weight(2),
@@ -221,80 +184,48 @@ mod tests {
     #[test]
     fn can_sort_by_none() {
         let input = vec![
-            create_page_with_order(2, "a.md"),
-            create_page_with_order(3, "a.md"),
-            create_page_with_order(1, "a.md"),
+            create_page_with_weight(2),
+            create_page_with_weight(3),
+            create_page_with_weight(1),
         ];
         let (pages, _) = sort_pages(input, SortBy::None);
-        // Should be sorted by date
-        assert_eq!(pages[0].clone().meta.order.unwrap(), 2);
-        assert_eq!(pages[1].clone().meta.order.unwrap(), 3);
-        assert_eq!(pages[2].clone().meta.order.unwrap(), 1);
+        assert_eq!(pages[0].clone().meta.weight.unwrap(), 2);
+        assert_eq!(pages[1].clone().meta.weight.unwrap(), 3);
+        assert_eq!(pages[2].clone().meta.weight.unwrap(), 1);
     }
 
     #[test]
     fn ignore_page_with_missing_field() {
         let input = vec![
-            create_page_with_order(2, "a.md"),
-            create_page_with_order(3, "a.md"),
+            create_page_with_weight(2),
+            create_page_with_weight(3),
             create_page_with_date("2019-01-01"),
         ];
-        let (pages, unsorted) = sort_pages(input, SortBy::Order);
+        let (pages, unsorted) = sort_pages(input, SortBy::Weight);
         assert_eq!(pages.len(), 2);
         assert_eq!(unsorted.len(), 1);
     }
 
     #[test]
-    fn can_populate_previous_and_next_pages() {
+    fn can_populate_siblings() {
         let input = vec![
-            create_page_with_order(1, "a.md"),
-            create_page_with_order(2, "b.md"),
-            create_page_with_order(3, "a.md"),
+            create_page_with_weight(1),
+            create_page_with_weight(2),
+            create_page_with_weight(3),
         ];
-        let pages = populate_previous_and_next_pages(&input);
+        let pages = populate_siblings(&input, SortBy::Weight);
 
-        assert!(pages[0].clone().next.is_none());
-        assert!(pages[0].clone().previous.is_some());
-        assert_eq!(pages[0].clone().previous.unwrap().meta.order.unwrap(), 2);
+        assert!(pages[0].clone().lighter.is_none());
+        assert!(pages[0].clone().heavier.is_some());
+        assert_eq!(pages[0].clone().heavier.unwrap().meta.weight.unwrap(), 2);
 
-        assert!(pages[1].clone().next.is_some());
-        assert!(pages[1].clone().previous.is_some());
-        assert_eq!(pages[1].clone().previous.unwrap().meta.order.unwrap(), 3);
-        assert_eq!(pages[1].clone().next.unwrap().meta.order.unwrap(), 1);
+        assert!(pages[1].clone().heavier.is_some());
+        assert!(pages[1].clone().lighter.is_some());
+        assert_eq!(pages[1].clone().lighter.unwrap().meta.weight.unwrap(), 1);
+        assert_eq!(pages[1].clone().heavier.unwrap().meta.weight.unwrap(), 3);
 
-        assert!(pages[2].clone().next.is_some());
-        assert!(pages[2].clone().previous.is_none());
-        assert_eq!(pages[2].clone().next.unwrap().meta.order.unwrap(), 2);
-    }
-
-    #[test]
-    fn can_populate_previous_and_next_pages_skip_drafts() {
-        let input = vec![
-            create_draft_page_with_order(0),
-            create_page_with_order(1, "a.md"),
-            create_page_with_order(2, "b.md"),
-            create_page_with_order(3, "c.md"),
-            create_draft_page_with_order(4),
-        ];
-        let pages = populate_previous_and_next_pages(&input);
-
-        assert!(pages[0].clone().next.is_none());
-        assert!(pages[0].clone().previous.is_none());
-
-        assert!(pages[1].clone().next.is_none());
-        assert!(pages[1].clone().previous.is_some());
-        assert_eq!(pages[1].clone().previous.unwrap().meta.order.unwrap(), 2);
-
-        assert!(pages[2].clone().next.is_some());
-        assert!(pages[2].clone().previous.is_some());
-        assert_eq!(pages[2].clone().previous.unwrap().meta.order.unwrap(), 3);
-        assert_eq!(pages[2].clone().next.unwrap().meta.order.unwrap(), 1);
-
-        assert!(pages[3].clone().next.is_some());
-        assert!(pages[3].clone().previous.is_none());
-        assert_eq!(pages[3].clone().next.unwrap().meta.order.unwrap(), 2);
-
-        assert!(pages[4].clone().next.is_none());
-        assert!(pages[4].clone().previous.is_none());
+        assert!(pages[2].clone().lighter.is_some());
+        assert!(pages[2].clone().heavier.is_none());
+        assert_eq!(pages[2].clone().lighter.unwrap().meta.weight.unwrap(), 2);
     }
 }

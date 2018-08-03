@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.4.0 (unreleased)
+
+### Breaking
+
+- Taxonomies have been rewritten from scratch to allow custom ones with RSS and pagination
+- `order` sorting has been removed in favour of only having `weight`
+- `page.next/page.previous` have been renamed to `page.later/page.earlier` and `page.heavier/page.lighter` depending on the sort method
+
+### Others
+- Fix `serve` not working with the config flag
+- Websocket port on `live` will not get the first available port instead of a fixed one
+- Rewrite markdown rendering to fix all known issues with shortcodes
+- Add array arguments to shortcodes and allow single-quote/backtick strings
+- Co-located assets are now permalinks
+- Words are now counted using unicode rather than whitespaces
+- Aliases can now be pointing directly to specific HTML files
+- Add `year`, `month` and `day` variables to pages with a date
+- Fix panic when live reloading a change on a file without extensions
+- Add image resizing support
+- Add a 404 template
+- Enable preserve-order feature of Tera
+- Add an external link checker
+- Add `get_taxonomy` global function to return the full taxonomy
+
 ## 0.3.4 (2018-06-22)
 
 - `cargo update` as some dependencies didn't compile with current Rust version
