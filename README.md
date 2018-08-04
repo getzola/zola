@@ -9,38 +9,46 @@ in the `docs/content` folder of the repository.
 
 ## Comparisons with other static site generators
 
-|                          | Gutenberg | Cobalt | Hugo | Pelican |
-|--------------------------|-----------|--------|------|---------|
-| Single binary            |     ✔     |    ✔   |   ✔  |    ✕    |
-| Language                 |    Rust   |  Rust  |  Go  |  Python |
-| Syntax highlighting      |     ✔     |    ✔   |   ✔  |    ✔    |
-| Sass compilation         |     ✔     |    ✔   |   ✔  |    ✔    |
-| Assets co-location       |     ✔     |    ✔   |   ✔  |    ✔    |
-| i18n                     |     ✕     |    ✕   |   ✔  |    ✔    |
-| Image processing         |     ✔     |    ✕   |   ✔  |    ✔    |
-| Sane template engine     |     ✔     |    ✔   |  ✕✕✕ |    ✔    |
-| Themes                   |     ✔     |    ✕   |   ✔  |    ✔    |
-| Shortcodes               |     ✔     |    ✕   |   ✔  |    ✔    |
-| Internal links           |     ✔     |    ✕   |   ✔  |    ✔    |
-| Link checker             |     ✔     |    ✕   |   ✕  |    ✔    |
-| Table of contents        |     ✔     |    ✕   |   ✔  |    ✔    |
-| Automatic header anchors |     ✔     |    ✕   |   ✔  |    ✔    |
-| Aliases                  |     ✔     |    ✕   |   ✔  |    ✔    |
-| Pagination               |     ✔     |    ✕   |   ✔  |    ✔    |
-| Custom taxonomies        |     ✔     |    ✕   |   ✔  |    ✕    |
-| Search                   |     ✔     |    ✕   |   ✕  |    ✔    |
-| Data files               |     ✕     |    ✔   |   ✔  |    ✕    |
-| LiveReload               |     ✔     |    ✕   |   ✔  |    ✔    |
-| Netlify support          |     ✔     |    ✕   |   ✔  |    ✕    |
+|                                 | Gutenberg | Cobalt | Hugo | Pelican |
+|:-------------------------------:|:---------:|--------|------|---------|
+| Single binary                   |     ✔     |    ✔   |   ✔  |    ✕    |
+| Language                        |    Rust   |  Rust  |  Go  |  Python |
+| Syntax highlighting             |     ✔     |    ✔   |   ✔  |    ✔    |
+| Sass compilation                |     ✔     |    ✔   |   ✔  |    ✔    |
+| Assets co-location              |     ✔     |    ✔   |   ✔  |    ✔    |
+| i18n                            |     ✕     |    ✕   |   ✔  |    ✔    |
+| Image processing                |     ✔     |    ✕   |   ✔  |    ✔    |
+| Sane & powerful template engine |     ✔     |    ~   |   ~  |    ✔    |
+| Themes                          |     ✔     |    ✕   |   ✔  |    ✔    |
+| Shortcodes                      |     ✔     |    ✕   |   ✔  |    ✔    |
+| Internal links                  |     ✔     |    ✕   |   ✔  |    ✔    |
+| Link checker                    |     ✔     |    ✕   |   ✕  |    ✔    |
+| Table of contents               |     ✔     |    ✕   |   ✔  |    ✔    |
+| Automatic header anchors        |     ✔     |    ✕   |   ✔  |    ✔    |
+| Aliases                         |     ✔     |    ✕   |   ✔  |    ✔    |
+| Pagination                      |     ✔     |    ✕   |   ✔  |    ✔    |
+| Custom taxonomies               |     ✔     |    ✕   |   ✔  |    ✕    |
+| Search                          |     ✔     |    ✕   |   ✕  |    ✔    |
+| Data files                      |     ✕     |    ✔   |   ✔  |    ✕    |
+| LiveReload                      |     ✔     |    ✕   |   ✔  |    ✔    |
+| Netlify support                 |     ✔     |    ✕   |   ✔  |    ✕    |
 
-Supported content formats:
+
+### Supported content formats
 
 - Gutenberg: markdown
 - Cobalt: markdown
 - Hugo: markdown, asciidoc, org-mode
 - Pelican: reStructuredText, markdown, asciidoc, org-mode, whatever-you-want
 
-Note that many features of Pelican are coming from plugins, which might be tricky
+### Template engine explanation
+
+Cobalt gets `~` as, while based on [Liquid](https://shopify.github.io/liquid/), the Rust library doesn't implement all its features but there is no documentation on what is and isn't implemented. The errors are also cryptic. Liquid itself is not powerful enough to do some of things you can do in Jinja2, Go templates or Tera.
+
+Hugo gets `~`. It is probably the most powerful template engine in the list after Jinja2 (hard to beat python code in templates) but personally drives me insane, to the point of writing my own template engine and static site generator. Yes, this is a bit biased.
+
+### Pelican notes
+Many features of Pelican are coming from plugins, which might be tricky
 to use because of version mismatch or lacking documentation. Netlify supports Python
 and Pipenv but you still need to install your dependencies manually.
 
