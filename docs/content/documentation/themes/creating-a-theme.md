@@ -19,7 +19,9 @@ description = "A classic blog theme"
 license = "MIT"
 homepage = "https://github.com/Keats/gutenberg-hyde"
 # The minimum version of Gutenberg required
-min_version = "0.3"
+min_version = "0.4.0"
+# An optional live demo URL
+demo = ""
 
 # Any variable there can be overriden in the end user `config.toml`
 # You don't need to prefix variables by the theme name but as this will

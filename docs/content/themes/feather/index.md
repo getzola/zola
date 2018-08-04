@@ -10,8 +10,9 @@ created = 2018-01-21T04:35:36-05:00
 updated = 2018-01-21T04:35:36-05:00
 repository = "https://github.com/piedoom/feather"
 homepage = "https://github.com/piedoom/feather"
-minimum_version = "0.2"
+minimum_version = "0.3.4"
 license = "MIT"
+demo = ""
 
 [extra.author]
 name = "doomy"

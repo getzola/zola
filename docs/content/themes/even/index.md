@@ -10,8 +10,9 @@ created = 2018-02-22T19:13:36+01:00
 updated = 2018-01-25T18:44:44+01:00
 repository = "https://github.com/Keats/even"
 homepage = "https://github.com/Keats/even"
-minimum_version = "0.3"
+minimum_version = "0.4.0"
 license = "MIT"
+demo = "https://gutenberg-even.netlify.com"
 
 [extra.author]
 name = "Vincent Prouillet"
@@ -42,6 +43,18 @@ and then enable it in your `config.toml`:
 ```toml
 theme = "even"
 ```
+
+The theme requires tags and categories taxonomies to be enabled in your `config.toml`:
+
+```toml
+taxonomies = [
+    # You can enable/disable RSS
+    {name = "categories", rss = true},
+    {name = "tags", rss = true},
+]
+```
+If you want to paginate taxonomies pages, you will need to overwrite the templates
+as it only works for non-paginated taxonomies by default.
 
 ## Options
 
