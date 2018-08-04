@@ -398,6 +398,7 @@ mod tests {
 
 
     #[test]
+    #[cfg(windows)]
     fn windows_path_handling() {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
         let pwd = Path::new(r#"C:\\Users\johan\site"#);
