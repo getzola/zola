@@ -219,7 +219,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         ws_server.listen(&*ws_address).unwrap();
     });
 
-    let pwd = format!("{}", env::current_dir().unwrap().display());
+    let pwd = env::current_dir().unwrap();
 
     let mut watchers = vec!["content", "templates", "config.toml"];
     if watching_static {
@@ -229,7 +229,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         watchers.push("sass");
     }
 
-    println!("Listening for changes in {}/{{{}}}", pwd, watchers.join(", "));
+    println!("Listening for changes in {}/{{{}}}", pwd.display(), watchers.join(", "));
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
@@ -268,12 +268,12 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {
                                     console::info(&format!("-> Static file changes detected {}", path.display()));
-                                    rebuild_done_handling(&broadcaster, copy_file(&path, &site.output_path, &site.static_path), &p);
+                                    rebuild_done_handling(&broadcaster, copy_file(&path, &site.output_path, &site.static_path), &p.to_string_lossy());
                                 }
                             },
                             (ChangeKind::Sass, p) => {
                                 console::info(&format!("-> Sass file changed {}", path.display()));
-                                rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p);
+                                rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p.to_string_lossy());
                             },
                             (ChangeKind::Config, _) => {
                                 console::info(&format!("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible."));
@@ -320,31 +320,30 @@ fn is_temp_file(path: &Path) -> bool {
 
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
-fn detect_change_kind(pwd: &str, path: &Path) -> (ChangeKind, String) {
-    let path_str = format!("{}", path.display())
-        .replace(pwd, "")
-        .replace("\\", "");
+fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
+    let mut partial_path = PathBuf::from("/");
+    partial_path.push(path.strip_prefix(pwd).unwrap());
 
-    let change_kind = if path_str.starts_with("/templates") {
+    let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
-    } else if path_str.starts_with("/content") {
+    } else if partial_path.starts_with("/content") {
         ChangeKind::Content
-    } else if path_str.starts_with("/static") {
+    } else if partial_path.starts_with("/static") {
         ChangeKind::StaticFiles
-    } else if path_str.starts_with("/sass") {
+    } else if partial_path.starts_with("/sass") {
         ChangeKind::Sass
-    } else if path_str == "/config.toml" {
+    } else if partial_path == Path::new("/config.toml") {
         ChangeKind::Config
     } else {
-        unreachable!("Got a change in an unexpected path: {}", path_str)
+        unreachable!("Got a change in an unexpected path: {}", partial_path.display());
     };
 
-    (change_kind, path_str)
+    (change_kind, partial_path)
 }
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use super::{is_temp_file, detect_change_kind, ChangeKind};
 
@@ -371,24 +370,24 @@ mod tests {
     fn can_detect_kind_of_changes() {
         let test_cases = vec![
             (
-                (ChangeKind::Templates, "/templates/hello.html".to_string()),
-                "/home/vincent/site", Path::new("/home/vincent/site/templates/hello.html")
+                (ChangeKind::Templates, PathBuf::from("/templates/hello.html")),
+                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/templates/hello.html")
             ),
             (
-                (ChangeKind::StaticFiles, "/static/site.css".to_string()),
-                "/home/vincent/site", Path::new("/home/vincent/site/static/site.css")
+                (ChangeKind::StaticFiles, PathBuf::from("/static/site.css")),
+                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/static/site.css")
             ),
             (
-                (ChangeKind::Content, "/content/posts/hello.md".to_string()),
-                "/home/vincent/site", Path::new("/home/vincent/site/content/posts/hello.md")
+                (ChangeKind::Content, PathBuf::from("/content/posts/hello.md")),
+                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/content/posts/hello.md")
             ),
             (
-                (ChangeKind::Sass, "/sass/print.scss".to_string()),
-                "/home/vincent/site", Path::new("/home/vincent/site/sass/print.scss")
+                (ChangeKind::Sass, PathBuf::from("/sass/print.scss")),
+                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/sass/print.scss")
             ),
             (
-                (ChangeKind::Config, "/config.toml".to_string()),
-                "/home/vincent/site", Path::new("/home/vincent/site/config.toml")
+                (ChangeKind::Config, PathBuf::from("/config.toml")),
+                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/config.toml")
             ),
         ];
 
@@ -397,5 +396,13 @@ mod tests {
         }
     }
 
+
+    #[test]
+    fn windows_path_handling() {
+        let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
+        let pwd = Path::new(r#"C:\\Users\johan\site"#);
+        let path = Path::new(r#"C:\\Users\johan\site\templates\hello.html"#);
+        assert_eq!(expected, detect_change_kind(pwd, path));
+    }
 
 }
