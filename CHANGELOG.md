@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.4.0 (unreleased)
+## 0.4.1 (unreleased)
+
+- Fix live reload of a section content change getting no data
+
+## 0.4.0 (2018-08-4)
 
 ### Breaking
 

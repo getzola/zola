@@ -136,6 +136,11 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
     match site.add_section(section, true)? {
         // Updating a section
         Some(prev) => {
+            // Copy the section data so we don't end up with an almost empty object
+            site.sections.get_mut(path).unwrap().pages = prev.pages;
+            site.sections.get_mut(path).unwrap().ignored_pages = prev.ignored_pages;
+            site.sections.get_mut(path).unwrap().subsections = prev.subsections;
+
             if site.sections[path].meta == prev.meta {
                 // Front matter didn't change, only content did
                 // so we render only the section page, not its pages
