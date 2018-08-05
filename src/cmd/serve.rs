@@ -322,7 +322,7 @@ fn is_temp_file(path: &Path) -> bool {
 /// to be reloaded
 fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
     let mut partial_path = PathBuf::from("/");
-    partial_path.push(path.strip_prefix(pwd).unwrap());
+    partial_path.push(path.strip_prefix(pwd).unwrap_or(path));
 
     let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
@@ -396,7 +396,6 @@ mod tests {
         }
     }
 
-
     #[test]
     #[cfg(windows)]
     fn windows_path_handling() {
@@ -406,4 +405,11 @@ mod tests {
         assert_eq!(expected, detect_change_kind(pwd, path));
     }
 
+    #[test]
+    fn relative_path() {
+        let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
+        let pwd = Path::new("/home/johan/site");
+        let path = Path::new("templates/hello.html");
+        assert_eq!(expected, detect_change_kind(pwd, path));
+    }
 }
