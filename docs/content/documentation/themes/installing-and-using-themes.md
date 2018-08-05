@@ -21,7 +21,7 @@ them in a folder.
 ## Using a theme
 
 Now that you have the theme in your `themes` directory, you only need to tell
-Gutenberg to use it to get started by setting the `theme` variable of the 
+Gutenberg to use it to get started by setting the `theme` variable of the
 [configuration file](./documentation/getting-started/configuration.md). The theme
 name has to be name of the directory you cloned the theme in.
 For example, if you cloned a theme in `themes/simple-blog`, the theme name to use
@@ -33,14 +33,25 @@ Any file from the theme can be overriden by creating a file with the same path a
 directory. Here are a few examples of that, assuming the theme name is `simple-blog`:
 
 ```plain
-templates/pages/post.html -> replace themes/simple-blog/pages/post.html
-templates/macros.html -> replace themes/simple-blog/macros.html
+templates/pages/post.html -> replace themes/simple-blog/templates/pages/post.html
+templates/macros.html -> replace themes/simple-blog/templates/macros.html
 static/js/site.js -> replace themes/simple-blog/static/js/site.js
 ```
 
+You can also choose to only parts of a page if a theme define some blocks by extending it. If we wanted
+to only change a single block from the `post.html` page in the example above, we could do the following:
+
+```
+{% extends "simple-blog/templates/pages/post.html" %}
+
+{% block some_block %}
+Some custom data
+{% endblock %}
+```
+
 Most themes will also provide some variables that are meant to be overriden: this happens in the `extra` section
-of the [configuration file](./documentation/getting-started/configuration.md). 
-Let's say a theme uses a `show_twitter` variable and sets it to `false` by default. If you want to set it to `true`, 
+of the [configuration file](./documentation/getting-started/configuration.md).
+Let's say a theme uses a `show_twitter` variable and sets it to `false` by default. If you want to set it to `true`,
 you can update your `config.toml` like so:
 
 ```toml
