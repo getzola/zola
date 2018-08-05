@@ -14,11 +14,6 @@ matrix:
     - env: TARGET=x86_64-apple-darwin
       os: osx
 
-    # Testing other channels
-    - env: TARGET=x86_64-unknown-linux-gnu
-      rust: beta
-    - env: TARGET=x86_64-unknown-linux-gnu
-      rust: nightly
     # The earliest stable Rust version that works
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: 1.27.0
