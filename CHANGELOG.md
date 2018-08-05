@@ -3,6 +3,8 @@
 ## 0.4.1 (unreleased)
 
 - Fix live reload of a section content change getting no data
+- Fix critical bug in `serve` in some OSes
+- Update deps, should now build on BSDs
 
 ## 0.4.0 (2018-08-4)
 
