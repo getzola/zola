@@ -13,7 +13,10 @@ matrix:
     # OSX
     - env: TARGET=x86_64-apple-darwin
       os: osx
-
+    - env: TARGET=x86_64-unknown-linux-musl
+    # BSDs
+    - env: TARGET=x86_64-unknown-freebsd
+    - env: TARGET=x86_64-unknown-netbsd
     # The earliest stable Rust version that works
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: 1.27.0
