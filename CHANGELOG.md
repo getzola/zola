@@ -1,12 +1,12 @@
 # Changelog
 
-## 0.4.1 (unreleased)
+## 0.4.1 (2018-08-06)
 
-- Fix live reload of a section content change getting no data
+- Fix live reload of a section content change getting no pages data
 - Fix critical bug in `serve` in some OSes
 - Update deps, should now build and work correctly on BSDs
 
-## 0.4.0 (2018-08-4)
+## 0.4.0 (2018-08-04)
 
 ### Breaking
 
