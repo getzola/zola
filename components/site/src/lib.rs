@@ -837,6 +837,12 @@ impl Site {
             }
         }
 
+        // Copy any asset we found previously into the same directory as the index.html
+        for asset in &section.assets {
+            let asset_path = asset.as_path();
+            copy(&asset_path, &output_path.join(asset_path.file_name().unwrap()))?;
+        }
+
         if render_pages {
             section
                 .pages
