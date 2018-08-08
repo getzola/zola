@@ -82,9 +82,17 @@ impl Section {
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config) -> Result<Section> {
         let path = path.as_ref();
         let content = read_file(path)?;
+        println!("Parsing from file {:?}", path);
         let mut section = Section::parse(path, &content, config)?;
 
-        if section.file.name == "_index" {
+        println!("filename {:?}", section.file.name);
+        // I don't see any reason why, but section.file.name always is "_index"! ← bug
+
+        let file_name = path.file_name().unwrap();
+
+        // Is this check really necessary? Should the else case happen at all?
+        if file_name == "_index.md" || file_name == "index.md" {
+            // In any case, we're looking for assets inside parent directory
             let parent_dir = path.parent().unwrap();
             let assets = find_related_assets(parent_dir);
 
