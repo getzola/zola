@@ -187,7 +187,6 @@ impl Site {
 
             section_entries
                 .into_par_iter()
-                .filter(|entry| entry.as_path().file_name().unwrap() == "_index.md")
                 .map(|entry| {
                     let path = entry.as_path();
                     Section::from_file(path, config)
@@ -200,7 +199,6 @@ impl Site {
 
             page_entries
                 .into_par_iter()
-                .filter(|entry| entry.as_path().file_name().unwrap() != "_index.md")
                 .map(|entry| {
                     let path = entry.as_path();
                     Page::from_file(path, config)
