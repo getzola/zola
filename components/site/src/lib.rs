@@ -216,7 +216,7 @@ impl Site {
         }
 
         // Insert a default index section if necessary so we don't need to create
-        // a _index.md to render the index page
+        // a _index.md to render the index page at the root of the site
         let index_path = self.index_section_path();
         if let Some(ref index_section) = self.sections.get(&index_path) {
             if self.config.build_search_index && !index_section.meta.in_search_index {
