@@ -14,6 +14,8 @@ not have any content or metadata.  If you would like to add content or metadata,
 `_index.md` file at the root of the `content` folder and edit it just as you would edit any other
 `_index.md` file; your `index.html` template will then have access to that content and metadata.
 
+Any non-Markdown file in the section folder is added to the `assets` collection of the section, as explained in the [Content Overview](./documentation/content/overview.md#assets-colocation). These files are then available from the Markdown using relative links.
+
 ## Front-matter
 
 The `_index.md` file within a folder defines the content and metadata for that section.  To set
