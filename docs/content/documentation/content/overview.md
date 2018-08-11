@@ -40,18 +40,34 @@ While not shown in the example, sections can be nested indefinitely.
 ## Assets colocation
 
 The `content` directory is not limited to markup files though: it's natural to want to co-locate a page and some related
-assets.
+assets, for instance images or spreadsheets. Gutenberg supports that pattern out of the box for both sections and pages.
 
-Gutenberg supports that pattern out of the box: create a folder, add a `index.md` file and as many non-markdown files as you want.
-Those assets will be copied in the same folder when building the site which allows you to use a relative path to access them.
+Any non-markdown file you add in the page/section folder will be copied alongside the generated page when building the site,
+which allows us to use a relative path to access them.
+
+For pages to use assets colocation, they should not be placed directly in their section folder (such as `latest-experiment.md`), but as an `index.md` file
+in a dedicated folder (`latest-experiment/index.md`), like so:
+
 
 ```bash
-└── with-assets
-    ├── index.md
-    └── yavascript.js
+└── research
+    ├── latest-experiment
+    │   ├── index.md
+    │   └── yavascript.js
+    ├── _index.md
+    └── research.jpg
 ```
 
-By default, this page will get the folder name (`with-assets` in this case) as its slug.
+In this setup, you may access `research.jpg` from your 'research' section,
+and `yavascript.js` from your 'latest-experiment' directly within the Markdown:
+
+```markdown
+Check out the complete program [here](yavascript.js). It's **really cool free-software**!
+```
+
+By default, this page will get the folder name as its slug. So its permalink would be in the form of `https://example.com/research/latest-experiment/`
+
+### Excluding files from assets
 
 It is possible to ignore selected asset files using the
 [ignored_content](./documentation/getting-started/configuration.md) setting in the config file.
