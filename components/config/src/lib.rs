@@ -107,6 +107,9 @@ pub struct Config {
     /// Whether to check all external links for validity
     pub check_external_links: bool,
 
+    /// A list of directories containing extra syntax definitions to load.
+    pub extra_syntaxes: Vec<String>,
+
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
 
@@ -233,6 +236,7 @@ impl Default for Config {
             ignored_content: Vec::new(),
             ignored_content_globset: None,
             translations: HashMap::new(),
+            extra_syntaxes: Vec::new(),
             extra: HashMap::new(),
             build_timestamp: Some(1),
         }
