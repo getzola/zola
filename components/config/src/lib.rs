@@ -3,22 +3,21 @@ extern crate serde_derive;
 extern crate toml;
 #[macro_use]
 extern crate errors;
-extern crate highlighting;
 extern crate chrono;
 extern crate globset;
+extern crate highlighting;
 
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use toml::Value as Toml;
 use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use toml::Value as Toml;
 
 use errors::{Result, ResultExt};
 use highlighting::THEME_SET;
-
 
 mod theme;
 
@@ -26,7 +25,6 @@ use theme::Theme;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
-
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
@@ -101,13 +99,13 @@ pub struct Config {
     /// Had to remove the PartialEq derive because GlobSet does not implement it. No impact
     /// because it's unused anyway (who wants to sort Configs?).
     pub ignored_content: Vec<String>,
-    #[serde(skip_serializing, skip_deserializing)]  // not a typo, 2 are needed
+    #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are needed
     pub ignored_content_globset: Option<GlobSet>,
 
     /// Whether to check all external links for validity
     pub check_external_links: bool,
 
-    /// A list of directories containing extra syntax definitions to load.
+    /// A list of directories to search for additional `.sublime-syntax` files in.
     pub extra_syntaxes: Vec<String>,
 
     /// All user params set in [extra] in the config
@@ -117,14 +115,13 @@ pub struct Config {
     pub build_timestamp: Option<i64>,
 }
 
-
 impl Config {
     /// Parses a string containing TOML to our Config struct
     /// Any extra parameter will end up in the extra field
     pub fn parse(content: &str) -> Result<Config> {
         let mut config: Config = match toml::from_str(content) {
             Ok(c) => c,
-            Err(e) => bail!(e)
+            Err(e) => bail!(e),
         };
 
         if config.base_url.is_empty() || config.base_url == DEFAULT_BASE_URL {
@@ -137,7 +134,6 @@ impl Config {
 
         config.build_timestamp = Some(Utc::now().timestamp());
 
-
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
             // at program initialization, rather than for every page, for example. We arrange for the
@@ -148,11 +144,19 @@ impl Config {
             for pat in &config.ignored_content {
                 let glob = match Glob::new(pat) {
                     Ok(g) => g,
-                    Err(e) => bail!("Invalid ignored_content glob pattern: {}, error = {}", pat, e)
+                    Err(e) => bail!(
+                        "Invalid ignored_content glob pattern: {}, error = {}",
+                        pat,
+                        e
+                    ),
                 };
                 glob_set_builder.add(glob);
             }
-            config.ignored_content_globset = Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
+            config.ignored_content_globset = Some(
+                glob_set_builder
+                    .build()
+                    .expect("Bad ignored_content in config file."),
+            );
         }
 
         Ok(config)
@@ -164,7 +168,12 @@ impl Config {
         let path = path.as_ref();
         let file_name = path.file_name().unwrap();
         File::open(path)
-            .chain_err(|| format!("No `{:?}` file found. Are you in the right directory?", file_name))?
+            .chain_err(|| {
+                format!(
+                    "No `{:?}` file found. Are you in the right directory?",
+                    file_name
+                )
+            })?
             .read_to_string(&mut content)?;
 
         Config::parse(&content)
@@ -172,7 +181,11 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        let trailing_bit = if path.ends_with('/') || path.is_empty() { "" } else { "/" };
+        let trailing_bit = if path.ends_with('/') || path.is_empty() {
+            ""
+        } else {
+            "/"
+        };
 
         // Index section with a base url that has a trailing slash
         if self.base_url.ends_with('/') && path == "/" {
@@ -198,12 +211,16 @@ impl Config {
         let original = self.extra.clone();
         // 2. inject theme extra values
         for (key, val) in &theme.extra {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
+            self.extra
+                .entry(key.to_string())
+                .or_insert_with(|| val.clone());
         }
 
         // 3. overwrite with original config
         for (key, val) in &original {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
+            self.extra
+                .entry(key.to_string())
+                .or_insert_with(|| val.clone());
         }
 
         Ok(())
@@ -243,7 +260,6 @@ impl Default for Config {
     }
 }
 
-
 /// Get and parse the config.
 /// If it doesn't succeed, exit
 pub fn get_config(path: &Path, filename: &str) -> Config {
@@ -256,7 +272,6 @@ pub fn get_config(path: &Path, filename: &str) -> Config {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -307,7 +322,16 @@ hello = "world"
 
         let config = Config::parse(config);
         assert!(config.is_ok());
-        assert_eq!(config.unwrap().extra.get("hello").unwrap().as_str().unwrap(), "world");
+        assert_eq!(
+            config
+                .unwrap()
+                .extra
+                .get("hello")
+                .unwrap()
+                .as_str()
+                .unwrap(),
+            "world"
+        );
     }
 
     #[test]
@@ -316,7 +340,6 @@ hello = "world"
         config.base_url = "http://vincent.is".to_string();
         assert_eq!(config.make_permalink(""), "http://vincent.is/");
     }
-
 
     #[test]
     fn can_make_url_index_page_with_railing_slash_url() {
@@ -343,7 +366,10 @@ hello = "world"
     fn can_make_url_with_localhost() {
         let mut config = Config::default();
         config.base_url = "http://127.0.0.1:1111".to_string();
-        assert_eq!(config.make_permalink("/tags/rust"), "http://127.0.0.1:1111/tags/rust/");
+        assert_eq!(
+            config.make_permalink("/tags/rust"),
+            "http://127.0.0.1:1111/tags/rust/"
+        );
     }
 
     #[test]
