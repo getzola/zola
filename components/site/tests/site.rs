@@ -19,7 +19,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
-    assert_eq!(site.pages.len(), 14);
+    assert_eq!(site.pages.len(), 15);
     let posts_path = path.join("content").join("posts");
 
     // Make sure we remove all the pwd + content from the sections
@@ -44,7 +44,7 @@ fn can_parse_site() {
 
     let posts_section = &site.sections[&posts_path.join("_index.md")];
     assert_eq!(posts_section.subsections.len(), 1);
-    assert_eq!(posts_section.pages.len(), 6);
+    assert_eq!(posts_section.pages.len(), 7);
 
     let tutorials_section = &site.sections[&posts_path.join("tutorials").join("_index.md")];
     assert_eq!(tutorials_section.subsections.len(), 2);
@@ -321,22 +321,41 @@ fn can_build_site_with_pagination_for_section() {
         "posts/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts/\""
     ));
-    assert!(file_contains!(public, "posts/index.html", "Num pagers: 3"));
+    assert!(file_contains!(public, "posts/index.html", "Num pagers: 4"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
+    assert!(!file_contains!(public, "posts/index.html", "has_prev"));
     assert!(file_contains!(public, "posts/index.html", "has_next"));
     assert!(file_contains!(public, "posts/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
+    assert!(file_contains!(public, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
     assert_eq!(file_contains!(public, "posts/index.html", "has_prev"), false);
 
     assert!(file_exists!(public, "posts/page/2/index.html"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 3"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 4"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_next"));
     assert!(file_contains!(public, "posts/page/2/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/3/"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
+
+    assert!(file_exists!(public, "posts/page/3/index.html"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 4"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "Page size: 2"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "Current index: 3"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "has_prev"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "has_next"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "First: https://replace-this-with-your-url.com/posts/"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
+
+    assert!(file_exists!(public, "posts/page/4/index.html"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 4"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "Page size: 2"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "Current index: 4"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "has_prev"));
+    assert!(!file_contains!(public, "posts/page/4/index.html", "has_next"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "First: https://replace-this-with-your-url.com/posts/"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
 }
 
 #[test]
@@ -397,10 +416,10 @@ fn can_build_rss_feed() {
 
     assert!(Path::new(&public).exists());
     assert!(file_exists!(public, "rss.xml"));
-    // latest article is posts/simple.md
+    // latest article is posts/extra-syntax.md
+    assert!(file_contains!(public, "rss.xml", "Extra Syntax"));
+    // Next is posts/simple.md
     assert!(file_contains!(public, "rss.xml", "Simple article with shortcodes"));
-    // Next is posts/python.md
-    assert!(file_contains!(public, "rss.xml", "Python in posts"));
 }
 
 
@@ -419,4 +438,21 @@ fn can_build_search_index() {
     assert!(Path::new(&public).exists());
     assert!(file_exists!(public, "elasticlunr.min.js"));
     assert!(file_exists!(public, "search_index.en.js"));
+}
+
+#[test]
+fn can_build_with_extra_syntaxes() {
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.load().unwrap();
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(&public.exists());
+    assert!(file_exists!(public, "posts/extra-syntax/index.html"));
+    assert!(file_contains!(public, "posts/extra-syntax/index.html",
+        r#"<span style="background-color:#2b303b;color:#d08770;">test</span>"#));
 }

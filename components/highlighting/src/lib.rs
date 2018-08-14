@@ -3,6 +3,7 @@ extern crate lazy_static;
 extern crate syntect;
 
 use std::cell::RefCell;
+use std::path::Path;
 
 use syntect::LoadingError;
 use syntect::dumps::from_binary;
@@ -23,12 +24,12 @@ lazy_static! {
     pub static ref THEME_SET: ThemeSet = from_binary(include_bytes!("../../../sublime_themes/all.themedump"));
 }
 
-pub fn get_highlighter<'a>(theme: &'a Theme, info: &str, extra_syntaxes: &[String]) -> Result<HighlightLines<'a>, LoadingError> {
+pub fn get_highlighter<'a>(theme: &'a Theme, info: &str, base_path: &Path, extra_syntaxes: &[String]) -> Result<HighlightLines<'a>, LoadingError> {
     SYNTAX_SET.with(|rc| {
         let (ss, extras_added) = &mut *rc.borrow_mut();
         if !*extras_added {
             for dir in extra_syntaxes {
-                ss.load_syntaxes(dir, true)?;
+                ss.load_syntaxes(base_path.join(dir), true)?;
             }
             ss.link_syntaxes();
             *extras_added = true;

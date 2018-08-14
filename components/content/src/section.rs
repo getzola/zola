@@ -123,12 +123,13 @@ impl Section {
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
-    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
+    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, base_path: &Path) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
             config,
             &self.permalink,
             permalinks,
+            base_path,
             self.meta.insert_anchor_links,
         );
 

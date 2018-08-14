@@ -10,5 +10,7 @@ taxonomies = [
     {name = "categories", rss = true},
 ]
 
+extra_syntaxes = ["syntaxes"]
+
 [extra.author]
 name = "Vincent Prouillet"
