@@ -106,3 +106,23 @@ Here is a full list of the supported languages and the short names you can use:
 ```
 
 If you want to highlight a language not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
+Alternatively, the `extra_syntaxes` config option can be used to add additional syntax files.
+
+If your site source is laid out as follows:
+
+```
+.
+├── config.toml
+├── content/
+│   └── ...
+├── static/
+│   └── ...
+├── syntaxes/
+│   ├── Sublime-Language1/
+│   │   └── lang1.sublime-syntax
+│   └── lang2.sublime-syntax
+└── templates/
+    └── ...
+```
+
+you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1"]` in order to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.

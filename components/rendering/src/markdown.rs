@@ -97,7 +97,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     }
 
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
-                    highlighter = Some(get_highlighter(&theme, info));
+                    match get_highlighter(&theme, info, context.base_path, &context.config.extra_syntaxes) {
+                        Ok(h) => highlighter = Some(h),
+                        Err(err) => {
+                            error = Some(format!("Could not load syntax: {}", err).into());
+                            return Event::Html(Owned(String::new()));
+                        }
+                    }
                     let snippet = start_coloured_html_snippet(theme);
                     Event::Html(Owned(snippet))
                 }
