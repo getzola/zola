@@ -90,7 +90,7 @@ $ git submodule update --remote --merge
 And finally from the root of the components/highlighting crate run the following command:
 
 ```bash
-$ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump ../../sublime_syntaxes/nonewlines.packdump
+$ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump
 ```
 
 #### Adding a theme

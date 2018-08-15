@@ -14,8 +14,7 @@ use syntect::easy::HighlightLines;
 thread_local! {
     /// A pair of the set and whether extras have been added to it.
     pub static SYNTAX_SET: RefCell<(SyntaxSet, bool)> = {
-        let mut ss: SyntaxSet = from_binary(include_bytes!("../../../sublime_syntaxes/newlines.packdump"));
-        ss.link_syntaxes();
+        let ss: SyntaxSet = from_binary(include_bytes!("../../../sublime_syntaxes/newlines.packdump"));
         RefCell::new((ss, false))
     };
 }

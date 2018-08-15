@@ -180,6 +180,8 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
+    use std::path::Path;
+
     use tera::Tera;
     use config::Config;
     use front_matter::InsertAnchor;
@@ -202,7 +204,7 @@ mod tests {
     fn render_shortcodes(code: &str, tera: &Tera) -> String {
         let config = Config::default();
         let permalinks = HashMap::new();
-        let context = RenderContext::new(&tera, &config, "", &permalinks, InsertAnchor::None);
+        let context = RenderContext::new(&tera, &config, "", &permalinks, Path::new("something"), InsertAnchor::None);
         super::render_shortcodes(code, &context).unwrap()
     }
 

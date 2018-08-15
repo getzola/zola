@@ -19,17 +19,12 @@ fn usage_and_exit() -> ! {
 // Check README for more details
 fn main() {
     let mut args = env::args().skip(1);
-    match (args.next(), args.next(), args.next(), args.next()) {
-        (Some(ref cmd), Some(ref package_dir), Some(ref packpath_newlines), Some(ref packpath_nonewlines)) if cmd == "synpack" => {
+    match (args.next(), args.next(), args.next()) {
+        (Some(ref cmd), Some(ref package_dir), Some(ref packpath_newlines)) if cmd == "synpack" => {
             let mut ps = SyntaxSet::new();
             ps.load_plain_text_syntax();
             ps.load_syntaxes(package_dir, true).unwrap();
             dump_to_file(&ps, packpath_newlines).unwrap();
-
-            ps = SyntaxSet::new();
-            ps.load_plain_text_syntax();
-            ps.load_syntaxes(package_dir, false).unwrap();
-            dump_to_file(&ps, packpath_nonewlines).unwrap();
 
             for s in ps.syntaxes() {
                 if !s.file_extensions.is_empty() {
@@ -37,7 +32,7 @@ fn main() {
                 }
             }
         },
-        (Some(ref cmd), Some(ref theme_dir), Some(ref packpath), None) if cmd == "themepack" => {
+        (Some(ref cmd), Some(ref theme_dir), Some(ref packpath)) if cmd == "themepack" => {
             let ts = ThemeSet::load_from_folder(theme_dir).unwrap();
             for path in ts.themes.keys() {
                 println!("{:?}", path);

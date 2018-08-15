@@ -166,7 +166,14 @@ impl Page {
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
-    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, base_path: &Path, anchor_insert: InsertAnchor) -> Result<()> {
+    pub fn render_markdown(
+        &mut self,
+        permalinks: &HashMap<String, String>,
+        tera: &Tera,
+        config: &Config,
+        base_path: &Path,
+        anchor_insert: InsertAnchor,
+    ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
             config,
@@ -311,7 +318,13 @@ Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &Config::default());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default(), InsertAnchor::None).unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &Config::default(),
+            Path::new("something"),
+            InsertAnchor::None,
+        ).unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -417,7 +430,13 @@ Hello world
         let res = Page::parse(Path::new("hello.md"), &content, &config);
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None).unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            Path::new("something"),
+            InsertAnchor::None,
+        ).unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
     }
 
