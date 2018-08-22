@@ -1,8 +1,15 @@
+extern crate toml;
+
+
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::fs::File;
+use std::io::prelude::*;
 
-use tera::{GlobalFn, Value, from_value, to_value, Result};
+use csv::{Reader, ReaderBuilder};
+
+use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
 
 use content::{Page, Section};
 use config::Config;
@@ -240,12 +247,113 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
     })
 }
 
+pub fn make_load_toml(content_path: PathBuf) -> GlobalFn {
+    Box::new(move |args| -> Result<Value> {
+        let source: String =
+            required_arg!(String,
+                          args.get("source"),
+                          "`load_toml`: requires a `source` argument with a string value");
+
+        if !content_path.join(source.clone()).exists() {
+            return Err(format!("`load_toml`: Cannot find path: {}", source.clone()).into());
+        }
+
+        let path = content_path.join(source.clone());
+
+        let mut file = match File::open(path) {
+            Err(_) => {
+                return Err(format!("`load_toml`: Unable to open file {}", source.clone()).into())
+            }
+            Ok(v) => v,
+        };
+
+        let mut content_string = String::new();
+        match file.read_to_string(&mut content_string) {
+            Err(_) => {
+                return Err(format!("`load_toml`: Unable to read file {}", source.clone()).into())
+            }
+            _ => (),
+        };
+        
+        let toml_content: toml::Value = match toml::from_str(&content_string) {
+            Ok(c) => c,
+            Err(_) => {
+                return Err(format!("`load_toml`: unable to parse TOML file {}", source.clone())
+                               .into())
+            }
+        };
+
+        to_value(toml_content).map_err(|err| err.into())
+    })
+}
+
+pub fn make_load_csv(content_path: PathBuf) -> GlobalFn {
+    Box::new(move |args| -> Result<Value> {
+        let source: String =
+            required_arg!(String,
+                          args.get("source"),
+                          "`load_csv`: requires a `source` argument with a string value");
+
+        if !content_path.join(source.clone()).exists() {
+            return Err(format!("`load_csv`: Cannot find path: {}", source.clone()).into());
+        }
+
+        let path = content_path.join(source.clone());
+
+        let mut reader = match Reader::from_path(path) {
+            Err(_) => return Err(format!("`load_csv`: unable to open CSV file {}", source.clone()).into()),
+            Ok(v) => v,
+        };
+
+        let mut csv_map = Map::new();
+
+        {
+            let hdrs = match reader.headers() {
+                Err(_) => return Err(format!("`load_csv`: unable to read CSV header line (line 1) for CSV file {}", source.clone()).into()),
+                Ok(v) => v,
+            };
+
+            let mut headers_array: Vec<Value> = Vec::new();
+
+            for h in hdrs {
+                let value = Value::String(String::from(h));
+                headers_array.push(value);
+            }
+
+            csv_map.insert(String::from("headers"), Value::Array(headers_array));
+        }
+
+        {
+            let records = reader.records();
+
+            let mut records_array: Vec<Value> = Vec::new();
+
+            for result in records {
+                let record = result.unwrap();
+
+                let mut elements_array: Vec<Value> = Vec::new();
+
+                for e in record.into_iter() {
+                    elements_array.push(Value::String(String::from(e)));
+                }
+
+                records_array.push(Value::Array(elements_array));
+            }
+
+            csv_map.insert(String::from("records"), Value::Array(records_array));
+        }
+
+        let csv_value: Value = Value::Object(csv_map);
+        to_value(csv_value).map_err(|err| err.into())
+    })
+}
 
 #[cfg(test)]
 mod tests {
-    use super::{make_get_url, make_get_taxonomy, make_get_taxonomy_url, make_trans};
+    use super::{make_get_url, make_get_taxonomy, make_get_taxonomy_url, make_trans, make_load_toml, make_load_csv};
 
     use std::collections::HashMap;
+    use std::path::PathBuf;
 
     use tera::to_value;
 
@@ -372,5 +480,36 @@ title = "A title"
 
         args.insert("lang".to_string(), to_value("fr").unwrap());
         assert_eq!(static_fn(args.clone()).unwrap(), "Un titre");
+    }
+
+    #[test]
+    fn can_load_toml()
+    {
+        let static_fn = make_load_toml(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("source".to_string(), to_value("test.toml").unwrap());
+        let result = static_fn(args.clone()).unwrap();
+
+        assert_eq!(result, json!({
+            "category": {
+                "key": "value"
+            },
+        }));
+    }
+
+    #[test]
+    fn can_load_csv()
+    {
+        let static_fn = make_load_csv(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("source".to_string(), to_value("test.csv").unwrap());
+        let result = static_fn(args.clone()).unwrap();
+
+        assert_eq!(result, json!({
+            "headers": ["File","Description"],
+            "records": [
+                ["Hello.png", "a very special file"], 
+                ["goodbye.jpg", "a not so special file"]],
+        }))
     }
 }
