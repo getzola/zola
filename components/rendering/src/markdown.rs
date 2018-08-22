@@ -1,4 +1,4 @@
-use std::borrow::Cow::Owned;
+use std::borrow::Cow::{Owned, Borrowed};
 
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
@@ -13,6 +13,14 @@ use link_checker::check_url;
 
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 use context::RenderContext;
+
+const CONTINUE_READING: &str = "<p><a name=\"continue-reading\"></a></p>\n";
+
+pub struct Rendered {
+    pub body: String,
+    pub summary_len: Option<usize>,
+    pub toc: Vec<Header>
+}
 
 // We might have cases where the slug is already present in our list of anchor
 // for example an article could have several titles named Example
@@ -36,8 +44,7 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
-
-pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(String, Vec<Header>)> {
+pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
     // the rendered html
     let mut html = String::with_capacity(content.len());
     // Set while parsing
@@ -57,6 +64,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
     let mut temp_header = TempHeader::default();
 
     let mut opts = Options::empty();
+    let mut has_summary = false;
     opts.insert(OPTION_ENABLE_TABLES);
     opts.insert(OPTION_ENABLE_FOOTNOTES);
 
@@ -208,6 +216,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     temp_header = TempHeader::default();
                     Event::Html(Owned(val))
                 }
+                Event::Html(ref markup) if markup.contains("<!-- more -->") => {
+                    has_summary = true;
+                    Event::Html(Borrowed(CONTINUE_READING))
+                }
                 _ => event,
             }
         });
@@ -215,11 +227,14 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
         cmark::html::push_html(&mut html, parser);
     }
 
-    match error {
-        Some(e) => Err(e),
-        None => Ok((
-            html.replace("<p></p>", "").replace("</p></p>", "</p>"),
-            make_table_of_contents(&headers)
-        )),
+    if let Some(e) = error {
+        return Err(e)
+    } else {
+        html = html.replace("<p></p>", "").replace("</p></p>", "</p>");
+        Ok(Rendered {
+            summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
+            body: html,
+            toc: make_table_of_contents(&headers)
+        })
     }
 }

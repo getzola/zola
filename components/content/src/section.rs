@@ -137,8 +137,8 @@ impl Section {
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
-        self.content = res.0;
-        self.toc = res.1;
+        self.content = res.body;
+        self.toc = res.toc;
         Ok(())
     }
 
