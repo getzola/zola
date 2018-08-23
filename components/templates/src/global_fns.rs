@@ -286,12 +286,9 @@ pub fn make_load_csv(content_path: PathBuf) -> GlobalFn {
             let hdrs = reader.headers()
                 .map_err(|e| format!("'load_csv': {} - {} - unable to read CSV header line (line 1) for CSV file", source, e))?;
 
-            let mut headers_array: Vec<Value> = Vec::new();
-
-            for h in hdrs {
-                let value = Value::String(String::from(h));
-                headers_array.push(value);
-            }
+            let headers_array = hdrs.iter()
+                .map(|v| Value::String(v.to_string()))
+                .collect();
 
             csv_map.insert(String::from("headers"), Value::Array(headers_array));
         }
