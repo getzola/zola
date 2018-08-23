@@ -256,13 +256,8 @@ pub fn make_load_toml(content_path: PathBuf) -> GlobalFn {
         let content_string = read_to_string(path)
             .map_err(|e| format!("'load_toml': {} - {}", source, e))?;
         
-        let toml_content: toml::Value = match toml::from_str(&content_string) {
-            Ok(c) => c,
-            Err(_) => {
-                return Err(format!("`load_toml`: unable to parse TOML file {}", source.clone())
-                               .into())
-            }
-        };
+        let toml_content: toml::Value = toml::from_str(&content_string)
+            .map_err(|e| format!("'load_toml': {} - {}", source, e))?;
 
         to_value(toml_content).map_err(|err| err.into())
     })
