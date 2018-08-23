@@ -1,13 +1,11 @@
 extern crate toml;
 
-
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::fs::File;
-use std::io::prelude::*;
+use std::fs::read_to_string;
 
-use csv::{Reader, ReaderBuilder};
+use csv::Reader;
 
 use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
 
@@ -254,26 +252,9 @@ pub fn make_load_toml(content_path: PathBuf) -> GlobalFn {
                           args.get("source"),
                           "`load_toml`: requires a `source` argument with a string value");
 
-        if !content_path.join(source.clone()).exists() {
-            return Err(format!("`load_toml`: Cannot find path: {}", source.clone()).into());
-        }
-
-        let path = content_path.join(source.clone());
-
-        let mut file = match File::open(path) {
-            Err(_) => {
-                return Err(format!("`load_toml`: Unable to open file {}", source.clone()).into())
-            }
-            Ok(v) => v,
-        };
-
-        let mut content_string = String::new();
-        match file.read_to_string(&mut content_string) {
-            Err(_) => {
-                return Err(format!("`load_toml`: Unable to read file {}", source.clone()).into())
-            }
-            _ => (),
-        };
+        let path = content_path.join(&source);
+        let content_string = read_to_string(path)
+            .map_err(|e| format!("'load_toml': {} - {}", source, e))?;
         
         let toml_content: toml::Value = match toml::from_str(&content_string) {
             Ok(c) => c,
@@ -294,24 +275,16 @@ pub fn make_load_csv(content_path: PathBuf) -> GlobalFn {
                           args.get("source"),
                           "`load_csv`: requires a `source` argument with a string value");
 
-        if !content_path.join(source.clone()).exists() {
-            return Err(format!("`load_csv`: Cannot find path: {}", source.clone()).into());
-        }
+        let path = content_path.join(&source);
 
-        let path = content_path.join(source.clone());
-
-        let mut reader = match Reader::from_path(path) {
-            Err(_) => return Err(format!("`load_csv`: unable to open CSV file {}", source.clone()).into()),
-            Ok(v) => v,
-        };
+        let mut reader = Reader::from_path(path)
+            .map_err(|e| format!("'load_csv': {} - {}", source, e))?;
 
         let mut csv_map = Map::new();
 
         {
-            let hdrs = match reader.headers() {
-                Err(_) => return Err(format!("`load_csv`: unable to read CSV header line (line 1) for CSV file {}", source.clone()).into()),
-                Ok(v) => v,
-            };
+            let hdrs = reader.headers()
+                .map_err(|e| format!("'load_csv': {} - {} - unable to read CSV header line (line 1) for CSV file", source, e))?;
 
             let mut headers_array: Vec<Value> = Vec::new();
 

@@ -5,7 +5,11 @@ extern crate tera;
 extern crate base64;
 extern crate pulldown_cmark;
 extern crate csv;
+
+#[cfg(test)]
 #[macro_use]
+extern crate serde_json;
+#[cfg(not(test))]
 extern crate serde_json;
 
 extern crate errors;
