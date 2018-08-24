@@ -76,7 +76,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     if in_header {
                         if header_created {
                             temp_header.push(&text);
-                            return Event::Html(Owned(String::new()));
+                            return Event::Html(Borrowed(""));
                         }
                         let id = find_anchor(&anchors, slugify(&text), 0);
                         anchors.push(id.clone());
@@ -86,7 +86,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         // += as we might have some <code> or other things already there
                         temp_header.title += &text;
                         header_created = true;
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
 
                     // if we are in the middle of a code block
@@ -101,7 +101,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 }
                 Event::Start(Tag::CodeBlock(ref info)) => {
                     if !context.config.highlight_code {
-                        return Event::Html(Owned("<pre><code>".to_string()));
+                        return Event::Html(Borrowed("<pre><code>"));
                     }
 
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
@@ -109,7 +109,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Ok(h) => highlighter = Some(h),
                         Err(err) => {
                             error = Some(format!("Could not load syntax: {}", err).into());
-                            return Event::Html(Owned(String::new()));
+                            return Event::Html(Borrowed(""));
                         }
                     }
                     let snippet = start_coloured_html_snippet(theme);
@@ -117,11 +117,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 }
                 Event::End(Tag::CodeBlock(_)) => {
                     if !context.config.highlight_code {
-                        return Event::Html(Owned("</code></pre>\n".to_string()));
+                        return Event::Html(Borrowed("</code></pre>\n"));
                     }
                     // reset highlight and close the code block
                     highlighter = None;
-                    Event::Html(Owned("</pre>".to_string()))
+                    Event::Html(Borrowed("</pre>"))
                 }
                 Event::Start(Tag::Image(src, title)) => {
                     if is_colocated_asset_link(&src) {
@@ -147,7 +147,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             Ok(url) => url,
                             Err(_) => {
                                 error = Some(format!("Relative link {} not found.", link).into());
-                                return Event::Html(Owned(String::new()));
+                                return Event::Html(Borrowed(""));
                             }
                         }
                     } else if is_colocated_asset_link(&link) {
@@ -175,7 +175,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             format!("<a href=\"{}\" title=\"{}\">", fixed_link, title)
                         };
                         temp_header.push(&html);
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
 
                     Event::Start(Tag::Link(Owned(fixed_link), title))
@@ -183,28 +183,28 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 Event::End(Tag::Link(_, _)) => {
                     if in_header {
                         temp_header.push("</a>");
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::Start(Tag::Code) => {
                     if in_header {
                         temp_header.push("<code>");
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::End(Tag::Code) => {
                     if in_header {
                         temp_header.push("</code>");
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::Start(Tag::Header(num)) => {
                     in_header = true;
                     temp_header = TempHeader::new(num);
-                    Event::Html(Owned(String::new()))
+                    Event::Html(Borrowed(""))
                 }
                 Event::End(Tag::Header(_)) => {
                     // End of a header, reset all the things and return the stringified
