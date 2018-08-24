@@ -563,3 +563,20 @@ fn can_show_error_message_for_invalid_external_links() {
     let err = res.unwrap_err();
     assert!(err.description().contains("Link http://google.comy is not valid"));
 }
+
+#[test]
+fn can_handle_summaries() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
+    let res = render_content("Hello [world]\n\n<!-- more -->\n\nBla bla\n\n[world]: https://vincent.is/about/", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n<p><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
+    );
+    assert_eq!(
+        res.summary_len,
+        Some("<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n".len())
+    );
+}
