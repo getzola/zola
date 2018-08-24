@@ -16,6 +16,7 @@ use context::RenderContext;
 
 const CONTINUE_READING: &str = "<p><a name=\"continue-reading\"></a></p>\n";
 
+#[derive(Debug)]
 pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
