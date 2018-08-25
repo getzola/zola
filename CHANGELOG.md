@@ -5,6 +5,7 @@
 - Add assets to section indexes
 - Allow users to add custom highlighting syntaxes
 - Add Swift, MiniZinc syntaxes and update others
+- Handle post summaries better: no more cutting references
 
 ## 0.4.1 (2018-08-06)
 
