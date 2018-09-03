@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.2 (unreleased)
+
+- Add assets to section indexes
+- Allow users to add custom highlighting syntaxes
+- Add Swift, MiniZinc syntaxes and update others
+- Handle post summaries better: no more cutting references
+
 ## 0.4.1 (2018-08-06)
 
 - Fix live reload of a section content change getting no pages data

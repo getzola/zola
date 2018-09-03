@@ -2,11 +2,11 @@ extern crate reqwest;
 #[macro_use]
 extern crate lazy_static;
 
+use reqwest::header::{qitem, Accept, Headers};
+use reqwest::{mime, StatusCode};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
-use reqwest::StatusCode;
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct LinkResult {
@@ -54,19 +54,30 @@ pub fn check_url(url: &str) -> LinkResult {
         }
     }
 
+    let mut headers = Headers::new();
+    headers.set(Accept(vec![qitem(mime::TEXT_HTML), qitem(mime::STAR_STAR)]));
+
+    let client = reqwest::Client::new();
+
     // Need to actually do the link checking
-    let res = match reqwest::get(url) {
-        Ok(response) => LinkResult { code: Some(response.status()), error: None },
-        Err(e) => LinkResult { code: None, error: Some(e.description().to_string()) },
+    let res = match client.get(url).headers(headers).send() {
+        Ok(response) => LinkResult {
+            code: Some(response.status()),
+            error: None,
+        },
+        Err(e) => LinkResult {
+            code: None,
+            error: Some(e.description().to_string()),
+        },
     };
 
     LINKS.write().unwrap().insert(url.to_string(), res.clone());
-    return res;
+    res
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{LINKS, check_url};
+    use super::{check_url, LINKS};
 
     #[test]
     fn can_validate_ok_links() {

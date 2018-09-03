@@ -70,6 +70,9 @@ check_external_links = false
 #     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
 ignored_content = []
 
+# A list of directories to search for additional `.sublime-syntax` files in.
+extra_syntaxes = []
+
 # Optional translation object. The key if present should be a language code
 [translations]
 

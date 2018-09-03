@@ -3,7 +3,7 @@ title = "Syntax Highlighting"
 weight = 80
 +++
 
-Gutenberg comes with built-in syntax highlighting but you first 
+Gutenberg comes with built-in syntax highlighting but you first
 need to enable it in the [configuration](./documentation/getting-started/configuration.md).
 
 Once this is done, Gutenberg will automatically highlight all code blocks
@@ -17,7 +17,7 @@ let highlight = true;
 
 ````
 
-You can replace the `rust` by the language you want to highlight or not put anything to get it 
+You can replace the `rust` by the language you want to highlight or not put anything to get it
 interpreted as plain text.
 
 Here is a full list of the supported languages and the short names you can use:
@@ -27,12 +27,12 @@ Here is a full list of the supported languages and the short names you can use:
 - Assembly x86 (NASM) -> ["asm", "inc", "nasm"]
 - Crystal -> ["cr"]
 - Elixir -> ["ex", "exs"]
-- Elm -> ["elm"]
 - Handlebars -> ["handlebars", "handlebars.html", "hbr", "hbrs", "hbs", "hdbs", "hjs", "mu", "mustache", "rac", "stache", "template", "tmpl"]
 - Jinja2 -> ["j2", "jinja2"]
 - Julia -> ["jl"]
 - Kotlin -> ["kt", "kts"]
 - Less -> ["less", "css.less"]
+- MiniZinc (MZN) -> ["mzn", "dzn"]
 - Nim -> ["nim", "nims"]
 - ASP -> ["asa"]
 - HTML (ASP) -> ["asp"]
@@ -49,10 +49,17 @@ Here is a full list of the supported languages and the short names you can use:
 - Diff -> ["diff", "patch"]
 - Erlang -> ["erl", "hrl", "Emakefile", "emakefile"]
 - HTML (Erlang) -> ["yaws"]
+- Git Attributes -> ["attributes", "gitattributes", ".gitattributes"]
+- Git Commit -> ["COMMIT_EDITMSG", "MERGE_MSG", "TAG_EDITMSG"]
+- Git Config -> ["gitconfig", ".gitconfig", ".gitmodules"]
+- Git Ignore -> ["exclude", "gitignore", ".gitignore"]
+- Git Link -> [".git"]
+- Git Log -> ["gitlog"]
+- Git Rebase Todo -> ["git-rebase-todo"]
 - Go -> ["go"]
 - Graphviz (DOT) -> ["dot", "DOT", "gv"]
-- Groovy -> ["groovy", "gvy", "gradle"]
-- HTML -> ["html", "htm", "shtml", "xhtml", "inc", "tmpl", "tpl"]
+- Groovy -> ["groovy", "gvy", "gradle", "Jenkinsfile"]
+- HTML -> ["html", "htm", "shtml", "xhtml"]
 - Haskell -> ["hs"]
 - Literate Haskell -> ["lhs"]
 - Java Server Page (JSP) -> ["jsp"]
@@ -65,7 +72,7 @@ Here is a full list of the supported languages and the short names you can use:
 - TeX -> ["sty", "cls"]
 - Lisp -> ["lisp", "cl", "clisp", "l", "mud", "el", "scm", "ss", "lsp", "fasl"]
 - Lua -> ["lua"]
-- Makefile -> ["make", "GNUmakefile", "makefile", "Makefile", "OCamlMakefile", "mak", "mk"]
+- Makefile -> ["make", "GNUmakefile", "makefile", "Makefile", "makefile.am", "Makefile.am", "makefile.in", "Makefile.in", "OCamlMakefile", "mak", "mk"]
 - Markdown -> ["md", "mdown", "markdown", "markdn"]
 - MATLAB -> ["matlab"]
 - OCaml -> ["ml", "mli"]
@@ -90,19 +97,45 @@ Here is a full list of the supported languages and the short names you can use:
 - Rust -> ["rs"]
 - SQL -> ["sql", "ddl", "dml"]
 - Scala -> ["scala", "sbt"]
-- Bourne Again Shell (bash) -> ["sh", "bash", "zsh", "fish", ".bash_aliases", ".bash_completions", ".bash_functions", ".bash_login", ".bash_logout", ".bash_profile", ".bash_variables", ".bashrc", ".profile", ".textmate_init"]
+- Bourne Again Shell (bash) -> ["sh", "bash", "zsh", "fish", ".bash_aliases", ".bash_completions", ".bash_functions", ".bash_login", ".bash_logout", ".bash_profile", ".bash_variables", ".bashrc", ".profile", ".textmate_init", ".zshrc"]
 - HTML (Tcl) -> ["adp"]
 - Tcl -> ["tcl"]
 - Textile -> ["textile"]
 - XML -> ["xml", "xsd", "xslt", "tld", "dtml", "rss", "opml", "svg"]
 - YAML -> ["yaml", "yml", "sublime-syntax"]
 - SWI-Prolog -> ["pro"]
+- CMake C Header -> ["h.in"]
+- CMake C++ Header -> ["hh.in", "hpp.in", "hxx.in", "h++.in"]
+- CMake -> ["CMakeLists.txt", "cmake"]
+- CMakeCache -> ["CMakeCache.txt"]
 - Generic Config -> ["cfg", "conf", "config", "ini", "pro", "mak", "mk", "Doxyfile", "inputrc", ".inputrc", "dircolors", ".dircolors", "gitmodules", ".gitmodules", "gitignore", ".gitignore", "gitattributes", ".gitattributes"]
+- Elm -> ["elm"]
 - Linker Script -> ["ld"]
 - TOML -> ["toml", "tml"]
 - TypeScript -> ["ts"]
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]
+- TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock"]
 ```
 
 If you want to highlight a language not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
+Alternatively, the `extra_syntaxes` config option can be used to add additional syntax files.
+
+If your site source is laid out as follows:
+
+```
+.
+├── config.toml
+├── content/
+│   └── ...
+├── static/
+│   └── ...
+├── syntaxes/
+│   ├── Sublime-Language1/
+│   │   └── lang1.sublime-syntax
+│   └── lang2.sublime-syntax
+└── templates/
+    └── ...
+```
+
+you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1"]` in order to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.

@@ -77,6 +77,8 @@ word_count: Number;
 reading_time: Number;
 // See the Table of contents section below for more details
 toc: Array<Header>;
+// Paths of colocated assets, relative to the content directory
+assets: Array<String>;
 ```
 
 ## Table of contents

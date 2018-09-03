@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+file_extensions:
+  - test-syntax
+scope: source.test
+
+contexts:
+  main:
+    - match: "test"
+      scope: constant.language.test

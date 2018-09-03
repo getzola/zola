@@ -187,7 +187,6 @@ impl Site {
 
             section_entries
                 .into_par_iter()
-                .filter(|entry| entry.as_path().file_name().unwrap() == "_index.md")
                 .map(|entry| {
                     let path = entry.as_path();
                     Section::from_file(path, config)
@@ -200,7 +199,6 @@ impl Site {
 
             page_entries
                 .into_par_iter()
-                .filter(|entry| entry.as_path().file_name().unwrap() != "_index.md")
                 .map(|entry| {
                     let path = entry.as_path();
                     Page::from_file(path, config)
@@ -216,7 +214,7 @@ impl Site {
         }
 
         // Insert a default index section if necessary so we don't need to create
-        // a _index.md to render the index page
+        // a _index.md to render the index page at the root of the site
         let index_path = self.index_section_path();
         if let Some(ref index_section) = self.sections.get(&index_path) {
             if self.config.build_search_index && !index_section.meta.in_search_index {
@@ -260,6 +258,7 @@ impl Site {
         let permalinks = &self.permalinks;
         let tera = &self.tera;
         let config = &self.config;
+        let base_path = &self.base_path;
 
         // TODO: avoid the duplication with function above for that part
         // This is needed in the first place because of silly borrow checker
@@ -271,13 +270,13 @@ impl Site {
         self.pages.par_iter_mut()
             .map(|(_, page)| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
-                page.render_markdown(permalinks, tera, config, insert_anchor)
+                page.render_markdown(permalinks, tera, config, base_path, insert_anchor)
             })
             .fold(|| Ok(()), Result::and)
             .reduce(|| Ok(()), Result::and)?;
 
         self.sections.par_iter_mut()
-            .map(|(_, section)| section.render_markdown(permalinks, tera, config))
+            .map(|(_, section)| section.render_markdown(permalinks, tera, config, base_path))
             .fold(|| Ok(()), Result::and)
             .reduce(|| Ok(()), Result::and)?;
 
@@ -320,7 +319,7 @@ impl Site {
         if render {
             let insert_anchor = self.find_parent_section_insert_anchor(&self.pages[&path].file.parent);
             let page = self.pages.get_mut(&path).unwrap();
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
+            page.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path, insert_anchor)?;
         }
 
         Ok(prev)
@@ -337,7 +336,7 @@ impl Site {
 
         if render {
             let section = self.sections.get_mut(&path).unwrap();
-            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+            section.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path)?;
         }
 
         Ok(prev)
@@ -835,6 +834,12 @@ impl Site {
             if !output_path.exists() {
                 create_directory(&output_path)?;
             }
+        }
+
+        // Copy any asset we found previously into the same directory as the index.html
+        for asset in &section.assets {
+            let asset_path = asset.as_path();
+            copy(&asset_path, &output_path.join(asset_path.file_name().unwrap()))?;
         }
 
         if render_pages {

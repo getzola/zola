@@ -5,6 +5,7 @@ extern crate rendering;
 extern crate config;
 
 use std::collections::HashMap;
+use std::path::Path;
 
 use tera::Tera;
 
@@ -19,9 +20,9 @@ fn can_do_render_content_simple() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("hello", &context).unwrap();
-    assert_eq!(res.0, "<p>hello</p>\n");
+    assert_eq!(res.body, "<p>hello</p>\n");
 }
 
 #[test]
@@ -30,10 +31,10 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = false;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n```", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<pre><code>$ gutenberg server\n</code></pre>\n"
     );
 }
@@ -43,10 +44,10 @@ fn can_highlight_code_block_no_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">$ ping\n</span></pre>"
     );
 }
@@ -56,10 +57,10 @@ fn can_highlight_code_block_with_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```python\nlist.append(1)\n```", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list.</span><span style=\"background-color:#2b303b;color:#bf616a;\">append</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">(</span><span style=\"background-color:#2b303b;color:#d08770;\">1</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">)\n</span></pre>"
     );
 }
@@ -69,11 +70,11 @@ fn can_higlight_code_block_with_unknown_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```yolo\nlist.append(1)\n```", &context).unwrap();
     // defaults to plain text
     assert_eq!(
-        res.0,
+        res.body,
         "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list.append(1)\n</span></pre>"
     );
 }
@@ -82,21 +83,21 @@ fn can_higlight_code_block_with_unknown_lang() {
 fn can_render_shortcode() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content(r#"
 Hello
 
 {{ youtube(id="ub36ffWAqgQ") }}
     "#, &context).unwrap();
-    assert!(res.0.contains("<p>Hello</p>\n<div >"));
-    assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+    assert!(res.body.contains("<p>Hello</p>\n<div >"));
+    assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
 }
 
 #[test]
 fn can_render_shortcode_with_markdown_char_in_args_name() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let input = vec![
         "name",
         "na_me",
@@ -105,7 +106,7 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
     ];
     for i in input {
         let res = render_content(&format!("{{{{ youtube(id=\"hey\", {}=1) }}}}", i), &context).unwrap();
-        assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/hey""#));
+        assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/hey""#));
     }
 }
 
@@ -113,7 +114,7 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
 fn can_render_shortcode_with_markdown_char_in_args_value() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let input = vec![
         "ub36ffWAqgQ-hey",
         "ub36ffWAqgQ_hey",
@@ -123,7 +124,7 @@ fn can_render_shortcode_with_markdown_char_in_args_value() {
     ];
     for i in input {
         let res = render_content(&format!("{{{{ youtube(id=\"{}\") }}}}", i), &context).unwrap();
-        assert!(res.0.contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i)));
+        assert!(res.body.contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i)));
     }
 }
 
@@ -140,11 +141,11 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
 
     for i in input {
         tera.add_raw_template(&format!("shortcodes/{}.html", i), "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
-        let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+        let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
 
         let res = render_content(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context).unwrap();
         println!("{:?}", res);
-        assert!(res.0.contains("<blockquote>hey - Bob</blockquote>"));
+        assert!(res.body.contains("<blockquote>hey - Bob</blockquote>"));
     }
 }
 
@@ -169,11 +170,11 @@ Here is another paragraph.
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
     let config = Config::default();
-    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
 
     let res = render_content(markdown_string, &context).unwrap();
     println!("{:?}", res);
-    assert_eq!(res.0, expected);
+    assert_eq!(res.body, expected);
 }
 
 #[test]
@@ -202,18 +203,18 @@ Here is another paragraph.
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
     let config = Config::default();
-    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
 
     let res = render_content(markdown_string, &context).unwrap();
     println!("{:?}", res);
-    assert_eq!(res.0, expected);
+    assert_eq!(res.body, expected);
 }
 
 #[test]
 fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content(r#"
 Hello
 
@@ -228,11 +229,11 @@ Hello
 {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}
 
     "#, &context).unwrap();
-    assert!(res.0.contains("<p>Hello</p>\n<div >"));
-    assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
-    assert!(res.0.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
-    assert!(res.0.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
-    assert!(res.0.contains(r#"//player.vimeo.com/video/210073083""#));
+    assert!(res.body.contains("<p>Hello</p>\n<div >"));
+    assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
+    assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
+    assert!(res.body.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
+    assert!(res.body.contains(r#"//player.vimeo.com/video/210073083""#));
 }
 
 #[test]
@@ -240,9 +241,9 @@ fn doesnt_render_ignored_shortcodes() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = false;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content(r#"```{{/* youtube(id="w7Ft2ymGmfc") */}}```"#, &context).unwrap();
-    assert_eq!(res.0, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
+    assert_eq!(res.body, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
 }
 
 #[test]
@@ -252,7 +253,7 @@ fn can_render_shortcode_with_body() {
     tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author }}</blockquote>").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
 
     let res = render_content(r#"
 Hello
@@ -260,7 +261,7 @@ Hello
 A quote
 {% end %}
     "#, &context).unwrap();
-    assert_eq!(res.0, "<p>Hello</p>\n<blockquote>A quote - Keats</blockquote>\n");
+    assert_eq!(res.body, "<p>Hello</p>\n<blockquote>A quote - Keats</blockquote>\n");
 }
 
 #[test]
@@ -268,7 +269,7 @@ fn errors_rendering_unknown_shortcode() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("{{ hello(flash=true) }}", &context);
     assert!(res.is_err());
 }
@@ -279,14 +280,14 @@ fn can_make_valid_relative_link() {
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
     let tera_ctx = Tera::default();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, Path::new("something"), InsertAnchor::None);
     let res = render_content(
         r#"[rel link](./pages/about.md), [abs link](https://vincent.is/about)"#,
-        &context
+        &context,
     ).unwrap();
 
     assert!(
-        res.0.contains(r#"<p><a href="https://vincent.is/about">rel link</a>, <a href="https://vincent.is/about">abs link</a></p>"#)
+        res.body.contains(r#"<p><a href="https://vincent.is/about">rel link</a>, <a href="https://vincent.is/about">abs link</a></p>"#)
     );
 }
 
@@ -296,11 +297,11 @@ fn can_make_relative_links_with_anchors() {
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
     let tera_ctx = Tera::default();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, Path::new("something"), InsertAnchor::None);
     let res = render_content(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
 
     assert!(
-        res.0.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
+        res.body.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
     );
 }
 
@@ -309,7 +310,7 @@ fn errors_relative_link_inexistant() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("[rel link](./pages/about.md)", &context);
     assert!(res.is_err());
 }
@@ -319,9 +320,9 @@ fn can_add_id_to_headers() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content(r#"# Hello"#, &context).unwrap();
-    assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n");
+    assert_eq!(res.body, "<h1 id=\"hello\">Hello</h1>\n");
 }
 
 #[test]
@@ -329,19 +330,19 @@ fn can_add_id_to_headers_same_slug() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("# Hello\n# Hello", &context).unwrap();
-    assert_eq!(res.0, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
+    assert_eq!(res.body, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
 }
 
 #[test]
 fn can_insert_anchor_left() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::Left);
     let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
     );
 }
@@ -350,10 +351,10 @@ fn can_insert_anchor_left() {
 fn can_insert_anchor_right() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Right);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::Right);
     let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"hello\">Hello<a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
     );
 }
@@ -363,10 +364,10 @@ fn can_insert_anchor_right() {
 fn can_insert_anchor_with_exclamation_mark() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::Left);
     let res = render_content("# Hello!", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
     );
 }
@@ -376,10 +377,10 @@ fn can_insert_anchor_with_exclamation_mark() {
 fn can_insert_anchor_with_link() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::Left);
     let res = render_content("## [Rust](https://rust-lang.org)", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h2 id=\"rust\"><a class=\"gutenberg-anchor\" href=\"#rust\" aria-label=\"Anchor link for: rust\">🔗</a>\n<a href=\"https://rust-lang.org\">Rust</a></h2>\n"
     );
 }
@@ -388,10 +389,10 @@ fn can_insert_anchor_with_link() {
 fn can_insert_anchor_with_other_special_chars() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::Left);
     let res = render_content("# Hello*_()", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
     );
 }
@@ -405,7 +406,8 @@ fn can_make_toc() {
         &config,
         "https://mysite.com/something",
         &permalinks_ctx,
-        InsertAnchor::Left
+        Path::new("something"),
+        InsertAnchor::Left,
     );
 
     let res = render_content(r#"
@@ -418,21 +420,20 @@ fn can_make_toc() {
 ### Last one
     "#, &context).unwrap();
 
-    let toc = res.1;
+    let toc = res.toc;
     assert_eq!(toc.len(), 1);
     assert_eq!(toc[0].children.len(), 2);
     assert_eq!(toc[0].children[1].children.len(), 1);
-
 }
 
 #[test]
 fn can_understand_backtick_in_titles() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("# `Hello`", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"hello\"><code>Hello</code></h1>\n"
     );
 }
@@ -441,10 +442,10 @@ fn can_understand_backtick_in_titles() {
 fn can_understand_backtick_in_paragraphs() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("Hello `world`", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<p>Hello <code>world</code></p>\n"
     );
 }
@@ -454,10 +455,10 @@ fn can_understand_backtick_in_paragraphs() {
 fn can_understand_links_in_header() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("# [Rust](https://rust-lang.org)", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"rust\"><a href=\"https://rust-lang.org\">Rust</a></h1>\n"
     );
 }
@@ -466,10 +467,10 @@ fn can_understand_links_in_header() {
 fn can_understand_link_with_title_in_header() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("# [Rust](https://rust-lang.org \"Rust homepage\")", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"rust\"><a href=\"https://rust-lang.org\" title=\"Rust homepage\">Rust</a></h1>\n"
     );
 }
@@ -480,14 +481,14 @@ fn can_make_valid_relative_link_in_header() {
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about/".to_string());
     let tera_ctx = Tera::default();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, Path::new("something"), InsertAnchor::None);
     let res = render_content(
         r#" # [rel link](./pages/about.md)"#,
-        &context
+        &context,
     ).unwrap();
 
     assert_eq!(
-        res.0,
+        res.body,
         "<h1 id=\"rel-link\"><a href=\"https://vincent.is/about/\">rel link</a></h1>\n"
     );
 }
@@ -496,10 +497,10 @@ fn can_make_valid_relative_link_in_header() {
 fn can_make_permalinks_with_colocated_assets_for_link() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("[an image](image.jpg)", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<p><a href=\"https://vincent.is/about/image.jpg\">an image</a></p>\n"
     );
 }
@@ -508,10 +509,10 @@ fn can_make_permalinks_with_colocated_assets_for_link() {
 fn can_make_permalinks_with_colocated_assets_for_image() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("![alt text](image.jpg)", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<p><img src=\"https://vincent.is/about/image.jpg\" alt=\"alt text\" /></p>\n"
     );
 }
@@ -520,7 +521,7 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
 fn markdown_doesnt_wrap_html_in_paragraph() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content(r#"
 Some text
 
@@ -533,7 +534,7 @@ Some text
 </div>
     "#, &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<p>Some text</p>\n<h1>Helo</h1>\n<div>\n<a href=\"mobx-flow.png\">\n        <img src=\"mobx-flow.png\" alt=\"MobX flow\">\n    </a>\n</div>\n"
     );
 }
@@ -543,10 +544,10 @@ fn can_validate_valid_external_links() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("[a link](http://google.com)", &context).unwrap();
     assert_eq!(
-        res.0,
+        res.body,
         "<p><a href=\"http://google.com\">a link</a></p>\n"
     );
 }
@@ -556,9 +557,26 @@ fn can_show_error_message_for_invalid_external_links() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("[a link](http://google.comy)", &context);
     assert!(res.is_err());
     let err = res.unwrap_err();
     assert!(err.description().contains("Link http://google.comy is not valid"));
+}
+
+#[test]
+fn can_handle_summaries() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
+    let res = render_content("Hello [world]\n\n<!-- more -->\n\nBla bla\n\n[world]: https://vincent.is/about/", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n<p><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
+    );
+    assert_eq!(
+        res.summary_len,
+        Some("<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n".len())
+    );
 }

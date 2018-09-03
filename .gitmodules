@@ -34,3 +34,6 @@
 [submodule "sublime_syntaxes/Sublime-CMakeLists"]
 	path = sublime_syntaxes/Sublime-CMakeLists
 	url = https://github.com/zyxar/Sublime-CMakeLists
+[submodule "sublime_syntaxes/Swift-for-f-ing-sublime"]
+	path = sublime_syntaxes/Swift-for-f-ing-sublime
+	url = git@github.com:colinta/Swift-for-f-ing-sublime.git

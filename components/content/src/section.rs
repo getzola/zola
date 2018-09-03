@@ -8,7 +8,7 @@ use serde::ser::{SerializeStruct, self};
 use config::Config;
 use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
-use utils::fs::read_file;
+use utils::fs::{read_file, find_related_assets};
 use utils::templates::render_template;
 use utils::site::get_reading_analytics;
 use rendering::{RenderContext, Header, render_content};
@@ -33,6 +33,8 @@ pub struct Section {
     pub raw_content: String,
     /// The HTML rendered of the page
     pub content: String,
+    /// All the non-md files we found next to the .md file
+    pub assets: Vec<PathBuf>,
     /// All direct pages of that section
     pub pages: Vec<Page>,
     /// All pages that cannot be sorted in this section
@@ -54,6 +56,7 @@ impl Section {
             components: vec![],
             permalink: "".to_string(),
             raw_content: "".to_string(),
+            assets: vec![],
             content: "".to_string(),
             pages: vec![],
             ignored_pages: vec![],
@@ -79,8 +82,31 @@ impl Section {
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config) -> Result<Section> {
         let path = path.as_ref();
         let content = read_file(path)?;
+        let mut section = Section::parse(path, &content, config)?;
 
-        Section::parse(path, &content, config)
+        let parent_dir = path.parent().unwrap();
+        let assets = find_related_assets(parent_dir);
+
+        if let Some(ref globset) = config.ignored_content_globset {
+            // `find_related_assets` only scans the immediate directory (it is not recursive) so our
+            // filtering only needs to work against the file_name component, not the full suffix. If
+            // `find_related_assets` was changed to also return files in subdirectories, we could
+            // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
+            // against the remaining path. Note that the current behaviour effectively means that
+            // the `ignored_content` setting in the config file is limited to single-file glob
+            // patterns (no "**" patterns).
+            section.assets = assets.into_iter()
+                .filter(|path|
+                    match path.file_name() {
+                        None => true,
+                        Some(file) => !globset.is_match(file)
+                    }
+                ).collect();
+        } else {
+            section.assets = assets;
+        }
+
+        Ok(section)
     }
 
     pub fn get_template_name(&self) -> String {
@@ -97,12 +123,13 @@ impl Section {
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
-    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config) -> Result<()> {
+    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, base_path: &Path) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
             config,
             &self.permalink,
             permalinks,
+            base_path,
             self.meta.insert_anchor_links,
         );
 
@@ -110,8 +137,8 @@ impl Section {
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
-        self.content = res.0;
-        self.toc = res.1;
+        self.content = res.body;
+        self.toc = res.toc;
         Ok(())
     }
 
@@ -146,6 +173,15 @@ impl Section {
     pub fn is_child_page(&self, path: &PathBuf) -> bool {
         self.all_pages_path().contains(path)
     }
+
+    /// Creates a vectors of asset URLs.
+    fn serialize_assets(&self) -> Vec<String> {
+        self.assets.iter()
+            .filter_map(|asset| asset.file_name())
+            .filter_map(|filename| filename.to_str())
+            .map(|filename| self.path.clone() + filename)
+            .collect()
+    }
 }
 
 impl ser::Serialize for Section {
@@ -165,6 +201,8 @@ impl ser::Serialize for Section {
         state.serialize_field("word_count", &word_count)?;
         state.serialize_field("reading_time", &reading_time)?;
         state.serialize_field("toc", &self.toc)?;
+        let assets = self.serialize_assets();
+        state.serialize_field("assets", &assets)?;
         state.end()
     }
 }
@@ -179,11 +217,78 @@ impl Default for Section {
             components: vec![],
             permalink: "".to_string(),
             raw_content: "".to_string(),
+            assets: vec![],
             content: "".to_string(),
             pages: vec![],
             ignored_pages: vec![],
             subsections: vec![],
             toc: vec![],
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::Write;
+    use std::fs::{File, create_dir};
+
+    use tempfile::tempdir;
+    use globset::{Glob, GlobSetBuilder};
+
+    use config::Config;
+    use super::Section;
+
+    #[test]
+    fn section_with_assets_gets_right_info() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("with-assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = File::create(nested_path.join("_index.md")).unwrap();
+        f.write_all(b"+++\n+++\n").unwrap();
+        File::create(nested_path.join("example.js")).unwrap();
+        File::create(nested_path.join("graph.jpg")).unwrap();
+        File::create(nested_path.join("fail.png")).unwrap();
+
+        let res = Section::from_file(
+            nested_path.join("_index.md").as_path(),
+            &Config::default(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.assets.len(), 3);
+        assert_eq!(section.permalink, "http://a-website.com/posts/with-assets/");
+    }
+
+    #[test]
+    fn section_with_ignored_assets_filters_out_correct_files() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("with-assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = File::create(nested_path.join("_index.md")).unwrap();
+        f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
+        File::create(nested_path.join("example.js")).unwrap();
+        File::create(nested_path.join("graph.jpg")).unwrap();
+        File::create(nested_path.join("fail.png")).unwrap();
+
+        let mut gsb = GlobSetBuilder::new();
+        gsb.add(Glob::new("*.{js,png}").unwrap());
+        let mut config = Config::default();
+        config.ignored_content_globset = Some(gsb.build().unwrap());
+
+        let res = Section::from_file(
+            nested_path.join("_index.md").as_path(),
+            &config,
+        );
+
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.assets.len(), 1);
+        assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
     }
 }

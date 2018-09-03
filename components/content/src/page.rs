@@ -166,30 +166,31 @@ impl Page {
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
-    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, anchor_insert: InsertAnchor) -> Result<()> {
+    pub fn render_markdown(
+        &mut self,
+        permalinks: &HashMap<String, String>,
+        tera: &Tera,
+        config: &Config,
+        base_path: &Path,
+        anchor_insert: InsertAnchor,
+    ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
             config,
             &self.permalink,
             permalinks,
+            base_path,
             anchor_insert,
         );
 
         context.tera_context.add("page", self);
 
-        let res = render_content(
-            &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),
-            &context,
-        ).chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
-        self.content = res.0;
-        self.toc = res.1;
-        if self.raw_content.contains("<!-- more -->") {
-            self.summary = Some({
-                let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                render_content(summary, &context)
-                    .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?.0
-            })
-        }
+        let res = render_content(&self.raw_content, &context)
+            .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
+
+        self.summary = res.summary_len.map(|l| res.body[0..l].to_owned());
+        self.content = res.body;
+        self.toc = res.toc;
 
         Ok(())
     }
@@ -310,7 +311,13 @@ Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &Config::default());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &Config::default(), InsertAnchor::None).unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &Config::default(),
+            Path::new("something"),
+            InsertAnchor::None,
+        ).unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -416,7 +423,13 @@ Hello world
         let res = Page::parse(Path::new("hello.md"), &content, &config);
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None).unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            Path::new("something"),
+            InsertAnchor::None,
+        ).unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
     }
 
