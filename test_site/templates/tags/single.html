@@ -1,6 +1,6 @@
-Tag: {{ tag.name }}
+Tag: {{ term.name }}
 
-{% for page in tag.pages %}
+{% for page in term.pages %}
     <article>
         <h3 class="post__title"><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
     </article>

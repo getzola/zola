@@ -7,6 +7,7 @@ extern crate front_matter;
 extern crate config;
 
 use std::collections::HashMap;
+use std::path::Path;
 
 use config::Config;
 use tera::Tera;
@@ -14,19 +15,16 @@ use front_matter::{SortBy, InsertAnchor};
 use content::{Page, sort_pages, populate_siblings};
 
 
-fn create_pages(number: usize, sort_by: SortBy) -> Vec<Page> {
+fn create_pages(number: usize) -> Vec<Page> {
     let mut pages = vec![];
     let config = Config::default();
-    let tera = Tera::default();
+    let mut tera = Tera::default();
+    tera.add_raw_template("shortcodes/youtube.html", "hello");
     let permalinks = HashMap::new();
 
     for i in 0..number {
         let mut page = Page::default();
-        match sort_by {
-            SortBy::Weight => { page.meta.weight = Some(i); }
-            SortBy::Order => { page.meta.order = Some(i); }
-            _ => (),
-        };
+        page.meta.weight = Some(i);
         page.raw_content = r#"
 # Modus cognitius profanam ne duae virtutis mundi
 
@@ -98,7 +96,7 @@ if __name__ == "__main__":
     gen_site("basic-blog", [""], 250, paginate=True)
 ```
 "#.to_string();
-        page.render_markdown(&permalinks, &tera, &config, InsertAnchor::None).unwrap();
+        page.render_markdown(&permalinks, &tera, &config, &Path::new(""), InsertAnchor::None).unwrap();
         pages.push(page);
     }
 
@@ -111,34 +109,34 @@ if __name__ == "__main__":
 
 #[bench]
 fn bench_baseline_cloning(b: &mut test::Bencher) {
-    let pages = create_pages(250, SortBy::Order);
+    let pages = create_pages(250);
     b.iter(|| pages.clone());
 }
 
 #[bench]
 fn bench_sorting_none(b: &mut test::Bencher) {
-    let pages = create_pages(250, SortBy::Order);
-    b.iter(|| sort_pages(pages.clone(), SortBy::None));
+    let pages = create_pages(250);
+    b.iter(|| sort_pages(pages.clone(), SortBy::Weight));
 }
 
 #[bench]
 fn bench_sorting_order(b: &mut test::Bencher) {
-    let pages = create_pages(250, SortBy::Order);
-    b.iter(|| sort_pages(pages.clone(), SortBy::Order));
+    let pages = create_pages(250);
+    b.iter(|| sort_pages(pages.clone(), SortBy::Weight));
 }
 
 #[bench]
 fn bench_populate_siblings(b: &mut test::Bencher) {
-    let pages = create_pages(250, SortBy::Order);
-    let (sorted_pages, _) = sort_pages(pages, SortBy::Order);
-    b.iter(|| populate_siblings(&sorted_pages.clone()));
+    let pages = create_pages(250);
+    let (sorted_pages, _) = sort_pages(pages, SortBy::Weight);
+    b.iter(|| populate_siblings(&sorted_pages.clone(), SortBy::Weight));
 }
 
 #[bench]
 fn bench_page_render_html(b: &mut test::Bencher) {
-    let pages = create_pages(10, SortBy::Order);
-    let (mut sorted_pages, _) = sort_pages(pages, SortBy::Order);
-    sorted_pages = populate_siblings(&sorted_pages);
+    let pages = create_pages(10);
+    let (mut sorted_pages, _) = sort_pages(pages, SortBy::Weight);
+    sorted_pages = populate_siblings(&sorted_pages, SortBy::Weight);
 
     let config = Config::default();
     let mut tera = Tera::default();
