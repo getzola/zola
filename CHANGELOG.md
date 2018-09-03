@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.2 (unreleased)
+## 0.4.2 (2018-09-03)
 
 - Add assets to section indexes
 - Allow users to add custom highlighting syntaxes
