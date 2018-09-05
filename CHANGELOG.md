@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3 (unreleased)
+
+- Gutenberg has changed name to REPLACE_ME!
+
+
 ## 0.4.2 (2018-09-03)
 
 - Add assets to section indexes
