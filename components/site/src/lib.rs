@@ -102,7 +102,11 @@ impl Site {
                 bail!("Theme `{}` is missing a templates folder", theme);
             }
 
-            let theme_tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "themes/**/*.html");
+            let theme_tpl_glob = format!(
+                "{}/{}",
+                path.to_string_lossy().replace("\\", "/"),
+                format!("themes/{}/templates/**/*.html", theme)
+            );
             let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
             rewrite_theme_paths(&mut tera_theme, &theme);
             tera_theme.build_inheritance_chains()?;

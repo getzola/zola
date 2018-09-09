@@ -4,6 +4,7 @@
 
 - Gutenberg has changed name to REPLACE_ME!
 - Update dependencies, fixing a few bugs with templates
+- Make Gutenberg load only .html files in themes from the templates folder
 
 
 ## 0.4.2 (2018-09-03)
