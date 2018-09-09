@@ -9,8 +9,8 @@ macro_rules! render_default_tpl {
     ($filename: expr, $url: expr) => {
         {
             let mut context = Context::new();
-            context.add("filename", $filename);
-            context.add("url", $url);
+            context.insert("filename", $filename);
+            context.insert("url", $url);
             Tera::one_off(DEFAULT_TPL, &context, true).map_err(|e| e.into())
         }
     };

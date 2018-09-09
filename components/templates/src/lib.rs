@@ -48,7 +48,7 @@ lazy_static! {
 /// via refresh to the url given
 pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
     let mut context = Context::new();
-    context.add("url", &url);
+    context.insert("url", &url);
 
     tera.render("internal/alias.html", &context)
         .chain_err(|| format!("Failed to render alias for '{}'", url))

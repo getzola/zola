@@ -88,11 +88,11 @@ impl Taxonomy {
 
     pub fn render_term(&self, item: &TaxonomyItem, tera: &Tera, config: &Config) -> Result<String> {
         let mut context = Context::new();
-        context.add("config", config);
-        context.add("term", item);
-        context.add("taxonomy", &self.kind);
-        context.add("current_url", &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)));
-        context.add("current_path", &format!("/{}/{}", self.kind.name, item.slug));
+        context.insert("config", config);
+        context.insert("term", item);
+        context.insert("taxonomy", &self.kind);
+        context.insert("current_url", &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)));
+        context.insert("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
         render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render single term {} page.", self.kind.name))
@@ -100,11 +100,11 @@ impl Taxonomy {
 
     pub fn render_all_terms(&self, tera: &Tera, config: &Config) -> Result<String> {
         let mut context = Context::new();
-        context.add("config", config);
-        context.add("terms", &self.items);
-        context.add("taxonomy", &self.kind);
-        context.add("current_url", &config.make_permalink(&self.kind.name));
-        context.add("current_path", &self.kind.name);
+        context.insert("config", config);
+        context.insert("terms", &self.items);
+        context.insert("taxonomy", &self.kind);
+        context.insert("current_url", &config.make_permalink(&self.kind.name));
+        context.insert("current_path", &self.kind.name);
 
         render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render a list of {} page.", self.kind.name))

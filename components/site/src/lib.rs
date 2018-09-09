@@ -739,14 +739,14 @@ impl Site {
             })
             .collect::<Vec<_>>();
         pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.add("pages", &pages);
+        context.insert("pages", &pages);
 
         let mut sections = self.sections
             .values()
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
             .collect::<Vec<_>>();
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.add("sections", &sections);
+        context.insert("sections", &sections);
 
         let mut taxonomies = vec![];
         for taxonomy in &self.taxonomies {
@@ -759,9 +759,9 @@ impl Site {
             terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
             taxonomies.push(terms);
         }
-        context.add("taxonomies", &taxonomies);
+        context.insert("taxonomies", &taxonomies);
 
-        context.add("config", &self.config);
+        context.insert("config", &self.config);
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
 
@@ -791,10 +791,10 @@ impl Site {
         }
 
         let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
-        context.add("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
+        context.insert("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
         // limit to the last n elements
-        context.add("pages", &sorted_pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
-        context.add("config", &self.config);
+        context.insert("pages", &sorted_pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
+        context.insert("config", &self.config);
 
         let rss_feed_url = if let Some(ref base) = base_path {
             self.config.make_permalink(&base.join("rss.xml").to_string_lossy().replace('\\', "/"))
@@ -802,7 +802,7 @@ impl Site {
             self.config.make_permalink("rss.xml")
         };
 
-        context.add("feed_url", &rss_feed_url);
+        context.insert("feed_url", &rss_feed_url);
 
         let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
