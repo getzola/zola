@@ -194,6 +194,8 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
         Some(prev) => {
             // Front matter didn't change, only content did
             if site.pages[path].meta == prev.meta {
+                // We need to update the page object in the section so it will render correctly
+                site.populate_sections();
                 // Other than the page itself, the summary might be seen
                 // on a paginated list for a blog for example
                 if site.pages[path].summary.is_some() {
