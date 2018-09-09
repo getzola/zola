@@ -373,11 +373,21 @@ impl Site {
         }
 
         for page in self.pages.values() {
-            let parent_section_path = page.file.parent.join("_index.md");
-            if self.sections.contains_key(&parent_section_path) {
+            let mut parent_section_path = page.file.parent.as_path();
+            while let Some(mut section) = self.sections.get_mut(&parent_section_path.join("_index.md")) {
                 // TODO: use references instead of cloning to avoid having to call populate_section on
                 // content change
-                self.sections.get_mut(&parent_section_path).unwrap().pages.push(page.clone());
+                section.pages.push(page.clone());
+
+                // If the section is transparent, then also add the post to the parent section
+                if !section.meta.transparent {
+                    break;
+                }
+
+                match parent_section_path.parent() {
+                    Some(parent) => parent_section_path = parent,
+                    None => break,
+                }
             }
         }
 
