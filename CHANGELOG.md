@@ -9,6 +9,7 @@
 - Link checker will not try to validate email links anymore
 - Load table and footnote markdown extensions in `markdown` filter
 - `get_url` now defaults to not adding a trailing slash
+- Fix `--base-url` not overriding processed images URLs
 
 ## 0.4.2 (2018-09-03)
 
