@@ -7,6 +7,7 @@
 - Load only .html files in themes from the templates folder
 - Background colour is set fewer times when highlighting syntaxes
 - Link checker will not try to validate email links anymore
+- Load table and footnote markdown extensions in `markdown` filter
 
 ## 0.4.2 (2018-09-03)
 
