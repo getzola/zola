@@ -4,9 +4,9 @@
 
 - Gutenberg has changed name to REPLACE_ME!
 - Update dependencies, fixing a few bugs with templates
-- Make Gutenberg load only .html files in themes from the templates folder
+- Load only .html files in themes from the templates folder
 - Background colour is set fewer times when highlighting syntaxes
-
+- Link checker will not try to validate email links anymore
 
 ## 0.4.2 (2018-09-03)
 

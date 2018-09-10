@@ -160,7 +160,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     } else if is_colocated_asset_link(&link) {
                         format!("{}{}", context.current_page_permalink, link)
                     } else {
-                        if context.config.check_external_links && !link.starts_with('#') {
+                        if context.config.check_external_links
+                            && !link.starts_with('#')
+                            && !link.starts_with("mailto:") {
                             let res = check_url(&link);
                             if res.is_valid() {
                                 link.to_string()
