@@ -310,6 +310,16 @@ Hello World
         assert_eq!(res, "\nHello World\n{% youtube() %}Some body {{ hello() }}{% end %}");
     }
 
+    // https://github.com/Keats/gutenberg/issues/383
+    #[test]
+    fn unignore_shortcode_with_body_does_not_swallow_initial_whitespace() {
+        let res = render_shortcodes(r#"
+Hello World
+{%/* youtube() */%}
+Some body {{ hello() }}{%/* end */%}"#, &Tera::default());
+        assert_eq!(res, "\nHello World\n{% youtube() %}\nSome body {{ hello() }}{% end %}");
+    }
+
     #[test]
     fn can_parse_shortcode_arguments() {
         let inputs = vec![
