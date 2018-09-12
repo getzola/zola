@@ -7,7 +7,7 @@ use std::fs::read_to_string;
 
 use csv::Reader;
 
-use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
+use tera::{GlobalFn, Value, from_value, to_value, Result, Map, Error, ErrorKind};
 
 use content::{Page, Section};
 use config::Config;
@@ -245,77 +245,86 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
     })
 }
 
-pub fn make_load_toml(content_path: PathBuf) -> GlobalFn {
+pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-        let source: String =
-            required_arg!(String,
-                          args.get("source"),
-                          "`load_toml`: requires a `source` argument with a string value");
+        let path: String = required_arg!(String, args.get("path"), "`load_data`: requires a `path` argument with a string value, being a path to a file");
+        let full_path = content_path.join(&path);
 
-        let path = content_path.join(&source);
-        let content_string = read_to_string(path)
-            .map_err(|e| format!("'load_toml': {} - {}", source, e))?;
-        
-        let toml_content: toml::Value = toml::from_str(&content_string)
-            .map_err(|e| format!("'load_toml': {} - {}", source, e))?;
+        let cloned_path = full_path.clone();
+        let extension = String::from(cloned_path.extension().unwrap().to_str().unwrap()).to_lowercase();
 
-        to_value(toml_content).map_err(|err| err.into())
+        let result_value: Result<Value> = match extension.as_str() {
+            "toml" => load_toml(full_path),
+            "csv" => load_csv(full_path),
+            _ => Err(
+                Error::from_kind(
+                    ErrorKind::Msg(
+                        String::from(
+                            format!("'load_data': {} - is an unsupported file extension", extension)
+                            )
+                        )
+                    )
+                )
+        };
+
+        result_value
     })
 }
 
-pub fn make_load_csv(content_path: PathBuf) -> GlobalFn {
-    Box::new(move |args| -> Result<Value> {
-        let source: String =
-            required_arg!(String,
-                          args.get("source"),
-                          "`load_csv`: requires a `source` argument with a string value");
+fn load_toml(toml_path: PathBuf) -> Result<Value> {
+    let content_string = read_to_string(toml_path.clone())
+        .map_err(|e| format!("'load_toml': {} - {}", toml_path.to_str().unwrap(), e))?;
+        
+    let toml_content: toml::Value = toml::from_str(&content_string)
+        .map_err(|e| format!("'load_toml': {} - {}", toml_path.to_str().unwrap(), e))?;
 
-        let path = content_path.join(&source);
+    to_value(toml_content).map_err(|err| err.into())
+}
 
-        let mut reader = Reader::from_path(path)
-            .map_err(|e| format!("'load_csv': {} - {}", source, e))?;
+fn load_csv(csv_path: PathBuf) -> Result<Value> {
+    let mut reader = Reader::from_path(csv_path.clone())
+        .map_err(|e| format!("'load_csv': {} - {}", csv_path.to_str().unwrap(), e))?;
 
-        let mut csv_map = Map::new();
+    let mut csv_map = Map::new();
 
-        {
-            let hdrs = reader.headers()
-                .map_err(|e| format!("'load_csv': {} - {} - unable to read CSV header line (line 1) for CSV file", source, e))?;
+    {
+        let hdrs = reader.headers()
+            .map_err(|e| format!("'load_csv': {} - {} - unable to read CSV header line (line 1) for CSV file", csv_path.to_str().unwrap(), e))?;
 
-            let headers_array = hdrs.iter()
-                .map(|v| Value::String(v.to_string()))
-                .collect();
+        let headers_array = hdrs.iter()
+            .map(|v| Value::String(v.to_string()))
+            .collect();
 
-            csv_map.insert(String::from("headers"), Value::Array(headers_array));
-        }
+        csv_map.insert(String::from("headers"), Value::Array(headers_array));
+    }
 
-        {
-            let records = reader.records();
+    {
+        let records = reader.records();
 
-            let mut records_array: Vec<Value> = Vec::new();
+        let mut records_array: Vec<Value> = Vec::new();
 
-            for result in records {
-                let record = result.unwrap();
+        for result in records {
+            let record = result.unwrap();
 
-                let mut elements_array: Vec<Value> = Vec::new();
+            let mut elements_array: Vec<Value> = Vec::new();
 
-                for e in record.into_iter() {
-                    elements_array.push(Value::String(String::from(e)));
-                }
-
-                records_array.push(Value::Array(elements_array));
+            for e in record.into_iter() {
+                elements_array.push(Value::String(String::from(e)));
             }
 
-            csv_map.insert(String::from("records"), Value::Array(records_array));
+            records_array.push(Value::Array(elements_array));
         }
 
-        let csv_value: Value = Value::Object(csv_map);
-        to_value(csv_value).map_err(|err| err.into())
-    })
+        csv_map.insert(String::from("records"), Value::Array(records_array));
+    }
+
+    let csv_value: Value = Value::Object(csv_map);
+    to_value(csv_value).map_err(|err| err.into())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{make_get_url, make_get_taxonomy, make_get_taxonomy_url, make_trans, make_load_toml, make_load_csv};
+    use super::{make_get_url, make_get_taxonomy, make_get_taxonomy_url, make_trans, make_load_data};
 
     use std::collections::HashMap;
     use std::path::PathBuf;
@@ -450,9 +459,9 @@ title = "A title"
     #[test]
     fn can_load_toml()
     {
-        let static_fn = make_load_toml(PathBuf::from("../utils/test-files"));
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
-        args.insert("source".to_string(), to_value("test.toml").unwrap());
+        args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn(args.clone()).unwrap();
 
         assert_eq!(result, json!({
@@ -465,9 +474,9 @@ title = "A title"
     #[test]
     fn can_load_csv()
     {
-        let static_fn = make_load_csv(PathBuf::from("../utils/test-files"));
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
-        args.insert("source".to_string(), to_value("test.csv").unwrap());
+        args.insert("path".to_string(), to_value("test.csv").unwrap());
         let result = static_fn(args.clone()).unwrap();
 
         assert_eq!(result, json!({

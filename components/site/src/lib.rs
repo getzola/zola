@@ -305,8 +305,7 @@ impl Site {
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(self.taxonomies.clone()),
         );
-        self.tera.register_global_function("load_toml", global_fns::make_load_toml(self.content_path.clone()));
-        self.tera.register_global_function("load_csv", global_fns::make_load_csv(self.content_path.clone()));
+        self.tera.register_global_function("load_data", global_fns::make_load_data(self.content_path.clone()));
     }
 
     /// Add a page to the site
