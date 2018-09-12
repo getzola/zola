@@ -21,7 +21,7 @@ extern crate imageproc;
 #[cfg(test)]
 extern crate tempfile;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir_all, remove_dir_all, copy};
 use std::mem;
 use std::path::{Path, PathBuf};
@@ -149,7 +149,7 @@ impl Site {
 
     /// Get all the orphan (== without section) pages in the site
     pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
-        let mut pages_in_sections = vec![];
+        let mut pages_in_sections = HashSet::new();
         let mut orphans = vec![];
 
         for s in self.sections.values() {
