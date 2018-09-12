@@ -289,23 +289,23 @@ impl Site {
 
     /// Adds global fns that are to be available to shortcodes while rendering markdown
     pub fn register_early_global_fns(&mut self) {
-        self.tera.register_global_function(
+        self.tera.register_function(
             "get_url", global_fns::make_get_url(self.permalinks.clone(), self.config.clone()),
         );
-        self.tera.register_global_function(
+        self.tera.register_function(
             "resize_image", global_fns::make_resize_image(self.imageproc.clone()),
         );
     }
 
     pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_global_function("trans", global_fns::make_trans(self.config.clone()));
-        self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
-        self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
-        self.tera.register_global_function(
+        self.tera.register_function("trans", global_fns::make_trans(self.config.clone()));
+        self.tera.register_function("get_page", global_fns::make_get_page(&self.pages));
+        self.tera.register_function("get_section", global_fns::make_get_section(&self.sections));
+        self.tera.register_function(
             "get_taxonomy",
             global_fns::make_get_taxonomy(self.taxonomies.clone()),
         );
-        self.tera.register_global_function(
+        self.tera.register_function(
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(self.taxonomies.clone()),
         );
