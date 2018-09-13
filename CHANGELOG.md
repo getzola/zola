@@ -10,6 +10,8 @@
 - Load table and footnote markdown extensions in `markdown` filter
 - `get_url` now defaults to not adding a trailing slash
 - Fix `--base-url` not overriding processed images URLs
+- Many many times faster (x10-x20) for sites with thousands of pages
+- Add more Emacs temp file to the ignored patterns in `gutenberg serve`
 
 ## 0.4.2 (2018-09-03)
 
