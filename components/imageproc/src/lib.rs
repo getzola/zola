@@ -363,9 +363,7 @@ impl Processor {
             let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id));
             op.perform(&self.content_path, &target)
                 .chain_err(|| format!("Failed to process image: {}", op.source))
-        })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+        }).collect::<Result<()>>()
     }
 }
 

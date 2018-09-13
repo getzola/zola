@@ -272,13 +272,11 @@ impl Site {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
                 page.render_markdown(permalinks, tera, config, base_path, insert_anchor)
             })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)?;
+            .collect::<Result<()>>()?;
 
         self.sections.par_iter_mut()
             .map(|(_, section)| section.render_markdown(permalinks, tera, config, base_path))
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)?;
+            .collect::<Result<()>>()?;
 
         Ok(())
     }
@@ -717,8 +715,7 @@ impl Site {
                     )
                 }
             })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+            .collect::<Result<()>>()
     }
 
     /// What it says on the tin
@@ -847,8 +844,7 @@ impl Site {
                 .pages
                 .par_iter()
                 .map(|p| self.render_page(p))
-                .fold(|| Ok(()), Result::and)
-                .reduce(|| Ok(()), Result::and)?;
+                .collect::<Result<()>>()?;
         }
 
         if !section.meta.render {
@@ -886,8 +882,7 @@ impl Site {
             .collect::<Vec<_>>()
             .into_par_iter()
             .map(|s| self.render_section(s, true))
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+            .collect::<Result<()>>()
     }
 
     /// Renders all pages that do not belong to any sections
@@ -924,7 +919,6 @@ impl Site {
                 }
                 Ok(())
             })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+            .collect::<Result<()>>()
     }
 }
