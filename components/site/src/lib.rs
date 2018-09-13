@@ -179,6 +179,7 @@ impl Site {
         let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
             .unwrap()
             .filter_map(|e| e.ok())
+            .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with("."))
             .partition(|entry| entry.as_path().file_name().unwrap() == "_index.md");
 
         let sections = {

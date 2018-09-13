@@ -12,6 +12,7 @@
 - Fix `--base-url` not overriding processed images URLs
 - Many many times faster (x10-x20) for sites with thousands of pages
 - Add more Emacs temp file to the ignored patterns in `gutenberg serve`
+- Files starting with `.` are not considered pages anymore even if they end with `.md`
 
 ## 0.4.2 (2018-09-03)
 
