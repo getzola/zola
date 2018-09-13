@@ -1,4 +1,5 @@
 extern crate toml;
+extern crate serde_json;
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -247,20 +248,33 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
 
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-        let path: String = required_arg!(String, args.get("path"), "`load_data`: requires a `path` argument with a string value, being a path to a file");
-        let full_path = content_path.join(&path);
+        let path_arg: String = required_arg!(
+            String, 
+            args.get("path"), 
+            "`load_data`: requires a `path` argument with a string value, being a path to a file"
+        );
+        let kind_arg = optional_arg!(
+            String,
+            args.get("kind"),
+            "`load_data`: `kind` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
+        );
+
+        let full_path = content_path.join(&path_arg);
 
         let cloned_path = full_path.clone();
         let extension = String::from(cloned_path.extension().unwrap().to_str().unwrap()).to_lowercase();
 
-        let result_value: Result<Value> = match extension.as_str() {
+        let file_kind = kind_arg.unwrap_or(extension);
+
+        let result_value: Result<Value> = match file_kind.as_str() {
             "toml" => load_toml(full_path),
             "csv" => load_csv(full_path),
+            "json" => load_json(full_path),
             _ => Err(
                 Error::from_kind(
                     ErrorKind::Msg(
                         String::from(
-                            format!("'load_data': {} - is an unsupported file extension", extension)
+                            format!("'load_data': {} - is an unsupported file kind", file_kind)
                             )
                         )
                     )
@@ -271,25 +285,54 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     })
 }
 
+fn load_json(json_path: PathBuf) -> Result<Value> {
+    let content_string = read_to_string(json_path.clone())
+        .map_err(|e| format!("'load_data': {} - {}", json_path.to_str().unwrap(), e))?;
+
+    let json_content = serde_json::from_str(content_string.as_str()).unwrap();
+    let tera_value: Value = json_content;
+
+    return Ok(tera_value);
+}
+
+/// load/parse a toml file from the given path, and place it into a json value
 fn load_toml(toml_path: PathBuf) -> Result<Value> {
     let content_string = read_to_string(toml_path.clone())
-        .map_err(|e| format!("'load_toml': {} - {}", toml_path.to_str().unwrap(), e))?;
+        .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
         
     let toml_content: toml::Value = toml::from_str(&content_string)
-        .map_err(|e| format!("'load_toml': {} - {}", toml_path.to_str().unwrap(), e))?;
+        .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
 
     to_value(toml_content).map_err(|err| err.into())
 }
 
+/// Load/parse a csv file from the given path, and place it into a json value
+/// 
+/// An example csv file `example.csv` could be:
+/// ```csv
+/// Number, Title
+/// 1,Gutenberg
+/// 2,Printing
+/// ```
+/// The json value output would be:
+/// ```json
+/// {
+///     "headers": ["Number", "Title"],
+///     "records": [
+///                     ["1", "Gutenberg"], 
+///                     ["2", "Printing"]
+///                ],
+/// }
+/// ```
 fn load_csv(csv_path: PathBuf) -> Result<Value> {
     let mut reader = Reader::from_path(csv_path.clone())
-        .map_err(|e| format!("'load_csv': {} - {}", csv_path.to_str().unwrap(), e))?;
+        .map_err(|e| format!("'load_data': {} - {}", csv_path.to_str().unwrap(), e))?;
 
     let mut csv_map = Map::new();
 
     {
         let hdrs = reader.headers()
-            .map_err(|e| format!("'load_csv': {} - {} - unable to read CSV header line (line 1) for CSV file", csv_path.to_str().unwrap(), e))?;
+            .map_err(|e| format!("'load_data': {} - {} - unable to read CSV header line (line 1) for CSV file", csv_path.to_str().unwrap(), e))?;
 
         let headers_array = hdrs.iter()
             .map(|v| Value::String(v.to_string()))
@@ -480,10 +523,28 @@ title = "A title"
         let result = static_fn(args.clone()).unwrap();
 
         assert_eq!(result, json!({
-            "headers": ["File","Description"],
+            "headers": ["Number", "Title"],
             "records": [
-                ["Hello.png", "a very special file"], 
-                ["goodbye.jpg", "a not so special file"]],
+                            ["1", "Gutenberg"], 
+                            ["2", "Printing"]
+                        ],
+        }))
+    }
+
+    #[test]
+    fn can_load_json()
+    {
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.json").unwrap());
+        let result = static_fn(args.clone()).unwrap();
+        
+        assert_eq!(result, json!({
+            "key": "value",
+            "array": [1, 2, 3],
+            "subpackage": {
+                "subkey": 5
+            }
         }))
     }
 }
