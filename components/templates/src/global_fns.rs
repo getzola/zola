@@ -267,9 +267,9 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
         let file_kind = kind_arg.unwrap_or(extension);
 
         let result_value: Result<Value> = match file_kind.as_str() {
-            "toml" => load_toml(full_path),
-            "csv" => load_csv(full_path),
-            "json" => load_json(full_path),
+            "toml" => load_toml(&full_path),
+            "csv" => load_csv(&full_path),
+            "json" => load_json(&full_path),
             _ => Err(
                 Error::from_kind(
                     ErrorKind::Msg(
@@ -285,7 +285,7 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     })
 }
 
-fn load_json(json_path: PathBuf) -> Result<Value> {
+fn load_json(json_path: &PathBuf) -> Result<Value> {
     let content_string = read_to_string(json_path.clone())
         .map_err(|e| format!("'load_data': {} - {}", json_path.to_str().unwrap(), e))?;
 
@@ -296,7 +296,7 @@ fn load_json(json_path: PathBuf) -> Result<Value> {
 }
 
 /// load/parse a toml file from the given path, and place it into a json value
-fn load_toml(toml_path: PathBuf) -> Result<Value> {
+fn load_toml(toml_path: &PathBuf) -> Result<Value> {
     let content_string = read_to_string(toml_path.clone())
         .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
         
@@ -324,7 +324,7 @@ fn load_toml(toml_path: PathBuf) -> Result<Value> {
 ///                ],
 /// }
 /// ```
-fn load_csv(csv_path: PathBuf) -> Result<Value> {
+fn load_csv(csv_path: &PathBuf) -> Result<Value> {
     let mut reader = Reader::from_path(csv_path.clone())
         .map_err(|e| format!("'load_data': {} - {}", csv_path.to_str().unwrap(), e))?;
 
