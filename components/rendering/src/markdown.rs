@@ -239,7 +239,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     if let Some(e) = error {
         return Err(e)
     } else {
-        html = html.replace("<p></p>", "").replace("</p></p>", "</p>");
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
