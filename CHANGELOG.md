@@ -13,6 +13,7 @@
 - Many many times faster (x10-x20) for sites with thousands of pages
 - Add more Emacs temp file to the ignored patterns in `gutenberg serve`
 - Files starting with `.` are not considered pages anymore even if they end with `.md`
+- `_processed_images` folder for image processing has been renamed `processed_images` to avoid issues with GitHub Pages
 
 ## 0.4.2 (2018-09-03)
 
