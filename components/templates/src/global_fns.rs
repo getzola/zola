@@ -261,8 +261,16 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
 
         let full_path = content_path.join(&path_arg);
 
-        let cloned_path = full_path.clone();
-        let extension = String::from(cloned_path.extension().unwrap().to_str().unwrap()).to_lowercase();
+        let extension = match full_path.extension() {
+            Some(value) => value.to_str().unwrap().to_lowercase(),
+            None => return Err(
+                Error::from_kind(
+                    ErrorKind::Msg(
+                        format!("`load_data`: Cannot parse file extension of specified file: {}", path_arg).into()
+                        )
+                    )
+                )
+        };
 
         let file_kind = kind_arg.unwrap_or(extension);
 
@@ -285,6 +293,8 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     })
 }
 
+/// load/parse a json file from the given path and place it into a 
+/// tera value
 fn load_json(json_path: &PathBuf) -> Result<Value> {
     let content_string = read_to_string(json_path.clone())
         .map_err(|e| format!("'load_data': {} - {}", json_path.to_str().unwrap(), e))?;
@@ -295,7 +305,8 @@ fn load_json(json_path: &PathBuf) -> Result<Value> {
     return Ok(tera_value);
 }
 
-/// load/parse a toml file from the given path, and place it into a json value
+/// load/parse a toml file from the given path, and place it into a
+/// tera Value
 fn load_toml(toml_path: &PathBuf) -> Result<Value> {
     let content_string = read_to_string(toml_path.clone())
         .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
@@ -306,7 +317,8 @@ fn load_toml(toml_path: &PathBuf) -> Result<Value> {
     to_value(toml_content).map_err(|err| err.into())
 }
 
-/// Load/parse a csv file from the given path, and place it into a json value
+/// Load/parse a csv file from the given path, and place it into a 
+/// tera Value.
 /// 
 /// An example csv file `example.csv` could be:
 /// ```csv
@@ -538,7 +550,7 @@ title = "A title"
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.json").unwrap());
         let result = static_fn(args.clone()).unwrap();
-        
+
         assert_eq!(result, json!({
             "key": "value",
             "array": [1, 2, 3],
