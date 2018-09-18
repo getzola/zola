@@ -368,9 +368,10 @@ impl Site {
 
         for page in self.pages.values() {
             let parent_section_path = page.file.parent.join("_index.md");
-            if self.sections.contains_key(&parent_section_path) {
-                let mut section = self.sections.get_mut(&parent_section_path).unwrap();
 
+            let section = self.sections.get_mut(&parent_section_path);
+
+            if let Some(mut section) = section {
                 // TODO: use references instead of cloning to avoid having to call populate_section on
                 // content change
                 let mut page = page.clone();
