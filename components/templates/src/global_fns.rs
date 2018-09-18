@@ -4,7 +4,6 @@ extern crate serde_json;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::fs::read_to_string;
 
 use csv::Reader;
 
@@ -13,8 +12,10 @@ use tera::{GlobalFn, Value, from_value, to_value, Result, Map, Error, ErrorKind}
 use content::{Page, Section};
 use config::Config;
 use utils::site::resolve_internal_link;
+use utils::fs::read_file;
 use taxonomies::Taxonomy;
 use imageproc;
+use errors;
 
 
 macro_rules! required_arg {
@@ -296,8 +297,10 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
 /// load/parse a json file from the given path and place it into a 
 /// tera value
 fn load_json(json_path: &PathBuf) -> Result<Value> {
-    let content_string = read_to_string(json_path.clone())
-        .map_err(|e| format!("'load_data': {} - {}", json_path.to_str().unwrap(), e))?;
+    let content_string: String = read_file(json_path)
+        .map_err(|err: errors::Error| {
+                Error::with_chain(err, ErrorKind::Msg(String::from("`load_data`: error loading json file")))
+            })?;
 
     let json_content = serde_json::from_str(content_string.as_str()).unwrap();
     let tera_value: Value = json_content;
@@ -308,9 +311,11 @@ fn load_json(json_path: &PathBuf) -> Result<Value> {
 /// load/parse a toml file from the given path, and place it into a
 /// tera Value
 fn load_toml(toml_path: &PathBuf) -> Result<Value> {
-    let content_string = read_to_string(toml_path.clone())
-        .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
-        
+    let content_string: String = read_file(toml_path)
+        .map_err(|err: errors::Error| {
+                Error::with_chain(err, ErrorKind::Msg(String::from("`load_data`: error loading toml file")))
+            })?;
+
     let toml_content: toml::Value = toml::from_str(&content_string)
         .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
 
