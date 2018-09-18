@@ -39,8 +39,11 @@ $ xbps-install -S gutenberg
 ```
 
 ## From source
-To build it from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/)
-installed.
+To build it from source, you will need to have Git, [Rust (at least 1.27) and Cargo](https://www.rust-lang.org/)
+installed. You will also need additional dependencies to compile [libsass](https://github.com/sass/libsass):
+
+- OSX, Linux and other Unix: `make` (`gmake` on BSDs), `g++`, `libssl-dev`
+- Windows (a bit trickier): updated `MSVC` and overall updated VS installation
 
 From a terminal, you can now run the following command:
 
@@ -48,4 +51,6 @@ From a terminal, you can now run the following command:
 $ cargo build --release
 ```
 
-The binary will be available in the `target/release` folder.
+The binary will be available in the `target/release` folder. You can move it in your `$PATH` to have the
+`gutenberg` command available globally or in a directory if you want for example to have the binary in the
+same repository as the site.

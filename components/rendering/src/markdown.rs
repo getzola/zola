@@ -1,4 +1,4 @@
-use std::borrow::Cow::Owned;
+use std::borrow::Cow::{Owned, Borrowed};
 
 use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
@@ -13,6 +13,15 @@ use link_checker::check_url;
 
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
 use context::RenderContext;
+
+const CONTINUE_READING: &str = "<p><a name=\"continue-reading\"></a></p>\n";
+
+#[derive(Debug)]
+pub struct Rendered {
+    pub body: String,
+    pub summary_len: Option<usize>,
+    pub toc: Vec<Header>
+}
 
 // We might have cases where the slug is already present in our list of anchor
 // for example an article could have several titles named Example
@@ -36,13 +45,13 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
-
-pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(String, Vec<Header>)> {
+pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
     // the rendered html
     let mut html = String::with_capacity(content.len());
     // Set while parsing
     let mut error = None;
 
+    let mut background = IncludeBackground::Yes;
     let mut highlighter: Option<HighlightLines> = None;
     // If we get text in header, we need to insert the id and a anchor
     let mut in_header = false;
@@ -57,6 +66,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
     let mut temp_header = TempHeader::default();
 
     let mut opts = Options::empty();
+    let mut has_summary = false;
     opts.insert(OPTION_ENABLE_TABLES);
     opts.insert(OPTION_ENABLE_FOOTNOTES);
 
@@ -68,7 +78,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     if in_header {
                         if header_created {
                             temp_header.push(&text);
-                            return Event::Html(Owned(String::new()));
+                            return Event::Html(Borrowed(""));
                         }
                         let id = find_anchor(&anchors, slugify(&text), 0);
                         anchors.push(id.clone());
@@ -78,13 +88,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                         // += as we might have some <code> or other things already there
                         temp_header.title += &text;
                         header_created = true;
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
 
                     // if we are in the middle of a code block
                     if let Some(ref mut highlighter) = highlighter {
                         let highlighted = &highlighter.highlight(&text);
-                        let html = styles_to_coloured_html(highlighted, IncludeBackground::Yes);
+                        let html = styles_to_coloured_html(highlighted, background);
                         return Event::Html(Owned(html));
                     }
 
@@ -93,15 +103,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                 }
                 Event::Start(Tag::CodeBlock(ref info)) => {
                     if !context.config.highlight_code {
-                        return Event::Html(Owned("<pre><code>".to_string()));
+                        return Event::Html(Borrowed("<pre><code>"));
                     }
 
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
                     match get_highlighter(&theme, info, context.base_path, &context.config.extra_syntaxes) {
-                        Ok(h) => highlighter = Some(h),
+                        Ok(h) => {
+                            highlighter = Some(h);
+                            // This selects the background color the same way that start_coloured_html_snippet does
+                            let color = theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE);
+                            background = IncludeBackground::IfDifferent(color);
+                        }
                         Err(err) => {
                             error = Some(format!("Could not load syntax: {}", err).into());
-                            return Event::Html(Owned(String::new()));
+                            return Event::Html(Borrowed(""));
                         }
                     }
                     let snippet = start_coloured_html_snippet(theme);
@@ -109,11 +124,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                 }
                 Event::End(Tag::CodeBlock(_)) => {
                     if !context.config.highlight_code {
-                        return Event::Html(Owned("</code></pre>\n".to_string()));
+                        return Event::Html(Borrowed("</code></pre>\n"));
                     }
                     // reset highlight and close the code block
                     highlighter = None;
-                    Event::Html(Owned("</pre>".to_string()))
+                    Event::Html(Borrowed("</pre>"))
                 }
                 Event::Start(Tag::Image(src, title)) => {
                     if is_colocated_asset_link(&src) {
@@ -139,13 +154,15 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                             Ok(url) => url,
                             Err(_) => {
                                 error = Some(format!("Relative link {} not found.", link).into());
-                                return Event::Html(Owned(String::new()));
+                                return Event::Html(Borrowed(""));
                             }
                         }
                     } else if is_colocated_asset_link(&link) {
                         format!("{}{}", context.current_page_permalink, link)
                     } else {
-                        if context.config.check_external_links && !link.starts_with('#') {
+                        if context.config.check_external_links
+                            && !link.starts_with('#')
+                            && !link.starts_with("mailto:") {
                             let res = check_url(&link);
                             if res.is_valid() {
                                 link.to_string()
@@ -167,7 +184,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                             format!("<a href=\"{}\" title=\"{}\">", fixed_link, title)
                         };
                         temp_header.push(&html);
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
 
                     Event::Start(Tag::Link(Owned(fixed_link), title))
@@ -175,28 +192,28 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                 Event::End(Tag::Link(_, _)) => {
                     if in_header {
                         temp_header.push("</a>");
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::Start(Tag::Code) => {
                     if in_header {
                         temp_header.push("<code>");
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::End(Tag::Code) => {
                     if in_header {
                         temp_header.push("</code>");
-                        return Event::Html(Owned(String::new()));
+                        return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::Start(Tag::Header(num)) => {
                     in_header = true;
                     temp_header = TempHeader::new(num);
-                    Event::Html(Owned(String::new()))
+                    Event::Html(Borrowed(""))
                 }
                 Event::End(Tag::Header(_)) => {
                     // End of a header, reset all the things and return the stringified
@@ -208,6 +225,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
                     temp_header = TempHeader::default();
                     Event::Html(Owned(val))
                 }
+                Event::Html(ref markup) if markup.contains("<!-- more -->") => {
+                    has_summary = true;
+                    Event::Html(Borrowed(CONTINUE_READING))
+                }
                 _ => event,
             }
         });
@@ -215,11 +236,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<(Strin
         cmark::html::push_html(&mut html, parser);
     }
 
-    match error {
-        Some(e) => Err(e),
-        None => Ok((
-            html.replace("<p></p>", "").replace("</p></p>", "</p>"),
-            make_table_of_contents(&headers)
-        )),
+    if let Some(e) = error {
+        return Err(e)
+    } else {
+        Ok(Rendered {
+            summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
+            body: html,
+            toc: make_table_of_contents(&headers)
+        })
     }
 }

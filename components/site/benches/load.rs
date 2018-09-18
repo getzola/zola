@@ -25,7 +25,7 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
     path.push("benches");
     path.push("small-blog");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.highlight_code = Some(true);
+    site.config.highlight_code = true;
 
     b.iter(|| site.load().unwrap());
 }
@@ -46,7 +46,7 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    path.push("benches");
 //    path.push("medium-blog");
 //    let mut site = Site::new(&path, "config.toml").unwrap();
-//    site.config.highlight_code = Some(true);
+//    site.config.highlight_code = true;
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -67,7 +67,7 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    path.push("benches");
 //    path.push("big-blog");
 //    let mut site = Site::new(&path, "config.toml").unwrap();
-//    site.config.highlight_code = Some(true);
+//    site.config.highlight_code = true;
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -88,7 +88,7 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    path.push("benches");
 //    path.push("huge-blog");
 //    let mut site = Site::new(&path, "config.toml").unwrap();
-//    site.config.highlight_code = Some(true);
+//    site.config.highlight_code = true;
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -109,7 +109,7 @@ fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
     path.push("benches");
     path.push("small-kb");
     let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.highlight_code = Some(true);
+    site.config.highlight_code = true;
 
     b.iter(|| site.load().unwrap());
 }

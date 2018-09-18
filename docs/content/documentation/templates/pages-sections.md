@@ -25,8 +25,7 @@ draft: Bool;
 components: Array<String>;
 permalink: String;
 summary: String?;
-tags: Array<String>;
-category: String?;
+taxonomies: HashMap<String, Array<String>>;
 extra: HashMap<String, Any>;
 // Naive word count, will not work for languages without whitespace
 word_count: Number;

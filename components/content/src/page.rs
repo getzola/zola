@@ -183,21 +183,14 @@ impl Page {
             anchor_insert,
         );
 
-        context.tera_context.add("page", self);
+        context.tera_context.insert("page", self);
 
-        let res = render_content(
-            &self.raw_content.replacen("<!-- more -->", "<a name=\"continue-reading\"></a>", 1),
-            &context,
-        ).chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
-        self.content = res.0;
-        self.toc = res.1;
-        if self.raw_content.contains("<!-- more -->") {
-            self.summary = Some({
-                let summary = self.raw_content.splitn(2, "<!-- more -->").collect::<Vec<&str>>()[0];
-                render_content(summary, &context)
-                    .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?.0
-            })
-        }
+        let res = render_content(&self.raw_content, &context)
+            .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
+
+        self.summary = res.summary_len.map(|l| res.body[0..l].to_owned());
+        self.content = res.body;
+        self.toc = res.toc;
 
         Ok(())
     }
@@ -210,10 +203,10 @@ impl Page {
         };
 
         let mut context = TeraContext::new();
-        context.add("config", config);
-        context.add("page", self);
-        context.add("current_url", &self.permalink);
-        context.add("current_path", &self.path);
+        context.insert("config", config);
+        context.insert("page", self);
+        context.insert("current_url", &self.permalink);
+        context.insert("current_path", &self.path);
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))

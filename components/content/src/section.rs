@@ -133,12 +133,12 @@ impl Section {
             self.meta.insert_anchor_links,
         );
 
-        context.tera_context.add("section", self);
+        context.tera_context.insert("section", self);
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
-        self.content = res.0;
-        self.toc = res.1;
+        self.content = res.body;
+        self.toc = res.toc;
         Ok(())
     }
 
@@ -147,10 +147,10 @@ impl Section {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
-        context.add("config", config);
-        context.add("section", self);
-        context.add("current_url", &self.permalink);
-        context.add("current_path", &self.path);
+        context.insert("config", config);
+        context.insert("section", self);
+        context.insert("current_url", &self.permalink);
+        context.insert("current_path", &self.path);
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))

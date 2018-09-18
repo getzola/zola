@@ -3,6 +3,6 @@
 {% block content %}
     {{ page.content | safe }}
 
-    {% if page.previous %}Previous article: {{ page.previous.permalink }}{% endif %}
-    {% if page.next %}Next article: {{ page.next.permalink }}{% endif %}
+    {% if page.earlier %}Previous article: {{ page.earlier.permalink }}{% endif %}
+    {% if page.later %}Next article: {{ page.later.permalink }}{% endif %}
 {% endblock content %}

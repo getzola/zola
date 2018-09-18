@@ -15,8 +15,10 @@ PAGE = """
 +++
 title = "Hello"
 date = REPLACE_DATE
+
+[taxonomies]
 tags = REPLACE_TAG
-category = "REPLACE_CATEGORY"
+categories = ["REPLACE_CATEGORY"]
 +++
 
 # Modus cognitius profanam ne duae virtutis mundi
@@ -103,9 +105,12 @@ def gen_skeleton(name, is_blog):
             f.write("""
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
-generate_tags_pages = true
-generate_categories_pages = true
 theme = "sample"
+
+taxonomies = [
+ {name = "tags", rss = true}, 
+ {name = "categories"}
+]
 
 [extra.author]
 name = "Vincent Prouillet"
@@ -121,8 +126,8 @@ name = "Vincent Prouillet"
 """)
 
     # Re-use the test templates
-    shutil.copytree("../test_site/templates", os.path.join(name, "templates"))
-    shutil.copytree("../test_site/themes", os.path.join(name, "themes"))
+    shutil.copytree("../../../test_site/templates", os.path.join(name, "templates"))
+    shutil.copytree("../../../test_site/themes", os.path.join(name, "themes"))
 
 
 def gen_section(path, num_pages, is_blog):
