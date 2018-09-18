@@ -67,3 +67,23 @@ fn bench_render_paginated(b: &mut test::Bencher) {
 
     b.iter(|| site.render_paginated(public, &paginator));
 }
+
+#[bench]
+fn bench_populate_sections_medium_blog(b: &mut test::Bencher) {
+    let mut site = setup_site("medium-blog");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.populate_sections());
+}
+
+#[bench]
+fn bench_populate_sections_medium_kb(b: &mut test::Bencher) {
+    let mut site = setup_site("medium-kb");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.populate_sections());
+}
