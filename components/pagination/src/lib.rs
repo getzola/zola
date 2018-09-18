@@ -33,7 +33,7 @@ enum PaginationRoot<'a> {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Pager<'a> {
     /// The page number in the paginator (1-indexed)
-    index: usize,
+    pub index: usize,
     /// Permalink to that page
     permalink: String,
     /// Path to that page

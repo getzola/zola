@@ -905,12 +905,11 @@ impl Site {
         paginator
             .pagers
             .par_iter()
-            .enumerate()
-            .map(|(i, pager)| {
-                let page_path = folder_path.join(&format!("{}", i + 1));
+            .map(|pager| {
+                let page_path = folder_path.join(&format!("{}", pager.index));
                 create_directory(&page_path)?;
                 let output = paginator.render_pager(pager, &self.config, &self.tera)?;
-                if i > 0 {
+                if pager.index > 1 {
                     create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
                 } else {
                     create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
