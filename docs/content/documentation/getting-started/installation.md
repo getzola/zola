@@ -40,7 +40,7 @@ $ xbps-install -S gutenberg
 
 ## From source
 To build it from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/)
-installed.
+installed (also few compiling tools & libraries : make, libsass, g++, libssl-dev)
 
 From a terminal, you can now run the following command:
 
