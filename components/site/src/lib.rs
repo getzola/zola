@@ -260,7 +260,6 @@ impl Site {
         let config = &self.config;
         let base_path = &self.base_path;
 
-        // TODO: avoid the duplication with function above for that part
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
         for (_, p) in &self.pages {

@@ -87,3 +87,23 @@ fn bench_populate_sections_medium_kb(b: &mut test::Bencher) {
 
     b.iter(|| site.populate_sections());
 }
+
+#[bench]
+fn bench_render_markdown_small_blog(b: &mut test::Bencher) {
+    let mut site = setup_site("small-blog");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.render_markdown());
+}
+
+#[bench]
+fn bench_render_markdown_small_kb(b: &mut test::Bencher) {
+    let mut site = setup_site("small-kb");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.render_markdown());
+}
