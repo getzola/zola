@@ -369,9 +369,16 @@ impl Site {
         for page in self.pages.values() {
             let parent_section_path = page.file.parent.join("_index.md");
             if self.sections.contains_key(&parent_section_path) {
+                let mut section = self.sections.get_mut(&parent_section_path).unwrap();
+
                 // TODO: use references instead of cloning to avoid having to call populate_section on
                 // content change
-                self.sections.get_mut(&parent_section_path).unwrap().pages.push(page.clone());
+                let mut page = page.clone();
+
+                // Allow pages to override template specified by the section
+                page.meta.template = page.meta.template.or_else( || section.meta.page_template.clone());
+
+                section.pages.push(page);
             }
         }
 
