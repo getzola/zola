@@ -215,7 +215,7 @@ impl<'a> Paginator<'a> {
         context.insert("config", &config);
         let template_name = match self.root {
             PaginationRoot::Section(s) => {
-                context.insert("section", &s);
+                context.insert("section", &s.clone_without_pages());
                 s.get_template_name()
             }
             PaginationRoot::Taxonomy(t) => {

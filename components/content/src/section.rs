@@ -182,6 +182,28 @@ impl Section {
             .map(|filename| self.path.clone() + filename)
             .collect()
     }
+
+    pub fn clone_without_pages(&self) -> Section {
+        let mut subsections = vec![];
+        for subsection in &self.subsections {
+            subsections.push(subsection.clone_without_pages());
+        }
+
+        Section {
+            file: self.file.clone(),
+            meta: self.meta.clone(),
+            path: self.path.clone(),
+            components: self.components.clone(),
+            permalink: self.permalink.clone(),
+            raw_content: self.raw_content.clone(),
+            content: self.content.clone(),
+            assets: self.assets.clone(),
+            toc: self.toc.clone(),
+            subsections,
+            pages: vec![],
+            ignored_pages: vec![],
+        }
+    }
 }
 
 impl ser::Serialize for Section {
