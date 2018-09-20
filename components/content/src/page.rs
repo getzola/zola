@@ -54,6 +54,11 @@ pub struct Page {
     pub heavier: Option<Box<Page>>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
+    /// How many words in the raw content
+    pub word_count: Option<usize>,
+    /// How long would it take to read the raw content.
+    /// See `get_reading_analytics` on how it is calculated
+    pub reading_time: Option<usize>,
 }
 
 
@@ -77,6 +82,8 @@ impl Page {
             lighter: None,
             heavier: None,
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
     }
 
@@ -91,6 +98,9 @@ impl Page {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta);
         page.raw_content = content;
+        let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
+        page.word_count = Some(word_count);
+        page.reading_time = Some(reading_time);
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
@@ -240,6 +250,8 @@ impl Default for Page {
             lighter: None,
             heavier: None,
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
     }
 }
@@ -268,9 +280,8 @@ impl ser::Serialize for Page {
         state.serialize_field("summary", &self.summary)?;
         state.serialize_field("taxonomies", &self.meta.taxonomies)?;
         state.serialize_field("extra", &self.meta.extra)?;
-        let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
-        state.serialize_field("word_count", &word_count)?;
-        state.serialize_field("reading_time", &reading_time)?;
+        state.serialize_field("word_count", &self.word_count)?;
+        state.serialize_field("reading_time", &self.reading_time)?;
         state.serialize_field("earlier", &self.earlier)?;
         state.serialize_field("later", &self.later)?;
         state.serialize_field("lighter", &self.lighter)?;

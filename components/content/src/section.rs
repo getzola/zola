@@ -43,6 +43,11 @@ pub struct Section {
     pub subsections: Vec<Section>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
+    /// How many words in the raw content
+    pub word_count: Option<usize>,
+    /// How long would it take to read the raw content.
+    /// See `get_reading_analytics` on how it is calculated
+    pub reading_time: Option<usize>,
 }
 
 impl Section {
@@ -62,6 +67,8 @@ impl Section {
             ignored_pages: vec![],
             subsections: vec![],
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
     }
 
@@ -69,6 +76,9 @@ impl Section {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
         section.raw_content = content.clone();
+        let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
+        section.word_count = Some(word_count);
+        section.reading_time = Some(reading_time);
         section.path = format!("{}/", section.file.components.join("/"));
         section.components = section.path.split('/')
             .map(|p| p.to_string())
@@ -202,6 +212,8 @@ impl Section {
             subsections,
             pages: vec![],
             ignored_pages: vec![],
+            word_count: self.word_count.clone(),
+            reading_time: self.reading_time.clone(),
         }
     }
 }
@@ -219,9 +231,8 @@ impl ser::Serialize for Section {
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
-        let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
-        state.serialize_field("word_count", &word_count)?;
-        state.serialize_field("reading_time", &reading_time)?;
+        state.serialize_field("word_count", &self.word_count)?;
+        state.serialize_field("reading_time", &self.reading_time)?;
         state.serialize_field("toc", &self.toc)?;
         let assets = self.serialize_assets();
         state.serialize_field("assets", &assets)?;
@@ -245,6 +256,8 @@ impl Default for Section {
             ignored_pages: vec![],
             subsections: vec![],
             toc: vec![],
+            reading_time: None,
+            word_count: None,
         }
     }
 }
