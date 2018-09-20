@@ -36,9 +36,9 @@ use config::{Config, get_config};
 use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
 use utils::net::get_available_port;
-use content::{Page, Section, populate_siblings, sort_pages};
+use content::{Page, Section, populate_siblings, sort_pages, sort_pages_by_date};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
-use front_matter::{SortBy, InsertAnchor};
+use front_matter::{InsertAnchor};
 use taxonomies::{Taxonomy, find_taxonomies};
 use pagination::Paginator;
 
@@ -515,7 +515,7 @@ impl Site {
         self.render_orphan_pages()?;
         self.render_sitemap()?;
         if self.config.generate_rss {
-            self.render_rss_feed(None, None)?;
+            self.render_rss_feed(self.pages.values().collect(), None)?;
         }
         self.render_404()?;
         self.render_robots()?;
@@ -695,9 +695,8 @@ impl Site {
             .par_iter()
             .map(|item| {
                 if taxonomy.kind.rss {
-                    // TODO: can we get rid of `clone()`?
                     self.render_rss_feed(
-                        Some(item.pages.clone()),
+                        item.pages.iter().map(|p| p).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
                     )?;
                 }
@@ -769,27 +768,25 @@ impl Site {
     /// Renders a RSS feed for the given path and at the given path
     /// If both arguments are `None`, it will render only the RSS feed for the whole
     /// site at the root folder.
-    pub fn render_rss_feed(&self, all_pages: Option<Vec<Page>>, base_path: Option<&PathBuf>) -> Result<()> {
+    pub fn render_rss_feed(&self, all_pages: Vec<&Page>, base_path: Option<&PathBuf>) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
         let mut context = Context::new();
-        let pages = all_pages
-            // TODO: avoid that cloned().
-            // It requires having `sort_pages` take references of Page
-            .unwrap_or_else(|| self.pages.values().cloned().collect::<Vec<_>>())
+        let mut pages = all_pages
             .into_iter()
             .filter(|p| p.meta.date.is_some() && !p.is_draft())
             .collect::<Vec<_>>();
+
+        pages.par_sort_unstable_by(sort_pages_by_date);
 
         // Don't generate a RSS feed if none of the pages has a date
         if pages.is_empty() {
             return Ok(());
         }
 
-        let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
-        context.insert("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
+        context.insert("last_build_date", &pages[0].meta.date.clone().map(|d| d.to_string()));
         // limit to the last n elements
-        context.insert("pages", &sorted_pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
+        context.insert("pages", &pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
         context.insert("config", &self.config);
 
         let rss_feed_url = if let Some(ref base) = base_path {

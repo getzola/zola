@@ -5,6 +5,21 @@ use rayon::prelude::*;
 use page::Page;
 use front_matter::SortBy;
 
+
+/// The comparison function of sorting pages by day
+/// Used by the RSS rendering
+/// To remove if `sort_pages` is changed to work on borrowed values
+/// This cannot be used in `sort_pages` currently as it takes &&Page instead of &Page
+pub fn sort_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
+    let ord = b.meta.date().unwrap().cmp(&a.meta.date().unwrap());
+    if ord == Ordering::Equal {
+        a.permalink.cmp(&b.permalink)
+    } else {
+        ord
+    }
+}
+
+
 /// Sort pages by the given criteria
 ///
 /// Any pages that doesn't have a required field when the sorting method is other than none
