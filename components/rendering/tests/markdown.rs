@@ -43,7 +43,8 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
 fn can_highlight_code_block_no_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let mut config = Config::default();
+    config.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
@@ -56,7 +57,8 @@ fn can_highlight_code_block_no_lang() {
 fn can_highlight_code_block_with_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let mut config = Config::default();
+    config.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```python\nlist.append(1)\n```", &context).unwrap();
     assert_eq!(
@@ -69,7 +71,8 @@ fn can_highlight_code_block_with_lang() {
 fn can_higlight_code_block_with_unknown_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let mut config = Config::default();
+    config.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```yolo\nlist.append(1)\n```", &context).unwrap();
     // defaults to plain text
