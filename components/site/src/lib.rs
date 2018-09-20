@@ -417,9 +417,7 @@ impl Site {
             self.pages
                 .values()
                 .filter(|p| !p.is_draft())
-                .cloned()
-                .collect::<Vec<_>>()
-                .as_slice(),
+                .collect::<Vec<_>>(),
         )?;
 
         Ok(())

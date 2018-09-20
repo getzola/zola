@@ -111,7 +111,7 @@ impl Taxonomy {
     }
 }
 
-pub fn find_taxonomies(config: &Config, all_pages: &[Page]) -> Result<Vec<Taxonomy>> {
+pub fn find_taxonomies(config: &Config, all_pages: Vec<&Page>) -> Result<Vec<Taxonomy>> {
     let taxonomies_def = {
         let mut m = HashMap::new();
         for t in &config.taxonomies {
@@ -183,9 +183,9 @@ mod tests {
         taxo_page3.insert("tags".to_string(), vec!["js".to_string()]);
         taxo_page3.insert("authors".to_string(), vec!["Vincent Prouillet".to_string()]);
         page3.meta.taxonomies = taxo_page3;
-        let pages = vec![page1, page2, page3];
+        let pages = vec![&page1, &page2, &page3];
 
-        let taxonomies = find_taxonomies(&config, &pages).unwrap();
+        let taxonomies = find_taxonomies(&config, pages).unwrap();
         let (tags, categories, authors) = {
             let mut t = None;
             let mut c = None;
@@ -241,7 +241,7 @@ mod tests {
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
         page1.meta.taxonomies = taxo_page1;
 
-        let taxonomies = find_taxonomies(&config, &vec![page1]);
+        let taxonomies = find_taxonomies(&config, vec![&page1]);
         assert!(taxonomies.is_err());
         let err = taxonomies.unwrap_err();
         // no path as this is created by Default
