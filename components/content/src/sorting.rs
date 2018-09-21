@@ -11,7 +11,7 @@ use front_matter::SortBy;
 /// To remove if `sort_pages` is changed to work on borrowed values
 /// This cannot be used in `sort_pages` currently as it takes &&Page instead of &Page
 pub fn sort_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
-    let ord = b.meta.date().unwrap().cmp(&a.meta.date().unwrap());
+    let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
     if ord == Ordering::Equal {
         a.permalink.cmp(&b.permalink)
     } else {
@@ -33,7 +33,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
         .into_par_iter()
         .partition(|page| {
             match sort_by {
-                SortBy::Date => page.meta.date.is_some(),
+                SortBy::Date => page.meta.datetime.is_some(),
                 SortBy::Weight => page.meta.weight.is_some(),
                 _ => unreachable!()
             }
@@ -42,7 +42,7 @@ pub fn sort_pages(pages: Vec<Page>, sort_by: SortBy) -> (Vec<Page>, Vec<Page>) {
     match sort_by {
         SortBy::Date => {
             can_be_sorted.par_sort_unstable_by(|a, b| {
-                let ord = b.meta.date().unwrap().cmp(&a.meta.date().unwrap());
+                let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
                 if ord == Ordering::Equal {
                     a.permalink.cmp(&b.permalink)
                 } else {
@@ -159,6 +159,7 @@ mod tests {
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.date = Some(date.to_string());
+        front_matter.date_to_datetime();
         Page::new("content/hello.md", front_matter)
     }
 

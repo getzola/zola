@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
-use chrono::Datelike;
 use tera::{Tera, Context as TeraContext};
 use serde::ser::{SerializeStruct, self};
 use slug::slugify;
@@ -263,11 +262,10 @@ impl ser::Serialize for Page {
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
-        if let Some(chrono_datetime) = self.meta.date() {
-            let d = chrono_datetime.date();
-            state.serialize_field("year", &d.year())?;
-            state.serialize_field("month", &d.month())?;
-            state.serialize_field("day", &d.day())?;
+        if let Some(d) = self.meta.datetime_tuple {
+            state.serialize_field("year", &d.0)?;
+            state.serialize_field("month", &d.1)?;
+            state.serialize_field("day", &d.2)?;
         } else {
             state.serialize_field::<Option<usize>>("year", &None)?;
             state.serialize_field::<Option<usize>>("month", &None)?;
