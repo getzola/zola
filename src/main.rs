@@ -1,9 +1,12 @@
+extern crate atty;
 extern crate actix_web;
 #[macro_use]
 extern crate clap;
 extern crate chrono;
+#[macro_use]
+extern crate lazy_static;
 extern crate notify;
-extern crate term_painter;
+extern crate termcolor;
 extern crate url;
 extern crate ws;
 extern crate ctrlc;
