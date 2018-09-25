@@ -77,3 +77,18 @@ You can also point to another config file than `config.toml` like so - the posit
 ```bash
 $ gutenberg --config config.staging.toml serve
 ```
+
+## Colored output
+
+Any of the three commands will emit colored output if your terminal supports it.
+
+*Note*: coloring is automatically disabled when the output is redirected to a pipe or a file (ie. when the standard output is not a TTY).
+
+You can disable this behavior by exporting one of the two following environment variables:
+
+- `NO_COLOR` (the value does not matter)
+- `CLICOLOR=0`
+
+Should you want to force the use of colors, you can set the following environment variable:
+
+- `CLICOLOR_FORCE=1`

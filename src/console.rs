@@ -1,27 +1,48 @@
+use std::env;
+use std::io::Write;
 use std::time::Instant;
 
+use atty;
 use chrono::Duration;
-use term_painter::ToStyle;
-use term_painter::Color::*;
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use errors::Error;
 use site::Site;
 
+lazy_static! {
+    /// Termcolor color choice.
+    /// We do not rely on ColorChoice::Auto behavior
+    /// as the check is already performed by has_color.
+    static ref COLOR_CHOICE: ColorChoice = 
+        if has_color() {
+            ColorChoice::Always
+        } else {
+            ColorChoice::Never
+        };
+}
+
 
 pub fn info(message: &str) {
-    println!("{}", NotSet.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true));
 }
 
 pub fn warn(message: &str) {
-    println!("{}", Yellow.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true).set_fg(Some(Color::Yellow)));
 }
 
 pub fn success(message: &str) {
-    println!("{}", Green.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true).set_fg(Some(Color::Green)));
 }
 
 pub fn error(message: &str) {
-    println!("{}", Red.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true).set_fg(Some(Color::Red)));
+}
+
+/// Print a colorized message to stdout
+fn colorize(message: &str, color: &ColorSpec) {
+    let mut stdout = StandardStream::stdout(*COLOR_CHOICE);
+    stdout.set_color(color).unwrap();
+    writeln!(&mut stdout, "{}", message).unwrap();
 }
 
 /// Display in the console the number of pages/sections in the site
@@ -74,4 +95,12 @@ pub fn unravel_errors(message: &str, error: &Error) {
     for e in error.iter().skip(1) {
         self::error(&format!("Reason: {}", e));
     }
+}
+
+/// Check whether to output colors
+fn has_color() -> bool {
+    let use_colors = env::var("CLICOLOR").unwrap_or("1".to_string()) != "0" && !env::var("NO_COLOR").is_ok();
+    let force_colors = env::var("CLICOLOR_FORCE").unwrap_or("0".to_string()) != "0";
+
+    force_colors || use_colors && atty::is(atty::Stream::Stdout)
 }
