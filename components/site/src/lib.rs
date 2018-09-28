@@ -365,6 +365,7 @@ impl Site {
             section.ignored_pages = vec![];
         }
 
+        // Put pages into the 'pages' field of their section
         for page in self.pages.values() {
             let parent_section_path = page.file.parent.join("_index.md");
             if self.sections.contains_key(&parent_section_path) {
@@ -375,18 +376,31 @@ impl Site {
         }
 
         self.sort_sections_pages(None);
-        // TODO: remove this clone
-        let sections = self.sections.clone();
 
-        for section in self.sections.values_mut() {
-            if let Some(paths) = grandparent_paths.get(&section.file.parent) {
-                section.subsections = paths
+        // Recursively adds the subsections of the given section to its 'subsections' field
+        fn set_subsections(section: &mut Section,
+                           grandparent_paths: &HashMap<PathBuf, Vec<PathBuf>>,
+                           sections: &HashMap<PathBuf, Section>) {
+            if let Some(subsection_indices) = grandparent_paths.get(&section.file.parent) {
+                section.subsections = subsection_indices
                     .iter()
-                    .map(|p| sections[p].clone())
-                    .collect::<Vec<_>>();
+                    .map(|index_file| sections[index_file].clone())
+                    .collect();
+
                 section.subsections
                     .sort_by(|a, b| a.meta.weight.cmp(&b.meta.weight));
+
+                for mut subsection in section.subsections.iter_mut() {
+                    set_subsections(&mut subsection, grandparent_paths, sections);
+                }
             }
+        }
+
+        // TODO: avoid unnecessary copying
+        let sections_cloned = self.sections.clone();
+
+        for mut section in self.sections.values_mut() {
+            set_subsections(&mut section, &grandparent_paths, &sections_cloned);
         }
     }
 
