@@ -111,6 +111,12 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
 fn create_new_site(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
+    // If the current site is also contains a theme.toml we need to merge it manually
+    let theme_file = current_dir.join("theme.toml");
+    if site.config.theme == None && theme_file.is_file() {
+        site.config.merge_with_theme(&theme_file)?;
+    }
+
     let base_address = format!("{}:{}", base_url, port);
     let address = format!("{}:{}", interface, port);
     let base_url = if site.config.base_url.ends_with('/') {
