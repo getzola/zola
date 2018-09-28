@@ -43,12 +43,13 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
 fn can_highlight_code_block_no_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let mut config = Config::default();
+    config.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">$ ping\n</span></pre>"
+        "<pre style=\"background-color:#2b303b\">\n<span style=\"color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"color:#c0c5ce;\">$ ping\n</span></pre>"
     );
 }
 
@@ -56,12 +57,13 @@ fn can_highlight_code_block_no_lang() {
 fn can_highlight_code_block_with_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let mut config = Config::default();
+    config.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```python\nlist.append(1)\n```", &context).unwrap();
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list.</span><span style=\"background-color:#2b303b;color:#bf616a;\">append</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">(</span><span style=\"background-color:#2b303b;color:#d08770;\">1</span><span style=\"background-color:#2b303b;color:#c0c5ce;\">)\n</span></pre>"
+        "<pre style=\"background-color:#2b303b\">\n<span style=\"color:#c0c5ce;\">list.</span><span style=\"color:#bf616a;\">append</span><span style=\"color:#c0c5ce;\">(</span><span style=\"color:#d08770;\">1</span><span style=\"color:#c0c5ce;\">)\n</span></pre>"
     );
 }
 
@@ -69,13 +71,14 @@ fn can_highlight_code_block_with_lang() {
 fn can_higlight_code_block_with_unknown_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let mut config = Config::default();
+    config.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
     let res = render_content("```yolo\nlist.append(1)\n```", &context).unwrap();
     // defaults to plain text
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b\">\n<span style=\"background-color:#2b303b;color:#c0c5ce;\">list.append(1)\n</span></pre>"
+        "<pre style=\"background-color:#2b303b\">\n<span style=\"color:#c0c5ce;\">list.append(1)\n</span></pre>"
     );
 }
 
@@ -562,6 +565,32 @@ fn can_show_error_message_for_invalid_external_links() {
     assert!(res.is_err());
     let err = res.unwrap_err();
     assert!(err.description().contains("Link http://google.comy is not valid"));
+}
+
+#[test]
+fn doesnt_try_to_validate_email_links_mailto() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.check_external_links = true;
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
+    let res = render_content("Email: [foo@bar.baz](mailto:foo@bar.baz)", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n"
+    );
+}
+
+#[test]
+fn doesnt_try_to_validate_email_links_angled_brackets() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.check_external_links = true;
+    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, Path::new("something"), InsertAnchor::None);
+    let res = render_content("Email: <foo@bar.baz>", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n"
+    );
 }
 
 #[test]

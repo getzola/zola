@@ -105,8 +105,8 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
 
         let trailing_slash = args
             .get("trailing_slash")
-            .map_or(true, |c| {
-                from_value::<bool>(c.clone()).unwrap_or(true)
+            .map_or(false, |c| {
+                from_value::<bool>(c.clone()).unwrap_or(false)
             });
 
         let path = required_arg!(
@@ -260,28 +260,28 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css/?t=1");
-    }
-
-    #[test]
-    fn can_remove_trailing_slashes() {
-        let config = Config::default();
-        let static_fn = make_get_url(HashMap::new(), config);
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("app.css").unwrap());
-        args.insert("trailing_slash".to_string(), to_value(false).unwrap());
-        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css");
-    }
-
-    #[test]
-    fn can_remove_slashes_and_cachebust() {
-        let config = Config::default();
-        let static_fn = make_get_url(HashMap::new(), config);
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("app.css").unwrap());
-        args.insert("trailing_slash".to_string(), to_value(false).unwrap());
-        args.insert("cachebust".to_string(), to_value(true).unwrap());
         assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css?t=1");
+    }
+
+    #[test]
+    fn can_add_trailing_slashes() {
+        let config = Config::default();
+        let static_fn = make_get_url(HashMap::new(), config);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("app.css").unwrap());
+        args.insert("trailing_slash".to_string(), to_value(true).unwrap());
+        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css/");
+    }
+
+    #[test]
+    fn can_add_slashes_and_cachebust() {
+        let config = Config::default();
+        let static_fn = make_get_url(HashMap::new(), config);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("app.css").unwrap());
+        args.insert("trailing_slash".to_string(), to_value(true).unwrap());
+        args.insert("cachebust".to_string(), to_value(true).unwrap());
+        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css/?t=1");
     }
 
     #[test]
@@ -290,7 +290,7 @@ mod tests {
         let static_fn = make_get_url(HashMap::new(), config);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
-        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css/");
+        assert_eq!(static_fn(args).unwrap(), "http://a-website.com/app.css");
     }
 
     #[test]

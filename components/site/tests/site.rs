@@ -454,5 +454,5 @@ fn can_build_with_extra_syntaxes() {
     assert!(&public.exists());
     assert!(file_exists!(public, "posts/extra-syntax/index.html"));
     assert!(file_contains!(public, "posts/extra-syntax/index.html",
-        r#"<span style="background-color:#2b303b;color:#d08770;">test</span>"#));
+        r#"<span style="color:#d08770;">test</span>"#));
 }

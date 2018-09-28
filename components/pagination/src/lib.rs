@@ -33,7 +33,7 @@ enum PaginationRoot<'a> {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Pager<'a> {
     /// The page number in the paginator (1-indexed)
-    index: usize,
+    pub index: usize,
     /// Permalink to that page
     permalink: String,
     /// Path to that page
@@ -212,20 +212,20 @@ impl<'a> Paginator<'a> {
 
     pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera) -> Result<String> {
         let mut context = Context::new();
-        context.add("config", &config);
+        context.insert("config", &config);
         let template_name = match self.root {
             PaginationRoot::Section(s) => {
-                context.add("section", &s);
+                context.insert("section", &s.clone_without_pages());
                 s.get_template_name()
             }
             PaginationRoot::Taxonomy(t) => {
-                context.add("taxonomy", &t.kind);
+                context.insert("taxonomy", &t.kind);
                 format!("{}/single.html", t.kind.name)
             }
         };
-        context.add("current_url", &pager.permalink);
-        context.add("current_path", &pager.path);
-        context.add("paginator", &self.build_paginator_context(pager));
+        context.insert("current_url", &pager.permalink);
+        context.insert("current_path", &pager.path);
+        context.insert("paginator", &self.build_paginator_context(pager));
 
         render_template(&template_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render pager {}", pager.index))

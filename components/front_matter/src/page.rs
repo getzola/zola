@@ -62,7 +62,7 @@ fn fix_toml_dates(table: Map<String, Value>) -> Value {
 
 
 /// The front matter of every page
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(default)]
 pub struct PageFrontMatter {
     /// <title> of the page
@@ -72,6 +72,12 @@ pub struct PageFrontMatter {
     /// Date if we want to order pages (ie blog post)
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub date: Option<String>,
+    /// Chrono converted datetime
+    #[serde(default, skip_deserializing)]
+    pub datetime: Option<NaiveDateTime>,
+    /// The converted date into a (year, month, day) tuple
+    #[serde(default, skip_deserializing)]
+    pub datetime_tuple: Option<(i32, u32, u32)>,
     /// Whether this page is a draft and should be ignored for pagination etc
     pub draft: bool,
     /// The page slug. Will be used instead of the filename if present
@@ -124,12 +130,16 @@ impl PageFrontMatter {
             Value::Object(o) => o,
             _ => unreachable!("Got something other than a table in page extra"),
         };
+
+        f.date_to_datetime();
+
         Ok(f)
     }
 
     /// Converts the TOML datetime to a Chrono naive datetime
-    pub fn date(&self) -> Option<NaiveDateTime> {
-        if let Some(ref d) = self.date {
+    /// Also grabs the year/month/day tuple that will be used in serialization
+    pub fn date_to_datetime(&mut self) {
+        self.datetime = if let Some(ref d) = self.date {
             if d.contains('T') {
                 DateTime::parse_from_rfc3339(&d).ok().and_then(|s| Some(s.naive_local()))
             } else {
@@ -137,7 +147,13 @@ impl PageFrontMatter {
             }
         } else {
             None
-        }
+        };
+
+        self.datetime_tuple = if let Some(ref dt) = self.datetime {
+            Some((dt.year(), dt.month(), dt.day()))
+        } else {
+            None
+        };
     }
 
     pub fn order(&self) -> usize {
@@ -155,6 +171,8 @@ impl Default for PageFrontMatter {
             title: None,
             description: None,
             date: None,
+            datetime: None,
+            datetime_tuple: None,
             draft: false,
             slug: None,
             path: None,

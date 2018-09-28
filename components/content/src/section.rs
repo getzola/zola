@@ -43,6 +43,11 @@ pub struct Section {
     pub subsections: Vec<Section>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
+    /// How many words in the raw content
+    pub word_count: Option<usize>,
+    /// How long would it take to read the raw content.
+    /// See `get_reading_analytics` on how it is calculated
+    pub reading_time: Option<usize>,
 }
 
 impl Section {
@@ -62,6 +67,8 @@ impl Section {
             ignored_pages: vec![],
             subsections: vec![],
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
     }
 
@@ -69,6 +76,9 @@ impl Section {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
         section.raw_content = content.clone();
+        let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
+        section.word_count = Some(word_count);
+        section.reading_time = Some(reading_time);
         section.path = format!("{}/", section.file.components.join("/"));
         section.components = section.path.split('/')
             .map(|p| p.to_string())
@@ -133,7 +143,7 @@ impl Section {
             self.meta.insert_anchor_links,
         );
 
-        context.tera_context.add("section", self);
+        context.tera_context.insert("section", self);
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -147,10 +157,10 @@ impl Section {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
-        context.add("config", config);
-        context.add("section", self);
-        context.add("current_url", &self.permalink);
-        context.add("current_path", &self.path);
+        context.insert("config", config);
+        context.insert("section", self);
+        context.insert("current_url", &self.permalink);
+        context.insert("current_path", &self.path);
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
@@ -182,6 +192,30 @@ impl Section {
             .map(|filename| self.path.clone() + filename)
             .collect()
     }
+
+    pub fn clone_without_pages(&self) -> Section {
+        let mut subsections = vec![];
+        for subsection in &self.subsections {
+            subsections.push(subsection.clone_without_pages());
+        }
+
+        Section {
+            file: self.file.clone(),
+            meta: self.meta.clone(),
+            path: self.path.clone(),
+            components: self.components.clone(),
+            permalink: self.permalink.clone(),
+            raw_content: self.raw_content.clone(),
+            content: self.content.clone(),
+            assets: self.assets.clone(),
+            toc: self.toc.clone(),
+            subsections,
+            pages: vec![],
+            ignored_pages: vec![],
+            word_count: self.word_count.clone(),
+            reading_time: self.reading_time.clone(),
+        }
+    }
 }
 
 impl ser::Serialize for Section {
@@ -197,9 +231,8 @@ impl ser::Serialize for Section {
         state.serialize_field("permalink", &self.permalink)?;
         state.serialize_field("pages", &self.pages)?;
         state.serialize_field("subsections", &self.subsections)?;
-        let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
-        state.serialize_field("word_count", &word_count)?;
-        state.serialize_field("reading_time", &reading_time)?;
+        state.serialize_field("word_count", &self.word_count)?;
+        state.serialize_field("reading_time", &self.reading_time)?;
         state.serialize_field("toc", &self.toc)?;
         let assets = self.serialize_assets();
         state.serialize_field("assets", &assets)?;
@@ -223,6 +256,8 @@ impl Default for Section {
             ignored_pages: vec![],
             subsections: vec![],
             toc: vec![],
+            reading_time: None,
+            word_count: None,
         }
     }
 }

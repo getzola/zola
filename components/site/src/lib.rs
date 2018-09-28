@@ -21,7 +21,7 @@ extern crate imageproc;
 #[cfg(test)]
 extern crate tempfile;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir_all, remove_dir_all, copy};
 use std::mem;
 use std::path::{Path, PathBuf};
@@ -36,9 +36,9 @@ use config::{Config, get_config};
 use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
 use utils::net::get_available_port;
-use content::{Page, Section, populate_siblings, sort_pages};
+use content::{Page, Section, populate_siblings, sort_pages, sort_pages_by_date};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
-use front_matter::{SortBy, InsertAnchor};
+use front_matter::{InsertAnchor};
 use taxonomies::{Taxonomy, find_taxonomies};
 use pagination::Paginator;
 
@@ -102,7 +102,11 @@ impl Site {
                 bail!("Theme `{}` is missing a templates folder", theme);
             }
 
-            let theme_tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "themes/**/*.html");
+            let theme_tpl_glob = format!(
+                "{}/{}",
+                path.to_string_lossy().replace("\\", "/"),
+                format!("themes/{}/templates/**/*.html", theme)
+            );
             let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
             rewrite_theme_paths(&mut tera_theme, &theme);
             tera_theme.build_inheritance_chains()?;
@@ -145,20 +149,15 @@ impl Site {
 
     /// Get all the orphan (== without section) pages in the site
     pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
-        let mut pages_in_sections = vec![];
-        let mut orphans = vec![];
+        let pages_in_sections = self.sections
+            .values()
+            .flat_map(|s| s.all_pages_path())
+            .collect::<HashSet<_>>();
 
-        for s in self.sections.values() {
-            pages_in_sections.extend(s.all_pages_path());
-        }
-
-        for page in self.pages.values() {
-            if !pages_in_sections.contains(&page.file.path) {
-                orphans.push(page);
-            }
-        }
-
-        orphans
+        self.pages
+            .values()
+            .filter(|page| !pages_in_sections.contains(&page.file.path))
+            .collect()
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
@@ -180,6 +179,7 @@ impl Site {
         let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
             .unwrap()
             .filter_map(|e| e.ok())
+            .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with("."))
             .partition(|entry| entry.as_path().file_name().unwrap() == "_index.md");
 
         let sections = {
@@ -260,7 +260,6 @@ impl Site {
         let config = &self.config;
         let base_path = &self.base_path;
 
-        // TODO: avoid the duplication with function above for that part
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
         for (_, p) in &self.pages {
@@ -272,36 +271,34 @@ impl Site {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
                 page.render_markdown(permalinks, tera, config, base_path, insert_anchor)
             })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)?;
+            .collect::<Result<()>>()?;
 
         self.sections.par_iter_mut()
             .map(|(_, section)| section.render_markdown(permalinks, tera, config, base_path))
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)?;
+            .collect::<Result<()>>()?;
 
         Ok(())
     }
 
     /// Adds global fns that are to be available to shortcodes while rendering markdown
     pub fn register_early_global_fns(&mut self) {
-        self.tera.register_global_function(
+        self.tera.register_function(
             "get_url", global_fns::make_get_url(self.permalinks.clone(), self.config.clone()),
         );
-        self.tera.register_global_function(
+        self.tera.register_function(
             "resize_image", global_fns::make_resize_image(self.imageproc.clone()),
         );
     }
 
     pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_global_function("trans", global_fns::make_trans(self.config.clone()));
-        self.tera.register_global_function("get_page", global_fns::make_get_page(&self.pages));
-        self.tera.register_global_function("get_section", global_fns::make_get_section(&self.sections));
-        self.tera.register_global_function(
+        self.tera.register_function("trans", global_fns::make_trans(self.config.clone()));
+        self.tera.register_function("get_page", global_fns::make_get_page(&self.pages));
+        self.tera.register_function("get_section", global_fns::make_get_section(&self.sections));
+        self.tera.register_function(
             "get_taxonomy",
             global_fns::make_get_taxonomy(self.taxonomies.clone()),
         );
-        self.tera.register_global_function(
+        self.tera.register_function(
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(self.taxonomies.clone()),
         );
@@ -434,9 +431,7 @@ impl Site {
             self.pages
                 .values()
                 .filter(|p| !p.is_draft())
-                .cloned()
-                .collect::<Vec<_>>()
-                .as_slice(),
+                .collect::<Vec<_>>(),
         )?;
 
         Ok(())
@@ -532,7 +527,7 @@ impl Site {
         self.render_orphan_pages()?;
         self.render_sitemap()?;
         if self.config.generate_rss {
-            self.render_rss_feed(None, None)?;
+            self.render_rss_feed(self.pages.values().collect(), None)?;
         }
         self.render_404()?;
         self.render_robots()?;
@@ -712,9 +707,8 @@ impl Site {
             .par_iter()
             .map(|item| {
                 if taxonomy.kind.rss {
-                    // TODO: can we get rid of `clone()`?
                     self.render_rss_feed(
-                        Some(item.pages.clone()),
+                        item.pages.iter().map(|p| p).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
                     )?;
                 }
@@ -731,8 +725,7 @@ impl Site {
                     )
                 }
             })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+            .collect::<Result<()>>()
     }
 
     /// What it says on the tin
@@ -753,14 +746,14 @@ impl Site {
             })
             .collect::<Vec<_>>();
         pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.add("pages", &pages);
+        context.insert("pages", &pages);
 
         let mut sections = self.sections
             .values()
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
             .collect::<Vec<_>>();
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.add("sections", &sections);
+        context.insert("sections", &sections);
 
         let mut taxonomies = vec![];
         for taxonomy in &self.taxonomies {
@@ -773,9 +766,9 @@ impl Site {
             terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
             taxonomies.push(terms);
         }
-        context.add("taxonomies", &taxonomies);
+        context.insert("taxonomies", &taxonomies);
 
-        context.add("config", &self.config);
+        context.insert("config", &self.config);
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
 
@@ -787,28 +780,26 @@ impl Site {
     /// Renders a RSS feed for the given path and at the given path
     /// If both arguments are `None`, it will render only the RSS feed for the whole
     /// site at the root folder.
-    pub fn render_rss_feed(&self, all_pages: Option<Vec<Page>>, base_path: Option<&PathBuf>) -> Result<()> {
+    pub fn render_rss_feed(&self, all_pages: Vec<&Page>, base_path: Option<&PathBuf>) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
         let mut context = Context::new();
-        let pages = all_pages
-            // TODO: avoid that cloned().
-            // It requires having `sort_pages` take references of Page
-            .unwrap_or_else(|| self.pages.values().cloned().collect::<Vec<_>>())
+        let mut pages = all_pages
             .into_iter()
             .filter(|p| p.meta.date.is_some() && !p.is_draft())
             .collect::<Vec<_>>();
+
+        pages.par_sort_unstable_by(sort_pages_by_date);
 
         // Don't generate a RSS feed if none of the pages has a date
         if pages.is_empty() {
             return Ok(());
         }
 
-        let (sorted_pages, _) = sort_pages(pages, SortBy::Date);
-        context.add("last_build_date", &sorted_pages[0].meta.date.clone().map(|d| d.to_string()));
+        context.insert("last_build_date", &pages[0].meta.date.clone().map(|d| d.to_string()));
         // limit to the last n elements
-        context.add("pages", &sorted_pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
-        context.add("config", &self.config);
+        context.insert("pages", &pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
+        context.insert("config", &self.config);
 
         let rss_feed_url = if let Some(ref base) = base_path {
             self.config.make_permalink(&base.join("rss.xml").to_string_lossy().replace('\\', "/"))
@@ -816,7 +807,7 @@ impl Site {
             self.config.make_permalink("rss.xml")
         };
 
-        context.add("feed_url", &rss_feed_url);
+        context.insert("feed_url", &rss_feed_url);
 
         let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
@@ -861,8 +852,7 @@ impl Site {
                 .pages
                 .par_iter()
                 .map(|p| self.render_page(p))
-                .fold(|| Ok(()), Result::and)
-                .reduce(|| Ok(()), Result::and)?;
+                .collect::<Result<()>>()?;
         }
 
         if !section.meta.render {
@@ -900,8 +890,7 @@ impl Site {
             .collect::<Vec<_>>()
             .into_par_iter()
             .map(|s| self.render_section(s, true))
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+            .collect::<Result<()>>()
     }
 
     /// Renders all pages that do not belong to any sections
@@ -925,12 +914,11 @@ impl Site {
         paginator
             .pagers
             .par_iter()
-            .enumerate()
-            .map(|(i, pager)| {
-                let page_path = folder_path.join(&format!("{}", i + 1));
+            .map(|pager| {
+                let page_path = folder_path.join(&format!("{}", pager.index));
                 create_directory(&page_path)?;
                 let output = paginator.render_pager(pager, &self.config, &self.tera)?;
-                if i > 0 {
+                if pager.index > 1 {
                     create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
                 } else {
                     create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
@@ -938,7 +926,6 @@ impl Site {
                 }
                 Ok(())
             })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+            .collect::<Result<()>>()
     }
 }

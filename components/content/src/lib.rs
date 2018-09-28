@@ -26,4 +26,4 @@ mod sorting;
 pub use file_info::FileInfo;
 pub use page::Page;
 pub use section::Section;
-pub use sorting::{sort_pages, populate_siblings};
+pub use sorting::{sort_pages, populate_siblings, sort_pages_by_date};

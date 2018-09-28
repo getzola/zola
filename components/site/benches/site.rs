@@ -22,7 +22,7 @@ fn setup_site(name: &str) -> Site {
 
 #[bench]
 fn bench_render_aliases(b: &mut test::Bencher) {
-    let mut site = setup_site("small-blog");
+    let mut site = setup_site("big-blog");
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
@@ -31,7 +31,7 @@ fn bench_render_aliases(b: &mut test::Bencher) {
 
 #[bench]
 fn bench_render_sitemap(b: &mut test::Bencher) {
-    let mut site = setup_site("small-blog");
+    let mut site = setup_site("big-blog");
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
@@ -40,11 +40,11 @@ fn bench_render_sitemap(b: &mut test::Bencher) {
 
 #[bench]
 fn bench_render_rss_feed(b: &mut test::Bencher) {
-    let mut site = setup_site("small-blog");
+    let mut site = setup_site("big-blog");
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    b.iter(|| site.render_rss_feed(None, None).unwrap());
+    b.iter(|| site.render_rss_feed(site.pages.values().collect(), None).unwrap());
 }
 
 #[bench]
@@ -66,4 +66,44 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     let paginator = Paginator::from_section(&section.pages, section);
 
     b.iter(|| site.render_paginated(public, &paginator));
+}
+
+#[bench]
+fn bench_populate_sections_medium_blog(b: &mut test::Bencher) {
+    let mut site = setup_site("medium-blog");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.populate_sections());
+}
+
+#[bench]
+fn bench_populate_sections_medium_kb(b: &mut test::Bencher) {
+    let mut site = setup_site("medium-kb");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.populate_sections());
+}
+
+#[bench]
+fn bench_render_markdown_small_blog(b: &mut test::Bencher) {
+    let mut site = setup_site("small-blog");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.render_markdown());
+}
+
+#[bench]
+fn bench_render_markdown_small_kb(b: &mut test::Bencher) {
+    let mut site = setup_site("small-kb");
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+
+    b.iter(|| site.render_markdown());
 }

@@ -12,8 +12,12 @@ pub fn markdown(value: Value, args: HashMap<String, Value>) -> TeraResult<Value>
         None => false,
     };
 
+    let mut opts = cmark::Options::empty();
+    opts.insert(cmark::OPTION_ENABLE_TABLES);
+    opts.insert(cmark::OPTION_ENABLE_FOOTNOTES);
+
     let mut html = String::new();
-    let parser = cmark::Parser::new(&s);
+    let parser = cmark::Parser::new_ext(&s, opts);
     cmark::html::push_html(&mut html, parser);
 
     if inline {
@@ -69,6 +73,21 @@ mod tests {
         let result = markdown(to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(), args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
+    }
+
+    // https://github.com/Keats/gutenberg/issues/417
+    #[test]
+    fn markdown_filter_inline_tables() {
+        let mut args = HashMap::new();
+        args.insert("inline".to_string(), to_value(true).unwrap());
+        let result = markdown(to_value(&r#"
+|id|author_id|       timestamp_created|title                 |content           |
+|-:|--------:|-----------------------:|:---------------------|:-----------------|
+| 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
+| 2|        1|2018-08-22 13:11:50.050Z|How to bake a nice pie|Badly written blog|
+        "#).unwrap(), args);
+        assert!(result.is_ok());
+        assert!(result.unwrap().as_str().unwrap().contains("<table>"));
     }
 
     #[test]

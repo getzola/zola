@@ -313,7 +313,8 @@ fn is_temp_file(path: &Path) -> bool {
             _ => {
                 if let Some(filename) = path.file_stem() {
                     // emacs
-                    filename.to_str().unwrap().starts_with('#')
+                    let name = filename.to_str().unwrap();
+                    name.starts_with('#') || name.starts_with(".#")
                 } else {
                     false
                 }

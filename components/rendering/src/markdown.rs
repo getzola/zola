@@ -51,6 +51,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     // Set while parsing
     let mut error = None;
 
+    let mut background = IncludeBackground::Yes;
     let mut highlighter: Option<HighlightLines> = None;
     // If we get text in header, we need to insert the id and a anchor
     let mut in_header = false;
@@ -93,7 +94,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     // if we are in the middle of a code block
                     if let Some(ref mut highlighter) = highlighter {
                         let highlighted = &highlighter.highlight(&text);
-                        let html = styles_to_coloured_html(highlighted, IncludeBackground::Yes);
+                        let html = styles_to_coloured_html(highlighted, background);
                         return Event::Html(Owned(html));
                     }
 
@@ -107,7 +108,12 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
                     match get_highlighter(&theme, info, context.base_path, &context.config.extra_syntaxes) {
-                        Ok(h) => highlighter = Some(h),
+                        Ok(h) => {
+                            highlighter = Some(h);
+                            // This selects the background color the same way that start_coloured_html_snippet does
+                            let color = theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE);
+                            background = IncludeBackground::IfDifferent(color);
+                        }
                         Err(err) => {
                             error = Some(format!("Could not load syntax: {}", err).into());
                             return Event::Html(Borrowed(""));
@@ -154,7 +160,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     } else if is_colocated_asset_link(&link) {
                         format!("{}{}", context.current_page_permalink, link)
                     } else {
-                        if context.config.check_external_links && !link.starts_with('#') {
+                        if context.config.check_external_links
+                            && !link.starts_with('#')
+                            && !link.starts_with("mailto:") {
                             let res = check_url(&link);
                             if res.is_valid() {
                                 link.to_string()
@@ -231,7 +239,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     if let Some(e) = error {
         return Err(e)
     } else {
-        html = html.replace("<p></p>", "").replace("</p></p>", "</p>");
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,

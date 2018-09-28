@@ -23,7 +23,7 @@ use utils::fs as ufs;
 use errors::{Result, ResultExt};
 
 
-static RESIZED_SUBDIR: &'static str = "_processed_images";
+static RESIZED_SUBDIR: &'static str = "processed_images";
 
 lazy_static! {
     pub static ref RESIZED_FILENAME: Regex = Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.]jpg"#).unwrap();
@@ -363,9 +363,7 @@ impl Processor {
             let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id));
             op.perform(&self.content_path, &target)
                 .chain_err(|| format!("Failed to process image: {}", op.source))
-        })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+        }).collect::<Result<()>>()
     }
 }
 

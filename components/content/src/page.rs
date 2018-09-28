@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::result::Result as StdResult;
 
-use chrono::Datelike;
 use tera::{Tera, Context as TeraContext};
 use serde::ser::{SerializeStruct, self};
 use slug::slugify;
@@ -54,6 +53,11 @@ pub struct Page {
     pub heavier: Option<Box<Page>>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
+    /// How many words in the raw content
+    pub word_count: Option<usize>,
+    /// How long would it take to read the raw content.
+    /// See `get_reading_analytics` on how it is calculated
+    pub reading_time: Option<usize>,
 }
 
 
@@ -77,6 +81,8 @@ impl Page {
             lighter: None,
             heavier: None,
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
     }
 
@@ -91,6 +97,9 @@ impl Page {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta);
         page.raw_content = content;
+        let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
+        page.word_count = Some(word_count);
+        page.reading_time = Some(reading_time);
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
@@ -183,7 +192,7 @@ impl Page {
             anchor_insert,
         );
 
-        context.tera_context.add("page", self);
+        context.tera_context.insert("page", self);
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -203,10 +212,10 @@ impl Page {
         };
 
         let mut context = TeraContext::new();
-        context.add("config", config);
-        context.add("page", self);
-        context.add("current_url", &self.permalink);
-        context.add("current_path", &self.path);
+        context.insert("config", config);
+        context.insert("page", self);
+        context.insert("current_url", &self.permalink);
+        context.insert("current_path", &self.path);
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
@@ -240,6 +249,8 @@ impl Default for Page {
             lighter: None,
             heavier: None,
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
     }
 }
@@ -251,11 +262,10 @@ impl ser::Serialize for Page {
         state.serialize_field("title", &self.meta.title)?;
         state.serialize_field("description", &self.meta.description)?;
         state.serialize_field("date", &self.meta.date)?;
-        if let Some(chrono_datetime) = self.meta.date() {
-            let d = chrono_datetime.date();
-            state.serialize_field("year", &d.year())?;
-            state.serialize_field("month", &d.month())?;
-            state.serialize_field("day", &d.day())?;
+        if let Some(d) = self.meta.datetime_tuple {
+            state.serialize_field("year", &d.0)?;
+            state.serialize_field("month", &d.1)?;
+            state.serialize_field("day", &d.2)?;
         } else {
             state.serialize_field::<Option<usize>>("year", &None)?;
             state.serialize_field::<Option<usize>>("month", &None)?;
@@ -268,9 +278,8 @@ impl ser::Serialize for Page {
         state.serialize_field("summary", &self.summary)?;
         state.serialize_field("taxonomies", &self.meta.taxonomies)?;
         state.serialize_field("extra", &self.meta.extra)?;
-        let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
-        state.serialize_field("word_count", &word_count)?;
-        state.serialize_field("reading_time", &reading_time)?;
+        state.serialize_field("word_count", &self.word_count)?;
+        state.serialize_field("reading_time", &self.reading_time)?;
         state.serialize_field("earlier", &self.earlier)?;
         state.serialize_field("later", &self.later)?;
         state.serialize_field("lighter", &self.lighter)?;
