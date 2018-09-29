@@ -6,7 +6,7 @@ weight = 30
 Two things can get paginated: a section or a taxonomy term.
 
 A paginated section gets the same `section` variable as a normal
-[section page](./documentation/templates/pages-sections.md#section-variables)
+[section page](./documentation/templates/pages-sections.md#section-variables) minus its pages
 while a paginated taxonomy gets the a `taxonomy` variable of type `TaxonomyConfig`, equivalent
 to the taxonomy definition in the `config.toml`.
 
