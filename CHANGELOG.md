@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.3 (unreleased)
+## 0.5.0 (unreleased)
 
 - Gutenberg has changed name to REPLACE_ME!
 - Update dependencies, fixing a few bugs with templates
@@ -15,7 +15,7 @@
 - Files starting with `.` are not considered pages anymore even if they end with `.md`
 - `_processed_images` folder for image processing has been renamed `processed_images` to avoid issues with GitHub Pages
 - Syntax highlighting default was mistakenly `true`, it has been set to `false`
-
+- Add NO_COLOR and CLICOLOR support for having colours or not in CLI output
 
 ## 0.4.2 (2018-09-03)
 
