@@ -22,6 +22,7 @@ mod cmd;
 mod console;
 mod cli;
 mod prompt;
+mod opportunistic_watcher;
 
 
 fn main() {
