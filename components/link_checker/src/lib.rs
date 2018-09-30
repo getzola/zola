@@ -2,8 +2,8 @@ extern crate reqwest;
 #[macro_use]
 extern crate lazy_static;
 
-use reqwest::header::{qitem, Accept, Headers};
-use reqwest::{mime, StatusCode};
+use reqwest::header::{HeaderMap, ACCEPT};
+use reqwest::{StatusCode};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
@@ -54,8 +54,8 @@ pub fn check_url(url: &str) -> LinkResult {
         }
     }
 
-    let mut headers = Headers::new();
-    headers.set(Accept(vec![qitem(mime::TEXT_HTML), qitem(mime::STAR_STAR)]));
+    let mut headers = HeaderMap::new();
+    headers.insert(ACCEPT, "text/html, *".parse().unwrap());
 
     let client = reqwest::Client::new();
 
