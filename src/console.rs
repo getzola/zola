@@ -99,8 +99,8 @@ pub fn unravel_errors(message: &str, error: &Error) {
 
 /// Check whether to output colors
 fn has_color() -> bool {
-    let use_colors = env::var("CLICOLOR").unwrap_or("1".to_string()) != "0" && !env::var("NO_COLOR").is_ok();
-    let force_colors = env::var("CLICOLOR_FORCE").unwrap_or("0".to_string()) != "0";
+    let use_colors = env::var("CLICOLOR").unwrap_or_else(|_| "1".to_string()) != "0" && env::var("NO_COLOR").is_err();
+    let force_colors = env::var("CLICOLOR_FORCE").unwrap_or_else(|_|"0".to_string()) != "0";
 
     force_colors || use_colors && atty::is(atty::Stream::Stdout)
 }

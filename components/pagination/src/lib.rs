@@ -149,12 +149,10 @@ impl<'a> Paginator<'a> {
 
             let pager_path = if self.is_index {
                 page_path
+            } else if self.path.ends_with('/') {
+                format!("{}{}", self.path, page_path)
             } else {
-                if self.path.ends_with("/") {
-                    format!("{}{}", self.path, page_path)
-                } else {
-                    format!("{}/{}", self.path, page_path)
-                }
+                format!("{}/{}", self.path, page_path)
             };
 
             pagers.push(Pager::new(

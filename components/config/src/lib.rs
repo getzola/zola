@@ -195,9 +195,7 @@ impl Config {
             format!("{}/", self.base_url)
         } else if self.base_url.ends_with('/') && path.starts_with('/') {
             format!("{}{}{}", self.base_url, &path[1..], trailing_bit)
-        } else if self.base_url.ends_with('/') {
-            format!("{}{}{}", self.base_url, path, trailing_bit)
-        } else if path.starts_with('/') {
+        } else if self.base_url.ends_with('/') || path.starts_with('/') {
             format!("{}{}{}", self.base_url, path, trailing_bit)
         } else {
             format!("{}/{}{}", self.base_url, path, trailing_bit)

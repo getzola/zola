@@ -15,7 +15,7 @@ use content::Section;
 use errors::Result;
 
 
-pub const ELASTICLUNR_JS: &'static str = include_str!("elasticlunr.min.js");
+pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
 
 lazy_static! {
     static ref AMMONIA: ammonia::Builder<'static> = {
@@ -63,7 +63,7 @@ fn add_section_to_index(index: &mut Index, section: &Section) {
     if section.meta.redirect_to.is_none() {
         index.add_doc(
             &section.permalink,
-            &[&section.meta.title.clone().unwrap_or(String::new()), &AMMONIA.clean(&section.content).to_string()],
+            &[&section.meta.title.clone().unwrap_or_default(), &AMMONIA.clean(&section.content).to_string()],
         );
     }
 
@@ -74,7 +74,7 @@ fn add_section_to_index(index: &mut Index, section: &Section) {
 
         index.add_doc(
             &page.permalink,
-            &[&page.meta.title.clone().unwrap_or(String::new()), &AMMONIA.clean(&page.content).to_string()],
+            &[&page.meta.title.clone().unwrap_or_default(), &AMMONIA.clean(&page.content).to_string()],
         );
     }
 }

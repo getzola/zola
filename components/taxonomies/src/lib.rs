@@ -127,7 +127,7 @@ pub fn find_taxonomies(config: &Config, all_pages: Vec<&Page>) -> Result<Vec<Tax
             if taxonomies_def.contains_key(name) {
                 all_taxonomies
                     .entry(name)
-                    .or_insert_with(|| HashMap::new());
+                    .or_insert_with(HashMap::new);
 
                 for v in val {
                     all_taxonomies.get_mut(name)

@@ -103,16 +103,14 @@ impl Page {
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
-            } else {
-                if page.file.name == "index" {
-                    if let Some(parent) = page.file.path.parent() {
-                        slugify(parent.file_name().unwrap().to_str().unwrap())
-                    } else {
-                        slugify(page.file.name.clone())
-                    }
+            } else if page.file.name == "index" {
+                if let Some(parent) = page.file.path.parent() {
+                    slugify(parent.file_name().unwrap().to_str().unwrap())
                 } else {
                     slugify(page.file.name.clone())
                 }
+            } else {
+                slugify(page.file.name.clone())
             }
         };
 

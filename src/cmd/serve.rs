@@ -56,7 +56,7 @@ enum ChangeKind {
 // Also, commenting out the lines 330-340 (containing `e instanceof ProtocolError`) was needed
 // as it seems their build didn't work well and didn't include ProtocolError so it would error on
 // errors
-const LIVE_RELOAD: &'static str = include_str!("livereload.js");
+const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 struct NotFoundHandler {
     rendered_template: PathBuf,
@@ -276,7 +276,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
                                 rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p.to_string_lossy());
                             },
                             (ChangeKind::Config, _) => {
-                                console::info(&format!("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible."));
+                                console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(interface, port, output_dir, base_url, config_file).unwrap().0;
                             }
                         };

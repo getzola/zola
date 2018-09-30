@@ -189,7 +189,7 @@ impl Site {
         let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
             .unwrap()
             .filter_map(|e| e.ok())
-            .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with("."))
+            .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
             .partition(|entry| entry.as_path().file_name().unwrap() == "_index.md");
 
         let sections = {
@@ -272,7 +272,7 @@ impl Site {
 
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
-        for (_, p) in &self.pages {
+        for p in self.pages.values() {
             pages_insert_anchors.insert(p.file.path.clone(), self.find_parent_section_insert_anchor(&p.file.parent.clone()));
         }
 
@@ -580,10 +580,10 @@ impl Site {
 
         let mut options = SassOptions::default();
         options.output_style = OutputStyle::Compressed;
-        let mut compiled_paths = self.compile_sass_glob(&sass_path, "scss", options.clone())?;
+        let mut compiled_paths = self.compile_sass_glob(&sass_path, "scss", &options.clone())?;
 
         options.indented_syntax = true;
-        compiled_paths.extend(self.compile_sass_glob(&sass_path, "sass", options)?);
+        compiled_paths.extend(self.compile_sass_glob(&sass_path, "sass", &options)?);
 
         compiled_paths.sort();
         for window in compiled_paths.windows(2) {
@@ -600,7 +600,7 @@ impl Site {
         Ok(())
     }
 
-    fn compile_sass_glob(&self, sass_path: &Path, extension: &str, options: SassOptions) -> Result<Vec<(PathBuf, PathBuf)>> {
+    fn compile_sass_glob(&self, sass_path: &Path, extension: &str, options: &SassOptions) -> Result<Vec<(PathBuf, PathBuf)>> {
         let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
         let files = glob(&glob_string)
             .unwrap()
