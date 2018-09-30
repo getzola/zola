@@ -51,6 +51,7 @@ branches:
     # Release tags
     - /^v\d+\.\d+\.\d+.*$/
     - master
+    - next
 
 # disable automatic builds
 build: false

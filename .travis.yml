@@ -54,6 +54,7 @@ branches:
     # release tags
     - /^v\d+\.\d+\.\d+.*$/
     - master
+    - next
 
 notifications:
   email: false
