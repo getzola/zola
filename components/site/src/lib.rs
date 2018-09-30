@@ -91,7 +91,6 @@ impl Site {
         // Only parsing as we might be extending templates from themes and that would error
         // as we haven't loaded them yet
         let mut tera = Tera::parse(&tpl_glob).chain_err(|| "Error parsing templates")?;
-
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
@@ -105,16 +104,27 @@ impl Site {
             let theme_tpl_glob = format!(
                 "{}/{}",
                 path.to_string_lossy().replace("\\", "/"),
-                format!("themes/{}/templates/**/*.html", theme)
+                format!("themes/{}/templates/**/*.*ml", theme)
             );
             let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
             rewrite_theme_paths(&mut tera_theme, &theme);
+            // TODO: same as above
+            if theme_path.join("templates").join("robots.txt").exists() {
+                tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
+            }
+            println!("{:?}", tera_theme.templates.keys().collect::<Vec<_>>());
             tera_theme.build_inheritance_chains()?;
             tera.extend(&tera_theme)?;
         }
         tera.extend(&GUTENBERG_TERA)?;
         // the `extend` above already does it but hey
         tera.build_inheritance_chains()?;
+
+        // TODO: Tera doesn't use globset right now so we can load the robots.txt as part
+        // of the glob above, therefore we load it manually if it exists.
+        if path.join("templates").join("robots.txt").exists() {
+            tera.add_template_file(path.join("templates").join("robots.txt"), None)?;
+        }
 
         let content_path = path.join("content");
         let static_path = path.join("static");

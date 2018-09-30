@@ -165,6 +165,9 @@ fn can_build_site_without_live_reload() {
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
     // Drafts are not in the sitemap
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
+
+    // robots.txt has been rendered from the template
+    assert!(!file_contains!(public, "robots.txt", "Hello"));
 }
 
 #[test]
