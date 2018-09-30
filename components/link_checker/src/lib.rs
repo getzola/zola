@@ -55,7 +55,8 @@ pub fn check_url(url: &str) -> LinkResult {
     }
 
     let mut headers = HeaderMap::new();
-    headers.insert(ACCEPT, "text/html, *".parse().unwrap());
+    headers.insert(ACCEPT, "text/html".parse().unwrap());
+    headers.append(ACCEPT, "*/*".parse().unwrap());
 
     let client = reqwest::Client::new();
 
