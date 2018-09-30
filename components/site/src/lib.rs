@@ -112,7 +112,6 @@ impl Site {
             if theme_path.join("templates").join("robots.txt").exists() {
                 tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
             }
-            println!("{:?}", tera_theme.templates.keys().collect::<Vec<_>>());
             tera_theme.build_inheritance_chains()?;
             tera.extend(&tera_theme)?;
         }
