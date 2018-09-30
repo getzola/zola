@@ -22,7 +22,7 @@
                 {% endfor %}
                 {% if paginator.previous %}has_prev{% endif %}
                 {% if paginator.next %}has_next{% endif %}
-                Num pages: {{ paginator.pagers | length }}
+                Num pages: {{ paginator.number_pagers }}
                 Current index: {{ paginator.current_index }}
                 First: {{ paginator.first | safe }}
                 Last: {{ paginator.last | safe }}

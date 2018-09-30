@@ -2,7 +2,12 @@
 
 ## 0.5.0 (unreleased)
 
+### Breaking
+
 - Gutenberg has changed name to REPLACE_ME!
+- The `pagers` variable of Paginator objects has been removed
+
+### Others
 - Update dependencies, fixing a few bugs with templates
 - Load only .html files in themes from the templates folder
 - Background colour is set fewer times when highlighting syntaxes

@@ -15,6 +15,11 @@ In addition, a paginated page gets a `paginator` variable of the `Pager` type:
 ```ts
 // How many items per page
 paginate_by: Number;
+// The base URL for the pagination: section permalink + pagination path
+// You can concatenate an integer with that to get a link to a given pagination page.
+base_url: String;
+// How many pagers in this paginator
+number_pagers: Number;
 // Permalink to the first page
 first: String;
 // Permalink to the last page
@@ -25,8 +30,6 @@ previous: String?;
 next: String?;
 // All pages for the current page
 pages: Array<Page>;
-// All pagers for this section, but with their `pages` attribute set to an empty array
-pagers: Array<Pagers>;
 // Which page are we on
 current_index: Number;
 ```

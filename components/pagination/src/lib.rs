@@ -51,17 +51,6 @@ impl<'a> Pager<'a> {
             pages,
         }
     }
-
-    /// Returns a manually cloned Pager with the pages removed
-    /// for use as template context
-    fn clone_without_pages(&self) -> Pager<'a> {
-        Pager {
-            index: self.index,
-            permalink: self.permalink.clone(),
-            path: self.path.clone(),
-            pages: vec![],
-        }
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -183,27 +172,23 @@ impl<'a> Paginator<'a> {
         paginator.insert("first", to_value(&self.permalink).unwrap());
         let last_pager = &self.pagers[self.pagers.len() - 1];
         paginator.insert("last", to_value(&last_pager.permalink).unwrap());
-        paginator.insert(
-            "pagers",
-            to_value(
-                &self.pagers.iter().map(|p| p.clone_without_pages()).collect::<Vec<_>>()
-            ).unwrap(),
-        );
 
         // Variables for this specific page
         if pager_index > 0 {
             let prev_pager = &self.pagers[pager_index - 1];
             paginator.insert("previous", to_value(&prev_pager.permalink).unwrap());
         } else {
-            paginator.insert("previous", to_value::<Option<()>>(None).unwrap());
+            paginator.insert("previous", Value::Null);
         }
 
         if pager_index < self.pagers.len() - 1 {
             let next_pager = &self.pagers[pager_index + 1];
             paginator.insert("next", to_value(&next_pager.permalink).unwrap());
         } else {
-            paginator.insert("next", to_value::<Option<()>>(None).unwrap());
+            paginator.insert("next", Value::Null);
         }
+        paginator.insert("number_pagers", to_value(&self.pagers.len()).unwrap());
+        paginator.insert("base_url", to_value(&format!("{}{}/", self.permalink, self.paginate_path)).unwrap());
         paginator.insert("pages", to_value(&current_pager.pages).unwrap());
         paginator.insert("current_index", to_value(current_pager.index).unwrap());
 
