@@ -212,8 +212,8 @@ impl Section {
             subsections,
             pages: vec![],
             ignored_pages: vec![],
-            word_count: self.word_count.clone(),
-            reading_time: self.reading_time.clone(),
+            word_count: self.word_count,
+            reading_time: self.reading_time,
         }
     }
 }

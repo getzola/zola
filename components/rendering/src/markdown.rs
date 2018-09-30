@@ -20,7 +20,7 @@ const CONTINUE_READING: &str = "<p><a name=\"continue-reading\"></a></p>\n";
 pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
-    pub toc: Vec<Header>
+    pub toc: Vec<Header>,
 }
 
 // We might have cases where the slug is already present in our list of anchor
@@ -41,7 +41,7 @@ fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
 }
 
 fn is_colocated_asset_link(link: &str) -> bool {
-    !link.contains("/")  // http://, ftp://, ../ etc
+    !link.contains('/')  // http://, ftp://, ../ etc
         && !link.starts_with("mailto:")
 }
 
@@ -159,22 +159,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                     } else if is_colocated_asset_link(&link) {
                         format!("{}{}", context.current_page_permalink, link)
-                    } else {
-                        if context.config.check_external_links
-                            && !link.starts_with('#')
-                            && !link.starts_with("mailto:") {
-                            let res = check_url(&link);
-                            if res.is_valid() {
-                                link.to_string()
-                            } else {
-                                error = Some(
-                                    format!("Link {} is not valid: {}", link, res.message()).into()
-                                );
-                                String::new()
-                            }
-                        } else {
+                    } else if context.config.check_external_links
+                        && !link.starts_with('#')
+                        && !link.starts_with("mailto:") {
+                        let res = check_url(&link);
+                        if res.is_valid() {
                             link.to_string()
+                        } else {
+                            error = Some(
+                                format!("Link {} is not valid: {}", link, res.message()).into()
+                            );
+                            String::new()
                         }
+                    } else {
+                        link.to_string()
                     };
 
                     if in_header {
@@ -237,12 +235,12 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     }
 
     if let Some(e) = error {
-        return Err(e)
+        return Err(e);
     } else {
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
-            toc: make_table_of_contents(&headers)
+            toc: make_table_of_contents(&headers),
         })
     }
 }

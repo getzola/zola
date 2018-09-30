@@ -107,27 +107,25 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
             site.permalinks.remove(&s.file.relative);
             site.populate_sections();
         }
-    } else {
-        if let Some(p) = site.pages.remove(path) {
-            site.permalinks.remove(&p.file.relative);
+    } else if let Some(p) = site.pages.remove(path) {
+        site.permalinks.remove(&p.file.relative);
 
-            if !p.meta.taxonomies.is_empty() {
-                site.populate_taxonomies()?;
-            }
+        if !p.meta.taxonomies.is_empty() {
+            site.populate_taxonomies()?;
+        }
 
-            // if there is a parent section, we will need to re-render it
-            // most likely
-            if find_parent_section(site, &p).is_some() {
-                site.populate_sections();
-            }
-        };
+        // if there is a parent section, we will need to re-render it
+        // most likely
+        if find_parent_section(site, &p).is_some() {
+            site.populate_sections();
+        }
     }
 
     // Ensure we have our fn updated so it doesn't contain the permalink(s)/section/page deleted
     site.register_tera_global_fns();
     // Deletion is something that doesn't happen all the time so we
     // don't need to optimise it too much
-    return site.build();
+    site.build()
 }
 
 /// Handles a `_index.md` (a section) being edited in some ways
@@ -164,24 +162,21 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
                     }
                 };
             }
-            return Ok(());
+            Ok(())
         }
         // New section, only render that one
         None => {
             site.populate_sections();
             site.register_tera_global_fns();
-            return site.render_section(&site.sections[path], true);
+            site.render_section(&site.sections[path], true)
         }
-    };
+    }
 }
 
 macro_rules! render_parent_section {
     ($site: expr, $path: expr) => {
-        match find_parent_section($site, &$site.pages[$path]) {
-            Some(s) => {
-                $site.render_section(s, false)?;
-            },
-            None => (),
+        if let Some(s) = find_parent_section($site, &$site.pages[$path]) {
+            $site.render_section(s, false)?;
         };
     }
 }
@@ -293,12 +288,10 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
         } else {
             handle_page_editing(site, path)
         }
+    } else if index.exists() {
+        handle_page_editing(site, &index)
     } else {
-        if index.exists() {
-            handle_page_editing(site, &index)
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 }
 
@@ -325,7 +318,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             // because we have no clue which one needs rebuilding
             // TODO: look if there the shortcode is used in the markdown instead of re-rendering
             // everything
-            if path.components().collect::<Vec<_>>().contains(&Component::Normal("shortcodes".as_ref())) {
+            if path.components().any(|x| x == Component::Normal("shortcodes".as_ref())) {
                 site.render_markdown()?;
             }
             site.populate_sections();

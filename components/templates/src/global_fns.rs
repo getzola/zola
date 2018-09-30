@@ -46,7 +46,7 @@ pub fn make_trans(config: Config) -> GlobalFn {
             String,
             args.get("lang"),
             "`trans`: `lang` must be a string."
-        ).unwrap_or(default_lang.clone());
+        ).unwrap_or_else(|| default_lang.clone());
         let translations = &translations_config[lang.as_str()];
         Ok(to_value(&translations[key.as_str()]).unwrap())
     })
@@ -122,7 +122,7 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
         } else {
             // anything else
             let mut permalink = config.make_permalink(&path);
-            if !trailing_slash && permalink.ends_with("/") {
+            if !trailing_slash && permalink.ends_with('/') {
                 permalink.pop(); // Removes the slash
             }
 
@@ -153,7 +153,7 @@ pub fn make_get_taxonomy(all_taxonomies: Vec<Taxonomy>) -> GlobalFn {
             ),
         };
 
-        return Ok(to_value(container).unwrap());
+        Ok(to_value(container).unwrap())
     })
 }
 
@@ -217,7 +217,7 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
             String,
             args.get("op"),
             "`resize_image`: `op` must be a string"
-        ).unwrap_or(DEFAULT_OP.to_string());
+        ).unwrap_or_else(|| DEFAULT_OP.to_string());
         let quality = optional_arg!(
             u8,
             args.get("quality"),

@@ -84,7 +84,7 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
 }
 
 
-fn render_shortcode(name: String, args: Map<String, Value>, context: &RenderContext, body: Option<&str>) -> Result<String> {
+fn render_shortcode(name: &str, args: &Map<String, Value>, context: &RenderContext, body: Option<&str>) -> Result<String> {
     let mut tera_context = Context::new();
     for (key, value) in args.iter() {
         tera_context.insert(key, value);
@@ -138,7 +138,7 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
             Rule::text | Rule::text_in_ignored_body_sc | Rule::text_in_body_sc => res.push_str(p.into_span().as_str()),
             Rule::inline_shortcode => {
                 let (name, args) = parse_shortcode_call(p);
-                res.push_str(&render_shortcode(name, args, context, None)?);
+                res.push_str(&render_shortcode(&name, &args, context, None)?);
             }
             Rule::shortcode_with_body => {
                 let mut inner = p.into_inner();
@@ -146,7 +146,7 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                 // we don't care about the closing tag
                 let (name, args) = parse_shortcode_call(inner.next().unwrap());
                 let body = inner.next().unwrap().into_span().as_str();
-                res.push_str(&render_shortcode(name, args, context, Some(body))?);
+                res.push_str(&render_shortcode(&name, &args, context, Some(body))?);
             }
             Rule::ignored_inline_shortcode => {
                 res.push_str(

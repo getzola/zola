@@ -8,7 +8,7 @@ use prompt::{ask_bool, ask_url};
 use console;
 
 
-const CONFIG: &'static str = r#"
+const CONFIG: &str = r#"
 # The URL the site will be built for
 base_url = "%BASE_URL%"
 
