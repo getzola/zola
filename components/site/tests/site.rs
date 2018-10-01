@@ -167,7 +167,7 @@ fn can_build_site_without_live_reload() {
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
 
     // robots.txt has been rendered from the template
-    assert!(!file_contains!(public, "robots.txt", "Hello"));
+    assert!(file_contains!(public, "robots.txt", "User-agent: gutenberg"));
 }
 
 #[test]

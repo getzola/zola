@@ -1,1 +1,2 @@
-Hello
+User-agent: gutenberg
+Allow: /

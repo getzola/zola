@@ -122,7 +122,7 @@ impl Site {
         // TODO: Tera doesn't use globset right now so we can load the robots.txt as part
         // of the glob above, therefore we load it manually if it exists.
         if path.join("templates").join("robots.txt").exists() {
-            tera.add_template_file(path.join("templates").join("robots.txt"), None)?;
+            tera.add_template_file(path.join("templates").join("robots.txt"), Some("robots.txt"))?;
         }
 
         let content_path = path.join("content");
