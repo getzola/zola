@@ -229,7 +229,9 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         watchers.push("sass");
     }
 
-    println!("Listening for changes in {}/{{{}}}", pwd.display(), watchers.join(", "));
+    let mut pwd_directory = pwd.clone();
+    pwd_directory.push(""); // add OS-specific trailing slash
+    println!("Listening for changes in {}{{{}}}", pwd_directory.display(), watchers.join(", "));
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
