@@ -1,14 +1,14 @@
 #![feature(test)]
 extern crate test;
 extern crate site;
-extern crate pagination;
+extern crate library;
 extern crate tempfile;
 
 use std::env;
 
 use tempfile::tempdir;
 use site::Site;
-use pagination::Paginator;
+use library::Paginator;
 
 
 fn setup_site(name: &str) -> Site {
@@ -44,7 +44,7 @@ fn bench_render_rss_feed(b: &mut test::Bencher) {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    b.iter(|| site.render_rss_feed(site.pages.values().collect(), None).unwrap());
+    b.iter(|| site.render_rss_feed(site.library.pages_values(), None).unwrap());
 }
 
 #[bench]
@@ -62,8 +62,8 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    let section = site.sections.values().collect::<Vec<_>>()[0];
-    let paginator = Paginator::from_section(&section.pages, section);
+    let section = site.library.sections_values()[0];
+    let paginator = Paginator::from_section(&section, site.library.pages());
 
     b.iter(|| site.render_paginated(public, &paginator));
 }

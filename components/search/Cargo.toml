@@ -9,4 +9,4 @@ ammonia = "1"
 lazy_static = "1"
 
 errors = { path = "../errors" }
-content = { path = "../content" }
+library = { path = "../library" }

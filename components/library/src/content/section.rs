@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::result::Result as StdResult;
 
-use tera::{Tera, Context as TeraContext};
-use serde::ser::{SerializeStruct, self};
+use tera::{Tera, Context as TeraContext, Value};
+use slotmap::{Key};
 
 use config::Config;
 use front_matter::{SectionFrontMatter, split_section_content};
@@ -13,9 +12,76 @@ use utils::templates::render_template;
 use utils::site::get_reading_analytics;
 use rendering::{RenderContext, Header, render_content};
 
-use page::Page;
-use file_info::FileInfo;
+use content::file_info::FileInfo;
+use library::Library;
 
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct SerializingSection<'a> {
+    content: &'a str,
+    permalink: &'a str,
+    title: &'a Option<String>,
+    description: &'a Option<String>,
+    extra: &'a HashMap<String, Value>,
+    path: &'a str,
+    components: &'a [String],
+    word_count: Option<usize>,
+    reading_time: Option<usize>,
+    toc: &'a [Header],
+    assets: Vec<String>,
+    pages: Vec<&'a Value>,
+    subsections: Vec<&'a Value>,
+}
+
+impl<'a> SerializingSection<'a> {
+    pub fn from_section(section: &'a Section, library: &'a Library) -> Self {
+        let mut section_pages = vec![];
+        let mut subsections = vec![];
+
+        for k in &section.pages {
+            section_pages.push(library.get_cached_page_value_by_key(k));
+        }
+
+        for k in &section.subsections {
+            subsections.push(library.get_cached_section_value_by_key(k));
+        }
+
+        SerializingSection {
+            content: &section.content,
+            permalink: &section.permalink,
+            title: &section.meta.title,
+            description: &section.meta.description,
+            extra: &section.meta.extra,
+            path: &section.path,
+            components: &section.components,
+            word_count: section.word_count,
+            reading_time: section.reading_time,
+            toc: &section.toc,
+            assets: section.serialize_assets(),
+            pages: section_pages,
+            subsections,
+        }
+    }
+
+    /// Same as from_section but doesn't fetch pages and sections
+    pub fn from_section_basic(section: &'a Section) -> Self {
+        SerializingSection {
+            content: &section.content,
+            permalink: &section.permalink,
+            title: &section.meta.title,
+            description: &section.meta.description,
+            extra: &section.meta.extra,
+            path: &section.path,
+            components: &section.components,
+            word_count: section.word_count,
+            reading_time: section.reading_time,
+            toc: &section.toc,
+            assets: section.serialize_assets(),
+            pages: vec![],
+            subsections: vec![],
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Section {
@@ -36,11 +102,11 @@ pub struct Section {
     /// All the non-md files we found next to the .md file
     pub assets: Vec<PathBuf>,
     /// All direct pages of that section
-    pub pages: Vec<Page>,
+    pub pages: Vec<Key>,
     /// All pages that cannot be sorted in this section
-    pub ignored_pages: Vec<Page>,
+    pub ignored_pages: Vec<Key>,
     /// All direct subsections
-    pub subsections: Vec<Section>,
+    pub subsections: Vec<Key>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
     /// How many words in the raw content
@@ -133,7 +199,13 @@ impl Section {
 
     /// We need access to all pages url to render links relative to content
     /// so that can't happen at the same time as parsing
-    pub fn render_markdown(&mut self, permalinks: &HashMap<String, String>, tera: &Tera, config: &Config, base_path: &Path) -> Result<()> {
+    pub fn render_markdown(
+        &mut self,
+        permalinks: &HashMap<String, String>,
+        tera: &Tera,
+        config: &Config,
+        base_path: &Path,
+    ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
             config,
@@ -143,7 +215,7 @@ impl Section {
             self.meta.insert_anchor_links,
         );
 
-        context.tera_context.insert("section", self);
+        context.tera_context.insert("section", &SerializingSection::from_section_basic(self));
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -153,12 +225,12 @@ impl Section {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
         context.insert("config", config);
-        context.insert("section", self);
+        context.insert("section", &library.get_cached_section_value(&self.file.path));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
 
@@ -173,15 +245,13 @@ impl Section {
 
     /// Returns all the paths of the pages belonging to that section
     pub fn all_pages_path(&self) -> Vec<PathBuf> {
-        let mut paths = vec![];
-        paths.extend(self.pages.iter().map(|p| p.file.path.clone()));
-        paths.extend(self.ignored_pages.iter().map(|p| p.file.path.clone()));
+        let paths = vec![];
         paths
     }
 
     /// Whether the page given belongs to that section
     pub fn is_child_page(&self, path: &PathBuf) -> bool {
-        self.all_pages_path().contains(path)
+        false
     }
 
     /// Creates a vectors of asset URLs.
@@ -193,50 +263,8 @@ impl Section {
             .collect()
     }
 
-    pub fn clone_without_pages(&self) -> Section {
-        let mut subsections = vec![];
-        for subsection in &self.subsections {
-            subsections.push(subsection.clone_without_pages());
-        }
-
-        Section {
-            file: self.file.clone(),
-            meta: self.meta.clone(),
-            path: self.path.clone(),
-            components: self.components.clone(),
-            permalink: self.permalink.clone(),
-            raw_content: self.raw_content.clone(),
-            content: self.content.clone(),
-            assets: self.assets.clone(),
-            toc: self.toc.clone(),
-            subsections,
-            pages: vec![],
-            ignored_pages: vec![],
-            word_count: self.word_count,
-            reading_time: self.reading_time,
-        }
-    }
-}
-
-impl ser::Serialize for Section {
-    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("section", 13)?;
-        state.serialize_field("content", &self.content)?;
-        state.serialize_field("permalink", &self.permalink)?;
-        state.serialize_field("title", &self.meta.title)?;
-        state.serialize_field("description", &self.meta.description)?;
-        state.serialize_field("extra", &self.meta.extra)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("components", &self.components)?;
-        state.serialize_field("permalink", &self.permalink)?;
-        state.serialize_field("pages", &self.pages)?;
-        state.serialize_field("subsections", &self.subsections)?;
-        state.serialize_field("word_count", &self.word_count)?;
-        state.serialize_field("reading_time", &self.reading_time)?;
-        state.serialize_field("toc", &self.toc)?;
-        let assets = self.serialize_assets();
-        state.serialize_field("assets", &assets)?;
-        state.end()
+    pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
+        SerializingSection::from_section(self, library)
     }
 }
 

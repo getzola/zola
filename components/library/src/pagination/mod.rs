@@ -1,25 +1,15 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate tera;
-
-extern crate errors;
-extern crate config;
-extern crate content;
-extern crate utils;
-extern crate taxonomies;
-
-#[cfg(test)]
-extern crate front_matter;
-
 use std::collections::HashMap;
 
 use tera::{Tera, Context, to_value, Value};
+use slotmap::{Key};
 
 use errors::{Result, ResultExt};
 use config::Config;
-use content::{Page, Section};
 use utils::templates::render_template;
-use taxonomies::{Taxonomy, TaxonomyItem};
+
+use content::{Section, SerializingSection};
+use taxonomies::{TaxonomyItem, Taxonomy};
+use library::Library;
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -39,11 +29,11 @@ pub struct Pager<'a> {
     /// Path to that page
     path: String,
     /// All pages for the pager
-    pages: Vec<&'a Page>,
+    pages: Vec<&'a Value>,
 }
 
 impl<'a> Pager<'a> {
-    fn new(index: usize, pages: Vec<&'a Page>, permalink: String, path: String) -> Pager<'a> {
+    fn new(index: usize, pages: Vec<&'a Value>, permalink: String, path: String) -> Pager<'a> {
         Pager {
             index,
             permalink,
@@ -55,8 +45,8 @@ impl<'a> Pager<'a> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Paginator<'a> {
-    /// All pages in the section
-    all_pages: &'a [Page],
+    /// All pages in the section/taxonomy
+    all_pages: &'a [Key],
     /// Pages split in chunks of `paginate_by`
     pub pagers: Vec<Pager<'a>>,
     /// How many content pages on a paginated page at max
@@ -67,17 +57,18 @@ pub struct Paginator<'a> {
     pub permalink: String,
     path: String,
     pub paginate_path: String,
+    /// Whether this is the index section, we need it for the template name
     is_index: bool,
 }
 
 impl<'a> Paginator<'a> {
     /// Create a new paginator from a section
-    /// It will always at least create one pager (the first) even if there are no pages to paginate
-    pub fn from_section(all_pages: &'a [Page], section: &'a Section) -> Paginator<'a> {
+    /// It will always at least create one pager (the first) even if there are not enough pages to paginate
+    pub fn from_section(section: &'a Section, library: &'a Library) -> Paginator<'a> {
         let paginate_by = section.meta.paginate_by.unwrap();
         let mut paginator = Paginator {
-            all_pages,
-            pagers: vec![],
+            all_pages: &section.pages,
+            pagers: Vec::with_capacity(section.pages.len() / paginate_by),
             paginate_by,
             root: PaginationRoot::Section(section),
             permalink: section.permalink.clone(),
@@ -86,17 +77,17 @@ impl<'a> Paginator<'a> {
             is_index: section.is_index(),
         };
 
-        paginator.fill_pagers();
+        paginator.fill_pagers(library);
         paginator
     }
 
     /// Create a new paginator from a taxonomy
-    /// It will always at least create one pager (the first) even if there are no pages to paginate
-    pub fn from_taxonomy(taxonomy: &'a Taxonomy, item: &'a TaxonomyItem) -> Paginator<'a> {
+    /// It will always at least create one pager (the first) even if there are not enough pages to paginate
+    pub fn from_taxonomy(taxonomy: &'a Taxonomy, item: &'a TaxonomyItem, library: &'a Library) -> Paginator<'a> {
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
         let mut paginator = Paginator {
             all_pages: &item.pages,
-            pagers: vec![],
+            pagers: Vec::with_capacity(item.pages.len() / paginate_by),
             paginate_by,
             root: PaginationRoot::Taxonomy(taxonomy),
             permalink: item.permalink.clone(),
@@ -105,31 +96,34 @@ impl<'a> Paginator<'a> {
             is_index: false,
         };
 
-        paginator.fill_pagers();
+        paginator.fill_pagers(library);
         paginator
     }
 
-    fn fill_pagers(&mut self) {
+    fn fill_pagers(&mut self, library: &'a Library) {
+        // the list of pagers
         let mut pages = vec![];
+        // the pages in the current pagers
         let mut current_page = vec![];
 
-        for page in self.all_pages {
-            current_page.push(page);
+        for key in self.all_pages {
+            current_page.push(library.get_cached_page_value_by_key(key));
 
             if current_page.len() == self.paginate_by {
                 pages.push(current_page);
                 current_page = vec![];
             }
         }
+
         if !current_page.is_empty() {
             pages.push(current_page);
         }
 
         let mut pagers = vec![];
-        for (index, page) in pages.iter().enumerate() {
+        for (index, page) in pages.into_iter().enumerate() {
             // First page has no pagination path
             if index == 0 {
-                pagers.push(Pager::new(1, page.clone(), self.permalink.clone(), self.path.clone()));
+                pagers.push(Pager::new(1, page, self.permalink.clone(), self.path.clone()));
                 continue;
             }
 
@@ -146,7 +140,7 @@ impl<'a> Paginator<'a> {
 
             pagers.push(Pager::new(
                 index + 1,
-                page.clone(),
+                page,
                 permalink,
                 pager_path,
             ));
@@ -198,7 +192,7 @@ impl<'a> Paginator<'a> {
         context.insert("config", &config);
         let template_name = match self.root {
             PaginationRoot::Section(s) => {
-                context.insert("section", &s.clone_without_pages());
+                context.insert("section", &SerializingSection::from_section_basic(s));
                 s.get_template_name()
             }
             PaginationRoot::Taxonomy(t) => {
@@ -223,6 +217,7 @@ mod tests {
     use content::{Page, Section};
     use config::Taxonomy as TaxonomyConfig;
     use taxonomies::{Taxonomy, TaxonomyItem};
+    use library::Library;
 
     use super::Paginator;
 
@@ -241,15 +236,24 @@ mod tests {
         s
     }
 
+    fn create_library(is_index: bool) -> (Section, Library) {
+        let mut library = Library::new(3, 0);
+        library.insert_page(Page::default());
+        library.insert_page(Page::default());
+        library.insert_page(Page::default());
+        let mut section = create_section(is_index);
+        section.pages = library.pages().keys().collect();
+        library.insert_section(section.clone());
+        library.cache_all_pages();
+        library.cache_all_sections();
+
+        (section, library)
+    }
+
     #[test]
     fn test_can_create_paginator() {
-        let pages = vec![
-            Page::default(),
-            Page::default(),
-            Page::default(),
-        ];
-        let section = create_section(false);
-        let paginator = Paginator::from_section(pages.as_slice(), &section);
+        let (section, library) = create_library(false);
+        let paginator = Paginator::from_section(&section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -265,13 +269,8 @@ mod tests {
 
     #[test]
     fn test_can_create_paginator_for_index() {
-        let pages = vec![
-            Page::default(),
-            Page::default(),
-            Page::default(),
-        ];
-        let section = create_section(true);
-        let paginator = Paginator::from_section(pages.as_slice(), &section);
+        let (section, library) = create_library(true);
+        let paginator = Paginator::from_section(&section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -287,13 +286,8 @@ mod tests {
 
     #[test]
     fn test_can_build_paginator_context() {
-        let pages = vec![
-            Page::default(),
-            Page::default(),
-            Page::default(),
-        ];
-        let section = create_section(false);
-        let paginator = Paginator::from_section(pages.as_slice(), &section);
+        let (section, library) = create_library(false);
+        let paginator = Paginator::from_section(&section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         let context = paginator.build_paginator_context(&paginator.pagers[0]);
@@ -315,11 +309,7 @@ mod tests {
 
     #[test]
     fn test_can_create_paginator_for_taxonomy() {
-        let pages = vec![
-            Page::default(),
-            Page::default(),
-            Page::default(),
-        ];
+        let (_, library) = create_library(false);
         let taxonomy_def = TaxonomyConfig {
             name: "tags".to_string(),
             paginate_by: Some(2),
@@ -329,10 +319,10 @@ mod tests {
             name: "Something".to_string(),
             slug: "something".to_string(),
             permalink: "https://vincent.is/tags/something/".to_string(),
-            pages,
+            pages: library.pages().keys().collect(),
         };
         let taxonomy = Taxonomy { kind: taxonomy_def, items: vec![taxonomy_item.clone()] };
-        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item);
+        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);

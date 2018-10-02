@@ -7,9 +7,8 @@ extern crate pulldown_cmark;
 
 extern crate errors;
 extern crate utils;
-extern crate content;
+extern crate library;
 extern crate config;
-extern crate taxonomies;
 extern crate imageproc;
 
 pub mod filters;

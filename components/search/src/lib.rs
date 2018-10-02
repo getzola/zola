@@ -2,16 +2,16 @@ extern crate elasticlunr;
 #[macro_use]
 extern crate lazy_static;
 extern crate ammonia;
+
 #[macro_use]
 extern crate errors;
-extern crate content;
+extern crate library;
 
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
 
 use elasticlunr::{Index, Language};
 
-use content::Section;
+use library::{Library, Section};
 use errors::Result;
 
 
@@ -39,7 +39,7 @@ lazy_static! {
 /// the language given
 /// Errors if the language given is not available in Elasticlunr
 /// TODO: is making `in_search_index` apply to subsections of a `false` section useful?
-pub fn build_index(sections: &HashMap<PathBuf, Section>, lang: &str) -> Result<String> {
+pub fn build_index(lang: &str, library: &Library) -> Result<String> {
     let language = match Language::from_code(lang) {
         Some(l) => l,
         None => { bail!("Tried to build search index for language {} which is not supported", lang); }
@@ -47,14 +47,14 @@ pub fn build_index(sections: &HashMap<PathBuf, Section>, lang: &str) -> Result<S
 
     let mut index = Index::with_language(language, &["title", "body"]);
 
-    for section in sections.values() {
-        add_section_to_index(&mut index, section);
+    for section in library.sections_values() {
+        add_section_to_index(&mut index, section, library);
     }
 
     Ok(index.to_json())
 }
 
-fn add_section_to_index(index: &mut Index, section: &Section) {
+fn add_section_to_index(index: &mut Index, section: &Section, library: &Library) {
     if !section.meta.in_search_index {
         return;
     }
@@ -67,7 +67,8 @@ fn add_section_to_index(index: &mut Index, section: &Section) {
         );
     }
 
-    for page in &section.pages {
+    for key in &section.pages {
+        let page = library.get_page_by_key(*key);
         if !page.meta.in_search_index || page.meta.draft {
             continue;
         }
