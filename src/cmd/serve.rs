@@ -24,7 +24,7 @@
 use std::env;
 use std::fs::{remove_dir_all, File};
 use std::io::{self, Read};
-use std::path::{Path, PathBuf};
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
 use std::thread;
@@ -229,7 +229,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         watchers.push("sass");
     }
 
-    println!("Listening for changes in {}/{{{}}}", pwd.display(), watchers.join(", "));
+    println!("Listening for changes in {}{}{{{}}}", pwd.display(), MAIN_SEPARATOR, watchers.join(", "));
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
