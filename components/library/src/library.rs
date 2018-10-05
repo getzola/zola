@@ -2,61 +2,30 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
 use slotmap::{DenseSlotMap, Key};
-use tera::{Value, to_value};
 
 use front_matter::SortBy;
 
 use sorting::{find_siblings, sort_pages_by_weight, sort_pages_by_date};
 use content::{Page, Section};
 
-#[derive(Debug)]
-struct Values {
-    pages: HashMap<Key, Value>,
-    sections: HashMap<Key, Value>,
-}
 
-impl Values {
-    pub fn new(cap_pages: usize, cap_sections: usize) -> Values {
-        Values {
-            pages: HashMap::with_capacity(cap_pages),
-            sections: HashMap::with_capacity(cap_sections),
-        }
-    }
-
-    pub fn get_page(&self, key: &Key) -> &Value {
-        return self.pages.get(key).unwrap()
-    }
-
-    pub fn insert_page(&mut self, key: Key, value: Value) {
-        self.pages.insert(key, value);
-    }
-
-    pub fn remove_page(&mut self, key: &Key) {
-        self.pages.remove(key);
-    }
-
-    pub fn get_section(&self, key: &Key) -> &Value {
-        return self.sections.get(key).unwrap()
-    }
-
-    pub fn insert_section(&mut self, key: Key, value: Value) {
-        self.sections.insert(key, value);
-    }
-
-    pub fn remove_section(&mut self, key: &Key) {
-        self.sections.remove(key);
-    }
-}
-
-// Houses everything about pages/sections/taxonomies
+/// Houses everything about pages and sections
+/// Think of it as a database where each page and section has an id (Key here)
+/// that can be used to find the actual value
+/// Sections and pages can then refer to other elements by those keys, which are very cheap to
+/// copy.
+/// We can assume the keys are always existing as removing a page/section deletes all references
+/// to that key.
 #[derive(Debug)]
 pub struct Library {
+    /// All the pages of the site
     pages: DenseSlotMap<Page>,
+    /// All the sections of the site
     sections: DenseSlotMap<Section>,
+    /// A mapping path -> key for pages so we can easily get their key
     paths_to_pages: HashMap<PathBuf, Key>,
+    /// A mapping path -> key for sections so we can easily get their key
     paths_to_sections: HashMap<PathBuf, Key>,
-
-    values: Values,
 }
 
 impl Library {
@@ -66,10 +35,10 @@ impl Library {
             sections: DenseSlotMap::with_capacity(cap_sections),
             paths_to_pages: HashMap::with_capacity(cap_pages),
             paths_to_sections: HashMap::with_capacity(cap_sections),
-            values: Values::new(cap_pages, cap_sections),
         }
     }
 
+    /// Add a section and return its Key
     pub fn insert_section(&mut self, section: Section) -> Key {
         let path = section.file.path.clone();
         let key = self.sections.insert(section);
@@ -77,6 +46,7 @@ impl Library {
         key
     }
 
+    /// Add a page and return its Key
     pub fn insert_page(&mut self, page: Page) -> Key {
         let path = page.file.path.clone();
         let key = self.pages.insert(page);
@@ -96,10 +66,6 @@ impl Library {
         self.pages.values().collect::<Vec<_>>()
     }
 
-    pub fn pages_values_mut(&mut self) -> Vec<&mut Page> {
-        self.pages.values_mut().collect::<Vec<_>>()
-    }
-
     pub fn sections(&self) -> &DenseSlotMap<Section> {
         &self.sections
     }
@@ -110,10 +76,6 @@ impl Library {
 
     pub fn sections_values(&self) -> Vec<&Section> {
         self.sections.values().collect::<Vec<_>>()
-    }
-
-    pub fn sections_values_mut(&mut self) -> Vec<&mut Section> {
-        self.sections.values_mut().collect::<Vec<_>>()
     }
 
     /// Find out the direct subsections of each subsection if there are some
@@ -158,6 +120,8 @@ impl Library {
         }
     }
 
+    /// Sort all sections pages unless `only` is set.
+    /// If `only` is set, only the pages of the section at that specific Path will be rendered.
     pub fn sort_sections_pages(&mut self, only: Option<&Path>) {
         let mut updates = HashMap::new();
         for (key, section) in &self.sections {
@@ -167,7 +131,6 @@ impl Library {
                 }
             }
 
-            // TODO: use an enum to avoid duplication there and in sorting.rs?
             let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
                 SortBy::None => continue,
                 SortBy::Date => {
@@ -237,49 +200,7 @@ impl Library {
         }
     }
 
-    pub fn cache_all_pages(&mut self) {
-        let mut cache = HashMap::with_capacity(self.pages.capacity());
-        for (key, page) in &self.pages {
-            cache.insert(key, to_value(page.to_serialized(self.pages())).unwrap());
-        }
-
-        for (key, value) in cache {
-            self.values.insert_page(key, value);
-        }
-    }
-
-    // We need to do it from the bottom up to ensure all subsections of a section have been
-    // cached before doing it
-    pub fn cache_all_sections(&mut self) {
-        // we get the Key in order we want to process them first
-        let mut deps = HashMap::new();
-        for (key, section) in &self.sections {
-            deps.insert(key, section.subsections.clone());
-        }
-
-        loop {
-            if deps.is_empty() {
-                break;
-            }
-
-            let mut processed_keys = vec![];
-            for (key, _) in deps.iter().filter(|(_, v)| v.is_empty()) {
-                let section = self.sections.get(*key).unwrap();
-                let value = to_value(section.to_serialized(self)).unwrap();
-                self.values.insert_section(*key, value);
-                processed_keys.push(*key);
-            }
-
-            // remove the processed keys from the action
-            for key in processed_keys {
-                deps.remove(&key);
-                for (_, subs) in &mut deps {
-                    subs.retain(|k| k != &key);
-                }
-            }
-        }
-    }
-
+    /// Find all the orphan pages: pages that are in a folder without an `_index.md`
     pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
         let pages_in_sections = self.sections
             .values()
@@ -305,52 +226,38 @@ impl Library {
         self.sections.get(key).unwrap()
     }
 
-    pub fn remove_section_by_path(&mut self, path: &PathBuf) -> Option<Section> {
-        if let Some(k) = self.paths_to_sections.remove(path) {
-            self.values.remove_section(&k);
-            self.sections.remove(k)
-        } else {
-            None
-        }
-    }
-
-    pub fn contains_section(&self, path: &PathBuf) -> bool {
-        self.paths_to_sections.contains_key(path)
-    }
-
-    pub fn get_cached_section_value(&self, path: &PathBuf) -> &Value {
-        self.values.get_section(self.paths_to_sections.get(path).unwrap())
-    }
-
-    pub fn get_cached_section_value_by_key(&self, key: &Key) -> &Value {
-        self.values.get_section(key)
-    }
-
     pub fn get_page(&self, path: &PathBuf) -> Option<&Page> {
         self.pages.get(self.paths_to_pages.get(path).cloned().unwrap_or_default())
-    }
-
-    pub fn get_cached_page_value(&self, path: &PathBuf) -> &Value {
-        self.values.get_page(self.paths_to_pages.get(path).unwrap())
-    }
-
-    pub fn get_cached_page_value_by_key(&self, key: &Key) -> &Value {
-        self.values.get_page(key)
     }
 
     pub fn get_page_by_key(&self, key: Key) -> &Page {
         self.pages.get(key).unwrap()
     }
 
-    pub fn remove_page_by_path(&mut self, path: &PathBuf) -> Option<Page> {
+    pub fn remove_section(&mut self, path: &PathBuf) -> Option<Section> {
+        if let Some(k) = self.paths_to_sections.remove(path) {
+            // TODO: delete section from parent subsection if there is one
+            self.sections.remove(k)
+        } else {
+            None
+        }
+    }
+
+    pub fn remove_page(&mut self, path: &PathBuf) -> Option<Page> {
         if let Some(k) = self.paths_to_pages.remove(path) {
-            self.values.remove_page(&k);
+            // TODO: delete page from all parent sections
             self.pages.remove(k)
         } else {
             None
         }
     }
 
+    /// Used in rebuild, to check if we know it already
+    pub fn contains_section(&self, path: &PathBuf) -> bool {
+        self.paths_to_sections.contains_key(path)
+    }
+
+    /// Used in rebuild, to check if we know it already
     pub fn contains_page(&self, path: &PathBuf) -> bool {
         self.paths_to_pages.contains_key(path)
     }

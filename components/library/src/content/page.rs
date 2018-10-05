@@ -17,6 +17,7 @@ use library::Library;
 
 use content::file_info::FileInfo;
 
+/// What we are sending to the templates when rendering them
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingPage<'a> {
     content: &'a str,
@@ -45,8 +46,7 @@ pub struct SerializingPage<'a> {
 }
 
 impl<'a> SerializingPage<'a> {
-    // We only want to fill one level of prev/next, otherwise it is going to overflow.
-    // `stop` is there for that
+    /// Grabs all the data from a page, including sibling pages
     pub fn from_page(page: &'a Page, pages: &'a DenseSlotMap<Page>) -> Self {
         let mut year = None;
         let mut month = None;
@@ -322,10 +322,9 @@ impl Page {
         context.insert("config", config);
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
-        let mut borrowed = HashMap::new();
-        borrowed.insert("page", library.get_cached_page_value(&self.file.path));
+        context.insert("page", &self.to_serialized(library.pages()));
 
-        render_template(&tpl_name, tera, &context, &config.theme, borrowed)
+        render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 
@@ -342,7 +341,7 @@ impl Page {
         SerializingPage::from_page(self, pages)
     }
 
-    pub fn to_serialized_basic<'a>(&'a self) -> SerializingPage<'a> {
+    pub fn to_serialized_basic(&self) -> SerializingPage {
         SerializingPage::from_page_basic(self)
     }
 }

@@ -7,7 +7,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 slotmap = "0.2"
 rayon = "1"
 chrono = { version = "0.4", features = ["serde"] }
-tera = { git = "https://github.com/Keats/tera/", branch = "next" }
+tera = "0.11"
 serde = "1"
 serde_derive = "1"
 slug = "0.1"

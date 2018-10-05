@@ -221,7 +221,7 @@ fn can_build_site_with_taxonomies() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
 
-    for (i, page) in site.library.pages_values_mut().iter_mut().enumerate() {
+    for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
         page.meta.taxonomies = {
             let mut taxonomies = HashMap::new();
             taxonomies.insert("categories".to_string(), vec![if i % 2 == 0 { "A" } else { "B" }.to_string()]);
@@ -291,7 +291,7 @@ fn can_build_site_with_pagination_for_section() {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
-    for section in site.library.sections_values_mut() {
+    for (_, section) in site.library.sections_mut() {
         if section.is_index() {
             continue;
         }

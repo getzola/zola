@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
-tera = { git = "https://github.com/Keats/tera/", branch = "next", features = ["preserve_order"] }
+tera = { version = "0.11", features = ["preserve_order"] }
 syntect = "2"
 pulldown-cmark = "0"
 slug = "0.1"

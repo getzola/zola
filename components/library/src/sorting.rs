@@ -6,7 +6,8 @@ use chrono::NaiveDateTime;
 
 use content::Page;
 
-// Used by the RSS feed
+/// Used by the RSS feed
+/// There to not have to import sorting stuff in the site crate
 pub fn sort_actual_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
     let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
     if ord == Ordering::Equal {
@@ -16,8 +17,9 @@ pub fn sort_actual_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
     }
 }
 
-// TODO: unify both sort_ functions
-// TODO: add back sorting tests
+/// Takes a list of (page key, date, permalink) and sort them by dates if possible
+/// Pages without date will be put in the unsortable bucket
+/// The permalink is used to break ties
 pub fn sort_pages_by_date(pages: Vec<(&Key, Option<NaiveDateTime>, &str)>) -> (Vec<Key>, Vec<Key>) {
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) = pages
         .into_par_iter()
@@ -36,6 +38,9 @@ pub fn sort_pages_by_date(pages: Vec<(&Key, Option<NaiveDateTime>, &str)>) -> (V
     (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
 }
 
+/// Takes a list of (page key, weight, permalink) and sort them by weight if possible
+/// Pages without weight will be put in the unsortable bucket
+/// The permalink is used to break ties
 pub fn sort_pages_by_weight(pages: Vec<(&Key, Option<usize>, &str)>) -> (Vec<Key>, Vec<Key>) {
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) = pages
         .into_par_iter()
@@ -54,6 +59,8 @@ pub fn sort_pages_by_weight(pages: Vec<(&Key, Option<usize>, &str)>) -> (Vec<Key
     (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
 }
 
+/// Find the lighter/heavier and earlier/later pages for all pages having a date/weight
+/// and that are not drafts.
 pub fn find_siblings(sorted: Vec<(&Key, bool)>) -> Vec<(Key, Option<Key>, Option<Key>)> {
     let mut res = Vec::with_capacity(sorted.len());
     let length = sorted.len();

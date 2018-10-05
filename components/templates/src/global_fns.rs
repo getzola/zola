@@ -56,7 +56,7 @@ pub fn make_get_page(library: &Library) -> GlobalFn {
     for page in library.pages_values() {
         pages.insert(
             page.file.relative.clone(),
-            library.get_cached_page_value(&page.file.path).clone(),
+            to_value(library.get_page(&page.file.path).unwrap().to_serialized(library.pages())).unwrap(),
         );
     }
 
@@ -78,7 +78,7 @@ pub fn make_get_section(library: &Library) -> GlobalFn {
     for section in library.sections_values() {
         sections.insert(
             section.file.relative.clone(),
-            library.get_cached_section_value(&section.file.path).clone(),
+            to_value(library.get_section(&section.file.path).unwrap().to_serialized(library)).unwrap(),
         );
     }
 

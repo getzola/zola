@@ -134,7 +134,7 @@ impl Taxonomy {
         context.insert("current_url", &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)));
         context.insert("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
-        render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme, HashMap::new())
+        render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render single term {} page.", self.kind.name))
     }
 
@@ -147,7 +147,7 @@ impl Taxonomy {
         context.insert("current_url", &config.make_permalink(&self.kind.name));
         context.insert("current_path", &self.kind.name);
 
-        render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme, HashMap::new())
+        render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render a list of {} page.", self.kind.name))
     }
 

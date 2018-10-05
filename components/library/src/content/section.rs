@@ -13,6 +13,7 @@ use utils::site::get_reading_analytics;
 use rendering::{RenderContext, Header, render_content};
 
 use content::file_info::FileInfo;
+use content::SerializingPage;
 use library::Library;
 
 
@@ -29,21 +30,21 @@ pub struct SerializingSection<'a> {
     reading_time: Option<usize>,
     toc: &'a [Header],
     assets: Vec<String>,
-    pages: Vec<&'a Value>,
-    subsections: Vec<&'a Value>,
+    pages: Vec<SerializingPage<'a>>,
+    subsections: Vec<SerializingSection<'a>>,
 }
 
 impl<'a> SerializingSection<'a> {
     pub fn from_section(section: &'a Section, library: &'a Library) -> Self {
-        let mut section_pages = vec![];
-        let mut subsections = vec![];
+        let mut pages = Vec::with_capacity(section.pages.len());
+        let mut subsections = Vec::with_capacity(section.subsections.len());
 
         for k in &section.pages {
-            section_pages.push(library.get_cached_page_value_by_key(k));
+            pages.push(library.get_page_by_key(*k).to_serialized(library.pages()));
         }
 
         for k in &section.subsections {
-            subsections.push(library.get_cached_section_value_by_key(k));
+            subsections.push(library.get_section_by_key(*k).to_serialized(library));
         }
 
         SerializingSection {
@@ -58,7 +59,7 @@ impl<'a> SerializingSection<'a> {
             reading_time: section.reading_time,
             toc: &section.toc,
             assets: section.serialize_assets(),
-            pages: section_pages,
+            pages,
             subsections,
         }
     }
@@ -232,10 +233,9 @@ impl Section {
         context.insert("config", config);
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
-        let mut borrowed = HashMap::new();
-        borrowed.insert("section", library.get_cached_section_value(&self.file.path));
+        context.insert("section", &self.to_serialized(library));
 
-        render_template(&tpl_name, tera, &context, &config.theme, borrowed)
+        render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 

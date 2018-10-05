@@ -241,8 +241,8 @@ impl Site {
         self.register_early_global_fns();
         self.render_markdown()?;
         self.populate_sections();
-        self.library.cache_all_pages();
-        self.library.cache_all_sections();
+//        self.library.cache_all_pages();
+//        self.library.cache_all_sections();
         self.populate_taxonomies()?;
         self.register_tera_global_fns();
 
@@ -321,7 +321,7 @@ impl Site {
             let insert_anchor = self.find_parent_section_insert_anchor(&page.file.parent);
             page.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path, insert_anchor)?;
         }
-        let prev = self.library.remove_page_by_path(&page.file.path);
+        let prev = self.library.remove_page(&page.file.path);
         self.library.insert_page(page);
 
         Ok(prev)
@@ -336,7 +336,7 @@ impl Site {
         if render {
             section.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path)?;
         }
-        let prev = self.library.remove_section_by_path(&section.file.path);
+        let prev = self.library.remove_section(&section.file.path);
         self.library.insert_section(section);
 
         Ok(prev)
@@ -569,7 +569,7 @@ impl Site {
     }
 
     pub fn render_aliases(&self) -> Result<()> {
-        for page in self.library.pages_values() {
+        for (_, page) in self.library.pages() {
             for alias in &page.meta.aliases {
                 let mut output_path = self.output_path.to_path_buf();
                 let mut split = alias.split('/').collect::<Vec<_>>();
@@ -605,7 +605,7 @@ impl Site {
         context.insert("config", &self.config);
         create_file(
             &self.output_path.join("404.html"),
-            &render_template("404.html", &self.tera, &context, &self.config.theme, HashMap::new())?,
+            &render_template("404.html", &self.tera, &context, &self.config.theme)?,
         )
     }
 
@@ -614,7 +614,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         create_file(
             &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme, HashMap::new())?,
+            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme)?,
         )
     }
 
@@ -709,7 +709,7 @@ impl Site {
 
         context.insert("config", &self.config);
 
-        let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme, HashMap::new())?;
+        let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
 
         create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
 
@@ -754,7 +754,7 @@ impl Site {
 
         context.insert("feed_url", &rss_feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme, HashMap::new())?;
+        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
         if let Some(ref base) = base_path {
             let mut output_path = self.output_path.clone().to_path_buf();

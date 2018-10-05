@@ -190,7 +190,6 @@ impl<'a> Paginator<'a> {
 
     pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera) -> Result<String> {
         let mut context = Context::new();
-        let borrowed = HashMap::new();
         context.insert("config", &config);
         let template_name = match self.root {
             PaginationRoot::Section(s) => {
@@ -206,7 +205,7 @@ impl<'a> Paginator<'a> {
         context.insert("current_path", &pager.path);
         context.insert("paginator", &self.build_paginator_context(pager));
 
-        render_template(&template_name, tera, &context, &config.theme, borrowed)
+        render_template(&template_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render pager {}", pager.index))
     }
 }
@@ -246,8 +245,6 @@ mod tests {
         let mut section = create_section(is_index);
         section.pages = library.pages().keys().collect();
         library.insert_section(section.clone());
-        library.cache_all_pages();
-        library.cache_all_sections();
 
         (section, library)
     }

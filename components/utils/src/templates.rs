@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use tera::{Tera, Context, Value};
+use tera::{Tera, Context};
 
 use errors::Result;
 
@@ -22,16 +22,16 @@ macro_rules! render_default_tpl {
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string
 /// to avoid an error if there isn't a template with that name
-pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: &Option<String>, borrowed: HashMap<&str, &Value>) -> Result<String> {
+pub fn render_template(name: &str, tera: &Tera, context: &Context, theme: &Option<String>) -> Result<String> {
     if tera.templates.contains_key(name) {
         return tera
-            .render_with_borrowed(name, context, borrowed)
+            .render(name, context)
             .map_err(|e| e.into());
     }
 
     if let Some(ref t) = *theme {
         return tera
-            .render_with_borrowed(&format!("{}/templates/{}", t, name), context, borrowed)
+            .render(&format!("{}/templates/{}", t, name), context)
             .map_err(|e| e.into());
     }
 

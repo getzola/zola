@@ -104,11 +104,11 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
     }
 
     if is_section {
-        if let Some(s) = site.library.remove_section_by_path(&path.to_path_buf()) {
+        if let Some(s) = site.library.remove_section(&path.to_path_buf()) {
             site.permalinks.remove(&s.file.relative);
             site.populate_sections();
         }
-    } else if let Some(p) = site.library.remove_page_by_path(&path.to_path_buf()) {
+    } else if let Some(p) = site.library.remove_page(&path.to_path_buf()) {
         site.permalinks.remove(&p.file.relative);
 
         if !p.meta.taxonomies.is_empty() {
