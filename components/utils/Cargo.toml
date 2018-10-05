@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
 errors = { path = "../errors" }
-tera = "0.11"
+tera = { git = "https://github.com/Keats/tera/", branch = "next" }
 unicode-segmentation = "1.2"
 walkdir = "2"
 

@@ -6,7 +6,7 @@ authors = ["Vojtěch Král <vojtech@kral.hk>"]
 [dependencies]
 lazy_static = "1"
 regex = "1.0"
-tera = "0.11"
+tera = { git = "https://github.com/Keats/tera/", branch = "next" }
 image = "0.20"
 rayon = "1"
 

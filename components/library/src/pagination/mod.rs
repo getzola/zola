@@ -7,7 +7,7 @@ use errors::{Result, ResultExt};
 use config::Config;
 use utils::templates::render_template;
 
-use content::{Section, SerializingSection};
+use content::{Section, SerializingSection, SerializingPage};
 use taxonomies::{TaxonomyItem, Taxonomy};
 use library::Library;
 
@@ -29,11 +29,11 @@ pub struct Pager<'a> {
     /// Path to that page
     path: String,
     /// All pages for the pager
-    pages: Vec<&'a Value>,
+    pages: Vec<SerializingPage<'a>>,
 }
 
 impl<'a> Pager<'a> {
-    fn new(index: usize, pages: Vec<&'a Value>, permalink: String, path: String) -> Pager<'a> {
+    fn new(index: usize, pages: Vec<SerializingPage<'a>>, permalink: String, path: String) -> Pager<'a> {
         Pager {
             index,
             permalink,
@@ -107,7 +107,8 @@ impl<'a> Paginator<'a> {
         let mut current_page = vec![];
 
         for key in self.all_pages {
-            current_page.push(library.get_cached_page_value_by_key(key));
+            let page = library.get_page_by_key(*key);
+            current_page.push(page.to_serialized_basic());
 
             if current_page.len() == self.paginate_by {
                 pages.push(current_page);
@@ -189,6 +190,7 @@ impl<'a> Paginator<'a> {
 
     pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera) -> Result<String> {
         let mut context = Context::new();
+        let borrowed = HashMap::new();
         context.insert("config", &config);
         let template_name = match self.root {
             PaginationRoot::Section(s) => {
@@ -204,7 +206,7 @@ impl<'a> Paginator<'a> {
         context.insert("current_path", &pager.path);
         context.insert("paginator", &self.build_paginator_context(pager));
 
-        render_template(&template_name, tera, &context, &config.theme)
+        render_template(&template_name, tera, &context, &config.theme, borrowed)
             .chain_err(|| format!("Failed to render pager {}", pager.index))
     }
 }

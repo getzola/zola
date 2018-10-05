@@ -283,12 +283,13 @@ impl Library {
     pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
         let pages_in_sections = self.sections
             .values()
-            .flat_map(|s| s.all_pages_path())
+            .flat_map(|s| &s.pages)
             .collect::<HashSet<_>>();
 
         self.pages
-            .values()
-            .filter(|page| !pages_in_sections.contains(&page.file.path))
+            .iter()
+            .filter(|(key, _)| !pages_in_sections.contains(&key))
+            .map(|(_, page)| page)
             .collect()
     }
 

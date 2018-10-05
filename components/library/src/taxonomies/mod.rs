@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 
 use slug::slugify;
-use tera::{Context, Tera, Value};
+use tera::{Context, Tera};
 use slotmap::{Key};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
 use errors::{Result, ResultExt};
 use utils::templates::render_template;
 
+use content::SerializingPage;
 use sorting::sort_pages_by_date;
 use library::Library;
 
@@ -16,15 +17,16 @@ struct SerializedTaxonomyItem<'a> {
     name: &'a str,
     slug: &'a str,
     permalink: &'a str,
-    pages: Vec<&'a Value>,
+    pages: Vec<SerializingPage<'a>>,
 }
 
 impl<'a> SerializedTaxonomyItem<'a> {
     pub fn from_item(item: &'a TaxonomyItem, library: &'a Library) -> Self {
         let mut pages = vec![];
 
-        for k in &item.pages {
-            pages.push(library.get_cached_page_value_by_key(k));
+        for key in &item.pages {
+            let page = library.get_page_by_key(*key);
+            pages.push(page.to_serialized_basic());
         }
 
         SerializedTaxonomyItem {
@@ -132,7 +134,7 @@ impl Taxonomy {
         context.insert("current_url", &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)));
         context.insert("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
-        render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme)
+        render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme, HashMap::new())
             .chain_err(|| format!("Failed to render single term {} page.", self.kind.name))
     }
 
@@ -145,7 +147,7 @@ impl Taxonomy {
         context.insert("current_url", &config.make_permalink(&self.kind.name));
         context.insert("current_path", &self.kind.name);
 
-        render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme)
+        render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme, HashMap::new())
             .chain_err(|| format!("Failed to render a list of {} page.", self.kind.name))
     }
 

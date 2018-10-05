@@ -605,7 +605,7 @@ impl Site {
         context.insert("config", &self.config);
         create_file(
             &self.output_path.join("404.html"),
-            &render_template("404.html", &self.tera, &context, &self.config.theme)?,
+            &render_template("404.html", &self.tera, &context, &self.config.theme, HashMap::new())?,
         )
     }
 
@@ -614,7 +614,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         create_file(
             &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme)?,
+            &render_template("robots.txt", &self.tera, &Context::new(), &self.config.theme, HashMap::new())?,
         )
     }
 
@@ -709,7 +709,7 @@ impl Site {
 
         context.insert("config", &self.config);
 
-        let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
+        let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme, HashMap::new())?;
 
         create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
 
@@ -754,7 +754,7 @@ impl Site {
 
         context.insert("feed_url", &rss_feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
+        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme, HashMap::new())?;
 
         if let Some(ref base) = base_path {
             let mut output_path = self.output_path.clone().to_path_buf();

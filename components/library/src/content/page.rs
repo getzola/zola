@@ -320,11 +320,12 @@ impl Page {
 
         let mut context = TeraContext::new();
         context.insert("config", config);
-        context.insert("page", &library.get_cached_page_value(&self.file.path));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
+        let mut borrowed = HashMap::new();
+        borrowed.insert("page", library.get_cached_page_value(&self.file.path));
 
-        render_template(&tpl_name, tera, &context, &config.theme)
+        render_template(&tpl_name, tera, &context, &config.theme, borrowed)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 
