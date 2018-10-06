@@ -34,6 +34,7 @@ impl<'a> SerializedTaxonomyItem<'a> {
             slug: &item.slug,
             permalink: &item.permalink,
             pages,
+
         }
     }
 }

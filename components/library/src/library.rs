@@ -101,7 +101,8 @@ impl Library {
                 self.sections.get_mut(*section_key).unwrap().pages.push(key);
             }
         }
-        self.sort_sections_pages(None);
+
+        self.sort_sections_pages();
 
         let sections = self.paths_to_sections.clone();
         let mut sections_weight = HashMap::new();
@@ -120,17 +121,10 @@ impl Library {
         }
     }
 
-    /// Sort all sections pages unless `only` is set.
-    /// If `only` is set, only the pages of the section at that specific Path will be rendered.
-    pub fn sort_sections_pages(&mut self, only: Option<&Path>) {
+    /// Sort all sections pages
+    pub fn sort_sections_pages(&mut self) {
         let mut updates = HashMap::new();
         for (key, section) in &self.sections {
-            if let Some(p) = only {
-                if p != section.file.path {
-                    continue;
-                }
-            }
-
             let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
                 SortBy::None => continue,
                 SortBy::Date => {
@@ -212,6 +206,17 @@ impl Library {
             .filter(|(key, _)| !pages_in_sections.contains(&key))
             .map(|(_, page)| page)
             .collect()
+    }
+
+    pub fn find_parent_section(&self, path: &Path) -> Option<&Section> {
+        let page_key = self.paths_to_pages[path];
+        for s in self.sections.values() {
+            if s.pages.contains(&page_key) {
+                return Some(s)
+            }
+        }
+
+        None
     }
 
     pub fn get_section(&self, path: &PathBuf) -> Option<&Section> {

@@ -244,17 +244,6 @@ impl Section {
         self.file.components.is_empty()
     }
 
-    /// Returns all the paths of the pages belonging to that section
-    pub fn all_pages_path(&self) -> Vec<PathBuf> {
-        let paths = vec![];
-        paths
-    }
-
-    /// Whether the page given belongs to that section
-    pub fn is_child_page(&self, path: &PathBuf) -> bool {
-        false
-    }
-
     /// Creates a vectors of asset URLs.
     fn serialize_assets(&self) -> Vec<String> {
         self.assets.iter()

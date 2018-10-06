@@ -357,12 +357,6 @@ impl Site {
         self.library.populate_sections();
     }
 
-    /// Sorts the pages of the section at the given path
-    /// By default will sort all sections but can be made to only sort a single one by providing a path
-    pub fn sort_sections_pages(&mut self, only: Option<&Path>) {
-        self.library.sort_sections_pages(only);
-    }
-
     /// Find all the tags and categories if it's asked in the config
     pub fn populate_taxonomies(&mut self) -> Result<()> {
         if self.config.taxonomies.is_empty() {

@@ -12,19 +12,6 @@ use library::{Page, Section};
 use front_matter::{PageFrontMatter, SectionFrontMatter};
 
 
-/// Finds the section that contains the page given if there is one
-pub fn find_parent_section<'a>(site: &'a Site, page: &Page) -> Option<&'a Section> {
-    for section in site.library.sections_values() {
-        // TODO: remove that, it's wrong now it should check the page key
-        if section.is_child_page(&page.file.path) {
-            return Some(section);
-        }
-    }
-
-    None
-}
-
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PageChangesNeeded {
     /// Editing `taxonomies`
@@ -106,7 +93,6 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
     if is_section {
         if let Some(s) = site.library.remove_section(&path.to_path_buf()) {
             site.permalinks.remove(&s.file.relative);
-            site.populate_sections();
         }
     } else if let Some(p) = site.library.remove_page(&path.to_path_buf()) {
         site.permalinks.remove(&p.file.relative);
@@ -114,15 +100,11 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
         if !p.meta.taxonomies.is_empty() {
             site.populate_taxonomies()?;
         }
-
-        // if there is a parent section, we will need to re-render it
-        // most likely
-        if find_parent_section(site, &p).is_some() {
-            site.populate_sections();
-        }
     }
 
+    site.populate_sections();
     // Ensure we have our fn updated so it doesn't contain the permalink(s)/section/page deleted
+    site.register_early_global_fns();
     site.register_tera_global_fns();
     // Deletion is something that doesn't happen all the time so we
     // don't need to optimise it too much
@@ -137,9 +119,12 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
         // Updating a section
         Some(prev) => {
             // Copy the section data so we don't end up with an almost empty object
-            site.library.get_section_mut(&pathbuf).unwrap().pages = prev.pages;
-            site.library.get_section_mut(&pathbuf).unwrap().ignored_pages = prev.ignored_pages;
-            site.library.get_section_mut(&pathbuf).unwrap().subsections = prev.subsections;
+            {
+                let s = site.library.get_section_mut(&pathbuf).unwrap();
+                s.pages = prev.pages;
+                s.ignored_pages = prev.ignored_pages;
+                s.subsections = prev.subsections;
+            }
 
             if site.library.get_section(&pathbuf).unwrap().meta == prev.meta {
                 // Front matter didn't change, only content did
@@ -152,7 +137,6 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
                 // Sort always comes first if present so the rendering will be fine
                 match changes {
                     SectionChangesNeeded::Sort => {
-                        site.sort_sections_pages(Some(path));
                         site.register_tera_global_fns();
                     }
                     SectionChangesNeeded::Render => site.render_section(&site.library.get_section(&pathbuf).unwrap(), false)?,
@@ -177,7 +161,7 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
 
 macro_rules! render_parent_section {
     ($site: expr, $path: expr) => {
-        if let Some(s) = find_parent_section($site, &$site.library.get_page(&$path.to_path_buf()).unwrap()) {
+        if let Some(s) = $site.library.find_parent_section($path) {
             $site.render_section(s, false)?;
         };
     }
@@ -190,6 +174,8 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
     match site.add_page(page, true)? {
         // Updating a page
         Some(prev) => {
+            site.populate_sections();
+
             // Front matter didn't change, only content did
             if site.library.get_page(&pathbuf).unwrap().meta == prev.meta {
                 // Other than the page itself, the summary might be seen
@@ -197,42 +183,24 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                 if site.library.get_page(&pathbuf).unwrap().summary.is_some() {
                     render_parent_section!(site, path);
                 }
-                // TODO: register_tera_global_fns is expensive as it involves lots of cloning
-                // I can't think of a valid usecase where you would need the content
-                // of a page through a global fn so it's commented out for now
-                // site.register_tera_global_fns();
+                site.register_tera_global_fns();
                 return site.render_page(&site.library.get_page(&pathbuf).unwrap());
             }
 
             // Front matter changed
-            let mut sections_populated = false;
             for changes in find_page_front_matter_changes(&site.library.get_page(&pathbuf).unwrap().meta, &prev.meta) {
+                site.register_tera_global_fns();
+
                 // Sort always comes first if present so the rendering will be fine
                 match changes {
                     PageChangesNeeded::Taxonomies => {
                         site.populate_taxonomies()?;
-                        site.register_tera_global_fns();
                         site.render_taxonomies()?;
                     }
                     PageChangesNeeded::Sort => {
-                        let section_path = match find_parent_section(site, &site.library.get_page(&pathbuf).unwrap()) {
-                            Some(s) => s.file.path.clone(),
-                            None => continue  // Do nothing if it's an orphan page
-                        };
-                        if !sections_populated {
-                            site.populate_sections();
-                            sections_populated = true;
-                        }
-                        site.sort_sections_pages(Some(&section_path));
-                        site.register_tera_global_fns();
                         site.render_index()?;
                     }
                     PageChangesNeeded::Render => {
-                        if !sections_populated {
-                            site.populate_sections();
-                            sections_populated = true;
-                        }
-                        site.register_tera_global_fns();
                         render_parent_section!(site, path);
                         site.render_page(&site.library.get_page(&path.to_path_buf()).unwrap())?;
                     }
@@ -244,6 +212,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
         None => {
             site.populate_sections();
             site.populate_taxonomies()?;
+            site.register_early_global_fns();
             site.register_tera_global_fns();
             // No need to optimise that yet, we can revisit if it becomes an issue
             site.build()
