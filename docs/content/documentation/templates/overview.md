@@ -147,3 +147,11 @@ Gets the translation of the given `key`, for the `default_language` or the `lang
 ### `resize_image`
 Resizes an image file.
 Pease refer to [_Content / Image Processing_](./documentation/content/image-processing/index.md) for complete documentation.
+
+### `get_json`
+Returns JSON requested from a remote endpoint.
+
+```jinja2
+{% set response = get_json(url="https://api.github.com/repos/Keats/gutenberg") %}
+{{ response.id }}
+```
