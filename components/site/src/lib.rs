@@ -311,6 +311,7 @@ impl Site {
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(self.taxonomies.clone()),
         );
+        self.tera.register_function("get_json", global_fns::make_get_json());
     }
 
     /// Add a page to the site

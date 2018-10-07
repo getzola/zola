@@ -4,6 +4,7 @@ extern crate lazy_static;
 extern crate tera;
 extern crate base64;
 extern crate pulldown_cmark;
+extern crate reqwest;
 
 extern crate errors;
 extern crate utils;

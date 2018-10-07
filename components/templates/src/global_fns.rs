@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use tera::{GlobalFn, Value, from_value, to_value, Result};
+use reqwest::{Client, header};
 
 use content::{Page, Section};
 use config::Config;
@@ -33,6 +34,32 @@ macro_rules! optional_arg {
             None => None
         }
     };
+}
+
+
+pub fn make_get_json() -> GlobalFn {
+    let mut headers = header::HeaderMap::new();
+    headers.insert(header::ACCEPT, "application/json".parse().unwrap());
+    let client = Arc::new(Mutex::new(Client::builder()
+        .default_headers(headers)
+        .build().unwrap()));
+    let response_cache: Arc<Mutex<HashMap<String, Value>>> = Arc::new(Mutex::new(HashMap::new()));
+    Box::new(move |args| -> Result<Value> {
+        let response_client = client.lock().unwrap();
+        let mut cache = response_cache.lock().unwrap();
+        let url = required_arg!(String, args.get("url"), "`get_json` requires a `url` argument.");
+        if let Some(cached_response) = cache.get(&url) {
+            return Ok(cached_response.clone());
+        }
+        let mut response = response_client.get(&url).send().map_err(|e| format!("Request to '{}' failed: {:?}", url, e))?;
+        match response.json::<Value>() {
+            Ok(json) => {
+                cache.insert(url, json.clone());
+                return Ok(json);
+            },
+            Err(e) => Err(format!("{} returned invalid JSON: {}", url, e).into())
+        }
+    })
 }
 
 
