@@ -3,10 +3,10 @@ title = "Installation"
 weight = 1
 +++
 
-Gutenberg provides pre-built binaries for MacOS, Linux and Windows on the
+Gutenberg provides pre-built binaries for macOS, Linux and Windows on the
 [GitHub release page](https://github.com/Keats/gutenberg/releases).
 
-## Mac OS
+## macOS
 
 Gutenberg is available on [Brew](https://brew.sh):
 
