@@ -18,6 +18,8 @@ Cloning the repository using Git or another VCS will allow you to easily
 update it but you can also simply download the files manually and paste
 them in a folder.
 
+You can find a list of themes [on this very website](./themes/_index.md).
+
 ## Using a theme
 
 Now that you have the theme in your `themes` directory, you only need to tell
