@@ -79,6 +79,7 @@ impl Site {
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
         let mut config = get_config(path, config_file);
+        config.load_extra_syntaxes(path)?;
 
         let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         // Only parsing as we might be extending templates from themes and that would error
@@ -257,7 +258,6 @@ impl Site {
         let permalinks = &self.permalinks;
         let tera = &self.tera;
         let config = &self.config;
-        let base_path = &self.base_path;
 
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
@@ -272,7 +272,7 @@ impl Site {
             .par_iter_mut()
             .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
-                page.render_markdown(permalinks, tera, config, base_path, insert_anchor)
+                page.render_markdown(permalinks, tera, config, insert_anchor)
             })
             .collect::<Result<()>>()?;
 
@@ -281,7 +281,7 @@ impl Site {
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
-            .map(|section| section.render_markdown(permalinks, tera, config, base_path))
+            .map(|section| section.render_markdown(permalinks, tera, config))
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -319,7 +319,7 @@ impl Site {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render {
             let insert_anchor = self.find_parent_section_insert_anchor(&page.file.parent);
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path, insert_anchor)?;
+            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
         let prev = self.library.remove_page(&page.file.path);
         self.library.insert_page(page);
@@ -334,7 +334,7 @@ impl Site {
     pub fn add_section(&mut self, mut section: Section, render: bool) -> Result<Option<Section>> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render {
-            section.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path)?;
+            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
         let prev = self.library.remove_section(&section.file.path);
         self.library.insert_section(section);

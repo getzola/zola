@@ -1,8 +1,0 @@
-[package]
-name = "highlighting"
-version = "0.1.0"
-authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
-
-[dependencies]
-lazy_static = "1"
-syntect = "2"

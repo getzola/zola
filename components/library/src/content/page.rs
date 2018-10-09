@@ -287,7 +287,6 @@ impl Page {
         permalinks: &HashMap<String, String>,
         tera: &Tera,
         config: &Config,
-        base_path: &Path,
         anchor_insert: InsertAnchor,
     ) -> Result<()> {
         let mut context = RenderContext::new(
@@ -295,7 +294,6 @@ impl Page {
             config,
             &self.permalink,
             permalinks,
-            base_path,
             anchor_insert,
         );
 
@@ -402,7 +400,6 @@ Hello world"#;
             &HashMap::default(),
             &Tera::default(),
             &Config::default(),
-            Path::new("something"),
             InsertAnchor::None,
         ).unwrap();
 
@@ -514,7 +511,6 @@ Hello world
             &HashMap::default(),
             &Tera::default(),
             &config,
-            Path::new("something"),
             InsertAnchor::None,
         ).unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));

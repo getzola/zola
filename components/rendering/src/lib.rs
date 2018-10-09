@@ -12,7 +12,6 @@ extern crate pest_derive;
 #[macro_use]
 extern crate errors;
 extern crate front_matter;
-extern crate highlighting;
 extern crate utils;
 extern crate config;
 extern crate link_checker;

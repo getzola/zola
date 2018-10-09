@@ -3,7 +3,7 @@
 //! Although it is a valid example for serializing syntaxes, you probably won't need
 //! to do this yourself unless you want to cache your own compiled grammars.
 extern crate syntect;
-use syntect::parsing::SyntaxSet;
+use syntect::parsing::SyntaxSetBuilder;
 use syntect::highlighting::ThemeSet;
 use syntect::dumps::*;
 use std::env;
@@ -21,12 +21,13 @@ fn main() {
     let mut args = env::args().skip(1);
     match (args.next(), args.next(), args.next()) {
         (Some(ref cmd), Some(ref package_dir), Some(ref packpath_newlines)) if cmd == "synpack" => {
-            let mut ps = SyntaxSet::new();
-            ps.load_plain_text_syntax();
-            ps.load_syntaxes(package_dir, true).unwrap();
-            dump_to_file(&ps, packpath_newlines).unwrap();
+            let mut builder = SyntaxSetBuilder::new();
+            builder.add_plain_text_syntax();
+            builder.add_from_folder(package_dir, true).unwrap();
+            let ss = builder.build();
+            dump_to_file(&ss, packpath_newlines).unwrap();
 
-            for s in ps.syntaxes() {
+            for s in ss.syntaxes() {
                 if !s.file_extensions.is_empty() {
                     println!("- {} -> {:?}", s.name, s.file_extensions);
                 }

@@ -205,14 +205,12 @@ impl Section {
         permalinks: &HashMap<String, String>,
         tera: &Tera,
         config: &Config,
-        base_path: &Path,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
             config,
             &self.permalink,
             permalinks,
-            base_path,
             self.meta.insert_anchor_links,
         );
 

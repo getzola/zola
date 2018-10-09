@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::path::Path;
 
 use tera::{Tera, Context};
 use front_matter::InsertAnchor;
@@ -14,7 +13,6 @@ pub struct RenderContext<'a> {
     pub tera_context: Context,
     pub current_page_permalink: &'a str,
     pub permalinks: &'a HashMap<String, String>,
-    pub base_path: &'a Path,
     pub insert_anchor: InsertAnchor,
 }
 
@@ -24,7 +22,6 @@ impl<'a> RenderContext<'a> {
         config: &'a Config,
         current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
-        base_path: &'a Path,
         insert_anchor: InsertAnchor,
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
@@ -35,7 +32,6 @@ impl<'a> RenderContext<'a> {
             current_page_permalink,
             permalinks,
             insert_anchor,
-            base_path,
             config,
         }
     }

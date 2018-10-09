@@ -87,7 +87,7 @@ You can check for any updates to the current packages by running:
 $ git submodule update --remote --merge
 ```
 
-And finally from the root of the components/highlighting crate run the following command:
+And finally from the root of the components/config crate run the following command:
 
 ```bash
 $ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump

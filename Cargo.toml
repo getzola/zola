@@ -42,7 +42,6 @@ members = [
     "components/config",
     "components/errors",
     "components/front_matter",
-    "components/highlighting",
     "components/rebuild",
     "components/rendering",
     "components/site",
