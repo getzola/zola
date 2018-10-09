@@ -57,7 +57,7 @@ ignored_shortcode_with_body = { ignored_sc_body_start ~ text_in_ignored_body_sc 
 
 text_in_body_sc         = ${ (!(sc_body_end) ~ ANY)+ }
 text_in_ignored_body_sc = ${ (!(ignored_sc_body_end) ~ ANY)+ }
-text                    = ${ (!(inline_shortcode | ignored_inline_shortcode | sc_body_start | ignored_sc_body_start) ~ ANY)+ }
+text                    = ${ (!(inline_shortcode | ignored_inline_shortcode | shortcode_with_body | ignored_shortcode_with_body) ~ ANY)+ }
 
 content = _{
     ignored_inline_shortcode |
