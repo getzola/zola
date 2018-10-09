@@ -33,7 +33,6 @@ ctrlc = "3"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
-content = { path = "components/content" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
 rebuild = { path = "components/rebuild" }
@@ -41,18 +40,19 @@ rebuild = { path = "components/rebuild" }
 [workspace]
 members = [
     "components/config",
-    "components/content",
     "components/errors",
     "components/front_matter",
     "components/highlighting",
-    "components/pagination",
     "components/rebuild",
     "components/rendering",
     "components/site",
-    "components/taxonomies",
     "components/templates",
     "components/utils",
     "components/search",
     "components/imageproc",
     "components/link_checker",
+    "components/library",
 ]
+
+#[profile.release]
+#debug = true

@@ -13,7 +13,7 @@ lazy_static! {
     /// Termcolor color choice.
     /// We do not rely on ColorChoice::Auto behavior
     /// as the check is already performed by has_color.
-    static ref COLOR_CHOICE: ColorChoice = 
+    static ref COLOR_CHOICE: ColorChoice =
         if has_color() {
             ColorChoice::Always
         } else {
@@ -49,18 +49,23 @@ fn colorize(message: &str, color: &ColorSpec) {
 pub fn notify_site_size(site: &Site) {
     println!(
         "-> Creating {} pages ({} orphan), {} sections, and processing {} images",
-        site.pages.len(),
+        site.library.pages().len(),
         site.get_all_orphan_pages().len(),
-        site.sections.len() - 1, // -1 since we do not the index as a section
+        site.library.sections().len() - 1, // -1 since we do not the index as a section
         site.num_img_ops(),
     );
 }
 
 /// Display a warning in the console if there are ignored pages in the site
 pub fn warn_about_ignored_pages(site: &Site) {
-    let ignored_pages: Vec<_> = site.sections
-        .values()
-        .flat_map(|s| s.ignored_pages.iter().map(|p| p.file.path.clone()))
+    let ignored_pages: Vec<_> = site.library
+        .sections_values()
+        .iter()
+        .flat_map(|s| {
+            s.ignored_pages
+                .iter()
+                .map(|k| site.library.get_page_by_key(*k).file.path.clone())
+        })
         .collect();
 
     if !ignored_pages.is_empty() {

@@ -14,7 +14,6 @@ extern crate ctrlc;
 extern crate site;
 #[macro_use]
 extern crate errors;
-extern crate content;
 extern crate front_matter;
 extern crate utils;
 extern crate rebuild;

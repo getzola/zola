@@ -12,38 +12,31 @@ extern crate config;
 extern crate utils;
 extern crate front_matter;
 extern crate templates;
-extern crate pagination;
-extern crate taxonomies;
-extern crate content;
 extern crate search;
 extern crate imageproc;
+extern crate library;
 
 #[cfg(test)]
 extern crate tempfile;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 use std::fs::{create_dir_all, remove_dir_all, copy};
-use std::mem;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use glob::glob;
 use tera::{Tera, Context};
 use sass_rs::{Options as SassOptions, OutputStyle, compile_file};
+use rayon::prelude::*;
 
 use errors::{Result, ResultExt};
 use config::{Config, get_config};
 use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
 use utils::net::get_available_port;
-use content::{Page, Section, populate_siblings, sort_pages, sort_pages_by_date};
 use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
 use front_matter::{InsertAnchor};
-use taxonomies::{Taxonomy, find_taxonomies};
-use pagination::Paginator;
-
-use rayon::prelude::*;
-
+use library::{Page, Section, sort_actual_pages_by_date, Library, Taxonomy, find_taxonomies, Paginator};
 
 /// The sitemap only needs links and potentially date so we trim down
 /// all pages to only that
@@ -65,8 +58,6 @@ pub struct Site {
     pub base_path: PathBuf,
     /// The parsed config for the site
     pub config: Config,
-    pub pages: HashMap<PathBuf, Page>,
-    pub sections: HashMap<PathBuf, Section>,
     pub tera: Tera,
     imageproc: Arc<Mutex<imageproc::Processor>>,
     // the live reload port to be used if there is one
@@ -78,6 +69,8 @@ pub struct Site {
     /// A map of all .md files (section and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
     pub permalinks: HashMap<String, String>,
+    /// Contains all pages and sections of the site
+    pub library: Library,
 }
 
 impl Site {
@@ -108,7 +101,7 @@ impl Site {
             );
             let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
             rewrite_theme_paths(&mut tera_theme, &theme);
-            // TODO: same as above
+            // TODO: same as below
             if theme_path.join("templates").join("robots.txt").exists() {
                 tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
             }
@@ -133,8 +126,6 @@ impl Site {
             base_path: path.to_path_buf(),
             config,
             tera,
-            pages: HashMap::new(),
-            sections: HashMap::new(),
             imageproc: Arc::new(Mutex::new(imageproc)),
             live_reload: None,
             output_path: path.join("public"),
@@ -142,6 +133,8 @@ impl Site {
             static_path,
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
+            // We will allocate it properly later on
+            library: Library::new(0, 0),
         };
 
         Ok(site)
@@ -158,15 +151,7 @@ impl Site {
 
     /// Get all the orphan (== without section) pages in the site
     pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
-        let pages_in_sections = self.sections
-            .values()
-            .flat_map(|s| s.all_pages_path())
-            .collect::<HashSet<_>>();
-
-        self.pages
-            .values()
-            .filter(|page| !pages_in_sections.contains(&page.file.path))
-            .collect()
+        self.library.get_all_orphan_pages()
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
@@ -190,6 +175,8 @@ impl Site {
             .filter_map(|e| e.ok())
             .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
             .partition(|entry| entry.as_path().file_name().unwrap() == "_index.md");
+
+        self.library = Library::new(page_entries.len(), section_entries.len());
 
         let sections = {
             let config = &self.config;
@@ -225,7 +212,7 @@ impl Site {
         // Insert a default index section if necessary so we don't need to create
         // a _index.md to render the index page at the root of the site
         let index_path = self.index_section_path();
-        if let Some(ref index_section) = self.sections.get(&index_path) {
+        if let Some(ref index_section) = self.library.get_section(&index_path) {
             if self.config.build_search_index && !index_section.meta.in_search_index {
                 bail!(
                     "You have enabled search in the config but disabled it in the index section: \
@@ -235,12 +222,13 @@ impl Site {
             }
         }
         // Not in else because of borrow checker
-        if !self.sections.contains_key(&index_path) {
+        if !self.library.contains_section(&index_path) {
             let mut index_section = Section::default();
             index_section.permalink = self.config.make_permalink("");
+            index_section.file.path = self.content_path.join("_index.md");
             index_section.file.parent = self.content_path.clone();
             index_section.file.relative = "_index.md".to_string();
-            self.sections.insert(index_path, index_section);
+            self.library.insert_section(index_section);
         }
 
         let mut pages_insert_anchors = HashMap::new();
@@ -253,6 +241,8 @@ impl Site {
         self.register_early_global_fns();
         self.render_markdown()?;
         self.populate_sections();
+//        self.library.cache_all_pages();
+//        self.library.cache_all_sections();
         self.populate_taxonomies()?;
         self.register_tera_global_fns();
 
@@ -271,19 +261,27 @@ impl Site {
 
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
-        for p in self.pages.values() {
+        for (_, p) in self.library.pages() {
             pages_insert_anchors.insert(p.file.path.clone(), self.find_parent_section_insert_anchor(&p.file.parent.clone()));
         }
 
-        self.pages.par_iter_mut()
-            .map(|(_, page)| {
+        self.library
+            .pages_mut()
+            .values_mut()
+            .collect::<Vec<_>>()
+            .par_iter_mut()
+            .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
                 page.render_markdown(permalinks, tera, config, base_path, insert_anchor)
             })
             .collect::<Result<()>>()?;
 
-        self.sections.par_iter_mut()
-            .map(|(_, section)| section.render_markdown(permalinks, tera, config, base_path))
+        self.library
+            .sections_mut()
+            .values_mut()
+            .collect::<Vec<_>>()
+            .par_iter_mut()
+            .map(|section| section.render_markdown(permalinks, tera, config, base_path))
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -301,15 +299,15 @@ impl Site {
 
     pub fn register_tera_global_fns(&mut self) {
         self.tera.register_function("trans", global_fns::make_trans(self.config.clone()));
-        self.tera.register_function("get_page", global_fns::make_get_page(&self.pages));
-        self.tera.register_function("get_section", global_fns::make_get_section(&self.sections));
+        self.tera.register_function("get_page", global_fns::make_get_page(&self.library));
+        self.tera.register_function("get_section", global_fns::make_get_section(&self.library));
         self.tera.register_function(
             "get_taxonomy",
-            global_fns::make_get_taxonomy(self.taxonomies.clone()),
+            global_fns::make_get_taxonomy(&self.taxonomies, &self.library),
         );
         self.tera.register_function(
             "get_taxonomy_url",
-            global_fns::make_get_taxonomy_url(self.taxonomies.clone()),
+            global_fns::make_get_taxonomy_url(&self.taxonomies),
         );
     }
 
@@ -317,16 +315,14 @@ impl Site {
     /// The `render` parameter is used in the serve command, when rebuilding a page.
     /// If `true`, it will also render the markdown for that page
     /// Returns the previous page struct if there was one at the same path
-    pub fn add_page(&mut self, page: Page, render: bool) -> Result<Option<Page>> {
-        let path = page.file.path.clone();
+    pub fn add_page(&mut self, mut page: Page, render: bool) -> Result<Option<Page>> {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
-        let prev = self.pages.insert(page.file.path.clone(), page);
-
         if render {
-            let insert_anchor = self.find_parent_section_insert_anchor(&self.pages[&path].file.parent);
-            let page = self.pages.get_mut(&path).unwrap();
+            let insert_anchor = self.find_parent_section_insert_anchor(&page.file.parent);
             page.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path, insert_anchor)?;
         }
+        let prev = self.library.remove_page(&page.file.path);
+        self.library.insert_page(page);
 
         Ok(prev)
     }
@@ -335,15 +331,13 @@ impl Site {
     /// The `render` parameter is used in the serve command, when rebuilding a page.
     /// If `true`, it will also render the markdown for that page
     /// Returns the previous section struct if there was one at the same path
-    pub fn add_section(&mut self, section: Section, render: bool) -> Result<Option<Section>> {
-        let path = section.file.path.clone();
+    pub fn add_section(&mut self, mut section: Section, render: bool) -> Result<Option<Section>> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
-        let prev = self.sections.insert(section.file.path.clone(), section);
-
         if render {
-            let section = self.sections.get_mut(&path).unwrap();
             section.render_markdown(&self.permalinks, &self.tera, &self.config, &self.base_path)?;
         }
+        let prev = self.library.remove_section(&section.file.path);
+        self.library.insert_section(section);
 
         Ok(prev)
     }
@@ -351,7 +345,7 @@ impl Site {
     /// Finds the insert_anchor for the parent section of the directory at `path`.
     /// Defaults to `AnchorInsert::None` if no parent section found
     pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
-        match self.sections.get(&parent_path.join("_index.md")) {
+        match self.library.get_section(&parent_path.join("_index.md")) {
             Some(s) => s.meta.insert_anchor_links,
             None => InsertAnchor::None
         }
@@ -360,59 +354,7 @@ impl Site {
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
-        let mut grandparent_paths: HashMap<PathBuf, Vec<PathBuf>> = HashMap::new();
-
-        for section in self.sections.values_mut() {
-            if let Some(ref grand_parent) = section.file.grand_parent {
-                grandparent_paths
-                    .entry(grand_parent.to_path_buf())
-                    .or_insert_with(|| vec![])
-                    .push(section.file.path.clone());
-            }
-            // Make sure the pages of a section are empty since we can call that many times on `serve`
-            section.pages = vec![];
-            section.ignored_pages = vec![];
-        }
-
-        for page in self.pages.values() {
-            let parent_section_path = page.file.parent.join("_index.md");
-            if self.sections.contains_key(&parent_section_path) {
-                // TODO: use references instead of cloning to avoid having to call populate_section on
-                // content change
-                self.sections.get_mut(&parent_section_path).unwrap().pages.push(page.clone());
-            }
-        }
-
-        self.sort_sections_pages(None);
-        // TODO: remove this clone
-        let sections = self.sections.clone();
-
-        for section in self.sections.values_mut() {
-            if let Some(paths) = grandparent_paths.get(&section.file.parent) {
-                section.subsections = paths
-                    .iter()
-                    .map(|p| sections[p].clone())
-                    .collect::<Vec<_>>();
-                section.subsections
-                    .sort_by(|a, b| a.meta.weight.cmp(&b.meta.weight));
-            }
-        }
-    }
-
-    /// Sorts the pages of the section at the given path
-    /// By default will sort all sections but can be made to only sort a single one by providing a path
-    pub fn sort_sections_pages(&mut self, only: Option<&Path>) {
-        for (path, section) in &mut self.sections {
-            if let Some(p) = only {
-                if p != path {
-                    continue;
-                }
-            }
-            let pages = mem::replace(&mut section.pages, vec![]);
-            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(pages, section.meta.sort_by);
-            section.pages = populate_siblings(&sorted_pages, section.meta.sort_by);
-            section.ignored_pages = cannot_be_sorted_pages;
-        }
+        self.library.populate_sections();
     }
 
     /// Find all the tags and categories if it's asked in the config
@@ -421,13 +363,7 @@ impl Site {
             return Ok(());
         }
 
-        self.taxonomies = find_taxonomies(
-            &self.config,
-            self.pages
-                .values()
-                .filter(|p| !p.is_draft())
-                .collect::<Vec<_>>(),
-        )?;
+        self.taxonomies = find_taxonomies(&self.config, &self.library)?;
 
         Ok(())
     }
@@ -501,7 +437,7 @@ impl Site {
         create_directory(&current_path)?;
 
         // Finally, create a index.html file there with the page rendered
-        let output = page.render_html(&self.tera, &self.config)?;
+        let output = page.render_html(&self.tera, &self.config, &self.library)?;
         create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
 
         // Copy any asset we found previously into the same directory as the index.html
@@ -522,7 +458,7 @@ impl Site {
         self.render_orphan_pages()?;
         self.render_sitemap()?;
         if self.config.generate_rss {
-            self.render_rss_feed(self.pages.values().collect(), None)?;
+            self.render_rss_feed(self.library.pages_values(), None)?;
         }
         self.render_404()?;
         self.render_robots()?;
@@ -555,7 +491,7 @@ impl Site {
             &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
             &format!(
                 "window.searchIndex = {};",
-                search::build_index(&self.sections, &self.config.default_language)?
+                search::build_index(&self.config.default_language, &self.library)?
             ),
         )?;
 
@@ -627,7 +563,7 @@ impl Site {
     }
 
     pub fn render_aliases(&self) -> Result<()> {
-        for page in self.pages.values() {
+        for (_, page) in self.library.pages() {
             for alias in &page.meta.aliases {
                 let mut output_path = self.output_path.to_path_buf();
                 let mut split = alias.split('/').collect::<Vec<_>>();
@@ -695,7 +631,7 @@ impl Site {
 
         ensure_directory_exists(&self.output_path)?;
         let output_path = self.output_path.join(&taxonomy.kind.name);
-        let list_output = taxonomy.render_all_terms(&self.tera, &self.config)?;
+        let list_output = taxonomy.render_all_terms(&self.tera, &self.config, &self.library)?;
         create_directory(&output_path)?;
         create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
 
@@ -705,15 +641,15 @@ impl Site {
             .map(|item| {
                 if taxonomy.kind.rss {
                     self.render_rss_feed(
-                        item.pages.iter().map(|p| p).collect(),
+                        item.pages.iter().map(|p| self.library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
                     )?;
                 }
 
                 if taxonomy.kind.is_paginated() {
-                    self.render_paginated(&output_path, &Paginator::from_taxonomy(&taxonomy, item))
+                    self.render_paginated(&output_path, &Paginator::from_taxonomy(&taxonomy, item, &self.library))
                 } else {
-                    let single_output = taxonomy.render_term(item, &self.tera, &self.config)?;
+                    let single_output = taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
                     let path = output_path.join(&item.slug);
                     create_directory(&path)?;
                     create_file(
@@ -731,8 +667,9 @@ impl Site {
 
         let mut context = Context::new();
 
-        let mut pages = self.pages
-            .values()
+        let mut pages = self.library
+            .pages_values()
+            .iter()
             .filter(|p| !p.is_draft())
             .map(|p| {
                 let date = match p.meta.date {
@@ -745,8 +682,9 @@ impl Site {
         pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.insert("pages", &pages);
 
-        let mut sections = self.sections
-            .values()
+        let mut sections = self.library
+            .sections_values()
+            .iter()
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
             .collect::<Vec<_>>();
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
@@ -786,16 +724,22 @@ impl Site {
             .filter(|p| p.meta.date.is_some() && !p.is_draft())
             .collect::<Vec<_>>();
 
-        pages.par_sort_unstable_by(sort_pages_by_date);
-
         // Don't generate a RSS feed if none of the pages has a date
         if pages.is_empty() {
             return Ok(());
         }
 
+        pages.par_sort_unstable_by(sort_actual_pages_by_date);
+
         context.insert("last_build_date", &pages[0].meta.date.clone().map(|d| d.to_string()));
         // limit to the last n elements
-        context.insert("pages", &pages.iter().take(self.config.rss_limit).collect::<Vec<_>>());
+        let p = pages
+            .iter()
+            .take(self.config.rss_limit)
+            .map(|x| x.to_serialized_basic())
+            .collect::<Vec<_>>();
+
+        context.insert("pages", &p);
         context.insert("config", &self.config);
 
         let rss_feed_url = if let Some(ref base) = base_path {
@@ -848,7 +792,7 @@ impl Site {
             section
                 .pages
                 .par_iter()
-                .map(|p| self.render_page(p))
+                .map(|k| self.render_page(self.library.get_page_by_key(*k)))
                 .collect::<Result<()>>()?;
         }
 
@@ -863,9 +807,9 @@ impl Site {
         }
 
         if section.meta.is_paginated() {
-            self.render_paginated(&output_path, &Paginator::from_section(&section.pages, section))?;
+            self.render_paginated(&output_path, &Paginator::from_section(&section, &self.library))?;
         } else {
-            let output = section.render_html(&self.tera, &self.config)?;
+            let output = section.render_html(&self.tera, &self.config, &self.library)?;
             create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
         }
 
@@ -875,16 +819,15 @@ impl Site {
     /// Used only on reload
     pub fn render_index(&self) -> Result<()> {
         self.render_section(
-            &self.sections[&self.content_path.join("_index.md")],
+            &self.library.get_section(&self.content_path.join("_index.md")).unwrap(),
             false,
         )
     }
 
     /// Renders all sections
     pub fn render_sections(&self) -> Result<()> {
-        self.sections
-            .values()
-            .collect::<Vec<_>>()
+        self.library
+            .sections_values()
             .into_par_iter()
             .map(|s| self.render_section(s, true))
             .collect::<Result<()>>()
