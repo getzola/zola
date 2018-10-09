@@ -125,7 +125,23 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                     Rule::sc_body_start => "the start of a shortcode".to_string(),
                     Rule::ignored_sc_body_start => "the start of an ignored shortcode".to_string(),
                     Rule::text => "some text".to_string(),
-                    _ => format!("TODO error: {:?}", rule).to_string(),
+                    Rule::EOI => "end of input".to_string(),
+                    Rule::double_quoted_string => "double quoted string".to_string(),
+                    Rule::single_quoted_string => "single quoted string".to_string(),
+                    Rule::backquoted_quoted_string => "backquoted quoted string".to_string(),
+                    Rule::boolean => "a boolean (true, false)".to_string(),
+                    Rule::all_chars => "a alphanumerical character".to_string(),
+                    Rule::kwargs => "a list of keyword arguments".to_string(),
+                    Rule::sc_def => "a shortcode definition".to_string(),
+                    Rule::shortcode_with_body => "a shortcode with body".to_string(),
+                    Rule::ignored_shortcode_with_body => "an ignored shortcode with body".to_string(),
+                    Rule::sc_body_end => "{% end %}".to_string(),
+                    Rule::ignored_sc_body_end => "{%/* end */%}".to_string(),
+                    Rule::text_in_body_sc => "text in a shortcode body".to_string(),
+                    Rule::text_in_ignored_body_sc => "text in an ignored shortcode body".to_string(),
+                    Rule::content => "some content".to_string(),
+                    Rule::page => "a page".to_string(),
+                    Rule::WHITESPACE => "whitespace".to_string(),
                 }
             });
             bail!("{}", fancy_e);
@@ -169,7 +185,8 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                         _ => unreachable!("Got something weird in an ignored shortcode: {:?}", p2),
                     }
                 }
-            }
+            },
+            Rule::EOI => (),
             _ => unreachable!("unexpected page rule: {:?}", p.as_rule()),
         }
     }

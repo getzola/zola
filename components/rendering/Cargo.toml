@@ -10,8 +10,8 @@ pulldown-cmark = "0"
 slug = "0.1"
 serde = "1"
 serde_derive = "1"
-pest = "1"
-pest_derive = "1"
+pest = "2"
+pest_derive = "2"
 
 errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }
