@@ -22,6 +22,7 @@
 - Syntax highlighting default was mistakenly `true`, it has been set to `false`
 - Add NO_COLOR and CLICOLOR support for having colours or not in CLI output
 - Fix `robots.txt`template not being used
+- RSS feed now takes all available articles by default instead of limiting to 10000
 
 ## 0.4.2 (2018-09-03)
 
