@@ -37,8 +37,9 @@ highlight_theme = "base16-ocean-dark"
 # Whether to generate a RSS feed automatically
 generate_rss = false
 
-# The number of articles to include in the RSS feed
-rss_limit = 20
+# The number of articles to include in the RSS feed. Will include all items if
+# not set (the default).
+# rss_limit = 20
 
 # The taxonomies to be rendered for that site and their configuration
 # Example:

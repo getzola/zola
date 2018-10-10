@@ -732,10 +732,11 @@ impl Site {
         pages.par_sort_unstable_by(sort_actual_pages_by_date);
 
         context.insert("last_build_date", &pages[0].meta.date.clone().map(|d| d.to_string()));
-        // limit to the last n elements
+        // limit to the last n elements if the limit is set; otherwise use all.
+        let num_entries = self.config.rss_limit.unwrap_or(pages.len());
         let p = pages
             .iter()
-            .take(self.config.rss_limit)
+            .take(num_entries)
             .map(|x| x.to_serialized_basic())
             .collect::<Vec<_>>();
 

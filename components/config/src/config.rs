@@ -5,13 +5,13 @@ use std::path::{Path, PathBuf};
 
 use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use toml;
 use toml::Value as Toml;
-use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 
-use theme::Theme;
-use highlighting::THEME_SET;
 use errors::{Result, ResultExt};
+use highlighting::THEME_SET;
+use theme::Theme;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
@@ -76,8 +76,8 @@ pub struct Config {
 
     /// Whether to generate RSS. Defaults to false
     pub generate_rss: bool,
-    /// The number of articles to include in the RSS feed. Defaults to 10_000
-    pub rss_limit: usize,
+    /// The number of articles to include in the RSS feed. Defaults to including all items.
+    pub rss_limit: Option<usize>,
 
     pub taxonomies: Vec<Taxonomy>,
 
@@ -251,7 +251,7 @@ impl Default for Config {
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
             generate_rss: false,
-            rss_limit: 10_000,
+            rss_limit: None,
             taxonomies: Vec::new(),
             compile_sass: false,
             check_external_links: false,
