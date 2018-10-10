@@ -100,9 +100,7 @@ fn render_shortcode(name: &str, args: &Map<String, Value>, context: &RenderConte
         .render(&tpl_name, &tera_context)
         .chain_err(|| format!("Failed to render {} shortcode", name))?;
 
-    // We trim left every single line of a shortcode to avoid the accidental
-    // shortcode counted as code block because of 4 spaces left padding
-    Ok(res.lines().map(|s| s.trim_left()).collect())
+    Ok(res)
 }
 
 pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
@@ -386,5 +384,14 @@ Some body {{ hello() }}{%/* end */%}"#, &Tera::default());
         tera.add_raw_template("shortcodes/youtube.html", "{{body}}").unwrap();
         let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera);
         assert_eq!(res, "Body\n Hey!");
+    }
+
+    // https://github.com/Keats/gutenberg/issues/462
+    #[test]
+    fn shortcodes_with_body_do_not_eat_newlines() {
+        let mut tera = Tera::default();
+        tera.add_raw_template("shortcodes/youtube.html", "{{body | safe}}").unwrap();
+        let res = render_shortcodes("Body\n {% youtube() %}\nHello \n World{% end %}", &tera);
+        assert_eq!(res, "Body\n Hello \n World");
     }
 }
