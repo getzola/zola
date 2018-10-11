@@ -4,6 +4,7 @@ extern crate error_chain;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use std::path::PathBuf;
 
 use csv::Reader;
 
