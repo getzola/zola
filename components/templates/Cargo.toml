@@ -11,6 +11,7 @@ pulldown-cmark = "0"
 toml = "0.4"
 csv = "1"
 serde_json = "1.0"
+error-chain = "0.12"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
