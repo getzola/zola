@@ -36,7 +36,7 @@ $ gutenberg build --base-url $DEPLOY_URL
 This is useful for example when you want to deploy previews of a site to a dynamic URL, such as Netlify
 deploy previews.
 
-+You can override the default output directory 'public' by passing a other value to the `output-dir` flag.
+You can override the default output directory 'public' by passing a other value to the `output-dir` flag.
 
 ```bash
 $ gutenberg build --output-dir $DOCUMENT_ROOT
