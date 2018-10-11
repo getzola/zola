@@ -4,11 +4,11 @@ use pulldown_cmark as cmark;
 use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
 use slug::slugify;
 use syntect::easy::HighlightLines;
-use syntect::html::{start_coloured_html_snippet, styles_to_coloured_html, IncludeBackground};
+use syntect::html::{start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground};
 
 use errors::Result;
 use utils::site::resolve_internal_link;
-use highlighting::{get_highlighter, THEME_SET};
+use config::highlighting::{get_highlighter, THEME_SET, SYNTAX_SET};
 use link_checker::check_url;
 
 use table_of_contents::{TempHeader, Header, make_table_of_contents};
@@ -20,7 +20,7 @@ const CONTINUE_READING: &str = "<p><a name=\"continue-reading\"></a></p>\n";
 pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
-    pub toc: Vec<Header>
+    pub toc: Vec<Header>,
 }
 
 // We might have cases where the slug is already present in our list of anchor
@@ -41,7 +41,7 @@ fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
 }
 
 fn is_colocated_asset_link(link: &str) -> bool {
-    !link.contains("/")  // http://, ftp://, ../ etc
+    !link.contains('/')  // http://, ftp://, ../ etc
         && !link.starts_with("mailto:")
 }
 
@@ -52,7 +52,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut error = None;
 
     let mut background = IncludeBackground::Yes;
-    let mut highlighter: Option<HighlightLines> = None;
+    let mut highlighter: Option<(HighlightLines, bool)> = None;
     // If we get text in header, we need to insert the id and a anchor
     let mut in_header = false;
     // pulldown_cmark can send several text events for a title if there are markdown
@@ -92,9 +92,18 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     }
 
                     // if we are in the middle of a code block
-                    if let Some(ref mut highlighter) = highlighter {
-                        let highlighted = &highlighter.highlight(&text);
-                        let html = styles_to_coloured_html(highlighted, background);
+                    if let Some((ref mut highlighter, in_extra)) = highlighter {
+                        let highlighted = if in_extra {
+                            if let Some(ref extra) = context.config.extra_syntax_set {
+                                highlighter.highlight(&text, &extra)
+                            } else {
+                                unreachable!("Got a highlighter from extra syntaxes but no extra?");
+                            }
+                        } else {
+                            highlighter.highlight(&text, &SYNTAX_SET)
+                        };
+                        //let highlighted = &highlighter.highlight(&text, ss);
+                        let html = styled_line_to_highlighted_html(&highlighted, background);
                         return Event::Html(Owned(html));
                     }
 
@@ -107,20 +116,12 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     }
 
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
-                    match get_highlighter(&theme, info, context.base_path, &context.config.extra_syntaxes) {
-                        Ok(h) => {
-                            highlighter = Some(h);
-                            // This selects the background color the same way that start_coloured_html_snippet does
-                            let color = theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE);
-                            background = IncludeBackground::IfDifferent(color);
-                        }
-                        Err(err) => {
-                            error = Some(format!("Could not load syntax: {}", err).into());
-                            return Event::Html(Borrowed(""));
-                        }
-                    }
-                    let snippet = start_coloured_html_snippet(theme);
-                    Event::Html(Owned(snippet))
+                    highlighter = Some(get_highlighter(info, &context.config));
+                    // This selects the background color the same way that start_coloured_html_snippet does
+                    let color = theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE);
+                    background = IncludeBackground::IfDifferent(color);
+                    let snippet = start_highlighted_html_snippet(theme);
+                    Event::Html(Owned(snippet.0))
                 }
                 Event::End(Tag::CodeBlock(_)) => {
                     if !context.config.highlight_code {
@@ -159,22 +160,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                     } else if is_colocated_asset_link(&link) {
                         format!("{}{}", context.current_page_permalink, link)
-                    } else {
-                        if context.config.check_external_links
-                            && !link.starts_with('#')
-                            && !link.starts_with("mailto:") {
-                            let res = check_url(&link);
-                            if res.is_valid() {
-                                link.to_string()
-                            } else {
-                                error = Some(
-                                    format!("Link {} is not valid: {}", link, res.message()).into()
-                                );
-                                String::new()
-                            }
-                        } else {
+                    } else if context.config.check_external_links
+                        && !link.starts_with('#')
+                        && !link.starts_with("mailto:") {
+                        let res = check_url(&link);
+                        if res.is_valid() {
                             link.to_string()
+                        } else {
+                            error = Some(
+                                format!("Link {} is not valid: {}", link, res.message()).into()
+                            );
+                            String::new()
                         }
+                    } else {
+                        link.to_string()
                     };
 
                     if in_header {
@@ -237,12 +236,12 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     }
 
     if let Some(e) = error {
-        return Err(e)
+        return Err(e);
     } else {
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
-            toc: make_table_of_contents(&headers)
+            toc: make_table_of_contents(&headers),
         })
     }
 }

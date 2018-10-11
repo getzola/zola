@@ -4,5 +4,5 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
-reqwest = "0.8"
+reqwest = "0.9"
 lazy_static = "1"

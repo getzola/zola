@@ -24,7 +24,7 @@
 use std::env;
 use std::fs::{remove_dir_all, File};
 use std::io::{self, Read};
-use std::path::{Path, PathBuf};
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
 use std::thread;
@@ -56,7 +56,7 @@ enum ChangeKind {
 // Also, commenting out the lines 330-340 (containing `e instanceof ProtocolError`) was needed
 // as it seems their build didn't work well and didn't include ProtocolError so it would error on
 // errors
-const LIVE_RELOAD: &'static str = include_str!("livereload.js");
+const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 struct NotFoundHandler {
     rendered_template: PathBuf,
@@ -154,19 +154,24 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
 
     // Setup watchers
     let mut watching_static = false;
+    let mut watching_templates = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
     watcher.watch("content/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
-    watcher.watch("templates/", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
     watcher.watch(config_file, RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `config` file. Does it exist?")?;
 
     if Path::new("static").exists() {
         watching_static = true;
         watcher.watch("static/", RecursiveMode::Recursive)
-            .chain_err(|| "Can't watch the `static` folder. Does it exist?")?;
+            .chain_err(|| "Can't watch the `static` folder.")?;
+    }
+
+    if Path::new("templates").exists() {
+        watching_templates = true;
+        watcher.watch("templates/", RecursiveMode::Recursive)
+            .chain_err(|| "Can't watch the `templates` folder.")?;
     }
 
     // Sass support is optional so don't make it an error to no have a sass folder
@@ -221,15 +226,18 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
 
     let pwd = env::current_dir().unwrap();
 
-    let mut watchers = vec!["content", "templates", "config.toml"];
+    let mut watchers = vec!["content", "config.toml"];
     if watching_static {
         watchers.push("static");
+    }
+    if watching_templates {
+        watchers.push("templates");
     }
     if site.config.compile_sass {
         watchers.push("sass");
     }
 
-    println!("Listening for changes in {}/{{{}}}", pwd.display(), watchers.join(", "));
+    println!("Listening for changes in {}{}{{{}}}", pwd.display(), MAIN_SEPARATOR, watchers.join(", "));
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
@@ -276,7 +284,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
                                 rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p.to_string_lossy());
                             },
                             (ChangeKind::Config, _) => {
-                                console::info(&format!("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible."));
+                                console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(interface, port, output_dir, base_url, config_file).unwrap().0;
                             }
                         };

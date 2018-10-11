@@ -5,6 +5,7 @@ extern crate error_chain;
 extern crate tera;
 extern crate toml;
 extern crate image;
+extern crate syntect;
 
 error_chain! {
     errors {}
@@ -17,6 +18,7 @@ error_chain! {
         Io(::std::io::Error);
         Toml(toml::de::Error);
         Image(image::ImageError);
+        Syntect(syntect::LoadingError);
     }
 }
 

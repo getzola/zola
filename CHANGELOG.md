@@ -1,19 +1,29 @@
 # Changelog
 
-## 0.4.3 (unreleased)
+## 0.5.0 (unreleased)
+
+### Breaking
 
 - Gutenberg has changed name to REPLACE_ME!
+- The `pagers` variable of Paginator objects has been removed
+
+### Others
 - Update dependencies, fixing a few bugs with templates
 - Load only .html files in themes from the templates folder
-- Background colour is set fewer times when highlighting syntaxes
+- Background colour is set fewer times when highlighting syntaxes, resulting in smaller HTML filesize
 - Link checker will not try to validate email links anymore
 - Load table and footnote markdown extensions in `markdown` filter
 - `get_url` now defaults to not adding a trailing slash
 - Fix `--base-url` not overriding processed images URLs
-- Many many times faster (x10-x20) for sites with thousands of pages
+- Many many times faster (x5-x40) for most sites
 - Add more Emacs temp file to the ignored patterns in `gutenberg serve`
 - Files starting with `.` are not considered pages anymore even if they end with `.md`
 - `_processed_images` folder for image processing has been renamed `processed_images` to avoid issues with GitHub Pages
+- Syntax highlighting default was mistakenly `true`, it has been set to `false`
+- Add NO_COLOR and CLICOLOR support for having colours or not in CLI output
+- Fix `robots.txt`template not being used
+- RSS feed now takes all available articles by default instead of limiting to 10000
+- `templates` directory is now optional
 
 ## 0.4.2 (2018-09-03)
 

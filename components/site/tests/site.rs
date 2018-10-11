@@ -19,44 +19,46 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
-    assert_eq!(site.pages.len(), 15);
+    assert_eq!(site.library.pages().len(), 15);
     let posts_path = path.join("content").join("posts");
 
     // Make sure we remove all the pwd + content from the sections
-    let basic = &site.pages[&posts_path.join("simple.md")];
+    let basic = site.library.get_page(&posts_path.join("simple.md")).unwrap();
     assert_eq!(basic.file.components, vec!["posts".to_string()]);
 
     // Make sure the page with a url doesn't have any sections
-    let url_post = &site.pages[&posts_path.join("fixed-url.md")];
+    let url_post = site.library.get_page(&posts_path.join("fixed-url.md")).unwrap();
     assert_eq!(url_post.path, "a-fixed-url/");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
-    let asset_folder_post = &site.pages[&posts_path.join("with-assets").join("index.md")];
+    let asset_folder_post = site.library.get_page(&posts_path.join("with-assets").join("index.md")).unwrap();
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.sections.len(), 7);
+    assert_eq!(site.library.sections().len(), 7);
 
     // And that the sections are correct
-    let index_section = &site.sections[&path.join("content").join("_index.md")];
+    let index_section = site.library.get_section(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 3);
     assert_eq!(index_section.pages.len(), 1);
 
-    let posts_section = &site.sections[&posts_path.join("_index.md")];
+    let posts_section = site.library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 1);
     assert_eq!(posts_section.pages.len(), 7);
 
-    let tutorials_section = &site.sections[&posts_path.join("tutorials").join("_index.md")];
+    let tutorials_section = site.library.get_section(&posts_path.join("tutorials").join("_index.md")).unwrap();
     assert_eq!(tutorials_section.subsections.len(), 2);
-    assert_eq!(tutorials_section.subsections[0].clone().meta.title.unwrap(), "Programming");
-    assert_eq!(tutorials_section.subsections[1].clone().meta.title.unwrap(), "DevOps");
+    let sub1 = site.library.get_section_by_key(tutorials_section.subsections[0]);
+    let sub2 = site.library.get_section_by_key(tutorials_section.subsections[1]);
+    assert_eq!(sub1.clone().meta.title.unwrap(), "Programming");
+    assert_eq!(sub2.clone().meta.title.unwrap(), "DevOps");
     assert_eq!(tutorials_section.pages.len(), 0);
 
-    let devops_section = &site.sections[&posts_path.join("tutorials").join("devops").join("_index.md")];
+    let devops_section = site.library.get_section(&posts_path.join("tutorials").join("devops").join("_index.md")).unwrap();
     assert_eq!(devops_section.subsections.len(), 0);
     assert_eq!(devops_section.pages.len(), 2);
 
-    let prog_section = &site.sections[&posts_path.join("tutorials").join("programming").join("_index.md")];
+    let prog_section = site.library.get_section(&posts_path.join("tutorials").join("programming").join("_index.md")).unwrap();
     assert_eq!(prog_section.subsections.len(), 0);
     assert_eq!(prog_section.pages.len(), 2);
 }
@@ -165,6 +167,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
     // Drafts are not in the sitemap
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
+
+    // robots.txt has been rendered from the template
+    assert!(file_contains!(public, "robots.txt", "User-agent: gutenberg"));
+    assert!(file_contains!(public, "robots.txt", "Sitemap: https://replace-this-with-your-url.com/sitemap.xml"));
 }
 
 #[test]
@@ -216,7 +222,7 @@ fn can_build_site_with_taxonomies() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
 
-    for (i, page) in site.pages.values_mut().enumerate() {
+    for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
         page.meta.taxonomies = {
             let mut taxonomies = HashMap::new();
             taxonomies.insert("categories".to_string(), vec![if i % 2 == 0 { "A" } else { "B" }.to_string()]);
@@ -286,7 +292,7 @@ fn can_build_site_with_pagination_for_section() {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
-    for section in site.sections.values_mut(){
+    for (_, section) in site.library.sections_mut() {
         if section.is_index() {
             continue;
         }
@@ -365,7 +371,7 @@ fn can_build_site_with_pagination_for_index() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
     {
-        let index = site.sections.get_mut(&path.join("content").join("_index.md")).unwrap();
+        let index = site.library.get_section_mut(&path.join("content").join("_index.md")).unwrap();
         index.meta.paginate_by = Some(2);
         index.meta.template = Some("index_paginated.html".to_string());
     }

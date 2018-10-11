@@ -5,17 +5,16 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
 tera = { version = "0.11", features = ["preserve_order"] }
-syntect = "2"
+syntect = "3"
 pulldown-cmark = "0"
 slug = "0.1"
 serde = "1"
 serde_derive = "1"
-pest = "1"
-pest_derive = "1"
+pest = "2"
+pest_derive = "2"
 
 errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }
-highlighting = { path = "../highlighting"}
 utils = { path = "../utils" }
 config = { path = "../config" }
 link_checker = { path = "../link_checker" }

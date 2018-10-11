@@ -15,7 +15,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::fs::{self, File};
 
 use regex::Regex;
-use image::{GenericImage, FilterType};
+use image::{FilterType, GenericImageView};
 use image::jpeg::JPEGEncoder;
 use rayon::prelude::*;
 

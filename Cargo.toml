@@ -1,6 +1,6 @@
 [package]
 name = "gutenberg"
-version = "0.4.2"
+version = "0.5.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -17,10 +17,12 @@ clap = "2"
 name = "gutenberg"
 
 [dependencies]
+atty = "0.2.11"
 clap = "2"
 chrono = "0.4"
+lazy_static = "1.1.0"
 toml = "0.4"
-term-painter = "0.2"
+termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
 # Below is for the serve cmd
@@ -31,7 +33,6 @@ ctrlc = "3"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
-content = { path = "components/content" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
 rebuild = { path = "components/rebuild" }
@@ -39,18 +40,18 @@ rebuild = { path = "components/rebuild" }
 [workspace]
 members = [
     "components/config",
-    "components/content",
     "components/errors",
     "components/front_matter",
-    "components/highlighting",
-    "components/pagination",
     "components/rebuild",
     "components/rendering",
     "components/site",
-    "components/taxonomies",
     "components/templates",
     "components/utils",
     "components/search",
     "components/imageproc",
     "components/link_checker",
+    "components/library",
 ]
+
+#[profile.release]
+#debug = true

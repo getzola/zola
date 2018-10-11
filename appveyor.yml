@@ -10,7 +10,7 @@ environment:
 
   matrix:
     - target: x86_64-pc-windows-msvc
-      RUST_VERSION: 1.27.0
+      RUST_VERSION: 1.28.0
     - target: x86_64-pc-windows-msvc
       RUST_VERSION: stable
 
@@ -51,6 +51,7 @@ branches:
     # Release tags
     - /^v\d+\.\d+\.\d+.*$/
     - master
+    - next
 
 # disable automatic builds
 build: false

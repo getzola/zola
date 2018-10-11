@@ -1,12 +1,10 @@
 /// A page, can be a blog post or a basic page
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::result::Result as StdResult;
 
-use chrono::Datelike;
-use tera::{Tera, Context as TeraContext};
-use serde::ser::{SerializeStruct, self};
+use tera::{Tera, Context as TeraContext, Value, Map};
 use slug::slugify;
+use slotmap::{Key, DenseSlotMap};
 
 use errors::{Result, ResultExt};
 use config::Config;
@@ -15,9 +13,119 @@ use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
 use rendering::{RenderContext, Header, render_content};
+use library::Library;
 
-use file_info::FileInfo;
+use content::file_info::FileInfo;
 
+/// What we are sending to the templates when rendering them
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct SerializingPage<'a> {
+    content: &'a str,
+    permalink: &'a str,
+    slug: &'a str,
+    title: &'a Option<String>,
+    description: &'a Option<String>,
+    date: &'a Option<String>,
+    year: Option<i32>,
+    month: Option<u32>,
+    day: Option<u32>,
+    taxonomies: &'a HashMap<String, Vec<String>>,
+    extra: &'a Map<String, Value>,
+    path: &'a str,
+    components: &'a [String],
+    summary: &'a Option<String>,
+    word_count: Option<usize>,
+    reading_time: Option<usize>,
+    toc: &'a [Header],
+    assets: Vec<String>,
+    draft: bool,
+    lighter: Option<Box<SerializingPage<'a>>>,
+    heavier: Option<Box<SerializingPage<'a>>>,
+    earlier: Option<Box<SerializingPage<'a>>>,
+    later: Option<Box<SerializingPage<'a>>>,
+}
+
+impl<'a> SerializingPage<'a> {
+    /// Grabs all the data from a page, including sibling pages
+    pub fn from_page(page: &'a Page, pages: &'a DenseSlotMap<Page>) -> Self {
+        let mut year = None;
+        let mut month = None;
+        let mut day = None;
+        if let Some(d) = page.meta.datetime_tuple {
+            year = Some(d.0);
+            month = Some(d.1);
+            day = Some(d.2);
+        }
+        let lighter = page.lighter.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
+        let heavier = page.heavier.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
+        let earlier = page.earlier.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
+        let later = page.later.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
+
+        SerializingPage {
+            content: &page.content,
+            permalink: &page.permalink,
+            slug: &page.slug,
+            title: &page.meta.title,
+            description: &page.meta.description,
+            extra: &page.meta.extra,
+            date: &page.meta.date,
+            year,
+            month,
+            day,
+            taxonomies: &page.meta.taxonomies,
+            path: &page.path,
+            components: &page.components,
+            summary: &page.summary,
+            word_count: page.word_count,
+            reading_time: page.reading_time,
+            toc: &page.toc,
+            assets: page.serialize_assets(),
+            draft: page.is_draft(),
+            lighter,
+            heavier,
+            earlier,
+            later,
+        }
+    }
+
+    /// Same as from_page but does not fill sibling pages
+    pub fn from_page_basic(page: &'a Page) -> Self {
+        let mut year = None;
+        let mut month = None;
+        let mut day = None;
+        if let Some(d) = page.meta.datetime_tuple {
+            year = Some(d.0);
+            month = Some(d.1);
+            day = Some(d.2);
+        }
+
+        SerializingPage {
+            content: &page.content,
+            permalink: &page.permalink,
+            slug: &page.slug,
+            title: &page.meta.title,
+            description: &page.meta.description,
+            extra: &page.meta.extra,
+            date: &page.meta.date,
+            year,
+            month,
+            day,
+            taxonomies: &page.meta.taxonomies,
+            path: &page.path,
+            components: &page.components,
+            summary: &page.summary,
+            word_count: page.word_count,
+            reading_time: page.reading_time,
+            toc: &page.toc,
+            assets: page.serialize_assets(),
+            draft: page.is_draft(),
+            lighter: None,
+            heavier: None,
+            earlier: None,
+            later: None,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Page {
@@ -45,15 +153,20 @@ pub struct Page {
     /// as summary
     pub summary: Option<String>,
     /// The earlier page, for pages sorted by date
-    pub earlier: Option<Box<Page>>,
+    pub earlier: Option<Key>,
     /// The later page, for pages sorted by date
-    pub later: Option<Box<Page>>,
+    pub later: Option<Key>,
     /// The lighter page, for pages sorted by weight
-    pub lighter: Option<Box<Page>>,
+    pub lighter: Option<Key>,
     /// The heavier page, for pages sorted by weight
-    pub heavier: Option<Box<Page>>,
+    pub heavier: Option<Key>,
     /// Toc made from the headers of the markdown file
     pub toc: Vec<Header>,
+    /// How many words in the raw content
+    pub word_count: Option<usize>,
+    /// How long would it take to read the raw content.
+    /// See `get_reading_analytics` on how it is calculated
+    pub reading_time: Option<usize>,
 }
 
 
@@ -77,6 +190,8 @@ impl Page {
             lighter: None,
             heavier: None,
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
     }
 
@@ -91,19 +206,20 @@ impl Page {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta);
         page.raw_content = content;
+        let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
+        page.word_count = Some(word_count);
+        page.reading_time = Some(reading_time);
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
-            } else {
-                if page.file.name == "index" {
-                    if let Some(parent) = page.file.path.parent() {
-                        slugify(parent.file_name().unwrap().to_str().unwrap())
-                    } else {
-                        slugify(page.file.name.clone())
-                    }
+            } else if page.file.name == "index" {
+                if let Some(parent) = page.file.path.parent() {
+                    slugify(parent.file_name().unwrap().to_str().unwrap())
                 } else {
                     slugify(page.file.name.clone())
                 }
+            } else {
+                slugify(page.file.name.clone())
             }
         };
 
@@ -171,7 +287,6 @@ impl Page {
         permalinks: &HashMap<String, String>,
         tera: &Tera,
         config: &Config,
-        base_path: &Path,
         anchor_insert: InsertAnchor,
     ) -> Result<()> {
         let mut context = RenderContext::new(
@@ -179,11 +294,10 @@ impl Page {
             config,
             &self.permalink,
             permalinks,
-            base_path,
             anchor_insert,
         );
 
-        context.tera_context.insert("page", self);
+        context.tera_context.insert("page", &SerializingPage::from_page_basic(self));
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -196,7 +310,7 @@ impl Page {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config) -> Result<String> {
+    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
         let tpl_name = match self.meta.template {
             Some(ref l) => l.to_string(),
             None => "page.html".to_string()
@@ -204,9 +318,9 @@ impl Page {
 
         let mut context = TeraContext::new();
         context.insert("config", config);
-        context.insert("page", self);
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
+        context.insert("page", &self.to_serialized(library.pages()));
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
@@ -219,6 +333,14 @@ impl Page {
             .filter_map(|filename| filename.to_str())
             .map(|filename| self.path.clone() + filename)
             .collect()
+    }
+
+    pub fn to_serialized<'a>(&'a self, pages: &'a DenseSlotMap<Page>) -> SerializingPage<'a> {
+        SerializingPage::from_page(self, pages)
+    }
+
+    pub fn to_serialized_basic(&self) -> SerializingPage {
+        SerializingPage::from_page_basic(self)
     }
 }
 
@@ -240,46 +362,9 @@ impl Default for Page {
             lighter: None,
             heavier: None,
             toc: vec![],
+            word_count: None,
+            reading_time: None,
         }
-    }
-}
-
-impl ser::Serialize for Page {
-    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error> where S: ser::Serializer {
-        let mut state = serializer.serialize_struct("page", 20)?;
-        state.serialize_field("content", &self.content)?;
-        state.serialize_field("title", &self.meta.title)?;
-        state.serialize_field("description", &self.meta.description)?;
-        state.serialize_field("date", &self.meta.date)?;
-        if let Some(chrono_datetime) = self.meta.date() {
-            let d = chrono_datetime.date();
-            state.serialize_field("year", &d.year())?;
-            state.serialize_field("month", &d.month())?;
-            state.serialize_field("day", &d.day())?;
-        } else {
-            state.serialize_field::<Option<usize>>("year", &None)?;
-            state.serialize_field::<Option<usize>>("month", &None)?;
-            state.serialize_field::<Option<usize>>("day", &None)?;
-        }
-        state.serialize_field("slug", &self.slug)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("components", &self.components)?;
-        state.serialize_field("permalink", &self.permalink)?;
-        state.serialize_field("summary", &self.summary)?;
-        state.serialize_field("taxonomies", &self.meta.taxonomies)?;
-        state.serialize_field("extra", &self.meta.extra)?;
-        let (word_count, reading_time) = get_reading_analytics(&self.raw_content);
-        state.serialize_field("word_count", &word_count)?;
-        state.serialize_field("reading_time", &reading_time)?;
-        state.serialize_field("earlier", &self.earlier)?;
-        state.serialize_field("later", &self.later)?;
-        state.serialize_field("lighter", &self.lighter)?;
-        state.serialize_field("heavier", &self.heavier)?;
-        state.serialize_field("toc", &self.toc)?;
-        state.serialize_field("draft", &self.is_draft())?;
-        let assets = self.serialize_assets();
-        state.serialize_field("assets", &assets)?;
-        state.end()
     }
 }
 
@@ -315,7 +400,6 @@ Hello world"#;
             &HashMap::default(),
             &Tera::default(),
             &Config::default(),
-            Path::new("something"),
             InsertAnchor::None,
         ).unwrap();
 
@@ -427,7 +511,6 @@ Hello world
             &HashMap::default(),
             &Tera::default(),
             &config,
-            Path::new("something"),
             InsertAnchor::None,
         ).unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
