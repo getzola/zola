@@ -154,19 +154,24 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
 
     // Setup watchers
     let mut watching_static = false;
+    let mut watching_templates = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
     watcher.watch("content/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
-    watcher.watch("templates/", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
     watcher.watch(config_file, RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `config` file. Does it exist?")?;
 
     if Path::new("static").exists() {
         watching_static = true;
         watcher.watch("static/", RecursiveMode::Recursive)
-            .chain_err(|| "Can't watch the `static` folder. Does it exist?")?;
+            .chain_err(|| "Can't watch the `static` folder.")?;
+    }
+
+    if Path::new("templates").exists() {
+        watching_templates = true;
+        watcher.watch("templates/", RecursiveMode::Recursive)
+            .chain_err(|| "Can't watch the `templates` folder.")?;
     }
 
     // Sass support is optional so don't make it an error to no have a sass folder
@@ -221,9 +226,12 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
 
     let pwd = env::current_dir().unwrap();
 
-    let mut watchers = vec!["content", "templates", "config.toml"];
+    let mut watchers = vec!["content", "config.toml"];
     if watching_static {
         watchers.push("static");
+    }
+    if watching_templates {
+        watchers.push("templates");
     }
     if site.config.compile_sass {
         watchers.push("sass");
