@@ -29,7 +29,7 @@ in the `docs/content` folder of the repository.
 | Pagination                      |     ✔     |    ✕   |   ✔  |    ✔    |
 | Custom taxonomies               |     ✔     |    ✕   |   ✔  |    ✕    |
 | Search                          |     ✔     |    ✕   |   ✕  |    ✔    |
-| Data files                      |     ✕     |    ✔   |   ✔  |    ✕    |
+| Data files                      |     ✔     |    ✔   |   ✔  |    ✕    |
 | LiveReload                      |     ✔     |    ✕   |   ✔  |    ✔    |
 | Netlify support                 |     ✔     |    ✕   |   ✔  |    ✕    |
 

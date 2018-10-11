@@ -249,6 +249,8 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
     })
 }
 
+/// A global function to load data from a data file.
+/// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
         let path_arg: String = required_arg!(
