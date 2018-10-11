@@ -1,5 +1,6 @@
 extern crate toml;
 extern crate serde_json;
+extern crate error_chain;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -7,6 +8,7 @@ use std::sync::{Arc, Mutex};
 use csv::Reader;
 
 use tera::{GlobalFn, Value, from_value, to_value, Result, Map, Error, ErrorKind};
+use self::error_chain::ChainedError;
 
 use library::{Taxonomy, Library};
 use config::Config;
@@ -272,13 +274,7 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
 
         let extension = match full_path.extension() {
             Some(value) => value.to_str().unwrap().to_lowercase(),
-            None => return Err(
-                Error::from_kind(
-                    ErrorKind::Msg(
-                        format!("`load_data`: Cannot parse file extension of specified file: {}", path_arg).into()
-                        )
-                    )
-                )
+            None => return Err(format!("`load_data`: Cannot parse file extension of specified file: {}", path_arg).into())
         };
 
         let file_kind = kind_arg.unwrap_or(extension);
@@ -287,15 +283,7 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
             "toml" => load_toml(&full_path),
             "csv" => load_csv(&full_path),
             "json" => load_json(&full_path),
-            _ => Err(
-                Error::from_kind(
-                    ErrorKind::Msg(
-                        String::from(
-                            format!("'load_data': {} - is an unsupported file kind", file_kind)
-                            )
-                        )
-                    )
-                )
+            _ => return Err(format!("'load_data': {} - is an unsupported file kind", file_kind).into())
         };
 
         result_value
@@ -305,10 +293,9 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
 /// load/parse a json file from the given path and place it into a 
 /// tera value
 fn load_json(json_path: &PathBuf) -> Result<Value> {
+    
     let content_string: String = read_file(json_path)
-        .map_err(|err: errors::Error| {
-                Error::with_chain(err, ErrorKind::Msg(String::from("`load_data`: error loading json file")))
-            })?;
+        .chain_err(|| format!("`load_data`: error loading json file {}", json_path.to_str().unwrap().into()))?;
 
     let json_content = serde_json::from_str(content_string.as_str()).unwrap();
     let tera_value: Value = json_content;
