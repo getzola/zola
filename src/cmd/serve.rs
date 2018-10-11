@@ -29,10 +29,12 @@ use std::sync::mpsc::channel;
 use std::time::{Instant, Duration};
 use std::thread;
 
+use opportunistic_watcher::OpportunisticWatcher;
+
 use chrono::prelude::*;
 use actix_web::{self, fs, http, server, App, HttpRequest, HttpResponse, Responder};
 use actix_web::middleware::{Middleware, Started, Response};
-use notify::{Watcher, RecursiveMode, watcher};
+use notify::RecursiveMode;
 use ws::{WebSocket, Sender, Message};
 use ctrlc;
 
@@ -147,30 +149,31 @@ fn handle_directory<'a, 'b>(dir: &'a fs::Directory, req: &'b HttpRequest) -> io:
     fs::NamedFile::open(path)?.respond_to(req)
 }
 
+const OPTIONAL_WATCH_DIRS: [&str; 4] = ["content", "sass", "static", "templates"];
+
 pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
     console::report_elapsed_time(start);
 
+    let pwd = env::current_dir().unwrap();
+
     // Setup watchers
-    let mut watching_static = false;
     let (tx, rx) = channel();
-    let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
-    watcher.watch("content/", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
-    watcher.watch("templates/", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `templates` folder. Does it exist?")?;
-    watcher.watch(config_file, RecursiveMode::Recursive)
+    let mut watcher = OpportunisticWatcher::new(tx, Duration::from_secs(2)).unwrap();
+
+    watcher.watch(pwd.clone(), RecursiveMode::NonRecursive)
+        .chain_err(|| "Can't watch the working directory!?")?;
+
+    watcher.watch(pwd.join(config_file), RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `config` file. Does it exist?")?;
 
-    if Path::new("static").exists() {
-        watching_static = true;
-        watcher.watch("static/", RecursiveMode::Recursive)
-            .chain_err(|| "Can't watch the `static` folder. Does it exist?")?;
+    for dir in OPTIONAL_WATCH_DIRS.iter() {
+        match watcher.watch(pwd.join(dir), RecursiveMode::Recursive) {
+            Ok(_) => {},
+            Err(e) => console::info(&format!("Ignoring error while setting up watch for directory `{}`: {}", dir, e))
+        }
     }
-
-    // Sass support is optional so don't make it an error to no have a sass folder
-    let _ = watcher.watch("sass/", RecursiveMode::Recursive);
 
     let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
     let output_path = Path::new(output_dir).to_path_buf();
@@ -219,19 +222,13 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
         ws_server.listen(&*ws_address).unwrap();
     });
 
-    let pwd = env::current_dir().unwrap();
-
-    let mut watchers = vec!["content", "templates", "config.toml"];
-    if watching_static {
-        watchers.push("static");
-    }
-    if site.config.compile_sass {
-        watchers.push("sass");
-    }
-
-    println!("Listening for changes in {}/{{{}}}", pwd.display(), watchers.join(", "));
+    {
+        let watched_paths: Vec<&str> = watcher.watches().keys().map(|s| s.strip_prefix(&pwd).unwrap().to_str().unwrap()).filter(|s| !s.is_empty()).collect();
+        println!("Listening for changes in {}/{{{}}}", pwd.display(), watched_paths.join(", "));
+    };
 
     println!("Press Ctrl+C to stop\n");
+
     // Delete the output folder on ctrl+C
     ctrlc::set_handler(move || {
         remove_dir_all(&output_path).expect("Failed to delete output directory");
@@ -243,11 +240,21 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
     loop {
         match rx.recv() {
             Ok(event) => {
+                match watcher.update(&event) {
+                    Ok(_) => {},
+                    Err(e) => console::info(&format!("Ignoring error during internal watcher update: {}", e))
+                };
                 match event {
                     Create(path) |
                     Write(path) |
                     Remove(path) |
                     Rename(_, path) => {
+                        if !OPTIONAL_WATCH_DIRS.contains(&path.strip_prefix(&pwd).unwrap().to_str().unwrap()) {
+                            console::info(&format!("Ignoring change in foreign directory: {}", path.display()));
+                            continue;
+                        }
+
+                        // FIXME: This skips all files with an extension marking temporary files and also all files without extension!
                         if is_temp_file(&path) || path.is_dir() {
                             continue;
                         }
