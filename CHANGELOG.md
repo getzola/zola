@@ -24,6 +24,7 @@
 - Fix `robots.txt`template not being used
 - RSS feed now takes all available articles by default instead of limiting to 10000
 - `templates` directory is now optional
+- Add Reason syntax highlighting
 
 ## 0.4.2 (2018-09-03)
 

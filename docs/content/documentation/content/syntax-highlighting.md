@@ -104,6 +104,7 @@ Here is a full list of the supported languages and the short names you can use:
 - XML -> ["xml", "xsd", "xslt", "tld", "dtml", "rss", "opml", "svg"]
 - YAML -> ["yaml", "yml", "sublime-syntax"]
 - SWI-Prolog -> ["pro"]
+- Reason -> ["re", "rei"]
 - CMake C Header -> ["h.in"]
 - CMake C++ Header -> ["hh.in", "hpp.in", "hxx.in", "h++.in"]
 - CMake -> ["CMakeLists.txt", "cmake"]
@@ -116,6 +117,7 @@ Here is a full list of the supported languages and the short names you can use:
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]
 - TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock"]
+
 ```
 
 If you want to highlight a language not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
