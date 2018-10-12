@@ -540,8 +540,13 @@ title = "A title"
         args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn(args.clone()).unwrap();
 
+        //TOML does not load in order, and also dates are not returned as strings, but
+        //rather as another object with a key and value
         assert_eq!(result, json!({
             "category": {
+                "date": {
+                    "$__toml_private_datetime": "1979-05-27T07:32:00Z"
+                },
                 "key": "value"
             },
         }));
