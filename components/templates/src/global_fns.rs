@@ -8,16 +8,13 @@ use std::path::PathBuf;
 
 use csv::Reader;
 
-use tera::{GlobalFn, Value, from_value, to_value, Result, Map, Error, ErrorKind};
-use self::error_chain::ChainedError;
+use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
 
 use library::{Taxonomy, Library};
 use config::Config;
 use utils::site::resolve_internal_link;
 use utils::fs::read_file;
 use imageproc;
-use errors;
-
 
 macro_rules! required_arg {
     ($ty: ty, $e: expr, $err: expr) => {
@@ -296,7 +293,7 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
 fn load_json(json_path: &PathBuf) -> Result<Value> {
     
     let content_string: String = read_file(json_path)
-        .chain_err(|| format!("`load_data`: error loading json file {}", json_path.to_str().unwrap().into()))?;
+        .map_err(|e| format!("`load_data`: error {} loading json file {}", json_path.to_str().unwrap(), e))?;
 
     let json_content = serde_json::from_str(content_string.as_str()).unwrap();
     let tera_value: Value = json_content;
@@ -308,9 +305,7 @@ fn load_json(json_path: &PathBuf) -> Result<Value> {
 /// tera Value
 fn load_toml(toml_path: &PathBuf) -> Result<Value> {
     let content_string: String = read_file(toml_path)
-        .map_err(|err: errors::Error| {
-                Error::with_chain(err, ErrorKind::Msg(String::from("`load_data`: error loading toml file")))
-            })?;
+        .map_err(|e| format!("`load_data`: error {} loading toml file {}", toml_path.to_str().unwrap(), e))?;
 
     let toml_content: toml::Value = toml::from_str(&content_string)
         .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
