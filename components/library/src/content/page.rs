@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use tera::{Tera, Context as TeraContext, Value, Map};
 use slug::slugify;
-use slotmap::{Key, DenseSlotMap};
+use slotmap::{Key};
 
 use errors::{Result, ResultExt};
 use config::Config;
@@ -23,6 +23,7 @@ pub struct SerializingPage<'a> {
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
+    parent_section: Option<String>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     date: &'a Option<String>,
@@ -47,7 +48,7 @@ pub struct SerializingPage<'a> {
 
 impl<'a> SerializingPage<'a> {
     /// Grabs all the data from a page, including sibling pages
-    pub fn from_page(page: &'a Page, pages: &'a DenseSlotMap<Page>) -> Self {
+    pub fn from_page(page: &'a Page, library: &'a Library) -> Self {
         let mut year = None;
         let mut month = None;
         let mut day = None;
@@ -56,12 +57,15 @@ impl<'a> SerializingPage<'a> {
             month = Some(d.1);
             day = Some(d.2);
         }
+        let pages = library.pages();
         let lighter = page.lighter.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
         let heavier = page.heavier.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
         let earlier = page.earlier.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
         let later = page.later.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
+        let parent_section = page.parent_section.map(|k| library.get_section_by_key(k).file.relative.clone());
 
         SerializingPage {
+            parent_section,
             content: &page.content,
             permalink: &page.permalink,
             slug: &page.slug,
@@ -100,6 +104,7 @@ impl<'a> SerializingPage<'a> {
         }
 
         SerializingPage {
+            parent_section: None,
             content: &page.content,
             permalink: &page.permalink,
             slug: &page.slug,
@@ -133,6 +138,8 @@ pub struct Page {
     pub file: FileInfo,
     /// The front matter meta-data
     pub meta: PageFrontMatter,
+    /// The parent section if there is one
+    pub parent_section: Option<Key>,
     /// The actual content of the page, in markdown
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
@@ -177,6 +184,7 @@ impl Page {
         Page {
             file: FileInfo::new_page(file_path),
             meta,
+            parent_section: None,
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),
@@ -320,7 +328,7 @@ impl Page {
         context.insert("config", config);
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
-        context.insert("page", &self.to_serialized(library.pages()));
+        context.insert("page", &self.to_serialized(library));
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
@@ -335,8 +343,8 @@ impl Page {
             .collect()
     }
 
-    pub fn to_serialized<'a>(&'a self, pages: &'a DenseSlotMap<Page>) -> SerializingPage<'a> {
-        SerializingPage::from_page(self, pages)
+    pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
+        SerializingPage::from_page(self, library)
     }
 
     pub fn to_serialized_basic(&self) -> SerializingPage {
@@ -349,6 +357,7 @@ impl Default for Page {
         Page {
             file: FileInfo::default(),
             meta: PageFrontMatter::default(),
+            parent_section: None,
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),

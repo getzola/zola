@@ -4,7 +4,8 @@
     {% for page in section.pages %}
         {{page.title}}
     {% endfor %}
-    {% for subsection in section.subsections %}
+    {% for sub in section.subsections %}
+        {% set subsection = get_section(path=sub) %}
         {{subsection.title}}
         Sub-pages: {{subsection.pages | length}}
     {% endfor %}

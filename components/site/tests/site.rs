@@ -22,10 +22,6 @@ fn can_parse_site() {
     assert_eq!(site.library.pages().len(), 15);
     let posts_path = path.join("content").join("posts");
 
-    // Make sure we remove all the pwd + content from the sections
-    let basic = site.library.get_page(&posts_path.join("simple.md")).unwrap();
-    assert_eq!(basic.file.components, vec!["posts".to_string()]);
-
     // Make sure the page with a url doesn't have any sections
     let url_post = site.library.get_page(&posts_path.join("fixed-url.md")).unwrap();
     assert_eq!(url_post.path, "a-fixed-url/");
@@ -41,10 +37,17 @@ fn can_parse_site() {
     let index_section = site.library.get_section(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 3);
     assert_eq!(index_section.pages.len(), 1);
+    assert!(index_section.parent_section.is_none());
 
     let posts_section = site.library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 1);
     assert_eq!(posts_section.pages.len(), 7);
+    assert_eq!(posts_section.parent_section, Some(*site.library.get_section_key(&index_section.file.path).unwrap()));
+
+    // Make sure we remove all the pwd + content from the sections
+    let basic = site.library.get_page(&posts_path.join("simple.md")).unwrap();
+    assert_eq!(basic.file.components, vec!["posts".to_string()]);
+    assert_eq!(basic.parent_section, Some(*site.library.get_section_key(&posts_section.file.path).unwrap()));
 
     let tutorials_section = site.library.get_section(&posts_path.join("tutorials").join("_index.md")).unwrap();
     assert_eq!(tutorials_section.subsections.len(), 2);
@@ -57,6 +60,7 @@ fn can_parse_site() {
     let devops_section = site.library.get_section(&posts_path.join("tutorials").join("devops").join("_index.md")).unwrap();
     assert_eq!(devops_section.subsections.len(), 0);
     assert_eq!(devops_section.pages.len(), 2);
+    assert_eq!(devops_section.parent_section, Some(*site.library.get_section_key(&tutorials_section.file.path).unwrap()));
 
     let prog_section = site.library.get_section(&posts_path.join("tutorials").join("programming").join("_index.md")).unwrap();
     assert_eq!(prog_section.subsections.len(), 0);

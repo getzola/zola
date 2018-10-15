@@ -56,7 +56,7 @@ pub fn make_get_page(library: &Library) -> GlobalFn {
     for page in library.pages_values() {
         pages.insert(
             page.file.relative.clone(),
-            to_value(library.get_page(&page.file.path).unwrap().to_serialized(library.pages())).unwrap(),
+            to_value(library.get_page(&page.file.path).unwrap().to_serialized(library)).unwrap(),
         );
     }
 

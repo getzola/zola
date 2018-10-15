@@ -21,6 +21,7 @@ use library::Library;
 pub struct SerializingSection<'a> {
     content: &'a str,
     permalink: &'a str,
+    parent_section: Option<String>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     extra: &'a HashMap<String, Value>,
@@ -31,7 +32,7 @@ pub struct SerializingSection<'a> {
     toc: &'a [Header],
     assets: Vec<String>,
     pages: Vec<SerializingPage<'a>>,
-    subsections: Vec<SerializingSection<'a>>,
+    subsections: Vec<&'a str>,
 }
 
 impl<'a> SerializingSection<'a> {
@@ -40,14 +41,17 @@ impl<'a> SerializingSection<'a> {
         let mut subsections = Vec::with_capacity(section.subsections.len());
 
         for k in &section.pages {
-            pages.push(library.get_page_by_key(*k).to_serialized(library.pages()));
+            pages.push(library.get_page_by_key(*k).to_serialized(library));
         }
 
         for k in &section.subsections {
-            subsections.push(library.get_section_by_key(*k).to_serialized(library));
+            subsections.push(library.get_section_path_by_key(*k));
         }
 
+        let parent_section = section.parent_section.map(|k| library.get_section_by_key(k).file.relative.clone());
+
         SerializingSection {
+            parent_section,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,
@@ -67,6 +71,7 @@ impl<'a> SerializingSection<'a> {
     /// Same as from_section but doesn't fetch pages and sections
     pub fn from_section_basic(section: &'a Section) -> Self {
         SerializingSection {
+            parent_section: None,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,
@@ -106,6 +111,8 @@ pub struct Section {
     pub pages: Vec<Key>,
     /// All pages that cannot be sorted in this section
     pub ignored_pages: Vec<Key>,
+    /// The relative path of the parent section if there is one
+    pub parent_section: Option<Key>,
     /// All direct subsections
     pub subsections: Vec<Key>,
     /// Toc made from the headers of the markdown file
@@ -124,6 +131,7 @@ impl Section {
         Section {
             file: FileInfo::new_section(file_path),
             meta,
+            parent_section: None,
             path: "".to_string(),
             components: vec![],
             permalink: "".to_string(),
@@ -262,6 +270,7 @@ impl Default for Section {
         Section {
             file: FileInfo::default(),
             meta: SectionFrontMatter::default(),
+            parent_section: None,
             path: "".to_string(),
             components: vec![],
             permalink: "".to_string(),

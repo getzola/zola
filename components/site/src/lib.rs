@@ -240,10 +240,8 @@ impl Site {
         }
 
         self.register_early_global_fns();
-        self.render_markdown()?;
         self.populate_sections();
-//        self.library.cache_all_pages();
-//        self.library.cache_all_sections();
+        self.render_markdown()?;
         self.populate_taxonomies()?;
         self.register_tera_global_fns();
 
