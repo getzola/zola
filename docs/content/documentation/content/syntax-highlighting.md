@@ -27,6 +27,7 @@ Here is a full list of the supported languages and the short names you can use:
 - Assembly x86 (NASM) -> ["asm", "inc", "nasm"]
 - Crystal -> ["cr"]
 - Elixir -> ["ex", "exs"]
+- fsharp -> ["fs"]
 - Handlebars -> ["handlebars", "handlebars.html", "hbr", "hbrs", "hbs", "hdbs", "hjs", "mu", "mustache", "rac", "stache", "template", "tmpl"]
 - Jinja2 -> ["j2", "jinja2"]
 - Julia -> ["jl"]
@@ -117,7 +118,6 @@ Here is a full list of the supported languages and the short names you can use:
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]
 - TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock"]
-
 ```
 
 If you want to highlight a language not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
