@@ -75,10 +75,16 @@ pub fn make_get_page(library: &Library) -> GlobalFn {
 
 pub fn make_get_section(library: &Library) -> GlobalFn {
     let mut sections = HashMap::new();
+    let mut sections_basic = HashMap::new();
     for section in library.sections_values() {
         sections.insert(
             section.file.relative.clone(),
             to_value(library.get_section(&section.file.path).unwrap().to_serialized(library)).unwrap(),
+        );
+
+        sections_basic.insert(
+            section.file.relative.clone(),
+            to_value(library.get_section(&section.file.path).unwrap().to_serialized_basic(library)).unwrap(),
         );
     }
 
@@ -89,7 +95,19 @@ pub fn make_get_section(library: &Library) -> GlobalFn {
             "`get_section` requires a `path` argument with a string value"
         );
 
-        match sections.get(&path) {
+        let metadata_only = args
+            .get("metadata_only")
+            .map_or(false, |c| {
+                from_value::<bool>(c.clone()).unwrap_or(false)
+            });
+
+        let container = if metadata_only {
+            &sections_basic
+        } else {
+            &sections
+        };
+
+        match container.get(&path) {
             Some(p) => Ok(p.clone()),
             None => Err(format!("Section `{}` not found.", path).into())
         }

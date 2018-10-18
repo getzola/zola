@@ -268,6 +268,10 @@ impl Section {
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
         SerializingSection::from_section(self, library)
     }
+
+    pub fn to_serialized_basic<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
+        SerializingSection::from_section_basic(self, Some(library))
+    }
 }
 
 /// Used to create a default index section if there is no _index.md in the root content directory
