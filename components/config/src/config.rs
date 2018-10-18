@@ -189,7 +189,7 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        let trailing_bit = if path.ends_with('/') || path.is_empty() {
+        let trailing_bit = if path.ends_with('/') || path.ends_with("rss.xml") || path.is_empty() {
             ""
         } else {
             "/"
@@ -364,6 +364,14 @@ hello = "world"
             config.make_permalink("/tags/rust"),
             "http://127.0.0.1:1111/tags/rust/"
         );
+    }
+
+    // https://github.com/Keats/gutenberg/issues/486
+    #[test]
+    fn doesnt_add_trailing_slash_to_rss() {
+        let mut config = Config::default();
+        config.base_url = "http://vincent.is/".to_string();
+        assert_eq!(config.make_permalink("rss.xml"), "http://vincent.is/rss.xml");
     }
 
     #[test]
