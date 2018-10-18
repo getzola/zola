@@ -149,7 +149,7 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
     // We have at least a `page` pair
     for p in pairs.next().unwrap().into_inner() {
         match p.as_rule() {
-            Rule::text | Rule::text_in_ignored_body_sc | Rule::text_in_body_sc => res.push_str(p.into_span().as_str()),
+            Rule::text => res.push_str(p.into_span().as_str()),
             Rule::inline_shortcode => {
                 let (name, args) = parse_shortcode_call(p);
                 res.push_str(&render_shortcode(&name, &args, context, None)?);
