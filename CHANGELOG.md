@@ -8,6 +8,7 @@
 - The `pagers` variable of Paginator objects has been removed
 - `section.subsections` is now an array of paths to be used with the `get_section`
 Tera function
+- Table of content now strips HTML from the titles to avoid various issues
 
 ### Others
 - Update dependencies, fixing a few bugs with templates
