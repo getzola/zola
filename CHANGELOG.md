@@ -30,6 +30,7 @@ Tera function
 - Add Reason and F# syntax highlighting
 - Add `ancestors` to pages and sections pointing to the relative path of all ancestor
 sections up to the index to be used with the `get_section` Tera function
+- Add a `load_data` Tera function to load local CSV/TOML/JSON files
 
 ## 0.4.2 (2018-09-03)
 
