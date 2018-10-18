@@ -17,11 +17,9 @@ main() {
 
     test -f Cargo.lock || cargo generate-lockfile
 
-    # TODO Update this to build the artifacts that matter to you
-    cross rustc --bin gutenberg --target $TARGET --release -- -C lto
+    cross rustc --bin zola --target $TARGET --release -- -C lto
 
-    # TODO Update this to package the right artifacts
-    cp target/$TARGET/release/gutenberg $stage/
+    cp target/$TARGET/release/zola $stage/
 
     cd $stage
     tar czf $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz *

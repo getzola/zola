@@ -14,7 +14,7 @@ fn usage_and_exit() -> ! {
     ::std::process::exit(2);
 }
 
-// Not an example of Gutenberg but is used to generate the theme and syntax dump
+// Not an example of zola but is used to generate the theme and syntax dump
 // used for syntax highlighting.
 // Check README for more details
 fn main() {

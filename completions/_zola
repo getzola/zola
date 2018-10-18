@@ -1,8 +1,8 @@
-#compdef gutenberg
+#compdef zola
 
 autoload -U is-at-least
 
-_gutenberg() {
+_zola() {
     typeset -A opt_args
     typeset -a _arguments_options
     local ret=1
@@ -21,14 +21,14 @@ _gutenberg() {
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-":: :_gutenberg_commands" \
-"*::: :->gutenberg" \
+":: :_zola_commands" \
+"*::: :->zola" \
 && ret=0
     case $state in
-    (gutenberg)
+    (zola)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:gutenberg-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:zola-command-$line[1]:"
         case $line[1] in
             (init)
 _arguments "${_arguments_options[@]}" \
@@ -80,43 +80,43 @@ _arguments "${_arguments_options[@]}" \
 esac
 }
 
-(( $+functions[_gutenberg_commands] )) ||
-_gutenberg_commands() {
+(( $+functions[_zola_commands] )) ||
+_zola_commands() {
     local commands; commands=(
-        "init:Create a new Gutenberg project" \
+        "init:Create a new Zola project" \
 "build:Builds the site" \
 "serve:Serve the site. Rebuild and reload on change automatically" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
-    _describe -t commands 'gutenberg commands' commands "$@"
+    _describe -t commands 'zola commands' commands "$@"
 }
-(( $+functions[_gutenberg__build_commands] )) ||
-_gutenberg__build_commands() {
+(( $+functions[_zola__build_commands] )) ||
+_zola__build_commands() {
     local commands; commands=(
         
     )
-    _describe -t commands 'gutenberg build commands' commands "$@"
+    _describe -t commands 'zola build commands' commands "$@"
 }
-(( $+functions[_gutenberg__help_commands] )) ||
-_gutenberg__help_commands() {
+(( $+functions[_zola__help_commands] )) ||
+_zola__help_commands() {
     local commands; commands=(
         
     )
-    _describe -t commands 'gutenberg help commands' commands "$@"
+    _describe -t commands 'zola help commands' commands "$@"
 }
-(( $+functions[_gutenberg__init_commands] )) ||
-_gutenberg__init_commands() {
+(( $+functions[_zola__init_commands] )) ||
+_zola__init_commands() {
     local commands; commands=(
         
     )
-    _describe -t commands 'gutenberg init commands' commands "$@"
+    _describe -t commands 'zola init commands' commands "$@"
 }
-(( $+functions[_gutenberg__serve_commands] )) ||
-_gutenberg__serve_commands() {
+(( $+functions[_zola__serve_commands] )) ||
+_zola__serve_commands() {
     local commands; commands=(
         
     )
-    _describe -t commands 'gutenberg serve commands' commands "$@"
+    _describe -t commands 'zola serve commands' commands "$@"
 }
 
-_gutenberg "$@"
+_zola "$@"

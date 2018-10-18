@@ -4,7 +4,7 @@
 
 ### Breaking
 
-- Gutenberg has changed name to REPLACE_ME!
+- Gutenberg has changed name to `zola`!
 - The `pagers` variable of Paginator objects has been removed
 - `section.subsections` is now an array of paths to be used with the `get_section`
 Tera function

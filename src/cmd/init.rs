@@ -16,7 +16,7 @@ base_url = "%BASE_URL%"
 compile_sass = %COMPILE_SASS%
 
 # Whether to do syntax highlighting
-# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Gutenberg
+# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
 highlight_code = %HIGHLIGHT%
 
 # Whether to build a search index to be used later on by a JavaScript library
@@ -35,7 +35,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
     }
 
     create_dir(path)?;
-    console::info("Welcome to Gutenberg!");
+    console::info("Welcome to Zola!");
 
     let base_url = ask_url("> What is the URL of your site?", "https://example.com")?;
     let compile_sass = ask_bool("> Do you want to enable Sass compilation?", true)?;
@@ -62,7 +62,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
     println!();
     console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));
     println!();
-    console::info("Get started by moving into the directory and using the built-in server: `gutenberg serve`");
-    println!("Visit https://www.getgutenberg.io for the full documentation.");
+    console::info("Get started by moving into the directory and using the built-in server: `zola serve`");
+    println!("Visit https://www.getzola.org for the full documentation.");
     Ok(())
 }

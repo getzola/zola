@@ -212,7 +212,7 @@ pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, conf
                     {
                         "command": "hello",
                         "protocols": [ "http://livereload.com/protocols/official-7" ],
-                        "serverName": "Gutenberg"
+                        "serverName": "Zola"
                     }
                 "#));
             }

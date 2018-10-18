@@ -1,15 +1,15 @@
-# Gutenberg
+# zola (né Gutenberg)
 [![Build Status](https://travis-ci.org/Keats/gutenberg.svg?branch=master)](https://travis-ci.org/Keats/gutenberg)
 [![Build status](https://ci.appveyor.com/api/projects/status/h4t9r6h5gom839q0/branch/master?svg=true)](https://ci.appveyor.com/project/Keats/gutenberg/branch/master)
 
 A fast static site generator in a single binary with everything built-in.
 
-Documentation is available on [its site](https://www.getgutenberg.io/documentation/getting-started/installation/) or
+Documentation is available on [its site](https://www.getzola.org/documentation/getting-started/installation/) or
 in the `docs/content` folder of the repository.
 
 ## Comparisons with other static site generators
 
-|                                 | Gutenberg | Cobalt | Hugo | Pelican |
+|                                 |    Zola   | Cobalt | Hugo | Pelican |
 |:-------------------------------:|:---------:|--------|------|---------|
 | Single binary                   |     ✔     |    ✔   |   ✔  |    ✕    |
 | Language                        |    Rust   |  Rust  |  Go  |  Python |
@@ -31,12 +31,13 @@ in the `docs/content` folder of the repository.
 | Search                          |     ✔     |    ✕   |   ✕  |    ✔    |
 | Data files                      |     ✔     |    ✔   |   ✔  |    ✕    |
 | LiveReload                      |     ✔     |    ✕   |   ✔  |    ✔    |
-| Netlify support                 |     ✔     |    ✕   |   ✔  |    ✕    |
+| Netlify support                 |     ~     |    ✕   |   ✔  |    ✕    |
+| Breadcrumbds                    |     ✔     |    ✕   |   ✕  |    ✔    |
 
 
 ### Supported content formats
 
-- Gutenberg: markdown
+- Zola: markdown
 - Cobalt: markdown
 - Hugo: markdown, asciidoc, org-mode
 - Pelican: reStructuredText, markdown, asciidoc, org-mode, whatever-you-want
@@ -67,7 +68,7 @@ Syntax highlighting depends on submodules so ensure you load them first:
 $ git submodule update --init
 ```
 
-Gutenberg only works with syntaxes in the `.sublime-syntax` format. If your syntax
+Zola only works with syntaxes in the `.sublime-syntax` format. If your syntax
 is in `.tmLanguage` format, open it in Sublime Text and convert it to `sublime-syntax` by clicking on
 Tools > Developer > New Syntax from ... and put it at the root of `sublime_syntaxes`.
 
@@ -79,7 +80,7 @@ $ git submodule add https://github.com/elm-community/SublimeElmLanguageSupport
 ```
 
 Note that you can also only copy manually the updated syntax definition file but this means
-Gutenberg won't be able to automatically update it.
+Zola won't be able to automatically update it.
 
 You can check for any updates to the current packages by running:
 
@@ -95,7 +96,7 @@ $ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../subl
 
 #### Adding a theme
 A gallery containing lots of themes is located at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
-More themes can be easily added to gutenberg, just make a PR with the wanted theme added in the `sublime_themes` directory
+More themes can be easily added to Zola, just make a PR with the wanted theme added in the `sublime_themes` directory
 and run the following command from the root of the components/rendering:
 
 ```bash

@@ -10,7 +10,7 @@ use tera::Tera;
 
 use config::Config;
 use front_matter::InsertAnchor;
-use templates::GUTENBERG_TERA;
+use templates::ZOLA_TERA;
 use rendering::{RenderContext, render_content};
 
 
@@ -85,7 +85,7 @@ fn can_higlight_code_block_with_unknown_lang() {
 fn can_render_shortcode() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(r#"
 Hello
 
@@ -99,7 +99,7 @@ Hello
 fn can_render_shortcode_with_markdown_char_in_args_name() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let input = vec![
         "name",
         "na_me",
@@ -116,7 +116,7 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
 fn can_render_shortcode_with_markdown_char_in_args_value() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let input = vec![
         "ub36ffWAqgQ-hey",
         "ub36ffWAqgQ_hey",
@@ -134,7 +134,7 @@ fn can_render_shortcode_with_markdown_char_in_args_value() {
 fn can_render_body_shortcode_with_markdown_char_in_name() {
     let permalinks_ctx = HashMap::new();
     let mut tera = Tera::default();
-    tera.extend(&GUTENBERG_TERA).unwrap();
+    tera.extend(&ZOLA_TERA).unwrap();
     let input = vec![
         "quo_te",
         "qu_o_te",
@@ -155,7 +155,7 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
 fn can_render_body_shortcode_and_paragraph_after() {
     let permalinks_ctx = HashMap::new();
     let mut tera = Tera::default();
-    tera.extend(&GUTENBERG_TERA).unwrap();
+    tera.extend(&ZOLA_TERA).unwrap();
 
     let shortcode = "<p>{{ body }}</p>";
     let markdown_string = r#"
@@ -183,7 +183,7 @@ Here is another paragraph.
 fn can_render_two_body_shortcode_and_paragraph_after_with_line_break_between() {
     let permalinks_ctx = HashMap::new();
     let mut tera = Tera::default();
-    tera.extend(&GUTENBERG_TERA).unwrap();
+    tera.extend(&ZOLA_TERA).unwrap();
 
     let shortcode = "<p>{{ body }}</p>";
     let markdown_string = r#"
@@ -216,7 +216,7 @@ Here is another paragraph.
 fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(r#"
 Hello
 
@@ -243,7 +243,7 @@ fn doesnt_render_ignored_shortcodes() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = false;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(r#"```{{/* youtube(id="w7Ft2ymGmfc") */}}```"#, &context).unwrap();
     assert_eq!(res.body, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
 }
@@ -251,7 +251,7 @@ fn doesnt_render_ignored_shortcodes() {
 #[test]
 fn can_render_shortcode_with_body() {
     let mut tera = Tera::default();
-    tera.extend(&GUTENBERG_TERA).unwrap();
+    tera.extend(&ZOLA_TERA).unwrap();
     tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author }}</blockquote>").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
@@ -341,11 +341,11 @@ fn can_add_id_to_headers_same_slug() {
 fn can_insert_anchor_left() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
     let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
+        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
     );
 }
 
@@ -353,11 +353,11 @@ fn can_insert_anchor_left() {
 fn can_insert_anchor_right() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Right);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Right);
     let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\">Hello<a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
+        "<h1 id=\"hello\">Hello<a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
     );
 }
 
@@ -366,11 +366,11 @@ fn can_insert_anchor_right() {
 fn can_insert_anchor_with_exclamation_mark() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
     let res = render_content("# Hello!", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
+        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
     );
 }
 
@@ -379,11 +379,11 @@ fn can_insert_anchor_with_exclamation_mark() {
 fn can_insert_anchor_with_link() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
     let res = render_content("## [Rust](https://rust-lang.org)", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h2 id=\"rust\"><a class=\"gutenberg-anchor\" href=\"#rust\" aria-label=\"Anchor link for: rust\">🔗</a>\n<a href=\"https://rust-lang.org\">Rust</a></h2>\n"
+        "<h2 id=\"rust\"><a class=\"zola-anchor\" href=\"#rust\" aria-label=\"Anchor link for: rust\">🔗</a>\n<a href=\"https://rust-lang.org\">Rust</a></h2>\n"
     );
 }
 
@@ -391,11 +391,11 @@ fn can_insert_anchor_with_link() {
 fn can_insert_anchor_with_other_special_chars() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Left);
     let res = render_content("# Hello*_()", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\"><a class=\"gutenberg-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
+        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
     );
 }
 
@@ -404,7 +404,7 @@ fn can_make_toc() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(
-        &GUTENBERG_TERA,
+        &ZOLA_TERA,
         &config,
         "https://mysite.com/something",
         &permalinks_ctx,
@@ -432,7 +432,7 @@ fn can_ignore_tags_in_toc() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(
-        &GUTENBERG_TERA,
+        &ZOLA_TERA,
         &config,
         "https://mysite.com/something",
         &permalinks_ctx,
@@ -463,7 +463,7 @@ fn can_ignore_tags_in_toc() {
 fn can_understand_backtick_in_titles() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# `Hello`", &context).unwrap();
     assert_eq!(
         res.body,
@@ -475,7 +475,7 @@ fn can_understand_backtick_in_titles() {
 fn can_understand_backtick_in_paragraphs() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("Hello `world`", &context).unwrap();
     assert_eq!(
         res.body,
@@ -488,7 +488,7 @@ fn can_understand_backtick_in_paragraphs() {
 fn can_understand_links_in_header() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# [Rust](https://rust-lang.org)", &context).unwrap();
     assert_eq!(
         res.body,
@@ -500,7 +500,7 @@ fn can_understand_links_in_header() {
 fn can_understand_link_with_title_in_header() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# [Rust](https://rust-lang.org \"Rust homepage\")", &context).unwrap();
     assert_eq!(
         res.body,
@@ -530,7 +530,7 @@ fn can_make_valid_relative_link_in_header() {
 fn can_make_permalinks_with_colocated_assets_for_link() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("[an image](image.jpg)", &context).unwrap();
     assert_eq!(
         res.body,
@@ -542,7 +542,7 @@ fn can_make_permalinks_with_colocated_assets_for_link() {
 fn can_make_permalinks_with_colocated_assets_for_image() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("![alt text](image.jpg)", &context).unwrap();
     assert_eq!(
         res.body,
@@ -554,7 +554,7 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
 fn markdown_doesnt_wrap_html_in_paragraph() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(r#"
 Some text
 
@@ -577,7 +577,7 @@ fn can_validate_valid_external_links() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("[a link](http://google.com)", &context).unwrap();
     assert_eq!(
         res.body,
@@ -590,7 +590,7 @@ fn can_show_error_message_for_invalid_external_links() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("[a link](http://google.comy)", &context);
     assert!(res.is_err());
     let err = res.unwrap_err();
@@ -602,7 +602,7 @@ fn doesnt_try_to_validate_email_links_mailto() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("Email: [foo@bar.baz](mailto:foo@bar.baz)", &context).unwrap();
     assert_eq!(
         res.body,
@@ -615,7 +615,7 @@ fn doesnt_try_to_validate_email_links_angled_brackets() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&GUTENBERG_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("Email: <foo@bar.baz>", &context).unwrap();
     assert_eq!(
         res.body,

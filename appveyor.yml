@@ -6,7 +6,7 @@ os: Visual Studio 2017
 environment:
   global:
     RUST_VERSION: stable
-    CRATE_NAME: gutenberg
+    CRATE_NAME: zola
 
   matrix:
     - target: x86_64-pc-windows-msvc
@@ -29,7 +29,7 @@ test_script:
     )
 
 before_deploy:
-  - cargo rustc --target %TARGET% --release --bin gutenberg -- -C lto
+  - cargo rustc --target %TARGET% --release --bin zola -- -C lto
   - ps: ci\before_deploy.ps1
 
 deploy:

@@ -5,7 +5,7 @@ use front_matter::InsertAnchor;
 use config::Config;
 
 
-/// All the information from the gutenberg site that is needed to render HTML from markdown
+/// All the information from the zola site that is needed to render HTML from markdown
 #[derive(Debug)]
 pub struct RenderContext<'a> {
     pub tera: &'a Tera,

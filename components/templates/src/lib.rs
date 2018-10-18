@@ -26,7 +26,7 @@ use tera::{Tera, Context};
 use errors::{Result, ResultExt};
 
 lazy_static! {
-    pub static ref GUTENBERG_TERA: Tera = {
+    pub static ref ZOLA_TERA: Tera = {
         let mut tera = Tera::default();
         tera.add_raw_templates(vec![
             ("404.html", include_str!("builtins/404.html")),

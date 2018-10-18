@@ -1,4 +1,4 @@
-_gutenberg() {
+_zola() {
     local i cur prev opts cmds
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
@@ -9,8 +9,8 @@ _gutenberg() {
     for i in ${COMP_WORDS[@]}
     do
         case "${i}" in
-            gutenberg)
-                cmd="gutenberg"
+            zola)
+                cmd="zola"
                 ;;
             
             build)
@@ -31,14 +31,22 @@ _gutenberg() {
     done
 
     case "${cmd}" in
-        gutenberg)
-            opts=" -c -h -V  --config --help --version   init build serve help"
+        zola)
+            opts=" -h -V -c  --help --version --config   init build serve help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
             fi
             case "${prev}" in
                 
+                --config)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                    -c)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -47,8 +55,8 @@ _gutenberg() {
             return 0
             ;;
         
-        gutenberg__build)
-            opts=" -h -V -u  --help --version --base-url  "
+        zola__build)
+            opts=" -h -V -u -o  --help --version --base-url --output-dir  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -56,11 +64,19 @@ _gutenberg() {
             case "${prev}" in
                 
                 --base-url)
-                    COMPREPLY=("<base_url>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -u)
-                    COMPREPLY=("<base_url>")
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                --output-dir)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                    -o)
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 *)
@@ -70,7 +86,7 @@ _gutenberg() {
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
             ;;
-        gutenberg__help)
+        zola__help)
             opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -85,7 +101,7 @@ _gutenberg() {
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
             ;;
-        gutenberg__init)
+        zola__init)
             opts=" -h -V  --help --version  <name> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -100,8 +116,8 @@ _gutenberg() {
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
             ;;
-        gutenberg__serve)
-            opts=" -h -V -i -p  --help --version --interface --port  "
+        zola__serve)
+            opts=" -h -V -i -p -o -u  --help --version --interface --port --output-dir --base-url  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -109,19 +125,35 @@ _gutenberg() {
             case "${prev}" in
                 
                 --interface)
-                    COMPREPLY=("<interface>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -i)
-                    COMPREPLY=("<interface>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 --port)
-                    COMPREPLY=("<port>")
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                     -p)
-                    COMPREPLY=("<port>")
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                --output-dir)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                    -o)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                --base-url)
+                    COMPREPLY=($(compgen -f ${cur}))
+                    return 0
+                    ;;
+                    -u)
+                    COMPREPLY=($(compgen -f ${cur}))
                     return 0
                     ;;
                 *)
@@ -134,4 +166,4 @@ _gutenberg() {
     esac
 }
 
-complete -F _gutenberg -o bashdefault -o default gutenberg
+complete -F _zola -o bashdefault -o default zola

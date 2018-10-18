@@ -1,7 +1,7 @@
 use clap::{App, AppSettings, Arg, SubCommand};
 
 pub fn build_cli() -> App<'static, 'static> {
-    App::new("gutenberg")
+    App::new("zola")
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
@@ -16,7 +16,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommands(vec![
             SubCommand::with_name("init")
-                .about("Create a new Gutenberg project")
+                .about("Create a new Zola project")
                 .arg(
                     Arg::with_name("name")
                         .required(true)

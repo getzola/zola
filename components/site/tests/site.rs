@@ -189,7 +189,7 @@ fn can_build_site_without_live_reload() {
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
 
     // robots.txt has been rendered from the template
-    assert!(file_contains!(public, "robots.txt", "User-agent: gutenberg"));
+    assert!(file_contains!(public, "robots.txt", "User-agent: zola"));
     assert!(file_contains!(public, "robots.txt", "Sitemap: https://replace-this-with-your-url.com/sitemap.xml"));
 }
 
@@ -303,7 +303,7 @@ fn can_build_site_and_insert_anchor_links() {
 
     assert!(Path::new(&public).exists());
     // anchor link inserted
-    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"gutenberg-anchor\" href=\"#title\""));
+    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"zola-anchor\" href=\"#title\""));
 }
 
 #[test]

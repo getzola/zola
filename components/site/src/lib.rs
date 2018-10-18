@@ -34,7 +34,7 @@ use config::{Config, get_config};
 use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
 use utils::templates::{render_template, rewrite_theme_paths};
 use utils::net::get_available_port;
-use templates::{GUTENBERG_TERA, global_fns, render_redirect_template};
+use templates::{ZOLA_TERA, global_fns, render_redirect_template};
 use front_matter::{InsertAnchor};
 use library::{Page, Section, sort_actual_pages_by_date, Library, Taxonomy, find_taxonomies, Paginator};
 
@@ -54,7 +54,7 @@ impl SitemapEntry {
 
 #[derive(Debug)]
 pub struct Site {
-    /// The base path of the gutenberg site
+    /// The base path of the zola site
     pub base_path: PathBuf,
     /// The parsed config for the site
     pub config: Config,
@@ -109,7 +109,7 @@ impl Site {
             tera_theme.build_inheritance_chains()?;
             tera.extend(&tera_theme)?;
         }
-        tera.extend(&GUTENBERG_TERA)?;
+        tera.extend(&ZOLA_TERA)?;
         // the `extend` above already does it but hey
         tera.build_inheritance_chains()?;
 

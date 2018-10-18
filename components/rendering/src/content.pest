@@ -36,7 +36,7 @@ ident = @{
     all_chars*
 }
 
-/// Now specific to Gutenberg
+/// Now specific to Zola
 
 // shortcode is abbreviated to sc to keep things short
 

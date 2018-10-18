@@ -92,7 +92,7 @@ pub struct PageFrontMatter {
     pub order: Option<usize>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
-    /// All aliases for that page. Gutenberg will create HTML templates that will
+    /// All aliases for that page. Zola will create HTML templates that will
     /// redirect to this
     #[serde(skip_serializing)]
     pub aliases: Vec<String>,

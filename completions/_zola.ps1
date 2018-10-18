@@ -2,12 +2,12 @@
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-Register-ArgumentCompleter -Native -CommandName 'gutenberg' -ScriptBlock {
+Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
     $commandElements = $commandAst.CommandElements
     $command = @(
-        'gutenberg'
+        'zola'
         for ($i = 1; $i -lt $commandElements.Count; $i++) {
             $element = $commandElements[$i]
             if ($element -isnot [StringConstantExpressionAst] -or
@@ -19,27 +19,27 @@ Register-ArgumentCompleter -Native -CommandName 'gutenberg' -ScriptBlock {
     }) -join ';'
 
     $completions = @(switch ($command) {
-        'gutenberg' {
+        'zola' {
             [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml')
             [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
-            [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Create a new Gutenberg project')
+            [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Create a new Zola project')
             [CompletionResult]::new('build', 'build', [CompletionResultType]::ParameterValue, 'Builds the site')
             [CompletionResult]::new('serve', 'serve', [CompletionResultType]::ParameterValue, 'Serve the site. Rebuild and reload on change automatically')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Prints this message or the help of the given subcommand(s)')
             break
         }
-        'gutenberg;init' {
+        'zola;init' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
             break
         }
-        'gutenberg;build' {
+        'zola;build' {
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Force the base URL to be that value (default to the one in config.toml)')
             [CompletionResult]::new('--base-url', 'base-url', [CompletionResultType]::ParameterName, 'Force the base URL to be that value (default to the one in config.toml)')
             [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
@@ -50,7 +50,7 @@ Register-ArgumentCompleter -Native -CommandName 'gutenberg' -ScriptBlock {
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
             break
         }
-        'gutenberg;serve' {
+        'zola;serve' {
             [CompletionResult]::new('-i', 'i', [CompletionResultType]::ParameterName, 'Interface to bind on')
             [CompletionResult]::new('--interface', 'interface', [CompletionResultType]::ParameterName, 'Interface to bind on')
             [CompletionResult]::new('-p', 'p', [CompletionResultType]::ParameterName, 'Which port to use')
@@ -65,7 +65,7 @@ Register-ArgumentCompleter -Native -CommandName 'gutenberg' -ScriptBlock {
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
             break
         }
-        'gutenberg;help' {
+        'zola;help' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')

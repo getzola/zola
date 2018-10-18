@@ -1,12 +1,12 @@
 [package]
-name = "gutenberg"
+name = "zola"
 version = "0.5.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 description = "A fast static site generator with everything built-in"
-homepage = "https://github.com/Keats/gutenberg"
-repository = "https://github.com/Keats/gutenberg"
+homepage = "https://www.getzola.org"
+repository = "https://github.com/getzola/zola"
 keywords = ["static", "site", "generator", "blog"]
 # build = "build.rs"
 
@@ -14,7 +14,7 @@ keywords = ["static", "site", "generator", "blog"]
 clap = "2"
 
 [[bin]]
-name = "gutenberg"
+name = "zola"
 
 [dependencies]
 atty = "0.2.11"
