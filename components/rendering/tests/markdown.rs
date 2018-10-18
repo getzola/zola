@@ -428,6 +428,38 @@ fn can_make_toc() {
 }
 
 #[test]
+fn can_ignore_tags_in_toc() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(
+        &GUTENBERG_TERA,
+        &config,
+        "https://mysite.com/something",
+        &permalinks_ctx,
+        InsertAnchor::Left,
+    );
+
+    let res = render_content(r#"
+## header with `code`
+
+## [anchor](https://duckduckgo.com/) in header
+
+## **bold** and *italics*
+    "#, &context).unwrap();
+
+    let toc = res.toc;
+
+    assert_eq!(toc[0].id, "header-with-code");
+    assert_eq!(toc[0].title, "header with code");
+
+    assert_eq!(toc[1].id, "anchor-in-header");
+    assert_eq!(toc[1].title, "anchor in header");
+
+    assert_eq!(toc[2].id, "bold-and-italics");
+    assert_eq!(toc[2].title, "bold and italics");
+}
+
+#[test]
 fn can_understand_backtick_in_titles() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();

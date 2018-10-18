@@ -31,6 +31,7 @@ pub struct TempHeader {
     pub id: String,
     pub permalink: String,
     pub title: String,
+    pub html: String,
 }
 
 impl TempHeader {
@@ -40,10 +41,16 @@ impl TempHeader {
             id: String::new(),
             permalink: String::new(),
             title: String::new(),
+            html: String::new(),
         }
     }
 
-    pub fn push(&mut self, val: &str) {
+    pub fn add_html(&mut self, val: &str) {
+        self.html += val;
+    }
+
+    pub fn add_text(&mut self, val: &str) {
+        self.html += val;
         self.title += val;
     }
 
@@ -58,9 +65,9 @@ impl TempHeader {
         };
 
         match insert_anchor {
-            InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl = self.level, t = self.title, id = self.id),
-            InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.title, id = self.id),
-            InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.title, id = self.id),
+            InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl = self.level, t = self.html, id = self.id),
+            InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.html, id = self.id),
+            InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.html, id = self.id),
         }
     }
 }

@@ -77,16 +77,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     // Header first
                     if in_header {
                         if header_created {
-                            temp_header.push(&text);
+                            temp_header.add_text(&text);
                             return Event::Html(Borrowed(""));
                         }
-                        let id = find_anchor(&anchors, slugify(&text), 0);
-                        anchors.push(id.clone());
-                        // update the header and add it to the list
-                        temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
-                        temp_header.id = id;
                         // += as we might have some <code> or other things already there
-                        temp_header.title += &text;
+                        temp_header.add_text(&text);
                         header_created = true;
                         return Event::Html(Borrowed(""));
                     }
@@ -182,7 +177,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         } else {
                             format!("<a href=\"{}\" title=\"{}\">", fixed_link, title)
                         };
-                        temp_header.push(&html);
+                        temp_header.add_html(&html);
                         return Event::Html(Borrowed(""));
                     }
 
@@ -190,21 +185,21 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 }
                 Event::End(Tag::Link(_, _)) => {
                     if in_header {
-                        temp_header.push("</a>");
+                        temp_header.add_html("</a>");
                         return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::Start(Tag::Code) => {
                     if in_header {
-                        temp_header.push("<code>");
+                        temp_header.add_html("<code>");
                         return Event::Html(Borrowed(""));
                     }
                     event
                 }
                 Event::End(Tag::Code) => {
                     if in_header {
-                        temp_header.push("</code>");
+                        temp_header.add_html("</code>");
                         return Event::Html(Borrowed(""));
                     }
                     event
@@ -215,8 +210,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     Event::Html(Borrowed(""))
                 }
                 Event::End(Tag::Header(_)) => {
-                    // End of a header, reset all the things and return the stringified
-                    // version of the header
+                    // End of a header, reset all the things and return the header string
+
+                    let id = find_anchor(&anchors, slugify(&temp_header.title), 0);
+                    anchors.push(id.clone());
+                    temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
+                    temp_header.id = id;
+
                     in_header = false;
                     header_created = false;
                     let val = temp_header.to_string(context.tera, context.insert_anchor);
