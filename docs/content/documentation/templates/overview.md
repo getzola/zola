@@ -142,6 +142,52 @@ Gets the whole taxonomy of a specific kind.
 {% set categories = get_taxonomy_url(kind="categories") %}
 ```
 
+### `load_data`
+Loads data from a file. Supported file types include *toml*, *json* and *csv*.
+
+The `path` argument specifies the path to the data file relative to your content directory.
+
+```jinja2
+{% set data = load_data(path="blog/story/data.toml") %}
+```
+
+The optional `kind` argument allows you to specify and override which data type is contained 
+within the file specified in the `path` argument. Valid entries are *"toml"*, *"json"*
+or *"csv"*. 
+
+```jinja2
+{% set data = load_data(path="blog/story/data.txt", kind="json") %}
+```
+
+For *toml* and *json* the data is loaded into a structure matching the original data file,
+however for *csv* there is no native notion of such a structure. Instead the data is seperated
+into a data structure containing *headers* and *records*. See the example below to see 
+how this works.
+
+In the template:
+```jinja2
+{% set data = load_data(path="blog/story/data.csv") %}
+```
+
+In the *blog/story/data.csv* file:
+ ```csv
+Number, Title
+1,Gutenberg
+2,Printing
+```
+
+The equivalent json value of the parsed data would be stored in the `data` variable in the
+template:
+```json
+{
+    "headers": ["Number", "Title"],
+    "records": [
+        ["1", "Gutenberg"], 
+        ["2", "Printing"]
+    ],
+}
+ ```
+
 ### `trans`
 Gets the translation of the given `key`, for the `default_language` or the `language given
 
