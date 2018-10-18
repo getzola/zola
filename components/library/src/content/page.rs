@@ -20,6 +20,7 @@ use content::file_info::FileInfo;
 /// What we are sending to the templates when rendering them
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingPage<'a> {
+    relative_path: &'a str,
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
@@ -65,6 +66,7 @@ impl<'a> SerializingPage<'a> {
         let ancestors = page.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
 
         SerializingPage {
+            relative_path: &page.file.relative,
             ancestors,
             content: &page.content,
             permalink: &page.permalink,
@@ -109,6 +111,7 @@ impl<'a> SerializingPage<'a> {
         };
 
         SerializingPage {
+            relative_path: &page.file.relative,
             ancestors,
             content: &page.content,
             permalink: &page.permalink,

@@ -49,6 +49,8 @@ assets: Array<String>;
 // The first item is the index section and the last one is the parent section
 // This is filled after rendering a page content so it will be empty in shortcodes
 ancestors: Array<String>;
+// The relative path from the `content` directory to the markdown file
+relative_path: String;
 ```
 
 ## Section variables
@@ -89,6 +91,8 @@ assets: Array<String>;
 // The first item is the index section and the last one is the parent section
 // This is filled after rendering a page content so it will be empty in shortcodes
 ancestors: Array<String>;
+// The relative path from the `content` directory to the markdown file
+relative_path: String;
 ```
 
 ## Table of contents

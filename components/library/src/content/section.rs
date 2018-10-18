@@ -19,6 +19,7 @@ use library::Library;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingSection<'a> {
+    relative_path: &'a str,
     content: &'a str,
     permalink: &'a str,
     ancestors: Vec<String>,
@@ -51,6 +52,7 @@ impl<'a> SerializingSection<'a> {
         let ancestors = section.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
 
         SerializingSection {
+            relative_path: &section.file.relative,
             ancestors,
             content: &section.content,
             permalink: &section.permalink,
@@ -77,6 +79,7 @@ impl<'a> SerializingSection<'a> {
         };
 
         SerializingSection {
+            relative_path: &section.file.relative,
             ancestors,
             content: &section.content,
             permalink: &section.permalink,

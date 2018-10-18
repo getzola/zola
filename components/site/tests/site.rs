@@ -142,7 +142,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
     // Ensure subsection pages are correctly filled
     assert!(file_contains!(public, "posts/tutorials/index.html", "Sub-pages: 2"));
-    // TODO: add assertion for syntax highlighting
+
+    // Pages and section get their relative path
+    assert!(file_contains!(public, "posts/tutorials/index.html", "posts/tutorials/_index.md"));
+    assert!(file_contains!(public, "posts/tutorials/devops/nix/index.html", "posts/tutorials/devops/nix.md"));
 
     // aliases work
     assert!(file_exists!(public, "an-old-url/old-page/index.html"));
