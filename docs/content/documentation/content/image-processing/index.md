@@ -23,7 +23,7 @@ resize_image(path, width, height, op, quality)
 
 ### Image processing and return value
 
-Gutenberg performs image processing during the build process and places the resized images in a subdirectory in the static files directory:
+Zola performs image processing during the build process and places the resized images in a subdirectory in the static files directory:
 
 ```
 static/processed_images/

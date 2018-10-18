@@ -17,18 +17,18 @@ if the slug already exists for that article. For example:
 ```
 
 ## Anchor insertion
-It is possible to have Gutenberg automatically insert anchor links next to the header, as you can see on the site you are currently 
+It is possible to have Zola automatically insert anchor links next to the header, as you can see on the site you are currently
 reading if you hover a title.
 
-This option is set at the section level: the `insert_anchor_links` variable on the 
+This option is set at the section level: the `insert_anchor_links` variable on the
 [Section front-matter page](./documentation/content/section.md#front-matter).
 
-The default template is very basic and will need CSS tweaks in your project to look decent. 
-If you want to change the anchor template, it can easily be overwritten by 
+The default template is very basic and will need CSS tweaks in your project to look decent.
+If you want to change the anchor template, it can easily be overwritten by
 creating a `anchor-link.html` file in the `templates` directory.
 
 ## Internal links
-Linking to other pages and their headers is so common that Gutenberg adds a 
+Linking to other pages and their headers is so common that Zola adds a
 special syntax to Markdown links to handle them: start the link with `./` and point to the `.md` file you want
 to link to. The path to the file starts from the `content` directory.
 

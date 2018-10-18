@@ -3,7 +3,7 @@ title = "Sitemap"
 weight = 60
 +++
 
-Gutenberg will look for a `sitemap.xml` file in the `templates` directory or 
+Zola will look for a `sitemap.xml` file in the `templates` directory or
 use the built-in one.
 
 

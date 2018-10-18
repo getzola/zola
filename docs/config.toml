@@ -1,5 +1,5 @@
-base_url = "https://www.getgutenberg.io/"
-title = "Gutenberg"
+base_url = "https://www.getzola.org/"
+title = "Zola"
 description = "Everything you need to make a static site engine in one binary."
 
 compile_sass = true

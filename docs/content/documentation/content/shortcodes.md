@@ -6,7 +6,7 @@ weight = 40
 While Markdown is good at writing, it isn't great when you need write inline
 HTML to add some styling for example.
 
-To solve this, Gutenberg borrows the concept of [shortcodes](https://codex.wordpress.org/Shortcode_API)
+To solve this, Zola borrows the concept of [shortcodes](https://codex.wordpress.org/Shortcode_API)
 from WordPress.
 In our case, the shortcode corresponds to a template that is defined in the `templates/shortcodes` directory or a built-in one that can
 be used in a Markdown file. If you want to use something similar to shortcodes in your templates, try [Tera macros](https://tera.netlify.com/docs/templates/#macros).
@@ -31,7 +31,7 @@ This template is very straightforward: an iframe pointing to the YouTube embed U
 In terms of input, it expects at least one variable: `id`. Since the other variables
 are in a `if` statement, we can assume they are optional.
 
-That's it, Gutenberg will now recognise this template as a shortcode named `youtube` (the filename minus the `.html` extension).
+That's it, Zola will now recognise this template as a shortcode named `youtube` (the filename minus the `.html` extension).
 
 The markdown renderer will wrap an inline HTML node like `<a>` or `<span>` into a paragraph. If you want to disable that,
 simply wrap your shortcode in a `div`.
@@ -78,7 +78,7 @@ Here is a YouTube video:
 An inline {{/* youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") */}} shortcode
 ```
 
-Note that if you want to have some content that looks like a shortcode but not have Gutenberg try to render it,
+Note that if you want to have some content that looks like a shortcode but not have Zola try to render it,
 you will need to escape it by using `{{/*` and `*/}}` instead of `{{` and `}}`.
 
 ### Shortcodes with body
@@ -104,14 +104,14 @@ A quote
 The body of the shortcode will be automatically passed down to the rendering context as the `body` variable and needs
 to be in a newline.
 
-If you want to have some content that looks like a shortcode but not have Gutenberg try to render it,
+If you want to have some content that looks like a shortcode but not have Zola try to render it,
 you will need to escape it by using `{%/*` and `*/%}` instead of `{%` and `%}`. You won't need to escape
 anything else until the closing tag.
 
 ## Built-in shortcodes
 
-Gutenberg comes with a few built-in shortcodes. If you want to override a default shortcode template,
-simply place a `{shortcode_name}.html` file in the `templates/shortcodes` directory and Gutenberg will
+Zola comes with a few built-in shortcodes. If you want to override a default shortcode template,
+simply place a `{shortcode_name}.html` file in the `templates/shortcodes` directory and Zola will
 use that instead.
 
 ### YouTube

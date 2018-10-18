@@ -6,7 +6,7 @@ weight = 20
 Pages and sections are actually very similar.
 
 ## Page variables
-Gutenberg will try to load the `templates/page.html` template, the `page.html` template of the theme if one is used
+Zola will try to load the `templates/page.html` template, the `page.html` template of the theme if one is used
 or will render the built-in template: a blank page.
 
 Whichever template you decide to render, you will get a `page` variable in your template
@@ -54,7 +54,7 @@ relative_path: String;
 ```
 
 ## Section variables
-By default, Gutenberg will try to load `templates/index.html` for `content/_index.md`
+By default, Zola will try to load `templates/index.html` for `content/_index.md`
 and `templates/section.html` for others `_index.md` files. If there isn't
 one, it will render the built-in template: a blank page.
 

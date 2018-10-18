@@ -3,7 +3,7 @@ title = "Taxonomies"
 weight = 90
 +++
 
-Gutenberg has built-in support for taxonomies.
+Zola has built-in support for taxonomies.
 
 The first step is to define the taxonomies in your [config.toml](./documentation/getting-started/configuration.md).
 
@@ -15,7 +15,7 @@ A taxonomy has 4 variables:
 For example the default would be page/1
 - `rss`: if set to `true`, a RSS feed will be generated for each individual term.
 
-Once this is done, you can then set taxonomies in your content and Gutenberg will pick
+Once this is done, you can then set taxonomies in your content and Zola will pick
 them up:
 
 ```toml

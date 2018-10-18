@@ -3,12 +3,12 @@ title = "Creating a theme"
 weight = 30
 +++
 
-Creating is exactly like creating a normal site with Gutenberg, except you
+Creating is exactly like creating a normal site with Zola, except you
 will want to use many [Tera blocks](https://tera.netlify.com/docs/templates/#inheritance) to
 allow users to easily modify it.
 
 ## Getting started
-As mentioned, a theme is just like any site: start with running `gutenberg init MY_THEME_NAME`.
+As mentioned, a theme is just like any site: start with running `zola init MY_THEME_NAME`.
 
 The only thing needed to turn that site into a theme is to add `theme.toml` configuration file with the
 following fields:
@@ -17,8 +17,8 @@ following fields:
 name = "my theme name"
 description = "A classic blog theme"
 license = "MIT"
-homepage = "https://github.com/Keats/gutenberg-hyde"
-# The minimum version of Gutenberg required
+homepage = "https://github.com/Keats/zola-hyde"
+# The minimum version of Zola required
 min_version = "0.4.0"
 # An optional live demo URL
 demo = ""
@@ -26,7 +26,7 @@ demo = ""
 # Any variable there can be overriden in the end user `config.toml`
 # You don't need to prefix variables by the theme name but as this will
 # be merged with user data, some kind of prefix or nesting is preferable
-# Use snake_casing to be consistent with the rest of Gutenberg
+# Use snake_casing to be consistent with the rest of Zola
 [extra]
 
 # The theme author info: you!
@@ -45,7 +45,7 @@ repo = "https://www.github.com/mdo/hyde"
 A simple theme you can use as example is [Hyde](https://github.com/Keats/hyde).
 
 ## Working on a theme
-As a theme is just a site, you can simply use `gutenberg serve` and make changes to your
+As a theme is just a site, you can simply use `zola serve` and make changes to your
 theme, with live reloading working as expected.
 
 Make sure to commit every directory (including `content`) in order for other people
@@ -72,6 +72,6 @@ The first step is to make sure the theme is fulfilling those three requirements:
 of importance
 - be of reasonably high quality
 
-When your theme is ready, you can submit it to the [themes repository](https://github.com/Keats/gutenberg-themes)
+When your theme is ready, you can submit it to the [themes repository](https://github.com/getzola/themes)
 by following the process in the README.
 

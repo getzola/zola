@@ -3,7 +3,7 @@ title = "Robots.txt"
 weight = 70
 +++
 
-Gutenberg will look for a `robots.txt` file in the `templates` directory or 
+Zola will look for a `robots.txt` file in the `templates` directory or
 use the built-in one.
 
 Robots.txt is the simplest of all templates: it only gets the config

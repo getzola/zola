@@ -9,7 +9,7 @@ use errors::{Result, ResultExt};
 
 
 /// Holds the data from a `theme.toml` file.
-/// There are other fields than `extra` in it but Gutenberg
+/// There are other fields than `extra` in it but Zola
 /// itself doesn't care about them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Theme {

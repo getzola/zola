@@ -24,7 +24,7 @@ the `about` folder allows you to use asset colocation, as discussed in the
 
 ## Front-matter
 
-The front-matter is a set of metadata embedded in a file. In Gutenberg,
+The front-matter is a set of metadata embedded in a file. In Zola,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
 While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
@@ -88,7 +88,7 @@ Some content
 
 ## Summary
 
-You can ask Gutenberg to create a summary if you only want to show the first
+You can ask Zola to create a summary if you only want to show the first
 paragraph of each page in a list for example.
 
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point

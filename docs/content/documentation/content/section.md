@@ -21,7 +21,7 @@ Any non-Markdown file in the section folder is added to the `assets` collection 
 The `_index.md` file within a folder defines the content and metadata for that section.  To set
 the metadata, add front matter to the file.
 
-The front-matter is a set of metadata embedded in a file. In Gutenberg,
+The front-matter is a set of metadata embedded in a file. In Zola,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
 After the closing `+++`, you can add content that will be parsed as markdown and will be available
@@ -95,7 +95,7 @@ You can also change the pagination path (the word displayed while paginated in t
 by setting the `paginate_path` variable, which defaults to `page`.
 
 ## Sorting
-It is very common for Gutenberg templates to iterate over pages or sections
+It is very common for Zola templates to iterate over pages or sections
 to display all pages/sections a given directory.  Consider a very simple
 example: a `blog` directory with three files: `blog/Post_1.md`,
 `blog/Post_2.md`, and `blog/Post_3.md`.  To iterate over these posts and

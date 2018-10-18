@@ -3,10 +3,10 @@ title = "Syntax Highlighting"
 weight = 80
 +++
 
-Gutenberg comes with built-in syntax highlighting but you first
+Zola comes with built-in syntax highlighting but you first
 need to enable it in the [configuration](./documentation/getting-started/configuration.md).
 
-Once this is done, Gutenberg will automatically highlight all code blocks
+Once this is done, Zola will automatically highlight all code blocks
 in your content. A code block in Markdown looks like the following:
 
 ````md
@@ -120,7 +120,7 @@ Here is a full list of the supported languages and the short names you can use:
 - TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock"]
 ```
 
-If you want to highlight a language not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
+If you want to highlight a language not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 Alternatively, the `extra_syntaxes` config option can be used to add additional syntax files.
 
 If your site source is laid out as follows:
