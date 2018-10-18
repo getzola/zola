@@ -26,7 +26,7 @@ impl<'a> SerializedTaxonomyItem<'a> {
 
         for key in &item.pages {
             let page = library.get_page_by_key(*key);
-            pages.push(page.to_serialized_basic());
+            pages.push(page.to_serialized_basic(library));
         }
 
         SerializedTaxonomyItem {

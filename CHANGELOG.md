@@ -27,8 +27,8 @@ Tera function
 - RSS feed now takes all available articles by default instead of limiting to 10000
 - `templates` directory is now optional
 - Add Reason and F# syntax highlighting
-- Add `parent_section` to pages and section pointing to the relative path of the parent
-section if there is one to be used with the `get_section` Tera function
+- Add `ancestors` to pages and sections pointing to the relative path of all ancestor
+sections up to the index to be used with the `get_section` Tera function
 
 ## 0.4.2 (2018-09-03)
 

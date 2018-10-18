@@ -25,7 +25,7 @@ pub struct Library {
     /// A mapping path -> key for pages so we can easily get their key
     paths_to_pages: HashMap<PathBuf, Key>,
     /// A mapping path -> key for sections so we can easily get their key
-    paths_to_sections: HashMap<PathBuf, Key>,
+    pub paths_to_sections: HashMap<PathBuf, Key>,
 }
 
 impl Library {
@@ -81,25 +81,58 @@ impl Library {
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
-        let mut grandparent_paths: HashMap<PathBuf, Vec<_>> = HashMap::new();
+        let (root_path, index_path) = self.sections
+            .values()
+            .find(|s| s.is_index())
+            .map(|s| (s.file.parent.clone(), s.file.path.clone()))
+            .unwrap();
+        let root_key =  self.paths_to_sections[&index_path];
+
+        // We are going to get both the ancestors and grandparents for each section in one go
+        let mut ancestors: HashMap<PathBuf, Vec<_>> = HashMap::new();
+        let mut subsections: HashMap<PathBuf, Vec<_>> = HashMap::new();
 
         for section in self.sections.values_mut() {
-            if let Some(ref grand_parent) = section.file.grand_parent {
-                grandparent_paths
-                    .entry(grand_parent.to_path_buf())
-                    .or_insert_with(|| vec![])
-                    .push(section.file.path.clone());
-            }
             // Make sure the pages of a section are empty since we can call that many times on `serve`
             section.pages = vec![];
             section.ignored_pages = vec![];
+
+            if let Some(ref grand_parent) = section.file.grand_parent {
+                subsections
+                    .entry(grand_parent.join("_index.md"))
+                    .or_insert_with(|| vec![])
+                    .push(section.file.path.clone());
+            }
+
+            // Index has no ancestors, no need to go through it
+            if section.is_index() {
+                ancestors.insert(section.file.path.clone(), vec![]);
+                continue;
+            }
+
+            let mut path = root_path.clone();
+            // Index section is the first ancestor of every single section
+            let mut parents = vec![root_key.clone()];
+            for component in &section.file.components {
+                path = path.join(component);
+                // Skip itself
+                if path == section.file.parent {
+                    continue;
+                }
+                if let Some(section_key) = self.paths_to_sections.get(&path.join("_index.md")) {
+                    parents.push(*section_key);
+                }
+            }
+            ancestors.insert(section.file.path.clone(), parents);
         }
 
         for (key, page) in &mut self.pages {
             let parent_section_path = page.file.parent.join("_index.md");
             if let Some(section_key) = self.paths_to_sections.get(&parent_section_path) {
                 self.sections.get_mut(*section_key).unwrap().pages.push(key);
-                page.parent_section = Some(*section_key);
+                page.ancestors = ancestors.get(&parent_section_path).cloned().unwrap_or_else(|| vec![]);
+                // Don't forget to push the actual parent
+                page.ancestors.push(*section_key);
             }
         }
 
@@ -111,22 +144,13 @@ impl Library {
             sections_weight.insert(key, section.meta.weight);
         }
 
-        for (grandparent, children) in &grandparent_paths {
-            let mut subsections = vec![];
-            let grandparent_path = grandparent.join("_index.md");
-
-            if let Some(ref mut section) = self.get_section_mut(&grandparent_path) {
-                subsections = children.iter().map(|p| sections[p]).collect();
-                subsections.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
-                section.subsections = subsections.clone();
+        for section in self.sections.values_mut() {
+            if let Some(ref children) = subsections.get(&section.file.path) {
+                let mut children: Vec<_> = children.iter().map(|p| sections[p]).collect();
+                children.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
+                section.subsections = children;
             }
-
-            // Only there for subsections so we must have a parent section
-            for key in &subsections {
-                if let Some(ref mut subsection) = self.sections.get_mut(*key) {
-                    subsection.parent_section = Some(sections[&grandparent_path]);
-                }
-            }
+            section.ancestors = ancestors.get(&section.file.path).cloned().unwrap_or_else(|| vec![]);
         }
     }
 

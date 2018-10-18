@@ -21,7 +21,7 @@ use library::Library;
 pub struct SerializingSection<'a> {
     content: &'a str,
     permalink: &'a str,
-    parent_section: Option<String>,
+    ancestors: Vec<String>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     extra: &'a HashMap<String, Value>,
@@ -48,10 +48,10 @@ impl<'a> SerializingSection<'a> {
             subsections.push(library.get_section_path_by_key(*k));
         }
 
-        let parent_section = section.parent_section.map(|k| library.get_section_by_key(k).file.relative.clone());
+        let ancestors = section.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
 
         SerializingSection {
-            parent_section,
+            ancestors,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,
@@ -69,9 +69,15 @@ impl<'a> SerializingSection<'a> {
     }
 
     /// Same as from_section but doesn't fetch pages and sections
-    pub fn from_section_basic(section: &'a Section) -> Self {
+    pub fn from_section_basic(section: &'a Section, library: Option<&'a Library>) -> Self {
+        let ancestors = if let Some(ref lib) = library {
+            section.ancestors.iter().map(|k| lib.get_section_by_key(*k).file.relative.clone()).collect()
+        } else {
+            vec![]
+        };
+
         SerializingSection {
-            parent_section: None,
+            ancestors,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,
@@ -111,8 +117,8 @@ pub struct Section {
     pub pages: Vec<Key>,
     /// All pages that cannot be sorted in this section
     pub ignored_pages: Vec<Key>,
-    /// The relative path of the parent section if there is one
-    pub parent_section: Option<Key>,
+    /// The list of parent sections
+    pub ancestors: Vec<Key>,
     /// All direct subsections
     pub subsections: Vec<Key>,
     /// Toc made from the headers of the markdown file
@@ -131,7 +137,7 @@ impl Section {
         Section {
             file: FileInfo::new_section(file_path),
             meta,
-            parent_section: None,
+            ancestors: vec![],
             path: "".to_string(),
             components: vec![],
             permalink: "".to_string(),
@@ -222,7 +228,7 @@ impl Section {
             self.meta.insert_anchor_links,
         );
 
-        context.tera_context.insert("section", &SerializingSection::from_section_basic(self));
+        context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -270,7 +276,7 @@ impl Default for Section {
         Section {
             file: FileInfo::default(),
             meta: SectionFrontMatter::default(),
-            parent_section: None,
+            ancestors: vec![],
             path: "".to_string(),
             components: vec![],
             permalink: "".to_string(),

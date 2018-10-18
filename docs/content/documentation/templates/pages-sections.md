@@ -45,8 +45,10 @@ month: Number?;
 day: Number?;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
-// The relative path of the parent section if existing, for use with the `get_section` Tera function
-parent_section: String?;
+// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The first item is the index section and the last one is the parent section
+// This is filled after rendering a page content so it will be empty in shortcodes
+ancestors: Array<String>;
 ```
 
 ## Section variables
@@ -83,8 +85,10 @@ reading_time: Number;
 toc: Array<Header>;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
-// The relative path of the parent section if existing, for use with the `get_section` Tera function
-parent_section: String?;
+// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The first item is the index section and the last one is the parent section
+// This is filled after rendering a page content so it will be empty in shortcodes
+ancestors: Array<String>;
 ```
 
 ## Table of contents

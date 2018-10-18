@@ -735,7 +735,7 @@ impl Site {
         let p = pages
             .iter()
             .take(num_entries)
-            .map(|x| x.to_serialized_basic())
+            .map(|x| x.to_serialized_basic(&self.library))
             .collect::<Vec<_>>();
 
         context.insert("pages", &p);
@@ -856,7 +856,7 @@ impl Site {
             .map(|pager| {
                 let page_path = folder_path.join(&format!("{}", pager.index));
                 create_directory(&page_path)?;
-                let output = paginator.render_pager(pager, &self.config, &self.tera)?;
+                let output = paginator.render_pager(pager, &self.config, &self.tera, &self.library)?;
                 if pager.index > 1 {
                     create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
                 } else {

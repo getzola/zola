@@ -108,7 +108,7 @@ impl<'a> Paginator<'a> {
 
         for key in self.all_pages {
             let page = library.get_page_by_key(*key);
-            current_page.push(page.to_serialized_basic());
+            current_page.push(page.to_serialized_basic(library));
 
             if current_page.len() == self.paginate_by {
                 pages.push(current_page);
@@ -188,12 +188,12 @@ impl<'a> Paginator<'a> {
         paginator
     }
 
-    pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera) -> Result<String> {
+    pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera, library: &Library) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", &config);
         let template_name = match self.root {
             PaginationRoot::Section(s) => {
-                context.insert("section", &SerializingSection::from_section_basic(s));
+                context.insert("section", &SerializingSection::from_section_basic(s, Some(library)));
                 s.get_template_name()
             }
             PaginationRoot::Taxonomy(t) => {

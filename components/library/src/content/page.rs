@@ -23,7 +23,7 @@ pub struct SerializingPage<'a> {
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
-    parent_section: Option<String>,
+    ancestors: Vec<String>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     date: &'a Option<String>,
@@ -58,14 +58,14 @@ impl<'a> SerializingPage<'a> {
             day = Some(d.2);
         }
         let pages = library.pages();
-        let lighter = page.lighter.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
-        let heavier = page.heavier.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
-        let earlier = page.earlier.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
-        let later = page.later.map(|k| Box::new(SerializingPage::from_page_basic(pages.get(k).unwrap())));
-        let parent_section = page.parent_section.map(|k| library.get_section_by_key(k).file.relative.clone());
+        let lighter = page.lighter.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let heavier = page.heavier.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let earlier = page.earlier.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let later = page.later.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let ancestors = page.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
 
         SerializingPage {
-            parent_section,
+            ancestors,
             content: &page.content,
             permalink: &page.permalink,
             slug: &page.slug,
@@ -93,7 +93,7 @@ impl<'a> SerializingPage<'a> {
     }
 
     /// Same as from_page but does not fill sibling pages
-    pub fn from_page_basic(page: &'a Page) -> Self {
+    pub fn from_page_basic(page: &'a Page, library: Option<&'a Library>) -> Self {
         let mut year = None;
         let mut month = None;
         let mut day = None;
@@ -102,9 +102,14 @@ impl<'a> SerializingPage<'a> {
             month = Some(d.1);
             day = Some(d.2);
         }
+        let ancestors = if let Some(ref lib) = library {
+            page.ancestors.iter().map(|k| lib.get_section_by_key(*k).file.relative.clone()).collect()
+        } else {
+            vec![]
+        };
 
         SerializingPage {
-            parent_section: None,
+            ancestors,
             content: &page.content,
             permalink: &page.permalink,
             slug: &page.slug,
@@ -138,8 +143,8 @@ pub struct Page {
     pub file: FileInfo,
     /// The front matter meta-data
     pub meta: PageFrontMatter,
-    /// The parent section if there is one
-    pub parent_section: Option<Key>,
+    /// The list of parent sections
+    pub ancestors: Vec<Key>,
     /// The actual content of the page, in markdown
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
@@ -184,7 +189,7 @@ impl Page {
         Page {
             file: FileInfo::new_page(file_path),
             meta,
-            parent_section: None,
+            ancestors: vec![],
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),
@@ -305,7 +310,7 @@ impl Page {
             anchor_insert,
         );
 
-        context.tera_context.insert("page", &SerializingPage::from_page_basic(self));
+        context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
         let res = render_content(&self.raw_content, &context)
             .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -347,8 +352,8 @@ impl Page {
         SerializingPage::from_page(self, library)
     }
 
-    pub fn to_serialized_basic(&self) -> SerializingPage {
-        SerializingPage::from_page_basic(self)
+    pub fn to_serialized_basic<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
+        SerializingPage::from_page_basic(self, Some(library))
     }
 }
 
@@ -357,7 +362,7 @@ impl Default for Page {
         Page {
             file: FileInfo::default(),
             meta: PageFrontMatter::default(),
-            parent_section: None,
+            ancestors: vec![],
             raw_content: "".to_string(),
             assets: vec![],
             content: "".to_string(),
