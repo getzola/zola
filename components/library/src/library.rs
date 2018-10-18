@@ -112,7 +112,7 @@ impl Library {
 
             let mut path = root_path.clone();
             // Index section is the first ancestor of every single section
-            let mut parents = vec![root_key.clone()];
+            let mut parents = vec![root_key];
             for component in &section.file.components {
                 path = path.join(component);
                 // Skip itself
