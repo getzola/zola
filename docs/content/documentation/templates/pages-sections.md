@@ -45,6 +45,10 @@ month: Number?;
 day: Number?;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
+// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The first item is the index section and the last one is the parent section
+// This is filled after rendering a page content so it will be empty in shortcodes
+ancestors: Array<String>;
 ```
 
 ## Section variables
@@ -70,7 +74,9 @@ extra: HashMap<String, Any>;
 // Pages directly in this section, sorted if asked
 pages: Array<Pages>;
 // Direct subsections to this section, sorted by subsections weight
-subsections: Array<Section>;
+// This only contains the path to use in the `get_section` Tera function to get
+// the actual section object if you need it
+subsections: Array<String>;
 // Unicode word count
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
@@ -79,6 +85,10 @@ reading_time: Number;
 toc: Array<Header>;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
+// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The first item is the index section and the last one is the parent section
+// This is filled after rendering a page content so it will be empty in shortcodes
+ancestors: Array<String>;
 ```
 
 ## Table of contents

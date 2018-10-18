@@ -6,6 +6,8 @@
 
 - Gutenberg has changed name to REPLACE_ME!
 - The `pagers` variable of Paginator objects has been removed
+- `section.subsections` is now an array of paths to be used with the `get_section`
+Tera function
 
 ### Others
 - Update dependencies, fixing a few bugs with templates
@@ -25,6 +27,8 @@
 - RSS feed now takes all available articles by default instead of limiting to 10000
 - `templates` directory is now optional
 - Add Reason and F# syntax highlighting
+- Add `ancestors` to pages and sections pointing to the relative path of all ancestor
+sections up to the index to be used with the `get_section` Tera function
 
 ## 0.4.2 (2018-09-03)
 

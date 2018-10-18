@@ -63,7 +63,7 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     let section = site.library.sections_values()[0];
-    let paginator = Paginator::from_section(&section, site.library.pages());
+    let paginator = Paginator::from_section(&section, &site.library);
 
     b.iter(|| site.render_paginated(public, &paginator));
 }

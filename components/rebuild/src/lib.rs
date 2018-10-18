@@ -125,6 +125,7 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
                 s.ignored_pages = prev.ignored_pages;
                 s.subsections = prev.subsections;
             }
+            site.populate_sections();
 
             if site.library.get_section(&pathbuf).unwrap().meta == prev.meta {
                 // Front matter didn't change, only content did

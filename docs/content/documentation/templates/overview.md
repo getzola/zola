@@ -92,6 +92,12 @@ Takes a path to a `_index.md` file and returns the associated section
 {% set section = get_section(path="blog/_index.md") %}
 ```
 
+If you only need the metadata of the section, you can pass `metadata_only=true` to the function:
+
+```jinja2
+{% set section = get_section(path="blog/_index.md", metadata_only=true) %}
+```
+
 ### ` get_url`
 Gets the permalink for the given path.
 If the path starts with `./`, it will be understood as an internal
@@ -108,11 +114,11 @@ we want to link to the file that is located at `static/css/app.css`:
 {{/* get_url(path="css/app.css") */}}
 ```
 
-For assets it is reccommended that you pass `trailing_slash=false` to the `get_url` function. This prevents errors
-when dealing with certain hosting providers. An example is:
+By default, assets will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
+An example is:
 
 ```jinja2
-{{/* get_url(path="css/app.css", trailing_slash=false) */}}
+{{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
 In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
