@@ -118,13 +118,6 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
     match site.add_section(section, true)? {
         // Updating a section
         Some(prev) => {
-            // Copy the section data so we don't end up with an almost empty object
-            {
-                let s = site.library.get_section_mut(&pathbuf).unwrap();
-                s.pages = prev.pages;
-                s.ignored_pages = prev.ignored_pages;
-                s.subsections = prev.subsections;
-            }
             site.populate_sections();
 
             if site.library.get_section(&pathbuf).unwrap().meta == prev.meta {
@@ -144,7 +137,6 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
                     SectionChangesNeeded::RenderWithPages => site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)?,
                     // not a common enough operation to make it worth optimizing
                     SectionChangesNeeded::Delete => {
-                        site.populate_sections();
                         site.build()?;
                     }
                 };
