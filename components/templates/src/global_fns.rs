@@ -16,6 +16,8 @@ use utils::site::resolve_internal_link;
 use utils::fs::read_file;
 use imageproc;
 
+static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires a `path` argument with a string value, being a path to a file";
+
 macro_rules! required_arg {
     ($ty: ty, $e: expr, $err: expr) => {
         match $e {
@@ -275,11 +277,22 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
 /// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-        let path_arg: String = required_arg!(
-            String, 
-            args.get("path"), 
-            "`load_data`: requires a `path` argument with a string value, being a path to a file"
+        let path_arg = optional_arg!(
+            String,
+            args.get("path"),
+            GET_DATA_ARGUMENT_ERROR_MESSAGE
         );
+
+        let url_arg = optional_arg!(
+            String,
+            args.get("url"),
+            GET_DATA_ARGUMENT_ERROR_MESSAGE
+        );
+
+        if path_arg.is_some() ^ url_arg.is_some() {
+            return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+        }
+
         let kind_arg = optional_arg!(
             String,
             args.get("kind"),
@@ -306,10 +319,10 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     })
 }
 
-/// load/parse a json file from the given path and place it into a 
+/// load/parse a json file from the given path and place it into a
 /// tera value
 fn load_json(json_path: &PathBuf) -> Result<Value> {
-    
+
     let content_string: String = read_file(json_path)
         .map_err(|e| format!("`load_data`: error {} loading json file {}", json_path.to_str().unwrap(), e))?;
 
@@ -331,9 +344,9 @@ fn load_toml(toml_path: &PathBuf) -> Result<Value> {
     to_value(toml_content).map_err(|err| err.into())
 }
 
-/// Load/parse a csv file from the given path, and place it into a 
+/// Load/parse a csv file from the given path, and place it into a
 /// tera Value.
-/// 
+///
 /// An example csv file `example.csv` could be:
 /// ```csv
 /// Number, Title
@@ -345,7 +358,7 @@ fn load_toml(toml_path: &PathBuf) -> Result<Value> {
 /// {
 ///     "headers": ["Number", "Title"],
 ///     "records": [
-///                     ["1", "Gutenberg"], 
+///                     ["1", "Gutenberg"],
 ///                     ["2", "Printing"]
 ///                ],
 /// }
@@ -581,7 +594,7 @@ title = "A title"
         assert_eq!(result, json!({
             "headers": ["Number", "Title"],
             "records": [
-                            ["1", "Gutenberg"], 
+                            ["1", "Gutenberg"],
                             ["2", "Printing"]
                         ],
         }))
