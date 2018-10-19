@@ -108,7 +108,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
-fn create_new_site(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<(Site, String)> {
+fn create_new_site(interface: &str, port: u16, output_dir: &str, base_url: &str, config_file: &str) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
     let base_address = format!("{}:{}", base_url, port);
@@ -122,7 +122,7 @@ fn create_new_site(interface: &str, port: &str, output_dir: &str, base_url: &str
     site.set_base_url(base_url);
     site.set_output_path(output_dir);
     site.load()?;
-    site.enable_live_reload();
+    site.enable_live_reload(port);
     console::notify_site_size(&site);
     console::warn_about_ignored_pages(&site);
     site.build()?;
@@ -147,7 +147,7 @@ fn handle_directory<'a, 'b>(dir: &'a fs::Directory, req: &'b HttpRequest) -> io:
     fs::NamedFile::open(path)?.respond_to(req)
 }
 
-pub fn serve(interface: &str, port: &str, output_dir: &str, base_url: &str, config_file: &str) -> Result<()> {
+pub fn serve(interface: &str, port: u16, output_dir: &str, base_url: &str, config_file: &str) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
     console::report_elapsed_time(start);

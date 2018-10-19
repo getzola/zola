@@ -20,6 +20,8 @@ extern crate rebuild;
 
 use std::time::Instant;
 
+use utils::net::{get_available_port, port_is_available};
+
 mod cmd;
 mod console;
 mod cli;
@@ -55,7 +57,28 @@ fn main() {
         },
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
-            let port = matches.value_of("port").unwrap_or("1111");
+            let mut port: u16 = match matches.value_of("port").unwrap().parse() {
+                Ok(x) => x,
+                Err(_) => {
+                    console::error("The request port needs to be an integer");
+                    ::std::process::exit(1);
+                }
+            };
+            // Default one
+            if port != 1111 && !port_is_available(port) {
+                console::error("The requested port is not available");
+                ::std::process::exit(1);
+            }
+
+            if !port_is_available(port) {
+                port = if let Some(p) = get_available_port(1111) {
+                    p
+                } else {
+                    console::error("No port available.");
+                    ::std::process::exit(1);
+                }
+            }
+
             let output_dir = matches.value_of("output_dir").unwrap();
             let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");

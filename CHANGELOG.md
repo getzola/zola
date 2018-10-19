@@ -33,6 +33,7 @@ sections up to the index to be used with the `get_section` Tera function
 - Add a `load_data` Tera function to load local CSV/TOML/JSON files
 - Add `relative_path` to pages and sections in templates
 - Do not have a trailing slash for the RSS permalinks
+- `serve` will now try to find other ports than 1111 rather than panicking
 
 ## 0.4.2 (2018-09-03)
 

@@ -146,8 +146,11 @@ impl Site {
         self.content_path.join("_index.md")
     }
 
-    pub fn enable_live_reload(&mut self) {
-        self.live_reload = get_available_port();
+    /// We avoid the port the server is going to use as it's not bound yet
+    /// when calling this function and we could end up having tried to bind
+    /// both http and websocket server to the same port
+    pub fn enable_live_reload(&mut self, port_to_avoid: u16) {
+        self.live_reload = get_available_port(port_to_avoid);
     }
 
     /// Get all the orphan (== without section) pages in the site
