@@ -71,9 +71,10 @@ in_search_index = true
 # to be used directly
 render = true
 
-# Whether to redirect when landing on that section. Defaults to `None`.
+# Whether to redirect when landing on that section. Defaults to not being set.
 # Useful for the same reason as `render` but when you don't want a 404 when
-# landing on the root section page
+# landing on the root section page.
+# Example: redirect_to = "documentation/content/overview"
 redirect_to = ""
 
 # Your own data
