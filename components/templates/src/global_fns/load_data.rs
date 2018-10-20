@@ -8,8 +8,9 @@ use std::path::PathBuf;
 use csv::Reader;
 use std::collections::HashMap;
 use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
+use std::ops::BitXor;
 
-static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires a `path` argument with a string value, being a path to a file";
+static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires EITHER a `path` or `url` argument";
 
 enum ProvidedArgument {
     URL(String),
@@ -29,8 +30,8 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
         GET_DATA_ARGUMENT_ERROR_MESSAGE
     );
 
-    if path_arg.is_some() ^ url_arg.is_some() {
-        return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+    if !path_arg.is_some().bitxor(url_arg.is_some()) {
+        return Err("GET_DATA_ARGUMENT_ERROR_MESSAGE.into()".into());
     }
 
     if let Some(path) = path_arg {
@@ -43,37 +44,48 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
     return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
 }
 
-pub fn read_data_file(content_path: &PathBuf, path_arg: String) -> Result<String> {
+fn read_data_file(content_path: &PathBuf, path_arg: String) -> Result<String> {
     let full_path = content_path.join(&path_arg);
     return read_file(&full_path)
         .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
+}
+
+fn get_output_kind_from_args(args: &HashMap<String, Value>, provided_argument: &ProvidedArgument) -> Result<String> {
+    let kind_arg = optional_arg!(
+        String,
+        args.get("kind"),
+        "`load_data`: `kind` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
+    );
+
+    if let Some(kind) = kind_arg {
+        return Ok(kind);
+    }
+    return match provided_argument {
+        ProvidedArgument::PATH(path) => PathBuf::from(path).extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine kind for {}", path).into()),
+        _ => Ok(String::from("plain"))
+    }
 }
 
 /// A global function to load data from a data file.
 /// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-        let kind_arg = optional_arg!(
-            String,
-            args.get("kind"),
-            "`load_data`: `kind` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
-        );
 
-        let provided_argument = get_data_from_args(&args);
+
+        let provided_argument = get_data_from_args(&args)?;
+
+        let file_kind = get_output_kind_from_args(&args, &provided_argument)?;
 
         let data = match provided_argument {
-            Ok(ProvidedArgument::PATH(path)) => read_data_file(&content_path, path),
-            Ok(ProvidedArgument::URL(_url)) => Ok(String::from("test")),
-            Err(err) => return Err(err)
+            ProvidedArgument::PATH(path) => read_data_file(&content_path, path),
+            ProvidedArgument::URL(_url) => Ok(String::from("test")),
         }?;
-
-        let file_kind = kind_arg.unwrap_or(String::from("plain"));
 
         let result_value: Result<Value> = match file_kind.as_str() {
             "toml" => load_toml(data),
             "csv" => load_csv(data),
             "json" => load_json(data),
-            "plain" => Ok(to_value(data).unwrap()),
+            "plain" => to_value(data).map_err(|e| e.into()),
             kind => return Err(format!("'load_data': {} is an unsupported file kind", kind).into())
         };
 

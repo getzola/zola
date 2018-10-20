@@ -256,7 +256,6 @@ mod tests {
     use super::{make_get_url, make_get_taxonomy, make_get_taxonomy_url, make_trans};
 
     use std::collections::HashMap;
-    use std::path::PathBuf;
 
     use tera::{to_value, Value};
 
