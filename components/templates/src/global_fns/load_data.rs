@@ -5,6 +5,7 @@ use utils::fs::{read_file, is_file_in_directory, get_file_time};
 
 use crypto_hash::{Algorithm, hex_digest};
 use chrono::{DateTime, Utc};
+use reqwest::Client;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -89,9 +90,11 @@ fn get_output_kind_from_args(args: &HashMap<String, Value>, provided_argument: &
     }
 }
 
+
 /// A global function to load data from a data file.
 /// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
+    let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
     let result_cache: Arc<Mutex<HashMap<String, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
         let provided_argument = get_data_from_args(&args)?;
@@ -101,13 +104,17 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
         let cache_key = get_cache_key(&content_path, &provided_argument, &file_kind);
 
         let mut cache = result_cache.lock().expect("result cache lock");
+        let response_client = client.lock().expect("response client lock");
         if let Some(cached_result) = cache.get(&cache_key) {
             return Ok(cached_result.clone());
         }
 
         let data = match provided_argument {
             ProvidedArgument::PATH(path) => read_data_file(&content_path, path),
-            ProvidedArgument::URL(_url) => Ok(String::from("test")),
+            ProvidedArgument::URL(url) => {
+                let mut response = response_client.get(&url).send().map_err(|e| format!("Failed to request {}: {:?}", url, e))?;
+                response.text().map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
+            },
         }?;
 
         let result_value: Result<Value> = match file_kind.as_str() {
@@ -240,6 +247,16 @@ mod tests {
         let toml_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("toml"));
         let json_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("json"));
         assert_ne!(toml_cache_key, json_cache_key);
+    }
+
+    #[test]
+    fn can_load_remote_data() {
+        let static_fn = make_load_data(PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value("https://api.github.com/repos/Keats/gutenberg").unwrap());
+        args.insert("kind".to_string(), to_value("json").unwrap());
+        let result = static_fn(args).unwrap();
+        assert_eq!(result.get("id").unwrap(), &to_value(75688610).unwrap());
     }
 
     #[test]

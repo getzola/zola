@@ -7,6 +7,7 @@ extern crate pulldown_cmark;
 extern crate csv;
 extern crate crypto_hash;
 extern crate chrono;
+extern crate reqwest;
 
 #[cfg(test)]
 #[macro_use]
