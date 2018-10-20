@@ -52,7 +52,7 @@ fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> 
     );
 
     if !path_arg.is_some().bitxor(url_arg.is_some()) {
-        return Err("GET_DATA_ARGUMENT_ERROR_MESSAGE.into()".into());
+        return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
     }
 
     if let Some(path) = path_arg {
