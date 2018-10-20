@@ -14,7 +14,7 @@ static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires EITHER a `
 
 enum ProvidedArgument {
     URL(String),
-    PATH(String)
+    PATH(PathBuf)
 }
 
 fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument> {
@@ -35,7 +35,7 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
     }
 
     if let Some(path) = path_arg {
-        return Ok(ProvidedArgument::PATH(path));
+        return Ok(ProvidedArgument::PATH(PathBuf::from(path)));
     }
     else if let Some(url) = url_arg {
         return Ok(ProvidedArgument::URL(url));
@@ -44,7 +44,7 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
     return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
 }
 
-fn read_data_file(content_path: &PathBuf, path_arg: String) -> Result<String> {
+fn read_data_file(content_path: &PathBuf, path_arg: PathBuf) -> Result<String> {
     let full_path = content_path.join(&path_arg);
     return read_file(&full_path)
         .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
@@ -61,7 +61,7 @@ fn get_output_kind_from_args(args: &HashMap<String, Value>, provided_argument: &
         return Ok(kind);
     }
     return match provided_argument {
-        ProvidedArgument::PATH(path) => PathBuf::from(path).extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine kind for {}", path).into()),
+        ProvidedArgument::PATH(path) => path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine kind for {} from extension", path.display()).into()),
         _ => Ok(String::from("plain"))
     }
 }
