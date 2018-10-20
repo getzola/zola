@@ -623,6 +623,7 @@ impl Site {
     }
 
     pub fn render_aliases(&self) -> Result<()> {
+        ensure_directory_exists(&self.output_path)?;
         for page in self.pages.values() {
             for alias in &page.meta.aliases {
                 let mut output_path = self.output_path.to_path_buf();

@@ -19,7 +19,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
-    assert_eq!(site.pages.len(), 15);
+    assert_eq!(site.pages.len(), 16);
     let posts_path = path.join("content").join("posts");
 
     // Make sure we remove all the pwd + content from the sections
@@ -44,7 +44,7 @@ fn can_parse_site() {
 
     let posts_section = &site.sections[&posts_path.join("_index.md")];
     assert_eq!(posts_section.subsections.len(), 1);
-    assert_eq!(posts_section.pages.len(), 7);
+    assert_eq!(posts_section.pages.len(), 8);
 
     let tutorials_section = &site.sections[&posts_path.join("tutorials").join("_index.md")];
     assert_eq!(tutorials_section.subsections.len(), 2);
