@@ -6,6 +6,7 @@ use utils::fs::{read_file, is_file_in_directory, get_file_time};
 use crypto_hash::{Algorithm, hex_digest};
 use chrono::{DateTime, Utc};
 use reqwest::Client;
+use url::Url;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -19,14 +20,14 @@ use std::ops::BitXor;
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires EITHER a `path` or `url` argument";
 
 enum ProvidedArgument {
-    URL(String),
+    URL(Url),
     PATH(PathBuf)
 }
 
 
 fn get_cache_key(content_path: &PathBuf, provided_argument: &ProvidedArgument, kind: &String) -> String {
     let content_based_data = match provided_argument {
-        ProvidedArgument::URL(url) => url.clone(),
+        ProvidedArgument::URL(url) => url.clone().into_string(),
         ProvidedArgument::PATH(path) => {
             let full_path = content_path.join(&path);
             let file_time = get_file_time(&full_path).expect("get file time");
@@ -59,7 +60,7 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
         return Ok(ProvidedArgument::PATH(PathBuf::from(path)));
     }
     else if let Some(url) = url_arg {
-        return Ok(ProvidedArgument::URL(url));
+        return Url::parse(&url).map(|parsed_url| ProvidedArgument::URL(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
     }
 
     return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
@@ -112,7 +113,7 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
         let data = match provided_argument {
             ProvidedArgument::PATH(path) => read_data_file(&content_path, path),
             ProvidedArgument::URL(url) => {
-                let mut response = response_client.get(&url).send().map_err(|e| format!("Failed to request {}: {:?}", url, e))?;
+                let mut response = response_client.get(url.as_str()).send().map_err(|e| format!("Failed to request {}: {:?}", url, e))?;
                 response.text().map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
             },
         }?;
