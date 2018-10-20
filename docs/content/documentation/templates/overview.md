@@ -143,17 +143,18 @@ Gets the whole taxonomy of a specific kind.
 ```
 
 ### `load_data`
-Loads data from a file. Supported file types include *toml*, *json* and *csv*.
+Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*.
 
 The `path` argument specifies the path to the data file relative to your content directory.
+As a security precaution, If this file is outside of the main site directory, your site will fail to build.
 
 ```jinja2
 {% set data = load_data(path="blog/story/data.toml") %}
 ```
 
 The optional `kind` argument allows you to specify and override which data type is contained
-within the file specified in the `path` argument. Valid entries are *"toml"*, *"json"*
-or *"csv"*.
+within the file specified in the `path` argument. Valid entries are *"toml"*, *"json"*, *"csv"*
+or *"plain"*. If the `kind` argument isn't specified, then the paths extension is used.
 
 ```jinja2
 {% set data = load_data(path="blog/story/data.txt", kind="json") %}
@@ -170,7 +171,7 @@ In the template:
 ```
 
 In the *blog/story/data.csv* file:
- ```csv
+```csv
 Number, Title
 1,Gutenberg
 2,Printing
@@ -186,7 +187,28 @@ template:
         ["2", "Printing"]
     ],
 }
- ```
+```
+
+#### Remote content
+
+Instead of using a file, you can load data from a remote URL. This can be done by specifying a `url` parameter to `load_data` rather than `file`.
+
+```jinja2
+{% set response = load_data(url="https://api.github.com/repos/getzola/zola") %}
+{{ response }}
+```
+
+By default, the response body will be returned with no parsing. This can be changed by using the `kind` argument as above.
+
+
+```jinja2
+{% set response = load_data(url="https://api.github.com/repos/getzola/zola", kind="json") %}
+{{ response }}
+```
+
+#### Data Caching
+
+Data file loading and remote requests are cached in memory memory during build, so multiple requests aren't made to the same endpoint. URLs are cached based on the URL, and data files are cached based on the files modified time. The kind is also taken into account when caching, so a request will be sent twice if it's loaded with 2 differnet kinds.
 
 ### `trans`
 Gets the translation of the given `key`, for the `default_language` or the `language given
