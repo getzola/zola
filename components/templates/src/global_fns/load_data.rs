@@ -6,51 +6,75 @@ use utils::fs::read_file;
 use std::path::PathBuf;
 
 use csv::Reader;
-
+use std::collections::HashMap;
 use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires a `path` argument with a string value, being a path to a file";
+
+enum ProvidedArgument {
+    URL(String),
+    PATH(String)
+}
+
+fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument> {
+    let path_arg = optional_arg!(
+        String,
+        args.get("path"),
+        GET_DATA_ARGUMENT_ERROR_MESSAGE
+    );
+
+    let url_arg = optional_arg!(
+        String,
+        args.get("url"),
+        GET_DATA_ARGUMENT_ERROR_MESSAGE
+    );
+
+    if path_arg.is_some() ^ url_arg.is_some() {
+        return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+    }
+
+    if let Some(path) = path_arg {
+        return Ok(ProvidedArgument::PATH(path));
+    }
+    else if let Some(url) = url_arg {
+        return Ok(ProvidedArgument::URL(url));
+    }
+
+    return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+}
+
+pub fn read_data_file(content_path: &PathBuf, path_arg: String) -> Result<String> {
+    let full_path = content_path.join(&path_arg);
+    return read_file(&full_path)
+        .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
+}
 
 /// A global function to load data from a data file.
 /// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-        let path_arg = optional_arg!(
-            String,
-            args.get("path"),
-            GET_DATA_ARGUMENT_ERROR_MESSAGE
-        );
-
-        let url_arg = optional_arg!(
-            String,
-            args.get("url"),
-            GET_DATA_ARGUMENT_ERROR_MESSAGE
-        );
-
-        if path_arg.is_some() ^ url_arg.is_some() {
-            return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
-        }
-
         let kind_arg = optional_arg!(
             String,
             args.get("kind"),
             "`load_data`: `kind` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
         );
 
-        let full_path = content_path.join(&path_arg);
+        let provided_argument = get_data_from_args(&args);
 
-        let extension = match full_path.extension() {
-            Some(value) => value.to_str().unwrap().to_lowercase(),
-            None => return Err(format!("`load_data`: Cannot parse file extension of specified file: {}", path_arg).into())
-        };
+        let data = match provided_argument {
+            Ok(ProvidedArgument::PATH(path)) => read_data_file(&content_path, path),
+            Ok(ProvidedArgument::URL(_url)) => Ok(String::from("test")),
+            Err(err) => return Err(err)
+        }?;
 
-        let file_kind = kind_arg.unwrap_or(extension);
+        let file_kind = kind_arg.unwrap_or(String::from("plain"));
 
         let result_value: Result<Value> = match file_kind.as_str() {
-            "toml" => load_toml(&full_path),
-            "csv" => load_csv(&full_path),
-            "json" => load_json(&full_path),
-            _ => return Err(format!("'load_data': {} - is an unsupported file kind", file_kind).into())
+            "toml" => load_toml(data),
+            "csv" => load_csv(data),
+            "json" => load_json(data),
+            "plain" => Ok(to_value(data).unwrap()),
+            kind => return Err(format!("'load_data': {} is an unsupported file kind", kind).into())
         };
 
         result_value
@@ -59,12 +83,8 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
 
 /// load/parse a json file from the given path and place it into a
 /// tera value
-fn load_json(json_path: &PathBuf) -> Result<Value> {
-
-    let content_string: String = read_file(json_path)
-        .map_err(|e| format!("`load_data`: error {} loading json file {}", json_path.to_str().unwrap(), e))?;
-
-    let json_content = serde_json::from_str(content_string.as_str()).unwrap();
+fn load_json(json_data: String) -> Result<Value> {
+    let json_content = serde_json::from_str(json_data.as_str()).unwrap();
     let tera_value: Value = json_content;
 
     return Ok(tera_value);
@@ -72,14 +92,10 @@ fn load_json(json_path: &PathBuf) -> Result<Value> {
 
 /// load/parse a toml file from the given path, and place it into a
 /// tera Value
-fn load_toml(toml_path: &PathBuf) -> Result<Value> {
-    let content_string: String = read_file(toml_path)
-        .map_err(|e| format!("`load_data`: error {} loading toml file {}", toml_path.to_str().unwrap(), e))?;
+fn load_toml(toml_data: String) -> Result<Value> {
+    let toml_content: toml::Value = toml::from_str(&toml_data).map_err(|e| format!("{:?}", e))?;
 
-    let toml_content: toml::Value = toml::from_str(&content_string)
-        .map_err(|e| format!("'load_data': {} - {}", toml_path.to_str().unwrap(), e))?;
-
-    to_value(toml_content).map_err(|err| err.into())
+    to_value(toml_content).map_err(|e| e.into())
 }
 
 /// Load/parse a csv file from the given path, and place it into a
@@ -101,15 +117,14 @@ fn load_toml(toml_path: &PathBuf) -> Result<Value> {
 ///                ],
 /// }
 /// ```
-fn load_csv(csv_path: &PathBuf) -> Result<Value> {
-    let mut reader = Reader::from_path(csv_path.clone())
-        .map_err(|e| format!("'load_data': {} - {}", csv_path.to_str().unwrap(), e))?;
+fn load_csv(csv_data: String) -> Result<Value> {
+    let mut reader = Reader::from_reader(csv_data.as_bytes());
 
     let mut csv_map = Map::new();
 
     {
         let hdrs = reader.headers()
-            .map_err(|e| format!("'load_data': {} - {} - unable to read CSV header line (line 1) for CSV file", csv_path.to_str().unwrap(), e))?;
+            .map_err(|e| format!("'load_data': {} - unable to read CSV header line (line 1) for CSV file", e))?;
 
         let headers_array = hdrs.iter()
             .map(|v| Value::String(v.to_string()))
