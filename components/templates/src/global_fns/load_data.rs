@@ -1,7 +1,7 @@
 extern crate toml;
 extern crate serde_json;
 
-use utils::fs::read_file;
+use utils::fs::{read_file, is_file_in_directory};
 
 use std::path::PathBuf;
 
@@ -46,6 +46,9 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
 
 fn read_data_file(content_path: &PathBuf, path_arg: PathBuf) -> Result<String> {
     let full_path = content_path.join(&path_arg);
+    if !is_file_in_directory(&content_path, &path_arg).map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))? {
+        return Err(format!("{} is not inside the content directory {}", full_path.display(), content_path.display()).into());
+    }
     return read_file(&full_path)
         .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
 }
@@ -178,6 +181,16 @@ mod tests {
     use std::path::PathBuf;
 
     use tera::to_value;
+
+    #[test]
+    fn cant_load_outside_content_dir() {
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("../../../README.md").unwrap());
+        let result = static_fn(args);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../README.md is not inside the content directory ../utils/test-files");
+    }
 
     #[test]
     fn can_load_toml()

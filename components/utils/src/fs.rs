@@ -7,6 +7,14 @@ use walkdir::WalkDir;
 use errors::{Result, ResultExt};
 
 
+pub fn is_file_in_directory(parent: &Path, file: &Path) -> Result<bool> {
+    let full_path = parent.join(file);
+    let canonical_path = full_path.canonicalize().map_err(|e| format!("Failed to canonicalize {}: {}", full_path.display(), e))?;
+    let canonical_parent = parent.canonicalize().map_err(|e| format!("Failed to canonicalize {}: {}", parent.display(), e))?;
+    return Ok(canonical_path.starts_with(canonical_parent));
+}
+
+
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
     let mut file = File::create(&path)?;
@@ -122,6 +130,7 @@ pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Pa
 #[cfg(test)]
 mod tests {
     use std::fs::File;
+    use std::path::Path;
 
     use tempfile::tempdir;
 
