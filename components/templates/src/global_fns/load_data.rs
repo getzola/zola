@@ -25,7 +25,7 @@ enum ProvidedArgument {
 }
 
 
-fn get_cache_key(provided_argument: &ProvidedArgument, kind: &String) -> String {
+fn get_cache_key(provided_argument: &ProvidedArgument, format: &String) -> String {
     let content_based_data = match provided_argument {
         ProvidedArgument::URL(url) => url.clone().into_string(),
         ProvidedArgument::PATH(path) => {
@@ -34,7 +34,7 @@ fn get_cache_key(provided_argument: &ProvidedArgument, kind: &String) -> String 
             format!("{}{}", file_datetime.timestamp_millis().to_string(), path.display())
         }
     };
-    return hex_digest(Algorithm::MD5, format!("{}{}", kind, content_based_data).as_bytes());
+    return hex_digest(Algorithm::MD5, format!("{}{}", format, content_based_data).as_bytes());
 }
 
 
@@ -77,18 +77,18 @@ fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
         .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
 }
 
-fn get_output_kind_from_args(args: &HashMap<String, Value>, provided_argument: &ProvidedArgument) -> Result<String> {
-    let kind_arg = optional_arg!(
+fn get_output_format_from_args(args: &HashMap<String, Value>, provided_argument: &ProvidedArgument) -> Result<String> {
+    let format_arg = optional_arg!(
         String,
-        args.get("kind"),
-        "`load_data`: `kind` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
+        args.get("format"),
+        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
     );
 
-    if let Some(kind) = kind_arg {
-        return Ok(kind);
+    if let Some(format) = format_arg {
+        return Ok(format);
     }
     return match provided_argument {
-        ProvidedArgument::PATH(path) => path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine kind for {} from extension", path.display()).into()),
+        ProvidedArgument::PATH(path) => path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine format for {} from extension", path.display()).into()),
         _ => Ok(String::from("plain"))
     }
 }
@@ -104,9 +104,9 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
         let provided_argument = get_data_from_args(&content_path, &args)?;
 
-        let file_kind = get_output_kind_from_args(&args, &provided_argument)?;
+        let file_format = get_output_format_from_args(&args, &provided_argument)?;
 
-        let cache_key = get_cache_key(&provided_argument, &file_kind);
+        let cache_key = get_cache_key(&provided_argument, &file_format);
 
         let mut cache = result_cache.lock().expect("result cache lock");
         let response_client = client.lock().expect("response client lock");
@@ -122,12 +122,12 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
             },
         }?;
 
-        let result_value: Result<Value> = match file_kind.as_str() {
+        let result_value: Result<Value> = match file_format.as_str() {
             "toml" => load_toml(data),
             "csv" => load_csv(data),
             "json" => load_json(data),
             "plain" => to_value(data).map_err(|e| e.into()),
-            kind => return Err(format!("'load_data': {} is an unsupported file kind", kind).into())
+            format => return Err(format!("'load_data': {} is an unsupported file format", format).into())
         };
 
         if let Ok(data_result) = &result_value {
@@ -263,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn different_cache_key_per_kind() {
+    fn different_cache_key_per_format() {
         let toml_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("toml"));
         let json_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("json"));
         assert_ne!(toml_cache_key, json_cache_key);
@@ -274,7 +274,7 @@ mod tests {
         let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://api.github.com/repos/Keats/gutenberg").unwrap());
-        args.insert("kind".to_string(), to_value("json").unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn(args).unwrap();
         assert_eq!(result.get("id").unwrap(), &to_value(75688610).unwrap());
     }

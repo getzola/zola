@@ -152,12 +152,12 @@ As a security precaution, If this file is outside of the main site directory, yo
 {% set data = load_data(path="blog/story/data.toml") %}
 ```
 
-The optional `kind` argument allows you to specify and override which data type is contained
+The optional `format` argument allows you to specify and override which data type is contained
 within the file specified in the `path` argument. Valid entries are *"toml"*, *"json"*, *"csv"*
-or *"plain"*. If the `kind` argument isn't specified, then the paths extension is used.
+or *"plain"*. If the `format` argument isn't specified, then the paths extension is used.
 
 ```jinja2
-{% set data = load_data(path="blog/story/data.txt", kind="json") %}
+{% set data = load_data(path="blog/story/data.txt", format="json") %}
 ```
 
 For *toml* and *json* the data is loaded into a structure matching the original data file,
@@ -198,17 +198,17 @@ Instead of using a file, you can load data from a remote URL. This can be done b
 {{ response }}
 ```
 
-By default, the response body will be returned with no parsing. This can be changed by using the `kind` argument as above.
+By default, the response body will be returned with no parsing. This can be changed by using the `format` argument as above.
 
 
 ```jinja2
-{% set response = load_data(url="https://api.github.com/repos/getzola/zola", kind="json") %}
+{% set response = load_data(url="https://api.github.com/repos/getzola/zola", format="json") %}
 {{ response }}
 ```
 
 #### Data Caching
 
-Data file loading and remote requests are cached in memory memory during build, so multiple requests aren't made to the same endpoint. URLs are cached based on the URL, and data files are cached based on the files modified time. The kind is also taken into account when caching, so a request will be sent twice if it's loaded with 2 differnet kinds.
+Data file loading and remote requests are cached in memory memory during build, so multiple requests aren't made to the same endpoint. URLs are cached based on the URL, and data files are cached based on the files modified time. The format is also taken into account when caching, so a request will be sent twice if it's loaded with 2 differnet formats.
 
 ### `trans`
 Gets the translation of the given `key`, for the `default_language` or the `language given
