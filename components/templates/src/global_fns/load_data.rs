@@ -1,7 +1,7 @@
 extern crate toml;
 extern crate serde_json;
 
-use utils::fs::{read_file, is_file_in_directory, get_file_time};
+use utils::fs::{read_file, is_path_in_directory, get_file_time};
 
 use crypto_hash::{Algorithm, hex_digest};
 use chrono::{DateTime, Utc};
@@ -25,21 +25,20 @@ enum ProvidedArgument {
 }
 
 
-fn get_cache_key(content_path: &PathBuf, provided_argument: &ProvidedArgument, kind: &String) -> String {
+fn get_cache_key(provided_argument: &ProvidedArgument, kind: &String) -> String {
     let content_based_data = match provided_argument {
         ProvidedArgument::URL(url) => url.clone().into_string(),
         ProvidedArgument::PATH(path) => {
-            let full_path = content_path.join(&path);
-            let file_time = get_file_time(&full_path).expect("get file time");
+            let file_time = get_file_time(&path).expect("get file time");
             let file_datetime: DateTime<Utc> = DateTime::from(file_time);
-            format!("{}{}", file_datetime.timestamp_millis().to_string(), full_path.display())
+            format!("{}{}", file_datetime.timestamp_millis().to_string(), path.display())
         }
     };
     return hex_digest(Algorithm::MD5, format!("{}{}", kind, content_based_data).as_bytes());
 }
 
 
-fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument> {
+fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> Result<ProvidedArgument> {
     let path_arg = optional_arg!(
         String,
         args.get("path"),
@@ -57,7 +56,11 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
     }
 
     if let Some(path) = path_arg {
-        return Ok(ProvidedArgument::PATH(PathBuf::from(path)));
+        let full_path = content_path.join(path);
+        if !full_path.exists() {
+            return Err(format!("{} doesn't exist", full_path.display()).into());
+        }
+        return Ok(ProvidedArgument::PATH(full_path));
     }
     else if let Some(url) = url_arg {
         return Url::parse(&url).map(|parsed_url| ProvidedArgument::URL(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
@@ -66,10 +69,9 @@ fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument>
     return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
 }
 
-fn read_data_file(content_path: &PathBuf, path_arg: PathBuf) -> Result<String> {
-    let full_path = content_path.join(&path_arg);
-    if !is_file_in_directory(&content_path, &path_arg).map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))? {
-        return Err(format!("{} is not inside the content directory {}", full_path.display(), content_path.display()).into());
+fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
+    if !is_path_in_directory(&base_path, &full_path).map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))? {
+        return Err(format!("{} is not inside the base site directory {}", full_path.display(), base_path.display()).into());
     }
     return read_file(&full_path)
         .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
@@ -94,17 +96,17 @@ fn get_output_kind_from_args(args: &HashMap<String, Value>, provided_argument: &
 
 /// A global function to load data from a data file.
 /// Currently the supported formats are json, toml and csv
-pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
+pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
     let mut headers = header::HeaderMap::new();
     headers.insert(header::USER_AGENT, format!("{} {}", crate_name!(), crate_version!()).parse().unwrap());
     let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
     let result_cache: Arc<Mutex<HashMap<String, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
-        let provided_argument = get_data_from_args(&args)?;
+        let provided_argument = get_data_from_args(&content_path, &args)?;
 
         let file_kind = get_output_kind_from_args(&args, &provided_argument)?;
 
-        let cache_key = get_cache_key(&content_path, &provided_argument, &file_kind);
+        let cache_key = get_cache_key(&provided_argument, &file_kind);
 
         let mut cache = result_cache.lock().expect("result cache lock");
         let response_client = client.lock().expect("response client lock");
@@ -113,7 +115,7 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
         }
 
         let data = match provided_argument {
-            ProvidedArgument::PATH(path) => read_data_file(&content_path, path),
+            ProvidedArgument::PATH(path) => read_data_file(&base_path, path),
             ProvidedArgument::URL(url) => {
                 let mut response = response_client.get(url.as_str()).send().map_err(|e| format!("Failed to request {}: {:?}", url, e))?;
                 response.text().map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
@@ -222,39 +224,54 @@ mod tests {
 
     use tera::to_value;
 
+    fn get_test_file(filename: &str) -> PathBuf {
+        let test_files = PathBuf::from("../utils/test-files").canonicalize().unwrap();
+        return test_files.join(filename);
+    }
+
+    #[test]
+    fn fails_when_missing_file() {
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
+        let result = static_fn(args);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../READMEE.md doesn't exist");
+    }
+
     #[test]
     fn cant_load_outside_content_dir() {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../README.md").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../README.md is not inside the content directory ../utils/test-files");
+        assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../README.md is not inside the base site directory ../utils");
     }
 
     #[test]
     fn calculates_cache_key() {
-        let cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("toml"));
-        assert_eq!(cache_key, "0d124219b9598f48103ab65886768498");
+        let cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("toml"));
+        assert_eq!(cache_key, "830dc6839f945d93e86fec2cc6ca0ea1");
     }
 
     #[test]
     fn different_cache_key_per_filename() {
-        let toml_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("toml"));
-        let json_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.json")), &String::from("toml"));
+        let toml_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("toml"));
+        let json_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.json")), &String::from("toml"));
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn different_cache_key_per_kind() {
-        let toml_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("toml"));
-        let json_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("json"));
+        let toml_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("toml"));
+        let json_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("json"));
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn can_load_remote_data() {
-        let static_fn = make_load_data(PathBuf::new());
+        let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://api.github.com/repos/Keats/gutenberg").unwrap());
         args.insert("kind".to_string(), to_value("json").unwrap());
@@ -265,7 +282,7 @@ mod tests {
     #[test]
     fn can_load_toml()
     {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn(args.clone()).unwrap();
@@ -285,7 +302,7 @@ mod tests {
     #[test]
     fn can_load_csv()
     {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.csv").unwrap());
         let result = static_fn(args.clone()).unwrap();
@@ -302,7 +319,7 @@ mod tests {
     #[test]
     fn can_load_json()
     {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.json").unwrap());
         let result = static_fn(args.clone()).unwrap();
