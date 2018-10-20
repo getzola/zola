@@ -1,7 +1,10 @@
 extern crate toml;
 extern crate serde_json;
 
-use utils::fs::{read_file, is_file_in_directory};
+use utils::fs::{read_file, is_file_in_directory, get_file_time};
+
+use crypto_hash::{Algorithm, hex_digest};
+use chrono::{DateTime, Utc};
 
 use std::path::PathBuf;
 
@@ -16,6 +19,21 @@ enum ProvidedArgument {
     URL(String),
     PATH(PathBuf)
 }
+
+
+fn get_cache_key(content_path: &PathBuf, provided_argument: &ProvidedArgument, kind: &String) -> Result<String> {
+    let content_based_data = match provided_argument {
+        ProvidedArgument::URL(url) => url.clone(),
+        ProvidedArgument::PATH(path) => {
+            let full_path = content_path.join(&path);
+            let file_time = get_file_time(&full_path).expect("get file time");
+            let file_datetime: DateTime<Utc> = DateTime::from(file_time);
+            format!("{}{}", file_datetime.timestamp_millis().to_string(), full_path.display())
+        }
+    };
+    return Ok(hex_digest(Algorithm::MD5, format!("{}{}", kind, content_based_data).as_bytes()));
+}
+
 
 fn get_data_from_args(args: &HashMap<String, Value>) -> Result<ProvidedArgument> {
     let path_arg = optional_arg!(
@@ -73,11 +91,11 @@ fn get_output_kind_from_args(args: &HashMap<String, Value>, provided_argument: &
 /// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-
-
         let provided_argument = get_data_from_args(&args)?;
 
         let file_kind = get_output_kind_from_args(&args, &provided_argument)?;
+
+        let cache_key = get_cache_key(&content_path, &provided_argument, &file_kind);
 
         let data = match provided_argument {
             ProvidedArgument::PATH(path) => read_data_file(&content_path, path),
@@ -175,7 +193,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use super::make_load_data;
+    use super::{make_load_data, get_cache_key, ProvidedArgument};
 
     use std::collections::HashMap;
     use std::path::PathBuf;
@@ -190,6 +208,26 @@ mod tests {
         let result = static_fn(args);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../README.md is not inside the content directory ../utils/test-files");
+    }
+
+    #[test]
+    fn calculates_cache_key() {
+        let cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("toml")).unwrap();
+        assert_eq!(cache_key, "0d124219b9598f48103ab65886768498");
+    }
+
+    #[test]
+    fn different_cache_key_per_filename() {
+        let toml_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("toml")).unwrap();
+        let json_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.json")), &String::from("toml")).unwrap();
+        assert_ne!(toml_cache_key, json_cache_key);
+    }
+
+    #[test]
+    fn different_cache_key_per_kind() {
+        let toml_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("toml")).unwrap();
+        let json_cache_key = get_cache_key(&PathBuf::from("../utils/test-files"), &ProvidedArgument::PATH(PathBuf::from("test.toml")), &String::from("json")).unwrap();
+        assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]

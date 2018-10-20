@@ -1,7 +1,7 @@
 use std::io::prelude::*;
 use std::fs::{File, create_dir_all, read_dir, copy};
 use std::path::{Path, PathBuf};
-
+use std::time::SystemTime;
 use walkdir::WalkDir;
 
 use errors::{Result, ResultExt};
@@ -101,6 +101,17 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
     Ok(())
 }
 
+pub fn get_file_time(path: &Path) -> Option<SystemTime> {
+    return path.metadata().ok().and_then(|meta| {
+        Some(match (meta.created().ok(), meta.modified().ok()) {
+            (Some(tc), Some(tm)) => tc.max(tm),
+            (Some(tc), None) => tc,
+            (None, Some(tm)) => tm,
+            (None, None) => return None,
+        })
+    });
+}
+
 /// Compares source and target files' timestamps and returns true if the source file
 /// has been created _or_ updated after the target file has
 pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Path>, PT: AsRef<Path> {
@@ -111,17 +122,8 @@ pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Pa
         return true;
     }
 
-    let get_time = |path: &Path| path.metadata().ok().and_then(|meta| {
-        Some(match (meta.created().ok(), meta.modified().ok()) {
-            (Some(tc), Some(tm)) => tc.max(tm),
-            (Some(tc), None) => tc,
-            (None, Some(tm)) => tm,
-            (None, None) => return None,
-        })
-    });
-
-    let time_source = get_time(p_source);
-    let time_target = get_time(p_target);
+    let time_source = get_file_time(p_source);
+    let time_target = get_file_time(p_target);
 
     time_source.and_then(|ts| time_target.map(|tt| ts > tt)).unwrap_or(true)
 }
