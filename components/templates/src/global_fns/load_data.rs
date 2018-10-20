@@ -5,7 +5,7 @@ use utils::fs::{read_file, is_file_in_directory, get_file_time};
 
 use crypto_hash::{Algorithm, hex_digest};
 use chrono::{DateTime, Utc};
-use reqwest::Client;
+use reqwest::{Client, header};
 use url::Url;
 
 use std::path::PathBuf;
@@ -95,6 +95,8 @@ fn get_output_kind_from_args(args: &HashMap<String, Value>, provided_argument: &
 /// A global function to load data from a data file.
 /// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
+    let mut headers = header::HeaderMap::new();
+    headers.insert(header::USER_AGENT, format!("{} {}", crate_name!(), crate_version!()).parse().unwrap());
     let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
     let result_cache: Arc<Mutex<HashMap<String, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
@@ -137,7 +139,7 @@ pub fn make_load_data(content_path: PathBuf) -> GlobalFn {
 /// load/parse a json file from the given path and place it into a
 /// tera value
 fn load_json(json_data: String) -> Result<Value> {
-    let json_content = serde_json::from_str(json_data.as_str()).unwrap();
+    let json_content = serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
     let tera_value: Value = json_content;
 
     return Ok(tera_value);

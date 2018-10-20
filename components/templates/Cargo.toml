@@ -1,6 +1,7 @@
 [package]
 name = "templates"
-version = "0.1.0"
+# Version must match that of root Cargo.toml
+version = "0.5.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
@@ -16,6 +17,7 @@ crypto-hash = "0.3.1"
 chrono = "0.4"
 reqwest = "0.9"
 url = "1.5"
+clap = "2"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

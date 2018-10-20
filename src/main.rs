@@ -70,4 +70,3 @@ fn main() {
         _ => unreachable!(),
     }
 }
-
