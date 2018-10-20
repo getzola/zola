@@ -14,10 +14,11 @@
 
         <header>
             <nav class="{% block extra_nav_class %}container{% endblock extra_nav_class %}">
+                {% set gh_response = load_data(url="https://api.github.com/repos/getzola/zola", format="json") %}
                 <a class="header__logo white" href="{{ config.base_url }}">Zola</a>
                 <a class="white" href="{{ get_url(path="./documentation/_index.md") }}" class="nav-link">Docs</a>
                 <a class="white" href="{{ get_url(path="./themes/_index.md") }}" class="nav-link">Themes</a>
-                <a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a>
+                <a class="white" href="{{ gh_response.html_url }}" class="nav-link">GitHub</a>
 
                 <div class="search-container">
                     <input id="search" type="search" placeholder="🔎 Search the docs">

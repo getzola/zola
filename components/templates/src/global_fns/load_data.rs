@@ -117,7 +117,7 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
         let data = match provided_argument {
             ProvidedArgument::PATH(path) => read_data_file(&base_path, path),
             ProvidedArgument::URL(url) => {
-                let mut response = response_client.get(url.as_str()).send().map_err(|e| format!("Failed to request {}: {:?}", url, e))?;
+                let mut response = response_client.get(url.as_str()).send().and_then(|res| res.error_for_status()).map_err(|e| format!("Failed to request {}: {}", url, e.status().expect("response status")))?;
                 response.text().map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
             },
         }?;
@@ -273,10 +273,21 @@ mod tests {
     fn can_load_remote_data() {
         let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value("https://api.github.com/repos/Keats/gutenberg").unwrap());
+        args.insert("url".to_string(), to_value("https://api.github.com/repos/getzola/zola").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn(args).unwrap();
         assert_eq!(result.get("id").unwrap(), &to_value(75688610).unwrap());
+    }
+
+    #[test]
+    fn fails_when_request_404s() {
+        let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value("https://api.github.com/repos/getzola/non-existent-zola-test-repo").unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
+        let result = static_fn(args);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().description(), "Failed to request https://api.github.com/repos/getzola/non-existent-zola-test-repo: 404 Not Found");
     }
 
     #[test]
