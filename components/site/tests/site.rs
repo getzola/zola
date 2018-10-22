@@ -19,7 +19,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
-    assert_eq!(site.library.pages().len(), 15);
+    assert_eq!(site.library.pages().len(), 16);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -41,7 +41,7 @@ fn can_parse_site() {
 
     let posts_section = site.library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 1);
-    assert_eq!(posts_section.pages.len(), 7);
+    assert_eq!(posts_section.pages.len(), 8);
     assert_eq!(posts_section.ancestors, vec![*site.library.get_section_key(&index_section.file.path).unwrap()]);
 
     // Make sure we remove all the pwd + content from the sections

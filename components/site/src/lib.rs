@@ -565,6 +565,7 @@ impl Site {
     }
 
     pub fn render_aliases(&self) -> Result<()> {
+        ensure_directory_exists(&self.output_path)?;
         for (_, page) in self.library.pages() {
             for alias in &page.meta.aliases {
                 let mut output_path = self.output_path.to_path_buf();
