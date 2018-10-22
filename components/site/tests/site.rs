@@ -202,7 +202,7 @@ fn can_build_site_with_live_reload() {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    site.enable_live_reload();
+    site.enable_live_reload(1000);
     site.build().unwrap();
 
     assert!(Path::new(&public).exists());
