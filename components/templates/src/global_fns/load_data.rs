@@ -18,16 +18,16 @@ use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires EITHER a `path` or `url` argument";
 
-enum ProvidedArgument {
-    URL(Url),
-    PATH(PathBuf)
+enum DataSource {
+    Url(Url),
+    Path(PathBuf)
 }
 
 
-fn get_cache_key(provided_argument: &ProvidedArgument, format: &String) -> String {
-    let content_based_data = match provided_argument {
-        ProvidedArgument::URL(url) => url.clone().into_string(),
-        ProvidedArgument::PATH(path) => {
+fn get_cache_key(data_source: &DataSource, format: &String) -> String {
+    let content_based_data = match data_source {
+        DataSource::Url(url) => url.clone().into_string(),
+        DataSource::Path(path) => {
             let file_time = get_file_time(&path).expect("get file time");
             let file_datetime: DateTime<Utc> = DateTime::from(file_time);
             format!("{}{}", file_datetime.timestamp_millis().to_string(), path.display())
@@ -37,7 +37,7 @@ fn get_cache_key(provided_argument: &ProvidedArgument, format: &String) -> Strin
 }
 
 
-fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> Result<ProvidedArgument> {
+fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> Result<DataSource> {
     let path_arg = optional_arg!(
         String,
         args.get("path"),
@@ -59,11 +59,11 @@ fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> 
         if !full_path.exists() {
             return Err(format!("{} doesn't exist", full_path.display()).into());
         }
-        return Ok(ProvidedArgument::PATH(full_path));
+        return Ok(DataSource::Path(full_path));
     }
 
     if let Some(url) = url_arg {
-        return Url::parse(&url).map(|parsed_url| ProvidedArgument::URL(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
+        return Url::parse(&url).map(|parsed_url| DataSource::Url(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
     }
 
     return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
@@ -77,7 +77,7 @@ fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
         .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
 }
 
-fn get_output_format_from_args(args: &HashMap<String, Value>, provided_argument: &ProvidedArgument) -> Result<String> {
+fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &DataSource) -> Result<String> {
     let format_arg = optional_arg!(
         String,
         args.get("format"),
@@ -87,8 +87,8 @@ fn get_output_format_from_args(args: &HashMap<String, Value>, provided_argument:
     if let Some(format) = format_arg {
         return Ok(format);
     }
-    return match provided_argument {
-        ProvidedArgument::PATH(path) => path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine format for {} from extension", path.display()).into()),
+    return match data_source {
+        DataSource::Path(path) => path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine format for {} from extension", path.display()).into()),
         _ => Ok(String::from("plain"))
     }
 }
@@ -102,11 +102,11 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
     let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
     let result_cache: Arc<Mutex<HashMap<String, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
-        let provided_argument = get_data_from_args(&content_path, &args)?;
+        let data_source = get_data_from_args(&content_path, &args)?;
 
-        let file_format = get_output_format_from_args(&args, &provided_argument)?;
+        let file_format = get_output_format_from_args(&args, &data_source)?;
 
-        let cache_key = get_cache_key(&provided_argument, &file_format);
+        let cache_key = get_cache_key(&data_source, &file_format);
 
         let mut cache = result_cache.lock().expect("result cache lock");
         let response_client = client.lock().expect("response client lock");
@@ -114,9 +114,9 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
             return Ok(cached_result.clone());
         }
 
-        let data = match provided_argument {
-            ProvidedArgument::PATH(path) => read_data_file(&base_path, path),
-            ProvidedArgument::URL(url) => {
+        let data = match data_source {
+            DataSource::Path(path) => read_data_file(&base_path, path),
+            DataSource::Url(url) => {
                 let mut response = response_client.get(url.as_str()).send().and_then(|res| res.error_for_status()).map_err(|e| format!("Failed to request {}: {}", url, e.status().expect("response status")))?;
                 response.text().map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
             },
@@ -215,7 +215,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use super::{make_load_data, get_cache_key, ProvidedArgument};
+    use super::{make_load_data, get_cache_key, DataSource};
 
     use std::collections::HashMap;
     use std::path::PathBuf;
@@ -249,21 +249,21 @@ mod tests {
 
     #[test]
     fn calculates_cache_key() {
-        let cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("toml"));
+        let cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("toml"));
         assert_eq!(cache_key, "830dc6839f945d93e86fec2cc6ca0ea1");
     }
 
     #[test]
     fn different_cache_key_per_filename() {
-        let toml_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("toml"));
-        let json_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.json")), &String::from("toml"));
+        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("toml"));
+        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.json")), &String::from("toml"));
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn different_cache_key_per_format() {
-        let toml_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("toml"));
-        let json_cache_key = get_cache_key(&ProvidedArgument::PATH(get_test_file("test.toml")), &String::from("json"));
+        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("toml"));
+        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("json"));
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
