@@ -208,7 +208,7 @@ By default, the response body will be returned with no parsing. This can be chan
 
 #### Data Caching
 
-Data file loading and remote requests are cached in memory memory during build, so multiple requests aren't made to the same endpoint. URLs are cached based on the URL, and data files are cached based on the files modified time. The format is also taken into account when caching, so a request will be sent twice if it's loaded with 2 differnet formats.
+Data file loading and remote requests are cached in memory during build, so multiple requests aren't made to the same endpoint. URLs are cached based on the URL, and data files are cached based on the files modified time. The format is also taken into account when caching, so a request will be sent twice if it's loaded with 2 different formats.
 
 ### `trans`
 Gets the translation of the given `key`, for the `default_language` or the `language given
