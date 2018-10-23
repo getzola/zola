@@ -141,10 +141,8 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
 /// load/parse a json file from the given path and place it into a
 /// tera value
 fn load_json(json_data: String) -> Result<Value> {
-    let json_content = serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
-    let tera_value: Value = json_content;
-
-    return Ok(tera_value);
+    let json_content: Value = serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
+    return Ok(json_content);
 }
 
 /// load/parse a toml file from the given path, and place it into a
