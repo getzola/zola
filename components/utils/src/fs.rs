@@ -101,7 +101,6 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
 }
 
 pub fn get_file_time(path: &Path) -> Option<SystemTime> {
-    println!("{}", path.display());
     return path.metadata().ok().and_then(|meta| {
         Some(match (meta.created().ok(), meta.modified().ok()) {
             (Some(tc), Some(tm)) => tc.max(tm),
