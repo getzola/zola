@@ -15,7 +15,6 @@ use std::sync::{Arc, Mutex};
 use csv::Reader;
 use std::collections::HashMap;
 use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
-use std::ops::BitXor;
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires EITHER a `path` or `url` argument";
 
@@ -51,7 +50,7 @@ fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> 
         GET_DATA_ARGUMENT_ERROR_MESSAGE
     );
 
-    if !path_arg.is_some().bitxor(url_arg.is_some()) {
+    if path_arg.is_some() && url_arg.is_some() {
         return Err("GET_DATA_ARGUMENT_ERROR_MESSAGE.into()".into());
     }
 
@@ -62,7 +61,8 @@ fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> 
         }
         return Ok(ProvidedArgument::PATH(full_path));
     }
-    else if let Some(url) = url_arg {
+
+    if let Some(url) = url_arg {
         return Url::parse(&url).map(|parsed_url| ProvidedArgument::URL(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
     }
 
