@@ -108,6 +108,9 @@ impl<'a> Paginator<'a> {
 
         for key in self.all_pages {
             let page = library.get_page_by_key(*key);
+            if page.is_draft() {
+                continue;
+            }
             current_page.push(page.to_serialized_basic(library));
 
             if current_page.len() == self.paginate_by {
@@ -242,6 +245,9 @@ mod tests {
         library.insert_page(Page::default());
         library.insert_page(Page::default());
         library.insert_page(Page::default());
+        let mut draft = Page::default();
+        draft.meta.draft = true;
+        library.insert_page(draft);
         let mut section = create_section(is_index);
         section.pages = library.pages().keys().collect();
         library.insert_section(section.clone());
