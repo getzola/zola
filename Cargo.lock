@@ -1794,7 +1794,7 @@ dependencies = [
  "serde_derive 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
  "slug 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "syntect 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "templates 0.5.0",
+ "templates 0.1.0",
  "tera 0.11.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
@@ -2030,7 +2030,7 @@ dependencies = [
  "serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile 3.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "templates 0.5.0",
+ "templates 0.1.0",
  "tera 0.11.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
@@ -2210,11 +2210,10 @@ dependencies = [
 
 [[package]]
 name = "templates"
-version = "0.5.0"
+version = "0.1.0"
 dependencies = [
  "base64 0.9.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "config 0.1.0",
  "crypto-hash 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "csv 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",

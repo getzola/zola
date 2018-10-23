@@ -98,7 +98,7 @@ fn get_output_format_from_args(args: &HashMap<String, Value>, provided_argument:
 /// Currently the supported formats are json, toml and csv
 pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
     let mut headers = header::HeaderMap::new();
-    headers.insert(header::USER_AGENT, format!("{} {}", crate_name!(), crate_version!()).parse().unwrap());
+    headers.insert(header::USER_AGENT, "zola".parse().unwrap());
     let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
     let result_cache: Arc<Mutex<HashMap<String, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
