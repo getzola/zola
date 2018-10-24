@@ -10,8 +10,6 @@ extern crate chrono;
 extern crate reqwest;
 extern crate url;
 
-#[macro_use]
-extern crate clap;
 
 #[cfg(test)]
 #[macro_use]
