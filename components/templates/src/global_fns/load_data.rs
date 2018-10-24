@@ -3,8 +3,9 @@ extern crate serde_json;
 
 use utils::fs::{read_file, is_path_in_directory, get_file_time};
 
-use crypto_hash::{Algorithm, hex_digest};
-use chrono::{DateTime, Utc};
+use std::hash::{Hasher, Hash};
+use std::fmt;
+use std::collections::hash_map::DefaultHasher;
 use reqwest::{Client, header};
 use url::Url;
 
@@ -31,6 +32,18 @@ enum OutputFormat {
     Plain
 }
 
+impl fmt::Display for OutputFormat {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
+}
+
+impl Hash for OutputFormat {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.to_string().hash(state);
+    }
+}
+
 fn output_format_from_string(output_format: String) -> Result<OutputFormat> {
     return match output_format.as_str() {
         "toml" => Ok(OutputFormat::TOML),
@@ -42,16 +55,18 @@ fn output_format_from_string(output_format: String) -> Result<OutputFormat> {
 }
 
 
-fn get_cache_key(data_source: &DataSource, format: &OutputFormat) -> String {
-    let content_based_data = match data_source {
-        DataSource::Url(url) => url.clone().into_string(),
+fn get_cache_key(data_source: &DataSource, format: &OutputFormat) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    format.hash(&mut hasher);
+
+    match data_source {
+        DataSource::Url(url) => url.hash(&mut hasher),
         DataSource::Path(path) => {
-            let file_time = get_file_time(&path).expect("get file time");
-            let file_datetime: DateTime<Utc> = DateTime::from(file_time);
-            format!("{}{}", file_datetime.timestamp_millis().to_string(), path.display())
+            path.hash(&mut hasher);
+            get_file_time(&path).expect("get file time").hash(&mut hasher);
         }
     };
-    return hex_digest(Algorithm::MD5, format!("{:?}{}", format, content_based_data).as_bytes());
+    return hasher.finish();
 }
 
 
@@ -122,7 +137,7 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
     let mut headers = header::HeaderMap::new();
     headers.insert(header::USER_AGENT, "zola".parse().unwrap());
     let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
-    let result_cache: Arc<Mutex<HashMap<String, Value>>> = Arc::new(Mutex::new(HashMap::new()));
+    let result_cache: Arc<Mutex<HashMap<u64, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
         let data_source = get_data_from_args(&content_path, &args)?;
 
@@ -270,9 +285,15 @@ mod tests {
     }
 
     #[test]
-    fn calculates_cache_key() {
+    fn calculates_cache_key_for_path() {
         let cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::TOML);
-        assert_eq!(cache_key, "24248911d77f4cf3bd169a35e92773ae");
+        assert_eq!(cache_key, 8438937598814354426);
+    }
+
+    #[test]
+    fn calculates_cache_key_for_url() {
+        let cache_key = get_cache_key(&DataSource::Url("https://api.github.com/repos/getzola/zola".parse().unwrap()), &OutputFormat::Plain);
+        assert_eq!(cache_key, 8916756616423791754);
     }
 
     #[test]

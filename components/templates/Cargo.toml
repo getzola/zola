@@ -12,8 +12,6 @@ toml = "0.4"
 csv = "1"
 serde_json = "1.0"
 error-chain = "0.12"
-crypto-hash = "0.3.1"
-chrono = "0.4"
 reqwest = "0.9"
 url = "1.5"
 

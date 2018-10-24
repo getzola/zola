@@ -5,8 +5,6 @@ extern crate tera;
 extern crate base64;
 extern crate pulldown_cmark;
 extern crate csv;
-extern crate crypto_hash;
-extern crate chrono;
 extern crate reqwest;
 extern crate url;
 
