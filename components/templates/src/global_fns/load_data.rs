@@ -65,6 +65,28 @@ impl OutputFormat {
     }
 }
 
+impl DataSource {
+    fn from_args(path_arg: Option<String>, url_arg: Option<String>, content_path: &PathBuf) -> Result<Self> {
+        if path_arg.is_some() && url_arg.is_some() {
+            return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+        }
+
+        if let Some(path) = path_arg {
+            let full_path = content_path.join(path);
+            if !full_path.exists() {
+                return Err(format!("{} doesn't exist", full_path.display()).into());
+            }
+            return Ok(DataSource::Path(full_path));
+        }
+
+        if let Some(url) = url_arg {
+            return Url::parse(&url).map(|parsed_url| DataSource::Url(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
+        }
+
+        return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+    }
+}
+
 fn get_cache_key(data_source: &DataSource, format: &OutputFormat) -> u64 {
     let mut hasher = DefaultHasher::new();
     format.hash(&mut hasher);
@@ -93,23 +115,7 @@ fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> 
         GET_DATA_ARGUMENT_ERROR_MESSAGE
     );
 
-    if path_arg.is_some() && url_arg.is_some() {
-        return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
-    }
-
-    if let Some(path) = path_arg {
-        let full_path = content_path.join(path);
-        if !full_path.exists() {
-            return Err(format!("{} doesn't exist", full_path.display()).into());
-        }
-        return Ok(DataSource::Path(full_path));
-    }
-
-    if let Some(url) = url_arg {
-        return Url::parse(&url).map(|parsed_url| DataSource::Url(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
-    }
-
-    return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+    return DataSource::from_args(path_arg, url_arg, content_path);
 }
 
 fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
