@@ -35,6 +35,8 @@ pub struct Section {
     pub content: String,
     /// All the non-md files we found next to the .md file
     pub assets: Vec<PathBuf>,
+    /// All the non-md files we found next to the .md file as string for use in templates
+    pub serialized_assets: Vec<String>,
     /// All direct pages of that section
     pub pages: Vec<Key>,
     /// All pages that cannot be sorted in this section
@@ -65,6 +67,7 @@ impl Section {
             permalink: "".to_string(),
             raw_content: "".to_string(),
             assets: vec![],
+            serialized_assets: vec![],
             content: "".to_string(),
             pages: vec![],
             ignored_pages: vec![],
@@ -118,6 +121,8 @@ impl Section {
         } else {
             section.assets = assets;
         }
+
+        section.serialized_assets = section.serialize_assets();
 
         Ok(section)
     }
@@ -179,7 +184,7 @@ impl Section {
     }
 
     /// Creates a vectors of asset URLs.
-    pub fn serialize_assets(&self) -> Vec<String> {
+    fn serialize_assets(&self) -> Vec<String> {
         self.assets.iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())
@@ -208,6 +213,7 @@ impl Default for Section {
             permalink: "".to_string(),
             raw_content: "".to_string(),
             assets: vec![],
+            serialized_assets: vec![],
             content: "".to_string(),
             pages: vec![],
             ignored_pages: vec![],

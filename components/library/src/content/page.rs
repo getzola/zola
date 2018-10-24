@@ -31,6 +31,8 @@ pub struct Page {
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
     pub assets: Vec<PathBuf>,
+    /// All the non-md files we found next to the .md file as string for use in templates
+    pub serialized_assets: Vec<String>,
     /// The HTML rendered of the page
     pub content: String,
     /// The slug of that page.
@@ -74,6 +76,7 @@ impl Page {
             ancestors: vec![],
             raw_content: "".to_string(),
             assets: vec![],
+            serialized_assets: vec![],
             content: "".to_string(),
             slug: "".to_string(),
             path: "".to_string(),
@@ -168,6 +171,8 @@ impl Page {
             } else {
                 page.assets = assets;
             }
+
+            page.serialized_assets = page.serialize_assets();
         } else {
             page.assets = vec![];
         }
@@ -222,7 +227,7 @@ impl Page {
     }
 
     /// Creates a vectors of asset URLs.
-    pub fn serialize_assets(&self) -> Vec<String> {
+    fn serialize_assets(&self) -> Vec<String> {
         self.assets.iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())
@@ -247,6 +252,7 @@ impl Default for Page {
             ancestors: vec![],
             raw_content: "".to_string(),
             assets: vec![],
+            serialized_assets: vec![],
             content: "".to_string(),
             slug: "".to_string(),
             path: "".to_string(),
