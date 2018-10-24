@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use tera::{Tera, Context as TeraContext, Value, Map};
+use tera::{Tera, Context as TeraContext};
 use slug::slugify;
 use slotmap::{Key};
 
@@ -16,129 +16,8 @@ use rendering::{RenderContext, Header, render_content};
 use library::Library;
 
 use content::file_info::FileInfo;
+use content::ser::SerializingPage;
 
-/// What we are sending to the templates when rendering them
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct SerializingPage<'a> {
-    relative_path: &'a str,
-    content: &'a str,
-    permalink: &'a str,
-    slug: &'a str,
-    ancestors: Vec<String>,
-    title: &'a Option<String>,
-    description: &'a Option<String>,
-    date: &'a Option<String>,
-    year: Option<i32>,
-    month: Option<u32>,
-    day: Option<u32>,
-    taxonomies: &'a HashMap<String, Vec<String>>,
-    extra: &'a Map<String, Value>,
-    path: &'a str,
-    components: &'a [String],
-    summary: &'a Option<String>,
-    word_count: Option<usize>,
-    reading_time: Option<usize>,
-    toc: &'a [Header],
-    assets: Vec<String>,
-    draft: bool,
-    lighter: Option<Box<SerializingPage<'a>>>,
-    heavier: Option<Box<SerializingPage<'a>>>,
-    earlier: Option<Box<SerializingPage<'a>>>,
-    later: Option<Box<SerializingPage<'a>>>,
-}
-
-impl<'a> SerializingPage<'a> {
-    /// Grabs all the data from a page, including sibling pages
-    pub fn from_page(page: &'a Page, library: &'a Library) -> Self {
-        let mut year = None;
-        let mut month = None;
-        let mut day = None;
-        if let Some(d) = page.meta.datetime_tuple {
-            year = Some(d.0);
-            month = Some(d.1);
-            day = Some(d.2);
-        }
-        let pages = library.pages();
-        let lighter = page.lighter.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let heavier = page.heavier.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let earlier = page.earlier.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let later = page.later.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let ancestors = page.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
-
-        SerializingPage {
-            relative_path: &page.file.relative,
-            ancestors,
-            content: &page.content,
-            permalink: &page.permalink,
-            slug: &page.slug,
-            title: &page.meta.title,
-            description: &page.meta.description,
-            extra: &page.meta.extra,
-            date: &page.meta.date,
-            year,
-            month,
-            day,
-            taxonomies: &page.meta.taxonomies,
-            path: &page.path,
-            components: &page.components,
-            summary: &page.summary,
-            word_count: page.word_count,
-            reading_time: page.reading_time,
-            toc: &page.toc,
-            assets: page.serialize_assets(),
-            draft: page.is_draft(),
-            lighter,
-            heavier,
-            earlier,
-            later,
-        }
-    }
-
-    /// Same as from_page but does not fill sibling pages
-    pub fn from_page_basic(page: &'a Page, library: Option<&'a Library>) -> Self {
-        let mut year = None;
-        let mut month = None;
-        let mut day = None;
-        if let Some(d) = page.meta.datetime_tuple {
-            year = Some(d.0);
-            month = Some(d.1);
-            day = Some(d.2);
-        }
-        let ancestors = if let Some(ref lib) = library {
-            page.ancestors.iter().map(|k| lib.get_section_by_key(*k).file.relative.clone()).collect()
-        } else {
-            vec![]
-        };
-
-        SerializingPage {
-            relative_path: &page.file.relative,
-            ancestors,
-            content: &page.content,
-            permalink: &page.permalink,
-            slug: &page.slug,
-            title: &page.meta.title,
-            description: &page.meta.description,
-            extra: &page.meta.extra,
-            date: &page.meta.date,
-            year,
-            month,
-            day,
-            taxonomies: &page.meta.taxonomies,
-            path: &page.path,
-            components: &page.components,
-            summary: &page.summary,
-            word_count: page.word_count,
-            reading_time: page.reading_time,
-            toc: &page.toc,
-            assets: page.serialize_assets(),
-            draft: page.is_draft(),
-            lighter: None,
-            heavier: None,
-            earlier: None,
-            later: None,
-        }
-    }
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Page {
@@ -343,7 +222,7 @@ impl Page {
     }
 
     /// Creates a vectors of asset URLs.
-    fn serialize_assets(&self) -> Vec<String> {
+    pub fn serialize_assets(&self) -> Vec<String> {
         self.assets.iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())

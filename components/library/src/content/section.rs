@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use tera::{Tera, Context as TeraContext, Value};
-use slotmap::{Key};
+use tera::{Tera, Context as TeraContext};
+use slotmap::Key;
 
 use config::Config;
 use front_matter::{SectionFrontMatter, split_section_content};
@@ -13,90 +13,9 @@ use utils::site::get_reading_analytics;
 use rendering::{RenderContext, Header, render_content};
 
 use content::file_info::FileInfo;
-use content::SerializingPage;
+use content::ser::SerializingSection;
 use library::Library;
 
-
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct SerializingSection<'a> {
-    relative_path: &'a str,
-    content: &'a str,
-    permalink: &'a str,
-    ancestors: Vec<String>,
-    title: &'a Option<String>,
-    description: &'a Option<String>,
-    extra: &'a HashMap<String, Value>,
-    path: &'a str,
-    components: &'a [String],
-    word_count: Option<usize>,
-    reading_time: Option<usize>,
-    toc: &'a [Header],
-    assets: Vec<String>,
-    pages: Vec<SerializingPage<'a>>,
-    subsections: Vec<&'a str>,
-}
-
-impl<'a> SerializingSection<'a> {
-    pub fn from_section(section: &'a Section, library: &'a Library) -> Self {
-        let mut pages = Vec::with_capacity(section.pages.len());
-        let mut subsections = Vec::with_capacity(section.subsections.len());
-
-        for k in &section.pages {
-            pages.push(library.get_page_by_key(*k).to_serialized(library));
-        }
-
-        for k in &section.subsections {
-            subsections.push(library.get_section_path_by_key(*k));
-        }
-
-        let ancestors = section.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
-
-        SerializingSection {
-            relative_path: &section.file.relative,
-            ancestors,
-            content: &section.content,
-            permalink: &section.permalink,
-            title: &section.meta.title,
-            description: &section.meta.description,
-            extra: &section.meta.extra,
-            path: &section.path,
-            components: &section.components,
-            word_count: section.word_count,
-            reading_time: section.reading_time,
-            toc: &section.toc,
-            assets: section.serialize_assets(),
-            pages,
-            subsections,
-        }
-    }
-
-    /// Same as from_section but doesn't fetch pages and sections
-    pub fn from_section_basic(section: &'a Section, library: Option<&'a Library>) -> Self {
-        let ancestors = if let Some(ref lib) = library {
-            section.ancestors.iter().map(|k| lib.get_section_by_key(*k).file.relative.clone()).collect()
-        } else {
-            vec![]
-        };
-
-        SerializingSection {
-            relative_path: &section.file.relative,
-            ancestors,
-            content: &section.content,
-            permalink: &section.permalink,
-            title: &section.meta.title,
-            description: &section.meta.description,
-            extra: &section.meta.extra,
-            path: &section.path,
-            components: &section.components,
-            word_count: section.word_count,
-            reading_time: section.reading_time,
-            toc: &section.toc,
-            assets: section.serialize_assets(),
-            pages: vec![],
-            subsections: vec![],
-        }
-    }
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Section {
@@ -260,7 +179,7 @@ impl Section {
     }
 
     /// Creates a vectors of asset URLs.
-    fn serialize_assets(&self) -> Vec<String> {
+    pub fn serialize_assets(&self) -> Vec<String> {
         self.assets.iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())
