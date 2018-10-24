@@ -23,8 +23,26 @@ enum DataSource {
     Path(PathBuf)
 }
 
+#[derive(Debug)]
+enum OutputFormat {
+    TOML,
+    JSON,
+    CSV,
+    Plain
+}
 
-fn get_cache_key(data_source: &DataSource, format: &String) -> String {
+fn output_format_from_string(output_format: String) -> Result<OutputFormat> {
+    return match output_format.as_str() {
+        "toml" => Ok(OutputFormat::TOML),
+        "csv" => Ok(OutputFormat::CSV),
+        "json" => Ok(OutputFormat::JSON),
+        "plain" => Ok(OutputFormat::Plain),
+        format => Err(format!("Unknown output format {}", format).into())
+    };
+}
+
+
+fn get_cache_key(data_source: &DataSource, format: &OutputFormat) -> String {
     let content_based_data = match data_source {
         DataSource::Url(url) => url.clone().into_string(),
         DataSource::Path(path) => {
@@ -33,7 +51,7 @@ fn get_cache_key(data_source: &DataSource, format: &String) -> String {
             format!("{}{}", file_datetime.timestamp_millis().to_string(), path.display())
         }
     };
-    return hex_digest(Algorithm::MD5, format!("{}{}", format, content_based_data).as_bytes());
+    return hex_digest(Algorithm::MD5, format!("{:?}{}", format, content_based_data).as_bytes());
 }
 
 
@@ -77,7 +95,7 @@ fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
         .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
 }
 
-fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &DataSource) -> Result<String> {
+fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &DataSource) -> Result<OutputFormat> {
     let format_arg = optional_arg!(
         String,
         args.get("format"),
@@ -85,12 +103,16 @@ fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &Data
     );
 
     if let Some(format) = format_arg {
-        return Ok(format);
+        return output_format_from_string(format);
     }
-    return match data_source {
-        DataSource::Path(path) => path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine format for {} from extension", path.display()).into()),
-        _ => Ok(String::from("plain"))
-    }
+
+    let from_extension: String = if let DataSource::Path(path) = data_source {
+        let extension_result: Result<String> = path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine format for {} from extension", path.display()).into());
+        extension_result?
+    } else {
+        String::from("plain")
+    };
+    return output_format_from_string(from_extension);
 }
 
 
@@ -122,12 +144,11 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
             },
         }?;
 
-        let result_value: Result<Value> = match file_format.as_str() {
-            "toml" => load_toml(data),
-            "csv" => load_csv(data),
-            "json" => load_json(data),
-            "plain" => to_value(data).map_err(|e| e.into()),
-            format => return Err(format!("'load_data': {} is an unsupported file format", format).into())
+        let result_value: Result<Value> = match file_format {
+            OutputFormat::TOML => load_toml(data),
+            OutputFormat::CSV => load_csv(data),
+            OutputFormat::JSON => load_json(data),
+            OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
         };
 
         if let Ok(data_result) = &result_value {
@@ -215,7 +236,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use super::{make_load_data, get_cache_key, DataSource};
+    use super::{make_load_data, get_cache_key, DataSource, OutputFormat};
 
     use std::collections::HashMap;
     use std::path::PathBuf;
@@ -242,6 +263,7 @@ mod tests {
         let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../README.md").unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../README.md is not inside the base site directory ../utils");
@@ -249,21 +271,21 @@ mod tests {
 
     #[test]
     fn calculates_cache_key() {
-        let cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("toml"));
-        assert_eq!(cache_key, "830dc6839f945d93e86fec2cc6ca0ea1");
+        let cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::TOML);
+        assert_eq!(cache_key, "24248911d77f4cf3bd169a35e92773ae");
     }
 
     #[test]
     fn different_cache_key_per_filename() {
-        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("toml"));
-        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.json")), &String::from("toml"));
+        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::TOML);
+        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.json")), &OutputFormat::TOML);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn different_cache_key_per_format() {
-        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("toml"));
-        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &String::from("json"));
+        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::TOML);
+        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::JSON);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
