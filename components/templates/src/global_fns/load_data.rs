@@ -44,16 +44,26 @@ impl Hash for OutputFormat {
     }
 }
 
-fn output_format_from_string(output_format: String) -> Result<OutputFormat> {
-    return match output_format.as_str() {
-        "toml" => Ok(OutputFormat::TOML),
-        "csv" => Ok(OutputFormat::CSV),
-        "json" => Ok(OutputFormat::JSON),
-        "plain" => Ok(OutputFormat::Plain),
-        format => Err(format!("Unknown output format {}", format).into())
-    };
-}
+impl OutputFormat {
+    fn from(output_format: String) -> Result<Self> {
+        return match output_format.as_str() {
+            "toml" => Ok(OutputFormat::TOML),
+            "csv" => Ok(OutputFormat::CSV),
+            "json" => Ok(OutputFormat::JSON),
+            "plain" => Ok(OutputFormat::Plain),
+            format => Err(format!("Unknown output format {}", format).into())
+        };
+    }
 
+    fn as_accept_header(&self) -> header::HeaderValue {
+        return header::HeaderValue::from_static(match self {
+            OutputFormat::JSON => "application/json",
+            OutputFormat::CSV => "text/csv",
+            OutputFormat::TOML => "application/toml",
+            OutputFormat::Plain => "text/plain",
+        });
+    }
+}
 
 fn get_cache_key(data_source: &DataSource, format: &OutputFormat) -> u64 {
     let mut hasher = DefaultHasher::new();
@@ -118,16 +128,16 @@ fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &Data
     );
 
     if let Some(format) = format_arg {
-        return output_format_from_string(format);
+        return OutputFormat::from(format);
     }
 
-    let from_extension: String = if let DataSource::Path(path) = data_source {
+    let from_extension = if let DataSource::Path(path) = data_source {
         let extension_result: Result<String> = path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine format for {} from extension", path.display()).into());
         extension_result?
     } else {
         String::from("plain")
     };
-    return output_format_from_string(from_extension);
+    return OutputFormat::from(from_extension);
 }
 
 
@@ -154,7 +164,7 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
         let data = match data_source {
             DataSource::Path(path) => read_data_file(&base_path, path),
             DataSource::Url(url) => {
-                let mut response = response_client.get(url.as_str()).send().and_then(|res| res.error_for_status()).map_err(|e| format!("Failed to request {}: {}", url, e.status().expect("response status")))?;
+                let mut response = response_client.get(url.as_str()).header(header::ACCEPT, file_format.as_accept_header()).send().and_then(|res| res.error_for_status()).map_err(|e| format!("Failed to request {}: {}", url, e.status().expect("response status")))?;
                 response.text().map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
             },
         }?;
