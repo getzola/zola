@@ -1,6 +1,5 @@
 [package]
 name = "zola"
-# Update templates Cargo.toml when bumping version
 version = "0.5.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
