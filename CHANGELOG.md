@@ -36,6 +36,7 @@ sections up to the index to be used with the `get_section` Tera function
 - `serve` will now try to find other ports than 1111 rather than panicking
 - Ensure content directory exists before rendering aliases
 - Do not include drafts in pagination
+- Pages filenames starting by a date will now use that date as page date if there isn't one defined in frontmatter
 
 ## 0.4.2 (2018-09-03)
 

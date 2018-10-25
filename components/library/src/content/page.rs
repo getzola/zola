@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use tera::{Tera, Context as TeraContext};
 use slug::slugify;
 use slotmap::{Key};
+use regex::Regex;
 
 use errors::{Result, ResultExt};
 use config::Config;
@@ -17,6 +18,11 @@ use library::Library;
 
 use content::file_info::FileInfo;
 use content::ser::SerializingPage;
+
+lazy_static! {
+    // Check whether a string starts with yyyy-mm-dd{-,_}
+    static ref DATE_IN_FILENAME: Regex = Regex::new(r"^^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))(_|-)").unwrap();
+}
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -103,10 +109,20 @@ impl Page {
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Page> {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta);
+
         page.raw_content = content;
         let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
         page.word_count = Some(word_count);
         page.reading_time = Some(reading_time);
+
+        let mut has_date_in_name = false;
+        if DATE_IN_FILENAME.is_match(&page.file.name) {
+            has_date_in_name = true;
+            if page.meta.date.is_none() {
+                page.meta.date = Some(page.file.name[..10].to_string());
+            }
+        }
+
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slug.trim().to_string()
@@ -114,10 +130,15 @@ impl Page {
                 if let Some(parent) = page.file.path.parent() {
                     slugify(parent.file_name().unwrap().to_str().unwrap())
                 } else {
-                    slugify(page.file.name.clone())
+                    slugify(&page.file.name)
                 }
             } else {
-                slugify(page.file.name.clone())
+                if has_date_in_name {
+                    // skip the date + the {_,-}
+                    slugify(&page.file.name[11..])
+                } else {
+                    slugify(&page.file.name)
+                }
             }
         };
 
@@ -498,5 +519,39 @@ Hello world
         let page = res.unwrap();
         assert_eq!(page.assets.len(), 1);
         assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+    }
+
+    #[test]
+    fn can_get_date_from_filename() {
+        let config = Config::default();
+        let content = r#"
++++
++++
+Hello world
+<!-- more -->"#.to_string();
+        let res = Page::parse(Path::new("2018-10-08_hello.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+
+        assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
+        assert_eq!(page.slug, "hello");
+    }
+
+    #[test]
+    fn frontmatter_date_override_filename_date() {
+
+        let config = Config::default();
+        let content = r#"
++++
+date = 2018-09-09
++++
+Hello world
+<!-- more -->"#.to_string();
+        let res = Page::parse(Path::new("2018-10-08_hello.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+
+        assert_eq!(page.meta.date, Some("2018-09-09".to_string()));
+        assert_eq!(page.slug, "hello");
     }
 }

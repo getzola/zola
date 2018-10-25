@@ -6,6 +6,9 @@ extern crate serde_derive;
 extern crate chrono;
 extern crate slotmap;
 extern crate rayon;
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
 
 #[cfg(test)]
 extern crate tempfile;
