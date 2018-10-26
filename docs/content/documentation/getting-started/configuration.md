@@ -114,6 +114,9 @@ Zola currently has the following highlight themes available:
 - [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
 - [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
 - [visual-studio-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Visual%20Studio%20Dark)
+- [ayu-light](https://github.com/dempfi/ayu)
+- [ayu-dark](https://github.com/dempfi/ayu)
+- [ayu-mirage](https://github.com/dempfi/ayu)
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).

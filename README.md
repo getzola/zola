@@ -97,7 +97,7 @@ $ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../subl
 #### Adding a theme
 A gallery containing lots of themes is located at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
 More themes can be easily added to Zola, just make a PR with the wanted theme added in the `sublime_themes` directory
-and run the following command from the root of the components/rendering:
+and run the following command from the root of the components/config:
 
 ```bash
 $ cargo run --example generate_sublime themepack ../../sublime_themes ../../sublime_themes/all.themedump
