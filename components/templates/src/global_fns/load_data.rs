@@ -26,9 +26,9 @@ enum DataSource {
 
 #[derive(Debug)]
 enum OutputFormat {
-    TOML,
-    JSON,
-    CSV,
+    Toml,
+    Json,
+    Csv,
     Plain
 }
 
@@ -47,9 +47,9 @@ impl Hash for OutputFormat {
 impl OutputFormat {
     fn from(output_format: String) -> Result<Self> {
         return match output_format.as_str() {
-            "toml" => Ok(OutputFormat::TOML),
-            "csv" => Ok(OutputFormat::CSV),
-            "json" => Ok(OutputFormat::JSON),
+            "toml" => Ok(OutputFormat::Toml),
+            "csv" => Ok(OutputFormat::Csv),
+            "json" => Ok(OutputFormat::Json),
             "plain" => Ok(OutputFormat::Plain),
             format => Err(format!("Unknown output format {}", format).into())
         };
@@ -57,9 +57,9 @@ impl OutputFormat {
 
     fn as_accept_header(&self) -> header::HeaderValue {
         return header::HeaderValue::from_static(match self {
-            OutputFormat::JSON => "application/json",
-            OutputFormat::CSV => "text/csv",
-            OutputFormat::TOML => "application/toml",
+            OutputFormat::Json => "application/json",
+            OutputFormat::Csv => "text/csv",
+            OutputFormat::Toml => "application/toml",
             OutputFormat::Plain => "text/plain",
         });
     }
@@ -176,9 +176,9 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
         }?;
 
         let result_value: Result<Value> = match file_format {
-            OutputFormat::TOML => load_toml(data),
-            OutputFormat::CSV => load_csv(data),
-            OutputFormat::JSON => load_json(data),
+            OutputFormat::Toml => load_toml(data),
+            OutputFormat::Csv => load_csv(data),
+            OutputFormat::Json => load_json(data),
             OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
         };
 
@@ -302,8 +302,8 @@ mod tests {
 
     #[test]
     fn calculates_cache_key_for_path() {
-        let cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::TOML);
-        assert_eq!(cache_key, 8438937598814354426);
+        let cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Toml);
+        assert_eq!(cache_key, 9819761231142657095);
     }
 
     #[test]
@@ -314,15 +314,15 @@ mod tests {
 
     #[test]
     fn different_cache_key_per_filename() {
-        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::TOML);
-        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.json")), &OutputFormat::TOML);
+        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Toml);
+        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.json")), &OutputFormat::Toml);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn different_cache_key_per_format() {
-        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::TOML);
-        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::JSON);
+        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Toml);
+        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Json);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
