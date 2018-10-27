@@ -90,20 +90,25 @@ impl DataSource {
 
         return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
     }
+
+    fn get_cache_key(&self, format: &OutputFormat) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        format.hash(&mut hasher);
+        self.hash(&mut hasher);
+        return hasher.finish();
+    }
 }
 
-fn get_cache_key(data_source: &DataSource, format: &OutputFormat) -> u64 {
-    let mut hasher = DefaultHasher::new();
-    format.hash(&mut hasher);
-
-    match data_source {
-        DataSource::Url(url) => url.hash(&mut hasher),
-        DataSource::Path(path) => {
-            path.hash(&mut hasher);
-            get_file_time(&path).expect("get file time").hash(&mut hasher);
-        }
-    };
-    return hasher.finish();
+impl Hash for DataSource {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            DataSource::Url(url) => url.hash(state),
+            DataSource::Path(path) => {
+                path.hash(state);
+                get_file_time(&path).expect("get file time").hash(state);
+            }
+        };
+    }
 }
 
 
@@ -164,7 +169,7 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
 
         let file_format = get_output_format_from_args(&args, &data_source)?;
 
-        let cache_key = get_cache_key(&data_source, &file_format);
+        let cache_key = data_source.get_cache_key(&file_format);
 
         let mut cache = result_cache.lock().expect("result cache lock");
         let response_client = client.lock().expect("response client lock");
@@ -272,7 +277,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use super::{make_load_data, get_cache_key, DataSource, OutputFormat};
+    use super::{make_load_data, DataSource, OutputFormat};
 
     use std::collections::HashMap;
     use std::path::PathBuf;
@@ -307,27 +312,27 @@ mod tests {
 
     #[test]
     fn calculates_cache_key_for_path() {
-        let cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Toml);
+        let cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
         assert_eq!(cache_key, 9819761231142657095);
     }
 
     #[test]
     fn calculates_cache_key_for_url() {
-        let cache_key = get_cache_key(&DataSource::Url("https://api.github.com/repos/getzola/zola".parse().unwrap()), &OutputFormat::Plain);
+        let cache_key = DataSource::Url("https://api.github.com/repos/getzola/zola".parse().unwrap()).get_cache_key(&OutputFormat::Plain);
         assert_eq!(cache_key, 8916756616423791754);
     }
 
     #[test]
     fn different_cache_key_per_filename() {
-        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Toml);
-        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.json")), &OutputFormat::Toml);
+        let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        let json_cache_key = DataSource::Path(get_test_file("test.json")).get_cache_key(&OutputFormat::Toml);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn different_cache_key_per_format() {
-        let toml_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Toml);
-        let json_cache_key = get_cache_key(&DataSource::Path(get_test_file("test.toml")), &OutputFormat::Json);
+        let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        let json_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Json);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
