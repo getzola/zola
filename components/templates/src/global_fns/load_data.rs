@@ -4,6 +4,7 @@ extern crate serde_json;
 use utils::fs::{read_file, is_path_in_directory, get_file_time};
 
 use std::hash::{Hasher, Hash};
+use std::str::FromStr;
 use std::fmt;
 use std::collections::hash_map::DefaultHasher;
 use reqwest::{Client, header};
@@ -15,7 +16,7 @@ use std::sync::{Arc, Mutex};
 
 use csv::Reader;
 use std::collections::HashMap;
-use tera::{GlobalFn, Value, from_value, to_value, Result, Map};
+use tera::{GlobalFn, Value, from_value, to_value, Result, Map, Error};
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires EITHER a `path` or `url` argument";
 
@@ -44,9 +45,11 @@ impl Hash for OutputFormat {
     }
 }
 
-impl OutputFormat {
-    fn from(output_format: String) -> Result<Self> {
-        return match output_format.as_str() {
+impl FromStr for OutputFormat {
+    type Err = Error;
+
+    fn from_str(output_format: &str) -> Result<Self> {
+        return match output_format {
             "toml" => Ok(OutputFormat::Toml),
             "csv" => Ok(OutputFormat::Csv),
             "json" => Ok(OutputFormat::Json),
@@ -54,7 +57,9 @@ impl OutputFormat {
             format => Err(format!("Unknown output format {}", format).into())
         };
     }
+}
 
+impl OutputFormat {
     fn as_accept_header(&self) -> header::HeaderValue {
         return header::HeaderValue::from_static(match self {
             OutputFormat::Json => "application/json",
@@ -134,16 +139,16 @@ fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &Data
     );
 
     if let Some(format) = format_arg {
-        return OutputFormat::from(format);
+        return OutputFormat::from_str(&format);
     }
 
     let from_extension = if let DataSource::Path(path) = data_source {
-        let extension_result: Result<String> = path.extension().map(|extension| extension.to_str().unwrap().to_string()).ok_or(format!("Could not determine format for {} from extension", path.display()).into());
+        let extension_result: Result<&str> = path.extension().map(|extension| extension.to_str().unwrap()).ok_or(format!("Could not determine format for {} from extension", path.display()).into());
         extension_result?
     } else {
-        String::from("plain")
+        "plain"
     };
-    return OutputFormat::from(from_extension);
+    return OutputFormat::from_str(from_extension);
 }
 
 
