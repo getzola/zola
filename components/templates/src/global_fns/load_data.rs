@@ -312,8 +312,10 @@ mod tests {
 
     #[test]
     fn calculates_cache_key_for_path() {
+        // We can't test against a fixed value, due to the fact the cache key is built from the absolute path
         let cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
-        assert_eq!(cache_key, 9819761231142657095);
+        let cache_key_2 = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        assert_eq!(cache_key, cache_key_2);
     }
 
     #[test]
