@@ -12,6 +12,8 @@ toml = "0.4"
 csv = "1"
 serde_json = "1.0"
 error-chain = "0.12"
+reqwest = "0.9"
+url = "1.5"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

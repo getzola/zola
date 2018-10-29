@@ -310,7 +310,7 @@ impl Site {
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(&self.taxonomies),
         );
-        self.tera.register_function("load_data", global_fns::make_load_data(self.content_path.clone()));
+        self.tera.register_function("load_data", global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()));
     }
 
     /// Add a page to the site
