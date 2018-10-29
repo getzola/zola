@@ -39,6 +39,11 @@ pub fn read_file(path: &Path) -> Result<String> {
         .chain_err(|| format!("Failed to open '{:?}'", path.display()))?
         .read_to_string(&mut content)?;
 
+    // Remove utf-8 BOM if any.
+    if content.starts_with("\u{feff}") {
+        content.drain(..3);
+    }
+
     Ok(content)
 }
 
