@@ -131,7 +131,6 @@ pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Pa
 #[cfg(test)]
 mod tests {
     use std::fs::File;
-    use std::path::Path;
 
     use tempfile::tempdir;
 
