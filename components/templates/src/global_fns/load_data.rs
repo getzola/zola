@@ -296,7 +296,7 @@ mod tests {
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../READMEE.md doesn't exist");
+        assert!(result.unwrap_err().description().contains("READMEE.md doesn't exist"));
     }
 
     #[test]
@@ -307,7 +307,7 @@ mod tests {
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().description(), "../utils/test-files/../../../README.md is not inside the base site directory ../utils");
+        assert!(result.unwrap_err().description().contains("README.md is not inside the base site directory"));
     }
 
     #[test]
