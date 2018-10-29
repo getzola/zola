@@ -342,10 +342,10 @@ mod tests {
     fn can_load_remote_data() {
         let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value("https://api.github.com/repos/getzola/zola").unwrap());
+        args.insert("url".to_string(), to_value("https://api.github.com/repos/git/git").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn(args).unwrap();
-        assert_eq!(result.get("id").unwrap(), &to_value(75688610).unwrap());
+        assert_eq!(result.get("id").unwrap(), &to_value(36502).unwrap());
     }
 
     #[test]
