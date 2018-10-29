@@ -342,21 +342,21 @@ mod tests {
     fn can_load_remote_data() {
         let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value("https://api.github.com/repos/git/git").unwrap());
+        args.insert("url".to_string(), to_value("https://httpbin.org/json").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn(args).unwrap();
-        assert_eq!(result.get("id").unwrap(), &to_value(36502).unwrap());
+        assert_eq!(result.get("slideshow").unwrap().get("title").unwrap(), &to_value("Sample Slide Show").unwrap());
     }
 
     #[test]
     fn fails_when_request_404s() {
         let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value("https://api.github.com/repos/getzola/non-existent-zola-test-repo").unwrap());
+        args.insert("url".to_string(), to_value("https://httpbin.org/status/404/").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().description(), "Failed to request https://api.github.com/repos/getzola/non-existent-zola-test-repo: 404 Not Found");
+        assert_eq!(result.unwrap_err().description(), "Failed to request https://httpbin.org/status/404/: 404 Not Found");
     }
 
     #[test]
