@@ -10,7 +10,8 @@ use errors::{Result, ResultExt};
 pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
     let canonical_path = path.canonicalize().map_err(|e| format!("Failed to canonicalize {}: {}", path.display(), e))?;
     let canonical_parent = parent.canonicalize().map_err(|e| format!("Failed to canonicalize {}: {}", parent.display(), e))?;
-    return Ok(canonical_path.starts_with(canonical_parent));
+
+    Ok(canonical_path.starts_with(canonical_parent))
 }
 
 
@@ -106,14 +107,14 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
 }
 
 pub fn get_file_time(path: &Path) -> Option<SystemTime> {
-    return path.metadata().ok().and_then(|meta| {
+    path.metadata().ok().and_then(|meta| {
         Some(match (meta.created().ok(), meta.modified().ok()) {
             (Some(tc), Some(tm)) => tc.max(tm),
             (Some(tc), None) => tc,
             (None, Some(tm)) => tm,
             (None, None) => return None,
         })
-    });
+    })
 }
 
 /// Compares source and target files' timestamps and returns true if the source file
