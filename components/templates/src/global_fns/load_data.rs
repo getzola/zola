@@ -112,7 +112,7 @@ impl Hash for DataSource {
 }
 
 
-fn get_data_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> Result<DataSource> {
+fn get_data_source_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> Result<DataSource> {
     let path_arg = optional_arg!(
         String,
         args.get("path"),
@@ -157,15 +157,15 @@ fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &Data
 }
 
 
-/// A global function to load data from a data file.
-/// Currently the supported formats are json, toml and csv
+/// A global function to load data from a file or from a URL
+/// Currently the supported formats are json, toml, csv and plain text
 pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
     let mut headers = header::HeaderMap::new();
     headers.insert(header::USER_AGENT, "zola".parse().unwrap());
     let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
     let result_cache: Arc<Mutex<HashMap<u64, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
-        let data_source = get_data_from_args(&content_path, &args)?;
+        let data_source = get_data_source_from_args(&content_path, &args)?;
 
         let file_format = get_output_format_from_args(&args, &data_source)?;
 
@@ -200,23 +200,19 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
     })
 }
 
-/// load/parse a json file from the given path and place it into a
-/// tera value
+/// Parse a JSON string and convert it to a Tera Value
 fn load_json(json_data: String) -> Result<Value> {
     let json_content: Value = serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
     return Ok(json_content);
 }
 
-/// load/parse a toml file from the given path, and place it into a
-/// tera Value
+/// Parse a TOML string and convert it to a Tera Value
 fn load_toml(toml_data: String) -> Result<Value> {
     let toml_content: toml::Value = toml::from_str(&toml_data).map_err(|e| format!("{:?}", e))?;
-
     to_value(toml_content).map_err(|e| e.into())
 }
 
-/// Load/parse a csv file from the given path, and place it into a
-/// tera Value.
+/// Parse a CSV string and convert it to a Tera Value
 ///
 /// An example csv file `example.csv` could be:
 /// ```csv
@@ -236,7 +232,6 @@ fn load_toml(toml_data: String) -> Result<Value> {
 /// ```
 fn load_csv(csv_data: String) -> Result<Value> {
     let mut reader = Reader::from_reader(csv_data.as_bytes());
-
     let mut csv_map = Map::new();
 
     {
@@ -257,7 +252,6 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
         for result in records {
             let record = result.unwrap();
-
             let mut elements_array: Vec<Value> = Vec::new();
 
             for e in record.into_iter() {
