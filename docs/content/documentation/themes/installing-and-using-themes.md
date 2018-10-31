@@ -18,6 +18,8 @@ Cloning the repository using Git or another VCS will allow you to easily
 update it but you can also simply download the files manually and paste
 them in a folder.
 
+You can find a list of themes [on this very website](./themes/_index.md).
+
 ## Using a theme
 
 Now that you have the theme in your `themes` directory, you only need to tell
@@ -38,7 +40,7 @@ templates/macros.html -> replace themes/simple-blog/templates/macros.html
 static/js/site.js -> replace themes/simple-blog/static/js/site.js
 ```
 
-You can also choose to only parts of a page if a theme define some blocks by extending it. If we wanted
+You can also choose to only override parts of a page if a theme define some blocks by extending it. If we wanted
 to only change a single block from the `post.html` page in the example above, we could do the following:
 
 ```

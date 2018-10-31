@@ -17,3 +17,4 @@
 | [Axiomatic Semantics](https://axiomatic.neophilus.net)             | https://github.com/Libbum/AxiomaticSemantics         |
 | [Tinkering](https://tinkering.xyz)                                 |                                                      |
 | [Daniel Sockwell's codesections.com](https://www.codesections.com) | https://gitlab.com/codesections/codesections-website |
+| [Jens Getreu's blog](https://blog.getreu.net)                      |                                                      |

@@ -6,7 +6,8 @@ weight = 1
 Zola provides pre-built binaries for MacOS, Linux and Windows on the
 [GitHub release page](https://github.com/getzola/zola/releases).
 
-## Mac OS
+
+## macOS
 
 Zola is available on [Brew](https://brew.sh):
 

@@ -3,7 +3,7 @@ title = "Image processing"
 weight = 120
 +++
 
-Gutengerb provides support for automatic image resizing through the built-in function `resize_image`,
+Gutenberg provides support for automatic image resizing through the built-in function `resize_image`,
 which is available in template code as well as in shortcodes.
 
 The function usage is as follows:
