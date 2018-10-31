@@ -31,12 +31,11 @@ pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
-    use super::{resolve_internal_link, get_reading_analytics};
+    use super::{get_reading_analytics, resolve_internal_link};
 
     #[test]
     fn can_resolve_valid_internal_link() {

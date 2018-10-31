@@ -1,18 +1,20 @@
-use std::borrow::Cow::{Owned, Borrowed};
+use std::borrow::Cow::{Borrowed, Owned};
 
+use self::cmark::{Event, Options, Parser, Tag, OPTION_ENABLE_FOOTNOTES, OPTION_ENABLE_TABLES};
 use pulldown_cmark as cmark;
-use self::cmark::{Parser, Event, Tag, Options, OPTION_ENABLE_TABLES, OPTION_ENABLE_FOOTNOTES};
 use slug::slugify;
 use syntect::easy::HighlightLines;
-use syntect::html::{start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground};
+use syntect::html::{
+    start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
+};
 
+use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use errors::Result;
-use utils::site::resolve_internal_link;
-use config::highlighting::{get_highlighter, THEME_SET, SYNTAX_SET};
 use link_checker::check_url;
+use utils::site::resolve_internal_link;
 
-use table_of_contents::{TempHeader, Header, make_table_of_contents};
 use context::RenderContext;
+use table_of_contents::{make_table_of_contents, Header, TempHeader};
 
 const CONTINUE_READING: &str = "<p><a name=\"continue-reading\"></a></p>\n";
 
@@ -113,7 +115,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
                     highlighter = Some(get_highlighter(info, &context.config));
                     // This selects the background color the same way that start_coloured_html_snippet does
-                    let color = theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE);
+                    let color =
+                        theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE);
                     background = IncludeBackground::IfDifferent(color);
                     let snippet = start_highlighted_html_snippet(theme);
                     Event::Html(Owned(snippet.0))
@@ -128,12 +131,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 }
                 Event::Start(Tag::Image(src, title)) => {
                     if is_colocated_asset_link(&src) {
-                        return Event::Start(
-                            Tag::Image(
-                                Owned(format!("{}{}", context.current_page_permalink, src)),
-                                title,
-                            )
-                        );
+                        return Event::Start(Tag::Image(
+                            Owned(format!("{}{}", context.current_page_permalink, src)),
+                            title,
+                        ));
                     }
 
                     Event::Start(Tag::Image(src, title))
@@ -157,13 +158,14 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         format!("{}{}", context.current_page_permalink, link)
                     } else if context.config.check_external_links
                         && !link.starts_with('#')
-                        && !link.starts_with("mailto:") {
+                        && !link.starts_with("mailto:")
+                    {
                         let res = check_url(&link);
                         if res.is_valid() {
                             link.to_string()
                         } else {
                             error = Some(
-                                format!("Link {} is not valid: {}", link, res.message()).into()
+                                format!("Link {} is not valid: {}", link, res.message()).into(),
                             );
                             String::new()
                         }

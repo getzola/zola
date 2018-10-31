@@ -3,13 +3,12 @@ extern crate tempfile;
 
 use std::collections::HashMap;
 use std::env;
-use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
 
-use tempfile::tempdir;
 use site::Site;
-
+use tempfile::tempdir;
 
 #[test]
 fn can_parse_site() {
@@ -27,7 +26,8 @@ fn can_parse_site() {
     assert_eq!(url_post.path, "a-fixed-url/");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
-    let asset_folder_post = site.library.get_page(&posts_path.join("with-assets").join("index.md")).unwrap();
+    let asset_folder_post =
+        site.library.get_page(&posts_path.join("with-assets").join("index.md")).unwrap();
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
@@ -42,7 +42,10 @@ fn can_parse_site() {
     let posts_section = site.library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 1);
     assert_eq!(posts_section.pages.len(), 8);
-    assert_eq!(posts_section.ancestors, vec![*site.library.get_section_key(&index_section.file.path).unwrap()]);
+    assert_eq!(
+        posts_section.ancestors,
+        vec![*site.library.get_section_key(&index_section.file.path).unwrap()]
+    );
 
     // Make sure we remove all the pwd + content from the sections
     let basic = site.library.get_page(&posts_path.join("simple.md")).unwrap();
@@ -55,7 +58,8 @@ fn can_parse_site() {
         ]
     );
 
-    let tutorials_section = site.library.get_section(&posts_path.join("tutorials").join("_index.md")).unwrap();
+    let tutorials_section =
+        site.library.get_section(&posts_path.join("tutorials").join("_index.md")).unwrap();
     assert_eq!(tutorials_section.subsections.len(), 2);
     let sub1 = site.library.get_section_by_key(tutorials_section.subsections[0]);
     let sub2 = site.library.get_section_by_key(tutorials_section.subsections[1]);
@@ -63,7 +67,10 @@ fn can_parse_site() {
     assert_eq!(sub2.clone().meta.title.unwrap(), "DevOps");
     assert_eq!(tutorials_section.pages.len(), 0);
 
-    let devops_section = site.library.get_section(&posts_path.join("tutorials").join("devops").join("_index.md")).unwrap();
+    let devops_section = site
+        .library
+        .get_section(&posts_path.join("tutorials").join("devops").join("_index.md"))
+        .unwrap();
     assert_eq!(devops_section.subsections.len(), 0);
     assert_eq!(devops_section.pages.len(), 2);
     assert_eq!(
@@ -75,38 +82,37 @@ fn can_parse_site() {
         ]
     );
 
-    let prog_section = site.library.get_section(&posts_path.join("tutorials").join("programming").join("_index.md")).unwrap();
+    let prog_section = site
+        .library
+        .get_section(&posts_path.join("tutorials").join("programming").join("_index.md"))
+        .unwrap();
     assert_eq!(prog_section.subsections.len(), 0);
     assert_eq!(prog_section.pages.len(), 2);
 }
 
 // 2 helper macros to make all the build testing more bearable
 macro_rules! file_exists {
-    ($root: expr, $path: expr) => {
-        {
-            let mut path = $root.clone();
-            for component in $path.split("/") {
-                path = path.join(component);
-            }
-            Path::new(&path).exists()
+    ($root: expr, $path: expr) => {{
+        let mut path = $root.clone();
+        for component in $path.split("/") {
+            path = path.join(component);
         }
-    }
+        Path::new(&path).exists()
+    }};
 }
 
 macro_rules! file_contains {
-    ($root: expr, $path: expr, $text: expr) => {
-        {
-            let mut path = $root.clone();
-            for component in $path.split("/") {
-                path = path.join(component);
-            }
-            let mut file = File::open(&path).unwrap();
-            let mut s = String::new();
-            file.read_to_string(&mut s).unwrap();
-            println!("{}", s);
-            s.contains($text)
+    ($root: expr, $path: expr, $text: expr) => {{
+        let mut path = $root.clone();
+        for component in $path.split("/") {
+            path = path.join(component);
         }
-    }
+        let mut file = File::open(&path).unwrap();
+        let mut s = String::new();
+        file.read_to_string(&mut s).unwrap();
+        println!("{}", s);
+        s.contains($text)
+    }};
 }
 
 #[test]
@@ -145,7 +151,11 @@ fn can_build_site_without_live_reload() {
 
     // Pages and section get their relative path
     assert!(file_contains!(public, "posts/tutorials/index.html", "posts/tutorials/_index.md"));
-    assert!(file_contains!(public, "posts/tutorials/devops/nix/index.html", "posts/tutorials/devops/nix.md"));
+    assert!(file_contains!(
+        public,
+        "posts/tutorials/devops/nix/index.html",
+        "posts/tutorials/devops/nix.md"
+    ));
 
     // aliases work
     assert!(file_exists!(public, "an-old-url/old-page/index.html"));
@@ -183,14 +193,26 @@ fn can_build_site_without_live_reload() {
     assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
 
     // Both pages and sections are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/posts/</loc>"));
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"
+    ));
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/posts/</loc>"
+    ));
     // Drafts are not in the sitemap
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
 
     // robots.txt has been rendered from the template
     assert!(file_contains!(public, "robots.txt", "User-agent: zola"));
-    assert!(file_contains!(public, "robots.txt", "Sitemap: https://replace-this-with-your-url.com/sitemap.xml"));
+    assert!(file_contains!(
+        public,
+        "robots.txt",
+        "Sitemap: https://replace-this-with-your-url.com/sitemap.xml"
+    ));
 }
 
 #[test]
@@ -231,7 +253,11 @@ fn can_build_site_with_live_reload() {
     assert!(file_contains!(public, "index.html", "/livereload.js"));
 
     // the summary anchor link has been created
-    assert!(file_contains!(public, "posts/python/index.html", r#"<a name="continue-reading"></a>"#));
+    assert!(file_contains!(
+        public,
+        "posts/python/index.html",
+        r#"<a name="continue-reading"></a>"#
+    ));
     assert!(file_contains!(public, "posts/draft/index.html", r#"THEME_SHORTCODE"#));
 }
 
@@ -245,7 +271,10 @@ fn can_build_site_with_taxonomies() {
     for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
         page.meta.taxonomies = {
             let mut taxonomies = HashMap::new();
-            taxonomies.insert("categories".to_string(), vec![if i % 2 == 0 { "A" } else { "B" }.to_string()]);
+            taxonomies.insert(
+                "categories".to_string(),
+                vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+            );
             taxonomies
         };
     }
@@ -278,15 +307,27 @@ fn can_build_site_with_taxonomies() {
     assert!(file_exists!(public, "categories/a/index.html"));
     assert!(file_exists!(public, "categories/b/index.html"));
     assert!(file_exists!(public, "categories/a/rss.xml"));
-    assert!(file_contains!(public, "categories/a/rss.xml", "https://replace-this-with-your-url.com/categories/a/rss.xml"));
+    assert!(file_contains!(
+        public,
+        "categories/a/rss.xml",
+        "https://replace-this-with-your-url.com/categories/a/rss.xml"
+    ));
     // Extending from a theme works
     assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
     // Tags aren't
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
     // Categories are in the sitemap
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/</loc>"));
-    assert!(file_contains!(public, "sitemap.xml", "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"));
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/categories/</loc>"
+    ));
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"
+    ));
 }
 
 #[test]
@@ -303,7 +344,11 @@ fn can_build_site_and_insert_anchor_links() {
 
     assert!(Path::new(&public).exists());
     // anchor link inserted
-    assert!(file_contains!(public, "posts/something-else/index.html", "<h1 id=\"title\"><a class=\"zola-anchor\" href=\"#title\""));
+    assert!(file_contains!(
+        public,
+        "posts/something-else/index.html",
+        "<h1 id=\"title\"><a class=\"zola-anchor\" href=\"#title\""
+    ));
 }
 
 #[test]
@@ -352,8 +397,16 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "posts/index.html", "has_prev"));
     assert!(file_contains!(public, "posts/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
+    assert!(file_contains!(
+        public,
+        "posts/index.html",
+        "First: https://replace-this-with-your-url.com/posts/"
+    ));
+    assert!(file_contains!(
+        public,
+        "posts/index.html",
+        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+    ));
     assert_eq!(file_contains!(public, "posts/index.html", "has_prev"), false);
 
     assert!(file_exists!(public, "posts/page/2/index.html"));
@@ -362,8 +415,16 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
+    assert!(file_contains!(
+        public,
+        "posts/page/2/index.html",
+        "First: https://replace-this-with-your-url.com/posts/"
+    ));
+    assert!(file_contains!(
+        public,
+        "posts/page/2/index.html",
+        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+    ));
 
     assert!(file_exists!(public, "posts/page/3/index.html"));
     assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 4"));
@@ -371,8 +432,16 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(public, "posts/page/3/index.html", "Current index: 3"));
     assert!(file_contains!(public, "posts/page/3/index.html", "has_prev"));
     assert!(file_contains!(public, "posts/page/3/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/page/3/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/page/3/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
+    assert!(file_contains!(
+        public,
+        "posts/page/3/index.html",
+        "First: https://replace-this-with-your-url.com/posts/"
+    ));
+    assert!(file_contains!(
+        public,
+        "posts/page/3/index.html",
+        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+    ));
 
     assert!(file_exists!(public, "posts/page/4/index.html"));
     assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 4"));
@@ -380,8 +449,16 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(public, "posts/page/4/index.html", "Current index: 4"));
     assert!(file_contains!(public, "posts/page/4/index.html", "has_prev"));
     assert!(!file_contains!(public, "posts/page/4/index.html", "has_next"));
-    assert!(file_contains!(public, "posts/page/4/index.html", "First: https://replace-this-with-your-url.com/posts/"));
-    assert!(file_contains!(public, "posts/page/4/index.html", "Last: https://replace-this-with-your-url.com/posts/page/4/"));
+    assert!(file_contains!(
+        public,
+        "posts/page/4/index.html",
+        "First: https://replace-this-with-your-url.com/posts/"
+    ));
+    assert!(file_contains!(
+        public,
+        "posts/page/4/index.html",
+        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+    ));
 }
 
 #[test]
@@ -448,7 +525,6 @@ fn can_build_rss_feed() {
     assert!(file_contains!(public, "rss.xml", "Simple article with shortcodes"));
 }
 
-
 #[test]
 fn can_build_search_index() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
@@ -479,6 +555,9 @@ fn can_build_with_extra_syntaxes() {
 
     assert!(&public.exists());
     assert!(file_exists!(public, "posts/extra-syntax/index.html"));
-    assert!(file_contains!(public, "posts/extra-syntax/index.html",
-        r#"<span style="color:#d08770;">test</span>"#));
+    assert!(file_contains!(
+        public,
+        "posts/extra-syntax/index.html",
+        r#"<span style="color:#d08770;">test</span>"#
+    ));
 }

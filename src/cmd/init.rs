@@ -1,12 +1,11 @@
-use std::fs::{create_dir, canonicalize};
+use std::fs::{canonicalize, create_dir};
 use std::path::Path;
 
 use errors::Result;
 use utils::fs::create_file;
 
-use prompt::{ask_bool, ask_url};
 use console;
-
+use prompt::{ask_bool, ask_url};
 
 const CONFIG: &str = r#"
 # The URL the site will be built for
@@ -25,7 +24,6 @@ build_search_index = %SEARCH%
 [extra]
 # Put all your custom variables here
 "#;
-
 
 pub fn create_new_project(name: &str) -> Result<()> {
     let path = Path::new(name);
@@ -62,7 +60,9 @@ pub fn create_new_project(name: &str) -> Result<()> {
     println!();
     console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));
     println!();
-    console::info("Get started by moving into the directory and using the built-in server: `zola serve`");
+    console::info(
+        "Get started by moving into the directory and using the built-in server: `zola serve`",
+    );
     println!("Visit https://www.getzola.org for the full documentation.");
     Ok(())
 }

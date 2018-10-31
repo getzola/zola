@@ -11,9 +11,8 @@ use std::collections::{HashMap, HashSet};
 
 use elasticlunr::{Index, Language};
 
-use library::{Library, Section};
 use errors::Result;
-
+use library::{Library, Section};
 
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
 
@@ -34,7 +33,6 @@ lazy_static! {
     };
 }
 
-
 /// Returns the generated JSON index with all the documents of the site added using
 /// the language given
 /// Errors if the language given is not available in Elasticlunr
@@ -42,7 +40,9 @@ lazy_static! {
 pub fn build_index(lang: &str, library: &Library) -> Result<String> {
     let language = match Language::from_code(lang) {
         Some(l) => l,
-        None => { bail!("Tried to build search index for language {} which is not supported", lang); }
+        None => {
+            bail!("Tried to build search index for language {} which is not supported", lang);
+        }
     };
 
     let mut index = Index::with_language(language, &["title", "body"]);
@@ -63,7 +63,10 @@ fn add_section_to_index(index: &mut Index, section: &Section, library: &Library)
     if section.meta.redirect_to.is_none() {
         index.add_doc(
             &section.permalink,
-            &[&section.meta.title.clone().unwrap_or_default(), &AMMONIA.clean(&section.content).to_string()],
+            &[
+                &section.meta.title.clone().unwrap_or_default(),
+                &AMMONIA.clean(&section.content).to_string(),
+            ],
         );
     }
 
@@ -75,7 +78,10 @@ fn add_section_to_index(index: &mut Index, section: &Section, library: &Library)
 
         index.add_doc(
             &page.permalink,
-            &[&page.meta.title.clone().unwrap_or_default(), &AMMONIA.clean(&page.content).to_string()],
+            &[
+                &page.meta.title.clone().unwrap_or_default(),
+                &AMMONIA.clean(&page.content).to_string(),
+            ],
         );
     }
 }

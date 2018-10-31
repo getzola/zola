@@ -1,6 +1,5 @@
-use tera::{Tera, Context as TeraContext};
 use front_matter::InsertAnchor;
-
+use tera::{Context as TeraContext, Tera};
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Header {
@@ -65,9 +64,26 @@ impl TempHeader {
         };
 
         match insert_anchor {
-            InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl = self.level, t = self.html, id = self.id),
-            InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.html, id = self.id),
-            InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.html, id = self.id),
+            InsertAnchor::None => format!(
+                "<h{lvl} id=\"{id}\">{t}</h{lvl}>\n",
+                lvl = self.level,
+                t = self.html,
+                id = self.id
+            ),
+            InsertAnchor::Left => format!(
+                "<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n",
+                lvl = self.level,
+                a = anchor_link,
+                t = self.html,
+                id = self.id
+            ),
+            InsertAnchor::Right => format!(
+                "<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n",
+                lvl = self.level,
+                a = anchor_link,
+                t = self.html,
+                id = self.id
+            ),
         }
     }
 }
@@ -78,9 +94,12 @@ impl Default for TempHeader {
     }
 }
 
-
 /// Recursively finds children of a header
-fn find_children(parent_level: i32, start_at: usize, temp_headers: &[TempHeader]) -> (usize, Vec<Header>) {
+fn find_children(
+    parent_level: i32,
+    start_at: usize,
+    temp_headers: &[TempHeader],
+) -> (usize, Vec<Header>) {
     let mut headers = vec![];
 
     let mut start_at = start_at;
@@ -124,7 +143,6 @@ fn find_children(parent_level: i32, start_at: usize, temp_headers: &[TempHeader]
     (start_at, headers)
 }
 
-
 /// Converts the flat temp headers into a nested set of headers
 /// representing the hierarchy
 pub fn make_table_of_contents(temp_headers: &[TempHeader]) -> Vec<Header> {
@@ -148,11 +166,7 @@ mod tests {
 
     #[test]
     fn can_make_basic_toc() {
-        let input = vec![
-            TempHeader::new(1),
-            TempHeader::new(1),
-            TempHeader::new(1),
-        ];
+        let input = vec![TempHeader::new(1), TempHeader::new(1), TempHeader::new(1)];
         let toc = make_table_of_contents(&input);
         assert_eq!(toc.len(), 3);
     }

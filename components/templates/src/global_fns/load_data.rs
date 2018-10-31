@@ -1,28 +1,28 @@
-extern crate toml;
 extern crate serde_json;
+extern crate toml;
 
-use utils::fs::{read_file, is_path_in_directory, get_file_time};
+use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
-use std::hash::{Hasher, Hash};
-use std::str::FromStr;
-use std::fmt;
+use reqwest::{header, Client};
 use std::collections::hash_map::DefaultHasher;
-use reqwest::{Client, header};
+use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::str::FromStr;
 use url::Url;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-
 use csv::Reader;
 use std::collections::HashMap;
-use tera::{GlobalFn, Value, from_value, to_value, Result, Map, Error};
+use tera::{from_value, to_value, Error, GlobalFn, Map, Result, Value};
 
-static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str = "`load_data`: requires EITHER a `path` or `url` argument";
+static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
+    "`load_data`: requires EITHER a `path` or `url` argument";
 
 enum DataSource {
     Url(Url),
-    Path(PathBuf)
+    Path(PathBuf),
 }
 
 #[derive(Debug)]
@@ -30,7 +30,7 @@ enum OutputFormat {
     Toml,
     Json,
     Csv,
-    Plain
+    Plain,
 }
 
 impl fmt::Display for OutputFormat {
@@ -54,7 +54,7 @@ impl FromStr for OutputFormat {
             "csv" => Ok(OutputFormat::Csv),
             "json" => Ok(OutputFormat::Json),
             "plain" => Ok(OutputFormat::Plain),
-            format => Err(format!("Unknown output format {}", format).into())
+            format => Err(format!("Unknown output format {}", format).into()),
         };
     }
 }
@@ -71,7 +71,11 @@ impl OutputFormat {
 }
 
 impl DataSource {
-    fn from_args(path_arg: Option<String>, url_arg: Option<String>, content_path: &PathBuf) -> Result<Self> {
+    fn from_args(
+        path_arg: Option<String>,
+        url_arg: Option<String>,
+        content_path: &PathBuf,
+    ) -> Result<Self> {
         if path_arg.is_some() && url_arg.is_some() {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
         }
@@ -85,7 +89,9 @@ impl DataSource {
         }
 
         if let Some(url) = url_arg {
-            return Url::parse(&url).map(|parsed_url| DataSource::Url(parsed_url)).map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
+            return Url::parse(&url)
+                .map(|parsed_url| DataSource::Url(parsed_url))
+                .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
         }
 
         return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
@@ -111,32 +117,37 @@ impl Hash for DataSource {
     }
 }
 
+fn get_data_source_from_args(
+    content_path: &PathBuf,
+    args: &HashMap<String, Value>,
+) -> Result<DataSource> {
+    let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
 
-fn get_data_source_from_args(content_path: &PathBuf, args: &HashMap<String, Value>) -> Result<DataSource> {
-    let path_arg = optional_arg!(
-        String,
-        args.get("path"),
-        GET_DATA_ARGUMENT_ERROR_MESSAGE
-    );
-
-    let url_arg = optional_arg!(
-        String,
-        args.get("url"),
-        GET_DATA_ARGUMENT_ERROR_MESSAGE
-    );
+    let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
 
     return DataSource::from_args(path_arg, url_arg, content_path);
 }
 
 fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
-    if !is_path_in_directory(&base_path, &full_path).map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))? {
-        return Err(format!("{} is not inside the base site directory {}", full_path.display(), base_path.display()).into());
+    if !is_path_in_directory(&base_path, &full_path)
+        .map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))?
+    {
+        return Err(format!(
+            "{} is not inside the base site directory {}",
+            full_path.display(),
+            base_path.display()
+        )
+        .into());
     }
-    return read_file(&full_path)
-        .map_err(|e| format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into());
+    return read_file(&full_path).map_err(|e| {
+        format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into()
+    });
 }
 
-fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &DataSource) -> Result<OutputFormat> {
+fn get_output_format_from_args(
+    args: &HashMap<String, Value>,
+    data_source: &DataSource,
+) -> Result<OutputFormat> {
     let format_arg = optional_arg!(
         String,
         args.get("format"),
@@ -148,14 +159,16 @@ fn get_output_format_from_args(args: &HashMap<String, Value>, data_source: &Data
     }
 
     let from_extension = if let DataSource::Path(path) = data_source {
-        let extension_result: Result<&str> = path.extension().map(|extension| extension.to_str().unwrap()).ok_or(format!("Could not determine format for {} from extension", path.display()).into());
+        let extension_result: Result<&str> =
+            path.extension().map(|extension| extension.to_str().unwrap()).ok_or(
+                format!("Could not determine format for {} from extension", path.display()).into(),
+            );
         extension_result?
     } else {
         "plain"
     };
     return OutputFormat::from_str(from_extension);
 }
-
 
 /// A global function to load data from a file or from a URL
 /// Currently the supported formats are json, toml, csv and plain text
@@ -180,9 +193,22 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
         let data = match data_source {
             DataSource::Path(path) => read_data_file(&base_path, path),
             DataSource::Url(url) => {
-                let mut response = response_client.get(url.as_str()).header(header::ACCEPT, file_format.as_accept_header()).send().and_then(|res| res.error_for_status()).map_err(|e| format!("Failed to request {}: {}", url, e.status().expect("response status")))?;
-                response.text().map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
-            },
+                let mut response = response_client
+                    .get(url.as_str())
+                    .header(header::ACCEPT, file_format.as_accept_header())
+                    .send()
+                    .and_then(|res| res.error_for_status())
+                    .map_err(|e| {
+                        format!(
+                            "Failed to request {}: {}",
+                            url,
+                            e.status().expect("response status")
+                        )
+                    })?;
+                response
+                    .text()
+                    .map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
+            }
         }?;
 
         let result_value: Result<Value> = match file_format {
@@ -202,7 +228,8 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
 
 /// Parse a JSON string and convert it to a Tera Value
 fn load_json(json_data: String) -> Result<Value> {
-    let json_content: Value = serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
+    let json_content: Value =
+        serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
     return Ok(json_content);
 }
 
@@ -235,12 +262,11 @@ fn load_csv(csv_data: String) -> Result<Value> {
     let mut csv_map = Map::new();
 
     {
-        let hdrs = reader.headers()
-            .map_err(|e| format!("'load_data': {} - unable to read CSV header line (line 1) for CSV file", e))?;
+        let hdrs = reader.headers().map_err(|e| {
+            format!("'load_data': {} - unable to read CSV header line (line 1) for CSV file", e)
+        })?;
 
-        let headers_array = hdrs.iter()
-            .map(|v| Value::String(v.to_string()))
-            .collect();
+        let headers_array = hdrs.iter().map(|v| Value::String(v.to_string())).collect();
 
         csv_map.insert(String::from("headers"), Value::Array(headers_array));
     }
@@ -268,7 +294,6 @@ fn load_csv(csv_data: String) -> Result<Value> {
     to_value(csv_value).map_err(|err| err.into())
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::{make_load_data, DataSource, OutputFormat};
@@ -285,7 +310,8 @@ mod tests {
 
     #[test]
     fn fails_when_missing_file() {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+        let static_fn =
+            make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
         let result = static_fn(args);
@@ -295,40 +321,54 @@ mod tests {
 
     #[test]
     fn cant_load_outside_content_dir() {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+        let static_fn =
+            make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../README.md").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert!(result.unwrap_err().description().contains("README.md is not inside the base site directory"));
+        assert!(
+            result
+                .unwrap_err()
+                .description()
+                .contains("README.md is not inside the base site directory")
+        );
     }
 
     #[test]
     fn calculates_cache_key_for_path() {
         // We can't test against a fixed value, due to the fact the cache key is built from the absolute path
-        let cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
-        let cache_key_2 = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        let cache_key =
+            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        let cache_key_2 =
+            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
         assert_eq!(cache_key, cache_key_2);
     }
 
     #[test]
     fn calculates_cache_key_for_url() {
-        let cache_key = DataSource::Url("https://api.github.com/repos/getzola/zola".parse().unwrap()).get_cache_key(&OutputFormat::Plain);
+        let cache_key =
+            DataSource::Url("https://api.github.com/repos/getzola/zola".parse().unwrap())
+                .get_cache_key(&OutputFormat::Plain);
         assert_eq!(cache_key, 8916756616423791754);
     }
 
     #[test]
     fn different_cache_key_per_filename() {
-        let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
-        let json_cache_key = DataSource::Path(get_test_file("test.json")).get_cache_key(&OutputFormat::Toml);
+        let toml_cache_key =
+            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        let json_cache_key =
+            DataSource::Path(get_test_file("test.json")).get_cache_key(&OutputFormat::Toml);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn different_cache_key_per_format() {
-        let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
-        let json_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Json);
+        let toml_cache_key =
+            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        let json_cache_key =
+            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Json);
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
@@ -339,7 +379,10 @@ mod tests {
         args.insert("url".to_string(), to_value("https://httpbin.org/json").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn(args).unwrap();
-        assert_eq!(result.get("slideshow").unwrap().get("title").unwrap(), &to_value("Sample Slide Show").unwrap());
+        assert_eq!(
+            result.get("slideshow").unwrap().get("title").unwrap(),
+            &to_value("Sample Slide Show").unwrap()
+        );
     }
 
     #[test]
@@ -350,60 +393,78 @@ mod tests {
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().description(), "Failed to request https://httpbin.org/status/404/: 404 Not Found");
+        assert_eq!(
+            result.unwrap_err().description(),
+            "Failed to request https://httpbin.org/status/404/: 404 Not Found"
+        );
     }
 
     #[test]
-    fn can_load_toml()
-    {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils/test-files"));
+    fn can_load_toml() {
+        let static_fn = make_load_data(
+            PathBuf::from("../utils/test-files"),
+            PathBuf::from("../utils/test-files"),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn(args.clone()).unwrap();
 
         //TOML does not load in order, and also dates are not returned as strings, but
         //rather as another object with a key and value
-        assert_eq!(result, json!({
+        assert_eq!(
+            result,
+            json!({
             "category": {
                 "date": {
                     "$__toml_private_datetime": "1979-05-27T07:32:00Z"
                 },
                 "key": "value"
             },
-        }));
+        })
+        );
     }
 
     #[test]
-    fn can_load_csv()
-    {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils/test-files"));
+    fn can_load_csv() {
+        let static_fn = make_load_data(
+            PathBuf::from("../utils/test-files"),
+            PathBuf::from("../utils/test-files"),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.csv").unwrap());
         let result = static_fn(args.clone()).unwrap();
 
-        assert_eq!(result, json!({
+        assert_eq!(
+            result,
+            json!({
             "headers": ["Number", "Title"],
             "records": [
                             ["1", "Gutenberg"],
                             ["2", "Printing"]
                         ],
-        }))
+        })
+        )
     }
 
     #[test]
-    fn can_load_json()
-    {
-        let static_fn = make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils/test-files"));
+    fn can_load_json() {
+        let static_fn = make_load_data(
+            PathBuf::from("../utils/test-files"),
+            PathBuf::from("../utils/test-files"),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.json").unwrap());
         let result = static_fn(args.clone()).unwrap();
 
-        assert_eq!(result, json!({
+        assert_eq!(
+            result,
+            json!({
             "key": "value",
             "array": [1, 2, 3],
             "subpackage": {
                 "subkey": 5
             }
-        }))
+        })
+        )
     }
 }

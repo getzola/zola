@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-use base64::{encode, decode};
+use base64::{decode, encode};
 use pulldown_cmark as cmark;
-use tera::{Value, to_value, Result as TeraResult};
-
+use tera::{to_value, Result as TeraResult, Value};
 
 pub fn markdown(value: Value, args: HashMap<String, Value>) -> TeraResult<Value> {
     let s = try_get_value!("markdown", "value", String, value);
@@ -31,25 +30,15 @@ pub fn markdown(value: Value, args: HashMap<String, Value>) -> TeraResult<Value>
     Ok(to_value(&html).unwrap())
 }
 
-
 pub fn base64_encode(value: Value, _: HashMap<String, Value>) -> TeraResult<Value> {
     let s = try_get_value!("base64_encode", "value", String, value);
-    Ok(
-        to_value(&encode(s.as_bytes())).unwrap()
-    )
+    Ok(to_value(&encode(s.as_bytes())).unwrap())
 }
 
 pub fn base64_decode(value: Value, _: HashMap<String, Value>) -> TeraResult<Value> {
     let s = try_get_value!("base64_decode", "value", String, value);
-    Ok(
-        to_value(
-            &String::from_utf8(
-                decode(s.as_bytes()).unwrap()
-            ).unwrap()
-        ).unwrap()
-    )
+    Ok(to_value(&String::from_utf8(decode(s.as_bytes()).unwrap()).unwrap()).unwrap())
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -57,7 +46,7 @@ mod tests {
 
     use tera::to_value;
 
-    use super::{markdown, base64_decode, base64_encode};
+    use super::{base64_decode, base64_encode, markdown};
 
     #[test]
     fn markdown_filter() {
@@ -70,7 +59,10 @@ mod tests {
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = markdown(to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(), args);
+        let result = markdown(
+            to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
+            args,
+        );
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
     }
@@ -80,12 +72,18 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = markdown(to_value(&r#"
+        let result = markdown(
+            to_value(
+                &r#"
 |id|author_id|       timestamp_created|title                 |content           |
 |-:|--------:|-----------------------:|:---------------------|:-----------------|
 | 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
 | 2|        1|2018-08-22 13:11:50.050Z|How to bake a nice pie|Badly written blog|
-        "#).unwrap(), args);
+        "#,
+            )
+            .unwrap(),
+            args,
+        );
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<table>"));
     }
@@ -100,7 +98,7 @@ mod tests {
             ("foo", "Zm9v"),
             ("foob", "Zm9vYg=="),
             ("fooba", "Zm9vYmE="),
-            ("foobar", "Zm9vYmFy")
+            ("foobar", "Zm9vYmFy"),
         ];
         for (input, expected) in tests {
             let args = HashMap::new();
@@ -109,7 +107,6 @@ mod tests {
             assert_eq!(result.unwrap(), to_value(expected).unwrap());
         }
     }
-
 
     #[test]
     fn base64_decode_filter() {
@@ -120,7 +117,7 @@ mod tests {
             ("Zm9v", "foo"),
             ("Zm9vYg==", "foob"),
             ("Zm9vYmE=", "fooba"),
-            ("Zm9vYmFy", "foobar")
+            ("Zm9vYmFy", "foobar"),
         ];
         for (input, expected) in tests {
             let args = HashMap::new();

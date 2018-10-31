@@ -1,23 +1,21 @@
 use std::collections::HashMap;
 
-use tera::{Tera, Context, to_value, Value};
-use slotmap::{Key};
+use slotmap::Key;
+use tera::{to_value, Context, Tera, Value};
 
-use errors::{Result, ResultExt};
 use config::Config;
+use errors::{Result, ResultExt};
 use utils::templates::render_template;
 
-use content::{Section, SerializingSection, SerializingPage};
-use taxonomies::{TaxonomyItem, Taxonomy};
+use content::{Section, SerializingPage, SerializingSection};
 use library::Library;
-
+use taxonomies::{Taxonomy, TaxonomyItem};
 
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
     Section(&'a Section),
     Taxonomy(&'a Taxonomy),
 }
-
 
 /// A list of all the pages in the paginator with their index and links
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -33,13 +31,13 @@ pub struct Pager<'a> {
 }
 
 impl<'a> Pager<'a> {
-    fn new(index: usize, pages: Vec<SerializingPage<'a>>, permalink: String, path: String) -> Pager<'a> {
-        Pager {
-            index,
-            permalink,
-            path,
-            pages,
-        }
+    fn new(
+        index: usize,
+        pages: Vec<SerializingPage<'a>>,
+        permalink: String,
+        path: String,
+    ) -> Pager<'a> {
+        Pager { index, permalink, path, pages }
     }
 }
 
@@ -83,7 +81,11 @@ impl<'a> Paginator<'a> {
 
     /// Create a new paginator from a taxonomy
     /// It will always at least create one pager (the first) even if there are not enough pages to paginate
-    pub fn from_taxonomy(taxonomy: &'a Taxonomy, item: &'a TaxonomyItem, library: &'a Library) -> Paginator<'a> {
+    pub fn from_taxonomy(
+        taxonomy: &'a Taxonomy,
+        item: &'a TaxonomyItem,
+        library: &'a Library,
+    ) -> Paginator<'a> {
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
         let mut paginator = Paginator {
             all_pages: &item.pages,
@@ -92,7 +94,11 @@ impl<'a> Paginator<'a> {
             root: PaginationRoot::Taxonomy(taxonomy),
             permalink: item.permalink.clone(),
             path: format!("{}/{}", taxonomy.kind.name, item.slug),
-            paginate_path: taxonomy.kind.paginate_path.clone().unwrap_or_else(|| "pages".to_string()),
+            paginate_path: taxonomy
+                .kind
+                .paginate_path
+                .clone()
+                .unwrap_or_else(|| "pages".to_string()),
             is_index: false,
         };
 
@@ -142,12 +148,7 @@ impl<'a> Paginator<'a> {
                 format!("{}/{}", self.path, page_path)
             };
 
-            pagers.push(Pager::new(
-                index + 1,
-                page,
-                permalink,
-                pager_path,
-            ));
+            pagers.push(Pager::new(index + 1, page, permalink, pager_path));
         }
 
         // We always have the index one at least
@@ -184,19 +185,29 @@ impl<'a> Paginator<'a> {
             paginator.insert("next", Value::Null);
         }
         paginator.insert("number_pagers", to_value(&self.pagers.len()).unwrap());
-        paginator.insert("base_url", to_value(&format!("{}{}/", self.permalink, self.paginate_path)).unwrap());
+        paginator.insert(
+            "base_url",
+            to_value(&format!("{}{}/", self.permalink, self.paginate_path)).unwrap(),
+        );
         paginator.insert("pages", to_value(&current_pager.pages).unwrap());
         paginator.insert("current_index", to_value(current_pager.index).unwrap());
 
         paginator
     }
 
-    pub fn render_pager(&self, pager: &Pager, config: &Config, tera: &Tera, library: &Library) -> Result<String> {
+    pub fn render_pager(
+        &self,
+        pager: &Pager,
+        config: &Config,
+        tera: &Tera,
+        library: &Library,
+    ) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", &config);
         let template_name = match self.root {
             PaginationRoot::Section(s) => {
-                context.insert("section", &SerializingSection::from_section_basic(s, Some(library)));
+                context
+                    .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
                 s.get_template_name()
             }
             PaginationRoot::Taxonomy(t) => {
@@ -217,11 +228,11 @@ impl<'a> Paginator<'a> {
 mod tests {
     use tera::to_value;
 
-    use front_matter::SectionFrontMatter;
-    use content::{Page, Section};
     use config::Taxonomy as TaxonomyConfig;
-    use taxonomies::{Taxonomy, TaxonomyItem};
+    use content::{Page, Section};
+    use front_matter::SectionFrontMatter;
     use library::Library;
+    use taxonomies::{Taxonomy, TaxonomyItem};
 
     use super::Paginator;
 

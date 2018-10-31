@@ -3,10 +3,10 @@
 //! Although it is a valid example for serializing syntaxes, you probably won't need
 //! to do this yourself unless you want to cache your own compiled grammars.
 extern crate syntect;
-use syntect::parsing::SyntaxSetBuilder;
-use syntect::highlighting::ThemeSet;
-use syntect::dumps::*;
 use std::env;
+use syntect::dumps::*;
+use syntect::highlighting::ThemeSet;
+use syntect::parsing::SyntaxSetBuilder;
 
 fn usage_and_exit() -> ! {
     println!("USAGE: cargo run --example generate_sublime synpack source-dir newlines.packdump nonewlines.packdump\n
@@ -32,7 +32,7 @@ fn main() {
                     println!("- {} -> {:?}", s.name, s.file_extensions);
                 }
             }
-        },
+        }
         (Some(ref cmd), Some(ref theme_dir), Some(ref packpath)) if cmd == "themepack" => {
             let ts = ThemeSet::load_from_folder(theme_dir).unwrap();
             for path in ts.themes.keys() {

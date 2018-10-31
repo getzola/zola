@@ -1,16 +1,15 @@
 extern crate site;
 #[macro_use]
 extern crate errors;
-extern crate library;
 extern crate front_matter;
+extern crate library;
 
-use std::path::{Path, Component};
+use std::path::{Component, Path};
 
 use errors::Result;
-use site::Site;
-use library::{Page, Section};
 use front_matter::{PageFrontMatter, SectionFrontMatter};
-
+use library::{Page, Section};
+use site::Site;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PageChangesNeeded {
@@ -37,7 +36,10 @@ pub enum SectionChangesNeeded {
 /// Evaluates all the params in the front matter that changed so we can do the smallest
 /// delta in the serve command
 /// Order matters as the actions will be done in insertion order
-fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &SectionFrontMatter) -> Vec<SectionChangesNeeded> {
+fn find_section_front_matter_changes(
+    current: &SectionFrontMatter,
+    new: &SectionFrontMatter,
+) -> Vec<SectionChangesNeeded> {
     let mut changes_needed = vec![];
 
     if current.sort_by != new.sort_by {
@@ -54,7 +56,8 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &Section
 
     if current.paginate_by != new.paginate_by
         || current.paginate_path != new.paginate_path
-        || current.insert_anchor_links != new.insert_anchor_links {
+        || current.insert_anchor_links != new.insert_anchor_links
+    {
         changes_needed.push(SectionChangesNeeded::RenderWithPages);
         // Nothing else we can do
         return changes_needed;
@@ -68,14 +71,18 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &Section
 /// Evaluates all the params in the front matter that changed so we can do the smallest
 /// delta in the serve command
 /// Order matters as the actions will be done in insertion order
-fn find_page_front_matter_changes(current: &PageFrontMatter, other: &PageFrontMatter) -> Vec<PageChangesNeeded> {
+fn find_page_front_matter_changes(
+    current: &PageFrontMatter,
+    other: &PageFrontMatter,
+) -> Vec<PageChangesNeeded> {
     let mut changes_needed = vec![];
 
     if current.taxonomies != other.taxonomies {
         changes_needed.push(PageChangesNeeded::Taxonomies);
     }
 
-    if current.date != other.date || current.order != other.order || current.weight != other.weight {
+    if current.date != other.date || current.order != other.order || current.weight != other.weight
+    {
         changes_needed.push(PageChangesNeeded::Sort);
     }
 
@@ -86,7 +93,9 @@ fn find_page_front_matter_changes(current: &PageFrontMatter, other: &PageFrontMa
 /// Handles a path deletion: could be a page, a section, a folder
 fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> {
     // Ignore the event if this path was not known
-    if !site.library.contains_section(&path.to_path_buf()) && !site.library.contains_page(&path.to_path_buf()) {
+    if !site.library.contains_section(&path.to_path_buf())
+        && !site.library.contains_page(&path.to_path_buf())
+    {
         return Ok(());
     }
 
@@ -127,14 +136,21 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
             }
 
             // Front matter changed
-            for changes in find_section_front_matter_changes(&site.library.get_section(&pathbuf).unwrap().meta, &prev.meta) {
+            for changes in find_section_front_matter_changes(
+                &site.library.get_section(&pathbuf).unwrap().meta,
+                &prev.meta,
+            ) {
                 // Sort always comes first if present so the rendering will be fine
                 match changes {
                     SectionChangesNeeded::Sort => {
                         site.register_tera_global_fns();
                     }
-                    SectionChangesNeeded::Render => site.render_section(&site.library.get_section(&pathbuf).unwrap(), false)?,
-                    SectionChangesNeeded::RenderWithPages => site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)?,
+                    SectionChangesNeeded::Render => {
+                        site.render_section(&site.library.get_section(&pathbuf).unwrap(), false)?
+                    }
+                    SectionChangesNeeded::RenderWithPages => {
+                        site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)?
+                    }
                     // not a common enough operation to make it worth optimizing
                     SectionChangesNeeded::Delete => {
                         site.build()?;
@@ -157,7 +173,7 @@ macro_rules! render_parent_section {
         if let Some(s) = $site.library.find_parent_section($path) {
             $site.render_section(s, false)?;
         };
-    }
+    };
 }
 
 /// Handles a page being edited in some ways
@@ -181,7 +197,10 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
             }
 
             // Front matter changed
-            for changes in find_page_front_matter_changes(&site.library.get_page(&pathbuf).unwrap().meta, &prev.meta) {
+            for changes in find_page_front_matter_changes(
+                &site.library.get_page(&pathbuf).unwrap().meta,
+                &prev.meta,
+            ) {
                 site.register_tera_global_fns();
 
                 // Sort always comes first if present so the rendering will be fine
@@ -212,7 +231,6 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
         }
     }
 }
-
 
 /// What happens when a section or a page is changed
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
@@ -294,16 +312,15 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
-    use front_matter::{PageFrontMatter, SectionFrontMatter, SortBy};
     use super::{
-        find_page_front_matter_changes, find_section_front_matter_changes,
-        PageChangesNeeded, SectionChangesNeeded,
+        find_page_front_matter_changes, find_section_front_matter_changes, PageChangesNeeded,
+        SectionChangesNeeded,
     };
+    use front_matter::{PageFrontMatter, SectionFrontMatter, SortBy};
 
     #[test]
     fn can_find_taxonomy_changes_in_page_frontmatter() {
@@ -320,7 +337,10 @@ mod tests {
         taxonomies.insert("categories".to_string(), vec!["a category".to_string()]);
         let current = PageFrontMatter { taxonomies, order: Some(1), ..PageFrontMatter::default() };
         let changes = find_page_front_matter_changes(&current, &PageFrontMatter::default());
-        assert_eq!(changes, vec![PageChangesNeeded::Taxonomies, PageChangesNeeded::Sort, PageChangesNeeded::Render]);
+        assert_eq!(
+            changes,
+            vec![PageChangesNeeded::Taxonomies, PageChangesNeeded::Sort, PageChangesNeeded::Render]
+        );
     }
 
     #[test]

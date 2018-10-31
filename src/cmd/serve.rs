@@ -26,18 +26,18 @@ use std::fs::{remove_dir_all, File};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
-use std::time::{Instant, Duration};
 use std::thread;
+use std::time::{Duration, Instant};
 
-use chrono::prelude::*;
+use actix_web::middleware::{Middleware, Response, Started};
 use actix_web::{self, fs, http, server, App, HttpRequest, HttpResponse, Responder};
-use actix_web::middleware::{Middleware, Started, Response};
-use notify::{Watcher, RecursiveMode, watcher};
-use ws::{WebSocket, Sender, Message};
+use chrono::prelude::*;
 use ctrlc;
+use notify::{watcher, RecursiveMode, Watcher};
+use ws::{Message, Sender, WebSocket};
 
-use site::Site;
 use errors::{Result, ResultExt};
+use site::Site;
 use utils::fs::copy_file;
 
 use console;
@@ -93,7 +93,9 @@ fn livereload_handler(_: &HttpRequest) -> &'static str {
 fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
     match res {
         Ok(_) => {
-            broadcaster.send(format!(r#"
+            broadcaster
+                .send(format!(
+                    r#"
                 {{
                     "command": "reload",
                     "path": "{}",
@@ -101,14 +103,22 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                     "liveCSS": true,
                     "liveImg": true,
                     "protocol": ["http://livereload.com/protocols/official-7"]
-                }}"#, reload_path)
-            ).unwrap();
-        },
-        Err(e) => console::unravel_errors("Failed to build the site", &e)
+                }}"#,
+                    reload_path
+                ))
+                .unwrap();
+        }
+        Err(e) => console::unravel_errors("Failed to build the site", &e),
     }
 }
 
-fn create_new_site(interface: &str, port: u16, output_dir: &str, base_url: &str, config_file: &str) -> Result<(Site, String)> {
+fn create_new_site(
+    interface: &str,
+    port: u16,
+    output_dir: &str,
+    base_url: &str,
+    config_file: &str,
+) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
     let base_address = format!("{}:{}", base_url, port);
@@ -140,14 +150,23 @@ fn create_new_site(interface: &str, port: u16, output_dir: &str, base_url: &str,
 /// Rather than deal with all of that, we can hijack a hook for presenting a
 /// custom directory listing response and serve it up using their
 /// `NamedFile` responder.
-fn handle_directory<'a, 'b>(dir: &'a fs::Directory, req: &'b HttpRequest) -> io::Result<HttpResponse> {
+fn handle_directory<'a, 'b>(
+    dir: &'a fs::Directory,
+    req: &'b HttpRequest,
+) -> io::Result<HttpResponse> {
     let mut path = PathBuf::from(&dir.base);
     path.push(&dir.path);
     path.push("index.html");
     fs::NamedFile::open(path)?.respond_to(req)
 }
 
-pub fn serve(interface: &str, port: u16, output_dir: &str, base_url: &str, config_file: &str) -> Result<()> {
+pub fn serve(
+    interface: &str,
+    port: u16,
+    output_dir: &str,
+    base_url: &str,
+    config_file: &str,
+) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
     console::report_elapsed_time(start);
@@ -157,20 +176,24 @@ pub fn serve(interface: &str, port: u16, output_dir: &str, base_url: &str, confi
     let mut watching_templates = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
-    watcher.watch("content/", RecursiveMode::Recursive)
+    watcher
+        .watch("content/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
-    watcher.watch(config_file, RecursiveMode::Recursive)
+    watcher
+        .watch(config_file, RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `config` file. Does it exist?")?;
 
     if Path::new("static").exists() {
         watching_static = true;
-        watcher.watch("static/", RecursiveMode::Recursive)
+        watcher
+            .watch("static/", RecursiveMode::Recursive)
             .chain_err(|| "Can't watch the `static` folder.")?;
     }
 
     if Path::new("templates").exists() {
         watching_templates = true;
-        watcher.watch("templates/", RecursiveMode::Recursive)
+        watcher
+            .watch("templates/", RecursiveMode::Recursive)
             .chain_err(|| "Can't watch the `templates` folder.")?;
     }
 
@@ -186,16 +209,16 @@ pub fn serve(interface: &str, port: u16, output_dir: &str, base_url: &str, confi
     thread::spawn(move || {
         let s = server::new(move || {
             App::new()
-            .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
-            .resource(r"/livereload.js", |r| r.f(livereload_handler))
-            // Start a webserver that serves the `output_dir` directory
-            .handler(
-                r"/",
-                fs::StaticFiles::new(&static_root)
-                    .unwrap()
-                    .show_files_listing()
-                    .files_listing_renderer(handle_directory)
-            )
+                .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
+                .resource(r"/livereload.js", |r| r.f(livereload_handler))
+                // Start a webserver that serves the `output_dir` directory
+                .handler(
+                    r"/",
+                    fs::StaticFiles::new(&static_root)
+                        .unwrap()
+                        .show_files_listing()
+                        .files_listing_renderer(handle_directory),
+                )
         })
         .bind(&address)
         .expect("Can't start the webserver")
@@ -208,17 +231,20 @@ pub fn serve(interface: &str, port: u16, output_dir: &str, base_url: &str, confi
     let ws_server = WebSocket::new(|output: Sender| {
         move |msg: Message| {
             if msg.into_text().unwrap().contains("\"hello\"") {
-                return output.send(Message::text(r#"
+                return output.send(Message::text(
+                    r#"
                     {
                         "command": "hello",
                         "protocols": [ "http://livereload.com/protocols/official-7" ],
                         "serverName": "Zola"
                     }
-                "#));
+                "#,
+                ));
             }
             Ok(())
         }
-    }).unwrap();
+    })
+    .unwrap();
     let broadcaster = ws_server.broadcaster();
     thread::spawn(move || {
         ws_server.listen(&*ws_address).unwrap();
@@ -237,14 +263,20 @@ pub fn serve(interface: &str, port: u16, output_dir: &str, base_url: &str, confi
         watchers.push("sass");
     }
 
-    println!("Listening for changes in {}{}{{{}}}", pwd.display(), MAIN_SEPARATOR, watchers.join(", "));
+    println!(
+        "Listening for changes in {}{}{{{}}}",
+        pwd.display(),
+        MAIN_SEPARATOR,
+        watchers.join(", ")
+    );
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
     ctrlc::set_handler(move || {
         remove_dir_all(&output_path).expect("Failed to delete output directory");
         ::std::process::exit(0);
-    }).expect("Error setting Ctrl-C handler");
+    })
+    .expect("Error setting Ctrl-C handler");
 
     use notify::DebouncedEvent::*;
 
@@ -252,47 +284,74 @@ pub fn serve(interface: &str, port: u16, output_dir: &str, base_url: &str, confi
         match rx.recv() {
             Ok(event) => {
                 match event {
-                    Create(path) |
-                    Write(path) |
-                    Remove(path) |
-                    Rename(_, path) => {
+                    Create(path) | Write(path) | Remove(path) | Rename(_, path) => {
                         if is_temp_file(&path) || path.is_dir() {
                             continue;
                         }
 
-                        println!("Change detected @ {}", Local::now().format("%Y-%m-%d %H:%M:%S").to_string());
+                        println!(
+                            "Change detected @ {}",
+                            Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+                        );
                         let start = Instant::now();
                         match detect_change_kind(&pwd, &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, rebuild::after_content_change(&mut site, &path), "/x.js");
-                            },
+                                rebuild_done_handling(
+                                    &broadcaster,
+                                    rebuild::after_content_change(&mut site, &path),
+                                    "/x.js",
+                                );
+                            }
                             (ChangeKind::Templates, _) => {
                                 console::info(&format!("-> Template changed {}", path.display()));
                                 // Force refresh
-                                rebuild_done_handling(&broadcaster, rebuild::after_template_change(&mut site, &path), "/x.js");
-                            },
+                                rebuild_done_handling(
+                                    &broadcaster,
+                                    rebuild::after_template_change(&mut site, &path),
+                                    "/x.js",
+                                );
+                            }
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {
-                                    console::info(&format!("-> Static file changes detected {}", path.display()));
-                                    rebuild_done_handling(&broadcaster, copy_file(&path, &site.output_path, &site.static_path), &p.to_string_lossy());
+                                    console::info(&format!(
+                                        "-> Static file changes detected {}",
+                                        path.display()
+                                    ));
+                                    rebuild_done_handling(
+                                        &broadcaster,
+                                        copy_file(&path, &site.output_path, &site.static_path),
+                                        &p.to_string_lossy(),
+                                    );
                                 }
-                            },
+                            }
                             (ChangeKind::Sass, p) => {
                                 console::info(&format!("-> Sass file changed {}", path.display()));
-                                rebuild_done_handling(&broadcaster, site.compile_sass(&site.base_path), &p.to_string_lossy());
-                            },
+                                rebuild_done_handling(
+                                    &broadcaster,
+                                    site.compile_sass(&site.base_path),
+                                    &p.to_string_lossy(),
+                                );
+                            }
                             (ChangeKind::Config, _) => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
-                                site = create_new_site(interface, port, output_dir, base_url, config_file).unwrap().0;
+                                site = create_new_site(
+                                    interface,
+                                    port,
+                                    output_dir,
+                                    base_url,
+                                    config_file,
+                                )
+                                .unwrap()
+                                .0;
                             }
                         };
                         console::report_elapsed_time(start);
                     }
                     _ => {}
                 }
-            },
+            }
             Err(e) => console::error(&format!("Watch error: {:?}", e)),
         };
     }
@@ -321,9 +380,7 @@ fn is_temp_file(path: &Path) -> bool {
                 }
             }
         },
-        None => {
-            true
-        },
+        None => true,
     }
 }
 
@@ -354,7 +411,7 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::{is_temp_file, detect_change_kind, ChangeKind};
+    use super::{detect_change_kind, is_temp_file, ChangeKind};
 
     #[test]
     fn can_recognize_temp_files() {
@@ -380,23 +437,28 @@ mod tests {
         let test_cases = vec![
             (
                 (ChangeKind::Templates, PathBuf::from("/templates/hello.html")),
-                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/templates/hello.html")
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/templates/hello.html"),
             ),
             (
                 (ChangeKind::StaticFiles, PathBuf::from("/static/site.css")),
-                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/static/site.css")
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/static/site.css"),
             ),
             (
                 (ChangeKind::Content, PathBuf::from("/content/posts/hello.md")),
-                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/content/posts/hello.md")
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/content/posts/hello.md"),
             ),
             (
                 (ChangeKind::Sass, PathBuf::from("/sass/print.scss")),
-                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/sass/print.scss")
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/sass/print.scss"),
             ),
             (
                 (ChangeKind::Config, PathBuf::from("/config.toml")),
-                Path::new("/home/vincent/site"), Path::new("/home/vincent/site/config.toml")
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/config.toml"),
             ),
         ];
 

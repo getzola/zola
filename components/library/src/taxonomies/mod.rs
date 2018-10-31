@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
+use slotmap::Key;
 use slug::slugify;
 use tera::{Context, Tera};
-use slotmap::{Key};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
 use errors::{Result, ResultExt};
 use utils::templates::render_template;
 
 use content::SerializingPage;
-use sorting::sort_pages_by_date;
 use library::Library;
+use sorting::sort_pages_by_date;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 struct SerializedTaxonomyItem<'a> {
@@ -34,7 +34,6 @@ impl<'a> SerializedTaxonomyItem<'a> {
             slug: &item.slug,
             permalink: &item.permalink,
             pages,
-
         }
     }
 }
@@ -70,12 +69,7 @@ impl TaxonomyItem {
         // We still append pages without dates at the end
         pages.extend(ignored_pages);
 
-        TaxonomyItem {
-            name: name.to_string(),
-            permalink,
-            slug,
-            pages,
-        }
+        TaxonomyItem { name: name.to_string(), permalink, slug, pages }
     }
 }
 
@@ -87,11 +81,9 @@ pub struct SerializedTaxonomy<'a> {
 
 impl<'a> SerializedTaxonomy<'a> {
     pub fn from_taxonomy(taxonomy: &'a Taxonomy, library: &'a Library) -> Self {
-        let items: Vec<SerializedTaxonomyItem> = taxonomy.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
-        SerializedTaxonomy {
-            kind: &taxonomy.kind,
-            items,
-        }
+        let items: Vec<SerializedTaxonomyItem> =
+            taxonomy.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
+        SerializedTaxonomy { kind: &taxonomy.kind, items }
     }
 }
 
@@ -104,19 +96,19 @@ pub struct Taxonomy {
 }
 
 impl Taxonomy {
-    fn new(kind: TaxonomyConfig, config: &Config, items: HashMap<String, Vec<Key>>, library: &Library) -> Taxonomy {
+    fn new(
+        kind: TaxonomyConfig,
+        config: &Config,
+        items: HashMap<String, Vec<Key>>,
+        library: &Library,
+    ) -> Taxonomy {
         let mut sorted_items = vec![];
         for (name, pages) in items {
-            sorted_items.push(
-                TaxonomyItem::new(&name, &kind.name, config, pages, library)
-            );
+            sorted_items.push(TaxonomyItem::new(&name, &kind.name, config, pages, library));
         }
         sorted_items.sort_by(|a, b| a.name.cmp(&b.name));
 
-        Taxonomy {
-            kind,
-            items: sorted_items,
-        }
+        Taxonomy { kind, items: sorted_items }
     }
 
     pub fn len(&self) -> usize {
@@ -127,22 +119,37 @@ impl Taxonomy {
         self.len() == 0
     }
 
-    pub fn render_term(&self, item: &TaxonomyItem, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
+    pub fn render_term(
+        &self,
+        item: &TaxonomyItem,
+        tera: &Tera,
+        config: &Config,
+        library: &Library,
+    ) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", config);
         context.insert("term", &SerializedTaxonomyItem::from_item(item, library));
         context.insert("taxonomy", &self.kind);
-        context.insert("current_url", &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)));
+        context.insert(
+            "current_url",
+            &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)),
+        );
         context.insert("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
         render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render single term {} page.", self.kind.name))
     }
 
-    pub fn render_all_terms(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
+    pub fn render_all_terms(
+        &self,
+        tera: &Tera,
+        config: &Config,
+        library: &Library,
+    ) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", config);
-        let terms: Vec<SerializedTaxonomyItem> = self.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
+        let terms: Vec<SerializedTaxonomyItem> =
+            self.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
         context.insert("terms", &terms);
         context.insert("taxonomy", &self.kind);
         context.insert("current_url", &config.make_permalink(&self.kind.name));
@@ -175,19 +182,22 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
 
         for (name, val) in &page.meta.taxonomies {
             if taxonomies_def.contains_key(name) {
-                all_taxonomies
-                    .entry(name)
-                    .or_insert_with(HashMap::new);
+                all_taxonomies.entry(name).or_insert_with(HashMap::new);
 
                 for v in val {
-                    all_taxonomies.get_mut(name)
+                    all_taxonomies
+                        .get_mut(name)
                         .unwrap()
                         .entry(v.to_string())
                         .or_insert_with(|| vec![])
                         .push(key);
                 }
             } else {
-                bail!("Page `{}` has taxonomy `{}` which is not defined in config.toml", page.file.path.display(), name);
+                bail!(
+                    "Page `{}` has taxonomy `{}` which is not defined in config.toml",
+                    page.file.path.display(),
+                    name
+                );
             }
         }
     }
@@ -200,7 +210,6 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
 
     Ok(taxonomies)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -284,7 +293,10 @@ mod tests {
 
         assert_eq!(categories.items[1].name, "Programming tutorials");
         assert_eq!(categories.items[1].slug, "programming-tutorials");
-        assert_eq!(categories.items[1].permalink, "http://a-website.com/categories/programming-tutorials/");
+        assert_eq!(
+            categories.items[1].permalink,
+            "http://a-website.com/categories/programming-tutorials/"
+        );
         assert_eq!(categories.items[1].pages.len(), 1);
     }
 
@@ -293,9 +305,8 @@ mod tests {
         let mut config = Config::default();
         let mut library = Library::new(2, 0);
 
-        config.taxonomies = vec![
-            TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() },
-        ];
+        config.taxonomies =
+            vec![TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() }];
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
@@ -306,6 +317,9 @@ mod tests {
         assert!(taxonomies.is_err());
         let err = taxonomies.unwrap_err();
         // no path as this is created by Default
-        assert_eq!(err.description(), "Page `` has taxonomy `tags` which is not defined in config.toml");
+        assert_eq!(
+            err.description(),
+            "Page `` has taxonomy `tags` which is not defined in config.toml"
+        );
     }
 }

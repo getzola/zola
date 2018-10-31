@@ -41,12 +41,7 @@ impl Taxonomy {
 
 impl Default for Taxonomy {
     fn default() -> Taxonomy {
-        Taxonomy {
-            name: String::new(),
-            paginate_by: None,
-            paginate_path: None,
-            rss: false,
-        }
+        Taxonomy { name: String::new(), paginate_by: None, paginate_path: None, rss: false }
     }
 }
 
@@ -137,19 +132,12 @@ impl Config {
             for pat in &config.ignored_content {
                 let glob = match Glob::new(pat) {
                     Ok(g) => g,
-                    Err(e) => bail!(
-                        "Invalid ignored_content glob pattern: {}, error = {}",
-                        pat,
-                        e
-                    ),
+                    Err(e) => bail!("Invalid ignored_content glob pattern: {}, error = {}", pat, e),
                 };
                 glob_set_builder.add(glob);
             }
-            config.ignored_content_globset = Some(
-                glob_set_builder
-                    .build()
-                    .expect("Bad ignored_content in config file."),
-            );
+            config.ignored_content_globset =
+                Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
         }
 
         Ok(config)
@@ -162,10 +150,7 @@ impl Config {
         let file_name = path.file_name().unwrap();
         File::open(path)
             .chain_err(|| {
-                format!(
-                    "No `{:?}` file found. Are you in the right directory?",
-                    file_name
-                )
+                format!("No `{:?}` file found. Are you in the right directory?", file_name)
             })?
             .read_to_string(&mut content)?;
 
@@ -217,16 +202,12 @@ impl Config {
         let original = self.extra.clone();
         // 2. inject theme extra values
         for (key, val) in &theme.extra {
-            self.extra
-                .entry(key.to_string())
-                .or_insert_with(|| val.clone());
+            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
         }
 
         // 3. overwrite with original config
         for (key, val) in &original {
-            self.extra
-                .entry(key.to_string())
-                .or_insert_with(|| val.clone());
+            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
         }
 
         Ok(())
@@ -316,16 +297,7 @@ hello = "world"
 
         let config = Config::parse(config);
         assert!(config.is_ok());
-        assert_eq!(
-            config
-                .unwrap()
-                .extra
-                .get("hello")
-                .unwrap()
-                .as_str()
-                .unwrap(),
-            "world"
-        );
+        assert_eq!(config.unwrap().extra.get("hello").unwrap().as_str().unwrap(), "world");
     }
 
     #[test]
@@ -360,10 +332,7 @@ hello = "world"
     fn can_make_url_with_localhost() {
         let mut config = Config::default();
         config.base_url = "http://127.0.0.1:1111".to_string();
-        assert_eq!(
-            config.make_permalink("/tags/rust"),
-            "http://127.0.0.1:1111/tags/rust/"
-        );
+        assert_eq!(config.make_permalink("/tags/rust"), "http://127.0.0.1:1111/tags/rust/");
     }
 
     // https://github.com/Keats/gutenberg/issues/486

@@ -7,7 +7,6 @@ use toml::Value as Toml;
 
 use errors::{Result, ResultExt};
 
-
 /// Holds the data from a `theme.toml` file.
 /// There are other fields than `extra` in it but Zola
 /// itself doesn't care about them.
@@ -36,7 +35,6 @@ impl Theme {
             bail!("Expected the `theme.toml` to be a TOML table")
         }
 
-
         Ok(Theme { extra })
     }
 
@@ -44,11 +42,11 @@ impl Theme {
     pub fn from_file(path: &PathBuf) -> Result<Theme> {
         let mut content = String::new();
         File::open(path)
-            .chain_err(||
+            .chain_err(|| {
                 "No `theme.toml` file found. \
-                Is the `theme` defined in your `config.toml present in the `themes` directory \
-                and does it have a `theme.toml` inside?"
-            )?
+                 Is the `theme` defined in your `config.toml present in the `themes` directory \
+                 and does it have a `theme.toml` inside?"
+            })?
             .read_to_string(&mut content)?;
 
         Theme::parse(&content)

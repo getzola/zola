@@ -5,10 +5,9 @@ use toml;
 
 use errors::Result;
 
-use super::{SortBy, InsertAnchor};
+use super::{InsertAnchor, SortBy};
 
 static DEFAULT_PAGINATE_PATH: &'static str = "page";
-
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -69,7 +68,7 @@ impl SectionFrontMatter {
     pub fn is_paginated(&self) -> bool {
         match self.paginate_by {
             Some(v) => v > 0,
-            None => false
+            None => false,
         }
     }
 }

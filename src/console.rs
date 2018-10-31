@@ -21,7 +21,6 @@ lazy_static! {
         };
 }
 
-
 pub fn info(message: &str) {
     colorize(message, ColorSpec::new().set_bold(true));
 }
@@ -58,13 +57,12 @@ pub fn notify_site_size(site: &Site) {
 
 /// Display a warning in the console if there are ignored pages in the site
 pub fn warn_about_ignored_pages(site: &Site) {
-    let ignored_pages: Vec<_> = site.library
+    let ignored_pages: Vec<_> = site
+        .library
         .sections_values()
         .iter()
         .flat_map(|s| {
-            s.ignored_pages
-                .iter()
-                .map(|k| site.library.get_page_by_key(*k).file.path.clone())
+            s.ignored_pages.iter().map(|k| site.library.get_page_by_key(*k).file.path.clone())
         })
         .collect();
 
@@ -104,8 +102,9 @@ pub fn unravel_errors(message: &str, error: &Error) {
 
 /// Check whether to output colors
 fn has_color() -> bool {
-    let use_colors = env::var("CLICOLOR").unwrap_or_else(|_| "1".to_string()) != "0" && env::var("NO_COLOR").is_err();
-    let force_colors = env::var("CLICOLOR_FORCE").unwrap_or_else(|_|"0".to_string()) != "0";
+    let use_colors = env::var("CLICOLOR").unwrap_or_else(|_| "1".to_string()) != "0"
+        && env::var("NO_COLOR").is_err();
+    let force_colors = env::var("CLICOLOR_FORCE").unwrap_or_else(|_| "0".to_string()) != "0";
 
     force_colors || use_colors && atty::is(atty::Stream::Stdout)
 }

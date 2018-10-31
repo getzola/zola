@@ -3,10 +3,10 @@ extern crate error_chain;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use tera::{GlobalFn, Value, from_value, to_value, Result};
+use tera::{from_value, to_value, GlobalFn, Result, Value};
 
-use library::{Taxonomy, Library};
 use config::Config;
+use library::{Library, Taxonomy};
 use utils::site::resolve_internal_link;
 
 use imageproc;
@@ -18,23 +18,18 @@ mod load_data;
 
 pub use self::load_data::make_load_data;
 
-
 pub fn make_trans(config: Config) -> GlobalFn {
     let translations_config = config.translations;
     let default_lang = config.default_language.clone();
 
     Box::new(move |args| -> Result<Value> {
         let key = required_arg!(String, args.get("key"), "`trans` requires a `key` argument.");
-        let lang = optional_arg!(
-            String,
-            args.get("lang"),
-            "`trans`: `lang` must be a string."
-        ).unwrap_or_else(|| default_lang.clone());
+        let lang = optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.")
+            .unwrap_or_else(|| default_lang.clone());
         let translations = &translations_config[lang.as_str()];
         Ok(to_value(&translations[key.as_str()]).unwrap())
     })
 }
-
 
 pub fn make_get_page(library: &Library) -> GlobalFn {
     let mut pages = HashMap::new();
@@ -53,7 +48,7 @@ pub fn make_get_page(library: &Library) -> GlobalFn {
         );
         match pages.get(&path) {
             Some(p) => Ok(p.clone()),
-            None => Err(format!("Page `{}` not found.", path).into())
+            None => Err(format!("Page `{}` not found.", path).into()),
         }
     })
 }
@@ -64,12 +59,14 @@ pub fn make_get_section(library: &Library) -> GlobalFn {
     for section in library.sections_values() {
         sections.insert(
             section.file.relative.clone(),
-            to_value(library.get_section(&section.file.path).unwrap().to_serialized(library)).unwrap(),
+            to_value(library.get_section(&section.file.path).unwrap().to_serialized(library))
+                .unwrap(),
         );
 
         sections_basic.insert(
             section.file.relative.clone(),
-            to_value(library.get_section(&section.file.path).unwrap().to_serialized_basic(library)).unwrap(),
+            to_value(library.get_section(&section.file.path).unwrap().to_serialized_basic(library))
+                .unwrap(),
         );
     }
 
@@ -82,36 +79,25 @@ pub fn make_get_section(library: &Library) -> GlobalFn {
 
         let metadata_only = args
             .get("metadata_only")
-            .map_or(false, |c| {
-                from_value::<bool>(c.clone()).unwrap_or(false)
-            });
+            .map_or(false, |c| from_value::<bool>(c.clone()).unwrap_or(false));
 
-        let container = if metadata_only {
-            &sections_basic
-        } else {
-            &sections
-        };
+        let container = if metadata_only { &sections_basic } else { &sections };
 
         match container.get(&path) {
             Some(p) => Ok(p.clone()),
-            None => Err(format!("Section `{}` not found.", path).into())
+            None => Err(format!("Section `{}` not found.", path).into()),
         }
     })
 }
 
 pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> GlobalFn {
     Box::new(move |args| -> Result<Value> {
-        let cachebust = args
-            .get("cachebust")
-            .map_or(false, |c| {
-                from_value::<bool>(c.clone()).unwrap_or(false)
-            });
+        let cachebust =
+            args.get("cachebust").map_or(false, |c| from_value::<bool>(c.clone()).unwrap_or(false));
 
         let trailing_slash = args
             .get("trailing_slash")
-            .map_or(false, |c| {
-                from_value::<bool>(c.clone()).unwrap_or(false)
-            });
+            .map_or(false, |c| from_value::<bool>(c.clone()).unwrap_or(false));
 
         let path = required_arg!(
             String,
@@ -121,7 +107,9 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
         if path.starts_with("./") {
             match resolve_internal_link(&path, &permalinks) {
                 Ok(url) => Ok(to_value(url).unwrap()),
-                Err(_) => Err(format!("Could not resolve URL for link `{}` not found.", path).into())
+                Err(_) => {
+                    Err(format!("Could not resolve URL for link `{}` not found.", path).into())
+                }
             }
         } else {
             // anything else
@@ -141,10 +129,8 @@ pub fn make_get_url(permalinks: HashMap<String, String>, config: Config) -> Glob
 pub fn make_get_taxonomy(all_taxonomies: &[Taxonomy], library: &Library) -> GlobalFn {
     let mut taxonomies = HashMap::new();
     for taxonomy in all_taxonomies {
-        taxonomies.insert(
-            taxonomy.kind.name.clone(),
-            to_value(taxonomy.to_serialized(library)).unwrap()
-        );
+        taxonomies
+            .insert(taxonomy.kind.name.clone(), to_value(taxonomy.to_serialized(library)).unwrap());
     }
 
     Box::new(move |args| -> Result<Value> {
@@ -155,9 +141,11 @@ pub fn make_get_taxonomy(all_taxonomies: &[Taxonomy], library: &Library) -> Glob
         );
         let container = match taxonomies.get(&kind) {
             Some(c) => c,
-            None => return Err(
-                format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
-            ),
+            None => {
+                return Err(
+                    format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
+                )
+            }
         };
 
         Ok(to_value(container).unwrap())
@@ -187,18 +175,20 @@ pub fn make_get_taxonomy_url(all_taxonomies: &[Taxonomy]) -> GlobalFn {
         );
         let container = match taxonomies.get(&kind) {
             Some(c) => c,
-            None => return Err(
-                format!("`get_taxonomy_url` received an unknown taxonomy as kind: {}", kind).into()
-            )
+            None => {
+                return Err(format!(
+                    "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
+                    kind
+                )
+                .into())
+            }
         };
 
         if let Some(ref permalink) = container.get(&name) {
             return Ok(to_value(permalink.clone()).unwrap());
         }
 
-        Err(
-            format!("`get_taxonomy_url`: couldn't find `{}` in `{}` taxonomy", name, kind).into()
-        )
+        Err(format!("`get_taxonomy_url`: couldn't find `{}` in `{}` taxonomy", name, kind).into())
     })
 }
 
@@ -222,16 +212,11 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
             args.get("height"),
             "`resize_image`: `height` must be a non-negative integer"
         );
-        let op = optional_arg!(
-            String,
-            args.get("op"),
-            "`resize_image`: `op` must be a string"
-        ).unwrap_or_else(|| DEFAULT_OP.to_string());
-        let quality = optional_arg!(
-            u8,
-            args.get("quality"),
-            "`resize_image`: `quality` must be a number"
-        ).unwrap_or(DEFAULT_Q);
+        let op = optional_arg!(String, args.get("op"), "`resize_image`: `op` must be a string")
+            .unwrap_or_else(|| DEFAULT_OP.to_string());
+        let quality =
+            optional_arg!(u8, args.get("quality"), "`resize_image`: `quality` must be a number")
+                .unwrap_or(DEFAULT_Q);
         if quality == 0 || quality > 100 {
             return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
         }
@@ -249,19 +234,16 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
     })
 }
 
-
-
 #[cfg(test)]
 mod tests {
-    use super::{make_get_url, make_get_taxonomy, make_get_taxonomy_url, make_trans};
+    use super::{make_get_taxonomy, make_get_taxonomy_url, make_get_url, make_trans};
 
     use std::collections::HashMap;
 
     use tera::{to_value, Value};
 
     use config::{Config, Taxonomy as TaxonomyConfig};
-    use library::{Taxonomy, TaxonomyItem, Library};
-
+    use library::{Library, Taxonomy, TaxonomyItem};
 
     #[test]
     fn can_add_cachebust_to_url() {
@@ -307,17 +289,8 @@ mod tests {
     fn can_get_taxonomy() {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let library = Library::new(0, 0);
-        let tag = TaxonomyItem::new(
-            "Programming",
-            "tags",
-            &Config::default(),
-            vec![],
-            &library
-        );
-        let tags = Taxonomy {
-            kind: taxo_config,
-            items: vec![tag],
-        };
+        let tag = TaxonomyItem::new("Programming", "tags", &Config::default(), vec![], &library);
+        let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
         let static_fn = make_get_taxonomy(&taxonomies, &library);
@@ -337,7 +310,8 @@ mod tests {
             Value::String("programming".to_string())
         );
         assert_eq!(
-            res_obj["items"].clone().as_array().unwrap()[0].clone().as_object().unwrap()["permalink"],
+            res_obj["items"].clone().as_array().unwrap()[0].clone().as_object().unwrap()
+                ["permalink"],
             Value::String("http://a-website.com/tags/programming/".to_string())
         );
         assert_eq!(
@@ -354,17 +328,8 @@ mod tests {
     fn can_get_taxonomy_url() {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let library = Library::new(0, 0);
-        let tag = TaxonomyItem::new(
-            "Programming",
-            "tags",
-            &Config::default(),
-            vec![],
-            &library
-        );
-        let tags = Taxonomy {
-            kind: taxo_config,
-            items: vec![tag],
-        };
+        let tag = TaxonomyItem::new("Programming", "tags", &Config::default(), vec![], &library);
+        let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
         let static_fn = make_get_taxonomy_url(&taxonomies);
@@ -372,7 +337,10 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
         args.insert("name".to_string(), to_value("Programming").unwrap());
-        assert_eq!(static_fn(args).unwrap(), to_value("http://a-website.com/tags/programming/").unwrap());
+        assert_eq!(
+            static_fn(args).unwrap(),
+            to_value("http://a-website.com/tags/programming/").unwrap()
+        );
         // and errors if it can't find it
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());

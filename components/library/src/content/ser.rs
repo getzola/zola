@@ -1,12 +1,11 @@
 //! What we are sending to the templates when rendering them
 use std::collections::HashMap;
 
-use tera::{Value, Map};
+use tera::{Map, Value};
 
-use library::Library;
 use content::{Page, Section};
+use library::Library;
 use rendering::Header;
-
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingPage<'a> {
@@ -49,11 +48,23 @@ impl<'a> SerializingPage<'a> {
             day = Some(d.2);
         }
         let pages = library.pages();
-        let lighter = page.lighter.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let heavier = page.heavier.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let earlier = page.earlier.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let later = page.later.map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
-        let ancestors = page.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
+        let lighter = page
+            .lighter
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let heavier = page
+            .heavier
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let earlier = page
+            .earlier
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let later = page
+            .later
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let ancestors = page
+            .ancestors
+            .iter()
+            .map(|k| library.get_section_by_key(*k).file.relative.clone())
+            .collect();
 
         SerializingPage {
             relative_path: &page.file.relative,
@@ -95,7 +106,10 @@ impl<'a> SerializingPage<'a> {
             day = Some(d.2);
         }
         let ancestors = if let Some(ref lib) = library {
-            page.ancestors.iter().map(|k| lib.get_section_by_key(*k).file.relative.clone()).collect()
+            page.ancestors
+                .iter()
+                .map(|k| lib.get_section_by_key(*k).file.relative.clone())
+                .collect()
         } else {
             vec![]
         };
@@ -130,7 +144,6 @@ impl<'a> SerializingPage<'a> {
     }
 }
 
-
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingSection<'a> {
     relative_path: &'a str,
@@ -145,7 +158,7 @@ pub struct SerializingSection<'a> {
     word_count: Option<usize>,
     reading_time: Option<usize>,
     toc: &'a [Header],
-    assets:  &'a [String],
+    assets: &'a [String],
     pages: Vec<SerializingPage<'a>>,
     subsections: Vec<&'a str>,
 }
@@ -163,7 +176,11 @@ impl<'a> SerializingSection<'a> {
             subsections.push(library.get_section_path_by_key(*k));
         }
 
-        let ancestors = section.ancestors.iter().map(|k| library.get_section_by_key(*k).file.relative.clone()).collect();
+        let ancestors = section
+            .ancestors
+            .iter()
+            .map(|k| library.get_section_by_key(*k).file.relative.clone())
+            .collect();
 
         SerializingSection {
             relative_path: &section.file.relative,
@@ -187,7 +204,11 @@ impl<'a> SerializingSection<'a> {
     /// Same as from_section but doesn't fetch pages and sections
     pub fn from_section_basic(section: &'a Section, library: Option<&'a Library>) -> Self {
         let ancestors = if let Some(ref lib) = library {
-            section.ancestors.iter().map(|k| lib.get_section_by_key(*k).file.relative.clone()).collect()
+            section
+                .ancestors
+                .iter()
+                .map(|k| lib.get_section_by_key(*k).file.relative.clone())
+                .collect()
         } else {
             vec![]
         };

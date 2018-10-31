@@ -4,9 +4,9 @@ macro_rules! required_arg {
         match $e {
             Some(v) => match from_value::<$ty>(v.clone()) {
                 Ok(u) => u,
-                Err(_) => return Err($err.into())
+                Err(_) => return Err($err.into()),
             },
-            None => return Err($err.into())
+            None => return Err($err.into()),
         }
     };
 }
@@ -17,9 +17,9 @@ macro_rules! optional_arg {
         match $e {
             Some(v) => match from_value::<$ty>(v.clone()) {
                 Ok(u) => Some(u),
-                Err(_) => return Err($err.into())
+                Err(_) => return Err($err.into()),
             },
-            None => None
+            None => None,
         }
     };
 }

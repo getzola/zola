@@ -2,19 +2,19 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use tera::{Tera, Context as TeraContext};
-use slug::slugify;
-use slotmap::{Key};
 use regex::Regex;
+use slotmap::Key;
+use slug::slugify;
+use tera::{Context as TeraContext, Tera};
 
-use errors::{Result, ResultExt};
 use config::Config;
-use utils::fs::{read_file, find_related_assets};
+use errors::{Result, ResultExt};
+use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
+use library::Library;
+use rendering::{render_content, Header, RenderContext};
+use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
-use front_matter::{PageFrontMatter, InsertAnchor, split_page_content};
-use rendering::{RenderContext, Header, render_content};
-use library::Library;
 
 use content::file_info::FileInfo;
 use content::ser::SerializingPage;
@@ -23,7 +23,6 @@ lazy_static! {
     // Check whether a string starts with yyyy-mm-dd{-,_}
     static ref DATE_IN_FILENAME: Regex = Regex::new(r"^^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))(_|-)").unwrap();
 }
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Page {
@@ -70,7 +69,6 @@ pub struct Page {
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
 }
-
 
 impl Page {
     pub fn new<P: AsRef<Path>>(file_path: P, meta: PageFrontMatter) -> Page {
@@ -155,7 +153,9 @@ impl Page {
             page.path = format!("{}/", page.path);
         }
 
-        page.components = page.path.split('/')
+        page.components = page
+            .path
+            .split('/')
             .map(|p| p.to_string())
             .filter(|p| !p.is_empty())
             .collect::<Vec<_>>();
@@ -182,13 +182,13 @@ impl Page {
                 // against the remaining path. Note that the current behaviour effectively means that
                 // the `ignored_content` setting in the config file is limited to single-file glob
                 // patterns (no "**" patterns).
-                page.assets = assets.into_iter()
-                    .filter(|path|
-                        match path.file_name() {
-                            None => true,
-                            Some(file) => !globset.is_match(file)
-                        }
-                    ).collect();
+                page.assets = assets
+                    .into_iter()
+                    .filter(|path| match path.file_name() {
+                        None => true,
+                        Some(file) => !globset.is_match(file),
+                    })
+                    .collect();
             } else {
                 page.assets = assets;
             }
@@ -210,13 +210,8 @@ impl Page {
         config: &Config,
         anchor_insert: InsertAnchor,
     ) -> Result<()> {
-        let mut context = RenderContext::new(
-            tera,
-            config,
-            &self.permalink,
-            permalinks,
-            anchor_insert,
-        );
+        let mut context =
+            RenderContext::new(tera, config, &self.permalink, permalinks, anchor_insert);
 
         context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
@@ -234,7 +229,7 @@ impl Page {
     pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
         let tpl_name = match self.meta.template {
             Some(ref l) => l.to_string(),
-            None => "page.html".to_string()
+            None => "page.html".to_string(),
         };
 
         let mut context = TeraContext::new();
@@ -249,7 +244,8 @@ impl Page {
 
     /// Creates a vectors of asset URLs.
     fn serialize_assets(&self) -> Vec<String> {
-        self.assets.iter()
+        self.assets
+            .iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())
             .map(|filename| self.path.clone() + filename)
@@ -294,18 +290,17 @@ impl Default for Page {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
+    use std::fs::{create_dir, File};
     use std::io::Write;
-    use std::fs::{File, create_dir};
     use std::path::Path;
 
-    use tera::Tera;
-    use tempfile::tempdir;
     use globset::{Glob, GlobSetBuilder};
+    use tempfile::tempdir;
+    use tera::Tera;
 
-    use config::Config;
     use super::Page;
+    use config::Config;
     use front_matter::InsertAnchor;
-
 
     #[test]
     fn test_can_parse_a_valid_page() {
@@ -324,7 +319,8 @@ Hello world"#;
             &Tera::default(),
             &Config::default(),
             InsertAnchor::None,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -426,16 +422,13 @@ Hello world"#;
 +++
 +++
 Hello world
-<!-- more -->"#.to_string();
+<!-- more -->"#
+            .to_string();
         let res = Page::parse(Path::new("hello.md"), &content, &config);
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &Tera::default(),
-            &config,
-            InsertAnchor::None,
-        ).unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None)
+            .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
     }
 
@@ -453,10 +446,7 @@ Hello world
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Page::from_file(
-            nested_path.join("index.md").as_path(),
-            &Config::default(),
-        );
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
@@ -479,10 +469,7 @@ Hello world
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Page::from_file(
-            nested_path.join("index.md").as_path(),
-            &Config::default(),
-        );
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
@@ -510,10 +497,7 @@ Hello world
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
-        let res = Page::from_file(
-            nested_path.join("index.md").as_path(),
-            &config,
-        );
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &config);
 
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -528,7 +512,8 @@ Hello world
 +++
 +++
 Hello world
-<!-- more -->"#.to_string();
+<!-- more -->"#
+            .to_string();
         let res = Page::parse(Path::new("2018-10-08_hello.md"), &content, &config);
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -539,14 +524,14 @@ Hello world
 
     #[test]
     fn frontmatter_date_override_filename_date() {
-
         let config = Config::default();
         let content = r#"
 +++
 date = 2018-09-09
 +++
 Hello world
-<!-- more -->"#.to_string();
+<!-- more -->"#
+            .to_string();
         let res = Page::parse(Path::new("2018-10-08_hello.md"), &content, &config);
         assert!(res.is_ok());
         let page = res.unwrap();

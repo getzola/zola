@@ -1,15 +1,14 @@
 #![feature(test)]
-extern crate test;
-extern crate site;
 extern crate library;
+extern crate site;
 extern crate tempfile;
+extern crate test;
 
 use std::env;
 
-use tempfile::tempdir;
-use site::Site;
 use library::Paginator;
-
+use site::Site;
+use tempfile::tempdir;
 
 fn setup_site(name: &str) -> Site {
     let mut path = env::current_dir().unwrap().to_path_buf();

@@ -3,7 +3,7 @@ extern crate reqwest;
 extern crate lazy_static;
 
 use reqwest::header::{HeaderMap, ACCEPT};
-use reqwest::{StatusCode};
+use reqwest::StatusCode;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
@@ -62,14 +62,8 @@ pub fn check_url(url: &str) -> LinkResult {
 
     // Need to actually do the link checking
     let res = match client.get(url).headers(headers).send() {
-        Ok(response) => LinkResult {
-            code: Some(response.status()),
-            error: None,
-        },
-        Err(e) => LinkResult {
-            code: None,
-            error: Some(e.description().to_string()),
-        },
+        Ok(response) => LinkResult { code: Some(response.status()), error: None },
+        Err(e) => LinkResult { code: None, error: Some(e.description().to_string()) },
     };
 
     LINKS.write().unwrap().insert(url.to_string(), res.clone());

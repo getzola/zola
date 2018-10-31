@@ -1,4 +1,4 @@
-use std::io::{self, Write, BufRead};
+use std::io::{self, BufRead, Write};
 
 use url::Url;
 
@@ -28,7 +28,7 @@ pub fn ask_bool(question: &str, default: bool) -> Result<bool> {
         _ => {
             println!("Invalid choice: '{}'", input);
             ask_bool(question, default)
-        },
+        }
     }
 }
 
@@ -40,13 +40,11 @@ pub fn ask_url(question: &str, default: &str) -> Result<String> {
 
     match &*input {
         "" => Ok(default.to_string()),
-        _ => {
-            match Url::parse(&input) {
-                Ok(_) => Ok(input),
-                Err(_) => {
-                    println!("Invalid URL: '{}'", input);
-                    ask_url(question, default)
-                }
+        _ => match Url::parse(&input) {
+            Ok(_) => Ok(input),
+            Err(_) => {
+                println!("Invalid URL: '{}'", input);
+                ask_url(question, default)
             }
         },
     }

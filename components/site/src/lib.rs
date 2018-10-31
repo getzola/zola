@@ -1,7 +1,7 @@
-extern crate tera;
-extern crate rayon;
 extern crate glob;
+extern crate rayon;
 extern crate serde;
+extern crate tera;
 #[macro_use]
 extern crate serde_derive;
 extern crate sass_rs;
@@ -9,34 +9,36 @@ extern crate sass_rs;
 #[macro_use]
 extern crate errors;
 extern crate config;
-extern crate utils;
 extern crate front_matter;
-extern crate templates;
-extern crate search;
 extern crate imageproc;
 extern crate library;
+extern crate search;
+extern crate templates;
+extern crate utils;
 
 #[cfg(test)]
 extern crate tempfile;
 
-use std::collections::{HashMap};
-use std::fs::{create_dir_all, remove_dir_all, copy};
+use std::collections::HashMap;
+use std::fs::{copy, create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use glob::glob;
-use tera::{Tera, Context};
-use sass_rs::{Options as SassOptions, OutputStyle, compile_file};
 use rayon::prelude::*;
+use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
+use tera::{Context, Tera};
 
+use config::{get_config, Config};
 use errors::{Result, ResultExt};
-use config::{Config, get_config};
-use utils::fs::{create_file, copy_directory, create_directory, ensure_directory_exists};
-use utils::templates::{render_template, rewrite_theme_paths};
+use front_matter::InsertAnchor;
+use library::{
+    find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
+};
+use templates::{global_fns, render_redirect_template, ZOLA_TERA};
+use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
-use templates::{ZOLA_TERA, global_fns, render_redirect_template};
-use front_matter::{InsertAnchor};
-use library::{Page, Section, sort_actual_pages_by_date, Library, Taxonomy, find_taxonomies, Paginator};
+use utils::templates::{render_template, rewrite_theme_paths};
 
 /// The sitemap only needs links and potentially date so we trim down
 /// all pages to only that
@@ -81,7 +83,8 @@ impl Site {
         let mut config = get_config(path, config_file);
         config.load_extra_syntaxes(path)?;
 
-        let tpl_glob = format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
+        let tpl_glob =
+            format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         // Only parsing as we might be extending templates from themes and that would error
         // as we haven't loaded them yet
         let mut tera = Tera::parse(&tpl_glob).chain_err(|| "Error parsing templates")?;
@@ -100,11 +103,13 @@ impl Site {
                 path.to_string_lossy().replace("\\", "/"),
                 format!("themes/{}/templates/**/*.*ml", theme)
             );
-            let mut tera_theme = Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
+            let mut tera_theme =
+                Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
             rewrite_theme_paths(&mut tera_theme, &theme);
             // TODO: same as below
             if theme_path.join("templates").join("robots.txt").exists() {
-                tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
+                tera_theme
+                    .add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
             }
             tera_theme.build_inheritance_chains()?;
             tera.extend(&tera_theme)?;
@@ -121,7 +126,8 @@ impl Site {
 
         let content_path = path.join("content");
         let static_path = path.join("static");
-        let imageproc = imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
+        let imageproc =
+            imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
 
         let site = Site {
             base_path: path.to_path_buf(),
@@ -238,7 +244,10 @@ impl Site {
         let mut pages_insert_anchors = HashMap::new();
         for page in pages {
             let p = page?;
-            pages_insert_anchors.insert(p.file.path.clone(), self.find_parent_section_insert_anchor(&p.file.parent.clone()));
+            pages_insert_anchors.insert(
+                p.file.path.clone(),
+                self.find_parent_section_insert_anchor(&p.file.parent.clone()),
+            );
             self.add_page(p, false)?;
         }
 
@@ -263,7 +272,10 @@ impl Site {
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
         for (_, p) in self.library.pages() {
-            pages_insert_anchors.insert(p.file.path.clone(), self.find_parent_section_insert_anchor(&p.file.parent.clone()));
+            pages_insert_anchors.insert(
+                p.file.path.clone(),
+                self.find_parent_section_insert_anchor(&p.file.parent.clone()),
+            );
         }
 
         self.library
@@ -291,10 +303,12 @@ impl Site {
     /// Adds global fns that are to be available to shortcodes while rendering markdown
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_function(
-            "get_url", global_fns::make_get_url(self.permalinks.clone(), self.config.clone()),
+            "get_url",
+            global_fns::make_get_url(self.permalinks.clone(), self.config.clone()),
         );
         self.tera.register_function(
-            "resize_image", global_fns::make_resize_image(self.imageproc.clone()),
+            "resize_image",
+            global_fns::make_resize_image(self.imageproc.clone()),
         );
     }
 
@@ -310,7 +324,10 @@ impl Site {
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(&self.taxonomies),
         );
-        self.tera.register_function("load_data", global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()));
+        self.tera.register_function(
+            "load_data",
+            global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()),
+        );
     }
 
     /// Add a page to the site
@@ -349,7 +366,7 @@ impl Site {
     pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
         match self.library.get_section(&parent_path.join("_index.md")) {
             Some(s) => s.meta.insert_anchor_links,
-            None => InsertAnchor::None
+            None => InsertAnchor::None,
         }
     }
 
@@ -375,7 +392,10 @@ impl Site {
         if let Some(port) = self.live_reload {
             return html.replace(
                 "</body>",
-                &format!(r#"<script src="/livereload.js?port={}&mindelay=10"></script></body>"#, port),
+                &format!(
+                    r#"<script src="/livereload.js?port={}&mindelay=10"></script></body>"#,
+                    port
+                ),
             );
         }
 
@@ -498,10 +518,7 @@ impl Site {
         )?;
 
         // then elasticlunr.min.js
-        create_file(
-            &self.output_path.join("elasticlunr.min.js"),
-            search::ELASTICLUNR_JS,
-        )?;
+        create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
 
         Ok(())
     }
@@ -537,12 +554,19 @@ impl Site {
         Ok(())
     }
 
-    fn compile_sass_glob(&self, sass_path: &Path, extension: &str, options: &SassOptions) -> Result<Vec<(PathBuf, PathBuf)>> {
+    fn compile_sass_glob(
+        &self,
+        sass_path: &Path,
+        extension: &str,
+        options: &SassOptions,
+    ) -> Result<Vec<(PathBuf, PathBuf)>> {
         let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
         let files = glob(&glob_string)
             .unwrap()
             .filter_map(|e| e.ok())
-            .filter(|entry| !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_'))
+            .filter(|entry| {
+                !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_')
+            })
             .collect::<Vec<_>>();
 
         let mut compiled_paths = Vec::new();
@@ -579,7 +603,7 @@ impl Site {
                         split.push(part);
                         "index.html"
                     }
-                    None => "index.html"
+                    None => "index.html",
                 };
 
                 for component in split {
@@ -589,7 +613,10 @@ impl Site {
                         create_directory(&output_path)?;
                     }
                 }
-                create_file(&output_path.join(page_name), &render_redirect_template(&page.permalink, &self.tera)?)?;
+                create_file(
+                    &output_path.join(page_name),
+                    &render_redirect_template(&page.permalink, &self.tera)?,
+                )?;
             }
         }
         Ok(())
@@ -650,15 +677,16 @@ impl Site {
                 }
 
                 if taxonomy.kind.is_paginated() {
-                    self.render_paginated(&output_path, &Paginator::from_taxonomy(&taxonomy, item, &self.library))
+                    self.render_paginated(
+                        &output_path,
+                        &Paginator::from_taxonomy(&taxonomy, item, &self.library),
+                    )
                 } else {
-                    let single_output = taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
+                    let single_output =
+                        taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
                     let path = output_path.join(&item.slug);
                     create_directory(&path)?;
-                    create_file(
-                        &path.join("index.html"),
-                        &self.inject_livereload(single_output),
-                    )
+                    create_file(&path.join("index.html"), &self.inject_livereload(single_output))
                 }
             })
             .collect::<Result<()>>()
@@ -670,7 +698,8 @@ impl Site {
 
         let mut context = Context::new();
 
-        let mut pages = self.library
+        let mut pages = self
+            .library
             .pages_values()
             .iter()
             .filter(|p| !p.is_draft())
@@ -685,7 +714,8 @@ impl Site {
         pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.insert("pages", &pages);
 
-        let mut sections = self.library
+        let mut sections = self
+            .library
             .sections_values()
             .iter()
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
@@ -699,7 +729,10 @@ impl Site {
             let mut terms = vec![];
             terms.push(SitemapEntry::new(self.config.make_permalink(name), None));
             for item in &taxonomy.items {
-                terms.push(SitemapEntry::new(self.config.make_permalink(&format!("{}/{}", &name, item.slug)), None));
+                terms.push(SitemapEntry::new(
+                    self.config.make_permalink(&format!("{}/{}", &name, item.slug)),
+                    None,
+                ));
             }
             terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
             taxonomies.push(terms);
@@ -718,7 +751,11 @@ impl Site {
     /// Renders a RSS feed for the given path and at the given path
     /// If both arguments are `None`, it will render only the RSS feed for the whole
     /// site at the root folder.
-    pub fn render_rss_feed(&self, all_pages: Vec<&Page>, base_path: Option<&PathBuf>) -> Result<()> {
+    pub fn render_rss_feed(
+        &self,
+        all_pages: Vec<&Page>,
+        base_path: Option<&PathBuf>,
+    ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
         let mut context = Context::new();
@@ -806,7 +843,10 @@ impl Site {
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
             let permalink = self.config.make_permalink(redirect_to);
-            create_file(&output_path.join("index.html"), &render_redirect_template(&permalink, &self.tera)?)?;
+            create_file(
+                &output_path.join("index.html"),
+                &render_redirect_template(&permalink, &self.tera)?,
+            )?;
             return Ok(());
         }
 
@@ -861,12 +901,16 @@ impl Site {
             .map(|pager| {
                 let page_path = folder_path.join(&format!("{}", pager.index));
                 create_directory(&page_path)?;
-                let output = paginator.render_pager(pager, &self.config, &self.tera, &self.library)?;
+                let output =
+                    paginator.render_pager(pager, &self.config, &self.tera, &self.library)?;
                 if pager.index > 1 {
                     create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
                 } else {
                     create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
-                    create_file(&page_path.join("index.html"), &render_redirect_template(&paginator.permalink, &self.tera)?)?;
+                    create_file(
+                        &page_path.join("index.html"),
+                        &render_redirect_template(&paginator.permalink, &self.tera)?,
+                    )?;
                 }
                 Ok(())
             })

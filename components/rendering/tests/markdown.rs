@@ -1,8 +1,8 @@
-extern crate tera;
-extern crate front_matter;
-extern crate templates;
-extern crate rendering;
 extern crate config;
+extern crate front_matter;
+extern crate rendering;
+extern crate templates;
+extern crate tera;
 
 use std::collections::HashMap;
 
@@ -10,9 +10,8 @@ use tera::Tera;
 
 use config::Config;
 use front_matter::InsertAnchor;
+use rendering::{render_content, RenderContext};
 use templates::ZOLA_TERA;
-use rendering::{RenderContext, render_content};
-
 
 #[test]
 fn can_do_render_content_simple() {
@@ -32,10 +31,7 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
     config.highlight_code = false;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n```", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<pre><code>$ gutenberg server\n</code></pre>\n"
-    );
+    assert_eq!(res.body, "<pre><code>$ gutenberg server\n</code></pre>\n");
 }
 
 #[test]
@@ -86,11 +82,15 @@ fn can_render_shortcode() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let res = render_content(
+        r#"
 Hello
 
 {{ youtube(id="ub36ffWAqgQ") }}
-    "#, &context).unwrap();
+    "#,
+        &context,
+    )
+    .unwrap();
     assert!(res.body.contains("<p>Hello</p>\n<div >"));
     assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
 }
@@ -100,14 +100,10 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let input = vec![
-        "name",
-        "na_me",
-        "n_a_me",
-        "n1",
-    ];
+    let input = vec!["name", "na_me", "n_a_me", "n1"];
     for i in input {
-        let res = render_content(&format!("{{{{ youtube(id=\"hey\", {}=1) }}}}", i), &context).unwrap();
+        let res =
+            render_content(&format!("{{{{ youtube(id=\"hey\", {}=1) }}}}", i), &context).unwrap();
         assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/hey""#));
     }
 }
@@ -126,7 +122,9 @@ fn can_render_shortcode_with_markdown_char_in_args_value() {
     ];
     for i in input {
         let res = render_content(&format!("{{{{ youtube(id=\"{}\") }}}}", i), &context).unwrap();
-        assert!(res.body.contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i)));
+        assert!(
+            res.body.contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i))
+        );
     }
 }
 
@@ -135,17 +133,20 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
     let permalinks_ctx = HashMap::new();
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
-    let input = vec![
-        "quo_te",
-        "qu_o_te",
-    ];
+    let input = vec!["quo_te", "qu_o_te"];
     let config = Config::default();
 
     for i in input {
-        tera.add_raw_template(&format!("shortcodes/{}.html", i), "<blockquote>{{ body }} - {{ author}}</blockquote>").unwrap();
+        tera.add_raw_template(
+            &format!("shortcodes/{}.html", i),
+            "<blockquote>{{ body }} - {{ author}}</blockquote>",
+        )
+        .unwrap();
         let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
-        let res = render_content(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context).unwrap();
+        let res =
+            render_content(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context)
+                .unwrap();
         println!("{:?}", res);
         assert!(res.body.contains("<blockquote>hey - Bob</blockquote>"));
     }
@@ -217,7 +218,8 @@ fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let res = render_content(
+        r#"
 Hello
 
 {{ youtube(id="ub36ffWAqgQ") }}
@@ -230,10 +232,15 @@ Hello
 
 {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}
 
-    "#, &context).unwrap();
+    "#,
+        &context,
+    )
+    .unwrap();
     assert!(res.body.contains("<p>Hello</p>\n<div >"));
     assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
-    assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
+    assert!(
+        res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#)
+    );
     assert!(res.body.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
     assert!(res.body.contains(r#"//player.vimeo.com/video/210073083""#));
 }
@@ -252,17 +259,25 @@ fn doesnt_render_ignored_shortcodes() {
 fn can_render_shortcode_with_body() {
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
-    tera.add_raw_template("shortcodes/quote.html", "<blockquote>{{ body }} - {{ author }}</blockquote>").unwrap();
+    tera.add_raw_template(
+        "shortcodes/quote.html",
+        "<blockquote>{{ body }} - {{ author }}</blockquote>",
+    )
+    .unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
-    let res = render_content(r#"
+    let res = render_content(
+        r#"
 Hello
 {% quote(author="Keats") %}
 A quote
 {% end %}
-    "#, &context).unwrap();
+    "#,
+        &context,
+    )
+    .unwrap();
     assert_eq!(res.body, "<p>Hello</p>\n<blockquote>A quote - Keats</blockquote>\n");
 }
 
@@ -286,7 +301,8 @@ fn can_make_valid_relative_link() {
     let res = render_content(
         r#"[rel link](./pages/about.md), [abs link](https://vincent.is/about)"#,
         &context,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert!(
         res.body.contains(r#"<p><a href="https://vincent.is/about">rel link</a>, <a href="https://vincent.is/about">abs link</a></p>"#)
@@ -302,9 +318,7 @@ fn can_make_relative_links_with_anchors() {
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
     let res = render_content(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
 
-    assert!(
-        res.body.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#)
-    );
+    assert!(res.body.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#));
 }
 
 #[test]
@@ -411,7 +425,8 @@ fn can_make_toc() {
         InsertAnchor::Left,
     );
 
-    let res = render_content(r#"
+    let res = render_content(
+        r#"
 # Header 1
 
 ## Header 2
@@ -419,7 +434,10 @@ fn can_make_toc() {
 ## Another Header 2
 
 ### Last one
-    "#, &context).unwrap();
+    "#,
+        &context,
+    )
+    .unwrap();
 
     let toc = res.toc;
     assert_eq!(toc.len(), 1);
@@ -439,13 +457,17 @@ fn can_ignore_tags_in_toc() {
         InsertAnchor::Left,
     );
 
-    let res = render_content(r#"
+    let res = render_content(
+        r#"
 ## header with `code`
 
 ## [anchor](https://duckduckgo.com/) in header
 
 ## **bold** and *italics*
-    "#, &context).unwrap();
+    "#,
+        &context,
+    )
+    .unwrap();
 
     let toc = res.toc;
 
@@ -465,10 +487,7 @@ fn can_understand_backtick_in_titles() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# `Hello`", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<h1 id=\"hello\"><code>Hello</code></h1>\n"
-    );
+    assert_eq!(res.body, "<h1 id=\"hello\"><code>Hello</code></h1>\n");
 }
 
 #[test]
@@ -477,10 +496,7 @@ fn can_understand_backtick_in_paragraphs() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("Hello `world`", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p>Hello <code>world</code></p>\n"
-    );
+    assert_eq!(res.body, "<p>Hello <code>world</code></p>\n");
 }
 
 // https://github.com/Keats/gutenberg/issues/297
@@ -490,10 +506,7 @@ fn can_understand_links_in_header() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# [Rust](https://rust-lang.org)", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<h1 id=\"rust\"><a href=\"https://rust-lang.org\">Rust</a></h1>\n"
-    );
+    assert_eq!(res.body, "<h1 id=\"rust\"><a href=\"https://rust-lang.org\">Rust</a></h1>\n");
 }
 
 #[test]
@@ -501,7 +514,8 @@ fn can_understand_link_with_title_in_header() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("# [Rust](https://rust-lang.org \"Rust homepage\")", &context).unwrap();
+    let res =
+        render_content("# [Rust](https://rust-lang.org \"Rust homepage\")", &context).unwrap();
     assert_eq!(
         res.body,
         "<h1 id=\"rust\"><a href=\"https://rust-lang.org\" title=\"Rust homepage\">Rust</a></h1>\n"
@@ -515,10 +529,7 @@ fn can_make_valid_relative_link_in_header() {
     let tera_ctx = Tera::default();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
-    let res = render_content(
-        r#" # [rel link](./pages/about.md)"#,
-        &context,
-    ).unwrap();
+    let res = render_content(r#" # [rel link](./pages/about.md)"#, &context).unwrap();
 
     assert_eq!(
         res.body,
@@ -530,19 +541,28 @@ fn can_make_valid_relative_link_in_header() {
 fn can_make_permalinks_with_colocated_assets_for_link() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("[an image](image.jpg)", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p><a href=\"https://vincent.is/about/image.jpg\">an image</a></p>\n"
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
     );
+    let res = render_content("[an image](image.jpg)", &context).unwrap();
+    assert_eq!(res.body, "<p><a href=\"https://vincent.is/about/image.jpg\">an image</a></p>\n");
 }
 
 #[test]
 fn can_make_permalinks_with_colocated_assets_for_image() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content("![alt text](image.jpg)", &context).unwrap();
     assert_eq!(
         res.body,
@@ -554,8 +574,15 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
 fn markdown_doesnt_wrap_html_in_paragraph() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+    let res = render_content(
+        r#"
 Some text
 
 <h1>Helo</h1>
@@ -565,7 +592,10 @@ Some text
         <img src="mobx-flow.png" alt="MobX flow">
     </a>
 </div>
-    "#, &context).unwrap();
+    "#,
+        &context,
+    )
+    .unwrap();
     assert_eq!(
         res.body,
         "<p>Some text</p>\n<h1>Helo</h1>\n<div>\n<a href=\"mobx-flow.png\">\n        <img src=\"mobx-flow.png\" alt=\"MobX flow\">\n    </a>\n</div>\n"
@@ -577,12 +607,15 @@ fn can_validate_valid_external_links() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("[a link](http://google.com)", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p><a href=\"http://google.com\">a link</a></p>\n"
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
     );
+    let res = render_content("[a link](http://google.com)", &context).unwrap();
+    assert_eq!(res.body, "<p><a href=\"http://google.com\">a link</a></p>\n");
 }
 
 #[test]
@@ -590,7 +623,13 @@ fn can_show_error_message_for_invalid_external_links() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content("[a link](http://google.comy)", &context);
     assert!(res.is_err());
     let err = res.unwrap_err();
@@ -602,12 +641,15 @@ fn doesnt_try_to_validate_email_links_mailto() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("Email: [foo@bar.baz](mailto:foo@bar.baz)", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n"
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
     );
+    let res = render_content("Email: [foo@bar.baz](mailto:foo@bar.baz)", &context).unwrap();
+    assert_eq!(res.body, "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n");
 }
 
 #[test]
@@ -615,12 +657,15 @@ fn doesnt_try_to_validate_email_links_angled_brackets() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.check_external_links = true;
-    let context = RenderContext::new(&ZOLA_TERA, &config, "https://vincent.is/about/", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("Email: <foo@bar.baz>", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n"
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
     );
+    let res = render_content("Email: <foo@bar.baz>", &context).unwrap();
+    assert_eq!(res.body, "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n");
 }
 
 #[test]
@@ -629,7 +674,11 @@ fn can_handle_summaries() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("Hello [world]\n\n<!-- more -->\n\nBla bla\n\n[world]: https://vincent.is/about/", &context).unwrap();
+    let res = render_content(
+        "Hello [world]\n\n<!-- more -->\n\nBla bla\n\n[world]: https://vincent.is/about/",
+        &context,
+    )
+    .unwrap();
     assert_eq!(
         res.body,
         "<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n<p><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"

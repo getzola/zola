@@ -114,7 +114,8 @@ mod tests {
 
     #[test]
     fn can_find_content_components() {
-        let res = find_content_components("/home/vincent/code/site/content/posts/tutorials/python.md");
+        let res =
+            find_content_components("/home/vincent/code/site/content/posts/tutorials/python.md");
         assert_eq!(res, ["posts".to_string(), "tutorials".to_string()]);
     }
 }

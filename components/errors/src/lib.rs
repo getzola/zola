@@ -2,10 +2,10 @@
 
 #[macro_use]
 extern crate error_chain;
-extern crate tera;
-extern crate toml;
 extern crate image;
 extern crate syntect;
+extern crate tera;
+extern crate toml;
 
 error_chain! {
     errors {}

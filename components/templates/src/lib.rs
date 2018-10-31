@@ -3,11 +3,10 @@ extern crate lazy_static;
 #[macro_use]
 extern crate tera;
 extern crate base64;
-extern crate pulldown_cmark;
 extern crate csv;
+extern crate pulldown_cmark;
 extern crate reqwest;
 extern crate url;
-
 
 #[cfg(test)]
 #[macro_use]
@@ -15,16 +14,16 @@ extern crate serde_json;
 #[cfg(not(test))]
 extern crate serde_json;
 
-extern crate errors;
-extern crate utils;
-extern crate library;
 extern crate config;
+extern crate errors;
 extern crate imageproc;
+extern crate library;
+extern crate utils;
 
 pub mod filters;
 pub mod global_fns;
 
-use tera::{Tera, Context};
+use tera::{Context, Tera};
 
 use errors::{Result, ResultExt};
 
@@ -37,21 +36,19 @@ lazy_static! {
             ("sitemap.xml", include_str!("builtins/sitemap.xml")),
             ("robots.txt", include_str!("builtins/robots.txt")),
             ("anchor-link.html", include_str!("builtins/anchor-link.html")),
-
             ("shortcodes/youtube.html", include_str!("builtins/shortcodes/youtube.html")),
             ("shortcodes/vimeo.html", include_str!("builtins/shortcodes/vimeo.html")),
             ("shortcodes/gist.html", include_str!("builtins/shortcodes/gist.html")),
             ("shortcodes/streamable.html", include_str!("builtins/shortcodes/streamable.html")),
-
             ("internal/alias.html", include_str!("builtins/internal/alias.html")),
-        ]).unwrap();
+        ])
+        .unwrap();
         tera.register_filter("markdown", filters::markdown);
         tera.register_filter("base64_encode", filters::base64_encode);
         tera.register_filter("base64_decode", filters::base64_decode);
         tera
     };
 }
-
 
 /// Renders the `internal/alias.html` template that will redirect
 /// via refresh to the url given

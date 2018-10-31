@@ -1,32 +1,31 @@
-extern crate atty;
 extern crate actix_web;
+extern crate atty;
 #[macro_use]
 extern crate clap;
 extern crate chrono;
 #[macro_use]
 extern crate lazy_static;
+extern crate ctrlc;
 extern crate notify;
 extern crate termcolor;
 extern crate url;
 extern crate ws;
-extern crate ctrlc;
 
 extern crate site;
 #[macro_use]
 extern crate errors;
 extern crate front_matter;
-extern crate utils;
 extern crate rebuild;
+extern crate utils;
 
 use std::time::Instant;
 
 use utils::net::{get_available_port, port_is_available};
 
+mod cli;
 mod cmd;
 mod console;
-mod cli;
 mod prompt;
-
 
 fn main() {
     let matches = cli::build_cli().get_matches();
@@ -40,9 +39,9 @@ fn main() {
                 Err(e) => {
                     console::unravel_errors("Failed to create the project", &e);
                     ::std::process::exit(1);
-                },
+                }
             };
-        },
+        }
         ("build", Some(matches)) => {
             console::info("Building site...");
             let start = Instant::now();
@@ -52,9 +51,9 @@ fn main() {
                 Err(e) => {
                     console::unravel_errors("Failed to build the site", &e);
                     ::std::process::exit(1);
-                },
+                }
             };
-        },
+        }
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let mut port: u16 = match matches.value_of("port").unwrap().parse() {
@@ -87,9 +86,9 @@ fn main() {
                 Err(e) => {
                     console::unravel_errors("", &e);
                     ::std::process::exit(1);
-                },
+                }
             };
-        },
+        }
         _ => unreachable!(),
     }
 }

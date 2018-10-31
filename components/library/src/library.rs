@@ -5,9 +5,8 @@ use slotmap::{DenseSlotMap, Key};
 
 use front_matter::SortBy;
 
-use sorting::{find_siblings, sort_pages_by_weight, sort_pages_by_date};
 use content::{Page, Section};
-
+use sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
 
 /// Houses everything about pages and sections
 /// Think of it as a database where each page and section has an id (Key here)
@@ -81,12 +80,13 @@ impl Library {
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
-        let (root_path, index_path) = self.sections
+        let (root_path, index_path) = self
+            .sections
             .values()
             .find(|s| s.is_index())
             .map(|s| (s.file.parent.clone(), s.file.path.clone()))
             .unwrap();
-        let root_key =  self.paths_to_sections[&index_path];
+        let root_key = self.paths_to_sections[&index_path];
 
         // We are going to get both the ancestors and grandparents for each section in one go
         let mut ancestors: HashMap<PathBuf, Vec<_>> = HashMap::new();
@@ -130,7 +130,8 @@ impl Library {
             let parent_section_path = page.file.parent.join("_index.md");
             if let Some(section_key) = self.paths_to_sections.get(&parent_section_path) {
                 self.sections.get_mut(*section_key).unwrap().pages.push(key);
-                page.ancestors = ancestors.get(&parent_section_path).cloned().unwrap_or_else(|| vec![]);
+                page.ancestors =
+                    ancestors.get(&parent_section_path).cloned().unwrap_or_else(|| vec![]);
                 // Don't forget to push the actual parent
                 page.ancestors.push(*section_key);
             }
@@ -150,7 +151,8 @@ impl Library {
                 children.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
                 section.subsections = children;
             }
-            section.ancestors = ancestors.get(&section.file.path).cloned().unwrap_or_else(|| vec![]);
+            section.ancestors =
+                ancestors.get(&section.file.path).cloned().unwrap_or_else(|| vec![]);
         }
     }
 
@@ -161,7 +163,8 @@ impl Library {
             let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
                 SortBy::None => continue,
                 SortBy::Date => {
-                    let data = section.pages
+                    let data = section
+                        .pages
                         .iter()
                         .map(|k| {
                             if let Some(page) = self.pages.get(*k) {
@@ -173,9 +176,10 @@ impl Library {
                         .collect();
 
                     sort_pages_by_date(data)
-                },
+                }
                 SortBy::Weight => {
-                    let data = section.pages
+                    let data = section
+                        .pages
                         .iter()
                         .map(|k| {
                             if let Some(page) = self.pages.get(*k) {
@@ -194,13 +198,18 @@ impl Library {
 
         for (key, (sorted, cannot_be_sorted, sort_by)) in updates {
             // Find sibling between sorted pages first
-            let with_siblings = find_siblings(sorted.iter().map(|k| {
-                if let Some(page) = self.pages.get(*k) {
-                    (k, page.is_draft())
-                } else {
-                    unreachable!("Sorting got an unknown page")
-                }
-            }).collect());
+            let with_siblings = find_siblings(
+                sorted
+                    .iter()
+                    .map(|k| {
+                        if let Some(page) = self.pages.get(*k) {
+                            (k, page.is_draft())
+                        } else {
+                            unreachable!("Sorting got an unknown page")
+                        }
+                    })
+                    .collect(),
+            );
 
             for (k2, val1, val2) in with_siblings {
                 if let Some(page) = self.pages.get_mut(k2) {
@@ -208,12 +217,12 @@ impl Library {
                         SortBy::Date => {
                             page.earlier = val2;
                             page.later = val1;
-                        },
+                        }
                         SortBy::Weight => {
                             page.lighter = val1;
                             page.heavier = val2;
-                        },
-                        SortBy::None => unreachable!("Impossible to find siblings in SortBy::None")
+                        }
+                        SortBy::None => unreachable!("Impossible to find siblings in SortBy::None"),
                     }
                 } else {
                     unreachable!("Sorting got an unknown page")
@@ -229,10 +238,8 @@ impl Library {
 
     /// Find all the orphan pages: pages that are in a folder without an `_index.md`
     pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
-        let pages_in_sections = self.sections
-            .values()
-            .flat_map(|s| &s.pages)
-            .collect::<HashSet<_>>();
+        let pages_in_sections =
+            self.sections.values().flat_map(|s| &s.pages).collect::<HashSet<_>>();
 
         self.pages
             .iter()
@@ -245,7 +252,7 @@ impl Library {
         let page_key = self.paths_to_pages[path];
         for s in self.sections.values() {
             if s.pages.contains(&page_key) {
-                return Some(s)
+                return Some(s);
             }
         }
 

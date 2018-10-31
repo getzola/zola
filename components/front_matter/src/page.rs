@@ -2,19 +2,17 @@ use std::collections::HashMap;
 use std::result::Result as StdResult;
 
 use chrono::prelude::*;
-use tera::{Map, Value};
 use serde::{Deserialize, Deserializer};
+use tera::{Map, Value};
 use toml;
 
 use errors::Result;
 
-
 fn from_toml_datetime<'de, D>(deserializer: D) -> StdResult<Option<String>, D::Error>
-    where
-        D: Deserializer<'de>,
+where
+    D: Deserializer<'de>,
 {
-    toml::value::Datetime::deserialize(deserializer)
-        .map(|s| Some(s.to_string()))
+    toml::value::Datetime::deserialize(deserializer).map(|s| Some(s.to_string()))
 }
 
 /// Returns key/value for a converted date from TOML.
@@ -36,7 +34,9 @@ fn convert_toml_date(table: Map<String, Value>) -> Value {
                 }
                 new.insert(k, convert_toml_date(o));
             }
-            _ => { new.insert(k, v); }
+            _ => {
+                new.insert(k, v);
+            }
         }
     }
 
@@ -53,13 +53,14 @@ fn fix_toml_dates(table: Map<String, Value>) -> Value {
             Value::Object(mut o) => {
                 new.insert(key, convert_toml_date(o));
             }
-            _ => { new.insert(key, value); }
+            _ => {
+                new.insert(key, value);
+            }
         }
     }
 
     Value::Object(new)
 }
-
 
 /// The front matter of every page
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -143,7 +144,9 @@ impl PageFrontMatter {
             if d.contains('T') {
                 DateTime::parse_from_rfc3339(&d).ok().and_then(|s| Some(s.naive_local()))
             } else {
-                NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0, 0, 0)))
+                NaiveDate::parse_from_str(&d, "%Y-%m-%d")
+                    .ok()
+                    .and_then(|s| Some(s.and_hms(0, 0, 0)))
             }
         } else {
             None
@@ -187,11 +190,10 @@ impl Default for PageFrontMatter {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use tera::to_value;
     use super::PageFrontMatter;
+    use tera::to_value;
 
     #[test]
     fn can_have_empty_front_matter() {
@@ -212,7 +214,6 @@ mod tests {
         assert_eq!(res.title.unwrap(), "Hello".to_string());
         assert_eq!(res.description.unwrap(), "hey there".to_string())
     }
-
 
     #[test]
     fn errors_with_invalid_front_matter() {

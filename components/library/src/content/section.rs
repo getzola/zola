@@ -1,21 +1,20 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use tera::{Tera, Context as TeraContext};
 use slotmap::Key;
+use tera::{Context as TeraContext, Tera};
 
 use config::Config;
-use front_matter::{SectionFrontMatter, split_section_content};
 use errors::{Result, ResultExt};
-use utils::fs::{read_file, find_related_assets};
-use utils::templates::render_template;
+use front_matter::{split_section_content, SectionFrontMatter};
+use rendering::{render_content, Header, RenderContext};
+use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
-use rendering::{RenderContext, Header, render_content};
+use utils::templates::render_template;
 
 use content::file_info::FileInfo;
 use content::ser::SerializingSection;
 use library::Library;
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Section {
@@ -86,7 +85,9 @@ impl Section {
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
         section.path = format!("{}/", section.file.components.join("/"));
-        section.components = section.path.split('/')
+        section.components = section
+            .path
+            .split('/')
             .map(|p| p.to_string())
             .filter(|p| !p.is_empty())
             .collect::<Vec<_>>();
@@ -111,13 +112,13 @@ impl Section {
             // against the remaining path. Note that the current behaviour effectively means that
             // the `ignored_content` setting in the config file is limited to single-file glob
             // patterns (no "**" patterns).
-            section.assets = assets.into_iter()
-                .filter(|path|
-                    match path.file_name() {
-                        None => true,
-                        Some(file) => !globset.is_match(file)
-                    }
-                ).collect();
+            section.assets = assets
+                .into_iter()
+                .filter(|path| match path.file_name() {
+                    None => true,
+                    Some(file) => !globset.is_match(file),
+                })
+                .collect();
         } else {
             section.assets = assets;
         }
@@ -185,7 +186,8 @@ impl Section {
 
     /// Creates a vectors of asset URLs.
     fn serialize_assets(&self) -> Vec<String> {
-        self.assets.iter()
+        self.assets
+            .iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())
             .map(|filename| self.path.clone() + filename)
@@ -227,14 +229,14 @@ impl Default for Section {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::{create_dir, File};
     use std::io::Write;
-    use std::fs::{File, create_dir};
 
-    use tempfile::tempdir;
     use globset::{Glob, GlobSetBuilder};
+    use tempfile::tempdir;
 
-    use config::Config;
     use super::Section;
+    use config::Config;
 
     #[test]
     fn section_with_assets_gets_right_info() {
@@ -250,10 +252,7 @@ mod tests {
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Section::from_file(
-            nested_path.join("_index.md").as_path(),
-            &Config::default(),
-        );
+        let res = Section::from_file(nested_path.join("_index.md").as_path(), &Config::default());
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.assets.len(), 3);
@@ -279,10 +278,7 @@ mod tests {
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
-        let res = Section::from_file(
-            nested_path.join("_index.md").as_path(),
-            &config,
-        );
+        let res = Section::from_file(nested_path.join("_index.md").as_path(), &config);
 
         assert!(res.is_ok());
         let page = res.unwrap();

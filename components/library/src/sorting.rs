@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
 
+use chrono::NaiveDateTime;
 use rayon::prelude::*;
 use slotmap::Key;
-use chrono::NaiveDateTime;
 
 use content::Page;
 
@@ -21,19 +21,17 @@ pub fn sort_actual_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
 /// Pages without date will be put in the unsortable bucket
 /// The permalink is used to break ties
 pub fn sort_pages_by_date(pages: Vec<(&Key, Option<NaiveDateTime>, &str)>) -> (Vec<Key>, Vec<Key>) {
-    let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) = pages
-        .into_par_iter()
-        .partition(|page| page.1.is_some());
+    let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) =
+        pages.into_par_iter().partition(|page| page.1.is_some());
 
-    can_be_sorted
-        .par_sort_unstable_by(|a, b| {
-            let ord = b.1.unwrap().cmp(&a.1.unwrap());
-            if ord == Ordering::Equal {
-                a.2.cmp(&b.2)
-            } else {
-                ord
-            }
-        });
+    can_be_sorted.par_sort_unstable_by(|a, b| {
+        let ord = b.1.unwrap().cmp(&a.1.unwrap());
+        if ord == Ordering::Equal {
+            a.2.cmp(&b.2)
+        } else {
+            ord
+        }
+    });
 
     (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
 }
@@ -42,19 +40,17 @@ pub fn sort_pages_by_date(pages: Vec<(&Key, Option<NaiveDateTime>, &str)>) -> (V
 /// Pages without weight will be put in the unsortable bucket
 /// The permalink is used to break ties
 pub fn sort_pages_by_weight(pages: Vec<(&Key, Option<usize>, &str)>) -> (Vec<Key>, Vec<Key>) {
-    let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) = pages
-        .into_par_iter()
-        .partition(|page| page.1.is_some());
+    let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) =
+        pages.into_par_iter().partition(|page| page.1.is_some());
 
-    can_be_sorted
-        .par_sort_unstable_by(|a, b| {
-            let ord = a.1.unwrap().cmp(&b.1.unwrap());
-            if ord == Ordering::Equal {
-                a.2.cmp(&b.2)
-            } else {
-                ord
-            }
-        });
+    can_be_sorted.par_sort_unstable_by(|a, b| {
+        let ord = a.1.unwrap().cmp(&b.1.unwrap());
+        if ord == Ordering::Equal {
+            a.2.cmp(&b.2)
+        } else {
+            ord
+        }
+    });
 
     (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
 }
@@ -118,9 +114,9 @@ pub fn find_siblings(sorted: Vec<(&Key, bool)>) -> Vec<(Key, Option<Key>, Option
 mod tests {
     use slotmap::DenseSlotMap;
 
-    use front_matter::{PageFrontMatter};
+    use super::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
     use content::Page;
-    use super::{sort_pages_by_date, sort_pages_by_weight, find_siblings};
+    use front_matter::PageFrontMatter;
 
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter = PageFrontMatter::default();
@@ -179,7 +175,6 @@ mod tests {
         assert_eq!(pages[2], key2);
     }
 
-
     #[test]
     fn ignore_page_with_missing_field() {
         let mut dense = DenseSlotMap::new();
@@ -196,7 +191,7 @@ mod tests {
             (&key3, page3.meta.weight, page3.permalink.as_ref()),
         ];
 
-        let (pages,unsorted) = sort_pages_by_weight(input);
+        let (pages, unsorted) = sort_pages_by_weight(input);
         assert_eq!(pages.len(), 2);
         assert_eq!(unsorted.len(), 1);
     }
@@ -211,11 +206,8 @@ mod tests {
         let page3 = create_page_with_weight(3);
         let key3 = dense.insert(page3.clone());
 
-        let input = vec![
-            (&key1, page1.is_draft()),
-            (&key2, page2.is_draft()),
-            (&key3, page3.is_draft()),
-        ];
+        let input =
+            vec![(&key1, page1.is_draft()), (&key2, page2.is_draft()), (&key3, page3.is_draft())];
 
         let pages = find_siblings(input);
 

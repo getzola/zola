@@ -9,10 +9,9 @@ extern crate globset;
 extern crate lazy_static;
 extern crate syntect;
 
-
 mod config;
-mod theme;
 pub mod highlighting;
+mod theme;
 pub use config::{Config, Taxonomy};
 
 use std::path::Path;
