@@ -166,6 +166,7 @@ pub fn serve(
     output_dir: &str,
     base_url: &str,
     config_file: &str,
+    watch_only: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
@@ -206,49 +207,56 @@ pub fn serve(
     // output path is going to need to be moved later on, so clone it for the
     // http closure to avoid contention.
     let static_root = output_path.clone();
-    thread::spawn(move || {
-        let s = server::new(move || {
-            App::new()
-                .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
-                .resource(r"/livereload.js", |r| r.f(livereload_handler))
-                // Start a webserver that serves the `output_dir` directory
-                .handler(
-                    r"/",
-                    fs::StaticFiles::new(&static_root)
-                        .unwrap()
-                        .show_files_listing()
-                        .files_listing_renderer(handle_directory),
-                )
-        })
-        .bind(&address)
-        .expect("Can't start the webserver")
-        .shutdown_timeout(20);
-        println!("Web server is available at http://{}", &address);
-        s.run();
-    });
+    let broadcaster = if !watch_only {
 
-    // The websocket for livereload
-    let ws_server = WebSocket::new(|output: Sender| {
-        move |msg: Message| {
-            if msg.into_text().unwrap().contains("\"hello\"") {
-                return output.send(Message::text(
-                    r#"
-                    {
-                        "command": "hello",
-                        "protocols": [ "http://livereload.com/protocols/official-7" ],
-                        "serverName": "Zola"
-                    }
-                "#,
-                ));
+        thread::spawn(move || {
+            let s = server::new(move || {
+                App::new()
+                    .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
+                    .resource(r"/livereload.js", |r| r.f(livereload_handler))
+                    // Start a webserver that serves the `output_dir` directory
+                    .handler(
+                        r"/",
+                        fs::StaticFiles::new(&static_root)
+                            .unwrap()
+                            .show_files_listing()
+                            .files_listing_renderer(handle_directory),
+                    )
+            })
+            .bind(&address)
+            .expect("Can't start the webserver")
+            .shutdown_timeout(20);
+            println!("Web server is available at http://{}", &address);
+            s.run();
+        });
+        // The websocket for livereload
+        let ws_server = WebSocket::new(|output: Sender| {
+            move |msg: Message| {
+                if msg.into_text().unwrap().contains("\"hello\"") {
+                    return output.send(Message::text(
+                        r#"
+                        {
+                            "command": "hello",
+                            "protocols": [ "http://livereload.com/protocols/official-7" ],
+                            "serverName": "Zola"
+                        }
+                    "#,
+                    ));
+                }
+                Ok(())
             }
-            Ok(())
-        }
-    })
-    .unwrap();
-    let broadcaster = ws_server.broadcaster();
-    thread::spawn(move || {
-        ws_server.listen(&*ws_address).unwrap();
-    });
+        })
+        .unwrap();
+        let broadcaster = ws_server.broadcaster();
+        thread::spawn(move || {
+            ws_server.listen(&*ws_address).unwrap();
+        });
+        Some(broadcaster)
+    } else {
+        println!("Watching in watch only mode, no web server will be started");
+        None
+    };
+
 
     let pwd = env::current_dir().unwrap();
 
@@ -297,21 +305,25 @@ pub fn serve(
                         match detect_change_kind(&pwd, &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
-                                // Force refresh
-                                rebuild_done_handling(
-                                    &broadcaster,
-                                    rebuild::after_content_change(&mut site, &path),
-                                    "/x.js",
-                                );
+                                if let Some(ref broadcaster) = broadcaster {
+                                    // Force refresh
+                                    rebuild_done_handling(
+                                        broadcaster,
+                                        rebuild::after_content_change(&mut site, &path),
+                                        "/x.js",
+                                    );
+                                }
                             }
                             (ChangeKind::Templates, _) => {
                                 console::info(&format!("-> Template changed {}", path.display()));
-                                // Force refresh
-                                rebuild_done_handling(
-                                    &broadcaster,
-                                    rebuild::after_template_change(&mut site, &path),
-                                    "/x.js",
-                                );
+                                if let Some(ref broadcaster) = broadcaster {
+                                    // Force refresh
+                                    rebuild_done_handling(
+                                        broadcaster,
+                                        rebuild::after_template_change(&mut site, &path),
+                                        "/x.js",
+                                    );
+                                }
                             }
                             (ChangeKind::StaticFiles, p) => {
                                 if path.is_file() {
@@ -319,20 +331,24 @@ pub fn serve(
                                         "-> Static file changes detected {}",
                                         path.display()
                                     ));
-                                    rebuild_done_handling(
-                                        &broadcaster,
-                                        copy_file(&path, &site.output_path, &site.static_path),
-                                        &p.to_string_lossy(),
-                                    );
+                                    if let Some(ref broadcaster) = broadcaster {
+                                        rebuild_done_handling(
+                                            broadcaster,
+                                            copy_file(&path, &site.output_path, &site.static_path),
+                                            &p.to_string_lossy(),
+                                        );
+                                    }
                                 }
                             }
                             (ChangeKind::Sass, p) => {
                                 console::info(&format!("-> Sass file changed {}", path.display()));
-                                rebuild_done_handling(
-                                    &broadcaster,
-                                    site.compile_sass(&site.base_path),
-                                    &p.to_string_lossy(),
-                                );
+                                if let Some(ref broadcaster) = broadcaster {
+                                    rebuild_done_handling(
+                                        &broadcaster,
+                                        site.compile_sass(&site.base_path),
+                                        &p.to_string_lossy(),
+                                    );
+                                }
                             }
                             (ChangeKind::Config, _) => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
