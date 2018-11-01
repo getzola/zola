@@ -80,7 +80,6 @@ fn main() {
             let watch_only = matches.is_present("watch_only");
             let output_dir = matches.value_of("output_dir").unwrap();
             let base_url = matches.value_of("base_url").unwrap();
-            println!("watch_only: {}", watch_only);
             console::info("Building site...");
             match cmd::serve(interface, port, output_dir, base_url, config_file, watch_only) {
                 Ok(()) => (),
