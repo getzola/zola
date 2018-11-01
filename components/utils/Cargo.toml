@@ -8,6 +8,8 @@ errors = { path = "../errors" }
 tera = "0.11"
 unicode-segmentation = "1.2"
 walkdir = "2"
+toml = "0.4"
+serde = "1"
 
 [dev-dependencies]
 tempfile = "3"

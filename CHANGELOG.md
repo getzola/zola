@@ -11,6 +11,7 @@ Tera function
 - Table of content now strips HTML from the titles to avoid various issues
 
 ### Others
+- Many many times faster (x5-x40) for most sites
 - Update dependencies, fixing a few bugs with templates
 - Load only .html files in themes from the templates folder
 - Background colour is set fewer times when highlighting syntaxes, resulting in smaller HTML filesize
@@ -18,7 +19,6 @@ Tera function
 - Load table and footnote markdown extensions in `markdown` filter
 - `get_url` now defaults to not adding a trailing slash
 - Fix `--base-url` not overriding processed images URLs
-- Many many times faster (x5-x40) for most sites
 - Add more Emacs temp file to the ignored patterns in `gutenberg serve`
 - Files starting with `.` are not considered pages anymore even if they end with `.md`
 - `_processed_images` folder for image processing has been renamed `processed_images` to avoid issues with GitHub Pages

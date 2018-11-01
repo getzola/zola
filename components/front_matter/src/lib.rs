@@ -10,6 +10,7 @@ extern crate toml;
 
 #[macro_use]
 extern crate errors;
+extern crate utils;
 
 use errors::{Result, ResultExt};
 use regex::Regex;

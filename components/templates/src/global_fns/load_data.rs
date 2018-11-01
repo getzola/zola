@@ -1,6 +1,7 @@
 extern crate serde_json;
 extern crate toml;
 
+use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
 use reqwest::{header, Client};
@@ -236,7 +237,12 @@ fn load_json(json_data: String) -> Result<Value> {
 /// Parse a TOML string and convert it to a Tera Value
 fn load_toml(toml_data: String) -> Result<Value> {
     let toml_content: toml::Value = toml::from_str(&toml_data).map_err(|e| format!("{:?}", e))?;
-    to_value(toml_content).map_err(|e| e.into())
+    let toml_value = to_value(toml_content).expect("Got invalid JSON that was valid TOML somehow");
+
+    match toml_value {
+        Value::Object(m) => Ok(fix_toml_dates(m)),
+        _ => unreachable!("Loaded something other than a TOML object"),
+    }
 }
 
 /// Parse a CSV string and convert it to a Tera Value
@@ -409,15 +415,12 @@ mod tests {
         args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn(args.clone()).unwrap();
 
-        //TOML does not load in order, and also dates are not returned as strings, but
-        //rather as another object with a key and value
+        //TOML does not load in order
         assert_eq!(
             result,
             json!({
             "category": {
-                "date": {
-                    "$__toml_private_datetime": "1979-05-27T07:32:00Z"
-                },
+                "date": "1979-05-27T07:32:00Z",
                 "key": "value"
             },
         })
