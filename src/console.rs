@@ -42,6 +42,7 @@ fn colorize(message: &str, color: &ColorSpec) {
     let mut stdout = StandardStream::stdout(*COLOR_CHOICE);
     stdout.set_color(color).unwrap();
     writeln!(&mut stdout, "{}", message).unwrap();
+    stdout.set_color(&ColorSpec::new()).unwrap();
 }
 
 /// Display in the console the number of pages/sections in the site
