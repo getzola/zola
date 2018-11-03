@@ -208,7 +208,6 @@ pub fn serve(
     // http closure to avoid contention.
     let static_root = output_path.clone();
     let broadcaster = if !watch_only {
-
         thread::spawn(move || {
             let s = server::new(move || {
                 App::new()
@@ -256,7 +255,6 @@ pub fn serve(
         println!("Watching in watch only mode, no web server will be started");
         None
     };
-
 
     let pwd = env::current_dir().unwrap();
 
