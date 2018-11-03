@@ -62,6 +62,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("127.0.0.1")
                         .takes_value(true)
                         .help("Changes the base_url"),
+                    Arg::with_name("watch_only")
+                        .long("watch-only")
+                        .takes_value(false)
+                        .help("Do not start a server, just re-build project on changes")
                 ]),
         ])
 }

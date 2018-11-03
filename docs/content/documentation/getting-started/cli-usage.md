@@ -56,6 +56,8 @@ the interface/port combination to use if you want something different than the d
 You can also specify different addresses for the interface and base_url using `-u`/`--base-url`, for example
 if you are running zola in a Docker container.
 
+In the event you don't want zola to run a local webserver, you can use the `--watch-only` flag.
+
 ```bash
 $ zola serve
 $ zola serve --port 2000
@@ -63,6 +65,7 @@ $ zola serve --interface 0.0.0.0
 $ zola serve --interface 0.0.0.0 --port 2000
 $ zola serve --interface 0.0.0.0 --base-url 127.0.0.1
 $ zola serve --interface 0.0.0.0 --port 2000 --output-dir www/public
+$ zola serve --watch-only
 ```
 
 The serve command will watch all your content and will provide live reload, without
