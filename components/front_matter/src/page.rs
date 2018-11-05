@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 
 use chrono::prelude::*;
-use serde::Deserialize;
 use tera::{Map, Value};
 use toml;
 
 use errors::Result;
-use utils::de::fix_toml_dates;
+use utils::de::{fix_toml_dates, from_toml_datetime};
 
 /// The front matter of every page
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -17,7 +16,7 @@ pub struct PageFrontMatter {
     /// Description in <meta> that appears when linked, e.g. on twitter
     pub description: Option<String>,
     /// Date if we want to order pages (ie blog post)
-    #[serde(default, deserialize_with = "utils::de::from_toml_datetime")]
+    #[serde(default, deserialize_with = "from_toml_datetime")]
     pub date: Option<String>,
     /// Chrono converted datetime
     #[serde(default, skip_deserializing)]
