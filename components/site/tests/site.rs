@@ -18,7 +18,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections are pages too)
-    assert_eq!(site.library.pages().len(), 16);
+    assert_eq!(site.library.pages().len(), 17);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -31,7 +31,7 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.library.sections().len(), 7);
+    assert_eq!(site.library.sections().len(), 8);
 
     // And that the sections are correct
     let index_section = site.library.get_section(&path.join("content").join("_index.md")).unwrap();
@@ -40,8 +40,8 @@ fn can_parse_site() {
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = site.library.get_section(&posts_path.join("_index.md")).unwrap();
-    assert_eq!(posts_section.subsections.len(), 1);
-    assert_eq!(posts_section.pages.len(), 8);
+    assert_eq!(posts_section.subsections.len(), 2);
+    assert_eq!(posts_section.pages.len(), 9);
     assert_eq!(
         posts_section.ancestors,
         vec![*site.library.get_section_key(&index_section.file.path).unwrap()]

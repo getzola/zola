@@ -127,13 +127,24 @@ impl Library {
         }
 
         for (key, page) in &mut self.pages {
-            let parent_section_path = page.file.parent.join("_index.md");
-            if let Some(section_key) = self.paths_to_sections.get(&parent_section_path) {
-                self.sections.get_mut(*section_key).unwrap().pages.push(key);
+            let mut parent_section_path = page.file.parent.join("_index.md");
+            while let Some(section_key) = self.paths_to_sections.get(&parent_section_path) {
+                let mut section = self.sections.get_mut(*section_key).unwrap();
+                section.pages.push(key);
                 page.ancestors =
                     ancestors.get(&parent_section_path).cloned().unwrap_or_else(|| vec![]);
                 // Don't forget to push the actual parent
                 page.ancestors.push(*section_key);
+
+                if !section.meta.transparent {
+                    break;
+                }
+
+                // We've added `_index.md` if we are here so we need to go up twice
+                match parent_section_path.clone().parent().unwrap().parent() {
+                    Some(parent) => parent_section_path = parent.join("_index.md"),
+                    None => break,
+                }
             }
         }
 

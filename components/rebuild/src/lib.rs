@@ -31,6 +31,8 @@ pub enum SectionChangesNeeded {
     RenderWithPages,
     /// Setting `render` to false
     Delete,
+    /// Changing `transparent`
+    Transparent,
 }
 
 /// Evaluates all the params in the front matter that changed so we can do the smallest
@@ -44,6 +46,10 @@ fn find_section_front_matter_changes(
 
     if current.sort_by != new.sort_by {
         changes_needed.push(SectionChangesNeeded::Sort);
+    }
+
+    if current.transparent != new.transparent {
+        changes_needed.push(SectionChangesNeeded::Transparent);
     }
 
     // We want to hide the section
@@ -124,7 +130,7 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
 fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
     let section = Section::from_file(path, &site.config)?;
     let pathbuf = path.to_path_buf();
-    match site.add_section(section, true)? {
+    match site.add_section(section,true)? {
         // Updating a section
         Some(prev) => {
             site.populate_sections();
@@ -152,7 +158,7 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
                         site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)?
                     }
                     // not a common enough operation to make it worth optimizing
-                    SectionChangesNeeded::Delete => {
+                    SectionChangesNeeded::Delete | SectionChangesNeeded::Transparent => {
                         site.build()?;
                     }
                 };

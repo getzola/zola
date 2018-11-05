@@ -77,6 +77,11 @@ render = true
 # Example: redirect_to = "documentation/content/overview"
 redirect_to = ""
 
+# Whether the section should pass its pages on to the parent section. Defaults to `false`.
+# Useful when the section shouldn't split up the parent section, like
+# sections for each year under a posts section.
+transparent = false
+
 # Your own data
 [extra]
 +++

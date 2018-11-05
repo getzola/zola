@@ -39,6 +39,8 @@ sections up to the index to be used with the `get_section` Tera function
 - Pages filenames starting by a date will now use that date as page date if there isn't one defined in frontmatter
 - Accept markdown files starting with BOM
 - Add a `watch-only` flag to the `serve` command for when you don't want a webserver
+- Add `transparent` sections, for when you want to separate content by sections but want to group them at a higher level (think a `posts` folder with years
+that want to use pagination on the index).
 
 ## 0.4.2 (2018-09-03)
 
