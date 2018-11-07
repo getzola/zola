@@ -128,14 +128,14 @@ impl Section {
         Ok(section)
     }
 
-    pub fn get_template_name(&self) -> String {
+    pub fn get_template_name(&self) -> &str {
         match self.meta.template {
-            Some(ref l) => l.to_string(),
+            Some(ref l) => l,
             None => {
                 if self.is_index() {
-                    return "index.html".to_string();
+                    return "index.html"
                 }
-                "section.html".to_string()
+                "section.html"
             }
         }
     }
@@ -175,7 +175,7 @@ impl Section {
         context.insert("current_path", &self.path);
         context.insert("section", &self.to_serialized(library));
 
-        render_template(&tpl_name, tera, &context, &config.theme)
+        render_template(tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 

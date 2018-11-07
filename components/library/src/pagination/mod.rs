@@ -55,6 +55,7 @@ pub struct Paginator<'a> {
     pub permalink: String,
     path: String,
     pub paginate_path: String,
+    template: String,
     /// Whether this is the index section, we need it for the template name
     is_index: bool,
 }
@@ -73,6 +74,7 @@ impl<'a> Paginator<'a> {
             path: section.path.clone(),
             paginate_path: section.meta.paginate_path.clone(),
             is_index: section.is_index(),
+            template: section.get_template_name().to_string(),
         };
 
         paginator.fill_pagers(library);
@@ -100,6 +102,7 @@ impl<'a> Paginator<'a> {
                 .clone()
                 .unwrap_or_else(|| "pages".to_string()),
             is_index: false,
+            template: format!("{}/single.html", taxonomy.kind.name),
         };
 
         paginator.fill_pagers(library);
@@ -204,22 +207,20 @@ impl<'a> Paginator<'a> {
     ) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", &config);
-        let template_name = match self.root {
+        match self.root {
             PaginationRoot::Section(s) => {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
-                s.get_template_name()
             }
             PaginationRoot::Taxonomy(t) => {
                 context.insert("taxonomy", &t.kind);
-                format!("{}/single.html", t.kind.name)
             }
         };
         context.insert("current_url", &pager.permalink);
         context.insert("current_path", &pager.path);
         context.insert("paginator", &self.build_paginator_context(pager));
 
-        render_template(&template_name, tera, &context, &config.theme)
+        render_template(&self.template, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render pager {}", pager.index))
     }
 }
