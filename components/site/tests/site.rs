@@ -18,7 +18,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections do not count as pages)
-    assert_eq!(site.library.pages().len(), 20);
+    assert_eq!(site.library.pages().len(), 21);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -31,7 +31,7 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.library.sections().len(), 10);
+    assert_eq!(site.library.sections().len(), 11);
 
     // And that the sections are correct
     let index_section = site.library.get_section(&path.join("content").join("_index.md")).unwrap();
@@ -572,7 +572,7 @@ fn can_apply_page_templates() {
     let template_path = path.join("content").join("applying_page_template");
 
     let template_section = site.library.get_section(&template_path.join("_index.md")).unwrap();
-    assert_eq!(template_section.subsections.len(), 1);
+    assert_eq!(template_section.subsections.len(), 2);
     assert_eq!(template_section.pages.len(), 2);
 
     let from_section_config = site.library.get_page_by_key(template_section.pages[0]);
@@ -591,4 +591,13 @@ fn can_apply_page_templates() {
     let changed_recursively = site.library.get_page_by_key(another_section.pages[0]);
     assert_eq!(changed_recursively.meta.template, Some("page_template.html".into()));
     assert_eq!(changed_recursively.meta.title, Some("Changed recursively".into()));
+
+    // But it should not have override a children page_template
+    let yet_another_section = site.library.get_section(&template_path.join("yet_another_section").join("_index.md")).unwrap();
+    assert_eq!(yet_another_section.subsections.len(), 0);
+    assert_eq!(yet_another_section.pages.len(), 1);
+
+    let child = site.library.get_page_by_key(yet_another_section.pages[0]);
+    assert_eq!(child.meta.template, Some("page_template_child.html".into()));
+    assert_eq!(child.meta.title, Some("Local section override".into()));
 }
