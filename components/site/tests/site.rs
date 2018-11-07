@@ -17,8 +17,8 @@ fn can_parse_site() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
 
-    // Correct number of pages (sections are pages too)
-    assert_eq!(site.library.pages().len(), 17);
+    // Correct number of pages (sections do not count as pages)
+    assert_eq!(site.library.pages().len(), 20);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -31,11 +31,11 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.library.sections().len(), 8);
+    assert_eq!(site.library.sections().len(), 10);
 
     // And that the sections are correct
     let index_section = site.library.get_section(&path.join("content").join("_index.md")).unwrap();
-    assert_eq!(index_section.subsections.len(), 3);
+    assert_eq!(index_section.subsections.len(), 4);
     assert_eq!(index_section.pages.len(), 1);
     assert!(index_section.ancestors.is_empty());
 
@@ -560,4 +560,35 @@ fn can_build_with_extra_syntaxes() {
         "posts/extra-syntax/index.html",
         r#"<span style="color:#d08770;">test</span>"#
     ));
+}
+
+#[test]
+fn can_apply_page_templates() {
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.load().unwrap();
+
+    let template_path = path.join("content").join("applying_page_template");
+
+    let template_section = site.library.get_section(&template_path.join("_index.md")).unwrap();
+    assert_eq!(template_section.subsections.len(), 1);
+    assert_eq!(template_section.pages.len(), 2);
+
+    let from_section_config = site.library.get_page_by_key(template_section.pages[0]);
+    assert_eq!(from_section_config.meta.template, Some("page_template.html".into()));
+    assert_eq!(from_section_config.meta.title, Some("From section config".into()));
+
+    let override_page_template = site.library.get_page_by_key(template_section.pages[1]);
+    assert_eq!(override_page_template.meta.template, Some("page_template_override.html".into()));
+    assert_eq!(override_page_template.meta.title, Some("Override".into()));
+
+    // It should have applied recursively as well
+    let another_section = site.library.get_section(&template_path.join("another_section").join("_index.md")).unwrap();
+    assert_eq!(another_section.subsections.len(), 0);
+    assert_eq!(another_section.pages.len(), 1);
+
+    let changed_recursively = site.library.get_page_by_key(another_section.pages[0]);
+    assert_eq!(changed_recursively.meta.template, Some("page_template.html".into()));
+    assert_eq!(changed_recursively.meta.title, Some("Changed recursively".into()));
 }

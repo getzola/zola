@@ -60,6 +60,8 @@ fn find_section_front_matter_changes(
         return changes_needed;
     }
 
+
+
     if current.paginate_by != new.paginate_by
         || current.paginate_path != new.paginate_path
         || current.insert_anchor_links != new.insert_anchor_links

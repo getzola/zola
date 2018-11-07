@@ -129,18 +129,36 @@ impl Library {
         for (key, page) in &mut self.pages {
             let mut parent_section_path = page.file.parent.join("_index.md");
             while let Some(section_key) = self.paths_to_sections.get(&parent_section_path) {
-                let mut section = self.sections.get_mut(*section_key).unwrap();
-                section.pages.push(key);
+                let parent_is_transparent;
+                // We need to get a reference to a section later so keep the scope of borrowing small
+                {
+                    let mut section = self.sections.get_mut(*section_key).unwrap();
+                    section.pages.push(key);
+                    parent_is_transparent = section.meta.transparent;
+                }
                 page.ancestors =
                     ancestors.get(&parent_section_path).cloned().unwrap_or_else(|| vec![]);
                 // Don't forget to push the actual parent
                 page.ancestors.push(*section_key);
 
-                if !section.meta.transparent {
+                // Find the page template if one of a parent has page_template set
+                // Stops after the first one found, keep in mind page.ancestors
+                // is [index, ..., parent] so we need to reverse it first
+                if page.meta.template.is_none() {
+                    for ancestor in page.ancestors.iter().rev() {
+                        let s = self.sections.get(*ancestor).unwrap();
+                        if s.meta.page_template.is_some() {
+                            page.meta.template = s.meta.page_template.clone();
+                            break;
+                        }
+                    }
+                }
+
+                if !parent_is_transparent {
                     break;
                 }
 
-                // We've added `_index.md` if we are here so we need to go up twice
+                // We've added `_index.md` so if we are here so we need to go up twice
                 match parent_section_path.clone().parent().unwrap().parent() {
                     Some(parent) => parent_section_path = parent.join("_index.md"),
                     None => break,
@@ -301,6 +319,10 @@ impl Library {
 
     pub fn get_page_by_key(&self, key: Key) -> &Page {
         self.pages.get(key).unwrap()
+    }
+
+    pub fn get_page_mut_by_key(&mut self, key: Key) -> &mut Page {
+        self.pages.get_mut(key).unwrap()
     }
 
     pub fn remove_section(&mut self, path: &PathBuf) -> Option<Section> {

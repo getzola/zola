@@ -1,0 +1,7 @@
+{% extends "index.html" %}
+{% block content %}
+    <h1>Another page template, specified with the "page_template" key in the front matter</h1>
+    {{ page.content | safe }}
+    {% if page.earlier %}Previous article: {{ page.earlier.permalink }}{% endif %}
+    {% if page.later %}Next article: {{ page.later.permalink }}{% endif %}
+{% endblock content %}

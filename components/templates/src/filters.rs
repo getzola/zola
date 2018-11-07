@@ -12,8 +12,8 @@ pub fn markdown(value: Value, args: HashMap<String, Value>) -> TeraResult<Value>
     };
 
     let mut opts = cmark::Options::empty();
-    opts.insert(cmark::OPTION_ENABLE_TABLES);
-    opts.insert(cmark::OPTION_ENABLE_FOOTNOTES);
+    opts.insert(cmark::Options::ENABLE_TABLES);
+    opts.insert(cmark::Options::ENABLE_FOOTNOTES);
 
     let mut html = String::new();
     let parser = cmark::Parser::new_ext(&s, opts);

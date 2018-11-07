@@ -55,6 +55,9 @@ pub struct SectionFrontMatter {
     /// sections for each year under a posts section.
     #[serde(skip_serializing)]
     pub transparent: bool,
+    /// Optional template for all pages in this section (including the pages of children section)
+    #[serde(skip_serializing)]
+    pub page_template: Option<String>,
     /// Any extra parameter present in the front matter
     pub extra: HashMap<String, Value>,
 }
@@ -93,6 +96,7 @@ impl Default for SectionFrontMatter {
             insert_anchor_links: InsertAnchor::None,
             in_search_index: true,
             transparent: false,
+            page_template: None,
             extra: HashMap::new(),
         }
     }

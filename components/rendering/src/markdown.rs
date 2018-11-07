@@ -1,6 +1,6 @@
 use std::borrow::Cow::{Borrowed, Owned};
 
-use self::cmark::{Event, Options, Parser, Tag, OPTION_ENABLE_FOOTNOTES, OPTION_ENABLE_TABLES};
+use self::cmark::{Event, Options, Parser, Tag};
 use pulldown_cmark as cmark;
 use slug::slugify;
 use syntect::easy::HighlightLines;
@@ -69,8 +69,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut opts = Options::empty();
     let mut has_summary = false;
-    opts.insert(OPTION_ENABLE_TABLES);
-    opts.insert(OPTION_ENABLE_FOOTNOTES);
+    opts.insert(Options::ENABLE_TABLES);
+    opts.insert(Options::ENABLE_FOOTNOTES);
 
     {
         let parser = Parser::new_ext(content, opts).map(|event| {
