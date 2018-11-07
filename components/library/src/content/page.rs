@@ -228,8 +228,8 @@ impl Page {
     /// Renders the page using the default layout, unless specified in front-matter
     pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
         let tpl_name = match self.meta.template {
-            Some(ref l) => l.to_string(),
-            None => "page.html".to_string(),
+            Some(ref l) => l,
+            None => "page.html",
         };
 
         let mut context = TeraContext::new();
