@@ -55,7 +55,7 @@ Custom templates are not required to live at the root of your `templates` direct
 For example, `product_pages/with_pictures.html` is a valid template.
 
 ## Built-in filters
-Zola adds a few filters, in addition of the ones already present in Tera.
+Zola adds a few filters, in addition of the ones [ones already present](https://tera.netlify.com/docs/templates/#built-in-filters) in Tera.
 
 ### markdown
 Converts the given variable to HTML using Markdown. This doesn't apply any of the
@@ -76,7 +76,9 @@ Decode the variable from base64.
 
 
 ## Built-in global functions
-Zola adds a few global functions to Tera in order to make it easier to develop complex sites.
+
+Zola adds a few global functions to [those in Tera](https://tera.netlify.com/docs/templates/#built-in-functions) in order to make it easier to develop complex sites.
+
 
 ### `get_page`
 Takes a path to a `.md` file and returns the associated page
