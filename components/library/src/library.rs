@@ -277,8 +277,8 @@ impl Library {
             .collect()
     }
 
-    pub fn find_parent_section(&self, path: &Path) -> Option<&Section> {
-        let page_key = self.paths_to_pages[path];
+    pub fn find_parent_section<P: AsRef<Path>>(&self, path: P) -> Option<&Section> {
+        let page_key = self.paths_to_pages[path.as_ref()];
         for s in self.sections.values() {
             if s.pages.contains(&page_key) {
                 return Some(s);
@@ -289,16 +289,16 @@ impl Library {
     }
 
     /// Only used in tests
-    pub fn get_section_key(&self, path: &PathBuf) -> Option<&Key> {
-        self.paths_to_sections.get(path)
+    pub fn get_section_key<P: AsRef<Path>>(&self, path: P) -> Option<&Key> {
+        self.paths_to_sections.get(path.as_ref())
     }
 
-    pub fn get_section(&self, path: &PathBuf) -> Option<&Section> {
-        self.sections.get(self.paths_to_sections.get(path).cloned().unwrap_or_default())
+    pub fn get_section<P: AsRef<Path>>(&self, path: P) -> Option<&Section> {
+        self.sections.get(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
-    pub fn get_section_mut(&mut self, path: &PathBuf) -> Option<&mut Section> {
-        self.sections.get_mut(self.paths_to_sections.get(path).cloned().unwrap_or_default())
+    pub fn get_section_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Section> {
+        self.sections.get_mut(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
     pub fn get_section_by_key(&self, key: Key) -> &Section {
@@ -313,8 +313,8 @@ impl Library {
         &self.get_section_by_key(key).file.relative
     }
 
-    pub fn get_page(&self, path: &PathBuf) -> Option<&Page> {
-        self.pages.get(self.paths_to_pages.get(path).cloned().unwrap_or_default())
+    pub fn get_page<P: AsRef<Path>>(&self, path: P) -> Option<&Page> {
+        self.pages.get(self.paths_to_pages.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
     pub fn get_page_by_key(&self, key: Key) -> &Page {
@@ -325,16 +325,16 @@ impl Library {
         self.pages.get_mut(key).unwrap()
     }
 
-    pub fn remove_section(&mut self, path: &PathBuf) -> Option<Section> {
-        if let Some(k) = self.paths_to_sections.remove(path) {
+    pub fn remove_section<P: AsRef<Path>>(&mut self, path: P) -> Option<Section> {
+        if let Some(k) = self.paths_to_sections.remove(path.as_ref()) {
             self.sections.remove(k)
         } else {
             None
         }
     }
 
-    pub fn remove_page(&mut self, path: &PathBuf) -> Option<Page> {
-        if let Some(k) = self.paths_to_pages.remove(path) {
+    pub fn remove_page<P: AsRef<Path>>(&mut self, path: P) -> Option<Page> {
+        if let Some(k) = self.paths_to_pages.remove(path.as_ref()) {
             self.pages.remove(k)
         } else {
             None
@@ -342,12 +342,12 @@ impl Library {
     }
 
     /// Used in rebuild, to check if we know it already
-    pub fn contains_section(&self, path: &PathBuf) -> bool {
-        self.paths_to_sections.contains_key(path)
+    pub fn contains_section<P: AsRef<Path>>(&self, path: P) -> bool {
+        self.paths_to_sections.contains_key(path.as_ref())
     }
 
     /// Used in rebuild, to check if we know it already
-    pub fn contains_page(&self, path: &PathBuf) -> bool {
-        self.paths_to_pages.contains_key(path)
+    pub fn contains_page<P: AsRef<Path>>(&self, path: P) -> bool {
+        self.paths_to_pages.contains_key(path.as_ref())
     }
 }

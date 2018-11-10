@@ -240,7 +240,53 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
     }
 }
 
-/// What happens when a section or a page is changed
+
+/// What happens when we rename a file/folder in the content directory.
+/// Note that this is only called for folders when it isn't empty
+pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<()> {
+    let new_path = if new.is_dir() {
+        if new.join("_index.md").exists() {
+            // This is a section keep the dir folder to differentiate from renaming _index.md
+            // which doesn't do the same thing
+            new.to_path_buf()
+        } else if new.join("index.md").exists() {
+            new.join("index.md")
+        } else {
+            bail!("Got unexpected folder {:?} while handling renaming that was not expected", new);
+        }
+    } else {
+        new.to_path_buf()
+    };
+
+    // A section folder has been renamed: just reload the whole site and rebuild it as we
+    // do not really know what needs to be rendered
+    if new_path.is_dir() {
+        site.load()?;
+        return site.build();
+    }
+
+    // Renaming a file to _index.md, let the section editing do something and hope for the best
+    if new_path.file_name().unwrap() == "_index.md" {
+        // We aren't entirely sure where the original thing was so just try to delete whatever was
+        // at the old path
+        site.library.remove_page(&old.to_path_buf());
+        site.library.remove_section(&old.to_path_buf());
+        return handle_section_editing(site, &new_path);
+    }
+
+    // If it is a page, just delete what was there before and
+    // fake it's a new page
+    let old_path = if new_path.file_name().unwrap() == "index.md" {
+        old.join("index.md")
+    } else {
+        old.to_path_buf()
+    };
+    site.library.remove_page(&old_path);
+    return handle_page_editing(site, &new_path);
+}
+
+
+/// What happens when a section or a page is created/edited
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let is_section = path.file_name().unwrap() == "_index.md";
     let is_md = path.extension().unwrap() == "md";

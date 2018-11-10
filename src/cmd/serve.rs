@@ -22,7 +22,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
-use std::fs::{remove_dir_all, File};
+use std::fs::{remove_dir_all, File, read_dir};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
@@ -225,7 +225,7 @@ pub fn serve(
             .bind(&address)
             .expect("Can't start the webserver")
             .shutdown_timeout(20);
-            println!("Web server is available at http://{}", &address);
+            println!("Web server is available at http://{}\n", &address);
             s.run();
         });
         // The websocket for livereload
@@ -286,11 +286,122 @@ pub fn serve(
 
     use notify::DebouncedEvent::*;
 
+    let reload_templates = |site: &mut Site, path: &Path| {
+        let msg = if path.is_dir() {
+            format!("-> Directory in `templates` folder changed {}", path.display())
+        } else {
+            format!("-> Template changed {}", path.display())
+        };
+        console::info(&msg);
+        if let Some(ref broadcaster) = broadcaster {
+            // Force refresh
+            rebuild_done_handling(
+                broadcaster,
+                rebuild::after_template_change(site, &path),
+                "/x.js",
+            );
+        }
+    };
+
+    let reload_sass = |site: &Site, path: &Path, partial_path: &Path| {
+        let msg = if path.is_dir() {
+            format!("-> Directory in `sass` folder changed {}", path.display())
+        } else {
+            format!("-> Sass file changed {}", path.display())
+        };
+        console::info(&msg);
+        if let Some(ref broadcaster) = broadcaster {
+            rebuild_done_handling(
+                &broadcaster,
+                site.compile_sass(&site.base_path),
+                &partial_path.to_string_lossy(),
+            );
+        }
+    };
+
+    let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
+        // Do nothing if the file/dir was deleted
+        if !path.exists() {
+            return;
+        }
+
+        let msg = if path.is_dir() {
+            format!("-> Directory in `static` folder changed {}", path.display())
+        } else {
+            format!("-> Static file changed {}", path.display())
+        };
+
+        console::info(&msg);
+        if let Some(ref broadcaster) = broadcaster {
+            if path.is_dir() {
+                rebuild_done_handling(
+                    broadcaster,
+                    site.copy_static_directories(),
+                    &path.to_string_lossy(),
+                );
+            } else {
+                rebuild_done_handling(
+                    broadcaster,
+                    copy_file(&path, &site.output_path, &site.static_path),
+                    &partial_path.to_string_lossy(),
+                );
+            }
+        }
+    };
+
     loop {
         match rx.recv() {
             Ok(event) => {
                 match event {
-                    Create(path) | Write(path) | Remove(path) | Rename(_, path) => {
+                    Rename(old_path, path) => {
+                        if path.is_file() && is_temp_file(&path) {
+                            continue;
+                        }
+                        let (change_kind, partial_path) = detect_change_kind(&pwd, &path);
+
+                        // We only care about changes in non-empty folders
+                        if path.is_dir() && is_folder_empty(&path) {
+                            continue;
+                        }
+
+                        println!(
+                            "Change detected @ {}",
+                            Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+                        );
+
+                        let start = Instant::now();
+                        match change_kind {
+                            ChangeKind::Content => {
+                                console::info(&format!("-> Content renamed {}", path.display()));
+                                if let Some(ref broadcaster) = broadcaster {
+                                    // Force refresh
+                                    rebuild_done_handling(
+                                        broadcaster,
+                                        rebuild::after_content_rename(&mut site, &old_path, &path),
+                                        "/x.js",
+                                    );
+                                }
+                            }
+                            ChangeKind::Templates => reload_templates(&mut site, &path),
+                            ChangeKind::StaticFiles => copy_static(&site, &path, &partial_path),
+                            ChangeKind::Sass => reload_sass(&site, &path, &partial_path),
+                            ChangeKind::Config => {
+                                console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
+                                site = create_new_site(
+                                    interface,
+                                    port,
+                                    output_dir,
+                                    base_url,
+                                    config_file,
+                                )
+                                .unwrap()
+                                .0;
+                            }
+                        }
+                        console::report_elapsed_time(start);
+
+                    }
+                    Create(path) | Write(path) | Remove(path) => {
                         if is_temp_file(&path) || path.is_dir() {
                             continue;
                         }
@@ -299,6 +410,7 @@ pub fn serve(
                             "Change detected @ {}",
                             Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
                         );
+
                         let start = Instant::now();
                         match detect_change_kind(&pwd, &path) {
                             (ChangeKind::Content, _) => {
@@ -312,42 +424,9 @@ pub fn serve(
                                     );
                                 }
                             }
-                            (ChangeKind::Templates, _) => {
-                                console::info(&format!("-> Template changed {}", path.display()));
-                                if let Some(ref broadcaster) = broadcaster {
-                                    // Force refresh
-                                    rebuild_done_handling(
-                                        broadcaster,
-                                        rebuild::after_template_change(&mut site, &path),
-                                        "/x.js",
-                                    );
-                                }
-                            }
-                            (ChangeKind::StaticFiles, p) => {
-                                if path.is_file() {
-                                    console::info(&format!(
-                                        "-> Static file changes detected {}",
-                                        path.display()
-                                    ));
-                                    if let Some(ref broadcaster) = broadcaster {
-                                        rebuild_done_handling(
-                                            broadcaster,
-                                            copy_file(&path, &site.output_path, &site.static_path),
-                                            &p.to_string_lossy(),
-                                        );
-                                    }
-                                }
-                            }
-                            (ChangeKind::Sass, p) => {
-                                console::info(&format!("-> Sass file changed {}", path.display()));
-                                if let Some(ref broadcaster) = broadcaster {
-                                    rebuild_done_handling(
-                                        &broadcaster,
-                                        site.compile_sass(&site.base_path),
-                                        &p.to_string_lossy(),
-                                    );
-                                }
-                            }
+                            (ChangeKind::Templates, _) => reload_templates(&mut site, &path),
+                            (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
+                            (ChangeKind::Sass, p) => reload_sass(&site, &path, &p),
                             (ChangeKind::Config, _) => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(
@@ -420,6 +499,18 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
 
     (change_kind, partial_path)
 }
+
+/// Check if the directory at path contains any file
+fn is_folder_empty(dir: &Path) -> bool {
+    // Can panic if we don't have the rights I guess?
+    for _ in read_dir(dir).expect("Failed to read a directory to see if it was empty") {
+        // If we get there, that means we have a file
+        return false;
+    }
+
+    true
+}
+
 
 #[cfg(test)]
 mod tests {

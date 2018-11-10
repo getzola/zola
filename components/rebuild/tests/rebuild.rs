@@ -4,14 +4,14 @@ extern crate site;
 extern crate tempfile;
 
 use std::env;
-use std::fs::{remove_dir_all, File};
+use std::fs::{self, File};
 use std::io::prelude::*;
 
 use fs_extra::dir;
 use site::Site;
 use tempfile::tempdir;
 
-use rebuild::after_content_change;
+use rebuild::{after_content_change, after_content_rename};
 
 // Loads the test_site in a tempdir and build it there
 // Returns (site_path_in_tempdir, site)
@@ -25,10 +25,6 @@ macro_rules! load_and_build_site {
         dir::copy(&path, &$tmp_dir, &options).unwrap();
 
         let site_path = $tmp_dir.path().join("test_site");
-        // delete useless sections for those tests
-        remove_dir_all(site_path.join("content").join("paginated")).unwrap();
-        remove_dir_all(site_path.join("content").join("posts")).unwrap();
-
         let mut site = Site::new(&site_path, "config.toml").unwrap();
         site.load().unwrap();
         let public = &site_path.join("public");
@@ -66,6 +62,22 @@ macro_rules! file_contains {
         s.contains($text)
     }};
 }
+
+/// Rename a file or a folder to the new given name
+macro_rules! rename {
+    ($site_path: expr, $path: expr, $new_name: expr) => {{
+        let mut t = $site_path.clone();
+        for c in $path.split('/') {
+            t.push(c);
+        }
+        let mut new_path = t.parent().unwrap().to_path_buf();
+        new_path.push($new_name);
+        fs::rename(&t, &new_path).unwrap();
+        println!("Renamed {:?} to {:?}", t, new_path);
+        (t, new_path)
+    }};
+}
+
 
 #[test]
 fn can_rebuild_after_simple_change_to_page_content() {
@@ -134,4 +146,88 @@ template = "rebuild.html"
         "public/rebuild/index.html",
         "<h1>first</h1><h1>second</h1>"
     ));
+}
+
+#[test]
+fn can_rebuild_after_transparent_change() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let file_path = edit_file!(
+        site_path,
+        "content/posts/2018/_index.md",
+        br#"
++++
+transparent = false
+render = false
++++
+"#
+    );
+    // Also remove pagination from posts section so we check whether the transparent page title
+    // is there or not without dealing with pagination
+    edit_file!(
+        site_path,
+        "content/posts/_index.md",
+        br#"
++++
+template = "section.html"
+insert_anchor_links = "left"
++++
+"#
+    );
+
+    let res = after_content_change(&mut site, &file_path);
+    assert!(res.is_ok());
+    assert!(!file_contains!(
+        site_path,
+        "public/posts/index.html",
+        "A transparent page"
+    ));
+}
+
+#[test]
+fn can_rebuild_after_renaming_page() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (old_path, new_path) = rename!(site_path, "content/posts/simple.md", "hard.md");
+
+    let res = after_content_rename(&mut site, &old_path, &new_path);
+    println!("{:?}", res);
+    assert!(res.is_ok());
+    assert!(file_contains!(
+        site_path,
+        "public/posts/hard/index.html",
+        "A simple page"
+    ));
+}
+
+// https://github.com/Keats/gutenberg/issues/385
+#[test]
+fn can_rebuild_after_renaming_colocated_asset_folder() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (old_path, new_path) = rename!(site_path, "content/posts/with-assets", "with-assets-updated");
+    assert!(file_contains!(site_path, "content/posts/with-assets-updated/index.md", "Hello"));
+
+    let res = after_content_rename(&mut site, &old_path, &new_path);
+    println!("{:?}", res);
+    assert!(res.is_ok());
+    assert!(file_contains!(
+        site_path,
+        "public/posts/with-assets-updated/index.html",
+        "Hello world"
+    ));
+}
+
+// https://github.com/Keats/gutenberg/issues/385
+#[test]
+fn can_rebuild_after_renaming_section_folder() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (old_path, new_path) = rename!(site_path, "content/posts", "new-posts");
+    assert!(file_contains!(site_path, "content/new-posts/simple.md", "simple"));
+
+    let res = after_content_rename(&mut site, &old_path, &new_path);
+    assert!(res.is_ok());
+
+    assert!(file_contains!(site_path, "public/new-posts/simple/index.html", "simple"));
 }
