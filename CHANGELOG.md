@@ -42,7 +42,7 @@ sections up to the index to be used with the `get_section` Tera function
 - Add `transparent` sections, for when you want to separate content by sections but want to group them at a higher level (think a `posts` folder with years
 that want to use pagination on the index).
 - Add `page_template` to section front-matter for when you want to specify the template to use for every page under it
-- Improves to `zola serve`: now handles files/directories renaming
+- Improves to `zola serve`: now handles directories renaming
 
 ## 0.4.2 (2018-09-03)
 
