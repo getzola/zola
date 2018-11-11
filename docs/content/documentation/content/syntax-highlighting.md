@@ -113,11 +113,12 @@ Here is a full list of the supported languages and the short names you can use:
 - Generic Config -> ["cfg", "conf", "config", "ini", "pro", "mak", "mk", "Doxyfile", "inputrc", ".inputrc", "dircolors", ".dircolors", "gitmodules", ".gitmodules", "gitignore", ".gitignore", "gitattributes", ".gitattributes"]
 - Elm -> ["elm"]
 - Linker Script -> ["ld"]
+- Swift -> ["swift"]
 - TOML -> ["toml", "tml"]
 - TypeScript -> ["ts"]
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]
-- TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock"]
+- TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock", "Pipfile"]
 ```
 
 If you want to highlight a language not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
