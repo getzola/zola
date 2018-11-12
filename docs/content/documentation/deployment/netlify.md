@@ -8,14 +8,20 @@ with no effort. This very site is hosted by Netlify and automatically deployed o
 
 If you don't have an account with Netlify, you can [sign up](https://app.netlify.com) for one.
 
-## Automatic Deploys
+Netlify has built-in support for the older version (named Gutenberg) but not for Zola yet.
+
+## Automatic Deploys (*Gutenberg only*)
+
+> Automatic deploys based on environment variable are not available for Zola yet,
+> only for version <= 0.4.2 when it was called Gutenberg
+
 Once you are in the admin interface, you can add a site from a Git provider (GitHub, GitLab or Bitbucket). At the end
  of this process, you can select the deploy settings for the project:
 
- - build command: `ZOLA_VERSION=0.5.0 zola build` (replace the version number in the variable by the version you want to use)
+ - build command: `GUTENBERG_VERSION=0.4.2 gutenberg build` (replace the version number in the variable by the version you want to use)
  - publish directory: the path to where the `public` directory is
 
-With this setup, your site should be automatically deployed on every commit on master.  For `ZOLA_VERSION`, you may
+With this setup, your site should be automatically deployed on every commit on master.  For `GUTENBERG_VERSION`, you may
 use any of the tagged `release` versions in the GitHub repository — Netlify will automatically fetch the tagged version
 and use it to build your site.
 
@@ -26,15 +32,15 @@ the admin interface.
 
 ```toml
 [build]
-# assuming the Zola site is in a docs folder, if it isn't you don't need
+# assuming the Gutenberg site is in a docs folder, if it isn't you don't need
 # to have a `base` variable but you do need the `publish` and `command`
 base    = "docs"
 publish = "docs/public"
-command = "zola build"
+command = "gutenberg build"
 
 [build.environment]
 # Set the version name that you want to use and Netlify will automatically use it
-ZOLA_VERSION = "0.5.0"
+GUTENBERG_VERSION = "0.5.0"
 
 # The magic for deploying previews of branches
 # We need to override the base url with whatever url Netlify assigns to our
@@ -42,10 +48,11 @@ ZOLA_VERSION = "0.5.0"
 # `$DEPLOY_PRIME_URL`.
 
 [context.deploy-preview]
-command = "zola build --base-url $DEPLOY_PRIME_URL"
+command = "gutenberg build --base-url $DEPLOY_PRIME_URL"
 ```
 
-You can also download the archive directly from GitHub if needed, replacing the version in the URL with the one wanted:
+## Automatic deploys for Zola
+Since Netlify doesn't support Zola currently, you will need to download the archive directly from GitHub, replacing the version in the URL with the one you want:
 
 ```
 command = "curl -sL https://github.com/getzola/zola/releases/download/v0.5.0/zola-v0.5.0-x86_64-unknown-linux-gnu.tar.gz | tar zxv && ./zola build"

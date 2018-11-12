@@ -60,6 +60,13 @@
         }
       }
     }
+
+    blockquote {
+      border-left: 10px solid black;
+      padding: 0.25rem 0.5rem;
+      margin-left: 0;
+      font-style: italic;
+    }
   }
 
   iframe {
