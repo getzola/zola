@@ -118,6 +118,7 @@ impl Page {
             has_date_in_name = true;
             if page.meta.date.is_none() {
                 page.meta.date = Some(page.file.name[..10].to_string());
+                page.meta.date_to_datetime();
             }
         }
 

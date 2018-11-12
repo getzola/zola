@@ -18,7 +18,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections do not count as pages)
-    assert_eq!(site.library.pages().len(), 21);
+    assert_eq!(site.library.pages().len(), 22);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -41,7 +41,7 @@ fn can_parse_site() {
 
     let posts_section = site.library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
-    assert_eq!(posts_section.pages.len(), 9);
+    assert_eq!(posts_section.pages.len(), 10);
     assert_eq!(
         posts_section.ancestors,
         vec![*site.library.get_section_key(&index_section.file.path).unwrap()]
@@ -392,7 +392,7 @@ fn can_build_site_with_pagination_for_section() {
         "posts/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts/\""
     ));
-    assert!(file_contains!(public, "posts/index.html", "Num pagers: 4"));
+    assert!(file_contains!(public, "posts/index.html", "Num pagers: 5"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "posts/index.html", "has_prev"));
@@ -405,12 +405,12 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+        "Last: https://replace-this-with-your-url.com/posts/page/5/"
     ));
     assert_eq!(file_contains!(public, "posts/index.html", "has_prev"), false);
 
     assert!(file_exists!(public, "posts/page/2/index.html"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 4"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 5"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
@@ -423,11 +423,11 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/2/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+        "Last: https://replace-this-with-your-url.com/posts/page/5/"
     ));
 
     assert!(file_exists!(public, "posts/page/3/index.html"));
-    assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 4"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 5"));
     assert!(file_contains!(public, "posts/page/3/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/3/index.html", "Current index: 3"));
     assert!(file_contains!(public, "posts/page/3/index.html", "has_prev"));
@@ -440,15 +440,15 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/3/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+        "Last: https://replace-this-with-your-url.com/posts/page/5/"
     ));
 
     assert!(file_exists!(public, "posts/page/4/index.html"));
-    assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 4"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 5"));
     assert!(file_contains!(public, "posts/page/4/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/4/index.html", "Current index: 4"));
     assert!(file_contains!(public, "posts/page/4/index.html", "has_prev"));
-    assert!(!file_contains!(public, "posts/page/4/index.html", "has_next"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "has_next"));
     assert!(file_contains!(
         public,
         "posts/page/4/index.html",
@@ -457,7 +457,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/4/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/4/"
+        "Last: https://replace-this-with-your-url.com/posts/page/5/"
     ));
 }
 
