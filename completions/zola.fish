@@ -15,6 +15,7 @@ complete -c zola -n "__fish_seen_subcommand_from serve" -s i -l interface -d 'In
 complete -c zola -n "__fish_seen_subcommand_from serve" -s p -l port -d 'Which port to use'
 complete -c zola -n "__fish_seen_subcommand_from serve" -s o -l output-dir -d 'Outputs the generated site in the given path'
 complete -c zola -n "__fish_seen_subcommand_from serve" -s u -l base-url -d 'Changes the base_url'
+complete -c zola -n "__fish_seen_subcommand_from serve" -l watch-only -d 'Do not start a server, just re-build project on changes'
 complete -c zola -n "__fish_seen_subcommand_from serve" -s h -l help -d 'Prints help information'
 complete -c zola -n "__fish_seen_subcommand_from serve" -s V -l version -d 'Prints version information'
 complete -c zola -n "__fish_seen_subcommand_from help" -s h -l help -d 'Prints help information'

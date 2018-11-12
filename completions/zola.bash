@@ -117,7 +117,7 @@ _zola() {
             return 0
             ;;
         zola__serve)
-            opts=" -h -V -i -p -o -u  --help --version --interface --port --output-dir --base-url  "
+            opts=" -h -V -i -p -o -u  --watch-only --help --version --interface --port --output-dir --base-url  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0

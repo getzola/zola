@@ -61,6 +61,7 @@ _arguments "${_arguments_options[@]}" \
 '--output-dir=[Outputs the generated site in the given path]' \
 '-u+[Changes the base_url]' \
 '--base-url=[Changes the base_url]' \
+'--watch-only[Do not start a server, just re-build project on changes]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \

@@ -59,6 +59,7 @@ Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
             [CompletionResult]::new('--output-dir', 'output-dir', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Changes the base_url')
             [CompletionResult]::new('--base-url', 'base-url', [CompletionResultType]::ParameterName, 'Changes the base_url')
+            [CompletionResult]::new('--watch-only', 'watch-only', [CompletionResultType]::ParameterName, 'Do not start a server, just re-build project on changes')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
