@@ -23,6 +23,12 @@ Zola is available on [Scoop](http://scoop.sh):
 $ scoop install zola
 ```
 
+And [Chocolatey](https://chocolatey.org/):
+
+```bash
+$ choco install gutenberg
+```
+
 ## Arch Linux
 
 Use your favourite AUR helper to install the `zola-bin` package.
