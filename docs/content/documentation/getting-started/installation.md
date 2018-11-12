@@ -22,6 +22,12 @@ Gutenberg is available on [Scoop](http://scoop.sh):
 $ scoop install gutenberg
 ```
 
+And [Chocolatey](https://chocolatey.org/):
+
+```bash
+$ choco install gutenberg
+```
+
 ## Arch Linux
 
 Use your favourite AUR helper to install the `gutenberg-bin` package.
