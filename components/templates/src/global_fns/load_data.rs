@@ -334,12 +334,10 @@ mod tests {
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .description()
-                .contains("README.md is not inside the base site directory")
-        );
+        assert!(result
+            .unwrap_err()
+            .description()
+            .contains("README.md is not inside the base site directory"));
     }
 
     #[test]

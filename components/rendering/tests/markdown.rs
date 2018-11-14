@@ -122,9 +122,9 @@ fn can_render_shortcode_with_markdown_char_in_args_value() {
     ];
     for i in input {
         let res = render_content(&format!("{{{{ youtube(id=\"{}\") }}}}", i), &context).unwrap();
-        assert!(
-            res.body.contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i))
-        );
+        assert!(res
+            .body
+            .contains(&format!(r#"<iframe src="https://www.youtube.com/embed/{}""#, i)));
     }
 }
 
@@ -238,9 +238,9 @@ Hello
     .unwrap();
     assert!(res.body.contains("<p>Hello</p>\n<div >"));
     assert!(res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ""#));
-    assert!(
-        res.body.contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#)
-    );
+    assert!(res
+        .body
+        .contains(r#"<iframe src="https://www.youtube.com/embed/ub36ffWAqgQ?autoplay=1""#));
     assert!(res.body.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
     assert!(res.body.contains(r#"//player.vimeo.com/video/210073083""#));
 }

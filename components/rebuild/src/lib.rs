@@ -60,8 +60,6 @@ fn find_section_front_matter_changes(
         return changes_needed;
     }
 
-
-
     if current.paginate_by != new.paginate_by
         || current.paginate_path != new.paginate_path
         || current.insert_anchor_links != new.insert_anchor_links
@@ -132,7 +130,7 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
 fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
     let section = Section::from_file(path, &site.config)?;
     let pathbuf = path.to_path_buf();
-    match site.add_section(section,true)? {
+    match site.add_section(section, true)? {
         // Updating a section
         Some(prev) => {
             site.populate_sections();
@@ -240,7 +238,6 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
     }
 }
 
-
 /// What happens when we rename a file/folder in the content directory.
 /// Note that this is only called for folders when it isn't empty
 pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<()> {
@@ -284,7 +281,6 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
     site.library.remove_page(&old_path);
     return handle_page_editing(site, &new_path);
 }
-
 
 /// What happens when a section or a page is created/edited
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {

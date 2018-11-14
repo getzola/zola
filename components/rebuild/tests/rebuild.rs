@@ -78,7 +78,6 @@ macro_rules! rename {
     }};
 }
 
-
 #[test]
 fn can_rebuild_after_simple_change_to_page_content() {
     let tmp_dir = tempdir().expect("create temp dir");
@@ -177,11 +176,7 @@ insert_anchor_links = "left"
 
     let res = after_content_change(&mut site, &file_path);
     assert!(res.is_ok());
-    assert!(!file_contains!(
-        site_path,
-        "public/posts/index.html",
-        "A transparent page"
-    ));
+    assert!(!file_contains!(site_path, "public/posts/index.html", "A transparent page"));
 }
 
 #[test]
@@ -193,11 +188,7 @@ fn can_rebuild_after_renaming_page() {
     let res = after_content_rename(&mut site, &old_path, &new_path);
     println!("{:?}", res);
     assert!(res.is_ok());
-    assert!(file_contains!(
-        site_path,
-        "public/posts/hard/index.html",
-        "A simple page"
-    ));
+    assert!(file_contains!(site_path, "public/posts/hard/index.html", "A simple page"));
 }
 
 // https://github.com/Keats/gutenberg/issues/385
@@ -205,7 +196,8 @@ fn can_rebuild_after_renaming_page() {
 fn can_rebuild_after_renaming_colocated_asset_folder() {
     let tmp_dir = tempdir().expect("create temp dir");
     let (site_path, mut site) = load_and_build_site!(tmp_dir);
-    let (old_path, new_path) = rename!(site_path, "content/posts/with-assets", "with-assets-updated");
+    let (old_path, new_path) =
+        rename!(site_path, "content/posts/with-assets", "with-assets-updated");
     assert!(file_contains!(site_path, "content/posts/with-assets-updated/index.md", "Hello"));
 
     let res = after_content_rename(&mut site, &old_path, &new_path);

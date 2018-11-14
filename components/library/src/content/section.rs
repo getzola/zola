@@ -133,7 +133,7 @@ impl Section {
             Some(ref l) => l,
             None => {
                 if self.is_index() {
-                    return "index.html"
+                    return "index.html";
                 }
                 "section.html"
             }

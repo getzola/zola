@@ -22,7 +22,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
-use std::fs::{remove_dir_all, File, read_dir};
+use std::fs::{read_dir, remove_dir_all, File};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
@@ -399,7 +399,6 @@ pub fn serve(
                             }
                         }
                         console::report_elapsed_time(start);
-
                     }
                     Create(path) | Write(path) | Remove(path) => {
                         if is_temp_file(&path) || path.is_dir() {
@@ -510,7 +509,6 @@ fn is_folder_empty(dir: &Path) -> bool {
 
     true
 }
-
 
 #[cfg(test)]
 mod tests {

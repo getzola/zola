@@ -298,7 +298,8 @@ impl Library {
     }
 
     pub fn get_section_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Section> {
-        self.sections.get_mut(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
+        self.sections
+            .get_mut(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
     pub fn get_section_by_key(&self, key: Key) -> &Section {
