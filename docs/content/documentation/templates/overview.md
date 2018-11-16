@@ -147,7 +147,7 @@ Gets the whole taxonomy of a specific kind.
 ### `load_data`
 Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*.
 
-The `path` argument specifies the path to the data file relative to your content directory.
+The `path` argument specifies the path to the data file. Data files live inside the `data/` directory in your sites base directory.
 As a security precaution, If this file is outside of the main site directory, your site will fail to build.
 
 ```jinja2

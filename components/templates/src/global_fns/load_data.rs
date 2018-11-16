@@ -6,6 +6,7 @@ use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
 use reqwest::{header, Client};
 use std::collections::hash_map::DefaultHasher;
+use std::error::Error;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
@@ -16,7 +17,8 @@ use std::sync::{Arc, Mutex};
 
 use csv::Reader;
 use std::collections::HashMap;
-use tera::{from_value, to_value, Error, GlobalFn, Map, Result, Value};
+use tera;
+use tera::{from_value, to_value, GlobalFn, Map, Result, Value};
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path` or `url` argument";
@@ -47,7 +49,7 @@ impl Hash for OutputFormat {
 }
 
 impl FromStr for OutputFormat {
-    type Err = Error;
+    type Err = tera::Error;
 
     fn from_str(output_format: &str) -> Result<Self> {
         return match output_format {
@@ -75,18 +77,21 @@ impl DataSource {
     fn from_args(
         path_arg: Option<String>,
         url_arg: Option<String>,
-        content_path: &PathBuf,
+        data_path: &PathBuf,
     ) -> Result<Self> {
         if path_arg.is_some() && url_arg.is_some() {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
         }
 
         if let Some(path) = path_arg {
-            let full_path = content_path.join(path);
-            if !full_path.exists() {
-                return Err(format!("{} doesn't exist", full_path.display()).into());
-            }
-            return Ok(DataSource::Path(full_path));
+            let full_path = data_path.join(path);
+            return match full_path.canonicalize() {
+                Ok(canonical_path) => Ok(DataSource::Path(canonical_path)),
+                Err(e) => {
+                    Err(format!("Failed to load {}: {}", full_path.display(), e.description())
+                        .into())
+                }
+            };
         }
 
         if let Some(url) = url_arg {
@@ -119,14 +124,14 @@ impl Hash for DataSource {
 }
 
 fn get_data_source_from_args(
-    content_path: &PathBuf,
+    data_path: &PathBuf,
     args: &HashMap<String, Value>,
 ) -> Result<DataSource> {
     let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
 
     let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
 
-    return DataSource::from_args(path_arg, url_arg, content_path);
+    return DataSource::from_args(path_arg, url_arg, data_path);
 }
 
 fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
@@ -137,8 +142,7 @@ fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
             "{} is not inside the base site directory {}",
             full_path.display(),
             base_path.display()
-        )
-        .into());
+        ).into());
     }
     return read_file(&full_path).map_err(|e| {
         format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into()
@@ -173,13 +177,14 @@ fn get_output_format_from_args(
 
 /// A global function to load data from a file or from a URL
 /// Currently the supported formats are json, toml, csv and plain text
-pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
+pub fn make_load_data(base_path: PathBuf) -> GlobalFn {
+    let data_path = base_path.join("data");
     let mut headers = header::HeaderMap::new();
     headers.insert(header::USER_AGENT, "zola".parse().unwrap());
     let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
     let result_cache: Arc<Mutex<HashMap<u64, Value>>> = Arc::new(Mutex::new(HashMap::new()));
     Box::new(move |args| -> Result<Value> {
-        let data_source = get_data_source_from_args(&content_path, &args)?;
+        let data_source = get_data_source_from_args(&data_path, &args)?;
 
         let file_format = get_output_format_from_args(&args, &data_source)?;
 
@@ -310,34 +315,29 @@ mod tests {
     use tera::to_value;
 
     fn get_test_file(filename: &str) -> PathBuf {
-        let test_files = PathBuf::from("../utils/test-files").canonicalize().unwrap();
+        let test_files = PathBuf::from("../utils/test-files/data").canonicalize().unwrap();
         return test_files.join(filename);
     }
 
     #[test]
     fn fails_when_missing_file() {
-        let static_fn =
-            make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+        let static_fn = make_load_data(PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert!(result.unwrap_err().description().contains("READMEE.md doesn't exist"));
+        assert!(result.unwrap_err().description().contains("READMEE.md: entity not found"));
     }
 
     #[test]
     fn cant_load_outside_content_dir() {
-        let static_fn =
-            make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+        let static_fn = make_load_data(PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../README.md").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn(args);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .description()
-            .contains("README.md is not inside the base site directory"));
+        assert!(result.unwrap_err().description().contains("README.md: entity not found"));
     }
 
     #[test]
@@ -378,7 +378,7 @@ mod tests {
 
     #[test]
     fn can_load_remote_data() {
-        let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
+        let static_fn = make_load_data(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://httpbin.org/json").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -391,7 +391,7 @@ mod tests {
 
     #[test]
     fn fails_when_request_404s() {
-        let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
+        let static_fn = make_load_data(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://httpbin.org/status/404/").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -405,10 +405,7 @@ mod tests {
 
     #[test]
     fn can_load_toml() {
-        let static_fn = make_load_data(
-            PathBuf::from("../utils/test-files"),
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn(args.clone()).unwrap();
@@ -427,10 +424,7 @@ mod tests {
 
     #[test]
     fn can_load_csv() {
-        let static_fn = make_load_data(
-            PathBuf::from("../utils/test-files"),
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.csv").unwrap());
         let result = static_fn(args.clone()).unwrap();
@@ -449,10 +443,7 @@ mod tests {
 
     #[test]
     fn can_load_json() {
-        let static_fn = make_load_data(
-            PathBuf::from("../utils/test-files"),
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = make_load_data(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.json").unwrap());
         let result = static_fn(args.clone()).unwrap();

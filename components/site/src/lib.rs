@@ -326,7 +326,7 @@ impl Site {
         );
         self.tera.register_function(
             "load_data",
-            global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()),
+            global_fns::make_load_data(self.base_path.clone()),
         );
     }
 
