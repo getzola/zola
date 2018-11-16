@@ -262,6 +262,13 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
         return site.build();
     }
 
+    // We ignore renames on non-markdown files for now
+    if let Some(ext) = new_path.extension() {
+        if ext != "md" {
+            return Ok(());
+        }
+    }
+
     // Renaming a file to _index.md, let the section editing do something and hope for the best
     if new_path.file_name().unwrap() == "_index.md" {
         // We aren't entirely sure where the original thing was so just try to delete whatever was

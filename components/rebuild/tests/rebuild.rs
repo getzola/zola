@@ -223,3 +223,14 @@ fn can_rebuild_after_renaming_section_folder() {
 
     assert!(file_contains!(site_path, "public/new-posts/simple/index.html", "simple"));
 }
+
+#[test]
+fn can_rebuild_after_renaming_non_md_asset_in_colocated_folder() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (old_path, new_path) = rename!(site_path, "content/posts/with-assets/zola.png", "gutenberg.png");
+
+    // Testing that we don't try to load some images as markdown or something
+    let res = after_content_rename(&mut site, &old_path, &new_path);
+    assert!(res.is_ok());
+}
