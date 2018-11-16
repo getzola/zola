@@ -169,8 +169,11 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "posts/tutorials/devops/index.html"));
     assert!(file_contains!(public, "posts/tutorials/devops/index.html", "docker"));
 
-    // No tags or categories
-    assert_eq!(file_exists!(public, "categories/index.html"), false);
+    // We do have categories
+    assert_eq!(file_exists!(public, "categories/index.html"), true);
+    assert_eq!(file_exists!(public, "categories/a-category/index.html"), true);
+    assert_eq!(file_exists!(public, "categories/a-category/rss.xml"), true);
+    // But no tags
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
     // Theme files are there
@@ -245,8 +248,11 @@ fn can_build_site_with_live_reload() {
     assert!(file_exists!(public, "posts/tutorials/programming/index.html"));
     // TODO: add assertion for syntax highlighting
 
-    // No tags or categories
-    assert_eq!(file_exists!(public, "categories/index.html"), false);
+    // We do have categories
+    assert_eq!(file_exists!(public, "categories/index.html"), true);
+    assert_eq!(file_exists!(public, "categories/a-category/index.html"), true);
+    assert_eq!(file_exists!(public, "categories/a-category/rss.xml"), true);
+    // But no tags
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
     // no live reload code

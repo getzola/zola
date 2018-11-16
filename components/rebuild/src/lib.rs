@@ -118,6 +118,7 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
     }
 
     site.populate_sections();
+    site.populate_taxonomies()?;
     // Ensure we have our fn updated so it doesn't contain the permalink(s)/section/page deleted
     site.register_early_global_fns();
     site.register_tera_global_fns();
@@ -190,6 +191,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
         // Updating a page
         Some(prev) => {
             site.populate_sections();
+            site.populate_taxonomies()?;
 
             // Front matter didn't change, only content did
             if site.library.get_page(&pathbuf).unwrap().meta == prev.meta {
@@ -362,6 +364,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
                 site.render_markdown()?;
             }
             site.populate_sections();
+            site.populate_taxonomies()?;
             site.render_sections()?;
             site.render_orphan_pages()?;
             site.render_taxonomies()

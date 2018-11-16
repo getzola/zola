@@ -10,6 +10,8 @@
 Tera function
 - Table of content now strips HTML from the titles to avoid various issues
 - `gutenberg-anchor` CSS class has been renamed `zola-anchor`
+- `data` is now a reserved variable name in templates, it is unused right now but
+might change soon.
 
 ### Others
 - Many many times faster (x5-x40) for most sites
