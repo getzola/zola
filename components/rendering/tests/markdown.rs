@@ -688,3 +688,36 @@ fn can_handle_summaries() {
         Some("<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n".len())
     );
 }
+
+// https://github.com/Keats/gutenberg/issues/522
+#[test]
+fn doesnt_try_to_highlight_content_from_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"
+<figure>
+     {% if width %}
+     <img src="/images/{{ src }}" alt="{{ caption }}" width="{{ width }}" />
+     {% else %}
+     <img src="/images/{{ src }}" alt="{{ caption }}" />
+     {% endif %}
+
+     <figcaption>{{ caption }}</figcaption>
+</figure>"#;
+
+    let markdown_string = r#"{{ figure(src="spherecluster.png", caption="Some spheres.") }}"#;
+
+    let expected = r#"<figure>
+     <img src="/images/spherecluster.png" alt="Some spheres." />
+     <figcaption>Some spheres.</figcaption>
+</figure>"#;
+
+    tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, expected);
+}

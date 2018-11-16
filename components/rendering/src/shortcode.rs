@@ -1,6 +1,7 @@
 use pest::iterators::Pair;
 use pest::Parser;
 use tera::{to_value, Context, Map, Value};
+use regex::Regex;
 
 use context::RenderContext;
 use errors::{Result, ResultExt};
@@ -12,6 +13,10 @@ const _GRAMMAR: &str = include_str!("content.pest");
 #[derive(Parser)]
 #[grammar = "content.pest"]
 pub struct ContentParser;
+
+lazy_static! {
+    static ref MULTIPLE_NEWLINE_RE: Regex = Regex::new(r"\n\s*\n").unwrap();
+}
 
 fn replace_string_markers(input: &str) -> String {
     match input.chars().next().unwrap() {
@@ -113,7 +118,12 @@ fn render_shortcode(
         .render(&tpl_name, &tera_context)
         .chain_err(|| format!("Failed to render {} shortcode", name))?;
 
-    Ok(res)
+    // Small hack to avoid having multiple blank lines because of Tera tags for example
+    // A blank like will cause the markdown parser to think we're out of HTML and start looking
+    // at indentation, making the output a code block.
+    let res = MULTIPLE_NEWLINE_RE.replace_all(&res, "\n");
+
+    Ok(res.to_string())
 }
 
 pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {

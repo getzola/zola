@@ -42,6 +42,8 @@ fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
     find_anchor(anchors, name, level + 1)
 }
 
+// Colocated asset links refers to the files in the same directory,
+// there it should be a filename only
 fn is_colocated_asset_link(link: &str) -> bool {
     !link.contains('/')  // http://, ftp://, ../ etc
         && !link.starts_with("mailto:")

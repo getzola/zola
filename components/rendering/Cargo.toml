@@ -12,6 +12,8 @@ serde = "1"
 serde_derive = "1"
 pest = "2"
 pest_derive = "2"
+regex = "1"
+lazy_static = "1"
 
 errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }
