@@ -1,5 +1,5 @@
 # zola (né Gutenberg)
-[![Build Status](https://travis-ci.org/getzola/zola.svg?branch=master)](https://travis-ci.org/getzola/zola)
+[![Build Status](https://travis-ci.com/getzola/zola.svg?branch=master)](https://travis-ci.com/getzola/zola)
 [![Build status](https://ci.appveyor.com/api/projects/status/i0ufvx2sdm2cmawo/branch/master?svg=true)](https://ci.appveyor.com/project/Keats/zola/branch/master)
 
 A fast static site generator in a single binary with everything built-in.
