@@ -6,23 +6,23 @@ template = "theme.html"
 date = 2018-01-25T18:44:44+01:00
 
 [extra]
-created = 2018-02-22T19:13:36+01:00
+created = 2018-08-04T13:14:45+02:00
 updated = 2018-01-25T18:44:44+01:00
-repository = "https://github.com/Keats/even"
-homepage = "https://github.com/Keats/even"
-minimum_version = "0.4.0"
+repository = "https://github.com/getzola/even"
+homepage = "https://github.com/getzola/even"
+minimum_version = "0.5.0"
 license = "MIT"
-demo = "https://gutenberg-even.netlify.com"
+demo = "https://zola-even.netlify.com"
 
 [extra.author]
 name = "Vincent Prouillet"
-homepage = "https://vincent.is"
+homepage = "https://www.vincentprouillet.com"
 +++        
 
 # Even
 Even is a clean, responsive theme based on the Hugo theme with the same name featuring categories, tags and pagination.
 
-![even screenshot](https://github.com/Keats/even/blob/master/screenshot.png?raw=true)
+![even screenshot](https://github.com/getzola/even/blob/master/screenshot.png?raw=true)
 
 ## Contents
 
@@ -36,7 +36,7 @@ First download this theme to your `themes` directory:
 
 ```bash
 $ cd themes
-$ git clone https://github.com/Keats/even.git
+$ git clone https://github.com/getzola/even.git
 ```
 and then enable it in your `config.toml`:
 
@@ -55,6 +55,15 @@ taxonomies = [
 ```
 If you want to paginate taxonomies pages, you will need to overwrite the templates
 as it only works for non-paginated taxonomies by default.
+
+It also requires to put the posts in the root of the `content` folder and to enable pagination, for example in `content/_index.md`:
+
+```
++++
+paginate_by = 5
+sort_by = "date"
++++
+```
 
 ## Options
 

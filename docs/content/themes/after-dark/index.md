@@ -6,22 +6,22 @@ template = "theme.html"
 date = 2017-11-07T17:39:37+01:00
 
 [extra]
-created = 2018-02-22T19:13:36+01:00
+created = 2018-08-04T13:14:45+02:00
 updated = 2017-11-07T17:39:37+01:00
-repository = "https://github.com/Keats/after-dark"
-homepage = "https://github.com/Keats/after-dark"
-minimum_version = "0.4.0"
+repository = "https://github.com/getzola/after-dark"
+homepage = "https://github.com/getzola/after-dark"
+minimum_version = "0.5.0"
 license = "MIT"
-demo = "https://gutenberg-after-dark.netlify.com"
+demo = "https://zola-after-dark.netlify.com"
 
 [extra.author]
 name = "Vincent Prouillet"
-homepage = "https://vincent.is"
+homepage = "https://www.vincentprouillet.com"
 +++        
 
 # after-dark
 
-![after-dark screenshot](https://github.com/Keats/after-dark/blob/master/screenshot.png?raw=true)
+![after-dark screenshot](https://github.com/getzola/after-dark/blob/master/screenshot.png?raw=true)
 
 ## Contents
 
@@ -35,7 +35,7 @@ First download this theme to your `themes` directory:
 
 ```bash
 $ cd themes
-$ git clone https://github.com/Keats/after-dark.git
+$ git clone https://github.com/getzola/after-dark.git
 ```
 and then enable it in your `config.toml`:
 

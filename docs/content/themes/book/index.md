@@ -6,17 +6,17 @@ template = "theme.html"
 date = 2018-01-28T10:53:19+01:00
 
 [extra]
-created = 2018-02-22T19:13:36+01:00
+created = 2018-08-04T13:14:45+02:00
 updated = 2018-01-28T10:53:19+01:00
-repository = "https://github.com/Keats/book"
-homepage = "https://github.com/Keats/book"
-minimum_version = "0.4.0"
+repository = "https://github.com/getzola/book"
+homepage = "https://github.com/getzola/book"
+minimum_version = "0.5.0"
 license = "MIT"
-demo = "https://gutenberg-book.netlify.com"
+demo = "https://zola-book.netlify.com"
 
 [extra.author]
 name = "Vincent Prouillet"
-homepage = "https://vincent.is"
+homepage = "https://www.vincentprouillet.com"
 +++        
 
 # book
@@ -38,7 +38,7 @@ First download this theme to your `themes` directory:
 
 ```bash
 $ cd themes
-$ git clone https://github.com/Keats/book.git
+$ git clone https://github.com/getzola/book.git
 ```
 and then enable it in your `config.toml`:
 

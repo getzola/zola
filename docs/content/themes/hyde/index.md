@@ -6,21 +6,21 @@ template = "theme.html"
 date = 2017-10-24T15:01:52+02:00
 
 [extra]
-created = 2018-02-28T19:41:16+01:00
+created = 2018-08-04T13:14:45+02:00
 updated = 2017-10-24T15:01:52+02:00
-repository = "https://github.com/Keats/hyde"
-homepage = "https://github.com/Keats/gutenberg-hyde"
-minimum_version = "0.2"
+repository = "https://github.com/getzola/hyde"
+homepage = "https://github.com/getzola/hyde"
+minimum_version = "0.5.0"
 license = "MIT"
-demo = ""
+demo = "https://zola-hyde.netlify.com"
 
 [extra.author]
 name = "Vincent Prouillet"
-homepage = "https://vincent.is"
+homepage = "https://www.vincentprouillet.com"
 +++        
 
 # hyde
-Hyde is a brazen two-column [Gutenberg](https://github.com/Keats/gutenberg) based on the Jekyll theme of the same name that pairs a prominent sidebar with uncomplicated content.
+Hyde is a brazen two-column [Zola](https://github.com/getzola/zola) based on the Jekyll theme of the same name that pairs a prominent sidebar with uncomplicated content.
 
 ![Hyde screenshot](https://f.cloud.github.com/assets/98681/1831228/42af6c6a-7384-11e3-98fb-e0b923ee0468.png)
 
@@ -39,7 +39,7 @@ First download this theme to your `themes` directory:
 
 ```bash
 $ cd themes
-$ git clone https://github.com/Keats/hyde.git
+$ git clone https://github.com/getzola/hyde.git
 ```
 and then enable it in your `config.toml`:
 
