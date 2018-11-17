@@ -1,10 +1,10 @@
 [build]
     base    = "docs"
     publish = "docs/public"
-    command = "zola build"
+    command = "curl -sL https://github.com/getzola/zola/releases/download/v0.5.0/zola-v0.5.0-x86_64-unknown-linux-gnu.tar.gz | tar zxv && ./zola build"
 
 [build.environment]
     ZOLA_VERSION = "0.5.0"
 
 [context.deploy-preview]
-    command = "zola build --base-url $DEPLOY_PRIME_URL"
+    command = "curl -sL https://github.com/getzola/zola/releases/download/v0.5.0/zola-v0.5.0-x86_64-unknown-linux-gnu.tar.gz | tar zxv && ./zola build--base-url $DEPLOY_PRIME_URL"
