@@ -1,14 +1,13 @@
-use std::fs::{create_dir, canonicalize};
+use std::fs::{canonicalize, create_dir};
 use std::path::Path;
 
 use errors::Result;
 use utils::fs::create_file;
 
-use prompt::{ask_bool, ask_url};
 use console;
+use prompt::{ask_bool, ask_url};
 
-
-const CONFIG: &'static str = r#"
+const CONFIG: &str = r#"
 # The URL the site will be built for
 base_url = "%BASE_URL%"
 
@@ -16,7 +15,7 @@ base_url = "%BASE_URL%"
 compile_sass = %COMPILE_SASS%
 
 # Whether to do syntax highlighting
-# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Gutenberg
+# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
 highlight_code = %HIGHLIGHT%
 
 # Whether to build a search index to be used later on by a JavaScript library
@@ -26,7 +25,6 @@ build_search_index = %SEARCH%
 # Put all your custom variables here
 "#;
 
-
 pub fn create_new_project(name: &str) -> Result<()> {
     let path = Path::new(name);
     // Better error message than the rust default
@@ -35,7 +33,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
     }
 
     create_dir(path)?;
-    console::info("Welcome to Gutenberg!");
+    console::info("Welcome to Zola!");
 
     let base_url = ask_url("> What is the URL of your site?", "https://example.com")?;
     let compile_sass = ask_bool("> Do you want to enable Sass compilation?", true)?;
@@ -62,7 +60,9 @@ pub fn create_new_project(name: &str) -> Result<()> {
     println!();
     console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));
     println!();
-    console::info("Get started by moving into the directory and using the built-in server: `gutenberg serve`");
-    println!("Visit https://www.getgutenberg.io for the full documentation.");
+    console::info(
+        "Get started by moving into the directory and using the built-in server: `zola serve`",
+    );
+    println!("Visit https://www.getzola.org for the full documentation.");
     Ok(())
 }

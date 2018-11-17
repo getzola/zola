@@ -1,28 +1,15 @@
 extern crate site;
 #[macro_use]
 extern crate errors;
-extern crate content;
 extern crate front_matter;
+extern crate library;
 
-use std::path::{Path, Component};
+use std::path::{Component, Path};
 
 use errors::Result;
-use site::Site;
-use content::{Page, Section};
 use front_matter::{PageFrontMatter, SectionFrontMatter};
-
-
-/// Finds the section that contains the page given if there is one
-pub fn find_parent_section<'a>(site: &'a Site, page: &Page) -> Option<&'a Section> {
-    for section in site.sections.values() {
-        if section.is_child_page(&page.file.path) {
-            return Some(section);
-        }
-    }
-
-    None
-}
-
+use library::{Page, Section};
+use site::Site;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PageChangesNeeded {
@@ -44,16 +31,25 @@ pub enum SectionChangesNeeded {
     RenderWithPages,
     /// Setting `render` to false
     Delete,
+    /// Changing `transparent`
+    Transparent,
 }
 
 /// Evaluates all the params in the front matter that changed so we can do the smallest
 /// delta in the serve command
 /// Order matters as the actions will be done in insertion order
-fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &SectionFrontMatter) -> Vec<SectionChangesNeeded> {
+fn find_section_front_matter_changes(
+    current: &SectionFrontMatter,
+    new: &SectionFrontMatter,
+) -> Vec<SectionChangesNeeded> {
     let mut changes_needed = vec![];
 
     if current.sort_by != new.sort_by {
         changes_needed.push(SectionChangesNeeded::Sort);
+    }
+
+    if current.transparent != new.transparent {
+        changes_needed.push(SectionChangesNeeded::Transparent);
     }
 
     // We want to hide the section
@@ -66,7 +62,8 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &Section
 
     if current.paginate_by != new.paginate_by
         || current.paginate_path != new.paginate_path
-        || current.insert_anchor_links != new.insert_anchor_links {
+        || current.insert_anchor_links != new.insert_anchor_links
+    {
         changes_needed.push(SectionChangesNeeded::RenderWithPages);
         // Nothing else we can do
         return changes_needed;
@@ -80,14 +77,18 @@ fn find_section_front_matter_changes(current: &SectionFrontMatter, new: &Section
 /// Evaluates all the params in the front matter that changed so we can do the smallest
 /// delta in the serve command
 /// Order matters as the actions will be done in insertion order
-fn find_page_front_matter_changes(current: &PageFrontMatter, other: &PageFrontMatter) -> Vec<PageChangesNeeded> {
+fn find_page_front_matter_changes(
+    current: &PageFrontMatter,
+    other: &PageFrontMatter,
+) -> Vec<PageChangesNeeded> {
     let mut changes_needed = vec![];
 
     if current.taxonomies != other.taxonomies {
         changes_needed.push(PageChangesNeeded::Taxonomies);
     }
 
-    if current.date != other.date || current.order != other.order || current.weight != other.weight {
+    if current.date != other.date || current.order != other.order || current.weight != other.weight
+    {
         changes_needed.push(PageChangesNeeded::Sort);
     }
 
@@ -98,145 +99,130 @@ fn find_page_front_matter_changes(current: &PageFrontMatter, other: &PageFrontMa
 /// Handles a path deletion: could be a page, a section, a folder
 fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> {
     // Ignore the event if this path was not known
-    if !site.sections.contains_key(path) && !site.pages.contains_key(path) {
+    if !site.library.contains_section(&path.to_path_buf())
+        && !site.library.contains_page(&path.to_path_buf())
+    {
         return Ok(());
     }
 
     if is_section {
-        if let Some(s) = site.pages.remove(path) {
+        if let Some(s) = site.library.remove_section(&path.to_path_buf()) {
             site.permalinks.remove(&s.file.relative);
-            site.populate_sections();
         }
-    } else {
-        if let Some(p) = site.pages.remove(path) {
-            site.permalinks.remove(&p.file.relative);
+    } else if let Some(p) = site.library.remove_page(&path.to_path_buf()) {
+        site.permalinks.remove(&p.file.relative);
 
-            if !p.meta.taxonomies.is_empty() {
-                site.populate_taxonomies()?;
-            }
-
-            // if there is a parent section, we will need to re-render it
-            // most likely
-            if find_parent_section(site, &p).is_some() {
-                site.populate_sections();
-            }
-        };
+        if !p.meta.taxonomies.is_empty() {
+            site.populate_taxonomies()?;
+        }
     }
 
+    site.populate_sections();
+    site.populate_taxonomies()?;
     // Ensure we have our fn updated so it doesn't contain the permalink(s)/section/page deleted
+    site.register_early_global_fns();
     site.register_tera_global_fns();
     // Deletion is something that doesn't happen all the time so we
     // don't need to optimise it too much
-    return site.build();
+    site.build()
 }
 
 /// Handles a `_index.md` (a section) being edited in some ways
 fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
     let section = Section::from_file(path, &site.config)?;
+    let pathbuf = path.to_path_buf();
     match site.add_section(section, true)? {
         // Updating a section
         Some(prev) => {
-            // Copy the section data so we don't end up with an almost empty object
-            site.sections.get_mut(path).unwrap().pages = prev.pages;
-            site.sections.get_mut(path).unwrap().ignored_pages = prev.ignored_pages;
-            site.sections.get_mut(path).unwrap().subsections = prev.subsections;
+            site.populate_sections();
 
-            if site.sections[path].meta == prev.meta {
+            if site.library.get_section(&pathbuf).unwrap().meta == prev.meta {
                 // Front matter didn't change, only content did
                 // so we render only the section page, not its pages
-                return site.render_section(&site.sections[path], false);
+                return site.render_section(&site.library.get_section(&pathbuf).unwrap(), false);
             }
 
             // Front matter changed
-            for changes in find_section_front_matter_changes(&site.sections[path].meta, &prev.meta) {
+            for changes in find_section_front_matter_changes(
+                &site.library.get_section(&pathbuf).unwrap().meta,
+                &prev.meta,
+            ) {
                 // Sort always comes first if present so the rendering will be fine
                 match changes {
                     SectionChangesNeeded::Sort => {
-                        site.sort_sections_pages(Some(path));
                         site.register_tera_global_fns();
                     }
-                    SectionChangesNeeded::Render => site.render_section(&site.sections[path], false)?,
-                    SectionChangesNeeded::RenderWithPages => site.render_section(&site.sections[path], true)?,
+                    SectionChangesNeeded::Render => {
+                        site.render_section(&site.library.get_section(&pathbuf).unwrap(), false)?
+                    }
+                    SectionChangesNeeded::RenderWithPages => {
+                        site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)?
+                    }
                     // not a common enough operation to make it worth optimizing
-                    SectionChangesNeeded::Delete => {
-                        site.populate_sections();
+                    SectionChangesNeeded::Delete | SectionChangesNeeded::Transparent => {
                         site.build()?;
                     }
                 };
             }
-            return Ok(());
+            Ok(())
         }
         // New section, only render that one
         None => {
             site.populate_sections();
             site.register_tera_global_fns();
-            return site.render_section(&site.sections[path], true);
+            site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)
         }
-    };
+    }
 }
 
 macro_rules! render_parent_section {
     ($site: expr, $path: expr) => {
-        match find_parent_section($site, &$site.pages[$path]) {
-            Some(s) => {
-                $site.render_section(s, false)?;
-            },
-            None => (),
+        if let Some(s) = $site.library.find_parent_section($path) {
+            $site.render_section(s, false)?;
         };
-    }
+    };
 }
 
 /// Handles a page being edited in some ways
 fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
     let page = Page::from_file(path, &site.config)?;
+    let pathbuf = path.to_path_buf();
     match site.add_page(page, true)? {
         // Updating a page
         Some(prev) => {
+            site.populate_sections();
+            site.populate_taxonomies()?;
+
             // Front matter didn't change, only content did
-            if site.pages[path].meta == prev.meta {
+            if site.library.get_page(&pathbuf).unwrap().meta == prev.meta {
                 // Other than the page itself, the summary might be seen
                 // on a paginated list for a blog for example
-                if site.pages[path].summary.is_some() {
+                if site.library.get_page(&pathbuf).unwrap().summary.is_some() {
                     render_parent_section!(site, path);
                 }
-                // TODO: register_tera_global_fns is expensive as it involves lots of cloning
-                // I can't think of a valid usecase where you would need the content
-                // of a page through a global fn so it's commented out for now
-                // site.register_tera_global_fns();
-                return site.render_page(&site.pages[path]);
+                site.register_tera_global_fns();
+                return site.render_page(&site.library.get_page(&pathbuf).unwrap());
             }
 
             // Front matter changed
-            let mut sections_populated = false;
-            for changes in find_page_front_matter_changes(&site.pages[path].meta, &prev.meta) {
+            for changes in find_page_front_matter_changes(
+                &site.library.get_page(&pathbuf).unwrap().meta,
+                &prev.meta,
+            ) {
+                site.register_tera_global_fns();
+
                 // Sort always comes first if present so the rendering will be fine
                 match changes {
                     PageChangesNeeded::Taxonomies => {
                         site.populate_taxonomies()?;
-                        site.register_tera_global_fns();
                         site.render_taxonomies()?;
                     }
                     PageChangesNeeded::Sort => {
-                        let section_path = match find_parent_section(site, &site.pages[path]) {
-                            Some(s) => s.file.path.clone(),
-                            None => continue  // Do nothing if it's an orphan page
-                        };
-                        if !sections_populated {
-                            site.populate_sections();
-                            sections_populated = true;
-                        }
-                        site.sort_sections_pages(Some(&section_path));
-                        site.register_tera_global_fns();
                         site.render_index()?;
                     }
                     PageChangesNeeded::Render => {
-                        if !sections_populated {
-                            site.populate_sections();
-                            sections_populated = true;
-                        }
-                        site.register_tera_global_fns();
                         render_parent_section!(site, path);
-                        site.render_page(&site.pages[path])?;
+                        site.render_page(&site.library.get_page(&path.to_path_buf()).unwrap())?;
                     }
                 };
             }
@@ -246,6 +232,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
         None => {
             site.populate_sections();
             site.populate_taxonomies()?;
+            site.register_early_global_fns();
             site.register_tera_global_fns();
             // No need to optimise that yet, we can revisit if it becomes an issue
             site.build()
@@ -253,8 +240,58 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
     }
 }
 
+/// What happens when we rename a file/folder in the content directory.
+/// Note that this is only called for folders when it isn't empty
+pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<()> {
+    let new_path = if new.is_dir() {
+        if new.join("_index.md").exists() {
+            // This is a section keep the dir folder to differentiate from renaming _index.md
+            // which doesn't do the same thing
+            new.to_path_buf()
+        } else if new.join("index.md").exists() {
+            new.join("index.md")
+        } else {
+            bail!("Got unexpected folder {:?} while handling renaming that was not expected", new);
+        }
+    } else {
+        new.to_path_buf()
+    };
 
-/// What happens when a section or a page is changed
+    // A section folder has been renamed: just reload the whole site and rebuild it as we
+    // do not really know what needs to be rendered
+    if new_path.is_dir() {
+        site.load()?;
+        return site.build();
+    }
+
+    // We ignore renames on non-markdown files for now
+    if let Some(ext) = new_path.extension() {
+        if ext != "md" {
+            return Ok(());
+        }
+    }
+
+    // Renaming a file to _index.md, let the section editing do something and hope for the best
+    if new_path.file_name().unwrap() == "_index.md" {
+        // We aren't entirely sure where the original thing was so just try to delete whatever was
+        // at the old path
+        site.library.remove_page(&old.to_path_buf());
+        site.library.remove_section(&old.to_path_buf());
+        return handle_section_editing(site, &new_path);
+    }
+
+    // If it is a page, just delete what was there before and
+    // fake it's a new page
+    let old_path = if new_path.file_name().unwrap() == "index.md" {
+        old.join("index.md")
+    } else {
+        old.to_path_buf()
+    };
+    site.library.remove_page(&old_path);
+    return handle_page_editing(site, &new_path);
+}
+
+/// What happens when a section or a page is created/edited
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let is_section = path.file_name().unwrap() == "_index.md";
     let is_md = path.extension().unwrap() == "md";
@@ -293,12 +330,10 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
         } else {
             handle_page_editing(site, path)
         }
+    } else if index.exists() {
+        handle_page_editing(site, &index)
     } else {
-        if index.exists() {
-            handle_page_editing(site, &index)
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 }
 
@@ -309,7 +344,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
 
     match filename {
         "sitemap.xml" => site.render_sitemap(),
-        "rss.xml" => site.render_rss_feed(None, None),
+        "rss.xml" => site.render_rss_feed(site.library.pages_values(), None),
         "robots.txt" => site.render_robots(),
         "single.html" | "list.html" => site.render_taxonomies(),
         "page.html" => {
@@ -325,10 +360,11 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             // because we have no clue which one needs rebuilding
             // TODO: look if there the shortcode is used in the markdown instead of re-rendering
             // everything
-            if path.components().collect::<Vec<_>>().contains(&Component::Normal("shortcodes".as_ref())) {
+            if path.components().any(|x| x == Component::Normal("shortcodes".as_ref())) {
                 site.render_markdown()?;
             }
             site.populate_sections();
+            site.populate_taxonomies()?;
             site.render_sections()?;
             site.render_orphan_pages()?;
             site.render_taxonomies()
@@ -336,16 +372,15 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
-    use front_matter::{PageFrontMatter, SectionFrontMatter, SortBy};
     use super::{
-        find_page_front_matter_changes, find_section_front_matter_changes,
-        PageChangesNeeded, SectionChangesNeeded,
+        find_page_front_matter_changes, find_section_front_matter_changes, PageChangesNeeded,
+        SectionChangesNeeded,
     };
+    use front_matter::{PageFrontMatter, SectionFrontMatter, SortBy};
 
     #[test]
     fn can_find_taxonomy_changes_in_page_frontmatter() {
@@ -362,7 +397,10 @@ mod tests {
         taxonomies.insert("categories".to_string(), vec!["a category".to_string()]);
         let current = PageFrontMatter { taxonomies, order: Some(1), ..PageFrontMatter::default() };
         let changes = find_page_front_matter_changes(&current, &PageFrontMatter::default());
-        assert_eq!(changes, vec![PageChangesNeeded::Taxonomies, PageChangesNeeded::Sort, PageChangesNeeded::Render]);
+        assert_eq!(
+            changes,
+            vec![PageChangesNeeded::Taxonomies, PageChangesNeeded::Sort, PageChangesNeeded::Render]
+        );
     }
 
     #[test]

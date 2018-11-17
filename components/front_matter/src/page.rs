@@ -1,68 +1,14 @@
 use std::collections::HashMap;
-use std::result::Result as StdResult;
 
 use chrono::prelude::*;
 use tera::{Map, Value};
-use serde::{Deserialize, Deserializer};
 use toml;
 
 use errors::Result;
-
-
-fn from_toml_datetime<'de, D>(deserializer: D) -> StdResult<Option<String>, D::Error>
-    where
-        D: Deserializer<'de>,
-{
-    toml::value::Datetime::deserialize(deserializer)
-        .map(|s| Some(s.to_string()))
-}
-
-/// Returns key/value for a converted date from TOML.
-/// If the table itself is the TOML struct, only return its value without the key
-fn convert_toml_date(table: Map<String, Value>) -> Value {
-    let mut new = Map::new();
-
-    for (k, v) in table {
-        if k == "$__toml_private_datetime" {
-            return v;
-        }
-
-        match v {
-            Value::Object(mut o) => {
-                // that was a toml datetime object, just return the date
-                if let Some(toml_date) = o.remove("$__toml_private_datetime") {
-                    new.insert(k, toml_date);
-                    return Value::Object(new);
-                }
-                new.insert(k, convert_toml_date(o));
-            }
-            _ => { new.insert(k, v); }
-        }
-    }
-
-    Value::Object(new)
-}
-
-/// TOML datetimes will be serialized as a struct but we want the
-/// stringified version for json, otherwise they are going to be weird
-fn fix_toml_dates(table: Map<String, Value>) -> Value {
-    let mut new = Map::new();
-
-    for (key, value) in table {
-        match value {
-            Value::Object(mut o) => {
-                new.insert(key, convert_toml_date(o));
-            }
-            _ => { new.insert(key, value); }
-        }
-    }
-
-    Value::Object(new)
-}
-
+use utils::de::{fix_toml_dates, from_toml_datetime};
 
 /// The front matter of every page
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(default)]
 pub struct PageFrontMatter {
     /// <title> of the page
@@ -72,6 +18,12 @@ pub struct PageFrontMatter {
     /// Date if we want to order pages (ie blog post)
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub date: Option<String>,
+    /// Chrono converted datetime
+    #[serde(default, skip_deserializing)]
+    pub datetime: Option<NaiveDateTime>,
+    /// The converted date into a (year, month, day) tuple
+    #[serde(default, skip_deserializing)]
+    pub datetime_tuple: Option<(i32, u32, u32)>,
     /// Whether this page is a draft and should be ignored for pagination etc
     pub draft: bool,
     /// The page slug. Will be used instead of the filename if present
@@ -86,7 +38,7 @@ pub struct PageFrontMatter {
     pub order: Option<usize>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
-    /// All aliases for that page. Gutenberg will create HTML templates that will
+    /// All aliases for that page. Zola will create HTML templates that will
     /// redirect to this
     #[serde(skip_serializing)]
     pub aliases: Vec<String>,
@@ -124,20 +76,32 @@ impl PageFrontMatter {
             Value::Object(o) => o,
             _ => unreachable!("Got something other than a table in page extra"),
         };
+
+        f.date_to_datetime();
+
         Ok(f)
     }
 
     /// Converts the TOML datetime to a Chrono naive datetime
-    pub fn date(&self) -> Option<NaiveDateTime> {
-        if let Some(ref d) = self.date {
+    /// Also grabs the year/month/day tuple that will be used in serialization
+    pub fn date_to_datetime(&mut self) {
+        self.datetime = if let Some(ref d) = self.date {
             if d.contains('T') {
                 DateTime::parse_from_rfc3339(&d).ok().and_then(|s| Some(s.naive_local()))
             } else {
-                NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok().and_then(|s| Some(s.and_hms(0, 0, 0)))
+                NaiveDate::parse_from_str(&d, "%Y-%m-%d")
+                    .ok()
+                    .and_then(|s| Some(s.and_hms(0, 0, 0)))
             }
         } else {
             None
-        }
+        };
+
+        self.datetime_tuple = if let Some(ref dt) = self.datetime {
+            Some((dt.year(), dt.month(), dt.day()))
+        } else {
+            None
+        };
     }
 
     pub fn order(&self) -> usize {
@@ -155,6 +119,8 @@ impl Default for PageFrontMatter {
             title: None,
             description: None,
             date: None,
+            datetime: None,
+            datetime_tuple: None,
             draft: false,
             slug: None,
             path: None,
@@ -169,11 +135,10 @@ impl Default for PageFrontMatter {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use tera::to_value;
     use super::PageFrontMatter;
+    use tera::to_value;
 
     #[test]
     fn can_have_empty_front_matter() {
@@ -194,7 +159,6 @@ mod tests {
         assert_eq!(res.title.unwrap(), "Hello".to_string());
         assert_eq!(res.description.unwrap(), "hey there".to_string())
     }
-
 
     #[test]
     fn errors_with_invalid_front_matter() {

@@ -3,7 +3,6 @@ base_url = "https://replace-this-with-your-url.com"
 highlight_code = true
 compile_sass = true
 generate_rss = true
-rss_limit = 2
 theme = "sample"
 
 taxonomies = [

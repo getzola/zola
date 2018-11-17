@@ -1,32 +1,32 @@
 #[macro_use]
 extern crate lazy_static;
-extern crate regex;
 extern crate image;
 extern crate rayon;
+extern crate regex;
 
-extern crate utils;
 extern crate errors;
+extern crate utils;
 
-use std::path::{Path, PathBuf};
-use std::hash::{Hash, Hasher};
-use std::collections::HashMap;
-use std::collections::hash_map::Entry as HEntry;
 use std::collections::hash_map::DefaultHasher;
+use std::collections::hash_map::Entry as HEntry;
+use std::collections::HashMap;
 use std::fs::{self, File};
+use std::hash::{Hash, Hasher};
+use std::path::{Path, PathBuf};
 
-use regex::Regex;
-use image::{GenericImage, FilterType};
 use image::jpeg::JPEGEncoder;
+use image::{FilterType, GenericImageView};
 use rayon::prelude::*;
+use regex::Regex;
 
-use utils::fs as ufs;
 use errors::{Result, ResultExt};
+use utils::fs as ufs;
 
-
-static RESIZED_SUBDIR: &'static str = "_processed_images";
+static RESIZED_SUBDIR: &'static str = "processed_images";
 
 lazy_static! {
-    pub static ref RESIZED_FILENAME: Regex = Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.]jpg"#).unwrap();
+    pub static ref RESIZED_FILENAME: Regex =
+        Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.]jpg"#).unwrap();
 }
 
 /// Describes the precise kind of a resize operation
@@ -57,16 +57,22 @@ impl ResizeOp {
 
         // Validate args:
         match op {
-            "fit_width" => if width.is_none() {
-                return Err("op=\"fit_width\" requires a `width` argument".to_string().into());
-            },
-            "fit_height" => if height.is_none() {
-                return Err("op=\"fit_height\" requires a `height` argument".to_string().into());
-            },
-            "scale" | "fit" | "fill" => if width.is_none() || height.is_none() {
-                return Err(format!("op={} requires a `width` and `height` argument", op).into());
-            },
-            _ => return Err(format!("Invalid image resize operation: {}", op).into())
+            "fit_width" => {
+                if width.is_none() {
+                    return Err("op=\"fit_width\" requires a `width` argument".to_string().into());
+                }
+            }
+            "fit_height" => {
+                if height.is_none() {
+                    return Err("op=\"fit_height\" requires a `height` argument".to_string().into());
+                }
+            }
+            "scale" | "fit" | "fill" => {
+                if width.is_none() || height.is_none() {
+                    return Err(format!("op={} requires a `width` and `height` argument", op).into());
+                }
+            }
+            _ => return Err(format!("Invalid image resize operation: {}", op).into()),
         };
 
         Ok(match op {
@@ -121,8 +127,12 @@ impl From<ResizeOp> for u8 {
 impl Hash for ResizeOp {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         hasher.write_u8(u8::from(*self));
-        if let Some(w) = self.width() { hasher.write_u32(w); }
-        if let Some(h) = self.height() { hasher.write_u32(h); }
+        if let Some(w) = self.width() {
+            hasher.write_u32(w);
+        }
+        if let Some(h) = self.height() {
+            hasher.write_u32(h);
+        }
     }
 }
 
@@ -207,8 +217,7 @@ impl ImageOp {
                         ((img_w - crop_w) / 2, 0)
                     };
 
-                    img.crop(offset_w, offset_h, crop_w, crop_h)
-                        .resize_exact(w, h, RESIZE_FILTER)
+                    img.crop(offset_w, offset_h, crop_w, crop_h).resize_exact(w, h, RESIZE_FILTER)
                 }
             }
         };
@@ -220,7 +229,6 @@ impl ImageOp {
         Ok(())
     }
 }
-
 
 /// A strcture into which image operations can be enqueued and then performed.
 /// All output is written in a subdirectory in `static_path`,
@@ -271,7 +279,11 @@ impl Processor {
 
     fn insert_with_collisions(&mut self, mut img_op: ImageOp) -> u32 {
         match self.img_ops.entry(img_op.hash) {
-            HEntry::Occupied(entry) => if *entry.get() == img_op { return 0; },
+            HEntry::Occupied(entry) => {
+                if *entry.get() == img_op {
+                    return 0;
+                }
+            }
             HEntry::Vacant(entry) => {
                 entry.insert(img_op);
                 return 0;
@@ -341,9 +353,8 @@ impl Processor {
                 let filename = entry_path.file_name().unwrap().to_string_lossy();
                 if let Some(capts) = RESIZED_FILENAME.captures(filename.as_ref()) {
                     let hash = u64::from_str_radix(capts.get(1).unwrap().as_str(), 16).unwrap();
-                    let collision_id = u32::from_str_radix(
-                        capts.get(2).unwrap().as_str(), 16,
-                    ).unwrap();
+                    let collision_id =
+                        u32::from_str_radix(capts.get(2).unwrap().as_str(), 16).unwrap();
 
                     if collision_id > 0 || !self.img_ops.contains_key(&hash) {
                         fs::remove_file(&entry_path)?;
@@ -359,26 +370,28 @@ impl Processor {
             ufs::ensure_directory_exists(&self.resized_path)?;
         }
 
-        self.img_ops.par_iter().map(|(hash, op)| {
-            let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id));
-            op.perform(&self.content_path, &target)
-                .chain_err(|| format!("Failed to process image: {}", op.source))
-        })
-            .fold(|| Ok(()), Result::and)
-            .reduce(|| Ok(()), Result::and)
+        self.img_ops
+            .par_iter()
+            .map(|(hash, op)| {
+                let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id));
+                op.perform(&self.content_path, &target)
+                    .chain_err(|| format!("Failed to process image: {}", op.source))
+            })
+            .collect::<Result<()>>()
     }
 }
 
-
 /// Looks at file's extension and returns whether it's a supported image format
 pub fn file_is_img<P: AsRef<Path>>(p: P) -> bool {
-    p.as_ref().extension().and_then(|s| s.to_str()).map(|ext| {
-        match ext.to_lowercase().as_str() {
+    p.as_ref()
+        .extension()
+        .and_then(|s| s.to_str())
+        .map(|ext| match ext.to_lowercase().as_str() {
             "jpg" | "jpeg" => true,
             "png" => true,
             "gif" => true,
             "bmp" => true,
             _ => false,
-        }
-    }).unwrap_or(false)
+        })
+        .unwrap_or(false)
 }

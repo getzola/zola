@@ -1,45 +1,70 @@
+use std::env;
+use std::io::Write;
 use std::time::Instant;
 
+use atty;
 use chrono::Duration;
-use term_painter::ToStyle;
-use term_painter::Color::*;
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use errors::Error;
 use site::Site;
 
+lazy_static! {
+    /// Termcolor color choice.
+    /// We do not rely on ColorChoice::Auto behavior
+    /// as the check is already performed by has_color.
+    static ref COLOR_CHOICE: ColorChoice =
+        if has_color() {
+            ColorChoice::Always
+        } else {
+            ColorChoice::Never
+        };
+}
 
 pub fn info(message: &str) {
-    println!("{}", NotSet.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true));
 }
 
 pub fn warn(message: &str) {
-    println!("{}", Yellow.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true).set_fg(Some(Color::Yellow)));
 }
 
 pub fn success(message: &str) {
-    println!("{}", Green.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true).set_fg(Some(Color::Green)));
 }
 
 pub fn error(message: &str) {
-    println!("{}", Red.bold().paint(message));
+    colorize(message, ColorSpec::new().set_bold(true).set_fg(Some(Color::Red)));
+}
+
+/// Print a colorized message to stdout
+fn colorize(message: &str, color: &ColorSpec) {
+    let mut stdout = StandardStream::stdout(*COLOR_CHOICE);
+    stdout.set_color(color).unwrap();
+    writeln!(&mut stdout, "{}", message).unwrap();
+    stdout.set_color(&ColorSpec::new()).unwrap();
 }
 
 /// Display in the console the number of pages/sections in the site
 pub fn notify_site_size(site: &Site) {
     println!(
         "-> Creating {} pages ({} orphan), {} sections, and processing {} images",
-        site.pages.len(),
+        site.library.pages().len(),
         site.get_all_orphan_pages().len(),
-        site.sections.len() - 1, // -1 since we do not the index as a section
+        site.library.sections().len() - 1, // -1 since we do not the index as a section
         site.num_img_ops(),
     );
 }
 
 /// Display a warning in the console if there are ignored pages in the site
 pub fn warn_about_ignored_pages(site: &Site) {
-    let ignored_pages: Vec<_> = site.sections
-        .values()
-        .flat_map(|s| s.ignored_pages.iter().map(|p| p.file.path.clone()))
+    let ignored_pages: Vec<_> = site
+        .library
+        .sections_values()
+        .iter()
+        .flat_map(|s| {
+            s.ignored_pages.iter().map(|k| site.library.get_page_by_key(*k).file.path.clone())
+        })
         .collect();
 
     if !ignored_pages.is_empty() {
@@ -74,4 +99,13 @@ pub fn unravel_errors(message: &str, error: &Error) {
     for e in error.iter().skip(1) {
         self::error(&format!("Reason: {}", e));
     }
+}
+
+/// Check whether to output colors
+fn has_color() -> bool {
+    let use_colors = env::var("CLICOLOR").unwrap_or_else(|_| "1".to_string()) != "0"
+        && env::var("NO_COLOR").is_err();
+    let force_colors = env::var("CLICOLOR_FORCE").unwrap_or_else(|_| "0".to_string()) != "0";
+
+    force_colors || use_colors && atty::is(atty::Stream::Stdout)
 }

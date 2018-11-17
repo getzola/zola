@@ -1,0 +1,26 @@
+[package]
+name = "library"
+version = "0.1.0"
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+
+[dependencies]
+slotmap = "0.2"
+rayon = "1"
+chrono = { version = "0.4", features = ["serde"] }
+tera = "0.11"
+serde = "1"
+serde_derive = "1"
+slug = "0.1"
+regex = "1"
+lazy_static = "1"
+
+front_matter = { path = "../front_matter" }
+config = { path = "../config" }
+utils = { path = "../utils" }
+rendering = { path = "../rendering" }
+errors = { path = "../errors" }
+
+[dev-dependencies]
+tempfile = "3"
+toml = "0.4"
+globset = "0.4"

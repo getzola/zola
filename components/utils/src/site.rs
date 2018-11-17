@@ -14,7 +14,7 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
 
 /// Resolves an internal link (of the `./posts/something.md#hey` sort) to its absolute link
 pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -> Result<String> {
-    // First we remove the ./ since that's gutenberg specific
+    // First we remove the ./ since that's zola specific
     let clean_link = link.replacen("./", "", 1);
     // Then we remove any potential anchor
     // parts[0] will be the file path and parts[1] the anchor if present
@@ -31,12 +31,11 @@ pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
-    use super::{resolve_internal_link, get_reading_analytics};
+    use super::{get_reading_analytics, resolve_internal_link};
 
     #[test]
     fn can_resolve_valid_internal_link() {

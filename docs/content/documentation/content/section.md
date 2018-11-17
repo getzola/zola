@@ -3,11 +3,11 @@ title = "Section"
 weight = 20
 +++
 
-A section is created whenever a folder (or subfolder) in the `content` section contains an 
-`_index.md` file.  If a folder does not contain an `_index.md` file, no section will be 
+A section is created whenever a folder (or subfolder) in the `content` section contains an
+`_index.md` file.  If a folder does not contain an `_index.md` file, no section will be
 created, but markdown files within that folder will still create pages (known as orphan pages).
 
-The index page (i.e., the page displayed when a user browses to your `base_url`) is a section, 
+The index page (i.e., the page displayed when a user browses to your `base_url`) is a section,
 which is created whether or not you add an `_index.md` file at the root of your `content` folder.
 If you do not create an `_index.md` file in your content directory, this main content section will
 not have any content or metadata.  If you would like to add content or metadata, you can add an
@@ -21,7 +21,7 @@ Any non-Markdown file in the section folder is added to the `assets` collection 
 The `_index.md` file within a folder defines the content and metadata for that section.  To set
 the metadata, add front matter to the file.
 
-The front-matter is a set of metadata embedded in a file. In Gutenberg,
+The front-matter is a set of metadata embedded in a file. In Zola,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
 After the closing `+++`, you can add content that will be parsed as markdown and will be available
@@ -49,6 +49,13 @@ weight = 0
 # Template to use to render this section page
 template = "section.html"
 
+# Apply the given template to ALL pages below the section, recursively.
+# If you have several nested sections each with a page_template set, the page
+# will always use the closest to itself.
+# However, a page own `template` variable will always have priority.
+# Not set by default
+page_template =
+
 # How many pages to be displayed per paginated page.
 # No pagination will happen if this isn't set or if the value is 0
 paginate_by = 0
@@ -71,10 +78,16 @@ in_search_index = true
 # to be used directly
 render = true
 
-# Whether to redirect when landing on that section. Defaults to `None`.
+# Whether to redirect when landing on that section. Defaults to not being set.
 # Useful for the same reason as `render` but when you don't want a 404 when
-# landing on the root section page
+# landing on the root section page.
+# Example: redirect_to = "documentation/content/overview"
 redirect_to = ""
+
+# Whether the section should pass its pages on to the parent section. Defaults to `false`.
+# Useful when the section shouldn't split up the parent section, like
+# sections for each year under a posts section.
+transparent = false
 
 # Your own data
 [extra]
@@ -95,10 +108,10 @@ You can also change the pagination path (the word displayed while paginated in t
 by setting the `paginate_path` variable, which defaults to `page`.
 
 ## Sorting
-It is very common for Gutenberg templates to iterate over pages or sections
-to display all pages/sections a given directory.  Consider a very simple 
+It is very common for Zola templates to iterate over pages or sections
+to display all pages/sections a given directory.  Consider a very simple
 example: a `blog` directory with three files: `blog/Post_1.md`,
-`blog/Post_2.md`, and `blog/Post_3.md`.  To iterate over these posts and 
+`blog/Post_2.md`, and `blog/Post_3.md`.  To iterate over these posts and
 create a list of links to the posts, a simple template might look like this:
 
 ```j2
@@ -107,15 +120,15 @@ create a list of links to the posts, a simple template might look like this:
 {% endfor %}
 ```
 
-This would iterate over the posts, and would do so in a specific order 
-based on the `sort_by` variable set in the `_index.md` page for the 
+This would iterate over the posts, and would do so in a specific order
+based on the `sort_by` variable set in the `_index.md` page for the
 containing section.  The `sort_by` variable can be given three values: `date`,
 `weight`, and `none`.  If no `sort_by` method is set, the pages will be
 sorted in the `none` order, which is not intended to be used for sorted content.
 
 Any page that is missing the data it needs to be sorted will be ignored and
-won't be rendered. For example, if a page is missing the date variable the 
-containing section sets `sort_by = "date"`, then that page will be ignored.  
+won't be rendered. For example, if a page is missing the date variable the
+containing section sets `sort_by = "date"`, then that page will be ignored.
 The terminal will warn you if this is happening.
 
 If several pages have the same date/weight/order, their permalink will be used
@@ -127,18 +140,18 @@ The `sort_by` front-matter variable can have the following values:
 ### `date`
 This will sort all pages by their `date` field, from the most recent (at the
 top of the list) to the oldest (at the bottom of the list).  Each page will
-get `page.earlier` and `page.later` variables that contain the pages with 
+get `page.earlier` and `page.later` variables that contain the pages with
 earlier and later dates, respectively.
 
 ### `weight`
-This will be sort all pages by their `weight` field, from lightest weight 
-(at the top of the list) to heaviest (at the bottom of the list).  Each 
-page gets `page.lighter` and `page.heavier` variables that contain the 
+This will be sort all pages by their `weight` field, from lightest weight
+(at the top of the list) to heaviest (at the bottom of the list).  Each
+page gets `page.lighter` and `page.heavier` variables that contain the
 pages with lighter and heavier weights, respectively.
 
-When iterating through pages, you may wish to use the Tera `reverse` filter, 
+When iterating through pages, you may wish to use the Tera `reverse` filter,
 which reverses the order of the pages.  Thus, after using the `reverse` filter,
-pages sorted by weight will be sorted from lightest (at the top) to heaviest 
+pages sorted by weight will be sorted from lightest (at the top) to heaviest
 (at the bottom); pages sorted by date will be sorted from oldest (at the top)
 to newest (at the bottom).
 
@@ -153,8 +166,8 @@ the top of the list and the heaviest (highest `weight`) will be at the top;
 the `reverse` filter reverses this order.
 
 **Note**: Unlike pages, permalinks will **not** be used to break ties between
-equally weighted sections.  Thus, if the `weight` variable for your section is not set (or if it 
-is set in a way that produces ties), then your sections will be sorted in 
+equally weighted sections.  Thus, if the `weight` variable for your section is not set (or if it
+is set in a way that produces ties), then your sections will be sorted in
 **random** order. Moreover, that order is determined at build time and will
-change with each site rebuild.  Thus, if there is any chance that you will 
+change with each site rebuild.  Thus, if there is any chance that you will
 iterate over your sections, you should always assign them weight.

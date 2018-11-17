@@ -3,7 +3,7 @@ title = "Directory structure"
 weight = 3
 +++
 
-After running `gutenberg init`, you should see the following structure in your folder:
+After running `zola init`, you should see the following structure in your folder:
 
 
 ```bash
@@ -21,7 +21,7 @@ After running `gutenberg init`, you should see the following structure in your f
 Here's a high level overview of each of these folders and `config.toml`.
 
 ## `config.toml`
-A mandatory configuration file of Gutenberg in TOML format.
+A mandatory configuration file of Zola in TOML format.
 It is explained in details in the [Configuration page](./documentation/getting-started/configuration.md).
 
 ## `content`

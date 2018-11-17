@@ -45,7 +45,7 @@
     margin-left: 2rem;
 
     h1, h2, h3, h4, h5, h6 {
-      .gutenberg-anchor {
+      .zola-anchor {
         font-size: 1.25rem;
         visibility: hidden;
         margin-left: -2rem;
@@ -55,10 +55,17 @@
       }
 
       &:hover {
-        .gutenberg-anchor {
+        .zola-anchor {
           visibility: visible;
         }
       }
+    }
+
+    blockquote {
+      border-left: 10px solid black;
+      padding: 0.25rem 0.5rem;
+      margin-left: 0;
+      font-style: italic;
     }
   }
 

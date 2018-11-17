@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.5.0 (2018-11-17)
+
+### Breaking
+
+- Gutenberg has changed name to `zola`!
+- The `pagers` variable of Paginator objects has been removed
+- `section.subsections` is now an array of paths to be used with the `get_section`
+Tera function
+- Table of content now strips HTML from the titles to avoid various issues
+- `gutenberg-anchor` CSS class has been renamed `zola-anchor`
+- `data` is now a reserved variable name in templates, it is unused right now but
+might change soon.
+
+### Others
+- Many many times faster (x5-x40) for most sites
+- Update dependencies, fixing a few bugs with templates
+- Load only .html files in themes from the templates folder
+- Background colour is set fewer times when highlighting syntaxes, resulting in smaller HTML filesize
+- Link checker will not try to validate email links anymore
+- Load table and footnote markdown extensions in `markdown` filter
+- `get_url` now defaults to not adding a trailing slash
+- Fix `--base-url` not overriding processed images URLs
+- Add more Emacs temp file to the ignored patterns in `gutenberg serve`
+- Files starting with `.` are not considered pages anymore even if they end with `.md`
+- `_processed_images` folder for image processing has been renamed `processed_images` to avoid issues with GitHub Pages
+- Syntax highlighting default was mistakenly `true`, it has been set to `false`
+- Add NO_COLOR and CLICOLOR support for having colours or not in CLI output
+- Fix `robots.txt`template not being used
+- RSS feed now takes all available articles by default instead of limiting to 10000
+- `templates` directory is now optional
+- Add Reason and F# syntax highlighting
+- Add `ancestors` to pages and sections pointing to the relative path of all ancestor
+sections up to the index to be used with the `get_section` Tera function
+- Add a `load_data` Tera function to load local CSV/TOML/JSON files
+- Add `relative_path` to pages and sections in templates
+- Do not have a trailing slash for the RSS permalinks
+- `serve` will now try to find other ports than 1111 rather than panicking
+- Ensure content directory exists before rendering aliases
+- Do not include drafts in pagination
+- Pages filenames starting by a date will now use that date as page date if there isn't one defined in frontmatter
+- Accept markdown files starting with BOM
+- Add a `watch-only` flag to the `serve` command for when you don't want a webserver
+- Add `transparent` sections, for when you want to separate content by sections but want to group them at a higher level (think a `posts` folder with years
+that want to use pagination on the index).
+- Add `page_template` to section front-matter for when you want to specify the template to use for every page under it
+- Improves to `zola serve`: now handles directories renaming
+
 ## 0.4.2 (2018-09-03)
 
 - Add assets to section indexes

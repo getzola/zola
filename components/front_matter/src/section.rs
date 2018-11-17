@@ -5,10 +5,9 @@ use toml;
 
 use errors::Result;
 
-use super::{SortBy, InsertAnchor};
+use super::{InsertAnchor, SortBy};
 
 static DEFAULT_PAGINATE_PATH: &'static str = "page";
-
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -51,6 +50,14 @@ pub struct SectionFrontMatter {
     /// Defaults to `true` but is only used if search if explicitly enabled in the config.
     #[serde(skip_serializing)]
     pub in_search_index: bool,
+    /// Whether the section should pass its pages on to the parent section. Defaults to `false`.
+    /// Useful when the section shouldn't split up the parent section, like
+    /// sections for each year under a posts section.
+    #[serde(skip_serializing)]
+    pub transparent: bool,
+    /// Optional template for all pages in this section (including the pages of children section)
+    #[serde(skip_serializing)]
+    pub page_template: Option<String>,
     /// Any extra parameter present in the front matter
     pub extra: HashMap<String, Value>,
 }
@@ -69,7 +76,7 @@ impl SectionFrontMatter {
     pub fn is_paginated(&self) -> bool {
         match self.paginate_by {
             Some(v) => v > 0,
-            None => false
+            None => false,
         }
     }
 }
@@ -88,6 +95,8 @@ impl Default for SectionFrontMatter {
             redirect_to: None,
             insert_anchor_links: InsertAnchor::None,
             in_search_index: true,
+            transparent: false,
+            page_template: None,
             extra: HashMap::new(),
         }
     }

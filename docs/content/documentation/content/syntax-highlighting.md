@@ -3,10 +3,10 @@ title = "Syntax Highlighting"
 weight = 80
 +++
 
-Gutenberg comes with built-in syntax highlighting but you first
+Zola comes with built-in syntax highlighting but you first
 need to enable it in the [configuration](./documentation/getting-started/configuration.md).
 
-Once this is done, Gutenberg will automatically highlight all code blocks
+Once this is done, Zola will automatically highlight all code blocks
 in your content. A code block in Markdown looks like the following:
 
 ````md
@@ -27,6 +27,7 @@ Here is a full list of the supported languages and the short names you can use:
 - Assembly x86 (NASM) -> ["asm", "inc", "nasm"]
 - Crystal -> ["cr"]
 - Elixir -> ["ex", "exs"]
+- fsharp -> ["fs"]
 - Handlebars -> ["handlebars", "handlebars.html", "hbr", "hbrs", "hbs", "hdbs", "hjs", "mu", "mustache", "rac", "stache", "template", "tmpl"]
 - Jinja2 -> ["j2", "jinja2"]
 - Julia -> ["jl"]
@@ -104,6 +105,7 @@ Here is a full list of the supported languages and the short names you can use:
 - XML -> ["xml", "xsd", "xslt", "tld", "dtml", "rss", "opml", "svg"]
 - YAML -> ["yaml", "yml", "sublime-syntax"]
 - SWI-Prolog -> ["pro"]
+- Reason -> ["re", "rei"]
 - CMake C Header -> ["h.in"]
 - CMake C++ Header -> ["hh.in", "hpp.in", "hxx.in", "h++.in"]
 - CMake -> ["CMakeLists.txt", "cmake"]
@@ -111,14 +113,15 @@ Here is a full list of the supported languages and the short names you can use:
 - Generic Config -> ["cfg", "conf", "config", "ini", "pro", "mak", "mk", "Doxyfile", "inputrc", ".inputrc", "dircolors", ".dircolors", "gitmodules", ".gitmodules", "gitignore", ".gitignore", "gitattributes", ".gitattributes"]
 - Elm -> ["elm"]
 - Linker Script -> ["ld"]
+- Swift -> ["swift"]
 - TOML -> ["toml", "tml"]
 - TypeScript -> ["ts"]
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]
-- TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock"]
+- TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock", "Pipfile"]
 ```
 
-If you want to highlight a language not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
+If you want to highlight a language not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 Alternatively, the `extra_syntaxes` config option can be used to add additional syntax files.
 
 If your site source is laid out as follows:

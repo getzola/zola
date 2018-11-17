@@ -1,7 +1,7 @@
 use clap::{App, AppSettings, Arg, SubCommand};
 
 pub fn build_cli() -> App<'static, 'static> {
-    App::new("gutenberg")
+    App::new("zola")
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
@@ -16,7 +16,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommands(vec![
             SubCommand::with_name("init")
-                .about("Create a new Gutenberg project")
+                .about("Create a new Zola project")
                 .arg(
                     Arg::with_name("name")
                         .required(true)
@@ -62,6 +62,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("127.0.0.1")
                         .takes_value(true)
                         .help("Changes the base_url"),
+                    Arg::with_name("watch_only")
+                        .long("watch-only")
+                        .takes_value(false)
+                        .help("Do not start a server, just re-build project on changes")
                 ]),
         ])
 }

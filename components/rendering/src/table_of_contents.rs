@@ -1,6 +1,5 @@
-use tera::{Tera, Context as TeraContext};
 use front_matter::InsertAnchor;
-
+use tera::{Context as TeraContext, Tera};
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Header {
@@ -31,6 +30,7 @@ pub struct TempHeader {
     pub id: String,
     pub permalink: String,
     pub title: String,
+    pub html: String,
 }
 
 impl TempHeader {
@@ -40,10 +40,16 @@ impl TempHeader {
             id: String::new(),
             permalink: String::new(),
             title: String::new(),
+            html: String::new(),
         }
     }
 
-    pub fn push(&mut self, val: &str) {
+    pub fn add_html(&mut self, val: &str) {
+        self.html += val;
+    }
+
+    pub fn add_text(&mut self, val: &str) {
+        self.html += val;
         self.title += val;
     }
 
@@ -51,16 +57,33 @@ impl TempHeader {
     pub fn to_string(&self, tera: &Tera, insert_anchor: InsertAnchor) -> String {
         let anchor_link = if insert_anchor != InsertAnchor::None {
             let mut c = TeraContext::new();
-            c.add("id", &self.id);
+            c.insert("id", &self.id);
             tera.render("anchor-link.html", &c).unwrap()
         } else {
             String::new()
         };
 
         match insert_anchor {
-            InsertAnchor::None => format!("<h{lvl} id=\"{id}\">{t}</h{lvl}>\n", lvl = self.level, t = self.title, id = self.id),
-            InsertAnchor::Left => format!("<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.title, id = self.id),
-            InsertAnchor::Right => format!("<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n", lvl = self.level, a = anchor_link, t = self.title, id = self.id),
+            InsertAnchor::None => format!(
+                "<h{lvl} id=\"{id}\">{t}</h{lvl}>\n",
+                lvl = self.level,
+                t = self.html,
+                id = self.id
+            ),
+            InsertAnchor::Left => format!(
+                "<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n",
+                lvl = self.level,
+                a = anchor_link,
+                t = self.html,
+                id = self.id
+            ),
+            InsertAnchor::Right => format!(
+                "<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n",
+                lvl = self.level,
+                a = anchor_link,
+                t = self.html,
+                id = self.id
+            ),
         }
     }
 }
@@ -71,9 +94,12 @@ impl Default for TempHeader {
     }
 }
 
-
 /// Recursively finds children of a header
-fn find_children(parent_level: i32, start_at: usize, temp_headers: &[TempHeader]) -> (usize, Vec<Header>) {
+fn find_children(
+    parent_level: i32,
+    start_at: usize,
+    temp_headers: &[TempHeader],
+) -> (usize, Vec<Header>) {
     let mut headers = vec![];
 
     let mut start_at = start_at;
@@ -117,7 +143,6 @@ fn find_children(parent_level: i32, start_at: usize, temp_headers: &[TempHeader]
     (start_at, headers)
 }
 
-
 /// Converts the flat temp headers into a nested set of headers
 /// representing the hierarchy
 pub fn make_table_of_contents(temp_headers: &[TempHeader]) -> Vec<Header> {
@@ -141,11 +166,7 @@ mod tests {
 
     #[test]
     fn can_make_basic_toc() {
-        let input = vec![
-            TempHeader::new(1),
-            TempHeader::new(1),
-            TempHeader::new(1),
-        ];
+        let input = vec![TempHeader::new(1), TempHeader::new(1), TempHeader::new(1)];
         let toc = make_table_of_contents(&input);
         assert_eq!(toc.len(), 3);
     }

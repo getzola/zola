@@ -3,7 +3,7 @@ title = "Configuration"
 weight = 4
 +++
 
-The default configuration will be enough to get Gutenberg running locally but not more than that.
+The default configuration will be enough to get Zola running locally but not more than that.
 It follows the philosophy of only paying for what you need: almost everything is turned off by default.
 
 To change the config, edit the `config.toml` file.
@@ -11,7 +11,7 @@ If you are not familiar with TOML, have a look at [the TOML Spec](https://github
 to learn about it.
 
 Only one variable - `base_url` - is mandatory, everything else is optional. You can find all variables
-used by Gutenberg config as well as their default values below:
+used by Zola config as well as their default values below:
 
 
 ```toml
@@ -37,8 +37,9 @@ highlight_theme = "base16-ocean-dark"
 # Whether to generate a RSS feed automatically
 generate_rss = false
 
-# The number of articles to include in the RSS feed
-rss_limit = 20
+# The number of articles to include in the RSS feed. Will include all items if
+# not set (the default).
+# rss_limit = 20
 
 # The taxonomies to be rendered for that site and their configuration
 # Example:
@@ -83,7 +84,7 @@ extra_syntaxes = []
 
 ## Syntax highlighting
 
-Gutenberg currently has the following highlight themes available:
+Zola currently has the following highlight themes available:
 
 - [1337](https://tmtheme-editor.herokuapp.com/#!/editor/theme/1337)
 - [agola-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark)
@@ -113,6 +114,9 @@ Gutenberg currently has the following highlight themes available:
 - [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
 - [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
 - [visual-studio-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Visual%20Studio%20Dark)
+- [ayu-light](https://github.com/dempfi/ayu)
+- [ayu-dark](https://github.com/dempfi/ayu)
+- [ayu-mirage](https://github.com/dempfi/ayu)
 
-Gutenberg uses the Sublime Text themes, making it very easy to add more.
-If you want a theme not on that list, please open an issue or a pull request on the [Gutenberg repo](https://github.com/Keats/gutenberg).
+Zola uses the Sublime Text themes, making it very easy to add more.
+If you want a theme not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).

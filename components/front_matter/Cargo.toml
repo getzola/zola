@@ -13,3 +13,4 @@ regex = "1"
 lazy_static = "1"
 
 errors = { path = "../errors" }
+utils = { path = "../utils" }

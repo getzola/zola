@@ -1,0 +1,3 @@
+User-agent: zola
+Allow: /
+Sitemap: {{config.base_url}}/sitemap.xml

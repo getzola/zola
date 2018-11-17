@@ -11,9 +11,9 @@ may be of interest:
 * The [official Sass website](http://sass-lang.com/)
 * [Why Sass?](https://alistapart.com/article/why-sass), by Dan Cederholm
 
-## Using Sass in Gutenberg
+## Using Sass in Zola
 
-Gutenberg processes any files with the `sass` or `scss` extensions in the `sass`
+Zola processes any files with the `sass` or `scss` extensions in the `sass`
 folder, and places the processed output into a `css` file with the same folder
 structure and base name into the `public` folder:
 
@@ -26,7 +26,7 @@ structure and base name into the `public` folder:
     ├── assets
     │   ├── fancy.scss // -> ./public/assets/fancy.css
     │   ├── same_name.scss // -> ./public/assets/same_name.css
-    │   ├── same_name.sass # CONFLICT! This has the same base name as the file above, so Gutenberg will return an error.
+    │   ├── same_name.sass # CONFLICT! This has the same base name as the file above, so Zola will return an error.
     │   └── _common_mixins.scss # This file won't get put into the `public` folder, but other files can @import it.
     └── secret-side-project
         └── style.scss // -> ./public/secret-side-project/fancy.css
@@ -38,5 +38,5 @@ folder, but can still be used as `@import` dependencies. For more information, s
 
 Files with the `scss` extension use ["Sassy CSS" syntax](http://sass-lang.com/documentation/#Formatting),
 while files with the `sass` extension use the ["indented" syntax](http://sass-lang.com/documentation/file.INDENTED_SYNTAX.html).
-Gutenberg will return an error if a `scss` and `sass` file exist with the same
+Zola will return an error if a `scss` and `sass` file exist with the same
 base name in the same folder to avoid confusion -- see the example above.

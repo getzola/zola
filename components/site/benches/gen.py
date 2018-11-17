@@ -54,7 +54,7 @@ sit submisso coniuge tristis ubi!
 ```rs
 #[derive(Debug)]
 pub struct Site {
-    /// The base path of the gutenberg site
+    /// The base path of the zola site
     pub base_path: PathBuf,
     /// The parsed config for the site
     pub config: Config,

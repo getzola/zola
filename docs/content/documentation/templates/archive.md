@@ -3,7 +3,7 @@ title = "Archive"
 weight = 90
 +++
 
-Gutenberg doesn't have a built-in way to display an archive page, a page showing
+Zola doesn't have a built-in way to display an archive page, a page showing
 all post titles ordered by year. However, this can be accomplished directly in the templates:
 
 ```jinja2

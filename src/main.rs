@@ -1,28 +1,31 @@
 extern crate actix_web;
+extern crate atty;
 #[macro_use]
 extern crate clap;
 extern crate chrono;
+#[macro_use]
+extern crate lazy_static;
+extern crate ctrlc;
 extern crate notify;
-extern crate term_painter;
+extern crate termcolor;
 extern crate url;
 extern crate ws;
-extern crate ctrlc;
 
 extern crate site;
 #[macro_use]
 extern crate errors;
-extern crate content;
 extern crate front_matter;
-extern crate utils;
 extern crate rebuild;
+extern crate utils;
 
 use std::time::Instant;
 
+use utils::net::{get_available_port, port_is_available};
+
+mod cli;
 mod cmd;
 mod console;
-mod cli;
 mod prompt;
-
 
 fn main() {
     let matches = cli::build_cli().get_matches();
@@ -36,9 +39,9 @@ fn main() {
                 Err(e) => {
                     console::unravel_errors("Failed to create the project", &e);
                     ::std::process::exit(1);
-                },
+                }
             };
-        },
+        }
         ("build", Some(matches)) => {
             console::info("Building site...");
             let start = Instant::now();
@@ -48,24 +51,44 @@ fn main() {
                 Err(e) => {
                     console::unravel_errors("Failed to build the site", &e);
                     ::std::process::exit(1);
-                },
+                }
             };
-        },
+        }
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
-            let port = matches.value_of("port").unwrap_or("1111");
+            let mut port: u16 = match matches.value_of("port").unwrap().parse() {
+                Ok(x) => x,
+                Err(_) => {
+                    console::error("The request port needs to be an integer");
+                    ::std::process::exit(1);
+                }
+            };
+            // Default one
+            if port != 1111 && !port_is_available(port) {
+                console::error("The requested port is not available");
+                ::std::process::exit(1);
+            }
+
+            if !port_is_available(port) {
+                port = if let Some(p) = get_available_port(1111) {
+                    p
+                } else {
+                    console::error("No port available.");
+                    ::std::process::exit(1);
+                }
+            }
+            let watch_only = matches.is_present("watch_only");
             let output_dir = matches.value_of("output_dir").unwrap();
             let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");
-            match cmd::serve(interface, port, output_dir, base_url, config_file) {
+            match cmd::serve(interface, port, output_dir, base_url, config_file, watch_only) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("", &e);
                     ::std::process::exit(1);
-                },
+                }
             };
-        },
+        }
         _ => unreachable!(),
     }
 }
-

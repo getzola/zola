@@ -6,11 +6,11 @@ os: Visual Studio 2017
 environment:
   global:
     RUST_VERSION: stable
-    CRATE_NAME: gutenberg
+    CRATE_NAME: zola
 
   matrix:
     - target: x86_64-pc-windows-msvc
-      RUST_VERSION: 1.27.0
+      RUST_VERSION: 1.29.0
     - target: x86_64-pc-windows-msvc
       RUST_VERSION: stable
 
@@ -29,13 +29,13 @@ test_script:
     )
 
 before_deploy:
-  - cargo rustc --target %TARGET% --release --bin gutenberg -- -C lto
+  - cargo rustc --target %TARGET% --release --bin zola -- -C lto
   - ps: ci\before_deploy.ps1
 
 deploy:
   artifact: /.*\.zip/
   auth_token:
-    secure: YCRPSTItx+m/3jnDfai52dEZNLYUTSEExF2lZoffULDzlv/t2jOR1fzSSIEi/xyB
+    secure: i64eFOHoySQryE3M9pr2JGRukAK3LGltOsUxeFHwilS+3O6/6828A4NUmI0FW4zN
   description: ''
   on:
     RUST_VERSION: stable
@@ -51,6 +51,7 @@ branches:
     # Release tags
     - /^v\d+\.\d+\.\d+.*$/
     - master
+    - next
 
 # disable automatic builds
 build: false

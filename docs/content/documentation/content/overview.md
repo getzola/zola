@@ -4,7 +4,7 @@ weight = 10
 +++
 
 
-Gutenberg uses the folder structure to determine the site structure.
+Zola uses the folder structure to determine the site structure.
 Each folder in the `content` directory represents a [section](./documentation/content/section.md)
 that contains [pages](./documentation/content/page.md): your `.md` files.
 
@@ -40,7 +40,7 @@ While not shown in the example, sections can be nested indefinitely.
 ## Assets colocation
 
 The `content` directory is not limited to markup files though: it's natural to want to co-locate a page and some related
-assets, for instance images or spreadsheets. Gutenberg supports that pattern out of the box for both sections and pages.
+assets, for instance images or spreadsheets. Zola supports that pattern out of the box for both sections and pages.
 
 Any non-markdown file you add in the page/section folder will be copied alongside the generated page when building the site,
 which allows us to use a relative path to access them.
@@ -82,14 +82,14 @@ ignored_content = ["*.xlsx"]
 
 ## Static assets
 
-In addition to placing content files in the `content` directory, you may also place content 
+In addition to placing content files in the `content` directory, you may also place content
 files in the `static` directory.  Any files/folders that you place in the `static` directory
-will be copied, without modification, to the public directory.  
+will be copied, without modification, to the public directory.
 
 Typically, you might put site-wide assets (such as the site favicon, site logos or site-wide
 JavaScript) in the root of the static directory.  You can also place any HTML or other files that
 you wish to be included without modification (that is, without being parsed as Markdown files)
-into the static directory. 
+into the static directory.
 
 Note that the static folder provides an _alternative_ to colocation.  For example, imagine that you
 had the following directory structure (a simplified version of the structure presented above):
@@ -109,12 +109,12 @@ have three options:
  relative path from the `index.md` page.  This is the approach described under **colocation**,
  above.
  *  You could save the image to a `static/blog/configuration` folder and link it in exactly the
- same way as if you had colocated it.  If you do this, the generated files will be identical to 
- if you had colocated; the only difference will be that all static files will be saved in the 
+ same way as if you had colocated it.  If you do this, the generated files will be identical to
+ if you had colocated; the only difference will be that all static files will be saved in the
  static folder rather than in the content folder.  Depending on your organizational needs, this
  may be better or worse.
  *  Or you could save the image to some arbitrary folder within the static folder.  For example,
  you could save all images to `static/images`.  Using this approach, you would no longer be able
- to use relative links, but could use an absolute link to `images/[filename]` to access your 
- image.  This might be preferable for small sites or for sites that associate images with 
+ to use relative links, but could use an absolute link to `images/[filename]` to access your
+ image.  This might be preferable for small sites or for sites that associate images with
  multiple pages (e.g., logo images that appear on every page).

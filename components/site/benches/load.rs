@@ -1,13 +1,12 @@
 //! Benchmarking loading/markdown rendering of generated sites of various sizes
 
 #![feature(test)]
-extern crate test;
 extern crate site;
+extern crate test;
 
 use std::env;
 
 use site::Site;
-
 
 #[bench]
 fn bench_loading_small_blog(b: &mut test::Bencher) {

@@ -16,6 +16,10 @@ create a **page** at `[base_url]/about`).
 If the file is given any name *other* than `index.md` or `_index.md`, then it will
 create a page with that name (without the `.md`). So naming a file in the root of your
 content directory `about.md` would also create a page at `[base_url]/about`.
+Another exception to that rule is that a filename starting with a YYYY-mm-dd date followed by
+an underscore (`_`) or a dash (`-`) will use that date as the page date, unless already set
+in the front-matter. The page name will be anything after `_`/`-` so a filename like `2018-10-10-hello-world.md` will
+be available at `[base_url]/hello-world`
 
 As you can see, creating an `about.md` file is exactly equivalent to creating an
 `about/index.md` file.  The only difference between the two methods is that creating
@@ -24,7 +28,7 @@ the `about` folder allows you to use asset colocation, as discussed in the
 
 ## Front-matter
 
-The front-matter is a set of metadata embedded in a file. In Gutenberg,
+The front-matter is a set of metadata embedded in a file. In Zola,
 it is at the beginning of the file, surrounded by `+++` and uses TOML.
 
 While none of the front-matter variables are mandatory, the opening and closing `+++` are required.
@@ -42,6 +46,7 @@ description = ""
 # Do not wrap dates in quotes, the line below only indicates that there is no default date.
 # If the section variable `sort_by` is set to `date`, then any page that lacks a `date`
 # will not be rendered.
+# Setting this overrides a date set in the filename.
 date =
 
 # The weight as defined in the Section page
@@ -88,7 +93,7 @@ Some content
 
 ## Summary
 
-You can ask Gutenberg to create a summary if you only want to show the first
+You can ask Zola to create a summary if you only want to show the first
 paragraph of each page in a list for example.
 
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point

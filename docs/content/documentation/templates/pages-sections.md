@@ -6,7 +6,7 @@ weight = 20
 Pages and sections are actually very similar.
 
 ## Page variables
-Gutenberg will try to load the `templates/page.html` template, the `page.html` template of the theme if one is used
+Zola will try to load the `templates/page.html` template, the `page.html` template of the theme if one is used
 or will render the built-in template: a blank page.
 
 Whichever template you decide to render, you will get a `page` variable in your template
@@ -45,10 +45,16 @@ month: Number?;
 day: Number?;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
+// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The first item is the index section and the last one is the parent section
+// This is filled after rendering a page content so it will be empty in shortcodes
+ancestors: Array<String>;
+// The relative path from the `content` directory to the markdown file
+relative_path: String;
 ```
 
 ## Section variables
-By default, Gutenberg will try to load `templates/index.html` for `content/_index.md`
+By default, Zola will try to load `templates/index.html` for `content/_index.md`
 and `templates/section.html` for others `_index.md` files. If there isn't
 one, it will render the built-in template: a blank page.
 
@@ -70,7 +76,9 @@ extra: HashMap<String, Any>;
 // Pages directly in this section, sorted if asked
 pages: Array<Pages>;
 // Direct subsections to this section, sorted by subsections weight
-subsections: Array<Section>;
+// This only contains the path to use in the `get_section` Tera function to get
+// the actual section object if you need it
+subsections: Array<String>;
 // Unicode word count
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
@@ -79,6 +87,12 @@ reading_time: Number;
 toc: Array<Header>;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
+// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The first item is the index section and the last one is the parent section
+// This is filled after rendering a page content so it will be empty in shortcodes
+ancestors: Array<String>;
+// The relative path from the `content` directory to the markdown file
+relative_path: String;
 ```
 
 ## Table of contents

@@ -1,11 +1,21 @@
+use std::fs::{copy, create_dir_all, read_dir, File};
 use std::io::prelude::*;
-use std::fs::{File, create_dir_all, read_dir, copy};
 use std::path::{Path, PathBuf};
-
+use std::time::SystemTime;
 use walkdir::WalkDir;
 
 use errors::{Result, ResultExt};
 
+pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
+    let canonical_path = path
+        .canonicalize()
+        .map_err(|e| format!("Failed to canonicalize {}: {}", path.display(), e))?;
+    let canonical_parent = parent
+        .canonicalize()
+        .map_err(|e| format!("Failed to canonicalize {}: {}", parent.display(), e))?;
+
+    Ok(canonical_path.starts_with(canonical_parent))
+}
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
@@ -38,6 +48,11 @@ pub fn read_file(path: &Path) -> Result<String> {
     File::open(path)
         .chain_err(|| format!("Failed to open '{:?}'", path.display()))?
         .read_to_string(&mut content)?;
+
+    // Remove utf-8 BOM if any.
+    if content.starts_with("\u{feff}") {
+        content.drain(..3);
+    }
 
     Ok(content)
 }
@@ -93,9 +108,24 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
     Ok(())
 }
 
+pub fn get_file_time(path: &Path) -> Option<SystemTime> {
+    path.metadata().ok().and_then(|meta| {
+        Some(match (meta.created().ok(), meta.modified().ok()) {
+            (Some(tc), Some(tm)) => tc.max(tm),
+            (Some(tc), None) => tc,
+            (None, Some(tm)) => tm,
+            (None, None) => return None,
+        })
+    })
+}
+
 /// Compares source and target files' timestamps and returns true if the source file
 /// has been created _or_ updated after the target file has
-pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Path>, PT: AsRef<Path> {
+pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool
+where
+    PS: AsRef<Path>,
+    PT: AsRef<Path>,
+{
     let p_source = p_source.as_ref();
     let p_target = p_target.as_ref();
 
@@ -103,21 +133,11 @@ pub fn file_stale<PS, PT>(p_source: PS, p_target: PT) -> bool where PS: AsRef<Pa
         return true;
     }
 
-    let get_time = |path: &Path| path.metadata().ok().and_then(|meta| {
-        Some(match (meta.created().ok(), meta.modified().ok()) {
-            (Some(tc), Some(tm)) => tc.max(tm),
-            (Some(tc), None) => tc,
-            (None, Some(tm)) => tm,
-            (None, None) => return None,
-        })
-    });
-
-    let time_source = get_time(p_source);
-    let time_target = get_time(p_target);
+    let time_source = get_file_time(p_source);
+    let time_target = get_file_time(p_target);
 
     time_source.and_then(|ts| time_target.map(|tt| ts > tt)).unwrap_or(true)
 }
-
 
 #[cfg(test)]
 mod tests {
