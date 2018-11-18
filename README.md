@@ -33,6 +33,7 @@ in the `docs/content` folder of the repository.
 | LiveReload                      |     ✔     |    ✕   |   ✔  |    ✔    |
 | Netlify support                 |     ~     |    ✕   |   ✔  |    ✕    |
 | Breadcrumbs                     |     ✔     |    ✕   |   ✕  |    ✔    |
+| Custom ouput formats            |     ✕     |    ✕   |   ✔  |    ?    |
 
 
 ### Supported content formats
