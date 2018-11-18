@@ -32,7 +32,7 @@ in the `docs/content` folder of the repository.
 | Data files                      |     ✔     |    ✔   |   ✔  |    ✕    |
 | LiveReload                      |     ✔     |    ✕   |   ✔  |    ✔    |
 | Netlify support                 |     ~     |    ✕   |   ✔  |    ✕    |
-| Breadcrumbds                    |     ✔     |    ✕   |   ✕  |    ✔    |
+| Breadcrumbs                     |     ✔     |    ✕   |   ✕  |    ✔    |
 
 
 ### Supported content formats
