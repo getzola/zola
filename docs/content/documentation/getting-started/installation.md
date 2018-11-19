@@ -13,7 +13,7 @@ Zola provides pre-built binaries for MacOS, Linux and Windows on the
 Use your favourite AUR helper to install the `zola-bin` package.
 
 ```bash
-$ yaourt -S zola-bin
+$ yay -S zola-bin
 ```
 
 ### Snapcraft
