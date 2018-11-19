@@ -6,12 +6,36 @@ weight = 1
 Zola provides pre-built binaries for MacOS, Linux and Windows on the
 [GitHub release page](https://github.com/getzola/zola/releases).
 
+## Linux
+
 ## Arch Linux
 
 Use your favourite AUR helper to install the `zola-bin` package.
 
 ```bash
 $ yaourt -S zola-bin
+```
+
+### Snapcraft
+
+Zola is available on snapcraft:
+
+```bash
+$ snap install --edge zola
+```
+
+## Windows
+
+Zola is available on [Scoop](http://scoop.sh):
+
+```bash
+$ scoop install zola
+```
+
+And [Chocolatey](https://chocolatey.org/):
+
+```bash
+$ choco install zola
 ```
 
 ## From source
