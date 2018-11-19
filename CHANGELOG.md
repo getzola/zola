@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1 (unreleased)
+
+- Fix deleting markdown file in `zola serve`
+
+
 ## 0.5.0 (2018-11-17)
 
 ### Breaking

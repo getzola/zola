@@ -311,7 +311,7 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     if is_md {
         // only delete if it was able to be added in the first place
         if !index.exists() && !path.exists() {
-            delete_element(site, path, is_section)?;
+            return delete_element(site, path, is_section);
         }
 
         // Added another .md in a assets directory

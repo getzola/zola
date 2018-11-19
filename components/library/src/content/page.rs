@@ -21,7 +21,7 @@ use content::ser::SerializingPage;
 
 lazy_static! {
     // Check whether a string starts with yyyy-mm-dd{-,_}
-    static ref DATE_IN_FILENAME: Regex = Regex::new(r"^^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))(_|-)").unwrap();
+    static ref DATE_IN_FILENAME: Regex = Regex::new(r"^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))(_|-)").unwrap();
 }
 
 #[derive(Clone, Debug, PartialEq)]
