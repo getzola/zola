@@ -23,3 +23,4 @@ parts:
     - build-essential
     - cmake
     - libssl-dev
+    - pkg-config
