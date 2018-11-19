@@ -234,3 +234,15 @@ fn can_rebuild_after_renaming_non_md_asset_in_colocated_folder() {
     let res = after_content_rename(&mut site, &old_path, &new_path);
     assert!(res.is_ok());
 }
+
+#[test]
+fn can_rebuild_after_deleting_file() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let path = site_path.join("content").join("posts").join("fixed-slug.md");
+    fs::remove_file(&path).unwrap();
+
+    let res = after_content_change(&mut site, &path);
+    println!("{:?}", res);
+    assert!(res.is_ok());
+}
