@@ -9,7 +9,7 @@ It is available in the template through `section.toc` and `page.toc`.
 You can view the [template variables](./documentation/templates/pages-sections.md#table-of-contents)
 documentation for information on its structure.
 
-Here is an example of using that field to render a 2-level table of content:
+Here is an example of using that field to render a 2-level table of contents:
 
 ```jinja2
 <ul>
