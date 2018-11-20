@@ -31,7 +31,7 @@ pub struct Rendered {
 // means we will have example, example-1, example-2 etc
 fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
     if level == 0 && !anchors.contains(&name) {
-        return name.to_string();
+        return name;
     }
 
     let new_anchor = format!("{}-{}", name, level + 1);

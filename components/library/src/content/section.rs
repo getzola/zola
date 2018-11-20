@@ -80,7 +80,7 @@ impl Section {
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Section> {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
-        section.raw_content = content.clone();
+        section.raw_content = content;
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);

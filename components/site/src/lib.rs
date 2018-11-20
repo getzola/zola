@@ -771,7 +771,7 @@ impl Site {
 
         pages.par_sort_unstable_by(sort_actual_pages_by_date);
 
-        context.insert("last_build_date", &pages[0].meta.date.clone().map(|d| d.to_string()));
+        context.insert("last_build_date", &pages[0].meta.date.clone());
         // limit to the last n elements if the limit is set; otherwise use all.
         let num_entries = self.config.rss_limit.unwrap_or(pages.len());
         let p = pages
@@ -794,7 +794,7 @@ impl Site {
         let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
         if let Some(ref base) = base_path {
-            let mut output_path = self.output_path.clone().to_path_buf();
+            let mut output_path = self.output_path.clone();
             for component in base.components() {
                 output_path.push(component);
                 if !output_path.exists() {
@@ -812,9 +812,7 @@ impl Site {
     /// Renders a single section
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
-        let public = self.output_path.clone();
-
-        let mut output_path = public.to_path_buf();
+        let mut output_path = self.output_path.clone();
         for component in &section.file.components {
             output_path.push(component);
 
