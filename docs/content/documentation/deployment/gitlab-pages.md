@@ -39,12 +39,14 @@ To do this, create a file called  `.gitlab-ci.yml` in the root directory of your
 ```yaml
 variables:
   # This variable will ensure that the CI runner pulls in your theme from the submodule
-  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_STRATEGY: recursive  
+  # Specify the zola version you want to use here
+  ZOLA_VERSION: "v0.5.0"
 
 pages:
   script:
     # Download the zola executable and store it in zola.tar.gz
-    - curl -L https://github.com/getzola/zola/releases/download/v0.5.0/zola-v0.5.0-x86_64-unknown-linux-gnu.tar.gz > zola.tar.gz
+    - curl -L https://github.com/getzola/zola/releases/download/$ZOLA_VERSION/zola-$ZOLA_VERSION-x86_64-unknown-linux-gnu.tar.gz > zola.tar.gz
     # Unpack the zola executable
     - tar -xzf zola.tar.gz
     # Execute zola build
