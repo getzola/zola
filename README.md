@@ -5,7 +5,7 @@
 A fast static site generator in a single binary with everything built-in.
 
 Documentation is available on [its site](https://www.getzola.org/documentation/getting-started/installation/) or
-in the `docs/content` folder of the repository.
+in the `docs/content` folder of the repository and the community can use [its forum](https://zola.discourse.group).
 
 ## Comparisons with other static site generators
 
