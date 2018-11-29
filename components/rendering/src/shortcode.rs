@@ -1,7 +1,7 @@
 use pest::iterators::Pair;
 use pest::Parser;
-use tera::{to_value, Context, Map, Value};
 use regex::Regex;
+use tera::{to_value, Context, Map, Value};
 
 use context::RenderContext;
 use errors::{Result, ResultExt};

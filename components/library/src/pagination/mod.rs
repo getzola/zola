@@ -14,7 +14,7 @@ use taxonomies::{Taxonomy, TaxonomyItem};
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
     Section(&'a Section),
-    Taxonomy(&'a Taxonomy),
+    Taxonomy(&'a Taxonomy, &'a TaxonomyItem),
 }
 
 /// A list of all the pages in the paginator with their index and links
@@ -93,7 +93,7 @@ impl<'a> Paginator<'a> {
             all_pages: &item.pages,
             pagers: Vec::with_capacity(item.pages.len() / paginate_by),
             paginate_by,
-            root: PaginationRoot::Taxonomy(taxonomy),
+            root: PaginationRoot::Taxonomy(taxonomy, item),
             permalink: item.permalink.clone(),
             path: format!("{}/{}", taxonomy.kind.name, item.slug),
             paginate_path: taxonomy
@@ -212,8 +212,9 @@ impl<'a> Paginator<'a> {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
             }
-            PaginationRoot::Taxonomy(t) => {
+            PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
+                context.insert("term", &item.serialize(library));
             }
         };
         context.insert("current_url", &pager.permalink);

@@ -646,7 +646,6 @@ impl Site {
 
     /// Renders all taxonomies with at least one non-draft post
     pub fn render_taxonomies(&self) -> Result<()> {
-        // TODO: make parallel?
         for taxonomy in &self.taxonomies {
             self.render_taxonomy(taxonomy)?;
         }
@@ -669,24 +668,26 @@ impl Site {
             .items
             .par_iter()
             .map(|item| {
+                let path = output_path.join(&item.slug);
+                if taxonomy.kind.is_paginated() {
+                    self.render_paginated(
+                        &path,
+                        &Paginator::from_taxonomy(&taxonomy, item, &self.library),
+                    )?;
+                } else {
+                    let single_output =
+                        taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
+                    create_directory(&path)?;
+                    create_file(&path.join("index.html"), &self.inject_livereload(single_output))?;
+                }
+
                 if taxonomy.kind.rss {
                     self.render_rss_feed(
                         item.pages.iter().map(|p| self.library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
-                    )?;
-                }
-
-                if taxonomy.kind.is_paginated() {
-                    self.render_paginated(
-                        &output_path,
-                        &Paginator::from_taxonomy(&taxonomy, item, &self.library),
                     )
                 } else {
-                    let single_output =
-                        taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
-                    let path = output_path.join(&item.slug);
-                    create_directory(&path)?;
-                    create_file(&path.join("index.html"), &self.inject_livereload(single_output))
+                    Ok(())
                 }
             })
             .collect::<Result<()>>()
@@ -737,8 +738,8 @@ impl Site {
             terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
             taxonomies.push(terms);
         }
-        context.insert("taxonomies", &taxonomies);
 
+        context.insert("taxonomies", &taxonomies);
         context.insert("config", &self.config);
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
@@ -805,7 +806,6 @@ impl Site {
         } else {
             create_file(&self.output_path.join("rss.xml"), feed)?;
         }
-
         Ok(())
     }
 

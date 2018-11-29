@@ -3,6 +3,7 @@
 ## 0.5.1 (unreleased)
 
 - Fix deleting markdown file in `zola serve`
+- Fix pagination for taxonomies being broken and add missing documentation for it
 
 
 ## 0.5.0 (2018-11-17)
