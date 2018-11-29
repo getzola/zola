@@ -21,7 +21,7 @@ $ yay -S zola-bin
 Zola is available on snapcraft:
 
 ```bash
-$ snap install --edge zola
+$ snap install --edge --classic zola
 ```
 
 ## Windows
