@@ -467,6 +467,13 @@ fn can_build_site_with_pagination_for_section() {
         "posts/page/4/index.html",
         "Last: https://replace-this-with-your-url.com/posts/page/5/"
     ));
+
+    // sitemap contains the pager pages
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/posts/page/4/</loc>"
+    ));
 }
 
 #[test]
@@ -512,6 +519,13 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
     assert_eq!(file_contains!(public, "index.html", "has_next"), false);
+
+    // sitemap contains the pager pages
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/page/1/</loc>"
+    ))
 }
 
 #[test]
@@ -558,15 +572,15 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_exists!(public, "tags/a/rss.xml"));
     assert!(file_exists!(public, "tags/b/rss.xml"));
     // And pagination!
-    assert!(file_exists!(public, "tags/a/pages/1/index.html"));
-    assert!(file_exists!(public, "tags/b/pages/1/index.html"));
-    assert!(file_exists!(public, "tags/a/pages/2/index.html"));
-    assert!(file_exists!(public, "tags/b/pages/2/index.html"));
+    assert!(file_exists!(public, "tags/a/page/1/index.html"));
+    assert!(file_exists!(public, "tags/b/page/1/index.html"));
+    assert!(file_exists!(public, "tags/a/page/2/index.html"));
+    assert!(file_exists!(public, "tags/b/page/2/index.html"));
 
     // should redirect to posts/
     assert!(file_contains!(
         public,
-        "tags/a/pages/1/index.html",
+        "tags/a/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/tags/a/\""
     ));
     assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 6"));
@@ -582,9 +596,16 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "tags/a/index.html",
-        "Last: https://replace-this-with-your-url.com/tags/a/pages/6/"
+        "Last: https://replace-this-with-your-url.com/tags/a/page/6/"
     ));
     assert_eq!(file_contains!(public, "tags/a/index.html", "has_prev"), false);
+
+    // sitemap contains the pager pages
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/tags/a/page/6/</loc>"
+    ))
 }
 
 #[test]

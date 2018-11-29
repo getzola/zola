@@ -4,6 +4,7 @@
 
 - Fix deleting markdown file in `zola serve`
 - Fix pagination for taxonomies being broken and add missing documentation for it
+- Add missing pager pages from the sitemap
 
 
 ## 0.5.0 (2018-11-17)

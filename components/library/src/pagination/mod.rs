@@ -100,7 +100,7 @@ impl<'a> Paginator<'a> {
                 .kind
                 .paginate_path
                 .clone()
-                .unwrap_or_else(|| "pages".to_string()),
+                .unwrap_or_else(|| "page".to_string()),
             is_index: false,
             template: format!("{}/single.html", taxonomy.kind.name),
         };
@@ -350,7 +350,7 @@ mod tests {
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 1);
-        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/pages/2/");
-        assert_eq!(paginator.pagers[1].path, "tags/something/pages/2/");
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
+        assert_eq!(paginator.pagers[1].path, "tags/something/page/2/");
     }
 }

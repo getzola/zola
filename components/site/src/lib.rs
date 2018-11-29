@@ -721,6 +721,13 @@ impl Site {
             .iter()
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
             .collect::<Vec<_>>();
+        for section in self.library.sections_values().iter().filter(|s| s.meta.paginate_by.is_some()) {
+            let number_pagers = (section.pages.len() as f64 / section.meta.paginate_by.unwrap() as f64).ceil() as isize;
+            for i in 1..number_pagers+1 {
+                let permalink = format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
+                sections.push(SitemapEntry::new(permalink, None))
+            }
+        }
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.insert("sections", &sections);
 
@@ -734,7 +741,16 @@ impl Site {
                     self.config.make_permalink(&format!("{}/{}", &name, item.slug)),
                     None,
                 ));
+
+                if taxonomy.kind.is_paginated() {
+                    let number_pagers = (item.pages.len() as f64 / taxonomy.kind.paginate_by.unwrap() as f64).ceil() as isize;
+                    for i in 1..number_pagers+1 {
+                        let permalink = self.config.make_permalink(&format!("{}/{}/{}/{}", name, item.slug, taxonomy.kind.paginate_path(), i));
+                        terms.push(SitemapEntry::new(permalink, None))
+                    }
+                }
             }
+
             terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
             taxonomies.push(terms);
         }
