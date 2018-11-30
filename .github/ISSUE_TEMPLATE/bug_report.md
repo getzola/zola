@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Did you run into an issue with the zola command line?
+about: Did you run into an issue while using Zola?
 ---
 
 # Bug Report
