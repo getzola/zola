@@ -33,7 +33,7 @@ in the `docs/content` folder of the repository and the community can use [its fo
 | LiveReload                      |     ✔     |    ✕   |   ✔  |    ✔    |
 | Netlify support                 |     ~     |    ✕   |   ✔  |    ✕    |
 | Breadcrumbs                     |     ✔     |    ✕   |   ✕  |    ✔    |
-| Custom ouput formats            |     ✕     |    ✕   |   ✔  |    ?    |
+| Custom output formats           |     ✕     |    ✕   |   ✔  |    ?    |
 
 
 ### Supported content formats
