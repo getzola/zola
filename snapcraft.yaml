@@ -12,6 +12,7 @@ apps:
   zola:
     command: zola
     plugs:
+      - home
       - network
       - network-bind
 
