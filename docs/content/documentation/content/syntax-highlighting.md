@@ -26,6 +26,7 @@ Here is a full list of the supported languages and the short names you can use:
 - Plain Text -> ["txt"]
 - Assembly x86 (NASM) -> ["asm", "inc", "nasm"]
 - Crystal -> ["cr"]
+- Dart -> ["dart"]
 - Elixir -> ["ex", "exs"]
 - fsharp -> ["fs"]
 - Handlebars -> ["handlebars", "handlebars.html", "hbr", "hbrs", "hbs", "hdbs", "hjs", "mu", "mustache", "rac", "stache", "template", "tmpl"]
