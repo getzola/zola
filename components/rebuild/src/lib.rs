@@ -352,6 +352,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             site.render_orphan_pages()
         }
         "section.html" => site.render_sections(),
+        "404.html" => site.render_404(),
         // Either the index or some unknown template changed
         // We can't really know what this change affects so rebuild all
         // the things
