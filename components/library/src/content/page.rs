@@ -542,7 +542,6 @@ Hello world
         assert_eq!(page.slug, "hello");
     }
 
-
     #[test]
     fn frontmatter_date_override_filename_date() {
         let config = Config::default();

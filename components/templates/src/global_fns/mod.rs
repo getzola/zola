@@ -144,7 +144,7 @@ pub fn make_get_taxonomy(all_taxonomies: &[Taxonomy], library: &Library) -> Glob
             None => {
                 return Err(
                     format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
-                )
+                );
             }
         };
 
@@ -180,7 +180,7 @@ pub fn make_get_taxonomy_url(all_taxonomies: &[Taxonomy]) -> GlobalFn {
                     "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
                     kind
                 )
-                .into())
+                .into());
             }
         };
 
