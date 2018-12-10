@@ -627,9 +627,10 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
+        let output = render_template("404.html", &self.tera, &context, &self.config.theme)?;
         create_file(
             &self.output_path.join("404.html"),
-            &render_template("404.html", &self.tera, &context, &self.config.theme)?,
+            &self.inject_livereload(output),
         )
     }
 
