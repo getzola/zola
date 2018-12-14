@@ -417,11 +417,11 @@ mod tests {
         assert_eq!(
             result,
             json!({
-            "category": {
-                "date": "1979-05-27T07:32:00Z",
-                "key": "value"
-            },
-        })
+                "category": {
+                    "date": "1979-05-27T07:32:00Z",
+                    "key": "value"
+                },
+            })
         );
     }
 
@@ -438,12 +438,12 @@ mod tests {
         assert_eq!(
             result,
             json!({
-            "headers": ["Number", "Title"],
-            "records": [
-                            ["1", "Gutenberg"],
-                            ["2", "Printing"]
-                        ],
-        })
+                "headers": ["Number", "Title"],
+                "records": [
+                                ["1", "Gutenberg"],
+                                ["2", "Printing"]
+                            ],
+            })
         )
     }
 
@@ -460,12 +460,12 @@ mod tests {
         assert_eq!(
             result,
             json!({
-            "key": "value",
-            "array": [1, 2, 3],
-            "subpackage": {
-                "subkey": 5
-            }
-        })
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            })
         )
     }
 }

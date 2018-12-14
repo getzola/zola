@@ -17,8 +17,35 @@ permalink: String;
 pages: Array<Page>;
 ```
 
-## Non-paginated taxonomies
-If a taxonomy is not paginated, the templates get the following variables:
+and a `TaxonomyConfig`:
+
+```ts
+name: String,
+slug: String,
+paginate_by: Number?;
+paginate_path: String?;
+rss: Bool;
+```
+
+```
+
+### Taxonomy list (`list.html`)
+
+This template is never paginated and therefore get the following variables in all cases.
+
+```ts
+// The site config
+config: Config;
+// The data of the taxonomy, from the config
+taxonomy: TaxonomyConfig;
+// The current full permalink for that page
+current_url: String;
+// The current path for that page
+current_path: String;
+// All terms for that taxonomy
+terms: Array<TaxonomyTerm>;
+```
+
 
 ### Single term (`single.html`)
 ```ts
@@ -34,18 +61,5 @@ current_path: String;
 term: TaxonomyTerm;
 ```
 
-### Taxonomy list (`list.html`)
-```ts
-// The site config
-config: Config;
-// The data of the taxonomy, from the config
-taxonomy: TaxonomyConfig;
-// The current full permalink for that page
-current_url: String;
-// The current path for that page
-current_path: String;
-// All terms for that taxonomy
-terms: Array<TaxonomyTerm>;
-```
-
-## Paginated taxonomies
+A paginated taxonomy term will also get a `paginator` variable, see the [pagination page](./documentation/templates/pagination.md)
+for more details on that.

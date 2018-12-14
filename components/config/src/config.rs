@@ -37,6 +37,14 @@ impl Taxonomy {
             false
         }
     }
+
+    pub fn paginate_path(&self) -> &str {
+        if let Some(ref path) = self.paginate_path {
+            path
+        } else {
+            "page"
+        }
+    }
 }
 
 impl Default for Taxonomy {

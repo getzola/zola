@@ -144,7 +144,7 @@ pub fn make_get_taxonomy(all_taxonomies: &[Taxonomy], library: &Library) -> Glob
             None => {
                 return Err(
                     format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
-                )
+                );
             }
         };
 
@@ -180,12 +180,12 @@ pub fn make_get_taxonomy_url(all_taxonomies: &[Taxonomy]) -> GlobalFn {
                     "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
                     kind
                 )
-                .into())
+                .into());
             }
         };
 
-        if let Some(ref permalink) = container.get(&name) {
-            return Ok(to_value(permalink.clone()).unwrap());
+        if let Some(permalink) = container.get(&name) {
+            return Ok(to_value(permalink).unwrap());
         }
 
         Err(format!("`get_taxonomy_url`: couldn't find `{}` in `{}` taxonomy", name, kind).into())
@@ -226,7 +226,7 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
             return Err(format!("`resize_image`: Cannot find path: {}", path).into());
         }
 
-        let imageop = imageproc::ImageOp::from_args(path.clone(), &op, width, height, quality)
+        let imageop = imageproc::ImageOp::from_args(path, &op, width, height, quality)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         let url = imageproc.insert(imageop);
 

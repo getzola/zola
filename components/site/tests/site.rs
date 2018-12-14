@@ -1,3 +1,4 @@
+extern crate config;
 extern crate site;
 extern crate tempfile;
 
@@ -7,6 +8,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use config::Taxonomy;
 use site::Site;
 use tempfile::tempdir;
 
@@ -465,6 +467,13 @@ fn can_build_site_with_pagination_for_section() {
         "posts/page/4/index.html",
         "Last: https://replace-this-with-your-url.com/posts/page/5/"
     ));
+
+    // sitemap contains the pager pages
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/posts/page/4/</loc>"
+    ));
 }
 
 #[test]
@@ -510,6 +519,93 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
     assert_eq!(file_contains!(public, "index.html", "has_next"), false);
+
+    // sitemap contains the pager pages
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/page/1/</loc>"
+    ))
+}
+
+#[test]
+fn can_build_site_with_pagination_for_taxonomy() {
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    let mut site = Site::new(&path, "config.toml").unwrap();
+    site.config.taxonomies.push(Taxonomy {
+        name: "tags".to_string(),
+        paginate_by: Some(2),
+        paginate_path: None,
+        rss: true,
+    });
+    site.load().unwrap();
+
+    for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
+        page.meta.taxonomies = {
+            let mut taxonomies = HashMap::new();
+            taxonomies
+                .insert("tags".to_string(), vec![if i % 2 == 0 { "A" } else { "B" }.to_string()]);
+            taxonomies
+        };
+    }
+    site.populate_taxonomies().unwrap();
+
+    let tmp_dir = tempdir().expect("create temp dir");
+    let public = &tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(Path::new(&public).exists());
+
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_exists!(public, "sitemap.xml"));
+    assert!(file_exists!(public, "robots.txt"));
+    assert!(file_exists!(public, "a-fixed-url/index.html"));
+    assert!(file_exists!(public, "posts/python/index.html"));
+    assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
+    assert!(file_exists!(public, "posts/with-assets/index.html"));
+
+    // Tags
+    assert!(file_exists!(public, "tags/index.html"));
+    // With RSS
+    assert!(file_exists!(public, "tags/a/rss.xml"));
+    assert!(file_exists!(public, "tags/b/rss.xml"));
+    // And pagination!
+    assert!(file_exists!(public, "tags/a/page/1/index.html"));
+    assert!(file_exists!(public, "tags/b/page/1/index.html"));
+    assert!(file_exists!(public, "tags/a/page/2/index.html"));
+    assert!(file_exists!(public, "tags/b/page/2/index.html"));
+
+    // should redirect to posts/
+    assert!(file_contains!(
+        public,
+        "tags/a/page/1/index.html",
+        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/tags/a/\""
+    ));
+    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 6"));
+    assert!(file_contains!(public, "tags/a/index.html", "Page size: 2"));
+    assert!(file_contains!(public, "tags/a/index.html", "Current index: 1"));
+    assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
+    assert!(file_contains!(public, "tags/a/index.html", "has_next"));
+    assert!(file_contains!(
+        public,
+        "tags/a/index.html",
+        "First: https://replace-this-with-your-url.com/tags/a/"
+    ));
+    assert!(file_contains!(
+        public,
+        "tags/a/index.html",
+        "Last: https://replace-this-with-your-url.com/tags/a/page/6/"
+    ));
+    assert_eq!(file_contains!(public, "tags/a/index.html", "has_prev"), false);
+
+    // sitemap contains the pager pages
+    assert!(file_contains!(
+        public,
+        "sitemap.xml",
+        "<loc>https://replace-this-with-your-url.com/tags/a/page/6/</loc>"
+    ))
 }
 
 #[test]

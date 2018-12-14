@@ -16,7 +16,7 @@ matrix:
 
     # The earliest stable Rust version that works
     - env: TARGET=x86_64-unknown-linux-gnu
-      rust: 1.29.0
+      rust: 1.30.0
 
 
 before_install: set -e

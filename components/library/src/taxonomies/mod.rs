@@ -13,7 +13,7 @@ use library::Library;
 use sorting::sort_pages_by_date;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-struct SerializedTaxonomyItem<'a> {
+pub struct SerializedTaxonomyItem<'a> {
     name: &'a str,
     slug: &'a str,
     permalink: &'a str,
@@ -70,6 +70,10 @@ impl TaxonomyItem {
         pages.extend(ignored_pages);
 
         TaxonomyItem { name: name.to_string(), permalink, slug, pages }
+    }
+
+    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyItem<'a> {
+        SerializedTaxonomyItem::from_item(self, library)
     }
 }
 

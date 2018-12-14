@@ -14,7 +14,9 @@ Zola is available on [Brew](https://brew.sh):
 $ brew install zola
 ```
 
-## Linux
+## From source
+To build it from source, you will need to have Git, [Rust (at least 1.30) and Cargo](https://www.rust-lang.org/)
+installed. You will also need additional dependencies to compile [libsass](https://github.com/sass/libsass):
 
 ### Arch Linux
 

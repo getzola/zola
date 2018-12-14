@@ -1,7 +1,7 @@
 use pest::iterators::Pair;
 use pest::Parser;
-use tera::{to_value, Context, Map, Value};
 use regex::Regex;
+use tera::{to_value, Context, Map, Value};
 
 use context::RenderContext;
 use errors::{Result, ResultExt};
@@ -20,9 +20,9 @@ lazy_static! {
 
 fn replace_string_markers(input: &str) -> String {
     match input.chars().next().unwrap() {
-        '"' => input.replace('"', "").to_string(),
-        '\'' => input.replace('\'', "").to_string(),
-        '`' => input.replace('`', "").to_string(),
+        '"' => input.replace('"', ""),
+        '\'' => input.replace('\'', ""),
+        '`' => input.replace('`', ""),
         _ => unreachable!("How did you even get there"),
     }
 }

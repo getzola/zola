@@ -14,7 +14,7 @@ use taxonomies::{Taxonomy, TaxonomyItem};
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
     Section(&'a Section),
-    Taxonomy(&'a Taxonomy),
+    Taxonomy(&'a Taxonomy, &'a TaxonomyItem),
 }
 
 /// A list of all the pages in the paginator with their index and links
@@ -93,14 +93,14 @@ impl<'a> Paginator<'a> {
             all_pages: &item.pages,
             pagers: Vec::with_capacity(item.pages.len() / paginate_by),
             paginate_by,
-            root: PaginationRoot::Taxonomy(taxonomy),
+            root: PaginationRoot::Taxonomy(taxonomy, item),
             permalink: item.permalink.clone(),
             path: format!("{}/{}", taxonomy.kind.name, item.slug),
             paginate_path: taxonomy
                 .kind
                 .paginate_path
                 .clone()
-                .unwrap_or_else(|| "pages".to_string()),
+                .unwrap_or_else(|| "page".to_string()),
             is_index: false,
             template: format!("{}/single.html", taxonomy.kind.name),
         };
@@ -212,8 +212,9 @@ impl<'a> Paginator<'a> {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
             }
-            PaginationRoot::Taxonomy(t) => {
+            PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
+                context.insert("term", &item.serialize(library));
             }
         };
         context.insert("current_url", &pager.permalink);
@@ -349,7 +350,7 @@ mod tests {
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 1);
-        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/pages/2/");
-        assert_eq!(paginator.pagers[1].path, "tags/something/pages/2/");
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
+        assert_eq!(paginator.pagers[1].path, "tags/something/page/2/");
     }
 }

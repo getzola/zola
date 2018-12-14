@@ -7,10 +7,9 @@ Two things can get paginated: a section or a taxonomy term.
 
 A paginated section gets the same `section` variable as a normal
 [section page](./documentation/templates/pages-sections.md#section-variables) minus its pages
-while a paginated taxonomy gets the a `taxonomy` variable of type `TaxonomyConfig`, equivalent
-to the taxonomy definition in the `config.toml`.
+while
 
-In addition, a paginated page gets a `paginator` variable of the `Pager` type:
+Both get a paginated page gets a `paginator` variable of the `Pager` type:
 
 ```ts
 // How many items per page
@@ -33,3 +32,17 @@ pages: Array<Page>;
 // Which page are we on
 current_index: Number;
 ```
+
+## Section
+
+A paginated section gets the same `section` variable as a normal
+[section page](./documentation/templates/pages-sections.md#section-variables) minus its pages.
+
+## Taxonomy term
+
+A paginated taxonomy gets two variables:
+
+- a `taxonomy` variable of type `TaxonomyConfig`
+- a `term` variable of type `TaxonomyTerm`.
+
+See the [taxonomies page](./documentation/templates/taxonomies.md) for a detailed version of the types.

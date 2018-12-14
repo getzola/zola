@@ -627,10 +627,8 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
-        create_file(
-            &self.output_path.join("404.html"),
-            &render_template("404.html", &self.tera, &context, &self.config.theme)?,
-        )
+        let output = render_template("404.html", &self.tera, &context, &self.config.theme)?;
+        create_file(&self.output_path.join("404.html"), &self.inject_livereload(output))
     }
 
     /// Renders robots.txt
@@ -646,7 +644,6 @@ impl Site {
 
     /// Renders all taxonomies with at least one non-draft post
     pub fn render_taxonomies(&self) -> Result<()> {
-        // TODO: make parallel?
         for taxonomy in &self.taxonomies {
             self.render_taxonomy(taxonomy)?;
         }
@@ -669,24 +666,26 @@ impl Site {
             .items
             .par_iter()
             .map(|item| {
+                let path = output_path.join(&item.slug);
+                if taxonomy.kind.is_paginated() {
+                    self.render_paginated(
+                        &path,
+                        &Paginator::from_taxonomy(&taxonomy, item, &self.library),
+                    )?;
+                } else {
+                    let single_output =
+                        taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
+                    create_directory(&path)?;
+                    create_file(&path.join("index.html"), &self.inject_livereload(single_output))?;
+                }
+
                 if taxonomy.kind.rss {
                     self.render_rss_feed(
                         item.pages.iter().map(|p| self.library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
-                    )?;
-                }
-
-                if taxonomy.kind.is_paginated() {
-                    self.render_paginated(
-                        &output_path,
-                        &Paginator::from_taxonomy(&taxonomy, item, &self.library),
                     )
                 } else {
-                    let single_output =
-                        taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
-                    let path = output_path.join(&item.slug);
-                    create_directory(&path)?;
-                    create_file(&path.join("index.html"), &self.inject_livereload(single_output))
+                    Ok(())
                 }
             })
             .collect::<Result<()>>()
@@ -720,6 +719,18 @@ impl Site {
             .iter()
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
             .collect::<Vec<_>>();
+        for section in
+            self.library.sections_values().iter().filter(|s| s.meta.paginate_by.is_some())
+        {
+            let number_pagers = (section.pages.len() as f64
+                / section.meta.paginate_by.unwrap() as f64)
+                .ceil() as isize;
+            for i in 1..number_pagers + 1 {
+                let permalink =
+                    format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
+                sections.push(SitemapEntry::new(permalink, None))
+            }
+        }
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
         context.insert("sections", &sections);
 
@@ -733,12 +744,29 @@ impl Site {
                     self.config.make_permalink(&format!("{}/{}", &name, item.slug)),
                     None,
                 ));
+
+                if taxonomy.kind.is_paginated() {
+                    let number_pagers = (item.pages.len() as f64
+                        / taxonomy.kind.paginate_by.unwrap() as f64)
+                        .ceil() as isize;
+                    for i in 1..number_pagers + 1 {
+                        let permalink = self.config.make_permalink(&format!(
+                            "{}/{}/{}/{}",
+                            name,
+                            item.slug,
+                            taxonomy.kind.paginate_path(),
+                            i
+                        ));
+                        terms.push(SitemapEntry::new(permalink, None))
+                    }
+                }
             }
+
             terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
             taxonomies.push(terms);
         }
-        context.insert("taxonomies", &taxonomies);
 
+        context.insert("taxonomies", &taxonomies);
         context.insert("config", &self.config);
 
         let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
@@ -771,7 +799,7 @@ impl Site {
 
         pages.par_sort_unstable_by(sort_actual_pages_by_date);
 
-        context.insert("last_build_date", &pages[0].meta.date.clone().map(|d| d.to_string()));
+        context.insert("last_build_date", &pages[0].meta.date.clone());
         // limit to the last n elements if the limit is set; otherwise use all.
         let num_entries = self.config.rss_limit.unwrap_or(pages.len());
         let p = pages
@@ -794,7 +822,7 @@ impl Site {
         let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
         if let Some(ref base) = base_path {
-            let mut output_path = self.output_path.clone().to_path_buf();
+            let mut output_path = self.output_path.clone();
             for component in base.components() {
                 output_path.push(component);
                 if !output_path.exists() {
@@ -805,16 +833,13 @@ impl Site {
         } else {
             create_file(&self.output_path.join("rss.xml"), feed)?;
         }
-
         Ok(())
     }
 
     /// Renders a single section
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
-        let public = self.output_path.clone();
-
-        let mut output_path = public.to_path_buf();
+        let mut output_path = self.output_path.clone();
         for component in &section.file.components {
             output_path.push(component);
 

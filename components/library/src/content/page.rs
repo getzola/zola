@@ -20,8 +20,11 @@ use content::file_info::FileInfo;
 use content::ser::SerializingPage;
 
 lazy_static! {
-    // Check whether a string starts with yyyy-mm-dd{-,_}
-    static ref DATE_IN_FILENAME: Regex = Regex::new(r"^^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))(_|-)").unwrap();
+    // Based on https://regex101.com/r/H2n38Z/1/tests
+    // A regex parsing RFC3339 date followed by {_,-}, some characters and ended by .md
+    static ref RFC3339_DATE: Regex = Regex::new(
+        r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)(_|-)(?P<slug>.+$)"
+    ).unwrap();
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -113,11 +116,11 @@ impl Page {
         page.word_count = Some(word_count);
         page.reading_time = Some(reading_time);
 
-        let mut has_date_in_name = false;
-        if DATE_IN_FILENAME.is_match(&page.file.name) {
-            has_date_in_name = true;
+        let mut slug_from_dated_filename = None;
+        if let Some(ref caps) = RFC3339_DATE.captures(&page.file.name.replace(".md", "")) {
+            slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
             if page.meta.date.is_none() {
-                page.meta.date = Some(page.file.name[..10].to_string());
+                page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
                 page.meta.date_to_datetime();
             }
         }
@@ -132,9 +135,8 @@ impl Page {
                     slugify(&page.file.name)
                 }
             } else {
-                if has_date_in_name {
-                    // skip the date + the {_,-}
-                    slugify(&page.file.name[11..])
+                if let Some(slug) = slug_from_dated_filename {
+                    slugify(&slug)
                 } else {
                     slugify(&page.file.name)
                 }
@@ -507,7 +509,7 @@ Hello world
     }
 
     #[test]
-    fn can_get_date_from_filename() {
+    fn can_get_date_from_short_date_in_filename() {
         let config = Config::default();
         let content = r#"
 +++
@@ -520,6 +522,23 @@ Hello world
         let page = res.unwrap();
 
         assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
+        assert_eq!(page.slug, "hello");
+    }
+
+    #[test]
+    fn can_get_date_from_full_rfc3339_date_in_filename() {
+        let config = Config::default();
+        let content = r#"
++++
++++
+Hello world
+<!-- more -->"#
+            .to_string();
+        let res = Page::parse(Path::new("2018-10-02T15:00:00Z-hello.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+
+        assert_eq!(page.meta.date, Some("2018-10-02T15:00:00Z".to_string()));
         assert_eq!(page.slug, "hello");
     }
 
