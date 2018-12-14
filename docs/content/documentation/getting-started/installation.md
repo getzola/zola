@@ -15,7 +15,7 @@ $ yaourt -S zola-bin
 ```
 
 ## From source
-To build it from source, you will need to have Git, [Rust (at least 1.28) and Cargo](https://www.rust-lang.org/)
+To build it from source, you will need to have Git, [Rust (at least 1.30) and Cargo](https://www.rust-lang.org/)
 installed. You will also need additional dependencies to compile [libsass](https://github.com/sass/libsass):
 
 - OSX, Linux and other Unix: `make` (`gmake` on BSDs), `g++`, `libssl-dev`
