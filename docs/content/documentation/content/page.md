@@ -19,7 +19,8 @@ content directory `about.md` would also create a page at `[base_url]/about`.
 Another exception to that rule is that a filename starting with a datetime (YYYY-mm-dd or [a RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by
 an underscore (`_`) or a dash (`-`) will use that date as the page date, unless already set
 in the front-matter. The page name will be anything after `_`/`-` so a filename like `2018-10-10-hello-world.md` will
-be available at `[base_url]/hello-world`
+be available at `[base_url]/hello-world`. Note that the full RFC3339 datetime contains colons, which is not a valid
+character in a filename on Windows.
 
 As you can see, creating an `about.md` file is exactly equivalent to creating an
 `about/index.md` file.  The only difference between the two methods is that creating
