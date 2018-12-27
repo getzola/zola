@@ -253,7 +253,7 @@ impl ImageOp {
         let mut img = image::open(&src_path)?;
         let (img_w, img_h) = img.dimensions();
 
-        const RESIZE_FILTER: FilterType = FilterType::Gaussian;
+        const RESIZE_FILTER: FilterType = FilterType::Lanczos3;
         const RATIO_EPSILLION: f32 = 0.1;
 
         let img = match self.op {
