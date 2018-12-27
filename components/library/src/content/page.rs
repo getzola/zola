@@ -71,6 +71,9 @@ pub struct Page {
     /// How long would it take to read the raw content.
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
+    /// The language of that page. `None` if the user doesn't setup `languages` in config.
+    /// Corresponds to the lang in the {slug}.{lang}.md file scheme
+    pub lang: Option<String>,
 }
 
 impl Page {
@@ -97,6 +100,7 @@ impl Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
+            lang: None,
         }
     }
 
@@ -110,6 +114,8 @@ impl Page {
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Page> {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta);
+
+        page.lang = page.file.find_language(config)?;
 
         page.raw_content = content;
         let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
@@ -286,6 +292,7 @@ impl Default for Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
+            lang: None,
         }
     }
 }
@@ -302,7 +309,7 @@ mod tests {
     use tera::Tera;
 
     use super::Page;
-    use config::Config;
+    use config::{Config, Language};
     use front_matter::InsertAnchor;
 
     #[test]
@@ -558,5 +565,38 @@ Hello world
 
         assert_eq!(page.meta.date, Some("2018-09-09".to_string()));
         assert_eq!(page.slug, "hello");
+    }
+
+    #[test]
+    fn can_specify_language_in_filename() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("fr"), rss: false});
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(Path::new("hello.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.slug, "hello".to_string());
+    }
+
+    #[test]
+    fn can_specify_language_in_filename_with_date() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("fr"), rss: false});
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(Path::new("2018-10-08_hello.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
+        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.slug, "hello".to_string());
     }
 }

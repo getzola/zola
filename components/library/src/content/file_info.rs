@@ -1,5 +1,8 @@
 use std::path::{Path, PathBuf};
 
+use config::Config;
+use errors::Result;
+
 /// Takes a full path to a file and returns only the components after the first `content` directory
 /// Will not return the filename as last component
 pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
@@ -29,6 +32,7 @@ pub struct FileInfo {
     /// The full path to the .md file
     pub path: PathBuf,
     /// The name of the .md file without the extension, always `_index` for sections
+    /// Doesn't contain the language if there was one in the filename
     pub name: String,
     /// The .md path, starting from the content directory, with `/` slashes
     pub relative: String,
@@ -55,7 +59,9 @@ impl FileInfo {
         };
 
         // If we have a folder with an asset, don't consider it as a component
-        if !components.is_empty() && name == "index" {
+        // Splitting on `.` as we might have a language so it isn't *only* index but also index.fr
+        // etc
+        if !components.is_empty() && name.split('.').collect::<Vec<_>>()[0] == "index" {
             components.pop();
             // also set parent_path to grandparent instead
             parent = parent.parent().unwrap().to_path_buf();
@@ -74,12 +80,12 @@ impl FileInfo {
 
     pub fn new_section(path: &Path) -> FileInfo {
         let parent = path.parent().unwrap().to_path_buf();
+        let name = path.file_stem().unwrap().to_string_lossy().to_string();
         let components = find_content_components(path);
-        let relative = if components.is_empty() {
-            // the index one
-            "_index.md".to_string()
+        let relative = if !components.is_empty() {
+            format!("{}/{}.md", components.join("/"), name)
         } else {
-            format!("{}/_index.md", components.join("/"))
+            format!("{}.md", name)
         };
         let grand_parent = parent.parent().map(|p| p.to_path_buf());
 
@@ -87,10 +93,39 @@ impl FileInfo {
             path: path.to_path_buf(),
             parent,
             grand_parent,
-            name: "_index".to_string(),
+            name,
             components,
             relative,
         }
+    }
+
+    /// Look for a language in the filename.
+    /// If a language has been found, update the name of the file in this struct to
+    /// remove it and return the language code
+    pub fn find_language(&mut self, config: &Config) -> Result<Option<String>> {
+        // No languages? Nothing to do
+        if !config.uses_i18n() {
+            return Ok(None);
+        }
+
+        if !self.name.contains('.') {
+            return Ok(None);
+        }
+
+        // Go with the assumption that no one is using `.` in filenames when using i18n
+        // We can document that
+        let mut parts: Vec<String> = self.name.splitn(2,'.').map(|s| s.to_string()).collect();
+
+        // The language code is not present in the config: typo or the user forgot to add it to the
+        // config
+        if !config.languages_codes().contains(&parts[1].as_ref()) {
+            bail!("File {:?} has a language code of {} which isn't present in the config.toml `languages`", self.path, parts[1]);
+        }
+
+        self.name = parts.swap_remove(0);
+        let lang = parts.swap_remove(0);
+
+        Ok(Some(lang))
     }
 }
 
@@ -110,12 +145,76 @@ impl Default for FileInfo {
 
 #[cfg(test)]
 mod tests {
-    use super::find_content_components;
+    use std::path::Path;
+
+    use config::{Config, Language};
+
+    use super::{FileInfo, find_content_components};
 
     #[test]
     fn can_find_content_components() {
         let res =
             find_content_components("/home/vincent/code/site/content/posts/tutorials/python.md");
         assert_eq!(res, ["posts".to_string(), "tutorials".to_string()]);
+    }
+    #[test]
+    fn can_find_components_in_page_with_assets() {
+        let file =
+            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"));
+        assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
+    }
+
+    #[test]
+    fn can_find_valid_language_in_page() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("fr"), rss: false});
+        let mut file =
+            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"));
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), Some(String::from("fr")));
+    }
+
+    #[test]
+    fn can_find_valid_language_in_page_with_assets() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("fr"), rss: false});
+        let mut file =
+            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"));
+        assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), Some(String::from("fr")));
+    }
+
+    #[test]
+    fn do_nothing_on_unknown_language_in_page_with_i18n_off() {
+        let config = Config::default();
+        let mut file =
+            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"));
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert!(res.unwrap().is_none());
+    }
+
+    #[test]
+    fn errors_on_unknown_language_in_page_with_i18n_on() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("it"), rss: false});
+        let mut file =
+            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"));
+        let res = file.find_language(&config);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn can_find_valid_language_in_section() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("fr"), rss: false});
+        let mut file =
+            FileInfo::new_section(&Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"));
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), Some(String::from("fr")));
     }
 }

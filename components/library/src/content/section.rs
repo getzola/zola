@@ -51,6 +51,9 @@ pub struct Section {
     /// How long would it take to read the raw content.
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
+    /// The language of that section. `None` if the user doesn't setup `languages` in config.
+    /// Corresponds to the lang in the _index.{lang}.md file scheme
+    pub lang: Option<String>,
 }
 
 impl Section {
@@ -74,12 +77,14 @@ impl Section {
             toc: vec![],
             word_count: None,
             reading_time: None,
+            lang: None,
         }
     }
 
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Section> {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta);
+        section.lang = section.file.find_language(config)?;
         section.raw_content = content;
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
@@ -223,6 +228,7 @@ impl Default for Section {
             toc: vec![],
             reading_time: None,
             word_count: None,
+            lang: None,
         }
     }
 }
@@ -231,12 +237,13 @@ impl Default for Section {
 mod tests {
     use std::fs::{create_dir, File};
     use std::io::Write;
+    use std::path::Path;
 
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
 
     use super::Section;
-    use config::Config;
+    use config::{Config, Language};
 
     #[test]
     fn section_with_assets_gets_right_info() {
@@ -284,5 +291,20 @@ mod tests {
         let page = res.unwrap();
         assert_eq!(page.assets.len(), 1);
         assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+    }
+
+    #[test]
+    fn can_specify_language_in_filename() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("fr"), rss: false});
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Section::parse(Path::new("hello.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, Some("fr".to_string()));
     }
 }

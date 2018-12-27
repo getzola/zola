@@ -249,6 +249,11 @@ impl Config {
     pub fn uses_i18n(&self) -> bool {
         !self.languages.is_empty()
     }
+
+    /// Returns the codes of all additional languages
+    pub fn languages_codes(&self) -> Vec<&str> {
+        self.languages.iter().map(|l| l.code.as_ref()).collect()
+    }
 }
 
 impl Default for Config {

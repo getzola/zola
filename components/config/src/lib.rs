@@ -12,7 +12,7 @@ extern crate syntect;
 mod config;
 pub mod highlighting;
 mod theme;
-pub use config::{Config, Taxonomy};
+pub use config::{Config, Taxonomy, Language};
 
 use std::path::Path;
 
