@@ -18,6 +18,21 @@ static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+pub struct Language {
+    /// The language code
+    pub code: String,
+    /// Whether to generate a RSS feed for that language, defaults to `false`
+    pub rss: bool,
+}
+
+impl Default for Language {
+    fn default() -> Language {
+        Language { code: String::new(), rss: false }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Taxonomy {
     /// The name used in the URL, usually the plural
     pub name: String,
@@ -68,6 +83,8 @@ pub struct Config {
 
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
+    /// The list of supported languages outside of the default one
+    pub languages: Vec<Language>,
     /// Languages list and translated strings
     pub translations: HashMap<String, Toml>,
 
@@ -227,6 +244,11 @@ impl Config {
         let theme = Theme::from_file(path)?;
         self.add_theme_extra(&theme)
     }
+
+    /// Is this site using i18n?
+    pub fn uses_i18n(&self) -> bool {
+        !self.languages.is_empty()
+    }
 }
 
 impl Default for Config {
@@ -239,6 +261,7 @@ impl Default for Config {
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
+            languages: Vec::new(),
             generate_rss: false,
             rss_limit: None,
             taxonomies: Vec::new(),
