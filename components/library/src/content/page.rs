@@ -152,11 +152,17 @@ impl Page {
         if let Some(ref p) = page.meta.path {
             page.path = p.trim().trim_left_matches('/').to_string();
         } else {
-            page.path = if page.file.components.is_empty() {
+            let mut path = if page.file.components.is_empty() {
                 page.slug.clone()
             } else {
                 format!("{}/{}", page.file.components.join("/"), page.slug)
             };
+
+            if let Some(ref lang) = page.lang {
+                path = format!("{}/{}", lang, path);
+            }
+
+            page.path = path;
         }
         if !page.path.ends_with('/') {
             page.path = format!("{}/", page.path);
@@ -580,7 +586,8 @@ Bonjour le monde"#
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.lang, Some("fr".to_string()));
-        assert_eq!(page.slug, "hello".to_string());
+        assert_eq!(page.slug, "hello");
+        assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
     }
 
     #[test]
@@ -597,6 +604,25 @@ Bonjour le monde"#
         let page = res.unwrap();
         assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
         assert_eq!(page.lang, Some("fr".to_string()));
-        assert_eq!(page.slug, "hello".to_string());
+        assert_eq!(page.slug, "hello");
+        assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
+    }
+
+    #[test]
+    fn i18n_frontmatter_path_overrides_default_permalink() {
+        let mut config = Config::default();
+        config.languages.push(Language {code: String::from("fr"), rss: false});
+        let content = r#"
++++
+path = "bonjour"
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(Path::new("hello.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.slug, "hello");
+        assert_eq!(page.permalink, "http://a-website.com/bonjour/");
     }
 }

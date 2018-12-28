@@ -2,6 +2,7 @@
 
 ## 0.6.0 (unreleased)
 
+- Add support for content in multiple languages
 
 ## 0.5.1 (2018-12-14)
 

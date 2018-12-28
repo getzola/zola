@@ -89,7 +89,12 @@ impl Section {
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
-        section.path = format!("{}/", section.file.components.join("/"));
+        let path = format!("{}/", section.file.components.join("/"));
+        if let Some(ref lang) = section.lang {
+            section.path = format!("{}/{}", lang, path);
+        } else {
+            section.path = path;
+        }
         section.components = section
             .path
             .split('/')
@@ -302,9 +307,10 @@ mod tests {
 +++
 Bonjour le monde"#
             .to_string();
-        let res = Section::parse(Path::new("hello.fr.md"), &content, &config);
+        let res = Section::parse(Path::new("content/hello/nested/_index.fr.md"), &content, &config);
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.lang, Some("fr".to_string()));
+        assert_eq!(section.permalink, "http://a-website.com/fr/hello/nested/");
     }
 }
