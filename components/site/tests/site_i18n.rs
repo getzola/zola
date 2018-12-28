@@ -1,8 +1,10 @@
 extern crate site;
+mod common;
 
 use std::env;
 
 use site::Site;
+use common::build_site;
 
 #[test]
 fn can_parse_multilingual_site() {
@@ -43,4 +45,30 @@ fn can_parse_multilingual_site() {
         let page = site.library.get_page_by_key(*key);
         assert_eq!(page.lang, Some("fr".to_string()));
     }
+}
+
+#[test]
+fn can_build_multilingual_site() {
+    let (_, _tmp_dir, public) = build_site("test_site_i18n");
+
+    assert!(public.exists());
+
+    // Index pages
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_exists!(public, "fr/index.html"));
+    assert!(file_contains!(public, "fr/index.html", "Une page"));
+    assert!(file_contains!(public, "fr/index.html", "Language: fr"));
+
+    assert!(file_exists!(public, "base/index.html"));
+    assert!(file_exists!(public, "fr/base/index.html"));
+
+    // Sections are there as well
+    assert!(file_exists!(public, "blog/index.html"));
+    assert!(file_exists!(public, "fr/blog/index.html"));
+    assert!(file_contains!(public, "fr/blog/index.html", "Language: fr"));
+
+    // sitemap contains all languages
+    assert!(file_exists!(public, "sitemap.xml"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/blog/something-else/"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/fr/blog/something-else/"));
 }

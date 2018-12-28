@@ -861,6 +861,11 @@ impl Site {
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let mut output_path = self.output_path.clone();
+
+        if let Some(ref lang) = section.lang {
+            output_path.push(lang);
+        }
+
         for component in &section.file.components {
             output_path.push(component);
 
