@@ -184,6 +184,7 @@ impl Section {
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
         context.insert("section", &self.to_serialized(library));
+        context.insert("lang", &self.lang);
 
         render_template(tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
