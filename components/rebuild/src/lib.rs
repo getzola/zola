@@ -297,9 +297,15 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let is_md = path.extension().unwrap() == "md";
     let index = path.parent().unwrap().join("index.md");
 
+    let mut potential_indices = vec![path.parent().unwrap().join("index.md")];
+    for language in &site.config.languages {
+        potential_indices.push(path.parent().unwrap().join(format!("index.{}.md", language.code)));
+    }
+    let colocated_index = potential_indices.contains(&path.to_path_buf());
+
     // A few situations can happen:
     // 1. Change on .md files
-    //    a. Is there an `index.md`? Return an error if it's something other than delete
+    //    a. Is there already an `index.md`? Return an error if it's something other than delete
     //    b. Deleted? remove the element
     //    c. Edited?
     //       1. filename is `_index.md`, this is a section
@@ -315,9 +321,9 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
         }
 
         // Added another .md in a assets directory
-        if index.exists() && path.exists() && path != index {
+        if index.exists() && path.exists() && !colocated_index {
             bail!(
-                "Change on {:?} detected but there is already an `index.md` in the same folder",
+                "Change on {:?} detected but only files named `index.md` with an optional language code are allowed",
                 path.display()
             );
         } else if index.exists() && !path.exists() {

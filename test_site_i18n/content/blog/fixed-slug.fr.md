@@ -1,5 +1,5 @@
 +++
-title = "Un slug fix"
+title = "Un slug fixe"
 slug = "something-else"
 date = 2017-01-01
 +++
