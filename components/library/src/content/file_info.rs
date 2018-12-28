@@ -31,6 +31,8 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
 pub struct FileInfo {
     /// The full path to the .md file
     pub path: PathBuf,
+    /// The on-disk filename, will differ from the `name` when there is a language code in it
+    pub filename: String,
     /// The name of the .md file without the extension, always `_index` for sections
     /// Doesn't contain the language if there was one in the filename
     pub name: String,
@@ -68,6 +70,7 @@ impl FileInfo {
         }
 
         FileInfo {
+            filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
             path: file_path,
             // We don't care about grand parent for pages
             grand_parent: None,
@@ -79,6 +82,7 @@ impl FileInfo {
     }
 
     pub fn new_section(path: &Path) -> FileInfo {
+        let file_path = path.to_path_buf();
         let parent = path.parent().unwrap().to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
         let components = find_content_components(path);
@@ -90,7 +94,8 @@ impl FileInfo {
         let grand_parent = parent.parent().map(|p| p.to_path_buf());
 
         FileInfo {
-            path: path.to_path_buf(),
+            filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
+            path: file_path,
             parent,
             grand_parent,
             name,
@@ -136,6 +141,7 @@ impl Default for FileInfo {
             path: PathBuf::new(),
             parent: PathBuf::new(),
             grand_parent: None,
+            filename: String::new(),
             name: String::new(),
             components: vec![],
             relative: String::new(),

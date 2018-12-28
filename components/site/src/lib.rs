@@ -147,9 +147,14 @@ impl Site {
         Ok(site)
     }
 
-    /// The index section is ALWAYS at that path
-    pub fn index_section_path(&self) -> PathBuf {
-        self.content_path.join("_index.md")
+    /// The index sections are ALWAYS at those paths
+    /// There are one index section for the basic language + 1 per language
+    fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
+        let mut res = vec![(self.content_path.join("_index.md"), None)];
+        for language in &self.config.languages {
+            res.push((self.content_path.join(format!("_index.{}.md", language.code)), Some(language.code.clone())));
+        }
+        res
     }
 
     /// We avoid the port the server is going to use as it's not bound yet
@@ -184,7 +189,7 @@ impl Site {
             .unwrap()
             .filter_map(|e| e.ok())
             .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
-            .partition(|entry| entry.as_path().file_name().unwrap() == "_index.md");
+            .partition(|entry| entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index."));
 
         self.library = Library::new(page_entries.len(), section_entries.len());
 
@@ -219,26 +224,37 @@ impl Site {
             self.add_section(s, false)?;
         }
 
-        // Insert a default index section if necessary so we don't need to create
+        // Insert a default index section for each language if necessary so we don't need to create
         // a _index.md to render the index page at the root of the site
-        let index_path = self.index_section_path();
-        if let Some(ref index_section) = self.library.get_section(&index_path) {
-            if self.config.build_search_index && !index_section.meta.in_search_index {
-                bail!(
+        for (index_path, lang) in self.index_section_paths() {
+            if let Some(ref index_section) = self.library.get_section(&index_path) {
+                if self.config.build_search_index && !index_section.meta.in_search_index {
+                    bail!(
                     "You have enabled search in the config but disabled it in the index section: \
                     either turn off the search in the config or remote `in_search_index = true` from the \
                     section front-matter."
-                )
+                    )
+                }
             }
-        }
-        // Not in else because of borrow checker
-        if !self.library.contains_section(&index_path) {
-            let mut index_section = Section::default();
-            index_section.permalink = self.config.make_permalink("");
-            index_section.file.path = self.content_path.join("_index.md");
-            index_section.file.parent = self.content_path.clone();
-            index_section.file.relative = "_index.md".to_string();
-            self.library.insert_section(index_section);
+            // Not in else because of borrow checker
+            if !self.library.contains_section(&index_path) {
+                let mut index_section = Section::default();
+                index_section.file.parent = self.content_path.clone();
+                index_section.file.name = "_index".to_string();
+                index_section.file.filename = index_path.file_name().unwrap().to_string_lossy().to_string();
+                if let Some(ref l) = lang {
+                    index_section.permalink = self.config.make_permalink(l);
+                    let filename = format!("_index.{}.md", l);
+                    index_section.file.path = self.content_path.join(&filename);
+                    index_section.file.relative = filename;
+                    index_section.lang = Some(l.clone());
+                } else {
+                    index_section.permalink = self.config.make_permalink("");
+                    index_section.file.path = self.content_path.join("_index.md");
+                    index_section.file.relative = "_index.md".to_string();
+                }
+                self.library.insert_section(index_section);
+            }
         }
 
         let mut pages_insert_anchors = HashMap::new();
@@ -246,7 +262,7 @@ impl Site {
             let p = page?;
             pages_insert_anchors.insert(
                 p.file.path.clone(),
-                self.find_parent_section_insert_anchor(&p.file.parent.clone()),
+                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
             );
             self.add_page(p, false)?;
         }
@@ -274,7 +290,7 @@ impl Site {
         for (_, p) in self.library.pages() {
             pages_insert_anchors.insert(
                 p.file.path.clone(),
-                self.find_parent_section_insert_anchor(&p.file.parent.clone()),
+                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
             );
         }
 
@@ -337,7 +353,7 @@ impl Site {
     pub fn add_page(&mut self, mut page: Page, render: bool) -> Result<Option<Page>> {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render {
-            let insert_anchor = self.find_parent_section_insert_anchor(&page.file.parent);
+            let insert_anchor = self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
             page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
         let prev = self.library.remove_page(&page.file.path);
@@ -363,8 +379,13 @@ impl Site {
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
     /// Defaults to `AnchorInsert::None` if no parent section found
-    pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
-        match self.library.get_section(&parent_path.join("_index.md")) {
+    pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf, lang: &Option<String>) -> InsertAnchor {
+        let parent = if let Some(ref l) = lang {
+            parent_path.join(format!("_index.{}.md", l))
+        } else {
+            parent_path.join("_index.md")
+        };
+        match self.library.get_section(&parent) {
             Some(s) => s.meta.insert_anchor_links,
             None => InsertAnchor::None,
         }
