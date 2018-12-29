@@ -288,7 +288,7 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
         old.to_path_buf()
     };
     site.library.remove_page(&old_path);
-    return handle_page_editing(site, &new_path);
+    handle_page_editing(site, &new_path)
 }
 
 /// What happens when a section or a page is created/edited

@@ -142,9 +142,11 @@ pub fn make_get_taxonomy(all_taxonomies: &[Taxonomy], library: &Library) -> Glob
         let container = match taxonomies.get(&kind) {
             Some(c) => c,
             None => {
-                return Err(
-                    format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
-                );
+                return Err(format!(
+                    "`get_taxonomy` received an unknown taxonomy as kind: {}",
+                    kind
+                )
+                .into());
             }
         };
 

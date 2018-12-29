@@ -119,7 +119,7 @@ impl FileInfo {
 
         // Go with the assumption that no one is using `.` in filenames when using i18n
         // We can document that
-        let mut parts: Vec<String> = self.name.splitn(2,'.').map(|s| s.to_string()).collect();
+        let mut parts: Vec<String> = self.name.splitn(2, '.').map(|s| s.to_string()).collect();
 
         // The language code is not present in the config: typo or the user forgot to add it to the
         // config
@@ -155,7 +155,7 @@ mod tests {
 
     use config::{Config, Language};
 
-    use super::{FileInfo, find_content_components};
+    use super::{find_content_components, FileInfo};
 
     #[test]
     fn can_find_content_components() {
@@ -165,17 +165,19 @@ mod tests {
     }
     #[test]
     fn can_find_components_in_page_with_assets() {
-        let file =
-            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"));
+        let file = FileInfo::new_page(&Path::new(
+            "/home/vincent/code/site/content/posts/tutorials/python/index.md",
+        ));
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
     }
 
     #[test]
     fn can_find_valid_language_in_page() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("fr"), rss: false});
-        let mut file =
-            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"));
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let mut file = FileInfo::new_page(&Path::new(
+            "/home/vincent/code/site/content/posts/tutorials/python.fr.md",
+        ));
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), Some(String::from("fr")));
@@ -184,9 +186,10 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_page_with_assets() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("fr"), rss: false});
-        let mut file =
-            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"));
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let mut file = FileInfo::new_page(&Path::new(
+            "/home/vincent/code/site/content/posts/tutorials/python/index.fr.md",
+        ));
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
         let res = file.find_language(&config);
         assert!(res.is_ok());
@@ -196,8 +199,9 @@ mod tests {
     #[test]
     fn do_nothing_on_unknown_language_in_page_with_i18n_off() {
         let config = Config::default();
-        let mut file =
-            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"));
+        let mut file = FileInfo::new_page(&Path::new(
+            "/home/vincent/code/site/content/posts/tutorials/python.fr.md",
+        ));
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert!(res.unwrap().is_none());
@@ -206,9 +210,10 @@ mod tests {
     #[test]
     fn errors_on_unknown_language_in_page_with_i18n_on() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("it"), rss: false});
-        let mut file =
-            FileInfo::new_page(&Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"));
+        config.languages.push(Language { code: String::from("it"), rss: false });
+        let mut file = FileInfo::new_page(&Path::new(
+            "/home/vincent/code/site/content/posts/tutorials/python.fr.md",
+        ));
         let res = file.find_language(&config);
         assert!(res.is_err());
     }
@@ -216,9 +221,10 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_section() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("fr"), rss: false});
-        let mut file =
-            FileInfo::new_section(&Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"));
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let mut file = FileInfo::new_section(&Path::new(
+            "/home/vincent/code/site/content/posts/tutorials/_index.fr.md",
+        ));
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), Some(String::from("fr")));

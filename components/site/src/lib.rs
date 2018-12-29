@@ -152,7 +152,10 @@ impl Site {
     fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
         let mut res = vec![(self.content_path.join("_index.md"), None)];
         for language in &self.config.languages {
-            res.push((self.content_path.join(format!("_index.{}.md", language.code)), Some(language.code.clone())));
+            res.push((
+                self.content_path.join(format!("_index.{}.md", language.code)),
+                Some(language.code.clone()),
+            ));
         }
         res
     }
@@ -189,7 +192,9 @@ impl Site {
             .unwrap()
             .filter_map(|e| e.ok())
             .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
-            .partition(|entry| entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index."));
+            .partition(|entry| {
+                entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index.")
+            });
 
         self.library = Library::new(page_entries.len(), section_entries.len());
 
@@ -241,7 +246,8 @@ impl Site {
                 let mut index_section = Section::default();
                 index_section.file.parent = self.content_path.clone();
                 index_section.file.name = "_index".to_string();
-                index_section.file.filename = index_path.file_name().unwrap().to_string_lossy().to_string();
+                index_section.file.filename =
+                    index_path.file_name().unwrap().to_string_lossy().to_string();
                 if let Some(ref l) = lang {
                     index_section.permalink = self.config.make_permalink(l);
                     let filename = format!("_index.{}.md", l);
@@ -353,7 +359,8 @@ impl Site {
     pub fn add_page(&mut self, mut page: Page, render: bool) -> Result<Option<Page>> {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render {
-            let insert_anchor = self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
+            let insert_anchor =
+                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
             page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
         let prev = self.library.remove_page(&page.file.path);
@@ -379,7 +386,11 @@ impl Site {
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
     /// Defaults to `AnchorInsert::None` if no parent section found
-    pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf, lang: &Option<String>) -> InsertAnchor {
+    pub fn find_parent_section_insert_anchor(
+        &self,
+        parent_path: &PathBuf,
+        lang: &Option<String>,
+    ) -> InsertAnchor {
         let parent = if let Some(ref l) = lang {
             parent_path.join(format!("_index.{}.md", l))
         } else {
@@ -746,7 +757,7 @@ impl Site {
             let number_pagers = (section.pages.len() as f64
                 / section.meta.paginate_by.unwrap() as f64)
                 .ceil() as isize;
-            for i in 1..number_pagers + 1 {
+            for i in 1..=number_pagers {
                 let permalink =
                     format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
                 sections.push(SitemapEntry::new(permalink, None))
@@ -770,7 +781,7 @@ impl Site {
                     let number_pagers = (item.pages.len() as f64
                         / taxonomy.kind.paginate_by.unwrap() as f64)
                         .ceil() as isize;
-                    for i in 1..number_pagers + 1 {
+                    for i in 1..=number_pagers {
                         let permalink = self.config.make_permalink(&format!(
                             "{}/{}/{}/{}",
                             name,
@@ -822,7 +833,7 @@ impl Site {
 
         context.insert("last_build_date", &pages[0].meta.date.clone());
         // limit to the last n elements if the limit is set; otherwise use all.
-        let num_entries = self.config.rss_limit.unwrap_or(pages.len());
+        let num_entries = self.config.rss_limit.unwrap_or_else(|| pages.len());
         let p = pages
             .iter()
             .take(num_entries)

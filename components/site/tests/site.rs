@@ -6,9 +6,9 @@ use std::collections::HashMap;
 use std::env;
 use std::path::Path;
 
+use common::{build_site, build_site_with_setup};
 use config::Taxonomy;
 use site::Site;
-use common::{build_site, build_site_with_setup};
 
 #[test]
 fn can_parse_site() {
@@ -425,7 +425,10 @@ fn can_build_site_with_pagination_for_index() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
         {
-            let index = site.library.get_section_mut(&site.base_path.join("content").join("_index.md")).unwrap();
+            let index = site
+                .library
+                .get_section_mut(&site.base_path.join("content").join("_index.md"))
+                .unwrap();
             index.meta.paginate_by = Some(2);
             index.meta.template = Some("index_paginated.html".to_string());
         }
@@ -482,8 +485,10 @@ fn can_build_site_with_pagination_for_taxonomy() {
         for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
             page.meta.taxonomies = {
                 let mut taxonomies = HashMap::new();
-                taxonomies
-                    .insert("tags".to_string(), vec![if i % 2 == 0 { "A" } else { "B" }.to_string()]);
+                taxonomies.insert(
+                    "tags".to_string(),
+                    vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+                );
                 taxonomies
             };
         }

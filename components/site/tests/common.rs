@@ -1,5 +1,5 @@
-extern crate tempfile;
 extern crate site;
+extern crate tempfile;
 
 use std::env;
 use std::path::PathBuf;
@@ -50,7 +50,10 @@ pub fn build_site(name: &str) -> (Site, TempDir, PathBuf) {
 }
 
 /// Same as `build_site` but has a hook to setup some config options
-pub fn build_site_with_setup<F>(name: &str, mut setup_cb: F) -> (Site, TempDir, PathBuf) where F: FnMut(Site) -> (Site, bool) {
+pub fn build_site_with_setup<F>(name: &str, mut setup_cb: F) -> (Site, TempDir, PathBuf)
+where
+    F: FnMut(Site) -> (Site, bool),
+{
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push(name);
     let site = Site::new(&path, "config.toml").unwrap();

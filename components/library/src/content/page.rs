@@ -74,6 +74,8 @@ pub struct Page {
     /// The language of that page. `None` if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the {slug}.{lang}.md file scheme
     pub lang: Option<String>,
+    /// Contains all the translated version of that page
+    pub translations: Vec<Key>,
 }
 
 impl Page {
@@ -101,6 +103,7 @@ impl Page {
             word_count: None,
             reading_time: None,
             lang: None,
+            translations: Vec::new(),
         }
     }
 
@@ -300,6 +303,7 @@ impl Default for Page {
             word_count: None,
             reading_time: None,
             lang: None,
+            translations: Vec::new(),
         }
     }
 }
@@ -577,7 +581,7 @@ Hello world
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("fr"), rss: false});
+        config.languages.push(Language { code: String::from("fr"), rss: false });
         let content = r#"
 +++
 +++
@@ -594,7 +598,7 @@ Bonjour le monde"#
     #[test]
     fn can_specify_language_in_filename_with_date() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("fr"), rss: false});
+        config.languages.push(Language { code: String::from("fr"), rss: false });
         let content = r#"
 +++
 +++
@@ -612,7 +616,7 @@ Bonjour le monde"#
     #[test]
     fn i18n_frontmatter_path_overrides_default_permalink() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("fr"), rss: false});
+        config.languages.push(Language { code: String::from("fr"), rss: false });
         let content = r#"
 +++
 path = "bonjour"

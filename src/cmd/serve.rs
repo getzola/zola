@@ -502,12 +502,9 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
 /// Check if the directory at path contains any file
 fn is_folder_empty(dir: &Path) -> bool {
     // Can panic if we don't have the rights I guess?
-    for _ in read_dir(dir).expect("Failed to read a directory to see if it was empty") {
-        // If we get there, that means we have a file
-        return false;
-    }
-
-    true
+    let files: Vec<_> =
+        read_dir(dir).expect("Failed to read a directory to see if it was empty").collect();
+    files.is_empty()
 }
 
 #[cfg(test)]

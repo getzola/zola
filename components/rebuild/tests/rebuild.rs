@@ -267,9 +267,5 @@ Edite
     let res = after_content_change(&mut site, &file_path);
     println!("{:?}", res);
     assert!(res.is_ok());
-    assert!(file_contains!(
-        site_path,
-        "public/fr/blog/with-assets/index.html",
-        "Edite"
-    ));
+    assert!(file_contains!(site_path, "public/fr/blog/with-assets/index.html", "Edite"));
 }

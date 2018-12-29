@@ -80,12 +80,8 @@ impl Library {
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
-        let root_path= self
-            .sections
-            .values()
-            .find(|s| s.is_index())
-            .map(|s| s.file.parent.clone())
-            .unwrap();
+        let root_path =
+            self.sections.values().find(|s| s.is_index()).map(|s| s.file.parent.clone()).unwrap();
         // We are going to get both the ancestors and grandparents for each section in one go
         let mut ancestors: HashMap<PathBuf, Vec<_>> = HashMap::new();
         let mut subsections: HashMap<PathBuf, Vec<_>> = HashMap::new();
@@ -119,7 +115,9 @@ impl Library {
                 if path == section.file.parent {
                     continue;
                 }
-                if let Some(section_key) = self.paths_to_sections.get(&path.join(&section.file.filename)) {
+                if let Some(section_key) =
+                    self.paths_to_sections.get(&path.join(&section.file.filename))
+                {
                     parents.push(*section_key);
                 }
             }

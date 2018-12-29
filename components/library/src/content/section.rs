@@ -54,6 +54,8 @@ pub struct Section {
     /// The language of that section. `None` if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the _index.{lang}.md file scheme
     pub lang: Option<String>,
+    /// Contains all the translated version of that section
+    pub translations: Vec<Key>,
 }
 
 impl Section {
@@ -78,6 +80,7 @@ impl Section {
             word_count: None,
             reading_time: None,
             lang: None,
+            translations: Vec::new(),
         }
     }
 
@@ -235,6 +238,7 @@ impl Default for Section {
             reading_time: None,
             word_count: None,
             lang: None,
+            translations: Vec::new(),
         }
     }
 }
@@ -302,7 +306,7 @@ mod tests {
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language {code: String::from("fr"), rss: false});
+        config.languages.push(Language { code: String::from("fr"), rss: false });
         let content = r#"
 +++
 +++
