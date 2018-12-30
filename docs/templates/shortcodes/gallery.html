@@ -1,7 +1,7 @@
 {% for asset in page.assets -%}
-  {%- if asset is ending_with(".jpg") -%}
-    <a href="{{ get_url(path=asset) | safe }}">
-      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill") | safe }}" />
+  {%- if asset is matching("[.](jpg|png)$") -%}
+    <a href="{{ get_url(path=asset) | safe }}" target="_blank">
+      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill", format="auto") | safe }}" />
     </a>
     &ensp;
   {%- endif %}
