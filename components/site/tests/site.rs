@@ -225,7 +225,7 @@ fn can_build_site_with_live_reload() {
     assert!(file_contains!(
         public,
         "posts/python/index.html",
-        r#"<a name="continue-reading"></a>"#
+        r#"<a id="zola-continue-reading" name="continue-reading"></a>"#
     ));
     assert!(file_contains!(public, "posts/draft/index.html", r#"THEME_SHORTCODE"#));
 }

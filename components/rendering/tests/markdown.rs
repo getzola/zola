@@ -681,7 +681,7 @@ fn can_handle_summaries() {
     .unwrap();
     assert_eq!(
         res.body,
-        "<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n<p><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
+        "<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
     );
     assert_eq!(
         res.summary_len,
