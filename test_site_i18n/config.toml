@@ -11,8 +11,11 @@ highlight_code = false
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = false
 
+generate_rss = true
+
 languages = [
- {code = "fr"},
+ {code = "fr", rss = true},
+ {code = "it", rss = false},
 ]
 
 [extra]

@@ -30,7 +30,7 @@ macro_rules! file_contains {
         let mut file = std::fs::File::open(&path).unwrap();
         let mut s = String::new();
         file.read_to_string(&mut s).unwrap();
-        println!("{}", s);
+        // println!("{}", s);
         s.contains($text)
     }};
 }

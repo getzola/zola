@@ -511,9 +511,41 @@ impl Site {
         self.render_sections()?;
         self.render_orphan_pages()?;
         self.render_sitemap()?;
+
         if self.config.generate_rss {
-            self.render_rss_feed(self.library.pages_values(), None)?;
+            let pages = if self.config.is_multilingual() {
+                self.library
+                    .pages_values()
+                    .iter()
+                    .filter(|p| p.lang.is_none())
+                    .map(|p| *p)
+                    .collect()
+            } else {
+                self.library.pages_values()
+            };
+            self.render_rss_feed(pages, None)?;
         }
+
+        for lang in &self.config.languages {
+            if !lang.rss {
+                continue;
+            }
+            let pages = self
+                .library
+                .pages_values()
+                .iter()
+                .filter(|p| {
+                    if let Some(ref l) = p.lang {
+                        l == &lang.code
+                    } else {
+                        false
+                    }
+                })
+                .map(|p| *p)
+                .collect();
+            self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
+        }
+
         self.render_404()?;
         self.render_robots()?;
         self.render_taxonomies()?;

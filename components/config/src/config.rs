@@ -246,7 +246,7 @@ impl Config {
     }
 
     /// Is this site using i18n?
-    pub fn uses_i18n(&self) -> bool {
+    pub fn is_multilingual(&self) -> bool {
         !self.languages.is_empty()
     }
 

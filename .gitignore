@@ -14,6 +14,7 @@ huge-kb
 
 current.bench
 now.bench
+*.zst
 
 # snapcraft artifacts
 snap/.snapcraft

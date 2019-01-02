@@ -109,7 +109,7 @@ impl FileInfo {
     /// remove it and return the language code
     pub fn find_language(&mut self, config: &Config) -> Result<Option<String>> {
         // No languages? Nothing to do
-        if !config.uses_i18n() {
+        if !config.is_multilingual() {
             return Ok(None);
         }
 
