@@ -298,11 +298,11 @@ impl ImageOp {
             Format::Png => {
                 let mut enc = PNGEncoder::new(&mut f);
                 enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
-            },
+            }
             Format::Jpeg(q) => {
                 let mut enc = JPEGEncoder::new_with_quality(&mut f, q);
                 enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
-            },
+            }
         }
 
         Ok(())
@@ -453,7 +453,8 @@ impl Processor {
         self.img_ops
             .par_iter()
             .map(|(hash, op)| {
-                let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id, op.format));
+                let target =
+                    self.resized_path.join(Self::op_filename(*hash, op.collision_id, op.format));
                 op.perform(&self.content_path, &target)
                     .chain_err(|| format!("Failed to process image: {}", op.source))
             })

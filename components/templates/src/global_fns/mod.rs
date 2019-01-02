@@ -218,8 +218,9 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
         let op = optional_arg!(String, args.get("op"), "`resize_image`: `op` must be a string")
             .unwrap_or_else(|| DEFAULT_OP.to_string());
 
-        let format = optional_arg!(String, args.get("format"), "`resize_image`: `format` must be a string")
-            .unwrap_or_else(|| DEFAULT_FMT.to_string());
+        let format =
+            optional_arg!(String, args.get("format"), "`resize_image`: `format` must be a string")
+                .unwrap_or_else(|| DEFAULT_FMT.to_string());
 
         let quality =
             optional_arg!(u8, args.get("quality"), "`resize_image`: `quality` must be a number")
