@@ -72,19 +72,43 @@ fn can_build_multilingual_site() {
 
     // Sections are there as well, with translations info
     assert!(file_exists!(public, "blog/index.html"));
-    assert!(file_contains!(public, "blog/index.html", "Translated in fr: Mon blog https://example.com/fr/blog/"));
-    assert!(file_contains!(public, "blog/index.html", "Translated in it: Il mio blog https://example.com/it/blog/"));
+    assert!(file_contains!(
+        public,
+        "blog/index.html",
+        "Translated in fr: Mon blog https://example.com/fr/blog/"
+    ));
+    assert!(file_contains!(
+        public,
+        "blog/index.html",
+        "Translated in it: Il mio blog https://example.com/it/blog/"
+    ));
     assert!(file_exists!(public, "fr/blog/index.html"));
     assert!(file_contains!(public, "fr/blog/index.html", "Language: fr"));
-    assert!(file_contains!(public, "fr/blog/index.html", "Translated in : My blog https://example.com/blog/"));
-    assert!(file_contains!(public, "fr/blog/index.html", "Translated in it: Il mio blog https://example.com/it/blog/"));
+    assert!(file_contains!(
+        public,
+        "fr/blog/index.html",
+        "Translated in : My blog https://example.com/blog/"
+    ));
+    assert!(file_contains!(
+        public,
+        "fr/blog/index.html",
+        "Translated in it: Il mio blog https://example.com/it/blog/"
+    ));
 
     // Normal pages are there with the translations
     assert!(file_exists!(public, "blog/something/index.html"));
-    assert!(file_contains!(public, "blog/something/index.html", "Translated in fr: Quelque chose https://example.com/fr/blog/something/"));
+    assert!(file_contains!(
+        public,
+        "blog/something/index.html",
+        "Translated in fr: Quelque chose https://example.com/fr/blog/something/"
+    ));
     assert!(file_exists!(public, "fr/blog/something/index.html"));
     assert!(file_contains!(public, "fr/blog/something/index.html", "Language: fr"));
-    assert!(file_contains!(public, "fr/blog/something/index.html", "Translated in : Something https://example.com/blog/something/"));
+    assert!(file_contains!(
+        public,
+        "fr/blog/something/index.html",
+        "Translated in : Something https://example.com/blog/something/"
+    ));
 
     // sitemap contains all languages
     assert!(file_exists!(public, "sitemap.xml"));

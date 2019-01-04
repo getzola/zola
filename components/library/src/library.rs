@@ -119,10 +119,10 @@ impl Library {
                     continue;
                 }
                 if let Some(section_key) =
-                self.paths_to_sections.get(&path.join(&section.file.filename))
-                    {
-                        parents.push(*section_key);
-                    }
+                    self.paths_to_sections.get(&path.join(&section.file.filename))
+                {
+                    parents.push(*section_key);
+                }
             }
             ancestors.insert(section.file.path.clone(), parents);
         }
@@ -285,7 +285,7 @@ impl Library {
         let mut sections_translations = HashMap::new();
         for (key, section) in &self.sections {
             sections_translations
-                .entry(section.file.canonical.clone())  // TODO: avoid this clone
+                .entry(section.file.canonical.clone()) // TODO: avoid this clone
                 .or_insert_with(Vec::new)
                 .push(key);
         }
@@ -303,7 +303,7 @@ impl Library {
         let mut pages_translations = HashMap::new();
         for (key, page) in &self.pages {
             pages_translations
-                .entry(page.file.canonical.clone())  // TODO: avoid this clone
+                .entry(page.file.canonical.clone()) // TODO: avoid this clone
                 .or_insert_with(Vec::new)
                 .push(key);
         }
@@ -316,7 +316,6 @@ impl Library {
             }
             page.translations = translations.iter().filter(|k| **k != key).cloned().collect();
         }
-
     }
 
     /// Find all the orphan pages: pages that are in a folder without an `_index.md`

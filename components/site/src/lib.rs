@@ -196,7 +196,8 @@ impl Site {
                 entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index.")
             });
 
-        self.library = Library::new(page_entries.len(), section_entries.len(), self.config.is_multilingual());
+        self.library =
+            Library::new(page_entries.len(), section_entries.len(), self.config.is_multilingual());
 
         let sections = {
             let config = &self.config;
@@ -457,7 +458,8 @@ impl Site {
     }
 
     pub fn process_images(&self) -> Result<()> {
-        let mut imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (process_images)");
+        let mut imageproc =
+            self.imageproc.lock().expect("Couldn't lock imageproc (process_images)");
         imageproc.prune()?;
         imageproc.do_process()
     }
@@ -497,7 +499,11 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
             let asset_path = asset.as_path();
-            copy(&asset_path, &current_path.join(asset_path.file_name().expect("Couldn't get filename from page asset")))?;
+            copy(
+                &asset_path,
+                &current_path
+                    .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
+            )?;
         }
 
         Ok(())
@@ -534,13 +540,7 @@ impl Site {
                 .library
                 .pages_values()
                 .iter()
-                .filter(|p| {
-                    if let Some(ref l) = p.lang {
-                        l == &lang.code
-                    } else {
-                        false
-                    }
-                })
+                .filter(|p| if let Some(ref l) = p.lang { l == &lang.code } else { false })
                 .map(|p| *p)
                 .collect();
             self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
@@ -920,7 +920,12 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &section.assets {
             let asset_path = asset.as_path();
-            copy(&asset_path, &output_path.join(asset_path.file_name().expect("Failed to get asset filename for section")))?;
+            copy(
+                &asset_path,
+                &output_path.join(
+                    asset_path.file_name().expect("Failed to get asset filename for section"),
+                ),
+            )?;
         }
 
         if render_pages {
@@ -957,7 +962,10 @@ impl Site {
     /// Used only on reload
     pub fn render_index(&self) -> Result<()> {
         self.render_section(
-            &self.library.get_section(&self.content_path.join("_index.md")).expect("Failed to get index section"),
+            &self
+                .library
+                .get_section(&self.content_path.join("_index.md"))
+                .expect("Failed to get index section"),
             false,
         )
     }

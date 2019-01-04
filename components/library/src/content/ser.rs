@@ -21,7 +21,11 @@ impl<'a> TranslatedContent<'a> {
 
         for key in &section.translations {
             let other = library.get_section_by_key(*key);
-            translations.push(TranslatedContent { lang: &other.lang, permalink: &other.permalink, title: &other.meta.title });
+            translations.push(TranslatedContent {
+                lang: &other.lang,
+                permalink: &other.permalink,
+                title: &other.meta.title,
+            });
         }
 
         translations
@@ -32,7 +36,11 @@ impl<'a> TranslatedContent<'a> {
 
         for key in &page.translations {
             let other = library.get_page_by_key(*key);
-            translations.push(TranslatedContent { lang: &other.lang, permalink: &other.permalink, title: &other.meta.title });
+            translations.push(TranslatedContent {
+                lang: &other.lang,
+                permalink: &other.permalink,
+                title: &other.meta.title,
+            });
         }
 
         translations
