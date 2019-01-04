@@ -8,6 +8,38 @@ use library::Library;
 use rendering::Header;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct TranslatedContent<'a> {
+    lang: &'a Option<String>,
+    permalink: &'a str,
+    title: &'a Option<String>,
+}
+
+impl<'a> TranslatedContent<'a> {
+    // copypaste eh, not worth creating an enum imo
+    pub fn find_all_sections(section: &'a Section, library: &'a Library) -> Vec<Self> {
+        let mut translations = vec![];
+
+        for key in &section.translations {
+            let other = library.get_section_by_key(*key);
+            translations.push(TranslatedContent { lang: &other.lang, permalink: &other.permalink, title: &other.meta.title });
+        }
+
+        translations
+    }
+
+    pub fn find_all_pages(page: &'a Page, library: &'a Library) -> Vec<Self> {
+        let mut translations = vec![];
+
+        for key in &page.translations {
+            let other = library.get_page_by_key(*key);
+            translations.push(TranslatedContent { lang: &other.lang, permalink: &other.permalink, title: &other.meta.title });
+        }
+
+        translations
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingPage<'a> {
     relative_path: &'a str,
     content: &'a str,
@@ -35,6 +67,7 @@ pub struct SerializingPage<'a> {
     heavier: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
     later: Option<Box<SerializingPage<'a>>>,
+    translations: Vec<TranslatedContent<'a>>,
 }
 
 impl<'a> SerializingPage<'a> {
@@ -67,6 +100,8 @@ impl<'a> SerializingPage<'a> {
             .map(|k| library.get_section_by_key(*k).file.relative.clone())
             .collect();
 
+        let translations = TranslatedContent::find_all_pages(page, library);
+
         SerializingPage {
             relative_path: &page.file.relative,
             ancestors,
@@ -94,6 +129,7 @@ impl<'a> SerializingPage<'a> {
             heavier,
             earlier,
             later,
+            translations,
         }
     }
 
@@ -112,6 +148,12 @@ impl<'a> SerializingPage<'a> {
                 .iter()
                 .map(|k| lib.get_section_by_key(*k).file.relative.clone())
                 .collect()
+        } else {
+            vec![]
+        };
+
+        let translations = if let Some(ref lib) = library {
+            TranslatedContent::find_all_pages(page, lib)
         } else {
             vec![]
         };
@@ -143,6 +185,7 @@ impl<'a> SerializingPage<'a> {
             heavier: None,
             earlier: None,
             later: None,
+            translations,
         }
     }
 }
@@ -165,6 +208,7 @@ pub struct SerializingSection<'a> {
     assets: &'a [String],
     pages: Vec<SerializingPage<'a>>,
     subsections: Vec<&'a str>,
+    translations: Vec<TranslatedContent<'a>>,
 }
 
 impl<'a> SerializingSection<'a> {
@@ -185,6 +229,7 @@ impl<'a> SerializingSection<'a> {
             .iter()
             .map(|k| library.get_section_by_key(*k).file.relative.clone())
             .collect();
+        let translations = TranslatedContent::find_all_sections(section, library);
 
         SerializingSection {
             relative_path: &section.file.relative,
@@ -203,6 +248,7 @@ impl<'a> SerializingSection<'a> {
             lang: &section.lang,
             pages,
             subsections,
+            translations,
         }
     }
 
@@ -214,6 +260,12 @@ impl<'a> SerializingSection<'a> {
                 .iter()
                 .map(|k| lib.get_section_by_key(*k).file.relative.clone())
                 .collect()
+        } else {
+            vec![]
+        };
+
+        let translations = if let Some(ref lib) = library {
+            TranslatedContent::find_all_sections(section, lib)
         } else {
             vec![]
         };
@@ -235,6 +287,7 @@ impl<'a> SerializingSection<'a> {
             lang: &section.lang,
             pages: vec![],
             subsections: vec![],
+            translations,
         }
     }
 }

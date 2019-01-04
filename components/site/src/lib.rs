@@ -141,7 +141,7 @@ impl Site {
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
             // We will allocate it properly later on
-            library: Library::new(0, 0),
+            library: Library::new(0, 0, false),
         };
 
         Ok(site)
@@ -173,7 +173,7 @@ impl Site {
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
-        let mut imageproc = self.imageproc.lock().unwrap();
+        let mut imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (set_base_url)");
         imageproc.set_base_url(&base_url);
         self.config.base_url = base_url;
     }
@@ -189,14 +189,14 @@ impl Site {
         let content_glob = format!("{}/{}", base_path, "content/**/*.md");
 
         let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
-            .unwrap()
+            .expect("Invalid glob")
             .filter_map(|e| e.ok())
             .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
             .partition(|entry| {
                 entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index.")
             });
 
-        self.library = Library::new(page_entries.len(), section_entries.len());
+        self.library = Library::new(page_entries.len(), section_entries.len(), self.config.is_multilingual());
 
         let sections = {
             let config = &self.config;
@@ -452,12 +452,12 @@ impl Site {
     }
 
     pub fn num_img_ops(&self) -> usize {
-        let imageproc = self.imageproc.lock().unwrap();
+        let imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (num_img_ops)");
         imageproc.num_img_ops()
     }
 
     pub fn process_images(&self) -> Result<()> {
-        let mut imageproc = self.imageproc.lock().unwrap();
+        let mut imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (process_images)");
         imageproc.prune()?;
         imageproc.do_process()
     }
@@ -497,7 +497,7 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
             let asset_path = asset.as_path();
-            copy(&asset_path, &current_path.join(asset_path.file_name().unwrap()))?;
+            copy(&asset_path, &current_path.join(asset_path.file_name().expect("Couldn't get filename from page asset")))?;
         }
 
         Ok(())
@@ -626,7 +626,7 @@ impl Site {
     ) -> Result<Vec<(PathBuf, PathBuf)>> {
         let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
         let files = glob(&glob_string)
-            .unwrap()
+            .expect("Invalid glob for sass")
             .filter_map(|e| e.ok())
             .filter(|entry| {
                 !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_')
@@ -920,7 +920,7 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &section.assets {
             let asset_path = asset.as_path();
-            copy(&asset_path, &output_path.join(asset_path.file_name().unwrap()))?;
+            copy(&asset_path, &output_path.join(asset_path.file_name().expect("Failed to get asset filename for section")))?;
         }
 
         if render_pages {
@@ -957,7 +957,7 @@ impl Site {
     /// Used only on reload
     pub fn render_index(&self) -> Result<()> {
         self.render_section(
-            &self.library.get_section(&self.content_path.join("_index.md")).unwrap(),
+            &self.library.get_section(&self.content_path.join("_index.md")).expect("Failed to get index section"),
             false,
         )
     }

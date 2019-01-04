@@ -52,7 +52,9 @@ ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
 // The language for the page if there is one
-lang: String?
+lang: String?;
+// Information about all the available languages for that content
+translations: Array<TranslatedContent>;
 ```
 
 ## Section variables
@@ -96,7 +98,9 @@ ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
 // The language for the section if there is one
-lang: String?
+lang: String?;
+// Information about all the available languages for that content
+translations: Array<TranslatedContent>;
 ```
 
 ## Table of contents
@@ -116,3 +120,19 @@ permalink: String;
 // All lower level headers below this header
 children: Array<Header>;
 ```
+
+## Translated content
+
+Both page and section have a `translations` field which corresponds to an array of `TranslatedContent`. If your site is not using multiple languages,
+this will always be an empty array.
+A `TranslatedContent` has the following fields:
+
+```ts
+// The language code for that content, empty if it is the default language
+lang: String?;
+// The title of that content if there is one
+title: String?;
+// A permalink to that content
+permalink: String;
+```
+

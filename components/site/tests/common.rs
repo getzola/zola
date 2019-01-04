@@ -27,10 +27,10 @@ macro_rules! file_contains {
         for component in $path.split("/") {
             path = path.join(component);
         }
-        let mut file = std::fs::File::open(&path).unwrap();
+        let mut file = std::fs::File::open(&path).expect(&format!("Failed to open {:?}", $path));
         let mut s = String::new();
         file.read_to_string(&mut s).unwrap();
-        // println!("{}", s);
+        println!("{}", s);
         s.contains($text)
     }};
 }
@@ -45,7 +45,7 @@ pub fn build_site(name: &str) -> (Site, TempDir, PathBuf) {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    site.build().unwrap();
+    site.build().expect("Couldn't build the site");
     (site, tmp_dir, public.clone())
 }
 
@@ -64,6 +64,6 @@ where
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    site.build().unwrap();
+    site.build().expect("Couldn't build the site");
     (site, tmp_dir, public.clone())
 }

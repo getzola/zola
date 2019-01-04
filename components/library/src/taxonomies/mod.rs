@@ -227,7 +227,7 @@ mod tests {
     #[test]
     fn can_make_taxonomies() {
         let mut config = Config::default();
-        let mut library = Library::new(2, 0);
+        let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
             TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
@@ -307,7 +307,7 @@ mod tests {
     #[test]
     fn errors_on_unknown_taxonomy() {
         let mut config = Config::default();
-        let mut library = Library::new(2, 0);
+        let mut library = Library::new(2, 0, false);
 
         config.taxonomies =
             vec![TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() }];

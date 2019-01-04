@@ -22,18 +22,21 @@ pub struct Library {
     /// All the sections of the site
     sections: DenseSlotMap<Section>,
     /// A mapping path -> key for pages so we can easily get their key
-    paths_to_pages: HashMap<PathBuf, Key>,
+    pub paths_to_pages: HashMap<PathBuf, Key>,
     /// A mapping path -> key for sections so we can easily get their key
     pub paths_to_sections: HashMap<PathBuf, Key>,
+    /// Whether we need to look for translations
+    is_multilingual: bool,
 }
 
 impl Library {
-    pub fn new(cap_pages: usize, cap_sections: usize) -> Self {
+    pub fn new(cap_pages: usize, cap_sections: usize, is_multilingual: bool) -> Self {
         Library {
             pages: DenseSlotMap::with_capacity(cap_pages),
             sections: DenseSlotMap::with_capacity(cap_sections),
             paths_to_pages: HashMap::with_capacity(cap_pages),
             paths_to_sections: HashMap::with_capacity(cap_sections),
+            is_multilingual,
         }
     }
 
@@ -116,10 +119,10 @@ impl Library {
                     continue;
                 }
                 if let Some(section_key) =
-                    self.paths_to_sections.get(&path.join(&section.file.filename))
-                {
-                    parents.push(*section_key);
-                }
+                self.paths_to_sections.get(&path.join(&section.file.filename))
+                    {
+                        parents.push(*section_key);
+                    }
             }
             ancestors.insert(section.file.path.clone(), parents);
         }
@@ -169,6 +172,7 @@ impl Library {
             }
         }
 
+        self.populate_translations();
         self.sort_sections_pages();
 
         let sections = self.paths_to_sections.clone();
@@ -188,7 +192,8 @@ impl Library {
         }
     }
 
-    /// Sort all sections pages
+    /// Sort all sections pages according to sorting method given
+    /// Pages that cannot be sorted are set to the section.ignored_pages instead
     pub fn sort_sections_pages(&mut self) {
         let mut updates = HashMap::new();
         for (key, section) in &self.sections {
@@ -266,6 +271,52 @@ impl Library {
                 s.ignored_pages = cannot_be_sorted;
             }
         }
+    }
+
+    /// Finds all the translations for each section/page and set the `translations`
+    /// field of each as needed
+    /// A no-op for sites without multiple languages
+    fn populate_translations(&mut self) {
+        if !self.is_multilingual {
+            return;
+        }
+
+        // Sections first
+        let mut sections_translations = HashMap::new();
+        for (key, section) in &self.sections {
+            sections_translations
+                .entry(section.file.canonical.clone())  // TODO: avoid this clone
+                .or_insert_with(Vec::new)
+                .push(key);
+        }
+
+        for (key, section) in self.sections.iter_mut() {
+            let translations = &sections_translations[&section.file.canonical];
+            if translations.len() == 1 {
+                section.translations = vec![];
+                continue;
+            }
+            section.translations = translations.iter().filter(|k| **k != key).cloned().collect();
+        }
+
+        // Same thing for pages
+        let mut pages_translations = HashMap::new();
+        for (key, page) in &self.pages {
+            pages_translations
+                .entry(page.file.canonical.clone())  // TODO: avoid this clone
+                .or_insert_with(Vec::new)
+                .push(key);
+        }
+
+        for (key, page) in self.pages.iter_mut() {
+            let translations = &pages_translations[&page.file.canonical];
+            if translations.len() == 1 {
+                page.translations = vec![];
+                continue;
+            }
+            page.translations = translations.iter().filter(|k| **k != key).cloned().collect();
+        }
+
     }
 
     /// Find all the orphan pages: pages that are in a folder without an `_index.md`

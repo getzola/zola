@@ -46,6 +46,9 @@ pub struct FileInfo {
     /// For example a file at content/kb/solutions/blabla.md will have 2 components:
     /// `kb` and `solutions`
     pub components: Vec<String>,
+    /// This is `parent` + `name`, used to find content referring to the same content but in
+    /// various languages.
+    pub canonical: PathBuf,
 }
 
 impl FileInfo {
@@ -74,6 +77,7 @@ impl FileInfo {
             path: file_path,
             // We don't care about grand parent for pages
             grand_parent: None,
+            canonical: parent.join(&name),
             parent,
             name,
             components,
@@ -96,6 +100,7 @@ impl FileInfo {
         FileInfo {
             filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
             path: file_path,
+            canonical: parent.join(&name),
             parent,
             grand_parent,
             name,
@@ -128,6 +133,7 @@ impl FileInfo {
         }
 
         self.name = parts.swap_remove(0);
+        self.canonical = self.parent.join(&self.name);
         let lang = parts.swap_remove(0);
 
         Ok(Some(lang))
@@ -145,6 +151,7 @@ impl Default for FileInfo {
             name: String::new(),
             components: vec![],
             relative: String::new(),
+            canonical: PathBuf::new(),
         }
     }
 }
