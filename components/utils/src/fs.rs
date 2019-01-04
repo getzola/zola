@@ -19,7 +19,7 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
-    let mut file = File::create(&path)?;
+    let mut file = File::create(&path).chain_err(|| format!("Failed to create {:?}", path))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }

@@ -246,16 +246,17 @@ impl Site {
             if !self.library.contains_section(&index_path) {
                 let mut index_section = Section::default();
                 index_section.file.parent = self.content_path.clone();
-                index_section.file.name = "_index".to_string();
                 index_section.file.filename =
                     index_path.file_name().unwrap().to_string_lossy().to_string();
                 if let Some(ref l) = lang {
+                    index_section.file.name = format!("_index.{}", l);
                     index_section.permalink = self.config.make_permalink(l);
                     let filename = format!("_index.{}.md", l);
                     index_section.file.path = self.content_path.join(&filename);
                     index_section.file.relative = filename;
-                    index_section.lang = Some(l.clone());
+                    index_section.lang = index_section.file.find_language(&self.config)?;
                 } else {
+                    index_section.file.name = "_index".to_string();
                     index_section.permalink = self.config.make_permalink("");
                     index_section.file.path = self.content_path.join("_index.md");
                     index_section.file.relative = "_index.md".to_string();
@@ -323,7 +324,8 @@ impl Site {
         Ok(())
     }
 
-    /// Adds global fns that are to be available to shortcodes while rendering markdown
+    /// Adds global fns that are to be available to shortcodes while
+    /// markdown
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_function(
             "get_url",
@@ -907,6 +909,9 @@ impl Site {
 
         if let Some(ref lang) = section.lang {
             output_path.push(lang);
+            if !output_path.exists() {
+                create_directory(&output_path)?;
+            }
         }
 
         for component in &section.file.components {
