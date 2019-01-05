@@ -176,7 +176,7 @@ pub fn serve(
     let mut watching_static = false;
     let mut watching_templates = false;
     let (tx, rx) = channel();
-    let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
+    let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher
         .watch("content/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
