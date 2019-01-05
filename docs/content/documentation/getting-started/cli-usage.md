@@ -21,7 +21,7 @@ zola.
 
 ## build
 
-This will build the whole site in the `public` directory.
+This will build the whole site in the `public` directory after deleting it.
 
 ```bash
 $ zola build
