@@ -49,6 +49,56 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
+fn fix_link(link: &str, context: &RenderContext) -> Result<String> {
+    // A few situations here:
+    // - it could be a relative link (starting with `./`)
+    // - it could be a link to a co-located asset
+    // - it could be a normal link
+    // - any of those can be in a header or not: if it's in a header
+    //   we need to append to a string
+    let result = if link.starts_with("./") {
+        match resolve_internal_link(&link, context.permalinks) {
+            Ok(url) => url,
+            Err(_) => {
+                return Err(format!("Relative link {} not found.", link).into());
+            }
+        }
+    } else if is_colocated_asset_link(&link) {
+        format!("{}{}", context.current_page_permalink, link)
+    } else if context.config.check_external_links
+        && !link.starts_with('#')
+        && !link.starts_with("mailto:") {
+        let res = check_url(&link);
+        if res.is_valid() {
+            link.to_string()
+        } else {
+            return Err(
+                format!("Link {} is not valid: {}", link, res.message()).into(),
+            );
+        }
+    } else {
+        link.to_string()
+    };
+    Ok(result)
+}
+
+/// returns true if event have been processed
+fn push_to_temp_header(event: &Event, temp_header: &mut TempHeader) -> bool {
+    match event {
+        Event::End(Tag::Link(_, _)) => {
+            temp_header.add_html("</a>");
+        }
+        Event::Start(Tag::Code) => {
+            temp_header.add_html("<code>");
+        }
+        Event::End(Tag::Code) => {
+            temp_header.add_html("</code>");
+        }
+        _ => return false,
+    }
+    true
+}
+
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
     // the rendered html
     let mut html = String::with_capacity(content.len());
@@ -76,6 +126,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     {
         let parser = Parser::new_ext(content, opts).map(|event| {
+            // Header first
+            if in_header && push_to_temp_header(&event, &mut temp_header) {
+                return Event::Html(Borrowed(""));
+            }
+
             match event {
                 Event::Text(text) => {
                     // Header first
@@ -142,37 +197,12 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     Event::Start(Tag::Image(src, title))
                 }
                 Event::Start(Tag::Link(link, title)) => {
-                    // A few situations here:
-                    // - it could be a relative link (starting with `./`)
-                    // - it could be a link to a co-located asset
-                    // - it could be a normal link
-                    // - any of those can be in a header or not: if it's in a header
-                    //   we need to append to a string
-                    let fixed_link = if link.starts_with("./") {
-                        match resolve_internal_link(&link, context.permalinks) {
-                            Ok(url) => url,
-                            Err(_) => {
-                                error = Some(format!("Relative link {} not found.", link).into());
-                                return Event::Html(Borrowed(""));
-                            }
+                    let fixed_link = match fix_link(&link, context) {
+                        Ok(fixed_link) => fixed_link,
+                        Err(err) => {
+                            error = Some(err);
+                            return Event::Html(Borrowed(""))
                         }
-                    } else if is_colocated_asset_link(&link) {
-                        format!("{}{}", context.current_page_permalink, link)
-                    } else if context.config.check_external_links
-                        && !link.starts_with('#')
-                        && !link.starts_with("mailto:")
-                    {
-                        let res = check_url(&link);
-                        if res.is_valid() {
-                            link.to_string()
-                        } else {
-                            error = Some(
-                                format!("Link {} is not valid: {}", link, res.message()).into(),
-                            );
-                            String::new()
-                        }
-                    } else {
-                        link.to_string()
                     };
 
                     if in_header {
@@ -186,27 +216,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     }
 
                     Event::Start(Tag::Link(Owned(fixed_link), title))
-                }
-                Event::End(Tag::Link(_, _)) => {
-                    if in_header {
-                        temp_header.add_html("</a>");
-                        return Event::Html(Borrowed(""));
-                    }
-                    event
-                }
-                Event::Start(Tag::Code) => {
-                    if in_header {
-                        temp_header.add_html("<code>");
-                        return Event::Html(Borrowed(""));
-                    }
-                    event
-                }
-                Event::End(Tag::Code) => {
-                    if in_header {
-                        temp_header.add_html("</code>");
-                        return Event::Html(Borrowed(""));
-                    }
-                    event
                 }
                 Event::Start(Tag::Header(num)) => {
                     in_header = true;
