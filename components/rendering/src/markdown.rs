@@ -54,8 +54,6 @@ fn fix_link(link: &str, context: &RenderContext) -> Result<String> {
     // - it could be a relative link (starting with `./`)
     // - it could be a link to a co-located asset
     // - it could be a normal link
-    // - any of those can be in a header or not: if it's in a header
-    //   we need to append to a string
     let result = if link.starts_with("./") {
         match resolve_internal_link(&link, context.permalinks) {
             Ok(url) => url,
@@ -82,18 +80,18 @@ fn fix_link(link: &str, context: &RenderContext) -> Result<String> {
     Ok(result)
 }
 
-fn start_tag(temp_header: &mut TempHeader, tag: &Tag) -> bool {
+fn push_start_tag(temp_header: &mut TempHeader, tag: &Tag) -> bool {
     match tag {
         Tag::Emphasis => temp_header.add_html("<em>"),
         Tag::Strong => temp_header.add_html("<strong>"),
         Tag::Code => temp_header.add_html("<code>"),
-        // Tag::Link is handled elsewhere
+        // Tag::Link is handled in `markdown_to_html`
         _ => return false,
     }
     true
 }
 
-fn end_tag(temp_header: &mut TempHeader, tag: &Tag) -> bool {
+fn push_end_tag(temp_header: &mut TempHeader, tag: &Tag) -> bool {
     match tag {
         Tag::Emphasis => temp_header.add_html("</em>"),
         Tag::Strong => temp_header.add_html("</strong>"),
@@ -107,8 +105,8 @@ fn end_tag(temp_header: &mut TempHeader, tag: &Tag) -> bool {
 /// returns true if event have been processed
 fn push_to_temp_header(event: &Event, temp_header: &mut TempHeader) -> bool {
     match event {
-        Event::Start(tag) => start_tag(temp_header, tag),
-        Event::End(tag) => end_tag(temp_header, tag),
+        Event::Start(tag) => push_start_tag(temp_header, tag),
+        Event::End(tag) => push_end_tag(temp_header, tag),
         _ => false,
     }
 }
@@ -140,7 +138,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     {
         let parser = Parser::new_ext(content, opts).map(|event| {
-            // Trivial markup generation
+            // if in header, just do the parse ourselves
             if in_header && push_to_temp_header(&event, &mut temp_header) {
                 return Event::Html(Borrowed(""));
             }
