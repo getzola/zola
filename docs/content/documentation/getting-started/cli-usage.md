@@ -58,6 +58,8 @@ if you are running zola in a Docker container.
 
 In the event you don't want zola to run a local webserver, you can use the `--watch-only` flag.
 
+Before starting, it will delete the public directory to ensure it starts from a clean slate.
+
 ```bash
 $ zola serve
 $ zola serve --port 2000
