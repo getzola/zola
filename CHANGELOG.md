@@ -5,6 +5,7 @@
 - Add support for content in multiple languages
 - Lower latency on serve before rebuilding from 2 to 1 second
 - Allow processing PNG and produced images are less blurry
+- Add an id (`zola-continue-reading`)
 
 ## 0.5.1 (2018-12-14)
 
