@@ -104,4 +104,4 @@ available separately in the
 
 An anchor link to this position named `continue-reading` is created so you can link
 directly to it if needed for example:
-`<p  id="zola-continue-reading"><a href="{{ page.permalink }}#continue-reading">Continue Reading</a></p>`
+`<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`
