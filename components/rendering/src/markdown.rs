@@ -16,7 +16,7 @@ use utils::site::resolve_internal_link;
 use context::RenderContext;
 use table_of_contents::{make_table_of_contents, Header, TempHeader};
 
-const CONTINUE_READING: &str = "<p><a name=\"continue-reading\"></a></p>\n";
+const CONTINUE_READING: &str = "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
 
 #[derive(Debug)]
 pub struct Rendered {
