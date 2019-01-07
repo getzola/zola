@@ -1,16 +1,14 @@
 extern crate config;
 extern crate site;
-extern crate tempfile;
+mod common;
 
 use std::collections::HashMap;
 use std::env;
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::Path;
 
+use common::{build_site, build_site_with_setup};
 use config::Taxonomy;
 use site::Site;
-use tempfile::tempdir;
 
 #[test]
 fn can_parse_site() {
@@ -92,41 +90,9 @@ fn can_parse_site() {
     assert_eq!(prog_section.pages.len(), 2);
 }
 
-// 2 helper macros to make all the build testing more bearable
-macro_rules! file_exists {
-    ($root: expr, $path: expr) => {{
-        let mut path = $root.clone();
-        for component in $path.split("/") {
-            path = path.join(component);
-        }
-        Path::new(&path).exists()
-    }};
-}
-
-macro_rules! file_contains {
-    ($root: expr, $path: expr, $text: expr) => {{
-        let mut path = $root.clone();
-        for component in $path.split("/") {
-            path = path.join(component);
-        }
-        let mut file = File::open(&path).unwrap();
-        let mut s = String::new();
-        file.read_to_string(&mut s).unwrap();
-        println!("{}", s);
-        s.contains($text)
-    }};
-}
-
 #[test]
 fn can_build_site_without_live_reload() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
+    let (_, _tmp_dir, public) = build_site("test_site");
 
     assert!(&public.exists());
     assert!(file_exists!(public, "index.html"));
@@ -222,17 +188,12 @@ fn can_build_site_without_live_reload() {
 
 #[test]
 fn can_build_site_with_live_reload() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.enable_live_reload(1000);
-    site.build().unwrap();
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.enable_live_reload(1000);
+        (site, true)
+    });
 
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -271,28 +232,23 @@ fn can_build_site_with_live_reload() {
 
 #[test]
 fn can_build_site_with_taxonomies() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
+    let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.load().unwrap();
+        for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
+            page.meta.taxonomies = {
+                let mut taxonomies = HashMap::new();
+                taxonomies.insert(
+                    "categories".to_string(),
+                    vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+                );
+                taxonomies
+            };
+        }
+        site.populate_taxonomies().unwrap();
+        (site, false)
+    });
 
-    for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
-        page.meta.taxonomies = {
-            let mut taxonomies = HashMap::new();
-            taxonomies.insert(
-                "categories".to_string(),
-                vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
-            );
-            taxonomies
-        };
-    }
-    site.populate_taxonomies().unwrap();
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
-
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
     assert_eq!(site.taxonomies.len(), 1);
 
     assert!(file_exists!(public, "index.html"));
@@ -340,15 +296,7 @@ fn can_build_site_with_taxonomies() {
 
 #[test]
 fn can_build_site_and_insert_anchor_links() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
+    let (_, _tmp_dir, public) = build_site("test_site");
 
     assert!(Path::new(&public).exists());
     // anchor link inserted
@@ -361,23 +309,19 @@ fn can_build_site_and_insert_anchor_links() {
 
 #[test]
 fn can_build_site_with_pagination_for_section() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    for (_, section) in site.library.sections_mut() {
-        if section.is_index() {
-            continue;
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.load().unwrap();
+        for (_, section) in site.library.sections_mut() {
+            if section.is_index() {
+                continue;
+            }
+            section.meta.paginate_by = Some(2);
+            section.meta.template = Some("section_paginated.html".to_string());
         }
-        section.meta.paginate_by = Some(2);
-        section.meta.template = Some("section_paginated.html".to_string());
-    }
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
+        (site, false)
+    });
 
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -478,21 +422,20 @@ fn can_build_site_with_pagination_for_section() {
 
 #[test]
 fn can_build_site_with_pagination_for_index() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    {
-        let index = site.library.get_section_mut(&path.join("content").join("_index.md")).unwrap();
-        index.meta.paginate_by = Some(2);
-        index.meta.template = Some("index_paginated.html".to_string());
-    }
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.load().unwrap();
+        {
+            let index = site
+                .library
+                .get_section_mut(&site.base_path.join("content").join("_index.md"))
+                .unwrap();
+            index.meta.paginate_by = Some(2);
+            index.meta.template = Some("index_paginated.html".to_string());
+        }
+        (site, false)
+    });
 
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -530,33 +473,30 @@ fn can_build_site_with_pagination_for_index() {
 
 #[test]
 fn can_build_site_with_pagination_for_taxonomy() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.config.taxonomies.push(Taxonomy {
-        name: "tags".to_string(),
-        paginate_by: Some(2),
-        paginate_path: None,
-        rss: true,
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.config.taxonomies.push(Taxonomy {
+            name: "tags".to_string(),
+            paginate_by: Some(2),
+            paginate_path: None,
+            rss: true,
+        });
+        site.load().unwrap();
+
+        for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
+            page.meta.taxonomies = {
+                let mut taxonomies = HashMap::new();
+                taxonomies.insert(
+                    "tags".to_string(),
+                    vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+                );
+                taxonomies
+            };
+        }
+        site.populate_taxonomies().unwrap();
+        (site, false)
     });
-    site.load().unwrap();
 
-    for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
-        page.meta.taxonomies = {
-            let mut taxonomies = HashMap::new();
-            taxonomies
-                .insert("tags".to_string(), vec![if i % 2 == 0 { "A" } else { "B" }.to_string()]);
-            taxonomies
-        };
-    }
-    site.populate_taxonomies().unwrap();
-
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
-
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -610,16 +550,9 @@ fn can_build_site_with_pagination_for_taxonomy() {
 
 #[test]
 fn can_build_rss_feed() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
+    let (_, _tmp_dir, public) = build_site("test_site");
 
-    assert!(Path::new(&public).exists());
+    assert!(&public.exists());
     assert!(file_exists!(public, "rss.xml"));
     // latest article is posts/extra-syntax.md
     assert!(file_contains!(public, "rss.xml", "Extra Syntax"));
@@ -629,15 +562,10 @@ fn can_build_rss_feed() {
 
 #[test]
 fn can_build_search_index() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    site.config.build_search_index = true;
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.config.build_search_index = true;
+        (site, true)
+    });
 
     assert!(Path::new(&public).exists());
     assert!(file_exists!(public, "elasticlunr.min.js"));
@@ -646,14 +574,7 @@ fn can_build_search_index() {
 
 #[test]
 fn can_build_with_extra_syntaxes() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
-    site.load().unwrap();
-    let tmp_dir = tempdir().expect("create temp dir");
-    let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
-    site.build().unwrap();
+    let (_, _tmp_dir, public) = build_site("test_site");
 
     assert!(&public.exists());
     assert!(file_exists!(public, "posts/extra-syntax/index.html"));

@@ -141,15 +141,23 @@ impl Site {
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
             // We will allocate it properly later on
-            library: Library::new(0, 0),
+            library: Library::new(0, 0, false),
         };
 
         Ok(site)
     }
 
-    /// The index section is ALWAYS at that path
-    pub fn index_section_path(&self) -> PathBuf {
-        self.content_path.join("_index.md")
+    /// The index sections are ALWAYS at those paths
+    /// There are one index section for the basic language + 1 per language
+    fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
+        let mut res = vec![(self.content_path.join("_index.md"), None)];
+        for language in &self.config.languages {
+            res.push((
+                self.content_path.join(format!("_index.{}.md", language.code)),
+                Some(language.code.clone()),
+            ));
+        }
+        res
     }
 
     /// We avoid the port the server is going to use as it's not bound yet
@@ -165,7 +173,7 @@ impl Site {
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
-        let mut imageproc = self.imageproc.lock().unwrap();
+        let mut imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (set_base_url)");
         imageproc.set_base_url(&base_url);
         self.config.base_url = base_url;
     }
@@ -181,12 +189,15 @@ impl Site {
         let content_glob = format!("{}/{}", base_path, "content/**/*.md");
 
         let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
-            .unwrap()
+            .expect("Invalid glob")
             .filter_map(|e| e.ok())
             .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
-            .partition(|entry| entry.as_path().file_name().unwrap() == "_index.md");
+            .partition(|entry| {
+                entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index.")
+            });
 
-        self.library = Library::new(page_entries.len(), section_entries.len());
+        self.library =
+            Library::new(page_entries.len(), section_entries.len(), self.config.is_multilingual());
 
         let sections = {
             let config = &self.config;
@@ -219,26 +230,39 @@ impl Site {
             self.add_section(s, false)?;
         }
 
-        // Insert a default index section if necessary so we don't need to create
+        // Insert a default index section for each language if necessary so we don't need to create
         // a _index.md to render the index page at the root of the site
-        let index_path = self.index_section_path();
-        if let Some(ref index_section) = self.library.get_section(&index_path) {
-            if self.config.build_search_index && !index_section.meta.in_search_index {
-                bail!(
+        for (index_path, lang) in self.index_section_paths() {
+            if let Some(ref index_section) = self.library.get_section(&index_path) {
+                if self.config.build_search_index && !index_section.meta.in_search_index {
+                    bail!(
                     "You have enabled search in the config but disabled it in the index section: \
                     either turn off the search in the config or remote `in_search_index = true` from the \
                     section front-matter."
-                )
+                    )
+                }
             }
-        }
-        // Not in else because of borrow checker
-        if !self.library.contains_section(&index_path) {
-            let mut index_section = Section::default();
-            index_section.permalink = self.config.make_permalink("");
-            index_section.file.path = self.content_path.join("_index.md");
-            index_section.file.parent = self.content_path.clone();
-            index_section.file.relative = "_index.md".to_string();
-            self.library.insert_section(index_section);
+            // Not in else because of borrow checker
+            if !self.library.contains_section(&index_path) {
+                let mut index_section = Section::default();
+                index_section.file.parent = self.content_path.clone();
+                index_section.file.filename =
+                    index_path.file_name().unwrap().to_string_lossy().to_string();
+                if let Some(ref l) = lang {
+                    index_section.file.name = format!("_index.{}", l);
+                    index_section.permalink = self.config.make_permalink(l);
+                    let filename = format!("_index.{}.md", l);
+                    index_section.file.path = self.content_path.join(&filename);
+                    index_section.file.relative = filename;
+                    index_section.lang = index_section.file.find_language(&self.config)?;
+                } else {
+                    index_section.file.name = "_index".to_string();
+                    index_section.permalink = self.config.make_permalink("");
+                    index_section.file.path = self.content_path.join("_index.md");
+                    index_section.file.relative = "_index.md".to_string();
+                }
+                self.library.insert_section(index_section);
+            }
         }
 
         let mut pages_insert_anchors = HashMap::new();
@@ -246,7 +270,7 @@ impl Site {
             let p = page?;
             pages_insert_anchors.insert(
                 p.file.path.clone(),
-                self.find_parent_section_insert_anchor(&p.file.parent.clone()),
+                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
             );
             self.add_page(p, false)?;
         }
@@ -274,7 +298,7 @@ impl Site {
         for (_, p) in self.library.pages() {
             pages_insert_anchors.insert(
                 p.file.path.clone(),
-                self.find_parent_section_insert_anchor(&p.file.parent.clone()),
+                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
             );
         }
 
@@ -300,7 +324,8 @@ impl Site {
         Ok(())
     }
 
-    /// Adds global fns that are to be available to shortcodes while rendering markdown
+    /// Adds global fns that are to be available to shortcodes while
+    /// markdown
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_function(
             "get_url",
@@ -337,7 +362,8 @@ impl Site {
     pub fn add_page(&mut self, mut page: Page, render: bool) -> Result<Option<Page>> {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render {
-            let insert_anchor = self.find_parent_section_insert_anchor(&page.file.parent);
+            let insert_anchor =
+                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
             page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
         let prev = self.library.remove_page(&page.file.path);
@@ -363,8 +389,17 @@ impl Site {
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
     /// Defaults to `AnchorInsert::None` if no parent section found
-    pub fn find_parent_section_insert_anchor(&self, parent_path: &PathBuf) -> InsertAnchor {
-        match self.library.get_section(&parent_path.join("_index.md")) {
+    pub fn find_parent_section_insert_anchor(
+        &self,
+        parent_path: &PathBuf,
+        lang: &Option<String>,
+    ) -> InsertAnchor {
+        let parent = if let Some(ref l) = lang {
+            parent_path.join(format!("_index.{}.md", l))
+        } else {
+            parent_path.join("_index.md")
+        };
+        match self.library.get_section(&parent) {
             Some(s) => s.meta.insert_anchor_links,
             None => InsertAnchor::None,
         }
@@ -420,12 +455,13 @@ impl Site {
     }
 
     pub fn num_img_ops(&self) -> usize {
-        let imageproc = self.imageproc.lock().unwrap();
+        let imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (num_img_ops)");
         imageproc.num_img_ops()
     }
 
     pub fn process_images(&self) -> Result<()> {
-        let mut imageproc = self.imageproc.lock().unwrap();
+        let mut imageproc =
+            self.imageproc.lock().expect("Couldn't lock imageproc (process_images)");
         imageproc.prune()?;
         imageproc.do_process()
     }
@@ -465,7 +501,11 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
             let asset_path = asset.as_path();
-            copy(&asset_path, &current_path.join(asset_path.file_name().unwrap()))?;
+            copy(
+                &asset_path,
+                &current_path
+                    .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
+            )?;
         }
 
         Ok(())
@@ -479,9 +519,35 @@ impl Site {
         self.render_sections()?;
         self.render_orphan_pages()?;
         self.render_sitemap()?;
+
         if self.config.generate_rss {
-            self.render_rss_feed(self.library.pages_values(), None)?;
+            let pages = if self.config.is_multilingual() {
+                self.library
+                    .pages_values()
+                    .iter()
+                    .filter(|p| p.lang.is_none())
+                    .map(|p| *p)
+                    .collect()
+            } else {
+                self.library.pages_values()
+            };
+            self.render_rss_feed(pages, None)?;
         }
+
+        for lang in &self.config.languages {
+            if !lang.rss {
+                continue;
+            }
+            let pages = self
+                .library
+                .pages_values()
+                .iter()
+                .filter(|p| if let Some(ref l) = p.lang { l == &lang.code } else { false })
+                .map(|p| *p)
+                .collect();
+            self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
+        }
+
         self.render_404()?;
         self.render_robots()?;
         self.render_taxonomies()?;
@@ -562,7 +628,7 @@ impl Site {
     ) -> Result<Vec<(PathBuf, PathBuf)>> {
         let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
         let files = glob(&glob_string)
-            .unwrap()
+            .expect("Invalid glob for sass")
             .filter_map(|e| e.ok())
             .filter(|entry| {
                 !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_')
@@ -725,7 +791,7 @@ impl Site {
             let number_pagers = (section.pages.len() as f64
                 / section.meta.paginate_by.unwrap() as f64)
                 .ceil() as isize;
-            for i in 1..number_pagers + 1 {
+            for i in 1..=number_pagers {
                 let permalink =
                     format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
                 sections.push(SitemapEntry::new(permalink, None))
@@ -749,7 +815,7 @@ impl Site {
                     let number_pagers = (item.pages.len() as f64
                         / taxonomy.kind.paginate_by.unwrap() as f64)
                         .ceil() as isize;
-                    for i in 1..number_pagers + 1 {
+                    for i in 1..=number_pagers {
                         let permalink = self.config.make_permalink(&format!(
                             "{}/{}/{}/{}",
                             name,
@@ -801,7 +867,7 @@ impl Site {
 
         context.insert("last_build_date", &pages[0].meta.date.clone());
         // limit to the last n elements if the limit is set; otherwise use all.
-        let num_entries = self.config.rss_limit.unwrap_or(pages.len());
+        let num_entries = self.config.rss_limit.unwrap_or_else(|| pages.len());
         let p = pages
             .iter()
             .take(num_entries)
@@ -840,6 +906,14 @@ impl Site {
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let mut output_path = self.output_path.clone();
+
+        if let Some(ref lang) = section.lang {
+            output_path.push(lang);
+            if !output_path.exists() {
+                create_directory(&output_path)?;
+            }
+        }
+
         for component in &section.file.components {
             output_path.push(component);
 
@@ -851,7 +925,12 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &section.assets {
             let asset_path = asset.as_path();
-            copy(&asset_path, &output_path.join(asset_path.file_name().unwrap()))?;
+            copy(
+                &asset_path,
+                &output_path.join(
+                    asset_path.file_name().expect("Failed to get asset filename for section"),
+                ),
+            )?;
         }
 
         if render_pages {
@@ -888,7 +967,10 @@ impl Site {
     /// Used only on reload
     pub fn render_index(&self) -> Result<()> {
         self.render_section(
-            &self.library.get_section(&self.content_path.join("_index.md")).unwrap(),
+            &self
+                .library
+                .get_section(&self.content_path.join("_index.md"))
+                .expect("Failed to get index section"),
             false,
         )
     }

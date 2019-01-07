@@ -21,7 +21,7 @@ base_url = "mywebsite.com"
 # Used in RSS by default
 title = ""
 description = ""
-# the default language, used in RSS and coming i18n
+# The default language, used in RSS
 default_language = "en"
 
 # Theme name to use
@@ -50,6 +50,15 @@ generate_rss = false
 #     ]
 #
 taxonomies = []
+
+# The additional languages for that site
+# Example:
+#     languages = [
+#       {code = "fr", rss = true}, # there will be a RSS feed for French content
+#       {code = "it"}, # there won't be a RSS feed for Italian content
+#     ]
+#
+languages = []
 
 # Whether to compile the Sass files found in the `sass` directory
 compile_sass = false

@@ -18,6 +18,7 @@ A few variables are available on all templates minus RSS and sitemap:
 - `config`: the [configuration](./documentation/getting-started/configuration.md) without any modifications
 - `current_path`: the path (full URL without the `base_url`) of the current page, never starting with a `/`
 - `current_url`: the full URL for that page
+- `lang`: the language for that page, `null` if the page/section doesn't have a language set
 
 ## Standard Templates
 By default, Zola will look for three templates: `index.html`, which is applied

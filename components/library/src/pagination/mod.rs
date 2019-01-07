@@ -254,7 +254,7 @@ mod tests {
     }
 
     fn create_library(is_index: bool) -> (Section, Library) {
-        let mut library = Library::new(3, 0);
+        let mut library = Library::new(3, 0, false);
         library.insert_page(Page::default());
         library.insert_page(Page::default());
         library.insert_page(Page::default());

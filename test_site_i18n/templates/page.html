@@ -1,0 +1,8 @@
+{{page.title}}
+{{page.content | safe}}
+Language: {{lang}}
+
+{% for t in page.translations %}
+Translated in {{t.lang|default(value=config.default_language)}}: {{t.title}} {{t.permalink|safe}}
+{% endfor %}
+

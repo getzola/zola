@@ -142,9 +142,11 @@ pub fn make_get_taxonomy(all_taxonomies: &[Taxonomy], library: &Library) -> Glob
         let container = match taxonomies.get(&kind) {
             Some(c) => c,
             None => {
-                return Err(
-                    format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into()
-                );
+                return Err(format!(
+                    "`get_taxonomy` received an unknown taxonomy as kind: {}",
+                    kind
+                )
+                .into());
             }
         };
 
@@ -194,6 +196,7 @@ pub fn make_get_taxonomy_url(all_taxonomies: &[Taxonomy]) -> GlobalFn {
 
 pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalFn {
     static DEFAULT_OP: &'static str = "fill";
+    static DEFAULT_FMT: &'static str = "auto";
     const DEFAULT_Q: u8 = 75;
 
     Box::new(move |args| -> Result<Value> {
@@ -214,6 +217,11 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
         );
         let op = optional_arg!(String, args.get("op"), "`resize_image`: `op` must be a string")
             .unwrap_or_else(|| DEFAULT_OP.to_string());
+
+        let format =
+            optional_arg!(String, args.get("format"), "`resize_image`: `format` must be a string")
+                .unwrap_or_else(|| DEFAULT_FMT.to_string());
+
         let quality =
             optional_arg!(u8, args.get("quality"), "`resize_image`: `quality` must be a number")
                 .unwrap_or(DEFAULT_Q);
@@ -226,7 +234,7 @@ pub fn make_resize_image(imageproc: Arc<Mutex<imageproc::Processor>>) -> GlobalF
             return Err(format!("`resize_image`: Cannot find path: {}", path).into());
         }
 
-        let imageop = imageproc::ImageOp::from_args(path, &op, width, height, quality)
+        let imageop = imageproc::ImageOp::from_args(path, &op, width, height, &format, quality)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         let url = imageproc.insert(imageop);
 
@@ -288,7 +296,7 @@ mod tests {
     #[test]
     fn can_get_taxonomy() {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Library::new(0, 0);
+        let library = Library::new(0, 0, false);
         let tag = TaxonomyItem::new("Programming", "tags", &Config::default(), vec![], &library);
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
@@ -327,7 +335,7 @@ mod tests {
     #[test]
     fn can_get_taxonomy_url() {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Library::new(0, 0);
+        let library = Library::new(0, 0, false);
         let tag = TaxonomyItem::new("Programming", "tags", &Config::default(), vec![], &library);
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 

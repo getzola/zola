@@ -50,24 +50,24 @@ impl FromStr for OutputFormat {
     type Err = Error;
 
     fn from_str(output_format: &str) -> Result<Self> {
-        return match output_format {
+        match output_format {
             "toml" => Ok(OutputFormat::Toml),
             "csv" => Ok(OutputFormat::Csv),
             "json" => Ok(OutputFormat::Json),
             "plain" => Ok(OutputFormat::Plain),
             format => Err(format!("Unknown output format {}", format).into()),
-        };
+        }
     }
 }
 
 impl OutputFormat {
     fn as_accept_header(&self) -> header::HeaderValue {
-        return header::HeaderValue::from_static(match self {
+        header::HeaderValue::from_static(match self {
             OutputFormat::Json => "application/json",
             OutputFormat::Csv => "text/csv",
             OutputFormat::Toml => "application/toml",
             OutputFormat::Plain => "text/plain",
-        });
+        })
     }
 }
 
@@ -91,18 +91,18 @@ impl DataSource {
 
         if let Some(url) = url_arg {
             return Url::parse(&url)
-                .map(|parsed_url| DataSource::Url(parsed_url))
+                .map(DataSource::Url)
                 .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
         }
 
-        return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+        Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
     }
 
     fn get_cache_key(&self, format: &OutputFormat) -> u64 {
         let mut hasher = DefaultHasher::new();
         format.hash(&mut hasher);
         self.hash(&mut hasher);
-        return hasher.finish();
+        hasher.finish()
     }
 }
 
@@ -123,10 +123,9 @@ fn get_data_source_from_args(
     args: &HashMap<String, Value>,
 ) -> Result<DataSource> {
     let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
-
     let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
 
-    return DataSource::from_args(path_arg, url_arg, content_path);
+    DataSource::from_args(path_arg, url_arg, content_path)
 }
 
 fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
@@ -140,9 +139,9 @@ fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
         )
         .into());
     }
-    return read_file(&full_path).map_err(|e| {
+    read_file(&full_path).map_err(|e| {
         format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into()
-    });
+    })
 }
 
 fn get_output_format_from_args(
@@ -161,14 +160,14 @@ fn get_output_format_from_args(
 
     let from_extension = if let DataSource::Path(path) = data_source {
         let extension_result: Result<&str> =
-            path.extension().map(|extension| extension.to_str().unwrap()).ok_or(
-                format!("Could not determine format for {} from extension", path.display()).into(),
-            );
+            path.extension().map(|extension| extension.to_str().unwrap()).ok_or_else(|| {
+                format!("Could not determine format for {} from extension", path.display()).into()
+            });
         extension_result?
     } else {
         "plain"
     };
-    return OutputFormat::from_str(from_extension);
+    OutputFormat::from_str(from_extension)
 }
 
 /// A global function to load data from a file or from a URL
@@ -231,7 +230,7 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
 fn load_json(json_data: String) -> Result<Value> {
     let json_content: Value =
         serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
-    return Ok(json_content);
+    Ok(json_content)
 }
 
 /// Parse a TOML string and convert it to a Tera Value

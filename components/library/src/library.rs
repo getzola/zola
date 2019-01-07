@@ -22,18 +22,21 @@ pub struct Library {
     /// All the sections of the site
     sections: DenseSlotMap<Section>,
     /// A mapping path -> key for pages so we can easily get their key
-    paths_to_pages: HashMap<PathBuf, Key>,
+    pub paths_to_pages: HashMap<PathBuf, Key>,
     /// A mapping path -> key for sections so we can easily get their key
     pub paths_to_sections: HashMap<PathBuf, Key>,
+    /// Whether we need to look for translations
+    is_multilingual: bool,
 }
 
 impl Library {
-    pub fn new(cap_pages: usize, cap_sections: usize) -> Self {
+    pub fn new(cap_pages: usize, cap_sections: usize, is_multilingual: bool) -> Self {
         Library {
             pages: DenseSlotMap::with_capacity(cap_pages),
             sections: DenseSlotMap::with_capacity(cap_sections),
             paths_to_pages: HashMap::with_capacity(cap_pages),
             paths_to_sections: HashMap::with_capacity(cap_sections),
+            is_multilingual,
         }
     }
 
@@ -80,14 +83,8 @@ impl Library {
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
-        let (root_path, index_path) = self
-            .sections
-            .values()
-            .find(|s| s.is_index())
-            .map(|s| (s.file.parent.clone(), s.file.path.clone()))
-            .unwrap();
-        let root_key = self.paths_to_sections[&index_path];
-
+        let root_path =
+            self.sections.values().find(|s| s.is_index()).map(|s| s.file.parent.clone()).unwrap();
         // We are going to get both the ancestors and grandparents for each section in one go
         let mut ancestors: HashMap<PathBuf, Vec<_>> = HashMap::new();
         let mut subsections: HashMap<PathBuf, Vec<_>> = HashMap::new();
@@ -99,7 +96,8 @@ impl Library {
 
             if let Some(ref grand_parent) = section.file.grand_parent {
                 subsections
-                    .entry(grand_parent.join("_index.md"))
+                    // Using the original filename to work for multi-lingual sections
+                    .entry(grand_parent.join(&section.file.filename))
                     .or_insert_with(|| vec![])
                     .push(section.file.path.clone());
             }
@@ -111,6 +109,7 @@ impl Library {
             }
 
             let mut path = root_path.clone();
+            let root_key = self.paths_to_sections[&root_path.join(&section.file.filename)];
             // Index section is the first ancestor of every single section
             let mut parents = vec![root_key];
             for component in &section.file.components {
@@ -119,7 +118,9 @@ impl Library {
                 if path == section.file.parent {
                     continue;
                 }
-                if let Some(section_key) = self.paths_to_sections.get(&path.join("_index.md")) {
+                if let Some(section_key) =
+                    self.paths_to_sections.get(&path.join(&section.file.filename))
+                {
                     parents.push(*section_key);
                 }
             }
@@ -127,7 +128,12 @@ impl Library {
         }
 
         for (key, page) in &mut self.pages {
-            let mut parent_section_path = page.file.parent.join("_index.md");
+            let parent_filename = if let Some(ref lang) = page.lang {
+                format!("_index.{}.md", lang)
+            } else {
+                "_index.md".to_string()
+            };
+            let mut parent_section_path = page.file.parent.join(&parent_filename);
             while let Some(section_key) = self.paths_to_sections.get(&parent_section_path) {
                 let parent_is_transparent;
                 // We need to get a reference to a section later so keep the scope of borrowing small
@@ -158,14 +164,15 @@ impl Library {
                     break;
                 }
 
-                // We've added `_index.md` so if we are here so we need to go up twice
+                // We've added `_index(.{LANG})?.md` so if we are here so we need to go up twice
                 match parent_section_path.clone().parent().unwrap().parent() {
-                    Some(parent) => parent_section_path = parent.join("_index.md"),
+                    Some(parent) => parent_section_path = parent.join(&parent_filename),
                     None => break,
                 }
             }
         }
 
+        self.populate_translations();
         self.sort_sections_pages();
 
         let sections = self.paths_to_sections.clone();
@@ -185,7 +192,8 @@ impl Library {
         }
     }
 
-    /// Sort all sections pages
+    /// Sort all sections pages according to sorting method given
+    /// Pages that cannot be sorted are set to the section.ignored_pages instead
     pub fn sort_sections_pages(&mut self) {
         let mut updates = HashMap::new();
         for (key, section) in &self.sections {
@@ -262,6 +270,51 @@ impl Library {
                 s.pages = sorted;
                 s.ignored_pages = cannot_be_sorted;
             }
+        }
+    }
+
+    /// Finds all the translations for each section/page and set the `translations`
+    /// field of each as needed
+    /// A no-op for sites without multiple languages
+    fn populate_translations(&mut self) {
+        if !self.is_multilingual {
+            return;
+        }
+
+        // Sections first
+        let mut sections_translations = HashMap::new();
+        for (key, section) in &self.sections {
+            sections_translations
+                .entry(section.file.canonical.clone()) // TODO: avoid this clone
+                .or_insert_with(Vec::new)
+                .push(key);
+        }
+
+        for (key, section) in self.sections.iter_mut() {
+            let translations = &sections_translations[&section.file.canonical];
+            if translations.len() == 1 {
+                section.translations = vec![];
+                continue;
+            }
+            section.translations = translations.iter().filter(|k| **k != key).cloned().collect();
+        }
+
+        // Same thing for pages
+        let mut pages_translations = HashMap::new();
+        for (key, page) in &self.pages {
+            pages_translations
+                .entry(page.file.canonical.clone()) // TODO: avoid this clone
+                .or_insert_with(Vec::new)
+                .push(key);
+        }
+
+        for (key, page) in self.pages.iter_mut() {
+            let translations = &pages_translations[&page.file.canonical];
+            if translations.len() == 1 {
+                page.translations = vec![];
+                continue;
+            }
+            page.translations = translations.iter().filter(|k| **k != key).cloned().collect();
         }
     }
 

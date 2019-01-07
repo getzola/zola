@@ -16,7 +16,7 @@ in the `docs/content` folder of the repository and the community can use [its fo
 | Syntax highlighting             |     ✔     |    ✔   |   ✔  |    ✔    |
 | Sass compilation                |     ✔     |    ✔   |   ✔  |    ✔    |
 | Assets co-location              |     ✔     |    ✔   |   ✔  |    ✔    |
-| i18n                            |     ✕     |    ✕   |   ✔  |    ✔    |
+| Multilingual site               |     ✔     |    ✕   |   ✔  |    ✔    |
 | Image processing                |     ✔     |    ✕   |   ✔  |    ✔    |
 | Sane & powerful template engine |     ✔     |    ~   |   ~  |    ✔    |
 | Themes                          |     ✔     |    ✕   |   ✔  |    ✔    |

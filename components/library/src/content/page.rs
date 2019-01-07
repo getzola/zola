@@ -71,6 +71,11 @@ pub struct Page {
     /// How long would it take to read the raw content.
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
+    /// The language of that page. `None` if the user doesn't setup `languages` in config.
+    /// Corresponds to the lang in the {slug}.{lang}.md file scheme
+    pub lang: Option<String>,
+    /// Contains all the translated version of that page
+    pub translations: Vec<Key>,
 }
 
 impl Page {
@@ -97,6 +102,8 @@ impl Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
+            lang: None,
+            translations: Vec::new(),
         }
     }
 
@@ -110,6 +117,8 @@ impl Page {
     pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Page> {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta);
+
+        page.lang = page.file.find_language(config)?;
 
         page.raw_content = content;
         let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
@@ -146,11 +155,17 @@ impl Page {
         if let Some(ref p) = page.meta.path {
             page.path = p.trim().trim_left_matches('/').to_string();
         } else {
-            page.path = if page.file.components.is_empty() {
+            let mut path = if page.file.components.is_empty() {
                 page.slug.clone()
             } else {
                 format!("{}/{}", page.file.components.join("/"), page.slug)
             };
+
+            if let Some(ref lang) = page.lang {
+                path = format!("{}/{}", lang, path);
+            }
+
+            page.path = path;
         }
         if !page.path.ends_with('/') {
             page.path = format!("{}/", page.path);
@@ -240,6 +255,7 @@ impl Page {
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
         context.insert("page", &self.to_serialized(library));
+        context.insert("lang", &self.lang);
 
         render_template(&tpl_name, tera, &context, &config.theme)
             .chain_err(|| format!("Failed to render page '{}'", self.file.path.display()))
@@ -286,6 +302,8 @@ impl Default for Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
+            lang: None,
+            translations: Vec::new(),
         }
     }
 }
@@ -302,7 +320,7 @@ mod tests {
     use tera::Tera;
 
     use super::Page;
-    use config::Config;
+    use config::{Config, Language};
     use front_matter::InsertAnchor;
 
     #[test]
@@ -558,5 +576,58 @@ Hello world
 
         assert_eq!(page.meta.date, Some("2018-09-09".to_string()));
         assert_eq!(page.slug, "hello");
+    }
+
+    #[test]
+    fn can_specify_language_in_filename() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(Path::new("hello.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.slug, "hello");
+        assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
+    }
+
+    #[test]
+    fn can_specify_language_in_filename_with_date() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(Path::new("2018-10-08_hello.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
+        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.slug, "hello");
+        assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
+    }
+
+    #[test]
+    fn i18n_frontmatter_path_overrides_default_permalink() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let content = r#"
++++
+path = "bonjour"
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(Path::new("hello.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.slug, "hello");
+        assert_eq!(page.permalink, "http://a-website.com/bonjour/");
     }
 }

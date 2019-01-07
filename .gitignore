@@ -1,6 +1,7 @@
 target
 .idea/
 test_site/public
+test_site_i18n/public
 docs/public
 
 small-blog
@@ -13,6 +14,7 @@ huge-kb
 
 current.bench
 now.bench
+*.zst
 
 # snapcraft artifacts
 snap/.snapcraft

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 (unreleased)
+
+- Add support for content in multiple languages
+- Lower latency on serve before rebuilding from 2 to 1 second
+- Allow processing PNG and produced images are less blurry
+
 ## 0.5.1 (2018-12-14)
 
 - Fix deleting markdown file in `zola serve`

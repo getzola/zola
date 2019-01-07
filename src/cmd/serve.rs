@@ -176,7 +176,7 @@ pub fn serve(
     let mut watching_static = false;
     let mut watching_templates = false;
     let (tx, rx) = channel();
-    let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
+    let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher
         .watch("content/", RecursiveMode::Recursive)
         .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
@@ -502,12 +502,9 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
 /// Check if the directory at path contains any file
 fn is_folder_empty(dir: &Path) -> bool {
     // Can panic if we don't have the rights I guess?
-    for _ in read_dir(dir).expect("Failed to read a directory to see if it was empty") {
-        // If we get there, that means we have a file
-        return false;
-    }
-
-    true
+    let files: Vec<_> =
+        read_dir(dir).expect("Failed to read a directory to see if it was empty").collect();
+    files.is_empty()
 }
 
 #[cfg(test)]
