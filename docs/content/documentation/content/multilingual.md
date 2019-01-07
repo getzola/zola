@@ -16,6 +16,9 @@ languages = [
 ]
 ```
 
+If you want to use per-language taxonomies, ensure you set the `lang` field in their
+configuration.
+
 ## Content
 Once the languages are added in, you can start to translate your content. Zola
 uses the filename to detect the language:

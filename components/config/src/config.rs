@@ -42,6 +42,8 @@ pub struct Taxonomy {
     pub paginate_path: Option<String>,
     /// Whether to generate a RSS feed only for each taxonomy term, defaults to false
     pub rss: bool,
+    /// The language for that taxonomy, only used in multilingual sites
+    pub lang: Option<String>,
 }
 
 impl Taxonomy {
@@ -64,7 +66,7 @@ impl Taxonomy {
 
 impl Default for Taxonomy {
     fn default() -> Taxonomy {
-        Taxonomy { name: String::new(), paginate_by: None, paginate_path: None, rss: false }
+        Taxonomy { name: String::new(), paginate_by: None, paginate_path: None, rss: false, lang: None }
     }
 }
 

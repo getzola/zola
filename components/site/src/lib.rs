@@ -723,7 +723,13 @@ impl Site {
         }
 
         ensure_directory_exists(&self.output_path)?;
-        let output_path = self.output_path.join(&taxonomy.kind.name);
+        let output_path = if let Some(ref lang) = taxonomy.kind.lang {
+            let mid_path = self.output_path.join(lang);
+            create_directory(&mid_path)?;
+            mid_path.join(&taxonomy.kind.name)
+        } else {
+            self.output_path.join(&taxonomy.kind.name)
+        };
         let list_output = taxonomy.render_all_terms(&self.tera, &self.config, &self.library)?;
         create_directory(&output_path)?;
         create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;

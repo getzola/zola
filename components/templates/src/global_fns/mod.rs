@@ -297,7 +297,7 @@ mod tests {
     fn can_get_taxonomy() {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new("Programming", "tags", &Config::default(), vec![], &library);
+        let tag = TaxonomyItem::new("Programming", &taxo_config, &Config::default(), vec![], &library);
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
@@ -336,7 +336,7 @@ mod tests {
     fn can_get_taxonomy_url() {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new("Programming", "tags", &Config::default(), vec![], &library);
+        let tag = TaxonomyItem::new("Programming", &taxo_config, &Config::default(), vec![], &library);
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
