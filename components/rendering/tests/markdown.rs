@@ -523,6 +523,33 @@ fn can_understand_link_with_title_in_header() {
 }
 
 #[test]
+fn can_understand_emphasis_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# *Emphasis* text", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"emphasis-text\"><em>Emphasis</em> text</h1>\n")
+}
+
+#[test]
+fn can_understand_strong_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# **Strong** text", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"strong-text\"><strong>Strong</strong> text</h1>\n")
+}
+
+#[test]
+fn can_understand_code_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# `Code` text", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"code-text\"><code>Code</code> text</h1>\n")
+}
+
+#[test]
 fn can_make_valid_relative_link_in_header() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about/".to_string());
