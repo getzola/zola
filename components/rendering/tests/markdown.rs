@@ -748,3 +748,30 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
 }
+
+// https://github.com/Keats/tera/issues/373
+#[test]
+fn can_split_lines_shortcode_body() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"{{ body | split(pat="\n") }}"#;
+
+    let markdown_string = r#"
+{% alert() %}
+multi
+ple
+lines
+{% end %}
+    "#;
+
+    let expected = r#"<p>["multi", "ple", "lines"]</p>"#;
+
+    tera.add_raw_template(&format!("shortcodes/{}.html", "alert"), shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, expected);
+}
