@@ -108,6 +108,7 @@ Zola currently has the following highlight themes available:
 - [classic-modified](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Classic%20Modified)
 - [demain](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Demain)
 - [dimmed-fluid](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Dimmed%20Fluid)
+- [dracula](https://draculatheme.com/)
 - [gray-matter-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Gray%20Matter%20Dark)
 - [gruvbox-dark](https://github.com/morhetz/gruvbox)
 - [gruvbox-light](https://github.com/morhetz/gruvbox)
