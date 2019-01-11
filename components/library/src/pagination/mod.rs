@@ -4,7 +4,7 @@ use slotmap::Key;
 use tera::{to_value, Context, Tera, Value};
 
 use config::Config;
-use errors::{Result, ResultExt};
+use errors::{Result, Error};
 use utils::templates::render_template;
 
 use content::{Section, SerializingPage, SerializingSection};
@@ -222,7 +222,7 @@ impl<'a> Paginator<'a> {
         context.insert("paginator", &self.build_paginator_context(pager));
 
         render_template(&self.template, tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render pager {}", pager.index))
+            .map_err(|e| Error::chain(format!("Failed to render pager {}", pager.index), e))
     }
 }
 

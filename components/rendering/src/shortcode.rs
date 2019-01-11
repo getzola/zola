@@ -4,7 +4,7 @@ use regex::Regex;
 use tera::{to_value, Context, Map, Value};
 
 use context::RenderContext;
-use errors::{Result, ResultExt};
+use errors::{Result, Error};
 
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file
@@ -116,7 +116,7 @@ fn render_shortcode(
     let res = context
         .tera
         .render(&tpl_name, &tera_context)
-        .chain_err(|| format!("Failed to render {} shortcode", name))?;
+        .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
 
     // Small hack to avoid having multiple blank lines because of Tera tags for example
     // A blank like will cause the markdown parser to think we're out of HTML and start looking

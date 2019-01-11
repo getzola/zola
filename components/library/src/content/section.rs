@@ -5,7 +5,7 @@ use slotmap::Key;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
-use errors::{Result, ResultExt};
+use errors::{Result, Error};
 use front_matter::{split_section_content, SectionFrontMatter};
 use rendering::{render_content, Header, RenderContext};
 use utils::fs::{find_related_assets, read_file};
@@ -172,7 +172,7 @@ impl Section {
         context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
 
         let res = render_content(&self.raw_content, &context)
-            .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
+            .map_err(|e| Error::chain(format!("Failed to render content of {}", self.file.path.display()), e))?;
         self.content = res.body;
         self.toc = res.toc;
         Ok(())
@@ -190,7 +190,7 @@ impl Section {
         context.insert("lang", &self.lang);
 
         render_template(tpl_name, tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
+            .map_err(|e| Error::chain(format!("Failed to render section '{}'", self.file.path.display()), e))
     }
 
     /// Is this the index section?

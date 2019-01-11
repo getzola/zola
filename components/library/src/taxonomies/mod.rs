@@ -5,7 +5,7 @@ use slug::slugify;
 use tera::{Context, Tera};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
-use errors::{Result, ResultExt};
+use errors::{Result, Error};
 use utils::templates::render_template;
 
 use content::SerializingPage;
@@ -145,7 +145,7 @@ impl Taxonomy {
         context.insert("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
         render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render single term {} page.", self.kind.name))
+            .map_err(|e| Error::chain(format!("Failed to render single term {} page.", self.kind.name), e))
     }
 
     pub fn render_all_terms(
@@ -164,7 +164,7 @@ impl Taxonomy {
         context.insert("current_path", &self.kind.name);
 
         render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render a list of {} page.", self.kind.name))
+            .map_err(|e| Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e))
     }
 
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializedTaxonomy<'a> {
@@ -334,7 +334,7 @@ mod tests {
         let err = taxonomies.unwrap_err();
         // no path as this is created by Default
         assert_eq!(
-            err.description(),
+            format!("{}", err),
             "Page `` has taxonomy `tags` which is not defined in config.toml"
         );
     }
@@ -442,7 +442,7 @@ mod tests {
         let err = taxonomies.unwrap_err();
         // no path as this is created by Default
         assert_eq!(
-            err.description(),
+            format!("{}", err),
             "Page `` has taxonomy `tags` which is not available in that language"
         );
     }

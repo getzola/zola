@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use chrono::Utc;
@@ -9,9 +7,10 @@ use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use toml;
 use toml::Value as Toml;
 
-use errors::{Result, ResultExt};
+use errors::Result;
 use highlighting::THEME_SET;
 use theme::Theme;
+use utils::fs::read_file_with_error;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
@@ -66,7 +65,13 @@ impl Taxonomy {
 
 impl Default for Taxonomy {
     fn default() -> Taxonomy {
-        Taxonomy { name: String::new(), paginate_by: None, paginate_path: None, rss: false, lang: None }
+        Taxonomy {
+            name: String::new(),
+            paginate_by: None,
+            paginate_path: None,
+            rss: false,
+            lang: None,
+        }
     }
 }
 
@@ -172,15 +177,12 @@ impl Config {
 
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
-        let mut content = String::new();
         let path = path.as_ref();
         let file_name = path.file_name().unwrap();
-        File::open(path)
-            .chain_err(|| {
-                format!("No `{:?}` file found. Are you in the right directory?", file_name)
-            })?
-            .read_to_string(&mut content)?;
-
+        let content = read_file_with_error(
+            path,
+            &format!("No `{:?}` file found. Are you in the right directory?", file_name),
+        )?;
         Config::parse(&content)
     }
 

@@ -1,5 +1,3 @@
-extern crate error_chain;
-
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 

@@ -660,7 +660,7 @@ fn can_show_error_message_for_invalid_external_links() {
     let res = render_content("[a link](http://google.comy)", &context);
     assert!(res.is_err());
     let err = res.unwrap_err();
-    assert!(err.description().contains("Link http://google.comy is not valid"));
+    assert!(format!("{}", err).contains("Link http://google.comy is not valid"));
 }
 
 #[test]

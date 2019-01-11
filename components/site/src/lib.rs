@@ -30,7 +30,7 @@ use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use tera::{Context, Tera};
 
 use config::{get_config, Config};
-use errors::{Result, ResultExt};
+use errors::{Result, Error};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
@@ -87,7 +87,7 @@ impl Site {
             format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         // Only parsing as we might be extending templates from themes and that would error
         // as we haven't loaded them yet
-        let mut tera = Tera::parse(&tpl_glob).chain_err(|| "Error parsing templates")?;
+        let mut tera = Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
@@ -104,9 +104,9 @@ impl Site {
                 format!("themes/{}/templates/**/*.*ml", theme)
             );
             let mut tera_theme =
-                Tera::parse(&theme_tpl_glob).chain_err(|| "Error parsing templates from themes")?;
+                Tera::parse(&theme_tpl_glob).map_err(|e| Error::chain("Error parsing templates from themes", e))?;
             rewrite_theme_paths(&mut tera_theme, &theme);
-            // TODO: same as below
+            // TODO: we do that twice, make it dry?
             if theme_path.join("templates").join("robots.txt").exists() {
                 tera_theme
                     .add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
@@ -470,7 +470,7 @@ impl Site {
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
             // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path).chain_err(|| "Couldn't delete output directory")?;
+            remove_dir_all(&self.output_path).map_err(|e| Error::chain("Couldn't delete output directory", e))?;
         }
 
         Ok(())

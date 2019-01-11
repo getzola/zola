@@ -1,4 +1,5 @@
 use std::env;
+use std::error::Error as StdError;
 use std::io::Write;
 use std::time::Instant;
 
@@ -6,7 +7,6 @@ use atty;
 use chrono::Duration;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-use errors::Error;
 use site::Site;
 
 lazy_static! {
@@ -91,13 +91,15 @@ pub fn report_elapsed_time(instant: Instant) {
 }
 
 /// Display an error message and the actual error(s)
-pub fn unravel_errors(message: &str, error: &Error) {
+pub fn unravel_errors(message: &str, error: &StdError) {
     if !message.is_empty() {
         self::error(message);
     }
     self::error(&format!("Error: {}", error));
-    for e in error.iter().skip(1) {
+    let mut cause = error.source();
+    while let Some(e) = cause {
         self::error(&format!("Reason: {}", e));
+        cause = e.source();
     }
 }
 

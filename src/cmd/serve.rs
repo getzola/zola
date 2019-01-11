@@ -36,7 +36,7 @@ use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{Result, ResultExt};
+use errors::{Result, Error as ZolaError};
 use site::Site;
 use utils::fs::copy_file;
 
@@ -179,23 +179,23 @@ pub fn serve(
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher
         .watch("content/", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
+        .map_err(|e| ZolaError::chain("Can't watch the `content` folder. Does it exist?", e))?;
     watcher
         .watch(config_file, RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `config` file. Does it exist?")?;
+        .map_err(|e| ZolaError::chain("Can't watch the `config` file. Does it exist?", e))?;
 
     if Path::new("static").exists() {
         watching_static = true;
         watcher
             .watch("static/", RecursiveMode::Recursive)
-            .chain_err(|| "Can't watch the `static` folder.")?;
+            .map_err(|e| ZolaError::chain("Can't watch the `static` folder.", e))?;
     }
 
     if Path::new("templates").exists() {
         watching_templates = true;
         watcher
             .watch("templates/", RecursiveMode::Recursive)
-            .chain_err(|| "Can't watch the `templates` folder.")?;
+            .map_err(|e| ZolaError::chain("Can't watch the `templates` folder.", e))?;
     }
 
     // Sass support is optional so don't make it an error to no have a sass folder

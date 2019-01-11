@@ -20,7 +20,7 @@ use image::{FilterType, GenericImageView};
 use rayon::prelude::*;
 use regex::Regex;
 
-use errors::{Result, ResultExt};
+use errors::{Result, Error};
 use utils::fs as ufs;
 
 static RESIZED_SUBDIR: &'static str = "processed_images";
@@ -456,7 +456,7 @@ impl Processor {
                 let target =
                     self.resized_path.join(Self::op_filename(*hash, op.collision_id, op.format));
                 op.perform(&self.content_path, &target)
-                    .chain_err(|| format!("Failed to process image: {}", op.source))
+                    .map_err(|e| Error::chain(format!("Failed to process image: {}", op.source), e))
             })
             .collect::<Result<()>>()
     }

@@ -25,7 +25,7 @@ pub mod global_fns;
 
 use tera::{Context, Tera};
 
-use errors::{Result, ResultExt};
+use errors::{Result, Error};
 
 lazy_static! {
     pub static ref ZOLA_TERA: Tera = {
@@ -57,5 +57,5 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
     context.insert("url", &url);
 
     tera.render("internal/alias.html", &context)
-        .chain_err(|| format!("Failed to render alias for '{}'", url))
+        .map_err(|e| Error::chain(format!("Failed to render alias for '{}'", url), e))
 }

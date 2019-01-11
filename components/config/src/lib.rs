@@ -1,13 +1,15 @@
 #[macro_use]
 extern crate serde_derive;
-extern crate toml;
-#[macro_use]
-extern crate errors;
 extern crate chrono;
 extern crate globset;
+extern crate toml;
 #[macro_use]
 extern crate lazy_static;
 extern crate syntect;
+
+#[macro_use]
+extern crate errors;
+extern crate utils;
 
 mod config;
 pub mod highlighting;
