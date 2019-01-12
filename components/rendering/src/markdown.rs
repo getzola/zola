@@ -1,28 +1,43 @@
 use std::borrow::Cow::{Borrowed, Owned};
 
-use self::cmark::{Event, Options, Parser, Tag};
 use pulldown_cmark as cmark;
 use slug::slugify;
 use syntect::easy::HighlightLines;
 use syntect::html::{
-    start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
+    IncludeBackground, start_highlighted_html_snippet, styled_line_to_highlighted_html,
 };
 
 use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
-use errors::Result;
-use link_checker::check_url;
-use utils::site::resolve_internal_link;
-
 use context::RenderContext;
-use table_of_contents::{make_table_of_contents, Header, TempHeader};
+use errors::Result;
+use front_matter::InsertAnchor;
+use link_checker::check_url;
+use table_of_contents::{Header, make_table_of_contents, TempHeader};
+use utils::site::resolve_internal_link;
+use utils::vec::InsertMany;
+
+use self::cmark::{Event, Options, Parser, Tag};
 
 const CONTINUE_READING: &str = "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
+const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 
 #[derive(Debug)]
 pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
     pub toc: Vec<Header>,
+}
+
+struct HeaderIndex {
+    start: usize,
+    end: usize,
+    level: i32,
+}
+
+impl HeaderIndex {
+    fn new(start: usize, level: i32) -> HeaderIndex {
+        HeaderIndex { start, end: 0, level }
+    }
 }
 
 // We might have cases where the slug is already present in our list of anchor
@@ -65,7 +80,8 @@ fn fix_link(link: &str, context: &RenderContext) -> Result<String> {
         format!("{}{}", context.current_page_permalink, link)
     } else if context.config.check_external_links
         && !link.starts_with('#')
-        && !link.starts_with("mailto:") {
+        && !link.starts_with("mailto:")
+    {
         let res = check_url(&link);
         if res.is_valid() {
             link.to_string()
@@ -80,35 +96,36 @@ fn fix_link(link: &str, context: &RenderContext) -> Result<String> {
     Ok(result)
 }
 
-fn push_start_tag(temp_header: &mut TempHeader, tag: &Tag) -> bool {
-    match tag {
-        Tag::Emphasis => temp_header.add_html("<em>"),
-        Tag::Strong => temp_header.add_html("<strong>"),
-        Tag::Code => temp_header.add_html("<code>"),
-        // Tag::Link is handled in `markdown_to_html`
-        _ => return false,
+/// get only text in a slice of events
+fn get_text(parser_slice: &[Event]) -> String {
+    let mut title = String::new();
+
+    for event in parser_slice.iter() {
+        if let Event::Text(text) = event {
+            title += text;
+        }
     }
-    true
+
+    title
 }
 
-fn push_end_tag(temp_header: &mut TempHeader, tag: &Tag) -> bool {
-    match tag {
-        Tag::Emphasis => temp_header.add_html("</em>"),
-        Tag::Strong => temp_header.add_html("</strong>"),
-        Tag::Code => temp_header.add_html("</code>"),
-        Tag::Link(_, _) => temp_header.add_html("</a>"),
-        _ => return false,
-    }
-    true
-}
+fn get_header_indexes(events: &[Event]) -> Vec<HeaderIndex> {
+    let mut header_indexes = vec![];
 
-/// returns true if event have been processed
-fn push_to_temp_header(event: &Event, temp_header: &mut TempHeader) -> bool {
-    match event {
-        Event::Start(tag) => push_start_tag(temp_header, tag),
-        Event::End(tag) => push_end_tag(temp_header, tag),
-        _ => false,
+    for (i, event) in events.iter().enumerate() {
+        match event {
+            Event::Start(Tag::Header(level)) => {
+                header_indexes.push(HeaderIndex::new(i, *level));
+            }
+            Event::End(Tag::Header(_)) => {
+                let msg = "Header end before start?";
+                header_indexes.last_mut().expect(msg).end = i;
+            }
+            _ => (),
+        }
     }
+
+    header_indexes
 }
 
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
@@ -119,17 +136,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut background = IncludeBackground::Yes;
     let mut highlighter: Option<(HighlightLines, bool)> = None;
-    // If we get text in header, we need to insert the id and a anchor
-    let mut in_header = false;
-    // pulldown_cmark can send several text events for a title if there are markdown
-    // specific characters like `!` in them. We only want to insert the anchor the first time
-    let mut header_created = false;
-    let mut anchors: Vec<String> = vec![];
 
-    let mut headers = vec![];
-    // Defaults to a 0 level so not a real header
-    // It should be an Option ideally but not worth the hassle to update
-    let mut temp_header = TempHeader::default();
+    let mut inserted_anchors: Vec<String> = vec![];
+    let mut headers: Vec<TempHeader> = vec![];
 
     let mut opts = Options::empty();
     let mut has_summary = false;
@@ -137,26 +146,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     opts.insert(Options::ENABLE_FOOTNOTES);
 
     {
-        let parser = Parser::new_ext(content, opts).map(|event| {
-            // if in header, just do the parse ourselves
-            if in_header && push_to_temp_header(&event, &mut temp_header) {
-                return Event::Html(Borrowed(""));
-            }
-
+        let mut events = Parser::new_ext(content, opts).map(|event| {
             match event {
                 Event::Text(text) => {
-                    // Header first
-                    if in_header {
-                        if header_created {
-                            temp_header.add_text(&text);
-                            return Event::Html(Borrowed(""));
-                        }
-                        // += as we might have some <code> or other things already there
-                        temp_header.add_text(&text);
-                        header_created = true;
-                        return Event::Html(Borrowed(""));
-                    }
-
                     // if we are in the middle of a code block
                     if let Some((ref mut highlighter, in_extra)) = highlighter {
                         let highlighted = if in_extra {
@@ -217,37 +209,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                     };
 
-                    if in_header {
-                        let html = if title.is_empty() {
-                            format!("<a href=\"{}\">", fixed_link)
-                        } else {
-                            format!("<a href=\"{}\" title=\"{}\">", fixed_link, title)
-                        };
-                        temp_header.add_html(&html);
-                        return Event::Html(Borrowed(""));
-                    }
-
                     Event::Start(Tag::Link(Owned(fixed_link), title))
-                }
-                Event::Start(Tag::Header(num)) => {
-                    in_header = true;
-                    temp_header = TempHeader::new(num);
-                    Event::Html(Borrowed(""))
-                }
-                Event::End(Tag::Header(_)) => {
-                    // End of a header, reset all the things and return the header string
-
-                    let id = find_anchor(&anchors, slugify(&temp_header.title), 0);
-                    anchors.push(id.clone());
-                    temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
-                    temp_header.id = id;
-
-                    in_header = false;
-                    header_created = false;
-                    let val = temp_header.to_string(context.tera, context.insert_anchor);
-                    headers.push(temp_header.clone());
-                    temp_header = TempHeader::default();
-                    Event::Html(Owned(val))
                 }
                 Event::Html(ref markup) if markup.contains("<!-- more -->") => {
                     has_summary = true;
@@ -255,9 +217,47 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 }
                 _ => event,
             }
-        });
+        }).collect::<Vec<_>>(); // We need to collect the events to make a second pass
 
-        cmark::html::push_html(&mut html, parser);
+        let mut header_indexes = get_header_indexes(&events);
+
+        let mut anchors_to_insert = vec![];
+
+        for header_idx in header_indexes {
+            let start_idx = header_idx.start;
+            let end_idx = header_idx.end;
+            let title = get_text(&events[start_idx + 1 .. end_idx]);
+            let id = find_anchor(&inserted_anchors, slugify(&title), 0);
+            inserted_anchors.push(id.clone());
+
+            // insert `id` to the tag
+            let html = format!("<h{lvl} id=\"{id}\">", lvl = header_idx.level, id = id);
+            events[start_idx] = Event::Html(Owned(html));
+
+            // generate anchors and places to insert them
+            if context.insert_anchor != InsertAnchor::None {
+                let anchor_idx = match context.insert_anchor {
+                    InsertAnchor::Left => start_idx + 1,
+                    InsertAnchor::Right => end_idx,
+                    InsertAnchor::None => 0, // Not important
+                };
+                let mut c = tera::Context::new();
+                c.insert("id", &id);
+                let anchor_link = context.tera.render(ANCHOR_LINK_TEMPLATE, &c).unwrap();
+                anchors_to_insert.push((anchor_idx, Event::Html(Owned(anchor_link))));
+            }
+
+            // record header to make table of contents
+            let permalink = format!("{}#{}", context.current_page_permalink, id);
+            let temp_header = TempHeader { level: header_idx.level, id, permalink, title };
+            headers.push(temp_header);
+        }
+
+        if context.insert_anchor != InsertAnchor::None {
+            events.insert_many(anchors_to_insert);
+        }
+
+        cmark::html::push_html(&mut html, events.into_iter());
     }
 
     if let Some(e) = error {

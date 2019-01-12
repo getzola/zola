@@ -375,6 +375,19 @@ fn can_insert_anchor_right() {
     );
 }
 
+#[test]
+fn can_insert_anchor_for_multi_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Right);
+    let res = render_content("# Hello\n# World", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<h1 id=\"hello\">Hello<a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n\
+<h1 id=\"world\">World<a class=\"zola-anchor\" href=\"#world\" aria-label=\"Anchor link for: world\">🔗</a>\n</h1>\n"
+    );
+}
+
 // See https://github.com/Keats/gutenberg/issues/42
 #[test]
 fn can_insert_anchor_with_exclamation_mark() {
@@ -528,7 +541,7 @@ fn can_understand_emphasis_in_header() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# *Emphasis* text", &context).unwrap();
-    assert_eq!(res.body, "<h1 id=\"emphasis-text\"><em>Emphasis</em> text</h1>\n")
+    assert_eq!(res.body, "<h1 id=\"emphasis-text\"><em>Emphasis</em> text</h1>\n");
 }
 
 #[test]
@@ -537,7 +550,7 @@ fn can_understand_strong_in_header() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# **Strong** text", &context).unwrap();
-    assert_eq!(res.body, "<h1 id=\"strong-text\"><strong>Strong</strong> text</h1>\n")
+    assert_eq!(res.body, "<h1 id=\"strong-text\"><strong>Strong</strong> text</h1>\n");
 }
 
 #[test]
@@ -546,7 +559,21 @@ fn can_understand_code_in_header() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# `Code` text", &context).unwrap();
-    assert_eq!(res.body, "<h1 id=\"code-text\"><code>Code</code> text</h1>\n")
+    assert_eq!(res.body, "<h1 id=\"code-text\"><code>Code</code> text</h1>\n");
+}
+
+// See https://github.com/getzola/zola/issues/569
+#[test]
+fn can_understand_footnote_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# text [^1] there\n[^1]: footnote", &context).unwrap();
+    assert_eq!(res.body, r##"<h1 id="text-there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>footnote</p>
+</div>
+"##);
 }
 
 #[test]
@@ -641,8 +668,8 @@ fn can_validate_valid_external_links() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
-    let res = render_content("[a link](http://google.com)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"http://google.com\">a link</a></p>\n");
+    let res = render_content("[a link](http://bing.com)", &context).unwrap();
+    assert_eq!(res.body, "<p><a href=\"http://bing.com\">a link</a></p>\n");
 }
 
 #[test]
