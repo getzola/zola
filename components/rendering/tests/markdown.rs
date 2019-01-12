@@ -668,8 +668,8 @@ fn can_validate_valid_external_links() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
-    let res = render_content("[a link](http://bing.com)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"http://bing.com\">a link</a></p>\n");
+    let res = render_content("[a link](http://google.com)", &context).unwrap();
+    assert_eq!(res.body, "<p><a href=\"http://google.com\">a link</a></p>\n");
 }
 
 #[test]
