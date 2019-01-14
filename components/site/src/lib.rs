@@ -691,8 +691,12 @@ impl Site {
     /// Renders 404.html
     pub fn render_404(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
+        let current_path = "404.html";
+        let current_url = self.config.base_url.clone() + "/" + current_path;
         let mut context = Context::new();
         context.insert("config", &self.config);
+        context.insert("current_path", &current_path);
+        context.insert("current_url", &current_url);
         let output = render_template("404.html", &self.tera, &context, &self.config.theme)?;
         create_file(&self.output_path.join("404.html"), &self.inject_livereload(output))
     }
