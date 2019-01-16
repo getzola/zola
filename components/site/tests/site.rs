@@ -629,3 +629,14 @@ fn can_apply_page_templates() {
     assert_eq!(child.meta.template, Some("page_template_child.html".into()));
     assert_eq!(child.meta.title, Some("Local section override".into()));
 }
+
+// https://github.com/getzola/zola/issues/571
+#[test]
+fn can_build_site_custom_builtins_from_theme() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+
+    assert!(&public.exists());
+    // 404.html is a theme template.
+    assert!(file_exists!(public, "404.html"));
+    assert!(file_contains!(public, "404.html", "Oops"));
+}

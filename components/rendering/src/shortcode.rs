@@ -4,7 +4,7 @@ use regex::Regex;
 use tera::{to_value, Context, Map, Value};
 
 use context::RenderContext;
-use errors::{Result, Error};
+use errors::{Error, Result};
 
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file
@@ -111,12 +111,12 @@ fn render_shortcode(
         tera_context.insert("body", b.trim_right());
     }
     tera_context.extend(context.tera_context.clone());
-    let tpl_name = format!("shortcodes/{}.html", name);
 
-    let res = context
-        .tera
-        .render(&tpl_name, &tera_context)
-        .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
+    let template_name = format!("shortcodes/{}.html", name);
+
+    let res =
+        utils::templates::render_template(&template_name, &context.tera, &tera_context, &None)
+            .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
 
     // Small hack to avoid having multiple blank lines because of Tera tags for example
     // A blank like will cause the markdown parser to think we're out of HTML and start looking
