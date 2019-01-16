@@ -1,5 +1,5 @@
+extern crate percent_encoding;
 extern crate pulldown_cmark;
-extern crate slug;
 extern crate syntect;
 extern crate tera;
 #[macro_use]

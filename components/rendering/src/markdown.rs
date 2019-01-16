@@ -1,8 +1,8 @@
 use std::borrow::Cow::{Borrowed, Owned};
 
 use self::cmark::{Event, Options, Parser, Tag};
+use percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 use pulldown_cmark as cmark;
-use slug::slugify;
 use syntect::easy::HighlightLines;
 use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
@@ -237,7 +237,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 Event::End(Tag::Header(_)) => {
                     // End of a header, reset all the things and return the header string
 
-                    let id = find_anchor(&anchors, slugify(&temp_header.title), 0);
+                    let id = find_anchor(
+                        &anchors,
+                        utf8_percent_encode(&temp_header.title, DEFAULT_ENCODE_SET).to_string(),
+                        0,
+                    );
                     anchors.push(id.clone());
                     temp_header.permalink = format!("{}#{}", context.current_page_permalink, id);
                     temp_header.id = id;

@@ -7,7 +7,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 tera = { version = "0.11", features = ["preserve_order"] }
 syntect = "3"
 pulldown-cmark = "0.2"
-slug = "0.1"
+percent-encoding = "1.0"
 serde = "1"
 serde_derive = "1"
 pest = "2"
