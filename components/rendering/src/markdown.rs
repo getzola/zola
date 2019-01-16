@@ -28,6 +28,7 @@ pub struct Rendered {
     pub toc: Vec<Header>,
 }
 
+#[derive(Debug)]
 struct HeaderIndex {
     start: usize,
     end: usize,
