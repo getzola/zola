@@ -335,6 +335,10 @@ impl Site {
             "resize_image",
             global_fns::make_resize_image(self.imageproc.clone()),
         );
+        self.tera.register_function(
+            "load_data",
+            global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()),
+        );
     }
 
     pub fn register_tera_global_fns(&mut self) {
@@ -348,10 +352,6 @@ impl Site {
         self.tera.register_function(
             "get_taxonomy_url",
             global_fns::make_get_taxonomy_url(&self.taxonomies),
-        );
-        self.tera.register_function(
-            "load_data",
-            global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()),
         );
     }
 

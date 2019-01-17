@@ -5,7 +5,10 @@
 - Add support for content in multiple languages
 - Lower latency on serve before rebuilding from 2 to 1 second
 - Allow processing PNG and produced images are less blurry
-- Add an id (`zola-continue-reading`)
+- Add an id (`zola-continue-reading`) to the paragraph generated after a summary
+- Add Dracula syntax highlighting theme
+- Fix using inline styles in headers
+
 
 ## 0.5.1 (2018-12-14)
 
