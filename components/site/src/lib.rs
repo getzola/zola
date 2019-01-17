@@ -339,19 +339,19 @@ impl Site {
             "load_data",
             global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()),
         );
+        self.tera.register_function("trans", global_fns::make_trans(self.config.clone()));
+        self.tera.register_function(
+            "get_taxonomy_url",
+            global_fns::make_get_taxonomy_url(&self.taxonomies),
+        );
     }
 
     pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_function("trans", global_fns::make_trans(self.config.clone()));
         self.tera.register_function("get_page", global_fns::make_get_page(&self.library));
         self.tera.register_function("get_section", global_fns::make_get_section(&self.library));
         self.tera.register_function(
             "get_taxonomy",
             global_fns::make_get_taxonomy(&self.taxonomies, &self.library),
-        );
-        self.tera.register_function(
-            "get_taxonomy_url",
-            global_fns::make_get_taxonomy_url(&self.taxonomies),
         );
     }
 
