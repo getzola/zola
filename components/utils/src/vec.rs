@@ -7,7 +7,7 @@ impl<T> InsertMany for Vec<T> {
     type Element = T;
 
     /// Efficiently insert multiple element in their specified index.
-    /// The index should be sorted in ascending order.
+    /// The elements should sorted in ascending order by their index.
     ///
     /// This is done in O(n) time.
     fn insert_many(&mut self, elem_to_insert: Vec<(usize, T)>) {

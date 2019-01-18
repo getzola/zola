@@ -28,16 +28,17 @@ pub struct Rendered {
     pub toc: Vec<Header>,
 }
 
+// tracks a header in a slice of pulldown-cmark events
 #[derive(Debug)]
-struct HeaderIndex {
-    start: usize,
-    end: usize,
+struct HeaderRef {
+    start_idx: usize,
+    end_idx: usize,
     level: i32,
 }
 
-impl HeaderIndex {
-    fn new(start: usize, level: i32) -> HeaderIndex {
-        HeaderIndex { start, end: 0, level }
+impl HeaderRef {
+    fn new(start: usize, level: i32) -> HeaderRef {
+        HeaderRef { start_idx: start, end_idx: 0, level }
     }
 }
 
@@ -110,23 +111,23 @@ fn get_text(parser_slice: &[Event]) -> String {
     title
 }
 
-fn get_header_indexes(events: &[Event]) -> Vec<HeaderIndex> {
-    let mut header_indexes = vec![];
+fn get_header_refs(events: &[Event]) -> Vec<HeaderRef> {
+    let mut header_refs = vec![];
 
     for (i, event) in events.iter().enumerate() {
         match event {
             Event::Start(Tag::Header(level)) => {
-                header_indexes.push(HeaderIndex::new(i, *level));
+                header_refs.push(HeaderRef::new(i, *level));
             }
             Event::End(Tag::Header(_)) => {
                 let msg = "Header end before start?";
-                header_indexes.last_mut().expect(msg).end = i;
+                header_refs.last_mut().expect(msg).end_idx = i;
             }
             _ => (),
         }
     }
 
-    header_indexes
+    header_refs
 }
 
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
@@ -220,19 +221,19 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             }
         }).collect::<Vec<_>>(); // We need to collect the events to make a second pass
 
-        let mut header_indexes = get_header_indexes(&events);
+        let header_refs = get_header_refs(&events);
 
         let mut anchors_to_insert = vec![];
 
-        for header_idx in header_indexes {
-            let start_idx = header_idx.start;
-            let end_idx = header_idx.end;
+        for header_ref in header_refs {
+            let start_idx = header_ref.start_idx;
+            let end_idx = header_ref.end_idx;
             let title = get_text(&events[start_idx + 1 .. end_idx]);
             let id = find_anchor(&inserted_anchors, slugify(&title), 0);
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag
-            let html = format!("<h{lvl} id=\"{id}\">", lvl = header_idx.level, id = id);
+            let html = format!("<h{lvl} id=\"{id}\">", lvl = header_ref.level, id = id);
             events[start_idx] = Event::Html(Owned(html));
 
             // generate anchors and places to insert them
@@ -250,7 +251,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
             // record header to make table of contents
             let permalink = format!("{}#{}", context.current_page_permalink, id);
-            let temp_header = TempHeader { level: header_idx.level, id, permalink, title };
+            let temp_header = TempHeader { level: header_ref.level, id, permalink, title };
             headers.push(temp_header);
         }
 
