@@ -225,7 +225,7 @@ impl<'a> SerializingSection<'a> {
         let mut subsections = Vec::with_capacity(section.subsections.len());
 
         for k in &section.pages {
-            pages.push(library.get_page_by_key(*k).to_serialized(library));
+            pages.push(library.get_page_by_key(*k).to_serialized_basic(library));
         }
 
         for k in &section.subsections {

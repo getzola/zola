@@ -2,6 +2,11 @@
 
 ## 0.6.0 (unreleased)
 
+### Breaking
+- `earlier/later` and `lighter/heavier` are not set anymore on pages when rendering
+a section
+
+### Other
 - Add support for content in multiple languages
 - Lower latency on serve before rebuilding from 2 to 1 second
 - Allow processing PNG and produced images are less blurry
