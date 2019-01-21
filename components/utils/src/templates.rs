@@ -25,12 +25,23 @@ pub fn render_template(
     context: &Context,
     theme: &Option<String>,
 ) -> Result<String> {
+    // check if it is in the templates
     if tera.templates.contains_key(name) {
         return tera.render(name, context).map_err(|e| e.into());
     }
 
+    // check if it is part of a theme
     if let Some(ref t) = *theme {
-        return tera.render(&format!("{}/templates/{}", t, name), context).map_err(|e| e.into());
+        let theme_template_name = format!("{}/templates/{}", t, name);
+        if tera.templates.contains_key(&theme_template_name) {
+            return tera.render(&theme_template_name, context).map_err(|e| e.into());
+        }
+    }
+
+    // check if it is part of ZOLA_TERA defaults
+    let default_name = format!("__zola_builtins/{}", name);
+    if tera.templates.contains_key(&default_name) {
+        return tera.render(&default_name, context).map_err(|e| e.into());
     }
 
     // maybe it's a default one?
