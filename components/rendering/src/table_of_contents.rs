@@ -1,6 +1,3 @@
-use front_matter::InsertAnchor;
-use tera::{Context as TeraContext, Tera};
-
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Header {
     #[serde(skip_serializing)]
@@ -30,7 +27,6 @@ pub struct TempHeader {
     pub id: String,
     pub permalink: String,
     pub title: String,
-    pub html: String,
 }
 
 impl TempHeader {
@@ -40,50 +36,6 @@ impl TempHeader {
             id: String::new(),
             permalink: String::new(),
             title: String::new(),
-            html: String::new(),
-        }
-    }
-
-    pub fn add_html(&mut self, val: &str) {
-        self.html += val;
-    }
-
-    pub fn add_text(&mut self, val: &str) {
-        self.html += val;
-        self.title += val;
-    }
-
-    /// Transform all the information we have about this header into the HTML string for it
-    pub fn to_string(&self, tera: &Tera, insert_anchor: InsertAnchor) -> String {
-        let anchor_link = if insert_anchor != InsertAnchor::None {
-            let mut c = TeraContext::new();
-            c.insert("id", &self.id);
-            tera.render("anchor-link.html", &c).unwrap()
-        } else {
-            String::new()
-        };
-
-        match insert_anchor {
-            InsertAnchor::None => format!(
-                "<h{lvl} id=\"{id}\">{t}</h{lvl}>\n",
-                lvl = self.level,
-                t = self.html,
-                id = self.id
-            ),
-            InsertAnchor::Left => format!(
-                "<h{lvl} id=\"{id}\">{a}{t}</h{lvl}>\n",
-                lvl = self.level,
-                a = anchor_link,
-                t = self.html,
-                id = self.id
-            ),
-            InsertAnchor::Right => format!(
-                "<h{lvl} id=\"{id}\">{t}{a}</h{lvl}>\n",
-                lvl = self.level,
-                a = anchor_link,
-                t = self.html,
-                id = self.id
-            ),
         }
     }
 }
