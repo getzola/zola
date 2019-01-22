@@ -19,3 +19,4 @@
 | [Daniel Sockwell's codesections.com](https://www.codesections.com) | https://gitlab.com/codesections/codesections-website |
 | [Jens Getreu's blog](https://blog.getreu.net)                      |                                                      |
 | [Matthias Endler](https://matthias-endler.de)                      | https://github.com/mre/mre.github.io                 |
+| [Hello, Rust!](https://hello-rust.show)                            | https://github.com/hello-rust/hello-rust.github.io   |
