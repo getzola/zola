@@ -115,7 +115,7 @@ fn render_shortcode(
     let template_name = format!("shortcodes/{}.html", name);
 
     let res =
-        utils::templates::render_template(&template_name, &context.tera, &tera_context, &None)
+        utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
             .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
 
     // Small hack to avoid having multiple blank lines because of Tera tags for example

@@ -9,7 +9,7 @@ use syntect::html::{
 
 use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use context::RenderContext;
-use errors::Result;
+use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use link_checker::check_url;
 use table_of_contents::{Header, make_table_of_contents, TempHeader};
@@ -245,7 +245,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 };
                 let mut c = tera::Context::new();
                 c.insert("id", &id);
-                let anchor_link = context.tera.render(ANCHOR_LINK_TEMPLATE, &c).unwrap();
+
+                let anchor_link = utils::templates::render_template(&ANCHOR_LINK_TEMPLATE, context.tera, c, &None)
+                    .map_err(|e| Error::chain("Failed to render anchor link template", e))?;
                 anchors_to_insert.push((anchor_idx, Event::Html(Owned(anchor_link))));
             }
 

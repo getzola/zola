@@ -221,7 +221,7 @@ impl<'a> Paginator<'a> {
         context.insert("current_path", &pager.path);
         context.insert("paginator", &self.build_paginator_context(pager));
 
-        render_template(&self.template, tera, &context, &config.theme)
+        render_template(&self.template, tera, context, &config.theme)
             .map_err(|e| Error::chain(format!("Failed to render pager {}", pager.index), e))
     }
 }

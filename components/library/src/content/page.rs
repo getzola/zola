@@ -257,7 +257,7 @@ impl Page {
         context.insert("page", &self.to_serialized(library));
         context.insert("lang", &self.lang);
 
-        render_template(&tpl_name, tera, &context, &config.theme)
+        render_template(&tpl_name, tera, context, &config.theme)
             .map_err(|e| Error::chain(format!("Failed to render page '{}'", self.file.path.display()), e))
     }
 

@@ -329,29 +329,29 @@ impl Site {
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_function(
             "get_url",
-            global_fns::make_get_url(self.permalinks.clone(), self.config.clone()),
+            global_fns::GetUrl::new(self.config.clone(), self.permalinks.clone()),
         );
         self.tera.register_function(
             "resize_image",
-            global_fns::make_resize_image(self.imageproc.clone()),
+            global_fns::ResizeImage::new(self.imageproc.clone()),
         );
         self.tera.register_function(
             "load_data",
-            global_fns::make_load_data(self.content_path.clone(), self.base_path.clone()),
+            global_fns::LoadData::new(self.content_path.clone(), self.base_path.clone()),
         );
-        self.tera.register_function("trans", global_fns::make_trans(self.config.clone()));
+        self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
         self.tera.register_function(
             "get_taxonomy_url",
-            global_fns::make_get_taxonomy_url(&self.taxonomies),
+            global_fns::GetTaxonomyUrl::new(&self.taxonomies),
         );
     }
 
     pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_function("get_page", global_fns::make_get_page(&self.library));
-        self.tera.register_function("get_section", global_fns::make_get_section(&self.library));
+        self.tera.register_function("get_page", global_fns::GetPage::new(&self.library));
+        self.tera.register_function("get_section", global_fns::GetSection::new(&self.library));
         self.tera.register_function(
             "get_taxonomy",
-            global_fns::make_get_taxonomy(&self.taxonomies, &self.library),
+            global_fns::GetTaxonomy::new(&self.taxonomies, &self.library),
         );
     }
 
@@ -693,7 +693,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
-        let output = render_template("404.html", &self.tera, &context, &self.config.theme)?;
+        let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
         create_file(&self.output_path.join("404.html"), &self.inject_livereload(output))
     }
 
@@ -704,7 +704,7 @@ impl Site {
         context.insert("config", &self.config);
         create_file(
             &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, &context, &self.config.theme)?,
+            &render_template("robots.txt", &self.tera, context, &self.config.theme)?,
         )
     }
 
@@ -841,7 +841,7 @@ impl Site {
         context.insert("taxonomies", &taxonomies);
         context.insert("config", &self.config);
 
-        let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
+        let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
 
         create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
 
@@ -891,7 +891,7 @@ impl Site {
 
         context.insert("feed_url", &rss_feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
+        let feed = &render_template("rss.xml", &self.tera, context, &self.config.theme)?;
 
         if let Some(ref base) = base_path {
             let mut output_path = self.output_path.clone();
