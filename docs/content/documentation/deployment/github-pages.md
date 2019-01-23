@@ -7,6 +7,13 @@ By default, GitHub Pages uses Jekyll (A ruby based static site generator),
 but you can use whatever you want provided you have an `index.html` file in the root of a branch called `gh-pages`.
 That branch name can also be manually changed in the settings of a repository.
 
+We can use any CI server to build and deploy our site. For example:
+
+ * [Github Actions](https://github.com/shalzz/zola-deploy-action)
+ * [Travis CI](#travis-ci)
+
+## Travis CI
+
 We are going to use [TravisCI](https://travis-ci.org) to automatically publish the site. If you are not using Travis already,
 you will need to login with the GitHub OAuth and activate Travis for the repository.
 Don't forget to also check if your repository allows GitHub Pages in its settings.
