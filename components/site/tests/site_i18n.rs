@@ -87,7 +87,7 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(
         public,
         "fr/blog/index.html",
-        "Translated in : My blog https://example.com/blog/"
+        "Translated in en: My blog https://example.com/blog/"
     ));
     assert!(file_contains!(
         public,
@@ -107,7 +107,7 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(
         public,
         "fr/blog/something/index.html",
-        "Translated in : Something https://example.com/blog/something/"
+        "Translated in en: Something https://example.com/blog/something/"
     ));
 
     // sitemap contains all languages
