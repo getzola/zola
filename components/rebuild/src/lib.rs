@@ -369,6 +369,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
     match filename {
         "sitemap.xml" => site.render_sitemap(),
         "multi_sitemap.xml" => site.render_sitemap(),
+        "main_sitemap.xml" => site.render_sitemap(),
         "rss.xml" => site.render_rss_feed(site.library.pages_values(), None),
         "robots.txt" => site.render_robots(),
         "single.html" | "list.html" => site.render_taxonomies(),

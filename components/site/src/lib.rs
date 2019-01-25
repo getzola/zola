@@ -893,14 +893,22 @@ impl Site {
             }
             
             // Slice the vector in chunks and create sitemap file for each
+            let mut xml_files = Vec::new();
             for (i, chunk) in all_sitemap_entries.chunks(SITEMAP_MAX_URLS).enumerate() {
                 let mut chunk_context = context.clone();
                 chunk_context.insert("chunk", &chunk);
                 let sitemap = &render_template("multi_sitemap.xml", &self.tera, &chunk_context, &self.config.theme)?;
                 let file_name = format!("sitemap_{}.xml", i);
-                create_file(&self.output_path.join(file_name), sitemap)?;
-                
+                create_file(&self.output_path.join(&file_name), sitemap)?;
+                xml_files.push(format!("{}{}", self.config.base_url.clone(), &file_name)); // Incorrect path
             }
+
+            // Create main sitemap
+            let mut main_context = context.clone();
+            main_context.insert("xml_files", &xml_files);
+            let sitemap = &render_template("main_sitemap.xml", &self.tera, &main_context, &self.config.theme)?;
+            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+            
         } else {
             // Create one sitemap with all pages, sections and taxonomies
             let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
