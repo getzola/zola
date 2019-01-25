@@ -870,12 +870,7 @@ impl Site {
         context.insert("taxonomies", &taxonomies);
         context.insert("config", &self.config);
 
-        // Insert here modifications concerning sitemap
-        // Step 1 : count urls
-        // Step 2 : if number > MAX_URL ==> split list
-        // Step 3 : create main sitemap
-        // variables : pages, sections, taxonomies = "listes" of elements of type SitemapEntry
-
+        // Count total number of urls to include in sitemap
         let total_number = pages.len() + sections.len() + taxonomies.len();
         if total_number > self.config.sitemap_limit {
             // Split the sitemap and reference all sitemaps in a main sitemap
@@ -895,7 +890,7 @@ impl Site {
                 let mut chunk_context = context.clone();
                 chunk_context.insert("chunk", &chunk);
                 let sitemap = &render_template("multi_sitemap.xml", &self.tera, &chunk_context, &self.config.theme)?;
-                let file_name = format!("sitemap_{}.xml", i);
+                let file_name = format!("sitemap{}.xml", i);
                 create_file(&self.output_path.join(&file_name), sitemap)?;
                 xml_files.push(self.config.make_permalink(&file_name))
             }
