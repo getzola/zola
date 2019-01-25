@@ -90,23 +90,25 @@ fn livereload_handler(_: &HttpRequest) -> &'static str {
     LIVE_RELOAD
 }
 
-fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
+fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_path: &str) {
     match res {
         Ok(_) => {
-            broadcaster
-                .send(format!(
-                    r#"
-                {{
-                    "command": "reload",
-                    "path": "{}",
-                    "originalPath": "",
-                    "liveCSS": true,
-                    "liveImg": true,
-                    "protocol": ["http://livereload.com/protocols/official-7"]
-                }}"#,
-                    reload_path
-                ))
-                .unwrap();
+            if let Some(broadcaster) = broadcaster.as_ref() {
+                broadcaster
+                    .send(format!(
+                        r#"
+                    {{
+                        "command": "reload",
+                        "path": "{}",
+                        "originalPath": "",
+                        "liveCSS": true,
+                        "liveImg": true,
+                        "protocol": ["http://livereload.com/protocols/official-7"]
+                    }}"#,
+                        reload_path
+                    ))
+                    .unwrap();
+            }
         }
         Err(e) => console::unravel_errors("Failed to build the site", &e),
     }
@@ -293,14 +295,12 @@ pub fn serve(
             format!("-> Template changed {}", path.display())
         };
         console::info(&msg);
-        if let Some(ref broadcaster) = broadcaster {
-            // Force refresh
-            rebuild_done_handling(
-                broadcaster,
-                rebuild::after_template_change(site, &path),
-                "/x.js",
-            );
-        }
+        // Force refresh
+        rebuild_done_handling(
+            &broadcaster,
+            rebuild::after_template_change(site, &path),
+            "/x.js",
+        );
     };
 
     let reload_sass = |site: &Site, path: &Path, partial_path: &Path| {
@@ -310,13 +310,11 @@ pub fn serve(
             format!("-> Sass file changed {}", path.display())
         };
         console::info(&msg);
-        if let Some(ref broadcaster) = broadcaster {
-            rebuild_done_handling(
-                &broadcaster,
-                site.compile_sass(&site.base_path),
-                &partial_path.to_string_lossy(),
-            );
-        }
+        rebuild_done_handling(
+            &broadcaster,
+            site.compile_sass(&site.base_path),
+            &partial_path.to_string_lossy(),
+        );
     };
 
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
@@ -332,20 +330,18 @@ pub fn serve(
         };
 
         console::info(&msg);
-        if let Some(ref broadcaster) = broadcaster {
-            if path.is_dir() {
-                rebuild_done_handling(
-                    broadcaster,
-                    site.copy_static_directories(),
-                    &path.to_string_lossy(),
-                );
-            } else {
-                rebuild_done_handling(
-                    broadcaster,
-                    copy_file(&path, &site.output_path, &site.static_path),
-                    &partial_path.to_string_lossy(),
-                );
-            }
+        if path.is_dir() {
+            rebuild_done_handling(
+                &broadcaster,
+                site.copy_static_directories(),
+                &path.to_string_lossy(),
+            );
+        } else {
+            rebuild_done_handling(
+                &broadcaster,
+                copy_file(&path, &site.output_path, &site.static_path),
+                &partial_path.to_string_lossy(),
+            );
         }
     };
 
@@ -373,14 +369,12 @@ pub fn serve(
                         match change_kind {
                             ChangeKind::Content => {
                                 console::info(&format!("-> Content renamed {}", path.display()));
-                                if let Some(ref broadcaster) = broadcaster {
-                                    // Force refresh
-                                    rebuild_done_handling(
-                                        broadcaster,
-                                        rebuild::after_content_rename(&mut site, &old_path, &path),
-                                        "/x.js",
-                                    );
-                                }
+                                // Force refresh
+                                rebuild_done_handling(
+                                    &broadcaster,
+                                    rebuild::after_content_rename(&mut site, &old_path, &path),
+                                    "/x.js",
+                                );
                             }
                             ChangeKind::Templates => reload_templates(&mut site, &path),
                             ChangeKind::StaticFiles => copy_static(&site, &path, &partial_path),
@@ -414,14 +408,12 @@ pub fn serve(
                         match detect_change_kind(&pwd, &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
-                                if let Some(ref broadcaster) = broadcaster {
-                                    // Force refresh
-                                    rebuild_done_handling(
-                                        broadcaster,
-                                        rebuild::after_content_change(&mut site, &path),
-                                        "/x.js",
-                                    );
-                                }
+                                // Force refresh
+                                rebuild_done_handling(
+                                    &broadcaster,
+                                    rebuild::after_content_change(&mut site, &path),
+                                    "/x.js",
+                                );
                             }
                             (ChangeKind::Templates, _) => reload_templates(&mut site, &path),
                             (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
