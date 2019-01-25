@@ -134,6 +134,10 @@ pub struct Config {
 
     /// Set automatically when instantiating the config. Used for cachebusting
     pub build_timestamp: Option<i64>,
+
+    /// Maximum number of urls in the sitemap.xml file. 
+    /// If number of pages exceed that limit, several sitemaps site are created, referenced in a main sitemap.xml
+    pub sitemap_limit: usize,
 }
 
 impl Config {
@@ -291,6 +295,7 @@ impl Default for Config {
             extra_syntax_set: None,
             extra: HashMap::new(),
             build_timestamp: Some(1),
+            sitemap_limit: 30000,
         }
     }
 }

@@ -876,11 +876,8 @@ impl Site {
         // Step 3 : create main sitemap
         // variables : pages, sections, taxonomies = "listes" of elements of type SitemapEntry
 
-        // Set the max number of urls in sitemap ==>  todo: set in config
-        const SITEMAP_MAX_URLS: usize = 20; // 30000 would be a good value ; 20 is better for tests
-
         let total_number = pages.len() + sections.len() + taxonomies.len();
-        if total_number > SITEMAP_MAX_URLS {
+        if total_number > self.config.sitemap_limit {
             // Split the sitemap and reference all sitemaps in a main sitemap
 
             // Group all sitemap entries in one vector
@@ -894,13 +891,13 @@ impl Site {
             
             // Slice the vector in chunks and create sitemap file for each
             let mut xml_files = Vec::new();
-            for (i, chunk) in all_sitemap_entries.chunks(SITEMAP_MAX_URLS).enumerate() {
+            for (i, chunk) in all_sitemap_entries.chunks(self.config.sitemap_limit).enumerate() {
                 let mut chunk_context = context.clone();
                 chunk_context.insert("chunk", &chunk);
                 let sitemap = &render_template("multi_sitemap.xml", &self.tera, &chunk_context, &self.config.theme)?;
                 let file_name = format!("sitemap_{}.xml", i);
                 create_file(&self.output_path.join(&file_name), sitemap)?;
-                xml_files.push(format!("{}{}", self.config.base_url.clone(), &file_name)); // Incorrect path
+                xml_files.push(self.config.make_permalink(&file_name))
             }
 
             // Create main sitemap

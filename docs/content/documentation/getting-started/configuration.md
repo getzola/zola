@@ -37,6 +37,11 @@ highlight_theme = "base16-ocean-dark"
 # Whether to generate a RSS feed automatically
 generate_rss = false
 
+# Max number of urls in a single sitemap file.
+# If the number of urls exceed this limit, as many .xml files as necessary are created
+# and are reffered to in a main sitemap.xml
+sitemap_limit = 30000
+
 # The number of articles to include in the RSS feed. Will include all items if
 # not set (the default).
 # rss_limit = 20
