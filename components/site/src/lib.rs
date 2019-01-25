@@ -870,9 +870,42 @@ impl Site {
         context.insert("taxonomies", &taxonomies);
         context.insert("config", &self.config);
 
-        let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+        // Insert here modifications concerning sitemap
+        // Step 1 : count urls
+        // Step 2 : if number > MAX_URL ==> split list
+        // Step 3 : create main sitemap
+        // variables : pages, sections, taxonomies = "listes" of elements of type SitemapEntry
 
-        create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+        // Set the max number of urls in sitemap ==>  todo: set in config
+        const SITEMAP_MAX_URLS: usize = 20; // 30000 would be a good value ; 20 is better for tests
+
+        let total_number = pages.len() + sections.len() + taxonomies.len();
+        if total_number > SITEMAP_MAX_URLS {
+            // Split the sitemap and reference all sitemaps in a main sitemap
+
+            // Group all sitemap entries in one vector
+            let mut all_sitemap_entries = Vec::new();
+            all_sitemap_entries.append(&mut pages);
+            all_sitemap_entries.append(&mut sections);
+            for terms in taxonomies {
+                let mut terms = terms;
+                all_sitemap_entries.append(&mut terms);
+            }
+            
+            // Slice the vector in chunks and create sitemap file for each
+            for (i, chunk) in all_sitemap_entries.chunks(SITEMAP_MAX_URLS).enumerate() {
+                let mut chunk_context = context.clone();
+                chunk_context.insert("chunk", &chunk);
+                let sitemap = &render_template("multi_sitemap.xml", &self.tera, &chunk_context, &self.config.theme)?;
+                let file_name = format!("sitemap_{}.xml", i);
+                create_file(&self.output_path.join(file_name), sitemap)?;
+                
+            }
+        } else {
+            // Create one sitemap with all pages, sections and taxonomies
+            let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
+            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+        }
 
         Ok(())
     }
