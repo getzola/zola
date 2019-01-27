@@ -12,7 +12,7 @@ use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use link_checker::check_url;
-use table_of_contents::{Header, make_table_of_contents, TempHeader};
+use table_of_contents::{Header, make_table_of_contents};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
 
@@ -140,7 +140,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut highlighter: Option<(HighlightLines, bool)> = None;
 
     let mut inserted_anchors: Vec<String> = vec![];
-    let mut headers: Vec<TempHeader> = vec![];
+    let mut headers: Vec<Header> = vec![];
 
     let mut opts = Options::empty();
     let mut has_summary = false;
@@ -253,8 +253,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
             // record header to make table of contents
             let permalink = format!("{}#{}", context.current_page_permalink, id);
-            let temp_header = TempHeader { level: header_ref.level, id, permalink, title };
-            headers.push(temp_header);
+            let h = Header { level: header_ref.level, id, permalink, title, children: Vec::new() };
+            headers.push(h);
         }
 
         if context.insert_anchor != InsertAnchor::None {
@@ -270,7 +270,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
-            toc: make_table_of_contents(&headers),
+            toc: make_table_of_contents(headers),
         })
     }
 }
