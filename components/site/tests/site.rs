@@ -16,59 +16,59 @@ fn can_parse_site() {
     path.push("test_site");
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
+    let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages)
-    assert_eq!(site.library.pages().len(), 22);
+    assert_eq!(library.pages().len(), 22);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
-    let url_post = site.library.get_page(&posts_path.join("fixed-url.md")).unwrap();
+    let url_post = library.get_page(&posts_path.join("fixed-url.md")).unwrap();
     assert_eq!(url_post.path, "a-fixed-url/");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post =
-        site.library.get_page(&posts_path.join("with-assets").join("index.md")).unwrap();
+        library.get_page(&posts_path.join("with-assets").join("index.md")).unwrap();
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.library.sections().len(), 11);
+    assert_eq!(library.sections().len(), 11);
 
     // And that the sections are correct
-    let index_section = site.library.get_section(&path.join("content").join("_index.md")).unwrap();
+    let index_section = library.get_section(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 4);
     assert_eq!(index_section.pages.len(), 1);
     assert!(index_section.ancestors.is_empty());
 
-    let posts_section = site.library.get_section(&posts_path.join("_index.md")).unwrap();
+    let posts_section = library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
     assert_eq!(posts_section.pages.len(), 10);
     assert_eq!(
         posts_section.ancestors,
-        vec![*site.library.get_section_key(&index_section.file.path).unwrap()]
+        vec![*library.get_section_key(&index_section.file.path).unwrap()]
     );
 
     // Make sure we remove all the pwd + content from the sections
-    let basic = site.library.get_page(&posts_path.join("simple.md")).unwrap();
+    let basic = library.get_page(&posts_path.join("simple.md")).unwrap();
     assert_eq!(basic.file.components, vec!["posts".to_string()]);
     assert_eq!(
         basic.ancestors,
         vec![
-            *site.library.get_section_key(&index_section.file.path).unwrap(),
-            *site.library.get_section_key(&posts_section.file.path).unwrap(),
+            *library.get_section_key(&index_section.file.path).unwrap(),
+            *library.get_section_key(&posts_section.file.path).unwrap(),
         ]
     );
 
     let tutorials_section =
-        site.library.get_section(&posts_path.join("tutorials").join("_index.md")).unwrap();
+        library.get_section(&posts_path.join("tutorials").join("_index.md")).unwrap();
     assert_eq!(tutorials_section.subsections.len(), 2);
-    let sub1 = site.library.get_section_by_key(tutorials_section.subsections[0]);
-    let sub2 = site.library.get_section_by_key(tutorials_section.subsections[1]);
+    let sub1 = library.get_section_by_key(tutorials_section.subsections[0]);
+    let sub2 = library.get_section_by_key(tutorials_section.subsections[1]);
     assert_eq!(sub1.clone().meta.title.unwrap(), "Programming");
     assert_eq!(sub2.clone().meta.title.unwrap(), "DevOps");
     assert_eq!(tutorials_section.pages.len(), 0);
 
-    let devops_section = site
-        .library
+    let devops_section = library
         .get_section(&posts_path.join("tutorials").join("devops").join("_index.md"))
         .unwrap();
     assert_eq!(devops_section.subsections.len(), 0);
@@ -76,14 +76,13 @@ fn can_parse_site() {
     assert_eq!(
         devops_section.ancestors,
         vec![
-            *site.library.get_section_key(&index_section.file.path).unwrap(),
-            *site.library.get_section_key(&posts_section.file.path).unwrap(),
-            *site.library.get_section_key(&tutorials_section.file.path).unwrap(),
+            *library.get_section_key(&index_section.file.path).unwrap(),
+            *library.get_section_key(&posts_section.file.path).unwrap(),
+            *library.get_section_key(&tutorials_section.file.path).unwrap(),
         ]
     );
 
-    let prog_section = site
-        .library
+    let prog_section = library
         .get_section(&posts_path.join("tutorials").join("programming").join("_index.md"))
         .unwrap();
     assert_eq!(prog_section.subsections.len(), 0);
@@ -234,15 +233,18 @@ fn can_build_site_with_live_reload() {
 fn can_build_site_with_taxonomies() {
     let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
-        for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
-            page.meta.taxonomies = {
-                let mut taxonomies = HashMap::new();
-                taxonomies.insert(
-                    "categories".to_string(),
-                    vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
-                );
-                taxonomies
-            };
+        {
+            let mut library = site.library.write().unwrap();
+            for (i, (_, page)) in library.pages_mut().iter_mut().enumerate() {
+                page.meta.taxonomies = {
+                    let mut taxonomies = HashMap::new();
+                    taxonomies.insert(
+                        "categories".to_string(),
+                        vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+                    );
+                    taxonomies
+                };
+            }
         }
         site.populate_taxonomies().unwrap();
         (site, false)
@@ -311,12 +313,15 @@ fn can_build_site_and_insert_anchor_links() {
 fn can_build_site_with_pagination_for_section() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
-        for (_, section) in site.library.sections_mut() {
-            if section.is_index() {
-                continue;
+        {
+            let mut library = site.library.write().unwrap();
+            for (_, section) in library.sections_mut() {
+                if section.is_index() {
+                    continue;
+                }
+                section.meta.paginate_by = Some(2);
+                section.meta.template = Some("section_paginated.html".to_string());
             }
-            section.meta.paginate_by = Some(2);
-            section.meta.template = Some("section_paginated.html".to_string());
         }
         (site, false)
     });
@@ -425,12 +430,14 @@ fn can_build_site_with_pagination_for_index() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
         {
-            let index = site
-                .library
-                .get_section_mut(&site.base_path.join("content").join("_index.md"))
-                .unwrap();
-            index.meta.paginate_by = Some(2);
-            index.meta.template = Some("index_paginated.html".to_string());
+            let mut library = site.library.write().unwrap();
+            {
+                let index = library
+                    .get_section_mut(&site.base_path.join("content").join("_index.md"))
+                    .unwrap();
+                index.meta.paginate_by = Some(2);
+                index.meta.template = Some("index_paginated.html".to_string());
+            }
         }
         (site, false)
     });
@@ -482,16 +489,19 @@ fn can_build_site_with_pagination_for_taxonomy() {
             lang: None,
         });
         site.load().unwrap();
+        {
+            let mut library = site.library.write().unwrap();
 
-        for (i, (_, page)) in site.library.pages_mut().iter_mut().enumerate() {
-            page.meta.taxonomies = {
-                let mut taxonomies = HashMap::new();
-                taxonomies.insert(
-                    "tags".to_string(),
-                    vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
-                );
-                taxonomies
-            };
+            for (i, (_, page)) in library.pages_mut().iter_mut().enumerate() {
+                page.meta.taxonomies = {
+                    let mut taxonomies = HashMap::new();
+                    taxonomies.insert(
+                        "tags".to_string(),
+                        vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+                    );
+                    taxonomies
+                };
+            }
         }
         site.populate_taxonomies().unwrap();
         (site, false)
@@ -594,38 +604,38 @@ fn can_apply_page_templates() {
     site.load().unwrap();
 
     let template_path = path.join("content").join("applying_page_template");
+    let library = site.library.read().unwrap();
 
-    let template_section = site.library.get_section(&template_path.join("_index.md")).unwrap();
+    let template_section = library.get_section(&template_path.join("_index.md")).unwrap();
     assert_eq!(template_section.subsections.len(), 2);
     assert_eq!(template_section.pages.len(), 2);
 
-    let from_section_config = site.library.get_page_by_key(template_section.pages[0]);
+    let from_section_config = library.get_page_by_key(template_section.pages[0]);
     assert_eq!(from_section_config.meta.template, Some("page_template.html".into()));
     assert_eq!(from_section_config.meta.title, Some("From section config".into()));
 
-    let override_page_template = site.library.get_page_by_key(template_section.pages[1]);
+    let override_page_template = library.get_page_by_key(template_section.pages[1]);
     assert_eq!(override_page_template.meta.template, Some("page_template_override.html".into()));
     assert_eq!(override_page_template.meta.title, Some("Override".into()));
 
     // It should have applied recursively as well
     let another_section =
-        site.library.get_section(&template_path.join("another_section").join("_index.md")).unwrap();
+        library.get_section(&template_path.join("another_section").join("_index.md")).unwrap();
     assert_eq!(another_section.subsections.len(), 0);
     assert_eq!(another_section.pages.len(), 1);
 
-    let changed_recursively = site.library.get_page_by_key(another_section.pages[0]);
+    let changed_recursively = library.get_page_by_key(another_section.pages[0]);
     assert_eq!(changed_recursively.meta.template, Some("page_template.html".into()));
     assert_eq!(changed_recursively.meta.title, Some("Changed recursively".into()));
 
     // But it should not have override a children page_template
-    let yet_another_section = site
-        .library
+    let yet_another_section = library
         .get_section(&template_path.join("yet_another_section").join("_index.md"))
         .unwrap();
     assert_eq!(yet_another_section.subsections.len(), 0);
     assert_eq!(yet_another_section.pages.len(), 1);
 
-    let child = site.library.get_page_by_key(yet_another_section.pages[0]);
+    let child = library.get_page_by_key(yet_another_section.pages[0]);
     assert_eq!(child.meta.template, Some("page_template_child.html".into()));
     assert_eq!(child.meta.title, Some("Local section override".into()));
 }

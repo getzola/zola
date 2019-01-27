@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, RwLock};
 
 use tera::{from_value, to_value, Function as TeraFn, Result, Value};
 
@@ -190,18 +191,12 @@ impl TeraFn for GetTaxonomyUrl {
 
 #[derive(Debug)]
 pub struct GetPage {
-    pages: HashMap<String, Value>,
+    base_path: PathBuf,
+    library: Arc<RwLock<Library>>,
 }
 impl GetPage {
-    pub fn new(library: &Library) -> Self {
-        let mut pages = HashMap::new();
-        for page in library.pages_values() {
-            pages.insert(
-                page.file.relative.clone(),
-                to_value(library.get_page(&page.file.path).unwrap().to_serialized(library)).unwrap(),
-            );
-        }
-        Self {pages}
+    pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
+        Self {base_path: base_path.join("content"), library}
     }
 }
 impl TeraFn for GetPage {
@@ -211,8 +206,12 @@ impl TeraFn for GetPage {
             args.get("path"),
             "`get_page` requires a `path` argument with a string value"
         );
-        match self.pages.get(&path) {
-            Some(p) => Ok(p.clone()),
+        let full_path = self.base_path.join(&path);
+        let library = self.library.read().unwrap();
+        match library.get_page(&full_path) {
+            Some(p) => {
+                Ok(to_value(p.to_serialized(&library)).unwrap())
+            },
             None => Err(format!("Page `{}` not found.", path).into()),
         }
     }
@@ -220,27 +219,12 @@ impl TeraFn for GetPage {
 
 #[derive(Debug)]
 pub struct GetSection {
-    sections: HashMap<String, Value>,
-    sections_basic: HashMap<String, Value>,
+    base_path: PathBuf,
+    library: Arc<RwLock<Library>>,
 }
 impl GetSection {
-    pub fn new(library: &Library) -> Self {
-        let mut sections = HashMap::new();
-        let mut sections_basic = HashMap::new();
-        for section in library.sections_values() {
-            sections.insert(
-                section.file.relative.clone(),
-                to_value(library.get_section(&section.file.path).unwrap().to_serialized(library))
-                    .unwrap(),
-            );
-
-            sections_basic.insert(
-                section.file.relative.clone(),
-                to_value(library.get_section(&section.file.path).unwrap().to_serialized_basic(library))
-                    .unwrap(),
-            );
-        }
-        Self {sections, sections_basic}
+    pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
+        Self {base_path: base_path.join("content"), library}
     }
 }
 impl TeraFn for GetSection {
@@ -255,10 +239,17 @@ impl TeraFn for GetSection {
             .get("metadata_only")
             .map_or(false, |c| from_value::<bool>(c.clone()).unwrap_or(false));
 
-        let container = if metadata_only { &self.sections_basic } else { &self.sections };
+        let full_path = self.base_path.join(&path);
+        let library = self.library.read().unwrap();
 
-        match container.get(&path) {
-            Some(p) => Ok(p.clone()),
+        match library.get_section(&full_path) {
+            Some(s) => {
+                if metadata_only {
+                    Ok(to_value(s.to_serialized_basic(&library)).unwrap())
+                } else {
+                    Ok(to_value(s.to_serialized(&library)).unwrap())
+                }
+            },
             None => Err(format!("Section `{}` not found.", path).into()),
         }
     }
@@ -267,16 +258,16 @@ impl TeraFn for GetSection {
 
 #[derive(Debug)]
 pub struct GetTaxonomy {
-    taxonomies: HashMap<String, Value>,
+    library: Arc<RwLock<Library>>,
+    taxonomies: HashMap<String, Taxonomy>,
 }
 impl GetTaxonomy {
-    pub fn new(all_taxonomies: &[Taxonomy], library: &Library) -> Self {
+    pub fn new(all_taxonomies: Vec<Taxonomy>, library: Arc<RwLock<Library>>) -> Self {
         let mut taxonomies = HashMap::new();
-        for taxonomy in all_taxonomies {
-            taxonomies
-                .insert(taxonomy.kind.name.clone(), to_value(taxonomy.to_serialized(library)).unwrap());
+        for taxo in all_taxonomies {
+            taxonomies.insert(taxo.kind.name.clone(), taxo);
         }
-        Self {taxonomies}
+        Self {taxonomies, library}
     }
 }
 impl TeraFn for GetTaxonomy {
@@ -286,18 +277,19 @@ impl TeraFn for GetTaxonomy {
             args.get("kind"),
             "`get_taxonomy` requires a `kind` argument with a string value"
         );
-        let container = match self.taxonomies.get(&kind) {
-            Some(c) => c,
+
+         match self.taxonomies.get(&kind) {
+            Some(t) => {
+                Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap())
+            },
             None => {
-                return Err(format!(
+                Err(format!(
                     "`get_taxonomy` received an unknown taxonomy as kind: {}",
                     kind
                 )
-                .into());
+                .into())
             }
-        };
-
-        Ok(to_value(container).unwrap())
+        }
     }
 }
 
@@ -306,6 +298,7 @@ mod tests {
     use super::{GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans};
 
     use std::collections::HashMap;
+    use std::sync::{RwLock, Arc};
 
     use tera::{to_value, Value, Function};
 
@@ -355,12 +348,12 @@ mod tests {
     #[test]
     fn can_get_taxonomy() {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new("Programming", &taxo_config, &Config::default(), vec![], &library);
+        let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
+        let tag = TaxonomyItem::new("Programming", &taxo_config, &Config::default(), vec![], &library.read().unwrap());
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
-        let static_fn = GetTaxonomy::new(&taxonomies, &library);
+        let static_fn = GetTaxonomy::new(taxonomies.clone(), library.clone());
         // can find it correctly
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());

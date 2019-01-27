@@ -47,23 +47,24 @@ fn colorize(message: &str, color: &ColorSpec) {
 
 /// Display in the console the number of pages/sections in the site
 pub fn notify_site_size(site: &Site) {
+    let library = site.library.read().unwrap();
     println!(
         "-> Creating {} pages ({} orphan), {} sections, and processing {} images",
-        site.library.pages().len(),
-        site.get_all_orphan_pages().len(),
-        site.library.sections().len() - 1, // -1 since we do not the index as a section
+        library.pages().len(),
+        site.get_number_orphan_pages(),
+        library.sections().len() - 1, // -1 since we do not the index as a section
         site.num_img_ops(),
     );
 }
 
 /// Display a warning in the console if there are ignored pages in the site
 pub fn warn_about_ignored_pages(site: &Site) {
-    let ignored_pages: Vec<_> = site
-        .library
+    let library = site.library.read().unwrap();
+    let ignored_pages: Vec<_> = library
         .sections_values()
         .iter()
         .flat_map(|s| {
-            s.ignored_pages.iter().map(|k| site.library.get_page_by_key(*k).file.path.clone())
+            s.ignored_pages.iter().map(|k| library.get_page_by_key(*k).file.path.clone())
         })
         .collect();
 
