@@ -21,9 +21,9 @@ pub fn markdown(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Valu
 
     if inline {
         html = html
-            .trim_left_matches("<p>")
+            .trim_start_matches("<p>")
             // pulldown_cmark finishes a paragraph with `</p>\n`
-            .trim_right_matches("</p>\n")
+            .trim_end_matches("</p>\n")
             .to_string();
     }
 
