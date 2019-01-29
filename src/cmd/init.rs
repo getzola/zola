@@ -41,7 +41,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
     let search = ask_bool("> Do you want to build a search index of the content?", false)?;
 
     let config = CONFIG
-        .trim_left()
+        .trim_start()
         .replace("%BASE_URL%", &base_url)
         .replace("%COMPILE_SASS%", &format!("{}", compile_sass))
         .replace("%SEARCH%", &format!("{}", search))

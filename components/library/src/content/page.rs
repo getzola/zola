@@ -153,7 +153,7 @@ impl Page {
         };
 
         if let Some(ref p) = page.meta.path {
-            page.path = p.trim().trim_left_matches('/').to_string();
+            page.path = p.trim().trim_start_matches('/').to_string();
         } else {
             let mut path = if page.file.components.is_empty() {
                 page.slug.clone()

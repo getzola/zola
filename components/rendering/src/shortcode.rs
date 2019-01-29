@@ -108,7 +108,7 @@ fn render_shortcode(
     }
     if let Some(ref b) = body {
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
-        tera_context.insert("body", b.trim_right());
+        tera_context.insert("body", b.trim_end());
     }
     tera_context.extend(context.tera_context.clone());
 
