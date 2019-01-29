@@ -51,9 +51,9 @@ pub struct Section {
     /// How long would it take to read the raw content.
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
-    /// The language of that section. `None` if the user doesn't setup `languages` in config.
+    /// The language of that section. Equal to the default lang if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the _index.{lang}.md file scheme
-    pub lang: Option<String>,
+    pub lang: String,
     /// Contains all the translated version of that section
     pub translations: Vec<Key>,
 }
@@ -79,7 +79,7 @@ impl Section {
             toc: vec![],
             word_count: None,
             reading_time: None,
-            lang: None,
+            lang: String::new(),
             translations: Vec::new(),
         }
     }
@@ -93,8 +93,8 @@ impl Section {
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
         let path = format!("{}/", section.file.components.join("/"));
-        if let Some(ref lang) = section.lang {
-            section.path = format!("{}/{}", lang, path);
+        if section.lang != config.default_language {
+            section.path = format!("{}/{}", section.lang, path);
         } else {
             section.path = path;
         }
@@ -237,7 +237,7 @@ impl Default for Section {
             toc: vec![],
             reading_time: None,
             word_count: None,
-            lang: None,
+            lang: String::new(),
             translations: Vec::new(),
         }
     }
@@ -315,7 +315,7 @@ Bonjour le monde"#
         let res = Section::parse(Path::new("content/hello/nested/_index.fr.md"), &content, &config);
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, Some("fr".to_string()));
+        assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/hello/nested/");
     }
 }

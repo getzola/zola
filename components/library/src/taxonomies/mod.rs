@@ -64,8 +64,8 @@ impl TaxonomyItem {
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
         let slug = slugify(name);
-        let permalink = if let Some(ref lang) = taxonomy.lang {
-            config.make_permalink(&format!("/{}/{}/{}", lang, taxonomy.name, slug))
+        let permalink = if taxonomy.lang != config.default_language {
+            config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
         } else {
             config.make_permalink(&format!("/{}/{}", taxonomy.name, slug))
         };
@@ -242,9 +242,9 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
-            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "categories".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "authors".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
         ];
 
         let mut page1 = Page::default();
@@ -252,6 +252,7 @@ mod tests {
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
         taxo_page1.insert("categories".to_string(), vec!["Programming tutorials".to_string()]);
         page1.meta.taxonomies = taxo_page1;
+        page1.lang = config.default_language.clone();
         library.insert_page(page1);
 
         let mut page2 = Page::default();
@@ -259,6 +260,7 @@ mod tests {
         taxo_page2.insert("tags".to_string(), vec!["rust".to_string(), "js".to_string()]);
         taxo_page2.insert("categories".to_string(), vec!["Other".to_string()]);
         page2.meta.taxonomies = taxo_page2;
+        page2.lang = config.default_language.clone();
         library.insert_page(page2);
 
         let mut page3 = Page::default();
@@ -266,6 +268,7 @@ mod tests {
         taxo_page3.insert("tags".to_string(), vec!["js".to_string()]);
         taxo_page3.insert("authors".to_string(), vec!["Vincent Prouillet".to_string()]);
         page3.meta.taxonomies = taxo_page3;
+        page3.lang = config.default_language.clone();
         library.insert_page(page3);
 
         let taxonomies = find_taxonomies(&config, &library).unwrap();
@@ -322,11 +325,12 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies =
-            vec![TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() }];
+            vec![TaxonomyConfig { name: "authors".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() }];
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
         page1.meta.taxonomies = taxo_page1;
+        page1.lang = config.default_language.clone();
         library.insert_page(page1);
 
         let taxonomies = find_taxonomies(&config, &library);
@@ -346,9 +350,9 @@ mod tests {
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
-            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "auteurs".to_string(), lang: Some("fr".to_string()), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "categories".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "auteurs".to_string(), lang: "fr".to_string(), ..TaxonomyConfig::default() },
         ];
 
         let mut page1 = Page::default();
@@ -356,6 +360,7 @@ mod tests {
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
         taxo_page1.insert("categories".to_string(), vec!["Programming tutorials".to_string()]);
         page1.meta.taxonomies = taxo_page1;
+        page1.lang = config.default_language.clone();
         library.insert_page(page1);
 
         let mut page2 = Page::default();
@@ -363,10 +368,11 @@ mod tests {
         taxo_page2.insert("tags".to_string(), vec!["rust".to_string()]);
         taxo_page2.insert("categories".to_string(), vec!["Other".to_string()]);
         page2.meta.taxonomies = taxo_page2;
+        page2.lang = config.default_language.clone();
         library.insert_page(page2);
 
         let mut page3 = Page::default();
-        page3.lang = Some("fr".to_string());
+        page3.lang = "fr".to_string();
         let mut taxo_page3 = HashMap::new();
         taxo_page3.insert("auteurs".to_string(), vec!["Vincent Prouillet".to_string()]);
         page3.meta.taxonomies = taxo_page3;
@@ -431,7 +437,7 @@ mod tests {
             vec![TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() }];
 
         let mut page1 = Page::default();
-        page1.lang = Some("fr".to_string());
+        page1.lang = "fr".to_string();
         let mut taxo_page1 = HashMap::new();
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
         page1.meta.taxonomies = taxo_page1;

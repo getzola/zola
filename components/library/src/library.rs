@@ -7,6 +7,7 @@ use front_matter::SortBy;
 
 use content::{Page, Section};
 use sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
+use config::Config;
 
 /// Houses everything about pages and sections
 /// Think of it as a database where each page and section has an id (Key here)
@@ -82,7 +83,7 @@ impl Library {
 
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
-    pub fn populate_sections(&mut self) {
+    pub fn populate_sections(&mut self, config: &Config) {
         let root_path =
             self.sections.values().find(|s| s.is_index()).map(|s| s.file.parent.clone()).unwrap();
         // We are going to get both the ancestors and grandparents for each section in one go
@@ -128,8 +129,8 @@ impl Library {
         }
 
         for (key, page) in &mut self.pages {
-            let parent_filename = if let Some(ref lang) = page.lang {
-                format!("_index.{}.md", lang)
+            let parent_filename = if page.lang != config.default_language {
+                format!("_index.{}.md", page.lang)
             } else {
                 "_index.md".to_string()
             };

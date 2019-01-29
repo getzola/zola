@@ -53,8 +53,8 @@ assets: Array<String>;
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
-// The language for the page if there is one
-lang: String?;
+// The language for the page if there is one. Default to the config `default_language`
+lang: String;
 // Information about all the available languages for that content
 translations: Array<TranslatedContent>;
 ```
@@ -99,8 +99,8 @@ assets: Array<String>;
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
-// The language for the section if there is one
-lang: String?;
+// The language for the section if there is one. Default to the config `default_language`
+lang: String;
 // Information about all the available languages for that content
 translations: Array<TranslatedContent>;
 ```

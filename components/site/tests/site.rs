@@ -486,7 +486,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
             paginate_by: Some(2),
             paginate_path: None,
             rss: true,
-            lang: None,
+            lang: site.config.default_language.clone(),
         });
         site.load().unwrap();
         {

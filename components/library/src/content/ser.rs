@@ -9,7 +9,7 @@ use rendering::Header;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TranslatedContent<'a> {
-    lang: &'a Option<String>,
+    lang: &'a str,
     permalink: &'a str,
     title: &'a Option<String>,
 }
@@ -70,7 +70,7 @@ pub struct SerializingPage<'a> {
     toc: &'a [Header],
     assets: &'a [String],
     draft: bool,
-    lang: &'a Option<String>,
+    lang: &'a str,
     lighter: Option<Box<SerializingPage<'a>>>,
     heavier: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
@@ -211,7 +211,7 @@ pub struct SerializingSection<'a> {
     components: &'a [String],
     word_count: Option<usize>,
     reading_time: Option<usize>,
-    lang: &'a Option<String>,
+    lang: &'a str,
     toc: &'a [Header],
     assets: &'a [String],
     pages: Vec<SerializingPage<'a>>,

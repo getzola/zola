@@ -396,10 +396,10 @@ impl Site {
     pub fn find_parent_section_insert_anchor(
         &self,
         parent_path: &PathBuf,
-        lang: &Option<String>,
+        lang: &str,
     ) -> InsertAnchor {
-        let parent = if let Some(ref l) = lang {
-            parent_path.join(format!("_index.{}.md", l))
+        let parent = if lang != self.config.default_language {
+            parent_path.join(format!("_index.{}.md", lang))
         } else {
             parent_path.join("_index.md")
         };
@@ -413,7 +413,7 @@ impl Site {
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
         let mut library = self.library.write().expect("Get lock for populate_sections");
-        library.populate_sections();
+        library.populate_sections(&self.config);
     }
 
     /// Find all the tags and categories if it's asked in the config
@@ -531,7 +531,7 @@ impl Site {
                 library
                     .pages_values()
                     .iter()
-                    .filter(|p| p.lang.is_none())
+                    .filter(|p| p.lang == self.config.default_language)
                     .map(|p| *p)
                     .collect()
             } else {
@@ -547,7 +547,7 @@ impl Site {
             let pages = library
                 .pages_values()
                 .iter()
-                .filter(|p| if let Some(ref l) = p.lang { l == &lang.code } else { false })
+                .filter(|p|  p.lang == lang.code)
                 .map(|p| *p)
                 .collect();
             self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
@@ -728,8 +728,8 @@ impl Site {
         }
 
         ensure_directory_exists(&self.output_path)?;
-        let output_path = if let Some(ref lang) = taxonomy.kind.lang {
-            let mid_path = self.output_path.join(lang);
+        let output_path = if taxonomy.kind.lang != self.config.default_language {
+            let mid_path = self.output_path.join(&taxonomy.kind.lang);
             create_directory(&mid_path)?;
             mid_path.join(&taxonomy.kind.name)
         } else {
@@ -922,8 +922,8 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut output_path = self.output_path.clone();
 
-        if let Some(ref lang) = section.lang {
-            output_path.push(lang);
+        if section.lang != self.config.default_language {
+            output_path.push(&section.lang);
             if !output_path.exists() {
                 create_directory(&output_path)?;
             }

@@ -71,9 +71,9 @@ pub struct Page {
     /// How long would it take to read the raw content.
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
-    /// The language of that page. `None` if the user doesn't setup `languages` in config.
+    /// The language of that page. Equal to the default lang if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the {slug}.{lang}.md file scheme
-    pub lang: Option<String>,
+    pub lang: String,
     /// Contains all the translated version of that page
     pub translations: Vec<Key>,
 }
@@ -102,7 +102,7 @@ impl Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
-            lang: None,
+            lang: String::new(),
             translations: Vec::new(),
         }
     }
@@ -161,8 +161,8 @@ impl Page {
                 format!("{}/{}", page.file.components.join("/"), page.slug)
             };
 
-            if let Some(ref lang) = page.lang {
-                path = format!("{}/{}", lang, path);
+            if page.lang != config.default_language {
+                path = format!("{}/{}", page.lang, path);
             }
 
             page.path = path;
@@ -302,7 +302,7 @@ impl Default for Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
-            lang: None,
+            lang: String::new(),
             translations: Vec::new(),
         }
     }
@@ -590,7 +590,7 @@ Bonjour le monde"#
         let res = Page::parse(Path::new("hello.fr.md"), &content, &config);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.lang, "fr".to_string());
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
     }
@@ -608,7 +608,7 @@ Bonjour le monde"#
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
-        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.lang, "fr".to_string());
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
     }
@@ -626,7 +626,7 @@ Bonjour le monde"#
         let res = Page::parse(Path::new("hello.fr.md"), &content, &config);
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.lang, "fr".to_string());
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/bonjour/");
     }

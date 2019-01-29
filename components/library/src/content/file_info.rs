@@ -112,14 +112,14 @@ impl FileInfo {
     /// Look for a language in the filename.
     /// If a language has been found, update the name of the file in this struct to
     /// remove it and return the language code
-    pub fn find_language(&mut self, config: &Config) -> Result<Option<String>> {
+    pub fn find_language(&mut self, config: &Config) -> Result<String> {
         // No languages? Nothing to do
         if !config.is_multilingual() {
-            return Ok(None);
+            return Ok(config.default_language.clone());
         }
 
         if !self.name.contains('.') {
-            return Ok(None);
+            return Ok(config.default_language.clone());
         }
 
         // Go with the assumption that no one is using `.` in filenames when using i18n
@@ -136,7 +136,7 @@ impl FileInfo {
         self.canonical = self.parent.join(&self.name);
         let lang = parts.swap_remove(0);
 
-        Ok(Some(lang))
+        Ok(lang)
     }
 }
 
@@ -187,7 +187,7 @@ mod tests {
         ));
         let res = file.find_language(&config);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), Some(String::from("fr")));
+        assert_eq!(res.unwrap(), "fr");
     }
 
     #[test]
@@ -200,7 +200,7 @@ mod tests {
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
         let res = file.find_language(&config);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), Some(String::from("fr")));
+        assert_eq!(res.unwrap(), "fr");
     }
 
     #[test]
@@ -211,7 +211,7 @@ mod tests {
         ));
         let res = file.find_language(&config);
         assert!(res.is_ok());
-        assert!(res.unwrap().is_none());
+        assert_eq!(res.unwrap(), config.default_language);
     }
 
     #[test]
@@ -234,6 +234,6 @@ mod tests {
         ));
         let res = file.find_language(&config);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), Some(String::from("fr")));
+        assert_eq!(res.unwrap(), "fr");
     }
 }

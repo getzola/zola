@@ -41,8 +41,9 @@ pub struct Taxonomy {
     pub paginate_path: Option<String>,
     /// Whether to generate a RSS feed only for each taxonomy term, defaults to false
     pub rss: bool,
-    /// The language for that taxonomy, only used in multilingual sites
-    pub lang: Option<String>,
+    /// The language for that taxonomy, only used in multilingual sites.
+    /// Defaults to the config `default_language` if not set
+    pub lang: String,
 }
 
 impl Taxonomy {
@@ -70,7 +71,7 @@ impl Default for Taxonomy {
             paginate_by: None,
             paginate_path: None,
             rss: false,
-            lang: None,
+            lang: String::new(),
         }
     }
 }
@@ -170,6 +171,12 @@ impl Config {
             }
             config.ignored_content_globset =
                 Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
+        }
+
+        for taxonomy in config.taxonomies.iter_mut() {
+            if taxonomy.lang.is_empty() {
+                taxonomy.lang = config.default_language.clone();
+            }
         }
 
         Ok(config)

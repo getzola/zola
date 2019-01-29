@@ -40,7 +40,7 @@ fn can_parse_multilingual_site() {
     );
     for key in &default_blog.pages {
         let page = library.get_page_by_key(*key);
-        assert_eq!(page.lang, None);
+        assert_eq!(page.lang, "en");
     }
 
     let fr_blog = library.get_section(&blog_path.join("_index.fr.md")).unwrap();
@@ -52,7 +52,7 @@ fn can_parse_multilingual_site() {
     );
     for key in &fr_blog.pages {
         let page = library.get_page_by_key(*key);
-        assert_eq!(page.lang, Some("fr".to_string()));
+        assert_eq!(page.lang, "fr");
     }
 }
 

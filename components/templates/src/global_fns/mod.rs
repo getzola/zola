@@ -347,9 +347,10 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy() {
-        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let config = Config::default();
+        let taxo_config = TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() };
         let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
-        let tag = TaxonomyItem::new("Programming", &taxo_config, &Config::default(), vec![], &library.read().unwrap());
+        let tag = TaxonomyItem::new("Programming", &taxo_config, &config, vec![], &library.read().unwrap());
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
@@ -386,9 +387,10 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy_url() {
-        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let config = Config::default();
+        let taxo_config = TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() };
         let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new("Programming", &taxo_config, &Config::default(), vec![], &library);
+        let tag = TaxonomyItem::new("Programming", &taxo_config, &config, vec![], &library);
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
