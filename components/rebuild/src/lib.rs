@@ -178,9 +178,9 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
     }
 }
 
-macro_rules! render_parent_section {
+macro_rules! render_parent_sections {
     ($site: expr, $path: expr) => {
-        if let Some(s) = $site.library.read().unwrap().find_parent_section($path) {
+        for s in $site.library.read().unwrap().find_parent_sections($path) {
             $site.render_section(s, false)?;
         };
     };
@@ -204,7 +204,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                     // Other than the page itself, the summary might be seen
                     // on a paginated list for a blog for example
                     if library.get_page(&pathbuf).unwrap().summary.is_some() {
-                        render_parent_section!(site, path);
+                        render_parent_sections!(site, path);
                     }
                     return site.render_page(&library.get_page(&pathbuf).unwrap());
                 }
@@ -215,6 +215,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                 &site.library.read().unwrap().get_page(&pathbuf).unwrap().meta,
                 &prev.meta,
             );
+
             for change in changes {
                 site.register_tera_global_fns();
 
@@ -228,7 +229,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                         site.render_index()?;
                     }
                     PageChangesNeeded::Render => {
-                        render_parent_section!(site, path);
+                        render_parent_sections!(site, path);
                         site.render_page(&site.library.read().unwrap().get_page(&path.to_path_buf()).unwrap())?;
                     }
                 };

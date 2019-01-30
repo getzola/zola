@@ -331,15 +331,19 @@ impl Library {
             .collect()
     }
 
-    pub fn find_parent_section<P: AsRef<Path>>(&self, path: P) -> Option<&Section> {
-        let page_key = self.paths_to_pages[path.as_ref()];
-        for s in self.sections.values() {
-            if s.pages.contains(&page_key) {
-                return Some(s);
+    /// Find the parent section & all grandparents section that have transparent=true
+    /// Only used in rebuild.
+    pub fn find_parent_sections<P: AsRef<Path>>(&self, path: P) -> Vec<&Section> {
+        let mut parents = vec![];
+        let page = self.get_page(path.as_ref()).unwrap();
+        for ancestor in page.ancestors.iter().rev() {
+            let section = self.get_section_by_key(*ancestor);
+            if parents.is_empty() || section.meta.transparent {
+                parents.push(section);
             }
         }
 
-        None
+        parents
     }
 
     /// Only used in tests
