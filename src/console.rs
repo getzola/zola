@@ -8,6 +8,7 @@ use chrono::Duration;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use site::Site;
+use errors::Error;
 
 lazy_static! {
     /// Termcolor color choice.
@@ -92,7 +93,7 @@ pub fn report_elapsed_time(instant: Instant) {
 }
 
 /// Display an error message and the actual error(s)
-pub fn unravel_errors(message: &str, error: &StdError) {
+pub fn unravel_errors(message: &str, error: &Error) {
     if !message.is_empty() {
         self::error(message);
     }

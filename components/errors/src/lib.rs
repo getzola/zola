@@ -29,7 +29,17 @@ unsafe impl Send for Error {}
 
 impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        self.source.as_ref().map(|c| &**c)
+        let mut source = self.source.as_ref().map(|c| &**c);
+        if source.is_none() {
+            match self.kind {
+                ErrorKind::Tera(ref err) => {
+                    source = err.source()
+                },
+                _ => ()
+            };
+        }
+
+        source
     }
 }
 
