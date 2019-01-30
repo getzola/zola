@@ -92,11 +92,11 @@ impl Section {
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
-        let path = format!("{}/", section.file.components.join("/"));
+        let path = section.file.components.join("/");
         if section.lang != config.default_language {
             section.path = format!("{}/{}", section.lang, path);
         } else {
-            section.path = path;
+            section.path = format!("{}/", path);
         }
         section.components = section
             .path
@@ -317,5 +317,22 @@ Bonjour le monde"#
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/hello/nested/");
+    }
+
+    // https://zola.discourse.group/t/rfc-i18n/13/17?u=keats
+    #[test]
+    fn can_make_links_to_translated_sections_without_double_trailing_slash() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Section::parse(Path::new("content/_index.fr.md"), &content, &config);
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/");
     }
 }
