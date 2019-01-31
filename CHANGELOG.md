@@ -13,6 +13,7 @@ a section
 - Add an id (`zola-continue-reading`) to the paragraph generated after a summary
 - Add Dracula syntax highlighting theme
 - Fix using inline styles in headers
+- Fix sections with render=false being shown in sitemap
 
 
 ## 0.5.1 (2018-12-14)

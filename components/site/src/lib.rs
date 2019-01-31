@@ -797,6 +797,7 @@ impl Site {
             .read().unwrap()
             .sections_values()
             .iter()
+            .filter(|s| s.meta.render)
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
             .collect::<Vec<_>>();
         for section in

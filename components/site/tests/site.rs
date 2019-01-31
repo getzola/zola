@@ -175,6 +175,8 @@ fn can_build_site_without_live_reload() {
     ));
     // Drafts are not in the sitemap
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
+    // render: false sections are not in the sitemap either
+    assert!(!file_contains!(public, "sitemap.xml", "posts/2018/</loc>"));
 
     // robots.txt has been rendered from the template
     assert!(file_contains!(public, "robots.txt", "User-agent: zola"));
