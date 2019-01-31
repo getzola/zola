@@ -890,9 +890,11 @@ impl Site {
                 let mut chunk_context = context.clone();
                 chunk_context.insert("chunk", &chunk);
                 let sitemap = &render_template("multi_sitemap.xml", &self.tera, &chunk_context, &self.config.theme)?;
-                let file_name = format!("sitemap{}.xml", i);
+                let file_name:String = format!("sitemap{}.xml", i+1);
                 create_file(&self.output_path.join(&file_name), sitemap)?;
-                xml_files.push(self.config.make_permalink(&file_name))
+                let mut xml_link:String = self.config.make_permalink(&file_name);
+                xml_link.pop(); // Remove trailing slash
+                xml_files.push(xml_link);
             }
 
             // Create main sitemap
