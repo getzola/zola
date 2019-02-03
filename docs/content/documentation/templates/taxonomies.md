@@ -27,7 +27,6 @@ paginate_path: String?;
 rss: Bool;
 ```
 
-```
 
 ### Taxonomy list (`list.html`)
 
