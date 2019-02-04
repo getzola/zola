@@ -183,7 +183,7 @@ impl LoadData {
     pub fn new(content_path: PathBuf, base_path: PathBuf) -> Self {
         let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
-        Self {content_path, base_path, client, result_cache}
+        Self { content_path, base_path, client, result_cache }
     }
 }
 
@@ -291,7 +291,16 @@ fn load_csv(csv_data: String) -> Result<Value> {
         let mut records_array: Vec<Value> = Vec::new();
 
         for result in records {
-            let record = result.unwrap();
+            let record = match result {
+                Ok(r) => r,
+                Err(e) => {
+                    return Err(tera::Error::chain(
+                        String::from("Error encountered when parsing csv records"),
+                        e,
+                    ));
+                }
+            };
+
             let mut elements_array: Vec<Value> = Vec::new();
 
             for e in record.into_iter() {
@@ -310,7 +319,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use super::{LoadData, DataSource, OutputFormat};
+    use super::{DataSource, LoadData, OutputFormat};
 
     use std::collections::HashMap;
     use std::path::PathBuf;
@@ -453,6 +462,30 @@ mod tests {
                             ],
             })
         )
+    }
+
+    // Test points to bad csv file with uneven row lengths
+    #[test]
+    fn bad_csv_should_result_in_error() {
+        let static_fn = LoadData::new(
+            PathBuf::from("../utils/test-files"),
+            PathBuf::from("../utils/test-files"),
+        );
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
+        let result = static_fn.call(&args.clone());
+
+        assert!(result.is_err());
+
+        let error_kind = result.err().unwrap().kind;
+        match error_kind {
+            tera::ErrorKind::Msg(msg) => {
+                if msg != String::from("Error encountered when parsing csv records") {
+                    panic!("Error message is wrong. Perhaps wrong error is being returned?");
+                }
+            }
+            _ => panic!("Error encountered was not expected CSV error"),
+        }
     }
 
     #[test]
