@@ -8,7 +8,7 @@ use slug::slugify;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
-use errors::{Result, Error};
+use errors::{Error, Result};
 use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
 use library::Library;
 use rendering::{render_content, Header, RenderContext};
@@ -126,7 +126,16 @@ impl Page {
         page.reading_time = Some(reading_time);
 
         let mut slug_from_dated_filename = None;
-        if let Some(ref caps) = RFC3339_DATE.captures(&page.file.name.replace(".md", "")) {
+        let file_path = if page.file.name == "index" {
+            if let Some(parent) = page.file.path.parent() {
+                parent.file_name().unwrap().to_str().unwrap().to_string()
+            } else {
+                page.file.name.replace(".md", "")
+            }
+        } else {
+            page.file.name.replace(".md", "")
+        };
+        if let Some(ref caps) = RFC3339_DATE.captures(&file_path) {
             slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
@@ -139,7 +148,11 @@ impl Page {
                 slug.trim().to_string()
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
-                    slugify(parent.file_name().unwrap().to_str().unwrap())
+                    if let Some(slug) = slug_from_dated_filename {
+                        slugify(&slug)
+                    } else {
+                        slugify(parent.file_name().unwrap().to_str().unwrap())
+                    }
                 } else {
                     slugify(&page.file.name)
                 }
@@ -233,8 +246,9 @@ impl Page {
 
         context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
-        let res = render_content(&self.raw_content, &context)
-            .map_err(|e| Error::chain(format!("Failed to render content of {}", self.file.path.display()), e))?;
+        let res = render_content(&self.raw_content, &context).map_err(|e| {
+            Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
+        })?;
 
         self.summary = res.summary_len.map(|l| res.body[0..l].to_owned());
         self.content = res.body;
@@ -257,8 +271,9 @@ impl Page {
         context.insert("page", &self.to_serialized(library));
         context.insert("lang", &self.lang);
 
-        render_template(&tpl_name, tera, context, &config.theme)
-            .map_err(|e| Error::chain(format!("Failed to render page '{}'", self.file.path.display()), e))
+        render_template(&tpl_name, tera, context, &config.theme).map_err(|e| {
+            Error::chain(format!("Failed to render page '{}'", self.file.path.display()), e)
+        })
     }
 
     /// Creates a vectors of asset URLs.
@@ -497,6 +512,31 @@ Hello world
         assert_eq!(page.slug, "hey");
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.permalink, "http://a-website.com/posts/hey/");
+    }
+
+    // https://github.com/getzola/zola/issues/607
+    #[test]
+    fn page_with_assets_and_date_in_folder_name() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("2013-06-02_with-assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        f.write_all(b"+++\n\n+++\n").unwrap();
+        File::create(nested_path.join("example.js")).unwrap();
+        File::create(nested_path.join("graph.jpg")).unwrap();
+        File::create(nested_path.join("fail.png")).unwrap();
+
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.file.parent, path.join("content").join("posts"));
+        assert_eq!(page.slug, "with-assets");
+        assert_eq!(page.meta.date, Some("2013-06-02".to_string()));
+        assert_eq!(page.assets.len(), 3);
+        assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
     }
 
     #[test]

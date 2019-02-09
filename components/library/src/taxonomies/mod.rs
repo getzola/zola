@@ -5,7 +5,7 @@ use slug::slugify;
 use tera::{Context, Tera};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
-use errors::{Result, Error};
+use errors::{Error, Result};
 use utils::templates::render_template;
 
 use content::SerializingPage;
@@ -48,7 +48,13 @@ pub struct TaxonomyItem {
 }
 
 impl TaxonomyItem {
-    pub fn new(name: &str, taxonomy: &TaxonomyConfig, config: &Config, keys: Vec<Key>, library: &Library) -> Self {
+    pub fn new(
+        name: &str,
+        taxonomy: &TaxonomyConfig,
+        config: &Config,
+        keys: Vec<Key>,
+        library: &Library,
+    ) -> Self {
         // Taxonomy are almost always used for blogs so we filter by dates
         // and it's not like we can sort things across sections by anything other
         // than dates
@@ -145,7 +151,9 @@ impl Taxonomy {
         context.insert("current_path", &format!("/{}/{}", self.kind.name, item.slug));
 
         render_template(&format!("{}/single.html", self.kind.name), tera, context, &config.theme)
-            .map_err(|e| Error::chain(format!("Failed to render single term {} page.", self.kind.name), e))
+            .map_err(|e| {
+                Error::chain(format!("Failed to render single term {} page.", self.kind.name), e)
+            })
     }
 
     pub fn render_all_terms(
@@ -164,7 +172,9 @@ impl Taxonomy {
         context.insert("current_path", &self.kind.name);
 
         render_template(&format!("{}/list.html", self.kind.name), tera, context, &config.theme)
-            .map_err(|e| Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e))
+            .map_err(|e| {
+                Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e)
+            })
     }
 
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializedTaxonomy<'a> {
@@ -232,7 +242,7 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
-    use config::{Config, Taxonomy as TaxonomyConfig, Language};
+    use config::{Config, Language, Taxonomy as TaxonomyConfig};
     use content::Page;
     use library::Library;
 
@@ -242,9 +252,21 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
-            TaxonomyConfig { name: "categories".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "authors".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
+            TaxonomyConfig {
+                name: "categories".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+            TaxonomyConfig {
+                name: "tags".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+            TaxonomyConfig {
+                name: "authors".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
         ];
 
         let mut page1 = Page::default();
@@ -324,8 +346,11 @@ mod tests {
         let mut config = Config::default();
         let mut library = Library::new(2, 0, false);
 
-        config.taxonomies =
-            vec![TaxonomyConfig { name: "authors".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() }];
+        config.taxonomies = vec![TaxonomyConfig {
+            name: "authors".to_string(),
+            lang: config.default_language.clone(),
+            ..TaxonomyConfig::default()
+        }];
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
@@ -346,13 +371,25 @@ mod tests {
     #[test]
     fn can_make_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.languages.push(Language {rss: false, code: "fr".to_string()});
+        config.languages.push(Language { rss: false, code: "fr".to_string() });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
-            TaxonomyConfig { name: "categories".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "auteurs".to_string(), lang: "fr".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig {
+                name: "categories".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+            TaxonomyConfig {
+                name: "tags".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+            TaxonomyConfig {
+                name: "auteurs".to_string(),
+                lang: "fr".to_string(),
+                ..TaxonomyConfig::default()
+            },
         ];
 
         let mut page1 = Page::default();
@@ -410,7 +447,10 @@ mod tests {
 
         assert_eq!(authors.items[0].name, "Vincent Prouillet");
         assert_eq!(authors.items[0].slug, "vincent-prouillet");
-        assert_eq!(authors.items[0].permalink, "http://a-website.com/fr/auteurs/vincent-prouillet/");
+        assert_eq!(
+            authors.items[0].permalink,
+            "http://a-website.com/fr/auteurs/vincent-prouillet/"
+        );
         assert_eq!(authors.items[0].pages.len(), 1);
 
         assert_eq!(categories.items[0].name, "Other");
@@ -430,7 +470,7 @@ mod tests {
     #[test]
     fn errors_on_taxonomy_of_different_language() {
         let mut config = Config::default();
-        config.languages.push(Language {rss: false, code: "fr".to_string()});
+        config.languages.push(Language { rss: false, code: "fr".to_string() });
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies =

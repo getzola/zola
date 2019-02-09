@@ -32,10 +32,8 @@ impl StdError for Error {
         let mut source = self.source.as_ref().map(|c| &**c);
         if source.is_none() {
             match self.kind {
-                ErrorKind::Tera(ref err) => {
-                    source = err.source()
-                },
-                _ => ()
+                ErrorKind::Tera(ref err) => source = err.source(),
+                _ => (),
             };
         }
 
@@ -67,7 +65,6 @@ impl Error {
         Self { kind: ErrorKind::Msg(value.to_string()), source: Some(source.into()) }
     }
 }
-
 
 impl From<&str> for Error {
     fn from(e: &str) -> Self {

@@ -23,8 +23,7 @@ fn can_parse_multilingual_site() {
     assert_eq!(default_index_section.pages.len(), 1);
     assert!(default_index_section.ancestors.is_empty());
 
-    let fr_index_section =
-        library.get_section(&path.join("content").join("_index.fr.md")).unwrap();
+    let fr_index_section = library.get_section(&path.join("content").join("_index.fr.md")).unwrap();
     assert_eq!(fr_index_section.pages.len(), 1);
     assert!(fr_index_section.ancestors.is_empty());
 
@@ -139,5 +138,4 @@ fn can_build_multilingual_site() {
     assert!(!file_contains!(public, "fr/auteurs/index.html", "Queen"));
     assert!(file_contains!(public, "fr/auteurs/index.html", "Vincent"));
     assert!(!file_exists!(public, "fr/auteurs/vincent-prouillet/rss.xml"));
-
 }

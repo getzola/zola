@@ -20,7 +20,7 @@ use image::{FilterType, GenericImageView};
 use rayon::prelude::*;
 use regex::Regex;
 
-use errors::{Result, Error};
+use errors::{Error, Result};
 use utils::fs as ufs;
 
 static RESIZED_SUBDIR: &'static str = "processed_images";

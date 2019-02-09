@@ -5,9 +5,9 @@ use slotmap::{DenseSlotMap, Key};
 
 use front_matter::SortBy;
 
+use config::Config;
 use content::{Page, Section};
 use sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
-use config::Config;
 
 /// Houses everything about pages and sections
 /// Think of it as a database where each page and section has an id (Key here)

@@ -7,8 +7,8 @@ use atty;
 use chrono::Duration;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-use site::Site;
 use errors::Error;
+use site::Site;
 
 lazy_static! {
     /// Termcolor color choice.
@@ -64,9 +64,7 @@ pub fn warn_about_ignored_pages(site: &Site) {
     let ignored_pages: Vec<_> = library
         .sections_values()
         .iter()
-        .flat_map(|s| {
-            s.ignored_pages.iter().map(|k| library.get_page_by_key(*k).file.path.clone())
-        })
+        .flat_map(|s| s.ignored_pages.iter().map(|k| library.get_page_by_key(*k).file.path.clone()))
         .collect();
 
     if !ignored_pages.is_empty() {

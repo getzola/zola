@@ -15,7 +15,7 @@ mod macros;
 
 mod load_data;
 
- pub use self::load_data::LoadData;
+pub use self::load_data::LoadData;
 
 #[derive(Debug)]
 pub struct Trans {
@@ -23,7 +23,7 @@ pub struct Trans {
 }
 impl Trans {
     pub fn new(config: Config) -> Self {
-        Self {config}
+        Self { config }
     }
 }
 impl TeraFn for Trans {
@@ -43,7 +43,7 @@ pub struct GetUrl {
 }
 impl GetUrl {
     pub fn new(config: Config, permalinks: HashMap<String, String>) -> Self {
-        Self {config, permalinks}
+        Self { config, permalinks }
     }
 }
 impl TeraFn for GetUrl {
@@ -88,7 +88,7 @@ pub struct ResizeImage {
 }
 impl ResizeImage {
     pub fn new(imageproc: Arc<Mutex<imageproc::Processor>>) -> Self {
-        Self {imageproc}
+        Self { imageproc }
     }
 }
 
@@ -154,7 +154,7 @@ impl GetTaxonomyUrl {
             }
             taxonomies.insert(taxonomy.kind.name.clone(), items);
         }
-        Self {taxonomies}
+        Self { taxonomies }
     }
 }
 impl TeraFn for GetTaxonomyUrl {
@@ -188,7 +188,6 @@ impl TeraFn for GetTaxonomyUrl {
     }
 }
 
-
 #[derive(Debug)]
 pub struct GetPage {
     base_path: PathBuf,
@@ -196,7 +195,7 @@ pub struct GetPage {
 }
 impl GetPage {
     pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
-        Self {base_path: base_path.join("content"), library}
+        Self { base_path: base_path.join("content"), library }
     }
 }
 impl TeraFn for GetPage {
@@ -209,9 +208,7 @@ impl TeraFn for GetPage {
         let full_path = self.base_path.join(&path);
         let library = self.library.read().unwrap();
         match library.get_page(&full_path) {
-            Some(p) => {
-                Ok(to_value(p.to_serialized(&library)).unwrap())
-            },
+            Some(p) => Ok(to_value(p.to_serialized(&library)).unwrap()),
             None => Err(format!("Page `{}` not found.", path).into()),
         }
     }
@@ -224,7 +221,7 @@ pub struct GetSection {
 }
 impl GetSection {
     pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
-        Self {base_path: base_path.join("content"), library}
+        Self { base_path: base_path.join("content"), library }
     }
 }
 impl TeraFn for GetSection {
@@ -249,12 +246,11 @@ impl TeraFn for GetSection {
                 } else {
                     Ok(to_value(s.to_serialized(&library)).unwrap())
                 }
-            },
+            }
             None => Err(format!("Section `{}` not found.", path).into()),
         }
     }
 }
-
 
 #[derive(Debug)]
 pub struct GetTaxonomy {
@@ -267,7 +263,7 @@ impl GetTaxonomy {
         for taxo in all_taxonomies {
             taxonomies.insert(taxo.kind.name.clone(), taxo);
         }
-        Self {taxonomies, library}
+        Self { taxonomies, library }
     }
 }
 impl TeraFn for GetTaxonomy {
@@ -278,16 +274,10 @@ impl TeraFn for GetTaxonomy {
             "`get_taxonomy` requires a `kind` argument with a string value"
         );
 
-         match self.taxonomies.get(&kind) {
-            Some(t) => {
-                Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap())
-            },
+        match self.taxonomies.get(&kind) {
+            Some(t) => Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap()),
             None => {
-                Err(format!(
-                    "`get_taxonomy` received an unknown taxonomy as kind: {}",
-                    kind
-                )
-                .into())
+                Err(format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into())
             }
         }
     }
@@ -298,9 +288,9 @@ mod tests {
     use super::{GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans};
 
     use std::collections::HashMap;
-    use std::sync::{RwLock, Arc};
+    use std::sync::{Arc, RwLock};
 
-    use tera::{to_value, Value, Function};
+    use tera::{to_value, Function, Value};
 
     use config::{Config, Taxonomy as TaxonomyConfig};
     use library::{Library, Taxonomy, TaxonomyItem};
@@ -348,9 +338,19 @@ mod tests {
     #[test]
     fn can_get_taxonomy() {
         let config = Config::default();
-        let taxo_config = TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() };
+        let taxo_config = TaxonomyConfig {
+            name: "tags".to_string(),
+            lang: config.default_language.clone(),
+            ..TaxonomyConfig::default()
+        };
         let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
-        let tag = TaxonomyItem::new("Programming", &taxo_config, &config, vec![], &library.read().unwrap());
+        let tag = TaxonomyItem::new(
+            "Programming",
+            &taxo_config,
+            &config,
+            vec![],
+            &library.read().unwrap(),
+        );
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
 
         let taxonomies = vec![tags.clone()];
@@ -388,7 +388,11 @@ mod tests {
     #[test]
     fn can_get_taxonomy_url() {
         let config = Config::default();
-        let taxo_config = TaxonomyConfig { name: "tags".to_string(), lang: config.default_language.clone(), ..TaxonomyConfig::default() };
+        let taxo_config = TaxonomyConfig {
+            name: "tags".to_string(),
+            lang: config.default_language.clone(),
+            ..TaxonomyConfig::default()
+        };
         let library = Library::new(0, 0, false);
         let tag = TaxonomyItem::new("Programming", &taxo_config, &config, vec![], &library);
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };

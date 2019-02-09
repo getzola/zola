@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use walkdir::WalkDir;
 
-use errors::{Result, Error};
+use errors::{Error, Result};
 
 pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
     let canonical_path = path
@@ -19,8 +19,8 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
-    let mut file = File::create(&path)
-        .map_err(|e| Error::chain(format!("Failed to create {:?}", path), e))?;
+    let mut file =
+        File::create(&path).map_err(|e| Error::chain(format!("Failed to create {:?}", path), e))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }
@@ -37,8 +37,9 @@ pub fn ensure_directory_exists(path: &Path) -> Result<()> {
 /// exists before creating it
 pub fn create_directory(path: &Path) -> Result<()> {
     if !path.exists() {
-        create_dir_all(path)
-            .map_err(|e| Error::chain(format!("Was not able to create folder {}", path.display()), e))?;
+        create_dir_all(path).map_err(|e| {
+            Error::chain(format!("Was not able to create folder {}", path.display()), e)
+        })?;
     }
     Ok(())
 }

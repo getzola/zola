@@ -30,7 +30,7 @@ use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use tera::{Context, Tera};
 
 use config::{get_config, Config};
-use errors::{Result, Error};
+use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
@@ -87,7 +87,8 @@ impl Site {
             format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
         // Only parsing as we might be extending templates from themes and that would error
         // as we haven't loaded them yet
-        let mut tera = Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
+        let mut tera =
+            Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
@@ -103,8 +104,8 @@ impl Site {
                 path.to_string_lossy().replace("\\", "/"),
                 format!("themes/{}/templates/**/*.*ml", theme)
             );
-            let mut tera_theme =
-                Tera::parse(&theme_tpl_glob).map_err(|e| Error::chain("Error parsing templates from themes", e))?;
+            let mut tera_theme = Tera::parse(&theme_tpl_glob)
+                .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
             rewrite_theme_paths(&mut tera_theme, &theme);
             // TODO: we do that twice, make it dry?
             if theme_path.join("templates").join("robots.txt").exists() {
@@ -196,8 +197,11 @@ impl Site {
                 entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index.")
             });
 
-        self.library =
-            Arc::new(RwLock::new(Library::new(page_entries.len(), section_entries.len(), self.config.is_multilingual())));
+        self.library = Arc::new(RwLock::new(Library::new(
+            page_entries.len(),
+            section_entries.len(),
+            self.config.is_multilingual(),
+        )));
 
         let sections = {
             let config = &self.config;
@@ -349,8 +353,14 @@ impl Site {
     }
 
     pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_function("get_page", global_fns::GetPage::new(self.base_path.clone(), self.library.clone()));
-        self.tera.register_function("get_section", global_fns::GetSection::new(self.base_path.clone(), self.library.clone()));
+        self.tera.register_function(
+            "get_page",
+            global_fns::GetPage::new(self.base_path.clone(), self.library.clone()),
+        );
+        self.tera.register_function(
+            "get_section",
+            global_fns::GetSection::new(self.base_path.clone(), self.library.clone()),
+        );
         self.tera.register_function(
             "get_taxonomy",
             global_fns::GetTaxonomy::new(self.taxonomies.clone(), self.library.clone()),
@@ -475,7 +485,8 @@ impl Site {
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
             // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path).map_err(|e| Error::chain("Couldn't delete output directory", e))?;
+            remove_dir_all(&self.output_path)
+                .map_err(|e| Error::chain("Couldn't delete output directory", e))?;
         }
 
         Ok(())
@@ -544,12 +555,8 @@ impl Site {
             if !lang.rss {
                 continue;
             }
-            let pages = library
-                .pages_values()
-                .iter()
-                .filter(|p|  p.lang == lang.code)
-                .map(|p| *p)
-                .collect();
+            let pages =
+                library.pages_values().iter().filter(|p| p.lang == lang.code).map(|p| *p).collect();
             self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
         }
 
@@ -735,7 +742,8 @@ impl Site {
         } else {
             self.output_path.join(&taxonomy.kind.name)
         };
-        let list_output = taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
+        let list_output =
+            taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
         create_directory(&output_path)?;
         create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
         let library = self.library.read().unwrap();
@@ -794,14 +802,20 @@ impl Site {
 
         let mut sections = self
             .library
-            .read().unwrap()
+            .read()
+            .unwrap()
             .sections_values()
             .iter()
             .filter(|s| s.meta.render)
             .map(|s| SitemapEntry::new(s.permalink.clone(), None))
             .collect::<Vec<_>>();
-        for section in
-            self.library.read().unwrap().sections_values().iter().filter(|s| s.meta.paginate_by.is_some())
+        for section in self
+            .library
+            .read()
+            .unwrap()
+            .sections_values()
+            .iter()
+            .filter(|s| s.meta.paginate_by.is_some())
         {
             let number_pagers = (section.pages.len() as f64
                 / section.meta.paginate_by.unwrap() as f64)
@@ -971,9 +985,13 @@ impl Site {
         }
 
         if section.meta.is_paginated() {
-            self.render_paginated(&output_path, &Paginator::from_section(&section, &self.library.read().unwrap()))?;
+            self.render_paginated(
+                &output_path,
+                &Paginator::from_section(&section, &self.library.read().unwrap()),
+            )?;
         } else {
-            let output = section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+            let output =
+                section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
             create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
         }
 
@@ -985,7 +1003,8 @@ impl Site {
         self.render_section(
             &self
                 .library
-                .read().unwrap()
+                .read()
+                .unwrap()
                 .get_section(&self.content_path.join("_index.md"))
                 .expect("Failed to get index section"),
             false,
@@ -995,7 +1014,8 @@ impl Site {
     /// Renders all sections
     pub fn render_sections(&self) -> Result<()> {
         self.library
-            .read().unwrap()
+            .read()
+            .unwrap()
             .sections_values()
             .into_par_iter()
             .map(|s| self.render_section(s, true))
@@ -1026,8 +1046,12 @@ impl Site {
             .map(|pager| {
                 let page_path = folder_path.join(&format!("{}", pager.index));
                 create_directory(&page_path)?;
-                let output =
-                    paginator.render_pager(pager, &self.config, &self.tera, &self.library.read().unwrap())?;
+                let output = paginator.render_pager(
+                    pager,
+                    &self.config,
+                    &self.tera,
+                    &self.library.read().unwrap(),
+                )?;
                 if pager.index > 1 {
                     create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
                 } else {

@@ -25,7 +25,7 @@ pub mod global_fns;
 
 use tera::{Context, Tera};
 
-use errors::{Result, Error};
+use errors::{Error, Result};
 
 lazy_static! {
     pub static ref ZOLA_TERA: Tera = {

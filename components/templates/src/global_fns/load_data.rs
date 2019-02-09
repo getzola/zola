@@ -183,7 +183,7 @@ impl LoadData {
     pub fn new(content_path: PathBuf, base_path: PathBuf) -> Self {
         let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
-        Self {content_path, base_path, client, result_cache}
+        Self { content_path, base_path, client, result_cache }
     }
 }
 
@@ -310,7 +310,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use super::{LoadData, DataSource, OutputFormat};
+    use super::{DataSource, LoadData, OutputFormat};
 
     use std::collections::HashMap;
     use std::path::PathBuf;

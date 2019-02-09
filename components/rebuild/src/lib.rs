@@ -155,12 +155,14 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
                     SectionChangesNeeded::Sort => {
                         site.register_tera_global_fns();
                     }
-                    SectionChangesNeeded::Render => {
-                        site.render_section(&site.library.read().unwrap().get_section(&pathbuf).unwrap(), false)?
-                    }
-                    SectionChangesNeeded::RenderWithPages => {
-                        site.render_section(&site.library.read().unwrap().get_section(&pathbuf).unwrap(), true)?
-                    }
+                    SectionChangesNeeded::Render => site.render_section(
+                        &site.library.read().unwrap().get_section(&pathbuf).unwrap(),
+                        false,
+                    )?,
+                    SectionChangesNeeded::RenderWithPages => site.render_section(
+                        &site.library.read().unwrap().get_section(&pathbuf).unwrap(),
+                        true,
+                    )?,
                     // not a common enough operation to make it worth optimizing
                     SectionChangesNeeded::Delete | SectionChangesNeeded::Transparent => {
                         site.build()?;
@@ -182,7 +184,7 @@ macro_rules! render_parent_sections {
     ($site: expr, $path: expr) => {
         for s in $site.library.read().unwrap().find_parent_sections($path) {
             $site.render_section(s, false)?;
-        };
+        }
     };
 }
 
@@ -230,7 +232,9 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                     }
                     PageChangesNeeded::Render => {
                         render_parent_sections!(site, path);
-                        site.render_page(&site.library.read().unwrap().get_page(&path.to_path_buf()).unwrap())?;
+                        site.render_page(
+                            &site.library.read().unwrap().get_page(&path.to_path_buf()).unwrap(),
+                        )?;
                     }
                 };
             }

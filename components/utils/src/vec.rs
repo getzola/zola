@@ -16,7 +16,7 @@ impl<T> InsertMany for Vec<T> {
 
         for (idx, elem) in elem_to_insert.into_iter() {
             let head_len = idx - last_idx;
-            inserted.extend(self.splice(0 .. head_len, std::iter::empty()));
+            inserted.extend(self.splice(0..head_len, std::iter::empty()));
             inserted.push(elem);
             last_idx = idx;
         }

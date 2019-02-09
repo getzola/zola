@@ -4,7 +4,7 @@ use pulldown_cmark as cmark;
 use slug::slugify;
 use syntect::easy::HighlightLines;
 use syntect::html::{
-    IncludeBackground, start_highlighted_html_snippet, styled_line_to_highlighted_html,
+    start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
 };
 
 use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
@@ -12,13 +12,14 @@ use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use link_checker::check_url;
-use table_of_contents::{Header, make_table_of_contents};
+use table_of_contents::{make_table_of_contents, Header};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
 
 use self::cmark::{Event, Options, Parser, Tag};
 
-const CONTINUE_READING: &str = "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
+const CONTINUE_READING: &str =
+    "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 
 #[derive(Debug)]
@@ -88,9 +89,7 @@ fn fix_link(link: &str, context: &RenderContext) -> Result<String> {
         if res.is_valid() {
             link.to_string()
         } else {
-            return Err(
-                format!("Link {} is not valid: {}", link, res.message()).into(),
-            );
+            return Err(format!("Link {} is not valid: {}", link, res.message()).into());
         }
     } else {
         link.to_string()
@@ -148,78 +147,84 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     opts.insert(Options::ENABLE_FOOTNOTES);
 
     {
-        let mut events = Parser::new_ext(content, opts).map(|event| {
-            match event {
-                Event::Text(text) => {
-                    // if we are in the middle of a code block
-                    if let Some((ref mut highlighter, in_extra)) = highlighter {
-                        let highlighted = if in_extra {
-                            if let Some(ref extra) = context.config.extra_syntax_set {
-                                highlighter.highlight(&text, &extra)
+        let mut events = Parser::new_ext(content, opts)
+            .map(|event| {
+                match event {
+                    Event::Text(text) => {
+                        // if we are in the middle of a code block
+                        if let Some((ref mut highlighter, in_extra)) = highlighter {
+                            let highlighted = if in_extra {
+                                if let Some(ref extra) = context.config.extra_syntax_set {
+                                    highlighter.highlight(&text, &extra)
+                                } else {
+                                    unreachable!(
+                                        "Got a highlighter from extra syntaxes but no extra?"
+                                    );
+                                }
                             } else {
-                                unreachable!("Got a highlighter from extra syntaxes but no extra?");
-                            }
-                        } else {
-                            highlighter.highlight(&text, &SYNTAX_SET)
-                        };
-                        //let highlighted = &highlighter.highlight(&text, ss);
-                        let html = styled_line_to_highlighted_html(&highlighted, background);
-                        return Event::Html(Owned(html));
-                    }
-
-                    // Business as usual
-                    Event::Text(text)
-                }
-                Event::Start(Tag::CodeBlock(ref info)) => {
-                    if !context.config.highlight_code {
-                        return Event::Html(Borrowed("<pre><code>"));
-                    }
-
-                    let theme = &THEME_SET.themes[&context.config.highlight_theme];
-                    highlighter = Some(get_highlighter(info, &context.config));
-                    // This selects the background color the same way that start_coloured_html_snippet does
-                    let color =
-                        theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE);
-                    background = IncludeBackground::IfDifferent(color);
-                    let snippet = start_highlighted_html_snippet(theme);
-                    Event::Html(Owned(snippet.0))
-                }
-                Event::End(Tag::CodeBlock(_)) => {
-                    if !context.config.highlight_code {
-                        return Event::Html(Borrowed("</code></pre>\n"));
-                    }
-                    // reset highlight and close the code block
-                    highlighter = None;
-                    Event::Html(Borrowed("</pre>"))
-                }
-                Event::Start(Tag::Image(src, title)) => {
-                    if is_colocated_asset_link(&src) {
-                        return Event::Start(Tag::Image(
-                            Owned(format!("{}{}", context.current_page_permalink, src)),
-                            title,
-                        ));
-                    }
-
-                    Event::Start(Tag::Image(src, title))
-                }
-                Event::Start(Tag::Link(link, title)) => {
-                    let fixed_link = match fix_link(&link, context) {
-                        Ok(fixed_link) => fixed_link,
-                        Err(err) => {
-                            error = Some(err);
-                            return Event::Html(Borrowed(""))
+                                highlighter.highlight(&text, &SYNTAX_SET)
+                            };
+                            //let highlighted = &highlighter.highlight(&text, ss);
+                            let html = styled_line_to_highlighted_html(&highlighted, background);
+                            return Event::Html(Owned(html));
                         }
-                    };
 
-                    Event::Start(Tag::Link(Owned(fixed_link), title))
+                        // Business as usual
+                        Event::Text(text)
+                    }
+                    Event::Start(Tag::CodeBlock(ref info)) => {
+                        if !context.config.highlight_code {
+                            return Event::Html(Borrowed("<pre><code>"));
+                        }
+
+                        let theme = &THEME_SET.themes[&context.config.highlight_theme];
+                        highlighter = Some(get_highlighter(info, &context.config));
+                        // This selects the background color the same way that start_coloured_html_snippet does
+                        let color = theme
+                            .settings
+                            .background
+                            .unwrap_or(::syntect::highlighting::Color::WHITE);
+                        background = IncludeBackground::IfDifferent(color);
+                        let snippet = start_highlighted_html_snippet(theme);
+                        Event::Html(Owned(snippet.0))
+                    }
+                    Event::End(Tag::CodeBlock(_)) => {
+                        if !context.config.highlight_code {
+                            return Event::Html(Borrowed("</code></pre>\n"));
+                        }
+                        // reset highlight and close the code block
+                        highlighter = None;
+                        Event::Html(Borrowed("</pre>"))
+                    }
+                    Event::Start(Tag::Image(src, title)) => {
+                        if is_colocated_asset_link(&src) {
+                            return Event::Start(Tag::Image(
+                                Owned(format!("{}{}", context.current_page_permalink, src)),
+                                title,
+                            ));
+                        }
+
+                        Event::Start(Tag::Image(src, title))
+                    }
+                    Event::Start(Tag::Link(link, title)) => {
+                        let fixed_link = match fix_link(&link, context) {
+                            Ok(fixed_link) => fixed_link,
+                            Err(err) => {
+                                error = Some(err);
+                                return Event::Html(Borrowed(""));
+                            }
+                        };
+
+                        Event::Start(Tag::Link(Owned(fixed_link), title))
+                    }
+                    Event::Html(ref markup) if markup.contains("<!-- more -->") => {
+                        has_summary = true;
+                        Event::Html(Borrowed(CONTINUE_READING))
+                    }
+                    _ => event,
                 }
-                Event::Html(ref markup) if markup.contains("<!-- more -->") => {
-                    has_summary = true;
-                    Event::Html(Borrowed(CONTINUE_READING))
-                }
-                _ => event,
-            }
-        }).collect::<Vec<_>>(); // We need to collect the events to make a second pass
+            })
+            .collect::<Vec<_>>(); // We need to collect the events to make a second pass
 
         let header_refs = get_header_refs(&events);
 
@@ -228,7 +233,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
         for header_ref in header_refs {
             let start_idx = header_ref.start_idx;
             let end_idx = header_ref.end_idx;
-            let title = get_text(&events[start_idx + 1 .. end_idx]);
+            let title = get_text(&events[start_idx + 1..end_idx]);
             let id = find_anchor(&inserted_anchors, slugify(&title), 0);
             inserted_anchors.push(id.clone());
 
@@ -246,8 +251,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 let mut c = tera::Context::new();
                 c.insert("id", &id);
 
-                let anchor_link = utils::templates::render_template(&ANCHOR_LINK_TEMPLATE, context.tera, c, &None)
-                    .map_err(|e| Error::chain("Failed to render anchor link template", e))?;
+                let anchor_link = utils::templates::render_template(
+                    &ANCHOR_LINK_TEMPLATE,
+                    context.tera,
+                    c,
+                    &None,
+                )
+                .map_err(|e| Error::chain("Failed to render anchor link template", e))?;
                 anchors_to_insert.push((anchor_idx, Event::Html(Owned(anchor_link))));
             }
 

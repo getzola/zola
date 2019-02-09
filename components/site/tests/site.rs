@@ -631,9 +631,8 @@ fn can_apply_page_templates() {
     assert_eq!(changed_recursively.meta.title, Some("Changed recursively".into()));
 
     // But it should not have override a children page_template
-    let yet_another_section = library
-        .get_section(&template_path.join("yet_another_section").join("_index.md"))
-        .unwrap();
+    let yet_another_section =
+        library.get_section(&template_path.join("yet_another_section").join("_index.md")).unwrap();
     assert_eq!(yet_another_section.subsections.len(), 0);
     assert_eq!(yet_another_section.pages.len(), 1);
 

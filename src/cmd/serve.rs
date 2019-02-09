@@ -36,7 +36,7 @@ use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{Result, Error as ZolaError};
+use errors::{Error as ZolaError, Result};
 use site::Site;
 use utils::fs::copy_file;
 
@@ -296,11 +296,7 @@ pub fn serve(
         };
         console::info(&msg);
         // Force refresh
-        rebuild_done_handling(
-            &broadcaster,
-            rebuild::after_template_change(site, &path),
-            "/x.js",
-        );
+        rebuild_done_handling(&broadcaster, rebuild::after_template_change(site, &path), "/x.js");
     };
 
     let reload_sass = |site: &Site, path: &Path, partial_path: &Path| {

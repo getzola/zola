@@ -4,7 +4,7 @@ use slotmap::Key;
 use tera::{to_value, Context, Tera, Value};
 
 use config::Config;
-use errors::{Result, Error};
+use errors::{Error, Result};
 use utils::templates::render_template;
 
 use content::{Section, SerializingPage, SerializingSection};
