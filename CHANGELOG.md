@@ -5,6 +5,8 @@
 ### Breaking
 - `earlier/later` and `lighter/heavier` are not set anymore on pages when rendering
 a section
+- The table of content for a page/section is now only available as the `toc` variable when
+rendering it and not anymore on the `page`/`section` variable
 
 ### Other
 - Add support for content in multiple languages
