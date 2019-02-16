@@ -240,6 +240,7 @@ fn can_rebuild_after_renaming_non_md_asset_in_colocated_folder() {
 fn can_rebuild_after_deleting_file() {
     let tmp_dir = tempdir().expect("create temp dir");
     let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
+    println!("{:#?}", site.tera.templates.keys().collect::<Vec<_>>());
     let path = site_path.join("content").join("posts").join("fixed-slug.md");
     fs::remove_file(&path).unwrap();
 
