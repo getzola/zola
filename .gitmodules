@@ -37,3 +37,6 @@
 [submodule "sublime_syntaxes/Swift-for-f-ing-sublime"]
 	path = sublime_syntaxes/Swift-for-f-ing-sublime
 	url = https://github.com/colinta/Swift-for-f-ing-sublime.git
+[submodule "sublime_syntaxes/PowerShell-EditorSyntax"]
+	path = sublime_syntaxes/PowerShell-EditorSyntax
+	url = https://github.com/PowerShell/EditorSyntax
