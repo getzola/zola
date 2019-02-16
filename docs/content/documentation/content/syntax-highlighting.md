@@ -105,6 +105,7 @@ Here is a full list of the supported languages and the short names you can use:
 - Textile -> ["textile"]
 - XML -> ["xml", "xsd", "xslt", "tld", "dtml", "rss", "opml", "svg"]
 - YAML -> ["yaml", "yml", "sublime-syntax"]
+- PowerShell -> ["ps1", "psm1", "psd1"]
 - SWI-Prolog -> ["pro"]
 - Reason -> ["re", "rei"]
 - CMake C Header -> ["h.in"]
