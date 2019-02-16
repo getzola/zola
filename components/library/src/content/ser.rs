@@ -5,7 +5,6 @@ use tera::{Map, Value};
 
 use content::{Page, Section};
 use library::Library;
-use rendering::Header;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TranslatedContent<'a> {
