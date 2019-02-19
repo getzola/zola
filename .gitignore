@@ -19,3 +19,6 @@ snap/.snapcraft
 parts
 prime
 stage
+
+# nixos dependencies snippet
+shell.nix
