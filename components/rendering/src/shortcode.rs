@@ -1,5 +1,3 @@
-use std::path::MAIN_SEPARATOR;
-
 use pest::iterators::Pair;
 use pest::Parser;
 use regex::Regex;
@@ -114,7 +112,7 @@ fn render_shortcode(
     }
     tera_context.extend(context.tera_context.clone());
 
-    let template_name = format!("shortcodes{}{}.html", MAIN_SEPARATOR, name);
+    let template_name = format!("shortcodes/{}.html", name);
 
     let res = utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
         .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
