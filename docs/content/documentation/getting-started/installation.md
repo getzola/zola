@@ -49,6 +49,19 @@ To build it from source, you will need to have Git, [Rust (at least 1.30) and Ca
 installed. You will also need additional dependencies to compile [libsass](https://github.com/sass/libsass):
 
 - OSX, Linux and other Unix: `make` (`gmake` on BSDs), `g++`, `libssl-dev`
+  - NixOS: Create a `shell.nix` file in the root of the cloned project with the following contents:
+  ```nix
+   with import <nixpkgs> {};
+
+   pkgs.mkShell {
+     buildInputs = [
+       libsass
+       openssl
+       pkgconfig
+    ];
+   }
+  ```
+  - Then invoke `nix-shell`. This opens a shell with the above dependencies. You then run `cargo build --release` to build the project.
 - Windows (a bit trickier): updated `MSVC` and overall updated VS installation
 
 From a terminal, you can now run the following command:
