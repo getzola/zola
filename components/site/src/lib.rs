@@ -234,8 +234,30 @@ impl Site {
             self.add_section(s, false)?;
         }
 
-        // Insert a default index section for each language if necessary so we don't need to create
-        // a _index.md to render the index page at the root of the site
+        self.create_default_index_sections()?;
+
+        let mut pages_insert_anchors = HashMap::new();
+        for page in pages {
+            let p = page?;
+            pages_insert_anchors.insert(
+                p.file.path.clone(),
+                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
+            );
+            self.add_page(p, false)?;
+        }
+
+        self.register_early_global_fns();
+        self.populate_sections();
+        self.render_markdown()?;
+        self.populate_taxonomies()?;
+        self.register_tera_global_fns();
+
+        Ok(())
+    }
+
+    /// Insert a default index section for each language if necessary so we don't need to create
+    /// a _index.md to render the index page at the root of the site
+    pub fn create_default_index_sections(&mut self) -> Result<()> {
         for (index_path, lang) in self.index_section_paths() {
             if let Some(ref index_section) = self.library.read().unwrap().get_section(&index_path) {
                 if self.config.build_search_index && !index_section.meta.in_search_index {
@@ -269,22 +291,6 @@ impl Site {
                 library.insert_section(index_section);
             }
         }
-
-        let mut pages_insert_anchors = HashMap::new();
-        for page in pages {
-            let p = page?;
-            pages_insert_anchors.insert(
-                p.file.path.clone(),
-                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
-            );
-            self.add_page(p, false)?;
-        }
-
-        self.register_early_global_fns();
-        self.populate_sections();
-        self.render_markdown()?;
-        self.populate_taxonomies()?;
-        self.register_tera_global_fns();
 
         Ok(())
     }

@@ -116,6 +116,9 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
         }
     }
 
+    // We might have delete the root _index.md so ensure we have at least the default one
+    // before populating
+    site.create_default_index_sections()?;
     site.populate_sections();
     site.populate_taxonomies()?;
     // Ensure we have our fn updated so it doesn't contain the permalink(s)/section/page deleted
