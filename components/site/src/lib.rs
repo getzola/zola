@@ -786,8 +786,6 @@ impl Site {
     pub fn render_sitemap(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let mut context = Context::new();
-
         let mut pages = self
             .library
             .read()
@@ -804,7 +802,6 @@ impl Site {
             })
             .collect::<Vec<_>>();
         pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.insert("pages", &pages);
 
         let mut sections = self
             .library
@@ -833,7 +830,6 @@ impl Site {
             }
         }
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.insert("sections", &sections);
 
         let mut taxonomies = vec![];
         for taxonomy in &self.taxonomies {
@@ -867,12 +863,19 @@ impl Site {
             taxonomies.push(terms);
         }
 
-        context.insert("taxonomies", &taxonomies);
-        context.insert("config", &self.config);
-
         // Count total number of urls to include in sitemap
         let total_number = pages.len() + sections.len() + taxonomies.len();
-        if total_number > self.config.sitemap_limit {
+
+        if total_number < self.config.sitemap_limit {
+            // Create one sitemap with all pages, sections and taxonomies
+            let mut context = Context::new();
+            context.insert("pages", &pages);
+            context.insert("sections", &sections);
+            context.insert("taxonomies", &taxonomies);
+            // context.insert("config", &self.config);
+            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+        } else {
             // Split the sitemap and reference all sitemaps in a main sitemap
 
             // Group all sitemap entries in one vector
@@ -887,26 +890,22 @@ impl Site {
             // Slice the vector in chunks and create sitemap file for each
             let mut xml_files = Vec::new();
             for (i, chunk) in all_sitemap_entries.chunks(self.config.sitemap_limit).enumerate() {
-                let mut chunk_context = context.clone();
-                chunk_context.insert("chunk", &chunk);
-                let sitemap = &render_template("multi_sitemap.xml", &self.tera, &chunk_context, &self.config.theme)?;
-                let file_name:String = format!("sitemap{}.xml", i+1);
+                let mut context = Context::new();
+                // context.insert("config", &self.config);
+                context.insert("chunk", &chunk);
+                let sitemap = &render_template("split_sitemap.xml", &self.tera, context, &self.config.theme)?;
+                let file_name = format!("sitemap{}.xml", i+1);
                 create_file(&self.output_path.join(&file_name), sitemap)?;
                 let mut xml_link:String = self.config.make_permalink(&file_name);
                 xml_link.pop(); // Remove trailing slash
                 xml_files.push(xml_link);
             }
-
             // Create main sitemap
-            let mut main_context = context.clone();
+            let mut main_context = Context::new();
+            // main_context.insert("config", &self.config);
             main_context.insert("xml_files", &xml_files);
-            let sitemap = &render_template("main_sitemap.xml", &self.tera, &main_context, &self.config.theme)?;
-            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
-            
-        } else {
-            // Create one sitemap with all pages, sections and taxonomies
-            let sitemap = &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
-            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+            let sitemap = &render_template("split_sitemap_index.xml", &self.tera, main_context, &self.config.theme)?;
+            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;  
         }
 
         Ok(())

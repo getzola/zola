@@ -31,13 +31,13 @@ lazy_static! {
     pub static ref ZOLA_TERA: Tera = {
         let mut tera = Tera::default();
         tera.add_raw_templates(vec![
-            ("404.html", include_str!("builtins/404.html")),
-            ("rss.xml", include_str!("builtins/rss.xml")),
-            ("sitemap.xml", include_str!("builtins/sitemap.xml")),
-            ("multi_sitemap.xml", include_str!("builtins/multi_sitemap.xml")),
-            ("main_sitemap.xml", include_str!("builtins/main_sitemap.xml")),
-            ("robots.txt", include_str!("builtins/robots.txt")),
-            ("anchor-link.html", include_str!("builtins/anchor-link.html")),
+            ("__zola_builtins/404.html", include_str!("builtins/404.html")),
+            ("__zola_builtins/rss.xml", include_str!("builtins/rss.xml")),
+            ("__zola_builtins/sitemap.xml", include_str!("builtins/sitemap.xml")),
+            ("__zola_builtins/robots.txt", include_str!("builtins/robots.txt")),
+            ("__zola_builtins/split_sitemap.xml", include_str!("builtins/split_sitemap.xml")),
+            ("__zola_builtins/split_sitemap_index.xml", include_str!("builtins/split_sitemap_index.xml")),
+            ("__zola_builtins/anchor-link.html", include_str!("builtins/anchor-link.html")),
             (
                 "__zola_builtins/shortcodes/youtube.html",
                 include_str!("builtins/shortcodes/youtube.html"),
