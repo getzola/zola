@@ -896,14 +896,14 @@ impl Site {
                 let sitemap = &render_template("split_sitemap.xml", &self.tera, context, &self.config.theme)?;
                 let file_name = format!("sitemap{}.xml", i+1);
                 create_file(&self.output_path.join(&file_name), sitemap)?;
-                let mut xml_link:String = self.config.make_permalink(&file_name);
-                xml_link.pop(); // Remove trailing slash
-                xml_files.push(xml_link);
+                let mut sitemap_url:String = self.config.make_permalink(&file_name);
+                sitemap_url.pop(); // Remove trailing slash
+                sitemaps.push(sitemap_url);
             }
             // Create main sitemap
             let mut main_context = Context::new();
             // main_context.insert("config", &self.config);
-            main_context.insert("xml_files", &xml_files);
+            main_context.insert("sitemaps", &sitemaps);
             let sitemap = &render_template("split_sitemap_index.xml", &self.tera, main_context, &self.config.theme)?;
             create_file(&self.output_path.join("sitemap.xml"), sitemap)?;  
         }
