@@ -873,7 +873,6 @@ impl Site {
             context.insert("pages", &pages);
             context.insert("sections", &sections);
             context.insert("taxonomies", &taxonomies);
-            // context.insert("config", &self.config);
             let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
             create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
         } else {
@@ -892,7 +891,6 @@ impl Site {
             let mut sitemap_index = Vec::new();
             for (i, chunk) in all_sitemap_entries.chunks(sitemap_limit).enumerate() {
                 let mut context = Context::new();
-                // context.insert("config", &self.config);
                 context.insert("chunk", &chunk);
                 let sitemap = &render_template("split_sitemap.xml", &self.tera, context, &self.config.theme)?;
                 let file_name = format!("sitemap{}.xml", i+1);
@@ -903,7 +901,6 @@ impl Site {
             }
             // Create main sitemap
             let mut main_context = Context::new();
-            // main_context.insert("config", &self.config);
             main_context.insert("sitemaps", &sitemap_index);
             let sitemap = &render_template("split_sitemap_index.xml", &self.tera, main_context, &self.config.theme)?;
             create_file(&self.output_path.join("sitemap.xml"), sitemap)?;  
