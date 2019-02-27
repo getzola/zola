@@ -193,14 +193,14 @@ template:
 
 #### Remote content
 
-Instead of using a file, you can load data from a remote URL. This can be done by specifying a `url` parameter to `load_data` rather than `file`.
+Instead of using a file, you can load data from a remote URL. This can be done by specifying a `url` parameter to `load_data` rather than `path`.
 
 ```jinja2
 {% set response = load_data(url="https://api.github.com/repos/getzola/zola") %}
 {{ response }}
 ```
 
-By default, the response body will be returned with no parsing. This can be changed by using the `format` argument as above.
+By default, the response body will be returned with no parsing. This can be changed by using the `format` argument as below.
 
 
 ```jinja2
@@ -213,7 +213,7 @@ By default, the response body will be returned with no parsing. This can be chan
 Data file loading and remote requests are cached in memory during build, so multiple requests aren't made to the same endpoint. URLs are cached based on the URL, and data files are cached based on the files modified time. The format is also taken into account when caching, so a request will be sent twice if it's loaded with 2 different formats.
 
 ### `trans`
-Gets the translation of the given `key`, for the `default_language` or the `language given
+Gets the translation of the given `key`, for the `default_language` or the `lang`uage given
 
 ```jinja2
 {{/* trans(key="title") */}}
