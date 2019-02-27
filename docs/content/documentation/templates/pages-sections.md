@@ -70,8 +70,6 @@ with the following fields:
 content: String;
 title: String?;
 description: String?;
-date: String?;
-slug: String;
 path: String;
 // the path, split on '/'
 components: Array<String>;
