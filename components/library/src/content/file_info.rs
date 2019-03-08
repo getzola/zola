@@ -52,11 +52,13 @@ pub struct FileInfo {
 }
 
 impl FileInfo {
-    pub fn new_page(path: &Path) -> FileInfo {
+    pub fn new_page(path: &Path, base_path: &PathBuf) -> FileInfo {
         let file_path = path.to_path_buf();
-        let mut parent = file_path.parent().unwrap().to_path_buf();
+        let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        let mut components = find_content_components(&file_path);
+        let mut components = find_content_components(
+            &file_path.strip_prefix(base_path).expect("Strip base path prefix for page"),
+        );
         let relative = if !components.is_empty() {
             format!("{}/{}.md", components.join("/"), name)
         } else {
@@ -85,11 +87,13 @@ impl FileInfo {
         }
     }
 
-    pub fn new_section(path: &Path) -> FileInfo {
+    pub fn new_section(path: &Path, base_path: &PathBuf) -> FileInfo {
         let file_path = path.to_path_buf();
-        let parent = path.parent().unwrap().to_path_buf();
+        let parent = path.parent().expect("Get parent of section").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        let components = find_content_components(path);
+        let components = find_content_components(
+            &file_path.strip_prefix(base_path).expect("Strip base path prefix for section"),
+        );
         let relative = if !components.is_empty() {
             format!("{}/{}.md", components.join("/"), name)
         } else {
@@ -158,7 +162,7 @@ impl Default for FileInfo {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use config::{Config, Language};
 
@@ -170,11 +174,22 @@ mod tests {
             find_content_components("/home/vincent/code/site/content/posts/tutorials/python.md");
         assert_eq!(res, ["posts".to_string(), "tutorials".to_string()]);
     }
+
     #[test]
     fn can_find_components_in_page_with_assets() {
-        let file = FileInfo::new_page(&Path::new(
-            "/home/vincent/code/site/content/posts/tutorials/python/index.md",
-        ));
+        let file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+            &PathBuf::new(),
+        );
+        assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
+    }
+
+    #[test]
+    fn doesnt_fail_with_multiple_content_directories() {
+        let file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/content/site/content/posts/tutorials/python/index.md"),
+            &PathBuf::from("/home/vincent/code/content/site"),
+        );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
     }
 
@@ -182,9 +197,10 @@ mod tests {
     fn can_find_valid_language_in_page() {
         let mut config = Config::default();
         config.languages.push(Language { code: String::from("fr"), rss: false });
-        let mut file = FileInfo::new_page(&Path::new(
-            "/home/vincent/code/site/content/posts/tutorials/python.fr.md",
-        ));
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
+            &PathBuf::new(),
+        );
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");
@@ -194,9 +210,10 @@ mod tests {
     fn can_find_valid_language_in_page_with_assets() {
         let mut config = Config::default();
         config.languages.push(Language { code: String::from("fr"), rss: false });
-        let mut file = FileInfo::new_page(&Path::new(
-            "/home/vincent/code/site/content/posts/tutorials/python/index.fr.md",
-        ));
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
+            &PathBuf::new(),
+        );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
         let res = file.find_language(&config);
         assert!(res.is_ok());
@@ -206,9 +223,10 @@ mod tests {
     #[test]
     fn do_nothing_on_unknown_language_in_page_with_i18n_off() {
         let config = Config::default();
-        let mut file = FileInfo::new_page(&Path::new(
-            "/home/vincent/code/site/content/posts/tutorials/python.fr.md",
-        ));
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
+            &PathBuf::new(),
+        );
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), config.default_language);
@@ -218,9 +236,10 @@ mod tests {
     fn errors_on_unknown_language_in_page_with_i18n_on() {
         let mut config = Config::default();
         config.languages.push(Language { code: String::from("it"), rss: false });
-        let mut file = FileInfo::new_page(&Path::new(
-            "/home/vincent/code/site/content/posts/tutorials/python.fr.md",
-        ));
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
+            &PathBuf::new(),
+        );
         let res = file.find_language(&config);
         assert!(res.is_err());
     }
@@ -229,9 +248,10 @@ mod tests {
     fn can_find_valid_language_in_section() {
         let mut config = Config::default();
         config.languages.push(Language { code: String::from("fr"), rss: false });
-        let mut file = FileInfo::new_section(&Path::new(
-            "/home/vincent/code/site/content/posts/tutorials/_index.fr.md",
-        ));
+        let mut file = FileInfo::new_section(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
+            &PathBuf::new(),
+        );
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");

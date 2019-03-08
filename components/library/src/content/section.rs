@@ -59,11 +59,15 @@ pub struct Section {
 }
 
 impl Section {
-    pub fn new<P: AsRef<Path>>(file_path: P, meta: SectionFrontMatter) -> Section {
+    pub fn new<P: AsRef<Path>>(
+        file_path: P,
+        meta: SectionFrontMatter,
+        base_path: &PathBuf,
+    ) -> Section {
         let file_path = file_path.as_ref();
 
         Section {
-            file: FileInfo::new_section(file_path),
+            file: FileInfo::new_section(file_path, base_path),
             meta,
             ancestors: vec![],
             path: "".to_string(),
@@ -84,9 +88,14 @@ impl Section {
         }
     }
 
-    pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Section> {
+    pub fn parse(
+        file_path: &Path,
+        content: &str,
+        config: &Config,
+        base_path: &PathBuf,
+    ) -> Result<Section> {
         let (meta, content) = split_section_content(file_path, content)?;
-        let mut section = Section::new(file_path, meta);
+        let mut section = Section::new(file_path, meta, base_path);
         section.lang = section.file.find_language(config)?;
         section.raw_content = content;
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
@@ -109,10 +118,14 @@ impl Section {
     }
 
     /// Read and parse a .md file into a Page struct
-    pub fn from_file<P: AsRef<Path>>(path: P, config: &Config) -> Result<Section> {
+    pub fn from_file<P: AsRef<Path>>(
+        path: P,
+        config: &Config,
+        base_path: &PathBuf,
+    ) -> Result<Section> {
         let path = path.as_ref();
         let content = read_file(path)?;
-        let mut section = Section::parse(path, &content, config)?;
+        let mut section = Section::parse(path, &content, config, base_path)?;
 
         let parent_dir = path.parent().unwrap();
         let assets = find_related_assets(parent_dir);
@@ -250,7 +263,7 @@ impl Default for Section {
 mod tests {
     use std::fs::{create_dir, File};
     use std::io::Write;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
@@ -272,7 +285,11 @@ mod tests {
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Section::from_file(nested_path.join("_index.md").as_path(), &Config::default());
+        let res = Section::from_file(
+            nested_path.join("_index.md").as_path(),
+            &Config::default(),
+            &PathBuf::new(),
+        );
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.assets.len(), 3);
@@ -298,7 +315,8 @@ mod tests {
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
-        let res = Section::from_file(nested_path.join("_index.md").as_path(), &config);
+        let res =
+            Section::from_file(nested_path.join("_index.md").as_path(), &config, &PathBuf::new());
 
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -315,7 +333,12 @@ mod tests {
 +++
 Bonjour le monde"#
             .to_string();
-        let res = Section::parse(Path::new("content/hello/nested/_index.fr.md"), &content, &config);
+        let res = Section::parse(
+            Path::new("content/hello/nested/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());
@@ -332,7 +355,8 @@ Bonjour le monde"#
 +++
 Bonjour le monde"#
             .to_string();
-        let res = Section::parse(Path::new("content/_index.fr.md"), &content, &config);
+        let res =
+            Section::parse(Path::new("content/_index.fr.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());

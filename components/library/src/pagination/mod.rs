@@ -228,6 +228,7 @@ impl<'a> Paginator<'a> {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
     use tera::to_value;
 
     use config::Taxonomy as TaxonomyConfig;
@@ -242,7 +243,7 @@ mod tests {
         let mut f = SectionFrontMatter::default();
         f.paginate_by = Some(2);
         f.paginate_path = "page".to_string();
-        let mut s = Section::new("content/_index.md", f);
+        let mut s = Section::new("content/_index.md", f, &PathBuf::new());
         if !is_index {
             s.path = "posts/".to_string();
             s.permalink = "https://vincent.is/posts/".to_string();

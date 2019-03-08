@@ -210,7 +210,7 @@ impl Site {
                 .into_par_iter()
                 .map(|entry| {
                     let path = entry.as_path();
-                    Section::from_file(path, config)
+                    Section::from_file(path, config, &self.base_path)
                 })
                 .collect::<Vec<_>>()
         };
@@ -222,7 +222,7 @@ impl Site {
                 .into_par_iter()
                 .map(|entry| {
                     let path = entry.as_path();
-                    Page::from_file(path, config)
+                    Page::from_file(path, config, &self.base_path)
                 })
                 .collect::<Vec<_>>()
         };

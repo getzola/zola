@@ -131,7 +131,7 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
 
 /// Handles a `_index.md` (a section) being edited in some ways
 fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
-    let section = Section::from_file(path, &site.config)?;
+    let section = Section::from_file(path, &site.config, &site.base_path)?;
     let pathbuf = path.to_path_buf();
     match site.add_section(section, true)? {
         // Updating a section
@@ -193,7 +193,7 @@ macro_rules! render_parent_sections {
 
 /// Handles a page being edited in some ways
 fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
-    let page = Page::from_file(path, &site.config)?;
+    let page = Page::from_file(path, &site.config, &site.base_path)?;
     let pathbuf = path.to_path_buf();
     match site.add_page(page, true)? {
         // Updating a page
