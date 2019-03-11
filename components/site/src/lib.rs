@@ -349,7 +349,7 @@ impl Site {
         );
         self.tera.register_function(
             "load_data",
-            global_fns::LoadData::new(self.content_path.clone(), self.base_path.clone()),
+            global_fns::LoadData::new(self.base_path.clone()),
         );
         self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
         self.tera.register_function(

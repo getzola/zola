@@ -174,22 +174,21 @@ fn get_output_format_from_args(
 /// Currently the supported formats are json, toml, csv and plain text
 #[derive(Debug)]
 pub struct LoadData {
-    content_path: PathBuf,
     base_path: PathBuf,
     client: Arc<Mutex<Client>>,
     result_cache: Arc<Mutex<HashMap<u64, Value>>>,
 }
 impl LoadData {
-    pub fn new(content_path: PathBuf, base_path: PathBuf) -> Self {
+    pub fn new(base_path: PathBuf) -> Self {
         let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
-        Self { content_path, base_path, client, result_cache }
+        Self { base_path, client, result_cache }
     }
 }
 
 impl TeraFn for LoadData {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let data_source = get_data_source_from_args(&self.content_path, &args)?;
+        let data_source = get_data_source_from_args(&self.base_path, &args)?;
         let file_format = get_output_format_from_args(&args, &data_source)?;
         let cache_key = data_source.get_cache_key(&file_format);
 
@@ -334,7 +333,7 @@ mod tests {
     #[test]
     fn fails_when_missing_file() {
         let static_fn =
-            LoadData::new(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+            LoadData::new(PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
         let result = static_fn.call(&args);
@@ -345,9 +344,9 @@ mod tests {
     #[test]
     fn cant_load_outside_content_dir() {
         let static_fn =
-            LoadData::new(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+            LoadData::new(PathBuf::from(PathBuf::from("../utils")));
         let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("../../../README.md").unwrap());
+        args.insert("path".to_string(), to_value("../../README.md").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_err());
@@ -395,7 +394,7 @@ mod tests {
 
     #[test]
     fn can_load_remote_data() {
-        let static_fn = LoadData::new(PathBuf::new(), PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://httpbin.org/json").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -408,7 +407,7 @@ mod tests {
 
     #[test]
     fn fails_when_request_404s() {
-        let static_fn = LoadData::new(PathBuf::new(), PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://httpbin.org/status/404/").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -423,7 +422,6 @@ mod tests {
     #[test]
     fn can_load_toml() {
         let static_fn = LoadData::new(
-            PathBuf::from("../utils/test-files"),
             PathBuf::from("../utils/test-files"),
         );
         let mut args = HashMap::new();
@@ -445,7 +443,6 @@ mod tests {
     #[test]
     fn can_load_csv() {
         let static_fn = LoadData::new(
-            PathBuf::from("../utils/test-files"),
             PathBuf::from("../utils/test-files"),
         );
         let mut args = HashMap::new();
@@ -469,7 +466,6 @@ mod tests {
     fn bad_csv_should_result_in_error() {
         let static_fn = LoadData::new(
             PathBuf::from("../utils/test-files"),
-            PathBuf::from("../utils/test-files"),
         );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
@@ -491,7 +487,6 @@ mod tests {
     #[test]
     fn can_load_json() {
         let static_fn = LoadData::new(
-            PathBuf::from("../utils/test-files"),
             PathBuf::from("../utils/test-files"),
         );
         let mut args = HashMap::new();

@@ -7,6 +7,7 @@
 a section
 - The table of content for a page/section is now only available as the `toc` variable when
 rendering it and not anymore on the `page`/`section` variable
+- Default directory for `load_data` is now the root of the site instead of the `content` directory
 
 ### Other
 - Add support for content in multiple languages
