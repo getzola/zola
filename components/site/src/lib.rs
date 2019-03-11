@@ -536,6 +536,26 @@ impl Site {
     /// Deletes the `public` directory and builds the site
     pub fn build(&self) -> Result<()> {
         self.clean()?;
+
+        // Generate/move all assets before rendering any content
+        if let Some(ref theme) = self.config.theme {
+            let theme_path = self.base_path.join("themes").join(theme);
+            if theme_path.join("sass").exists() {
+                self.compile_sass(&theme_path)?;
+            }
+        }
+
+        if self.config.compile_sass {
+            self.compile_sass(&self.base_path)?;
+        }
+
+        self.process_images()?;
+        self.copy_static_directories()?;
+
+        if self.config.build_search_index {
+            self.build_search_index()?;
+        }
+
         // Render aliases first to allow overwriting
         self.render_aliases()?;
         self.render_sections()?;
@@ -569,24 +589,6 @@ impl Site {
         self.render_404()?;
         self.render_robots()?;
         self.render_taxonomies()?;
-
-        if let Some(ref theme) = self.config.theme {
-            let theme_path = self.base_path.join("themes").join(theme);
-            if theme_path.join("sass").exists() {
-                self.compile_sass(&theme_path)?;
-            }
-        }
-
-        if self.config.compile_sass {
-            self.compile_sass(&self.base_path)?;
-        }
-
-        self.process_images()?;
-        self.copy_static_directories()?;
-
-        if self.config.build_search_index {
-            self.build_search_index()?;
-        }
 
         Ok(())
     }
