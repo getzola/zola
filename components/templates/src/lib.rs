@@ -35,7 +35,6 @@ lazy_static! {
             ("__zola_builtins/rss.xml", include_str!("builtins/rss.xml")),
             ("__zola_builtins/sitemap.xml", include_str!("builtins/sitemap.xml")),
             ("__zola_builtins/robots.txt", include_str!("builtins/robots.txt")),
-            ("__zola_builtins/split_sitemap.xml", include_str!("builtins/split_sitemap.xml")),
             ("__zola_builtins/split_sitemap_index.xml", include_str!("builtins/split_sitemap_index.xml")),
             ("__zola_builtins/anchor-link.html", include_str!("builtins/anchor-link.html")),
             (

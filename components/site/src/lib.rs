@@ -863,49 +863,46 @@ impl Site {
             taxonomies.push(terms);
         }
 
-        // Count total number of urls to include in sitemap
-        let total_number = pages.len() + sections.len() + taxonomies.len();
+        // Group all sitemap entries in one vector
+        let mut all_sitemap_entries = Vec::new();
+        all_sitemap_entries.append(&mut pages);
+        all_sitemap_entries.append(&mut sections);
+        for terms in taxonomies {
+            let mut terms = terms;
+            all_sitemap_entries.append(&mut terms);
+        }
+
+        // Count total number of sitemap entries to include in sitemap
+        let total_number = all_sitemap_entries.len();
         let sitemap_limit = 30000;
 
         if total_number < sitemap_limit {
-            // Create one sitemap with all pages, sections and taxonomies
+            // Create single sitemap
             let mut context = Context::new();
-            context.insert("pages", &pages);
-            context.insert("sections", &sections);
-            context.insert("taxonomies", &taxonomies);
+            context.insert("sitemap_entries", &all_sitemap_entries);
             let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
             create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
-        } else {
-            // Split the sitemap and reference all sitemaps in a main sitemap
-
-            // Group all sitemap entries in one vector
-            let mut all_sitemap_entries = Vec::new();
-            all_sitemap_entries.append(&mut pages);
-            all_sitemap_entries.append(&mut sections);
-            for terms in taxonomies {
-                let mut terms = terms;
-                all_sitemap_entries.append(&mut terms);
-            }
-            
-            // Slice the vector in chunks and create sitemap file for each
-            let mut sitemap_index = Vec::new();
-            for (i, chunk) in all_sitemap_entries.chunks(sitemap_limit).enumerate() {
-                let mut context = Context::new();
-                context.insert("chunk", &chunk);
-                let sitemap = &render_template("split_sitemap.xml", &self.tera, context, &self.config.theme)?;
-                let file_name = format!("sitemap{}.xml", i+1);
-                create_file(&self.output_path.join(&file_name), sitemap)?;
-                let mut sitemap_url:String = self.config.make_permalink(&file_name);
-                sitemap_url.pop(); // Remove trailing slash
-                sitemap_index.push(sitemap_url);
-            }
-            // Create main sitemap
-            let mut main_context = Context::new();
-            main_context.insert("sitemaps", &sitemap_index);
-            let sitemap = &render_template("split_sitemap_index.xml", &self.tera, main_context, &self.config.theme)?;
-            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;  
+            return Ok(())
         }
-
+        
+        // Create multiple sitemaps (max 30000 urls each)
+        let mut sitemap_index = Vec::new();
+        for (i, chunk) in all_sitemap_entries.chunks(sitemap_limit).enumerate() {
+            let mut context = Context::new();
+            context.insert("sitemap_entries", &chunk);
+            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let file_name = format!("sitemap{}.xml", i+1);
+            create_file(&self.output_path.join(&file_name), sitemap)?;
+            let mut sitemap_url:String = self.config.make_permalink(&file_name);
+            sitemap_url.pop(); // Remove trailing slash
+            sitemap_index.push(sitemap_url);
+        }
+        // Create main sitemap that reference numbered sitemaps
+        let mut main_context = Context::new();
+        main_context.insert("sitemaps", &sitemap_index);
+        let sitemap = &render_template("split_sitemap_index.xml", &self.tera, main_context, &self.config.theme)?;
+        create_file(&self.output_path.join("sitemap.xml"), sitemap)?;  
+        
         Ok(())
     }
 
