@@ -788,8 +788,6 @@ impl Site {
     pub fn render_sitemap(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let mut context = Context::new();
-
         let mut pages = self
             .library
             .read()
@@ -806,7 +804,6 @@ impl Site {
             })
             .collect::<Vec<_>>();
         pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.insert("pages", &pages);
 
         let mut sections = self
             .library
@@ -835,7 +832,6 @@ impl Site {
             }
         }
         sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
-        context.insert("sections", &sections);
 
         let mut taxonomies = vec![];
         for taxonomy in &self.taxonomies {
@@ -869,13 +865,46 @@ impl Site {
             taxonomies.push(terms);
         }
 
-        context.insert("taxonomies", &taxonomies);
-        context.insert("config", &self.config);
+        // Group all sitemap entries in one vector
+        let mut all_sitemap_entries = Vec::new();
+        all_sitemap_entries.append(&mut pages);
+        all_sitemap_entries.append(&mut sections);
+        for terms in taxonomies {
+            let mut terms = terms;
+            all_sitemap_entries.append(&mut terms);
+        }
 
-        let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+        // Count total number of sitemap entries to include in sitemap
+        let total_number = all_sitemap_entries.len();
+        let sitemap_limit = 30000;
 
-        create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
-
+        if total_number < sitemap_limit {
+            // Create single sitemap
+            let mut context = Context::new();
+            context.insert("sitemap_entries", &all_sitemap_entries);
+            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+            return Ok(())
+        }
+        
+        // Create multiple sitemaps (max 30000 urls each)
+        let mut sitemap_index = Vec::new();
+        for (i, chunk) in all_sitemap_entries.chunks(sitemap_limit).enumerate() {
+            let mut context = Context::new();
+            context.insert("sitemap_entries", &chunk);
+            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let file_name = format!("sitemap{}.xml", i+1);
+            create_file(&self.output_path.join(&file_name), sitemap)?;
+            let mut sitemap_url:String = self.config.make_permalink(&file_name);
+            sitemap_url.pop(); // Remove trailing slash
+            sitemap_index.push(sitemap_url);
+        }
+        // Create main sitemap that reference numbered sitemaps
+        let mut main_context = Context::new();
+        main_context.insert("sitemaps", &sitemap_index);
+        let sitemap = &render_template("split_sitemap_index.xml", &self.tera, main_context, &self.config.theme)?;
+        create_file(&self.output_path.join("sitemap.xml"), sitemap)?;  
+        
         Ok(())
     }
 
