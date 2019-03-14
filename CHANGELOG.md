@@ -19,6 +19,7 @@ rendering it and not anymore on the `page`/`section` variable
 - Fix using inline styles in headers
 - Fix sections with render=false being shown in sitemap
 - Sitemap is now split when there are more than 30 000  links in it
+- Add link to sitemap in robots.txt
 
 
 ## 0.5.1 (2018-12-14)
