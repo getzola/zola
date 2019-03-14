@@ -19,7 +19,7 @@ extern crate utils;
 #[cfg(test)]
 extern crate tempfile;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{copy, create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
@@ -42,7 +42,7 @@ use utils::templates::{render_template, rewrite_theme_paths};
 
 /// The sitemap only needs links and potentially date so we trim down
 /// all pages to only that
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Eq, PartialEq, Hash)]
 struct SitemapEntry {
     permalink: String,
     date: Option<String>,
@@ -788,7 +788,7 @@ impl Site {
     pub fn render_sitemap(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let mut pages = self
+        let pages = self
             .library
             .read()
             .unwrap()
@@ -803,7 +803,6 @@ impl Site {
                 SitemapEntry::new(p.permalink.clone(), date)
             })
             .collect::<Vec<_>>();
-        pages.sort_by(|a, b| a.permalink.cmp(&b.permalink));
 
         let mut sections = self
             .library
@@ -831,7 +830,6 @@ impl Site {
                 sections.push(SitemapEntry::new(permalink, None))
             }
         }
-        sections.sort_by(|a, b| a.permalink.cmp(&b.permalink));
 
         let mut taxonomies = vec![];
         for taxonomy in &self.taxonomies {
@@ -861,17 +859,21 @@ impl Site {
                 }
             }
 
-            terms.sort_by(|a, b| a.permalink.cmp(&b.permalink));
             taxonomies.push(terms);
         }
 
-        // Group all sitemap entries in one vector
-        let mut all_sitemap_entries = Vec::new();
-        all_sitemap_entries.append(&mut pages);
-        all_sitemap_entries.append(&mut sections);
+
+        let mut all_sitemap_entries = HashSet::new();
+        for p in pages {
+            all_sitemap_entries.insert(p);
+        }
+        for s in sections {
+            all_sitemap_entries.insert(s);
+        }
         for terms in taxonomies {
-            let mut terms = terms;
-            all_sitemap_entries.append(&mut terms);
+            for term in terms {
+                all_sitemap_entries.insert(term);
+            }
         }
 
         // Count total number of sitemap entries to include in sitemap
@@ -889,7 +891,7 @@ impl Site {
 
         // Create multiple sitemaps (max 30000 urls each)
         let mut sitemap_index = Vec::new();
-        for (i, chunk) in all_sitemap_entries.chunks(sitemap_limit).enumerate() {
+        for (i, chunk) in all_sitemap_entries.iter().collect::<Vec<_>>().chunks(sitemap_limit).enumerate() {
             let mut context = Context::new();
             context.insert("entries", &chunk);
             let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
