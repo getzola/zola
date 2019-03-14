@@ -8,6 +8,7 @@ a section
 - The table of content for a page/section is now only available as the `toc` variable when
 rendering it and not anymore on the `page`/`section` variable
 - Default directory for `load_data` is now the root of the site instead of the `content` directory
+- Change variable sent to the sitemap template, see documentation for details
 
 ### Other
 - Add support for content in multiple languages
@@ -17,6 +18,7 @@ rendering it and not anymore on the `page`/`section` variable
 - Add Dracula syntax highlighting theme
 - Fix using inline styles in headers
 - Fix sections with render=false being shown in sitemap
+- Sitemap is now split when there are more than 30 000  links in it
 
 
 ## 0.5.1 (2018-12-14)
