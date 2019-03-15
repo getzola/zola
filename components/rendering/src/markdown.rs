@@ -1,5 +1,3 @@
-use std::borrow::Cow::{Borrowed, Owned};
-
 use pulldown_cmark as cmark;
 use slug::slugify;
 use syntect::easy::HighlightLines;
@@ -16,7 +14,7 @@ use table_of_contents::{make_table_of_contents, Header};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
 
-use self::cmark::{Event, Options, Parser, Tag};
+use self::cmark::{Event, Options, Parser, Tag, LinkType};
 
 const CONTINUE_READING: &str =
     "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
@@ -67,7 +65,10 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
-fn fix_link(link: &str, context: &RenderContext) -> Result<String> {
+fn fix_link(link_type: LinkType, link: &str, context: &RenderContext) -> Result<String> {
+    if link_type == LinkType::Email {
+        return Ok(link.to_string());
+    }
     // A few situations here:
     // - it could be a relative link (starting with `./`)
     // - it could be a link to a co-located asset
@@ -166,7 +167,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             };
                             //let highlighted = &highlighter.highlight(&text, ss);
                             let html = styled_line_to_highlighted_html(&highlighted, background);
-                            return Event::Html(Owned(html));
+                            return Event::Html(html.into());
                         }
 
                         // Business as usual
@@ -174,7 +175,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     }
                     Event::Start(Tag::CodeBlock(ref info)) => {
                         if !context.config.highlight_code {
-                            return Event::Html(Borrowed("<pre><code>"));
+                            return Event::Html("<pre><code>".into());
                         }
 
                         let theme = &THEME_SET.themes[&context.config.highlight_theme];
@@ -186,40 +187,42 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             .unwrap_or(::syntect::highlighting::Color::WHITE);
                         background = IncludeBackground::IfDifferent(color);
                         let snippet = start_highlighted_html_snippet(theme);
-                        Event::Html(Owned(snippet.0))
+                        Event::Html(snippet.0.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
                         if !context.config.highlight_code {
-                            return Event::Html(Borrowed("</code></pre>\n"));
+                            return Event::Html("</code></pre>\n".into());
                         }
                         // reset highlight and close the code block
                         highlighter = None;
-                        Event::Html(Borrowed("</pre>"))
+                        Event::Html("</pre>".into())
                     }
-                    Event::Start(Tag::Image(src, title)) => {
+                    Event::Start(Tag::Image(link_type, src, title)) => {
                         if is_colocated_asset_link(&src) {
+                            let link = format!("{}{}", context.current_page_permalink, &*src);
                             return Event::Start(Tag::Image(
-                                Owned(format!("{}{}", context.current_page_permalink, src)),
+                                link_type,
+                                link.into(),
                                 title,
                             ));
                         }
 
-                        Event::Start(Tag::Image(src, title))
+                        Event::Start(Tag::Image(link_type, src, title))
                     }
-                    Event::Start(Tag::Link(link, title)) => {
-                        let fixed_link = match fix_link(&link, context) {
+                    Event::Start(Tag::Link(link_type, link, title)) => {
+                        let fixed_link = match fix_link(link_type, &link, context) {
                             Ok(fixed_link) => fixed_link,
                             Err(err) => {
                                 error = Some(err);
-                                return Event::Html(Borrowed(""));
+                                return Event::Html("".into());
                             }
                         };
 
-                        Event::Start(Tag::Link(Owned(fixed_link), title))
+                        Event::Start(Tag::Link(link_type, fixed_link.into(), title))
                     }
                     Event::Html(ref markup) if markup.contains("<!-- more -->") => {
                         has_summary = true;
-                        Event::Html(Borrowed(CONTINUE_READING))
+                        Event::Html(CONTINUE_READING.into())
                     }
                     _ => event,
                 }
@@ -239,7 +242,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
             // insert `id` to the tag
             let html = format!("<h{lvl} id=\"{id}\">", lvl = header_ref.level, id = id);
-            events[start_idx] = Event::Html(Owned(html));
+            events[start_idx] = Event::Html(html.into());
 
             // generate anchors and places to insert them
             if context.insert_anchor != InsertAnchor::None {
@@ -258,7 +261,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     &None,
                 )
                 .map_err(|e| Error::chain("Failed to render anchor link template", e))?;
-                anchors_to_insert.push((anchor_idx, Event::Html(Owned(anchor_link))));
+                anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
             }
 
             // record header to make table of contents

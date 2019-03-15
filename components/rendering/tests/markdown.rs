@@ -44,7 +44,7 @@ fn can_highlight_code_block_no_lang() {
     let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b;\">\n<span style=\"color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"color:#c0c5ce;\">$ ping\n</span></pre>"
+        "<pre style=\"background-color:#2b303b;\">\n<span style=\"color:#c0c5ce;\">$ gutenberg server\n$ ping\n</span></pre>"
     );
 }
 
@@ -729,17 +729,25 @@ fn can_handle_summaries() {
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(
-        "Hello [world]\n\n<!-- more -->\n\nBla bla\n\n[world]: https://vincent.is/about/",
+        r#"
+Hello [My site][world]
+
+<!-- more -->
+
+Bla bla
+
+[world]: https://vincentprouillet.com
+"#,
         &context,
     )
     .unwrap();
     assert_eq!(
         res.body,
-        "<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
+        "<p>Hello <a href=\"https://vincentprouillet.com\">My site</a></p>\n<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
     );
     assert_eq!(
         res.summary_len,
-        Some("<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n".len())
+        Some("<p>Hello <a href=\"https://vincentprouillet.com/\">My site</a></p>".len())
     );
 }
 
