@@ -14,7 +14,7 @@ use table_of_contents::{make_table_of_contents, Header};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
 
-use self::cmark::{Event, Options, Parser, Tag, LinkType};
+use self::cmark::{Event, LinkType, Options, Parser, Tag};
 
 const CONTINUE_READING: &str =
     "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
@@ -200,11 +200,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     Event::Start(Tag::Image(link_type, src, title)) => {
                         if is_colocated_asset_link(&src) {
                             let link = format!("{}{}", context.current_page_permalink, &*src);
-                            return Event::Start(Tag::Image(
-                                link_type,
-                                link.into(),
-                                title,
-                            ));
+                            return Event::Start(Tag::Image(link_type, link.into(), title));
                         }
 
                         Event::Start(Tag::Image(link_type, src, title))

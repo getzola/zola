@@ -246,10 +246,12 @@ impl Site {
             self.add_page(p, false)?;
         }
 
+        // taxonomy Tera fns are loaded in `register_early_global_fns`
+        // so we do need to populate it first.
+        self.populate_taxonomies()?;
         self.register_early_global_fns();
         self.populate_sections();
         self.render_markdown()?;
-        self.populate_taxonomies()?;
         self.register_tera_global_fns();
 
         Ok(())
@@ -347,10 +349,7 @@ impl Site {
             "resize_image",
             global_fns::ResizeImage::new(self.imageproc.clone()),
         );
-        self.tera.register_function(
-            "load_data",
-            global_fns::LoadData::new(self.base_path.clone()),
-        );
+        self.tera.register_function("load_data", global_fns::LoadData::new(self.base_path.clone()));
         self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
         self.tera.register_function(
             "get_taxonomy_url",
@@ -862,7 +861,6 @@ impl Site {
             taxonomies.push(terms);
         }
 
-
         let mut all_sitemap_entries = HashSet::new();
         for p in pages {
             all_sitemap_entries.insert(p);
@@ -886,25 +884,32 @@ impl Site {
             context.insert("entries", &all_sitemap_entries);
             let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
             create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
-            return Ok(())
+            return Ok(());
         }
 
         // Create multiple sitemaps (max 30000 urls each)
         let mut sitemap_index = Vec::new();
-        for (i, chunk) in all_sitemap_entries.iter().collect::<Vec<_>>().chunks(sitemap_limit).enumerate() {
+        for (i, chunk) in
+            all_sitemap_entries.iter().collect::<Vec<_>>().chunks(sitemap_limit).enumerate()
+        {
             let mut context = Context::new();
             context.insert("entries", &chunk);
             let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
-            let file_name = format!("sitemap{}.xml", i+1);
+            let file_name = format!("sitemap{}.xml", i + 1);
             create_file(&self.output_path.join(&file_name), sitemap)?;
-            let mut sitemap_url:String = self.config.make_permalink(&file_name);
+            let mut sitemap_url: String = self.config.make_permalink(&file_name);
             sitemap_url.pop(); // Remove trailing slash
             sitemap_index.push(sitemap_url);
         }
         // Create main sitemap that reference numbered sitemaps
         let mut main_context = Context::new();
         main_context.insert("sitemaps", &sitemap_index);
-        let sitemap = &render_template("split_sitemap_index.xml", &self.tera, main_context, &self.config.theme)?;
+        let sitemap = &render_template(
+            "split_sitemap_index.xml",
+            &self.tera,
+            main_context,
+            &self.config.theme,
+        )?;
         create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
 
         Ok(())

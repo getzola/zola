@@ -146,34 +146,37 @@ Gets the whole taxonomy of a specific kind.
 ```
 
 ### `load_data`
-Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*.
+Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*. 
+Any other file type will be loaded as plain text.
 
-The `path` argument specifies the path to the data file relative to your content directory.
+The `path` argument specifies the path to the data file relative to your base directory, where your `config.toml` is.
 As a security precaution, If this file is outside of the main site directory, your site will fail to build.
 
 ```jinja2
-{% set data = load_data(path="blog/story/data.toml") %}
+{% set data = load_data(path="content/blog/story/data.toml") %}
 ```
 
 The optional `format` argument allows you to specify and override which data type is contained
-within the file specified in the `path` argument. Valid entries are *"toml"*, *"json"*, *"csv"*
-or *"plain"*. If the `format` argument isn't specified, then the paths extension is used.
+within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`
+or `plain`. If the `format` argument isn't specified, then the paths extension is used.
 
 ```jinja2
-{% set data = load_data(path="blog/story/data.txt", format="json") %}
+{% set data = load_data(path="content/blog/story/data.txt", format="json") %}
 ```
 
+Use the `plain` format for when your file has a toml/json/csv extension but you want to load it as plain text.
+
 For *toml* and *json* the data is loaded into a structure matching the original data file,
-however for *csv* there is no native notion of such a structure. Instead the data is seperated
+however for *csv* there is no native notion of such a structure. Instead the data is separated
 into a data structure containing *headers* and *records*. See the example below to see
 how this works.
 
 In the template:
 ```jinja2
-{% set data = load_data(path="blog/story/data.csv") %}
+{% set data = load_data(path="content/blog/story/data.csv") %}
 ```
 
-In the *blog/story/data.csv* file:
+In the *content/blog/story/data.csv* file:
 ```csv
 Number, Title
 1,Gutenberg
@@ -211,7 +214,9 @@ By default, the response body will be returned with no parsing. This can be chan
 
 #### Data Caching
 
-Data file loading and remote requests are cached in memory during build, so multiple requests aren't made to the same endpoint. URLs are cached based on the URL, and data files are cached based on the files modified time. The format is also taken into account when caching, so a request will be sent twice if it's loaded with 2 different formats.
+Data file loading and remote requests are cached in memory during build, so multiple requests aren't made to the same endpoint. 
+URLs are cached based on the URL, and data files are cached based on the files modified time. 
+The format is also taken into account when caching, so a request will be sent twice if it's loaded with 2 different formats.
 
 ### `trans`
 Gets the translation of the given `key`, for the `default_language` or the `language given

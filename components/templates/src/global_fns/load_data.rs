@@ -151,7 +151,7 @@ fn get_output_format_from_args(
     let format_arg = optional_arg!(
         String,
         args.get("format"),
-        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
+        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, plain)"
     );
 
     if let Some(format) = format_arg {
@@ -159,11 +159,7 @@ fn get_output_format_from_args(
     }
 
     let from_extension = if let DataSource::Path(path) = data_source {
-        let extension_result: Result<&str> =
-            path.extension().map(|extension| extension.to_str().unwrap()).ok_or_else(|| {
-                format!("Could not determine format for {} from extension", path.display()).into()
-            });
-        extension_result?
+        path.extension().map(|extension| extension.to_str().unwrap()).unwrap_or_else(|| "plain")
     } else {
         "plain"
     };
@@ -332,8 +328,7 @@ mod tests {
 
     #[test]
     fn fails_when_missing_file() {
-        let static_fn =
-            LoadData::new(PathBuf::from("../utils"));
+        let static_fn = LoadData::new(PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
         let result = static_fn.call(&args);
@@ -343,8 +338,7 @@ mod tests {
 
     #[test]
     fn cant_load_outside_content_dir() {
-        let static_fn =
-            LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../README.md").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -421,9 +415,7 @@ mod tests {
 
     #[test]
     fn can_load_toml() {
-        let static_fn = LoadData::new(
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
@@ -442,9 +434,7 @@ mod tests {
 
     #[test]
     fn can_load_csv() {
-        let static_fn = LoadData::new(
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.csv").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
@@ -464,9 +454,7 @@ mod tests {
     // Test points to bad csv file with uneven row lengths
     #[test]
     fn bad_csv_should_result_in_error() {
-        let static_fn = LoadData::new(
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
         let result = static_fn.call(&args.clone());
@@ -486,9 +474,7 @@ mod tests {
 
     #[test]
     fn can_load_json() {
-        let static_fn = LoadData::new(
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.json").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();

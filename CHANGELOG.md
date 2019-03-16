@@ -20,7 +20,9 @@ rendering it and not anymore on the `page`/`section` variable
 - Fix sections with render=false being shown in sitemap
 - Sitemap is now split when there are more than 30 000  links in it
 - Add link to sitemap in robots.txt
-- Markdown rendering is now fully CommonMark commpliant
+- Markdown rendering is now fully CommonMark compliant
+- `load_data` now defaults to loading file as plain text, unless `format` is passed
+or the extension matches csv/toml/json
 
 
 ## 0.5.1 (2018-12-14)
