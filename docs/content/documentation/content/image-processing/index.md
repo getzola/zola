@@ -145,3 +145,9 @@ Here is the result:
 <small>
   Image attribution: Public domain, except: _06-example.jpg_: Willi Heidelbach, _07-example.jpg_: Daniel Ullrich.
 </small>
+
+
+## Get image size
+
+Sometimes when building a gallery it is useful to know the dimensions of each asset.  You can get this information with
+[get_image_metadata](./documentation/templates/overview.md#get-image-metadata) 
