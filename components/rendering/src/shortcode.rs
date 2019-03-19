@@ -58,7 +58,7 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
     for p in pair.into_inner() {
         match p.as_rule() {
             Rule::ident => {
-                name = Some(p.into_span().as_str().to_string());
+                name = Some(p.as_span().as_str().to_string());
             }
             Rule::kwarg => {
                 let mut arg_name = None;
@@ -66,7 +66,7 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
                 for p2 in p.into_inner() {
                     match p2.as_rule() {
                         Rule::ident => {
-                            arg_name = Some(p2.into_span().as_str().to_string());
+                            arg_name = Some(p2.as_span().as_str().to_string());
                         }
                         Rule::literal => {
                             arg_val = Some(parse_literal(p2));
@@ -169,7 +169,7 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
     // We have at least a `page` pair
     for p in pairs.next().unwrap().into_inner() {
         match p.as_rule() {
-            Rule::text => res.push_str(p.into_span().as_str()),
+            Rule::text => res.push_str(p.as_span().as_str()),
             Rule::inline_shortcode => {
                 let (name, args) = parse_shortcode_call(p);
                 res.push_str(&render_shortcode(&name, &args, context, None)?);
@@ -179,12 +179,12 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                 // 3 items in inner: call, body, end
                 // we don't care about the closing tag
                 let (name, args) = parse_shortcode_call(inner.next().unwrap());
-                let body = inner.next().unwrap().into_span().as_str();
+                let body = inner.next().unwrap().as_span().as_str();
                 res.push_str(&render_shortcode(&name, &args, context, Some(body))?);
             }
             Rule::ignored_inline_shortcode => {
                 res.push_str(
-                    &p.into_span().as_str().replacen("{{/*", "{{", 1).replacen("*/}}", "}}", 1),
+                    &p.as_span().as_str().replacen("{{/*", "{{", 1).replacen("*/}}", "}}", 1),
                 );
             }
             Rule::ignored_shortcode_with_body => {
@@ -192,13 +192,13 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                     match p2.as_rule() {
                         Rule::ignored_sc_body_start | Rule::ignored_sc_body_end => {
                             res.push_str(
-                                &p2.into_span()
+                                &p2.as_span()
                                     .as_str()
                                     .replacen("{%/*", "{%", 1)
                                     .replacen("*/%}", "%}", 1),
                             );
                         }
-                        Rule::text_in_ignored_body_sc => res.push_str(p2.into_span().as_str()),
+                        Rule::text_in_ignored_body_sc => res.push_str(p2.as_span().as_str()),
                         _ => unreachable!("Got something weird in an ignored shortcode: {:?}", p2),
                     }
                 }
@@ -230,7 +230,7 @@ mod tests {
                 panic!();
             }
             assert!(res.is_ok());
-            assert_eq!(res.unwrap().last().unwrap().into_span().end(), $input.len());
+            assert_eq!(res.unwrap().last().unwrap().as_span().end(), $input.len());
         };
     }
 
