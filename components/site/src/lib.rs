@@ -19,7 +19,10 @@ extern crate utils;
 #[cfg(test)]
 extern crate tempfile;
 
-use std::collections::{HashMap, HashSet};
+
+mod sitemap;
+
+use std::collections::{HashMap};
 use std::fs::{copy, create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
@@ -39,20 +42,6 @@ use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
 use utils::templates::{render_template, rewrite_theme_paths};
-
-/// The sitemap only needs links and potentially date so we trim down
-/// all pages to only that
-#[derive(Debug, Serialize, Eq, PartialEq, Hash)]
-struct SitemapEntry {
-    permalink: String,
-    date: Option<String>,
-}
-
-impl SitemapEntry {
-    pub fn new(permalink: String, date: Option<String>) -> SitemapEntry {
-        SitemapEntry { permalink, date }
-    }
-}
 
 #[derive(Debug)]
 pub struct Site {
@@ -787,98 +776,15 @@ impl Site {
     pub fn render_sitemap(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let pages = self
-            .library
-            .read()
-            .unwrap()
-            .pages_values()
-            .iter()
-            .filter(|p| !p.is_draft())
-            .map(|p| {
-                let date = match p.meta.date {
-                    Some(ref d) => Some(d.to_string()),
-                    None => None,
-                };
-                SitemapEntry::new(p.permalink.clone(), date)
-            })
-            .collect::<Vec<_>>();
-
-        let mut sections = self
-            .library
-            .read()
-            .unwrap()
-            .sections_values()
-            .iter()
-            .filter(|s| s.meta.render)
-            .map(|s| SitemapEntry::new(s.permalink.clone(), None))
-            .collect::<Vec<_>>();
-        for section in self
-            .library
-            .read()
-            .unwrap()
-            .sections_values()
-            .iter()
-            .filter(|s| s.meta.paginate_by.is_some())
-        {
-            let number_pagers = (section.pages.len() as f64
-                / section.meta.paginate_by.unwrap() as f64)
-                .ceil() as isize;
-            for i in 1..=number_pagers {
-                let permalink =
-                    format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
-                sections.push(SitemapEntry::new(permalink, None))
-            }
-        }
-
-        let mut taxonomies = vec![];
-        for taxonomy in &self.taxonomies {
-            let name = &taxonomy.kind.name;
-            let mut terms = vec![];
-            terms.push(SitemapEntry::new(self.config.make_permalink(name), None));
-            for item in &taxonomy.items {
-                terms.push(SitemapEntry::new(
-                    self.config.make_permalink(&format!("{}/{}", &name, item.slug)),
-                    None,
-                ));
-
-                if taxonomy.kind.is_paginated() {
-                    let number_pagers = (item.pages.len() as f64
-                        / taxonomy.kind.paginate_by.unwrap() as f64)
-                        .ceil() as isize;
-                    for i in 1..=number_pagers {
-                        let permalink = self.config.make_permalink(&format!(
-                            "{}/{}/{}/{}",
-                            name,
-                            item.slug,
-                            taxonomy.kind.paginate_path(),
-                            i
-                        ));
-                        terms.push(SitemapEntry::new(permalink, None))
-                    }
-                }
-            }
-
-            taxonomies.push(terms);
-        }
-
-        let mut all_sitemap_entries = HashSet::new();
-        for p in pages {
-            all_sitemap_entries.insert(p);
-        }
-        for s in sections {
-            all_sitemap_entries.insert(s);
-        }
-        for terms in taxonomies {
-            for term in terms {
-                all_sitemap_entries.insert(term);
-            }
-        }
-
-        // Count total number of sitemap entries to include in sitemap
-        let total_number = all_sitemap_entries.len();
+        let library = self.library.read().unwrap();
+        let all_sitemap_entries = sitemap::find_entries(
+            &library,
+            &self.taxonomies[..],
+            &self.config,
+        );
         let sitemap_limit = 30000;
 
-        if total_number < sitemap_limit {
+        if all_sitemap_entries.len() < sitemap_limit {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);

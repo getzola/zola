@@ -18,11 +18,12 @@ rendering it and not anymore on the `page`/`section` variable
 - Add Dracula syntax highlighting theme
 - Fix using inline styles in headers
 - Fix sections with render=false being shown in sitemap
-- Sitemap is now split when there are more than 30 000  links in it
+- Sitemap is now split when there are more than 30 000 links in it
 - Add link to sitemap in robots.txt
 - Markdown rendering is now fully CommonMark compliant
 - `load_data` now defaults to loading file as plain text, unless `format` is passed
 or the extension matches csv/toml/json
+- Sitemap entries get an additional `extra` field for pages only
 
 
 ## 0.5.1 (2018-12-14)

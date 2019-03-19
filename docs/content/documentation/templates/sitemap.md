@@ -25,6 +25,7 @@ A `SitemapEntry` has the following fields:
 ```ts
 permalink: String;
 date: String?;
+extra: Hashmap<String, Any>?;
 ```
 
 The `split_sitemap_index.xml` also gets a single variable:
