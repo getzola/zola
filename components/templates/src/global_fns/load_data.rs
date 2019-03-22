@@ -155,6 +155,9 @@ fn get_output_format_from_args(
     );
 
     if let Some(format) = format_arg {
+        if format == "plain" {
+            return Ok(OutputFormat::Plain);
+        }
         return OutputFormat::from_str(&format);
     }
 
@@ -431,6 +434,47 @@ mod tests {
                     "key": "value"
                 },
             })
+        );
+    }
+
+    #[test]
+    fn unknown_extension_defaults_to_plain() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.css").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            ".hello {}\n",
+        );
+    }
+
+    #[test]
+    fn can_override_known_extension_with_format() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.csv").unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            "Number,Title\n1,Gutenberg\n2,Printing",
+        );
+    }
+
+    #[test]
+    fn will_use_format_on_unknown_extension() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.css").unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            ".hello {}\n",
         );
     }
 
