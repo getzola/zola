@@ -66,7 +66,7 @@ pub struct Site {
 
 impl Site {
     /// Parse a site at the given path. Defaults to the current dir
-    /// Passing in a path is only used in tests
+    /// Passing in a path is possible using the `base-path` command line build option
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
         let mut config = get_config(path, config_file);

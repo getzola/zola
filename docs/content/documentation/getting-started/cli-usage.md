@@ -36,6 +36,14 @@ $ zola build --base-url $DEPLOY_URL
 This is useful for example when you want to deploy previews of a site to a dynamic URL, such as Netlify
 deploy previews.
 
+You can override the default `base_path` by passing a new directory to the `base-path` flag. If no `base-path` flag
+is provided, zola defaults to your current working directory. This is useful if your zola project is located in
+a different directory from where you're executing zola from.
+
+```bash
+$ zola build --base-path /path/to/zola/site
+```
+
 You can override the default output directory 'public' by passing a other value to the `output-dir` flag.
 
 ```bash
@@ -67,6 +75,7 @@ $ zola serve --interface 0.0.0.0
 $ zola serve --interface 0.0.0.0 --port 2000
 $ zola serve --interface 0.0.0.0 --base-url 127.0.0.1
 $ zola serve --interface 0.0.0.0 --port 2000 --output-dir www/public
+$ zola serve --interface 0.0.0.0 --port 2000 --base-path mysite/ --output-dir mysite/www/public
 $ zola serve --watch-only
 ```
 
