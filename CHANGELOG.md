@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0 (unreleased)
+## 0.6.0 (2019-03-25)
 
 ### Breaking
 - `earlier/later` and `lighter/heavier` are not set anymore on pages when rendering
