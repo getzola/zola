@@ -15,18 +15,19 @@ use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
 use image::jpeg::JPEGEncoder;
+use image::png::PNGEncoder;
 use image::{FilterType, GenericImageView};
 use rayon::prelude::*;
 use regex::Regex;
 
-use errors::{Result, ResultExt};
+use errors::{Error, Result};
 use utils::fs as ufs;
 
 static RESIZED_SUBDIR: &'static str = "processed_images";
 
 lazy_static! {
     pub static ref RESIZED_FILENAME: Regex =
-        Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.]jpg"#).unwrap();
+        Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png)"#).unwrap();
 }
 
 /// Describes the precise kind of a resize operation
@@ -136,12 +137,78 @@ impl Hash for ResizeOp {
     }
 }
 
+/// Thumbnail image format
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Format {
+    /// JPEG, The `u8` argument is JPEG quality (in percent).
+    Jpeg(u8),
+    /// PNG
+    Png,
+}
+
+impl Format {
+    pub fn from_args(source: &str, format: &str, quality: u8) -> Result<Format> {
+        use Format::*;
+
+        assert!(quality > 0 && quality <= 100, "Jpeg quality must be within the range [1; 100]");
+
+        match format {
+            "auto" => match Self::is_lossy(source) {
+                Some(true) => Ok(Jpeg(quality)),
+                Some(false) => Ok(Png),
+                None => Err(format!("Unsupported image file: {}", source).into()),
+            },
+            "jpeg" | "jpg" => Ok(Jpeg(quality)),
+            "png" => Ok(Png),
+            _ => Err(format!("Invalid image format: {}", format).into()),
+        }
+    }
+
+    /// Looks at file's extension and, if it's a supported image format, returns whether the format is lossless
+    pub fn is_lossy<P: AsRef<Path>>(p: P) -> Option<bool> {
+        p.as_ref()
+            .extension()
+            .and_then(|s| s.to_str())
+            .map(|ext| match ext.to_lowercase().as_str() {
+                "jpg" | "jpeg" => Some(true),
+                "png" => Some(false),
+                "gif" => Some(false),
+                "bmp" => Some(false),
+                _ => None,
+            })
+            .unwrap_or(None)
+    }
+
+    fn extension(&self) -> &str {
+        // Kept in sync with RESIZED_FILENAME and op_filename
+        use Format::*;
+
+        match *self {
+            Png => "png",
+            Jpeg(_) => "jpg",
+        }
+    }
+}
+
+impl Hash for Format {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        use Format::*;
+
+        let q = match *self {
+            Png => 0,
+            Jpeg(q) => q,
+        };
+
+        hasher.write_u8(q);
+    }
+}
+
 /// Holds all data needed to perform a resize operation
 #[derive(Debug, PartialEq, Eq)]
 pub struct ImageOp {
     source: String,
     op: ResizeOp,
-    quality: u8,
+    format: Format,
     /// Hash of the above parameters
     hash: u64,
     /// If there is a hash collision with another ImageOp, this contains a sequential ID > 1
@@ -152,14 +219,14 @@ pub struct ImageOp {
 }
 
 impl ImageOp {
-    pub fn new(source: String, op: ResizeOp, quality: u8) -> ImageOp {
+    pub fn new(source: String, op: ResizeOp, format: Format) -> ImageOp {
         let mut hasher = DefaultHasher::new();
         hasher.write(source.as_ref());
         op.hash(&mut hasher);
-        hasher.write_u8(quality);
+        format.hash(&mut hasher);
         let hash = hasher.finish();
 
-        ImageOp { source, op, quality, hash, collision_id: 0 }
+        ImageOp { source, op, format, hash, collision_id: 0 }
     }
 
     pub fn from_args(
@@ -167,10 +234,12 @@ impl ImageOp {
         op: &str,
         width: Option<u32>,
         height: Option<u32>,
+        format: &str,
         quality: u8,
     ) -> Result<ImageOp> {
         let op = ResizeOp::from_args(op, width, height)?;
-        Ok(Self::new(source, op, quality))
+        let format = Format::from_args(&source, format, quality)?;
+        Ok(Self::new(source, op, format))
     }
 
     fn perform(&self, content_path: &Path, target_path: &Path) -> Result<()> {
@@ -184,7 +253,7 @@ impl ImageOp {
         let mut img = image::open(&src_path)?;
         let (img_w, img_h) = img.dimensions();
 
-        const RESIZE_FILTER: FilterType = FilterType::Gaussian;
+        const RESIZE_FILTER: FilterType = FilterType::Lanczos3;
         const RATIO_EPSILLION: f32 = 0.1;
 
         let img = match self.op {
@@ -223,9 +292,19 @@ impl ImageOp {
         };
 
         let mut f = File::create(target_path)?;
-        let mut enc = JPEGEncoder::new_with_quality(&mut f, self.quality);
         let (img_w, img_h) = img.dimensions();
-        enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
+
+        match self.format {
+            Format::Png => {
+                let mut enc = PNGEncoder::new(&mut f);
+                enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
+            }
+            Format::Jpeg(q) => {
+                let mut enc = JPEGEncoder::new_with_quality(&mut f, q);
+                enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
+            }
+        }
+
         Ok(())
     }
 }
@@ -323,20 +402,21 @@ impl Processor {
         collision_id
     }
 
-    fn op_filename(hash: u64, collision_id: u32) -> String {
+    fn op_filename(hash: u64, collision_id: u32, format: Format) -> String {
         // Please keep this in sync with RESIZED_FILENAME
         assert!(collision_id < 256, "Unexpectedly large number of collisions: {}", collision_id);
-        format!("{:016x}{:02x}.jpg", hash, collision_id)
+        format!("{:016x}{:02x}.{}", hash, collision_id, format.extension())
     }
 
-    fn op_url(&self, hash: u64, collision_id: u32) -> String {
-        format!("{}/{}", &self.resized_url, Self::op_filename(hash, collision_id))
+    fn op_url(&self, hash: u64, collision_id: u32, format: Format) -> String {
+        format!("{}/{}", &self.resized_url, Self::op_filename(hash, collision_id, format))
     }
 
     pub fn insert(&mut self, img_op: ImageOp) -> String {
         let hash = img_op.hash;
+        let format = img_op.format;
         let collision_id = self.insert_with_collisions(img_op);
-        self.op_url(hash, collision_id)
+        self.op_url(hash, collision_id, format)
     }
 
     pub fn prune(&self) -> Result<()> {
@@ -373,25 +453,11 @@ impl Processor {
         self.img_ops
             .par_iter()
             .map(|(hash, op)| {
-                let target = self.resized_path.join(Self::op_filename(*hash, op.collision_id));
+                let target =
+                    self.resized_path.join(Self::op_filename(*hash, op.collision_id, op.format));
                 op.perform(&self.content_path, &target)
-                    .chain_err(|| format!("Failed to process image: {}", op.source))
+                    .map_err(|e| Error::chain(format!("Failed to process image: {}", op.source), e))
             })
             .collect::<Result<()>>()
     }
-}
-
-/// Looks at file's extension and returns whether it's a supported image format
-pub fn file_is_img<P: AsRef<Path>>(p: P) -> bool {
-    p.as_ref()
-        .extension()
-        .and_then(|s| s.to_str())
-        .map(|ext| match ext.to_lowercase().as_str() {
-            "jpg" | "jpeg" => true,
-            "png" => true,
-            "gif" => true,
-            "bmp" => true,
-            _ => false,
-        })
-        .unwrap_or(false)
 }

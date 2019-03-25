@@ -4,7 +4,7 @@ use slotmap::Key;
 use tera::{to_value, Context, Tera, Value};
 
 use config::Config;
-use errors::{Result, ResultExt};
+use errors::{Error, Result};
 use utils::templates::render_template;
 
 use content::{Section, SerializingPage, SerializingSection};
@@ -221,13 +221,14 @@ impl<'a> Paginator<'a> {
         context.insert("current_path", &pager.path);
         context.insert("paginator", &self.build_paginator_context(pager));
 
-        render_template(&self.template, tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render pager {}", pager.index))
+        render_template(&self.template, tera, context, &config.theme)
+            .map_err(|e| Error::chain(format!("Failed to render pager {}", pager.index), e))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
     use tera::to_value;
 
     use config::Taxonomy as TaxonomyConfig;
@@ -242,7 +243,7 @@ mod tests {
         let mut f = SectionFrontMatter::default();
         f.paginate_by = Some(2);
         f.paginate_path = "page".to_string();
-        let mut s = Section::new("content/_index.md", f);
+        let mut s = Section::new("content/_index.md", f, &PathBuf::new());
         if !is_index {
             s.path = "posts/".to_string();
             s.permalink = "https://vincent.is/posts/".to_string();
@@ -254,7 +255,7 @@ mod tests {
     }
 
     fn create_library(is_index: bool) -> (Section, Library) {
-        let mut library = Library::new(3, 0);
+        let mut library = Library::new(3, 0, false);
         library.insert_page(Page::default());
         library.insert_page(Page::default());
         library.insert_page(Page::default());

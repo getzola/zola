@@ -98,25 +98,27 @@ fn find_page_front_matter_changes(
 
 /// Handles a path deletion: could be a page, a section, a folder
 fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> {
-    // Ignore the event if this path was not known
-    if !site.library.contains_section(&path.to_path_buf())
-        && !site.library.contains_page(&path.to_path_buf())
     {
-        return Ok(());
+        let mut library = site.library.write().unwrap();
+        // Ignore the event if this path was not known
+        if !library.contains_section(&path.to_path_buf())
+            && !library.contains_page(&path.to_path_buf())
+        {
+            return Ok(());
+        }
+
+        if is_section {
+            if let Some(s) = library.remove_section(&path.to_path_buf()) {
+                site.permalinks.remove(&s.file.relative);
+            }
+        } else if let Some(p) = library.remove_page(&path.to_path_buf()) {
+            site.permalinks.remove(&p.file.relative);
+        }
     }
 
-    if is_section {
-        if let Some(s) = site.library.remove_section(&path.to_path_buf()) {
-            site.permalinks.remove(&s.file.relative);
-        }
-    } else if let Some(p) = site.library.remove_page(&path.to_path_buf()) {
-        site.permalinks.remove(&p.file.relative);
-
-        if !p.meta.taxonomies.is_empty() {
-            site.populate_taxonomies()?;
-        }
-    }
-
+    // We might have delete the root _index.md so ensure we have at least the default one
+    // before populating
+    site.create_default_index_sections()?;
     site.populate_sections();
     site.populate_taxonomies()?;
     // Ensure we have our fn updated so it doesn't contain the permalink(s)/section/page deleted
@@ -129,35 +131,41 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
 
 /// Handles a `_index.md` (a section) being edited in some ways
 fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
-    let section = Section::from_file(path, &site.config)?;
+    let section = Section::from_file(path, &site.config, &site.base_path)?;
     let pathbuf = path.to_path_buf();
     match site.add_section(section, true)? {
         // Updating a section
         Some(prev) => {
             site.populate_sections();
+            {
+                let library = site.library.read().unwrap();
 
-            if site.library.get_section(&pathbuf).unwrap().meta == prev.meta {
-                // Front matter didn't change, only content did
-                // so we render only the section page, not its pages
-                return site.render_section(&site.library.get_section(&pathbuf).unwrap(), false);
+                if library.get_section(&pathbuf).unwrap().meta == prev.meta {
+                    // Front matter didn't change, only content did
+                    // so we render only the section page, not its pages
+                    return site.render_section(&library.get_section(&pathbuf).unwrap(), false);
+                }
             }
 
             // Front matter changed
-            for changes in find_section_front_matter_changes(
-                &site.library.get_section(&pathbuf).unwrap().meta,
+            let changes = find_section_front_matter_changes(
+                &site.library.read().unwrap().get_section(&pathbuf).unwrap().meta,
                 &prev.meta,
-            ) {
+            );
+            for change in changes {
                 // Sort always comes first if present so the rendering will be fine
-                match changes {
+                match change {
                     SectionChangesNeeded::Sort => {
                         site.register_tera_global_fns();
                     }
-                    SectionChangesNeeded::Render => {
-                        site.render_section(&site.library.get_section(&pathbuf).unwrap(), false)?
-                    }
-                    SectionChangesNeeded::RenderWithPages => {
-                        site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)?
-                    }
+                    SectionChangesNeeded::Render => site.render_section(
+                        &site.library.read().unwrap().get_section(&pathbuf).unwrap(),
+                        false,
+                    )?,
+                    SectionChangesNeeded::RenderWithPages => site.render_section(
+                        &site.library.read().unwrap().get_section(&pathbuf).unwrap(),
+                        true,
+                    )?,
                     // not a common enough operation to make it worth optimizing
                     SectionChangesNeeded::Delete | SectionChangesNeeded::Transparent => {
                         site.build()?;
@@ -170,49 +178,54 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
         None => {
             site.populate_sections();
             site.register_tera_global_fns();
-            site.render_section(&site.library.get_section(&pathbuf).unwrap(), true)
+            site.render_section(&site.library.read().unwrap().get_section(&pathbuf).unwrap(), true)
         }
     }
 }
 
-macro_rules! render_parent_section {
+macro_rules! render_parent_sections {
     ($site: expr, $path: expr) => {
-        if let Some(s) = $site.library.find_parent_section($path) {
+        for s in $site.library.read().unwrap().find_parent_sections($path) {
             $site.render_section(s, false)?;
-        };
+        }
     };
 }
 
 /// Handles a page being edited in some ways
 fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
-    let page = Page::from_file(path, &site.config)?;
+    let page = Page::from_file(path, &site.config, &site.base_path)?;
     let pathbuf = path.to_path_buf();
     match site.add_page(page, true)? {
         // Updating a page
         Some(prev) => {
             site.populate_sections();
             site.populate_taxonomies()?;
+            site.register_tera_global_fns();
+            {
+                let library = site.library.read().unwrap();
 
-            // Front matter didn't change, only content did
-            if site.library.get_page(&pathbuf).unwrap().meta == prev.meta {
-                // Other than the page itself, the summary might be seen
-                // on a paginated list for a blog for example
-                if site.library.get_page(&pathbuf).unwrap().summary.is_some() {
-                    render_parent_section!(site, path);
+                // Front matter didn't change, only content did
+                if library.get_page(&pathbuf).unwrap().meta == prev.meta {
+                    // Other than the page itself, the summary might be seen
+                    // on a paginated list for a blog for example
+                    if library.get_page(&pathbuf).unwrap().summary.is_some() {
+                        render_parent_sections!(site, path);
+                    }
+                    return site.render_page(&library.get_page(&pathbuf).unwrap());
                 }
-                site.register_tera_global_fns();
-                return site.render_page(&site.library.get_page(&pathbuf).unwrap());
             }
 
             // Front matter changed
-            for changes in find_page_front_matter_changes(
-                &site.library.get_page(&pathbuf).unwrap().meta,
+            let changes = find_page_front_matter_changes(
+                &site.library.read().unwrap().get_page(&pathbuf).unwrap().meta,
                 &prev.meta,
-            ) {
+            );
+
+            for change in changes {
                 site.register_tera_global_fns();
 
                 // Sort always comes first if present so the rendering will be fine
-                match changes {
+                match change {
                     PageChangesNeeded::Taxonomies => {
                         site.populate_taxonomies()?;
                         site.render_taxonomies()?;
@@ -221,8 +234,10 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
                         site.render_index()?;
                     }
                     PageChangesNeeded::Render => {
-                        render_parent_section!(site, path);
-                        site.render_page(&site.library.get_page(&path.to_path_buf()).unwrap())?;
+                        render_parent_sections!(site, path);
+                        site.render_page(
+                            &site.library.read().unwrap().get_page(&path.to_path_buf()).unwrap(),
+                        )?;
                     }
                 };
             }
@@ -275,8 +290,11 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
     if new_path.file_name().unwrap() == "_index.md" {
         // We aren't entirely sure where the original thing was so just try to delete whatever was
         // at the old path
-        site.library.remove_page(&old.to_path_buf());
-        site.library.remove_section(&old.to_path_buf());
+        {
+            let mut library = site.library.write().unwrap();
+            library.remove_page(&old.to_path_buf());
+            library.remove_section(&old.to_path_buf());
+        }
         return handle_section_editing(site, &new_path);
     }
 
@@ -287,8 +305,8 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
     } else {
         old.to_path_buf()
     };
-    site.library.remove_page(&old_path);
-    return handle_page_editing(site, &new_path);
+    site.library.write().unwrap().remove_page(&old_path);
+    handle_page_editing(site, &new_path)
 }
 
 /// What happens when a section or a page is created/edited
@@ -297,9 +315,15 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let is_md = path.extension().unwrap() == "md";
     let index = path.parent().unwrap().join("index.md");
 
+    let mut potential_indices = vec![path.parent().unwrap().join("index.md")];
+    for language in &site.config.languages {
+        potential_indices.push(path.parent().unwrap().join(format!("index.{}.md", language.code)));
+    }
+    let colocated_index = potential_indices.contains(&path.to_path_buf());
+
     // A few situations can happen:
     // 1. Change on .md files
-    //    a. Is there an `index.md`? Return an error if it's something other than delete
+    //    a. Is there already an `index.md`? Return an error if it's something other than delete
     //    b. Deleted? remove the element
     //    c. Edited?
     //       1. filename is `_index.md`, this is a section
@@ -315,9 +339,9 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
         }
 
         // Added another .md in a assets directory
-        if index.exists() && path.exists() && path != index {
+        if index.exists() && path.exists() && !colocated_index {
             bail!(
-                "Change on {:?} detected but there is already an `index.md` in the same folder",
+                "Change on {:?} detected but only files named `index.md` with an optional language code are allowed",
                 path.display()
             );
         } else if index.exists() && !path.exists() {
@@ -344,7 +368,8 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
 
     match filename {
         "sitemap.xml" => site.render_sitemap(),
-        "rss.xml" => site.render_rss_feed(site.library.pages_values(), None),
+        "rss.xml" => site.render_rss_feed(site.library.read().unwrap().pages_values(), None),
+        "split_sitemap_index.xml" => site.render_sitemap(),
         "robots.txt" => site.render_robots(),
         "single.html" | "list.html" => site.render_taxonomies(),
         "page.html" => {

@@ -44,7 +44,7 @@ fn can_highlight_code_block_no_lang() {
     let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b;\">\n<span style=\"color:#c0c5ce;\">$ gutenberg server\n</span><span style=\"color:#c0c5ce;\">$ ping\n</span></pre>"
+        "<pre style=\"background-color:#2b303b;\">\n<span style=\"color:#c0c5ce;\">$ gutenberg server\n$ ping\n</span></pre>"
     );
 }
 
@@ -375,6 +375,19 @@ fn can_insert_anchor_right() {
     );
 }
 
+#[test]
+fn can_insert_anchor_for_multi_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Right);
+    let res = render_content("# Hello\n# World", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<h1 id=\"hello\">Hello<a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n\
+<h1 id=\"world\">World<a class=\"zola-anchor\" href=\"#world\" aria-label=\"Anchor link for: world\">🔗</a>\n</h1>\n"
+    );
+}
+
 // See https://github.com/Keats/gutenberg/issues/42
 #[test]
 fn can_insert_anchor_with_exclamation_mark() {
@@ -523,6 +536,47 @@ fn can_understand_link_with_title_in_header() {
 }
 
 #[test]
+fn can_understand_emphasis_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# *Emphasis* text", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"emphasis-text\"><em>Emphasis</em> text</h1>\n");
+}
+
+#[test]
+fn can_understand_strong_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# **Strong** text", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"strong-text\"><strong>Strong</strong> text</h1>\n");
+}
+
+#[test]
+fn can_understand_code_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# `Code` text", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"code-text\"><code>Code</code> text</h1>\n");
+}
+
+// See https://github.com/getzola/zola/issues/569
+#[test]
+fn can_understand_footnote_in_header() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# text [^1] there\n[^1]: footnote", &context).unwrap();
+    assert_eq!(res.body, r##"<h1 id="text-there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>footnote</p>
+</div>
+"##);
+}
+
+#[test]
 fn can_make_valid_relative_link_in_header() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about/".to_string());
@@ -633,7 +687,7 @@ fn can_show_error_message_for_invalid_external_links() {
     let res = render_content("[a link](http://google.comy)", &context);
     assert!(res.is_err());
     let err = res.unwrap_err();
-    assert!(err.description().contains("Link http://google.comy is not valid"));
+    assert!(format!("{}", err).contains("Link http://google.comy is not valid"));
 }
 
 #[test]
@@ -675,17 +729,25 @@ fn can_handle_summaries() {
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(
-        "Hello [world]\n\n<!-- more -->\n\nBla bla\n\n[world]: https://vincent.is/about/",
+        r#"
+Hello [My site][world]
+
+<!-- more -->
+
+Bla bla
+
+[world]: https://vincentprouillet.com
+"#,
         &context,
     )
     .unwrap();
     assert_eq!(
         res.body,
-        "<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n<p><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
+        "<p>Hello <a href=\"https://vincentprouillet.com\">My site</a></p>\n<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
     );
     assert_eq!(
         res.summary_len,
-        Some("<p>Hello <a href=\"https://vincent.is/about/\">world</a></p>\n".len())
+        Some("<p>Hello <a href=\"https://vincentprouillet.com/\">My site</a></p>".len())
     );
 }
 
@@ -721,3 +783,31 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
 }
+
+// TODO: re-enable once it's fixed in Tera
+// https://github.com/Keats/tera/issues/373
+//#[test]
+//fn can_split_lines_shortcode_body() {
+//    let permalinks_ctx = HashMap::new();
+//    let mut tera = Tera::default();
+//    tera.extend(&ZOLA_TERA).unwrap();
+//
+//    let shortcode = r#"{{ body | split(pat="\n") }}"#;
+//
+//    let markdown_string = r#"
+//{% alert() %}
+//multi
+//ple
+//lines
+//{% end %}
+//    "#;
+//
+//    let expected = r#"<p>["multi", "ple", "lines"]</p>"#;
+//
+//    tera.add_raw_template(&format!("shortcodes/{}.html", "alert"), shortcode).unwrap();
+//    let config = Config::default();
+//    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+//
+//    let res = render_content(markdown_string, &context).unwrap();
+//    assert_eq!(res.body, expected);
+//}

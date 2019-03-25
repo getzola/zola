@@ -13,3 +13,4 @@ lazy_static = "1"
 syntect = "3"
 
 errors = { path = "../errors" }
+utils = { path = "../utils" }

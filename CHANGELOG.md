@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.6.0 (unreleased)
+
+### Breaking
+- `earlier/later` and `lighter/heavier` are not set anymore on pages when rendering
+a section
+- The table of content for a page/section is now only available as the `toc` variable when
+rendering it and not anymore on the `page`/`section` variable
+- Default directory for `load_data` is now the root of the site instead of the `content` directory
+- Change variable sent to the sitemap template, see documentation for details
+
+### Other
+- Add support for content in multiple languages
+- Lower latency on serve before rebuilding from 2 to 1 second
+- Allow processing PNG and produced images are less blurry
+- Add an id (`zola-continue-reading`) to the paragraph generated after a summary
+- Add Dracula syntax highlighting theme
+- Fix using inline styles in headers
+- Fix sections with render=false being shown in sitemap
+- Sitemap is now split when there are more than 30 000 links in it
+- Add link to sitemap in robots.txt
+- Markdown rendering is now fully CommonMark compliant
+- `load_data` now defaults to loading file as plain text, unless `format` is passed
+or the extension matches csv/toml/json
+- Sitemap entries get an additional `extra` field for pages only
+- Add a `base-path` command line option to `build` and `serve`
+
+
 ## 0.5.1 (2018-12-14)
 
 - Fix deleting markdown file in `zola serve`

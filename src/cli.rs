@@ -23,13 +23,18 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Name of the project. Will create a new directory with that name in the current directory")
                 ),
             SubCommand::with_name("build")
-                .about("Builds the site")
+                .about("Deletes the output directory if there is one and builds the site")
                 .args(&[
                     Arg::with_name("base_url")
                         .short("u")
                         .long("base-url")
                         .takes_value(true)
                         .help("Force the base URL to be that value (default to the one in config.toml)"),
+                    Arg::with_name("base_path")
+                        .short("b")
+                        .long("base-path")
+                        .takes_value(true)
+                        .help("Force the base site path to a certain directory [default: the current working directory]"),
                     Arg::with_name("output_dir")
                         .short("o")
                         .long("output-dir")
@@ -56,6 +61,11 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("public")
                         .takes_value(true)
                         .help("Outputs the generated site in the given path"),
+                    Arg::with_name("base_path")
+                        .short("b")
+                        .long("base-path")
+                        .takes_value(true)
+                        .help("Force the base site path to a certain directory [default: the current working directory]"),
                     Arg::with_name("base_url")
                         .short("u")
                         .long("base-url")

@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
 elasticlunr-rs = "2"
-ammonia = "1"
+ammonia = "2"
 lazy_static = "1"
 
 errors = { path = "../errors" }

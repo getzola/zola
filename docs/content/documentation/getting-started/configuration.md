@@ -21,7 +21,7 @@ base_url = "mywebsite.com"
 # Used in RSS by default
 title = ""
 description = ""
-# the default language, used in RSS and coming i18n
+# The default language, used in RSS
 default_language = "en"
 
 # Theme name to use
@@ -50,6 +50,15 @@ generate_rss = false
 #     ]
 #
 taxonomies = []
+
+# The additional languages for that site
+# Example:
+#     languages = [
+#       {code = "fr", rss = true}, # there will be a RSS feed for French content
+#       {code = "it"}, # there won't be a RSS feed for Italian content
+#     ]
+#
+languages = []
 
 # Whether to compile the Sass files found in the `sass` directory
 compile_sass = false
@@ -99,6 +108,7 @@ Zola currently has the following highlight themes available:
 - [classic-modified](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Classic%20Modified)
 - [demain](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Demain)
 - [dimmed-fluid](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Dimmed%20Fluid)
+- [dracula](https://draculatheme.com/)
 - [gray-matter-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Gray%20Matter%20Dark)
 - [gruvbox-dark](https://github.com/morhetz/gruvbox)
 - [gruvbox-light](https://github.com/morhetz/gruvbox)

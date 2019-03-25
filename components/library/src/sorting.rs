@@ -113,6 +113,7 @@ pub fn find_siblings(sorted: Vec<(&Key, bool)>) -> Vec<(Key, Option<Key>, Option
 #[cfg(test)]
 mod tests {
     use slotmap::DenseSlotMap;
+    use std::path::PathBuf;
 
     use super::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
     use content::Page;
@@ -122,13 +123,13 @@ mod tests {
         let mut front_matter = PageFrontMatter::default();
         front_matter.date = Some(date.to_string());
         front_matter.date_to_datetime();
-        Page::new("content/hello.md", front_matter)
+        Page::new("content/hello.md", front_matter, &PathBuf::new())
     }
 
     fn create_page_with_weight(weight: usize) -> Page {
         let mut front_matter = PageFrontMatter::default();
         front_matter.weight = Some(weight);
-        Page::new("content/hello.md", front_matter)
+        Page::new("content/hello.md", front_matter, &PathBuf::new())
     }
 
     #[test]

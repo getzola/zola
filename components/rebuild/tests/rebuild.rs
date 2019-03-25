@@ -16,15 +16,15 @@ use rebuild::{after_content_change, after_content_rename};
 // Loads the test_site in a tempdir and build it there
 // Returns (site_path_in_tempdir, site)
 macro_rules! load_and_build_site {
-    ($tmp_dir: expr) => {{
+    ($tmp_dir: expr, $site: expr) => {{
         let mut path =
             env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-        path.push("test_site");
+        path.push($site);
         let mut options = dir::CopyOptions::new();
         options.copy_inside = true;
         dir::copy(&path, &$tmp_dir, &options).unwrap();
 
-        let site_path = $tmp_dir.path().join("test_site");
+        let site_path = $tmp_dir.path().join($site);
         let mut site = Site::new(&site_path, "config.toml").unwrap();
         site.load().unwrap();
         let public = &site_path.join("public");
@@ -81,7 +81,7 @@ macro_rules! rename {
 #[test]
 fn can_rebuild_after_simple_change_to_page_content() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let file_path = edit_file!(
         site_path,
         "content/rebuild/first.md",
@@ -103,7 +103,7 @@ Some content"#
 #[test]
 fn can_rebuild_after_title_change_page_global_func_usage() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let file_path = edit_file!(
         site_path,
         "content/rebuild/first.md",
@@ -125,7 +125,7 @@ date = 2017-01-01
 #[test]
 fn can_rebuild_after_sort_change_in_section() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let file_path = edit_file!(
         site_path,
         "content/rebuild/_index.md",
@@ -150,7 +150,7 @@ template = "rebuild.html"
 #[test]
 fn can_rebuild_after_transparent_change() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let file_path = edit_file!(
         site_path,
         "content/posts/2018/_index.md",
@@ -182,7 +182,7 @@ insert_anchor_links = "left"
 #[test]
 fn can_rebuild_after_renaming_page() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let (old_path, new_path) = rename!(site_path, "content/posts/simple.md", "hard.md");
 
     let res = after_content_rename(&mut site, &old_path, &new_path);
@@ -195,7 +195,7 @@ fn can_rebuild_after_renaming_page() {
 #[test]
 fn can_rebuild_after_renaming_colocated_asset_folder() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let (old_path, new_path) =
         rename!(site_path, "content/posts/with-assets", "with-assets-updated");
     assert!(file_contains!(site_path, "content/posts/with-assets-updated/index.md", "Hello"));
@@ -214,7 +214,7 @@ fn can_rebuild_after_renaming_colocated_asset_folder() {
 #[test]
 fn can_rebuild_after_renaming_section_folder() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let (old_path, new_path) = rename!(site_path, "content/posts", "new-posts");
     assert!(file_contains!(site_path, "content/new-posts/simple.md", "simple"));
 
@@ -227,7 +227,7 @@ fn can_rebuild_after_renaming_section_folder() {
 #[test]
 fn can_rebuild_after_renaming_non_md_asset_in_colocated_folder() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let (old_path, new_path) =
         rename!(site_path, "content/posts/with-assets/zola.png", "gutenberg.png");
 
@@ -239,8 +239,47 @@ fn can_rebuild_after_renaming_non_md_asset_in_colocated_folder() {
 #[test]
 fn can_rebuild_after_deleting_file() {
     let tmp_dir = tempdir().expect("create temp dir");
-    let (site_path, mut site) = load_and_build_site!(tmp_dir);
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
     let path = site_path.join("content").join("posts").join("fixed-slug.md");
+    fs::remove_file(&path).unwrap();
+
+    let res = after_content_change(&mut site, &path);
+    println!("{:?}", res);
+    assert!(res.is_ok());
+}
+
+#[test]
+fn can_rebuild_after_editing_in_colocated_asset_folder_with_language() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site_i18n");
+    let file_path = edit_file!(
+        site_path,
+        "content/blog/with-assets/index.fr.md",
+        br#"
++++
+date = 2018-11-11
++++
+
+Edite
+"#
+    );
+
+    let res = after_content_change(&mut site, &file_path);
+    println!("{:?}", res);
+    assert!(res.is_ok());
+    assert!(file_contains!(site_path, "public/fr/blog/with-assets/index.html", "Edite"));
+}
+
+// https://github.com/getzola/zola/issues/620
+#[test]
+fn can_rebuild_after_renaming_section_and_deleting_file() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
+    let (old_path, new_path) = rename!(site_path, "content/posts/", "post/");
+    let res = after_content_rename(&mut site, &old_path, &new_path);
+    assert!(res.is_ok());
+
+    let path = site_path.join("content").join("_index.md");
     fs::remove_file(&path).unwrap();
 
     let res = after_content_change(&mut site, &path);
