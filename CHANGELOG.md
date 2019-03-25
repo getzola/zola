@@ -24,6 +24,7 @@ rendering it and not anymore on the `page`/`section` variable
 - `load_data` now defaults to loading file as plain text, unless `format` is passed
 or the extension matches csv/toml/json
 - Sitemap entries get an additional `extra` field for pages only
+- Add a `base-path` command line option to `build` and `serve`
 
 
 ## 0.5.1 (2018-12-14)
