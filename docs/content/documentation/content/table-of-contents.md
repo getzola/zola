@@ -5,7 +5,7 @@ weight = 60
 
 Each page/section will automatically generate a table of contents for itself based on the headers present.
 
-It is available in the template through `section.toc` and `page.toc`.
+It is available in the template through the `toc` variable.
 You can view the [template variables](./documentation/templates/pages-sections.md#table-of-contents)
 documentation for information on its structure.
 
@@ -13,7 +13,7 @@ Here is an example of using that field to render a 2-level table of contents:
 
 ```jinja2
 <ul>
-{% for h1 in page.toc %}
+{% for h1 in toc %}
     <li>
         <a href="{{h1.permalink | safe}}">{{ h1.title }}</a>
         {% if h1.children %}
