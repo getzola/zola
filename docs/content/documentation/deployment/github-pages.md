@@ -46,6 +46,8 @@ Make sure "Display value in build log" is off, and then click add. Now Travis ha
 We're almost done. We just need some scripts in a .travis.yml file to tell Travis what to do.
 
 ```yaml
+language: minimal
+
 before_script:
   # Download and unzip the zola executable
   # Replace the version numbers in the URL by the version you want to use
