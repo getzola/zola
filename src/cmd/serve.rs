@@ -352,7 +352,7 @@ pub fn serve(
                             continue;
                         }
                         let (change_kind, partial_path) =
-                            detect_change_kind(&bp.canonicalize().unwrap(), &path);
+                            detect_change_kind(&bp, &path);
 
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
@@ -405,7 +405,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&bp.canonicalize().unwrap(), &path) {
+                        match detect_change_kind(&bp, &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
                                 // Force refresh
@@ -473,7 +473,7 @@ fn is_temp_file(path: &Path) -> bool {
 /// to be reloaded
 fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
     let mut partial_path = PathBuf::from("/");
-    partial_path.push(path.canonicalize().unwrap().strip_prefix(pwd).unwrap_or(path));
+    partial_path.push(path.strip_prefix(pwd).unwrap_or(path));
 
     let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
