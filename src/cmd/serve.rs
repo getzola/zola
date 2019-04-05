@@ -473,7 +473,7 @@ fn is_temp_file(path: &Path) -> bool {
 /// to be reloaded
 fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
     let mut partial_path = PathBuf::from("/");
-    partial_path.push(path.strip_prefix(pwd).unwrap_or(path));
+    partial_path.push(path.canonicalize().unwrap().strip_prefix(pwd).unwrap_or(path));
 
     let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
