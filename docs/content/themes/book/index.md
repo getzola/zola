@@ -6,7 +6,7 @@ template = "theme.html"
 date = 2018-01-28T10:53:19+01:00
 
 [extra]
-created = 2018-08-04T13:14:45+02:00
+created = 2018-11-17T18:27:11+01:00
 updated = 2018-01-28T10:53:19+01:00
 repository = "https://github.com/getzola/book"
 homepage = "https://github.com/getzola/book"

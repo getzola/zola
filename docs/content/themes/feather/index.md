@@ -6,11 +6,11 @@ template = "theme.html"
 date = 2018-01-21T04:35:36-05:00
 
 [extra]
-created = 2018-08-04T13:14:45+02:00
+created = 2019-04-06T11:27:43+02:00
 updated = 2018-01-21T04:35:36-05:00
 repository = "https://github.com/piedoom/feather"
 homepage = "https://github.com/piedoom/feather"
-minimum_version = "0.3.4"
+minimum_version = "0.5.1"
 license = "MIT"
 demo = ""
 
@@ -20,30 +20,30 @@ homepage = "https://alexanderlozada.com"
 +++        
 
 # feather
-A lightweight theme for gutenberg
+A lightweight theme for zola 
 
-Feather is a blog theme specifically designed for the static site generator [Gutenberg](https://github.com/Keats/gutenberg).  It's as far as 
+Feather is a blog theme specifically designed for the static site generator [Zola](https://www.getzola.org/).  It's as far as 
 I know the first theme for the platform that isn't a port or just contained within template files.  
 
 Feather is *not* intended for anything other than blogs.  
 
 # Developing & Contributing
 Because feather comes with example content, you can run the theme just like any Gutenberg
-blog with `gutenberg serve`.  Your changes will autoreload!
+blog with `zola serve`.  Your changes will autoreload!
 
 ## Considerations
 Please don't edit the `content` folder directly for your own blog, use it as a theme like
 intended!
 
 # Usage
-Using feather is easy.  Install [Gutenberg](https://github.com/Keats/gutenberg) and follow 
-[the guide for creating a site and using a theme](https://www.getgutenberg.io/documentation/themes/installing-and-using-themes/).  Then,
+Using feather is easy.  Install [Zola](https://www.getzola.org/) and follow 
+[the guide for creating a site and using a theme](https://www.getzola.org/documentation/themes/installing-and-using-themes/).  Then,
 add `theme = "feather"` to your `config.toml` file.
 
 If you intend to publish your site to Github Pages, please check out [this tutorial](http://vaporsoft.net/publishing-gutenberg-to-github/).
 
 ## Options
-Gutenberg allows themes to [define `[extra]` variables](https://www.getgutenberg.io/documentation/getting-started/configuration/)
+Zola allows themes to [define `[extra]` variables](https://www.getzola.org/documentation/getting-started/configuration/)
 in the config.  Here's a full list of theme variables with example values and comments.
 
 ```

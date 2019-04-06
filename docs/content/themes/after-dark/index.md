@@ -6,7 +6,7 @@ template = "theme.html"
 date = 2017-11-07T17:39:37+01:00
 
 [extra]
-created = 2018-08-04T13:14:45+02:00
+created = 2019-04-06T11:27:43+02:00
 updated = 2017-11-07T17:39:37+01:00
 repository = "https://github.com/getzola/after-dark"
 homepage = "https://github.com/getzola/after-dark"
@@ -87,6 +87,6 @@ element that the `title` field in the config represents, you can set the `after_
 instead.
 
 ## Original
-This template is based on the Hugo template https://github.com/comfusion/after-dark
+This template is based on the Hugo template https://git.habd.as/comfusion/after-dark
 
         

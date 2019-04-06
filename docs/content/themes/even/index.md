@@ -6,11 +6,11 @@ template = "theme.html"
 date = 2018-01-25T18:44:44+01:00
 
 [extra]
-created = 2018-08-04T13:14:45+02:00
+created = 2019-04-06T11:27:43+02:00
 updated = 2018-01-25T18:44:44+01:00
 repository = "https://github.com/getzola/even"
 homepage = "https://github.com/getzola/even"
-minimum_version = "0.5.0"
+minimum_version = "0.6.0"
 license = "MIT"
 demo = "https://zola-even.netlify.com"
 
@@ -87,5 +87,33 @@ site URL.
 The site title is shown on the header. As it might be different from the `<title>`
 element that the `title` field in the config represents, you can set the `even_title`
 instead.
+
+### KaTeX math formula support
+
+This theme contains math formula support using [KaTeX](https://katex.org/),
+which can be enabled by setting `katex_enable = true` in the `extra` section
+of `config.toml`:
+
+```toml
+[extra]
+katex_enable = true
+```
+
+After enabling this extension, the `katex` short code can be used in documents:
+* `{{/* katex(body="\KaTeX") */}}` to typeset a math formula inlined into a text,
+  similar to `$...$` in LaTeX
+* `{%/* katex(block=true) */%}\KaTeX{%/* end */%}` to typeset a block of math formulas,
+  similar to `$$...$$` in LaTeX
+
+#### Automatic rendering without short codes
+
+Optionally, `\\( \KaTeX \\)` inline and `\\[ \KaTeX \\]` / `$$ \KaTeX $$`
+block-style automatic rendering is also supported, if enabled in the config:
+
+```toml
+[extra]
+katex_enable = true
+katex_auto_render = true
+```
 
         
