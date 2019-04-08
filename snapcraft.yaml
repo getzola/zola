@@ -1,10 +1,11 @@
-name: zola # you probably want to 'snapcraft register <name>'
-version: '0.6.0+git' # just for humans, typically '1.2+git' or '1.3.2'
+name: zola 
+version: 0.6.0 
 summary: A fast static site generator in a single binary with everything built-in.
 description: |
   A fast static site generator in a single binary with everything built-in.
   https://www.getzola.org
 
+base: core18
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 
@@ -18,6 +19,9 @@ apps:
 
 parts:
   zola:
+    source-type: git
+    source: https://github.com/getzola/zola.git
+    source-tag: v0.6.0
     plugin: rust
     rust-channel: stable
     build-packages:
