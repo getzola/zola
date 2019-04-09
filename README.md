@@ -45,7 +45,7 @@ in the `docs/content` folder of the repository and the community can use [its fo
 
 ### Template engine explanation
 
-Cobalt gets ![ehh](./is-ehh.svg) because, while based on [Liquid](https://shopify.github.io/liquid/), the Rust library doesn't implement all its features, and there is no documentation on what is and isn't implemented; the errors are cryptic; and Liquid itself is not powerful enough to do some of things you can do in Jinja2, Go templates, or Tera.
+Cobalt gets ![ehh](./is-ehh.svg) because, while based on [Liquid](https://shopify.github.io/liquid/), the Rust library doesn't implement all its features and there is no documentation on what is and isn't implemented; the errors are cryptic; and Liquid itself is not powerful enough to do some of things you can do in Jinja2, Go templates, or Tera.
 
 Hugo gets ![ehh](./is-ehh.svg) because while it is probably the most powerful template engine in the list, after Jinja2, it personally drives me insane, to the point of writing my own template engine and static site generator. Yes, this is a bit biased.
 
