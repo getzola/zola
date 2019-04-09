@@ -20,3 +20,6 @@
 | [Jens Getreu's blog](https://blog.getreu.net)                      |                                                      |
 | [Matthias Endler](https://matthias-endler.de)                      | https://github.com/mre/mre.github.io                 |
 | [Michael Plotke](https://michael.plotke.me)                        | https://gitlab.com/bdjnk/michael                     |
+| [shaleenjain.com](https://shaleenjain.com)                         | https://github.com/shalzz/shalzz.github.io           |
+| [Hello, Rust!](https://hello-rust.show)                            | https://github.com/hello-rust/hello-rust.github.io   |
+| [maxdeviant.com](https://maxdeviant.com/)                          |                                                      |

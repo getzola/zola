@@ -36,6 +36,10 @@ That's it, Zola will now recognise this template as a shortcode named `youtube` 
 The markdown renderer will wrap an inline HTML node like `<a>` or `<span>` into a paragraph. If you want to disable that,
 simply wrap your shortcode in a `div`.
 
+Shortcodes are rendered before parsing the markdown so it doesn't have access to the table of contents. Because of that,
+you also cannot use the `get_page`/`get_section`/`get_taxonomy` global function. It might work while running `zola serve` because
+it has been loaded but it will fail during `zola build`.
+
 ## Using shortcodes
 
 There are two kinds of shortcodes:

@@ -169,6 +169,7 @@ if __name__ == "__main__":
     gen_site("medium-blog", [""], 250, is_blog=True)
     gen_site("big-blog", [""], 1000, is_blog=True)
     gen_site("huge-blog", [""], 10000, is_blog=True)
+    gen_site("extra-huge-blog", [""], 100000, is_blog=True)
 
     gen_site("small-kb", ["help", "help1", "help2", "help3", "help4", "help5", "help6", "help7", "help8", "help9"], 10)
     gen_site("medium-kb", ["help", "help1", "help2", "help3", "help4", "help5", "help6", "help7", "help8", "help9"], 100)

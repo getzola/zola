@@ -8,6 +8,7 @@ small-blog
 medium-blog
 big-blog
 huge-blog
+extra-huge-blog
 small-kb
 medium-kb
 huge-kb
@@ -21,3 +22,6 @@ snap/.snapcraft
 parts
 prime
 stage
+
+# nixos dependencies snippet
+shell.nix

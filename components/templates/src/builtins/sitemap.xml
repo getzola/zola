@@ -1,22 +1,10 @@
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    {% for page in pages %}
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+    {% for sitemap_entry in entries %}
         <url>
-            <loc>{{ page.permalink | safe }}</loc>
-            {% if page.date %}
-                <lastmod>{{ page.date }}</lastmod>
+            <loc>{{ sitemap_entry.permalink | safe }}</loc>
+            {% if sitemap_entry.date %}
+                <lastmod>{{ sitemap_entry.date }}</lastmod>
             {% endif %}
         </url>
-    {% endfor %}
-    {% for section in sections %}
-        <url>
-            <loc>{{ section.permalink | safe }}</loc>
-        </url>
-    {% endfor %}
-    {% for taxonomy in taxonomies %}
-        {% for entry in taxonomy %}
-        <url>
-            <loc>{{ entry.permalink | safe }}</loc>
-        </url>
-        {% endfor %}
     {% endfor %}
 </urlset>

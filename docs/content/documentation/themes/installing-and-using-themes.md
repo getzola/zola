@@ -6,7 +6,7 @@ weight = 20
 
 ## Installing a theme
 
-The easiest way to install to theme is to clone its repository in the `themes`
+The easiest way to install a theme is to clone its repository in the `themes`
 directory.
 
 ```bash

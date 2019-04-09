@@ -27,7 +27,7 @@ $ yay -S zola-bin
 Zola is available on snapcraft:
 
 ```bash
-$ snap install --edge --classic zola
+$ snap install --edge zola
 ```
 
 ## Windows
@@ -44,11 +44,26 @@ And [Chocolatey](https://chocolatey.org/):
 $ choco install zola
 ```
 
+Zola does not work in PowerShell ISE.
+
 ## From source
 To build it from source, you will need to have Git, [Rust (at least 1.31) and Cargo](https://www.rust-lang.org/)
 installed. You will also need additional dependencies to compile [libsass](https://github.com/sass/libsass):
 
 - OSX, Linux and other Unix: `make` (`gmake` on BSDs), `g++`, `libssl-dev`
+  - NixOS: Create a `shell.nix` file in the root of the cloned project with the following contents:
+  ```nix
+   with import <nixpkgs> {};
+
+   pkgs.mkShell {
+     buildInputs = [
+       libsass
+       openssl
+       pkgconfig
+    ];
+   }
+  ```
+  - Then invoke `nix-shell`. This opens a shell with the above dependencies. You then run `cargo build --release` to build the project.
 - Windows (a bit trickier): updated `MSVC` and overall updated VS installation
 
 From a terminal, you can now run the following command:

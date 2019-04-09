@@ -43,7 +43,7 @@ fn bench_render_rss_feed(b: &mut test::Bencher) {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    b.iter(|| site.render_rss_feed(site.library.pages_values(), None).unwrap());
+    b.iter(|| site.render_rss_feed(site.library.read().unwrap().pages_values(), None).unwrap());
 }
 
 #[bench]
@@ -61,8 +61,9 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    let section = site.library.sections_values()[0];
-    let paginator = Paginator::from_section(&section, &site.library);
+    let library = site.library.read().unwrap();
+    let section = library.sections_values()[0];
+    let paginator = Paginator::from_section(&section, &library);
 
     b.iter(|| site.render_paginated(public, &paginator));
 }

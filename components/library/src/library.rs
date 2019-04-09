@@ -5,6 +5,7 @@ use slotmap::{DenseSlotMap, Key};
 
 use front_matter::SortBy;
 
+use config::Config;
 use content::{Page, Section};
 use sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
 
@@ -82,7 +83,7 @@ impl Library {
 
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
-    pub fn populate_sections(&mut self) {
+    pub fn populate_sections(&mut self, config: &Config) {
         let root_path =
             self.sections.values().find(|s| s.is_index()).map(|s| s.file.parent.clone()).unwrap();
         // We are going to get both the ancestors and grandparents for each section in one go
@@ -128,8 +129,8 @@ impl Library {
         }
 
         for (key, page) in &mut self.pages {
-            let parent_filename = if let Some(ref lang) = page.lang {
-                format!("_index.{}.md", lang)
+            let parent_filename = if page.lang != config.default_language {
+                format!("_index.{}.md", page.lang)
             } else {
                 "_index.md".to_string()
             };
@@ -330,15 +331,19 @@ impl Library {
             .collect()
     }
 
-    pub fn find_parent_section<P: AsRef<Path>>(&self, path: P) -> Option<&Section> {
-        let page_key = self.paths_to_pages[path.as_ref()];
-        for s in self.sections.values() {
-            if s.pages.contains(&page_key) {
-                return Some(s);
+    /// Find the parent section & all grandparents section that have transparent=true
+    /// Only used in rebuild.
+    pub fn find_parent_sections<P: AsRef<Path>>(&self, path: P) -> Vec<&Section> {
+        let mut parents = vec![];
+        let page = self.get_page(path.as_ref()).unwrap();
+        for ancestor in page.ancestors.iter().rev() {
+            let section = self.get_section_by_key(*ancestor);
+            if parents.is_empty() || section.meta.transparent {
+                parents.push(section);
             }
         }
 
-        None
+        parents
     }
 
     /// Only used in tests

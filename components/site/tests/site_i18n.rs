@@ -13,45 +13,45 @@ fn can_parse_multilingual_site() {
     let mut site = Site::new(&path, "config.toml").unwrap();
     site.load().unwrap();
 
-    assert_eq!(site.library.pages().len(), 10);
-    assert_eq!(site.library.sections().len(), 6);
+    let library = site.library.read().unwrap();
+    assert_eq!(library.pages().len(), 10);
+    assert_eq!(library.sections().len(), 6);
 
     // default index sections
     let default_index_section =
-        site.library.get_section(&path.join("content").join("_index.md")).unwrap();
+        library.get_section(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(default_index_section.pages.len(), 1);
     assert!(default_index_section.ancestors.is_empty());
 
-    let fr_index_section =
-        site.library.get_section(&path.join("content").join("_index.fr.md")).unwrap();
+    let fr_index_section = library.get_section(&path.join("content").join("_index.fr.md")).unwrap();
     assert_eq!(fr_index_section.pages.len(), 1);
     assert!(fr_index_section.ancestors.is_empty());
 
     // blog sections get only their own language pages
     let blog_path = path.join("content").join("blog");
 
-    let default_blog = site.library.get_section(&blog_path.join("_index.md")).unwrap();
+    let default_blog = library.get_section(&blog_path.join("_index.md")).unwrap();
     assert_eq!(default_blog.subsections.len(), 0);
     assert_eq!(default_blog.pages.len(), 4);
     assert_eq!(
         default_blog.ancestors,
-        vec![*site.library.get_section_key(&default_index_section.file.path).unwrap()]
+        vec![*library.get_section_key(&default_index_section.file.path).unwrap()]
     );
     for key in &default_blog.pages {
-        let page = site.library.get_page_by_key(*key);
-        assert_eq!(page.lang, None);
+        let page = library.get_page_by_key(*key);
+        assert_eq!(page.lang, "en");
     }
 
-    let fr_blog = site.library.get_section(&blog_path.join("_index.fr.md")).unwrap();
+    let fr_blog = library.get_section(&blog_path.join("_index.fr.md")).unwrap();
     assert_eq!(fr_blog.subsections.len(), 0);
     assert_eq!(fr_blog.pages.len(), 3);
     assert_eq!(
         fr_blog.ancestors,
-        vec![*site.library.get_section_key(&fr_index_section.file.path).unwrap()]
+        vec![*library.get_section_key(&fr_index_section.file.path).unwrap()]
     );
     for key in &fr_blog.pages {
-        let page = site.library.get_page_by_key(*key);
-        assert_eq!(page.lang, Some("fr".to_string()));
+        let page = library.get_page_by_key(*key);
+        assert_eq!(page.lang, "fr");
     }
 }
 
@@ -87,7 +87,7 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(
         public,
         "fr/blog/index.html",
-        "Translated in : My blog https://example.com/blog/"
+        "Translated in en: My blog https://example.com/blog/"
     ));
     assert!(file_contains!(
         public,
@@ -107,7 +107,7 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(
         public,
         "fr/blog/something/index.html",
-        "Translated in : Something https://example.com/blog/something/"
+        "Translated in en: Something https://example.com/blog/something/"
     ));
 
     // sitemap contains all languages
@@ -125,4 +125,17 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(public, "fr/rss.xml", "https://example.com/fr/blog/something-else/"));
     // Italian doesn't have RSS enabled
     assert!(!file_exists!(public, "it/rss.xml"));
+
+    // Taxonomies are per-language
+    assert!(file_exists!(public, "authors/index.html"));
+    assert!(file_contains!(public, "authors/index.html", "Queen"));
+    assert!(!file_contains!(public, "authors/index.html", "Vincent"));
+    assert!(!file_exists!(public, "auteurs/index.html"));
+    assert!(file_exists!(public, "authors/queen-elizabeth/rss.xml"));
+
+    assert!(!file_exists!(public, "fr/authors/index.html"));
+    assert!(file_exists!(public, "fr/auteurs/index.html"));
+    assert!(!file_contains!(public, "fr/auteurs/index.html", "Queen"));
+    assert!(file_contains!(public, "fr/auteurs/index.html", "Vincent"));
+    assert!(!file_exists!(public, "fr/auteurs/vincent-prouillet/rss.xml"));
 }

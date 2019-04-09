@@ -269,3 +269,20 @@ Edite
     assert!(res.is_ok());
     assert!(file_contains!(site_path, "public/fr/blog/with-assets/index.html", "Edite"));
 }
+
+// https://github.com/getzola/zola/issues/620
+#[test]
+fn can_rebuild_after_renaming_section_and_deleting_file() {
+    let tmp_dir = tempdir().expect("create temp dir");
+    let (site_path, mut site) = load_and_build_site!(tmp_dir, "test_site");
+    let (old_path, new_path) = rename!(site_path, "content/posts/", "post/");
+    let res = after_content_rename(&mut site, &old_path, &new_path);
+    assert!(res.is_ok());
+
+    let path = site_path.join("content").join("_index.md");
+    fs::remove_file(&path).unwrap();
+
+    let res = after_content_change(&mut site, &path);
+    println!("{:?}", res);
+    assert!(res.is_ok());
+}

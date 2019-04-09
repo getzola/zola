@@ -12,7 +12,7 @@ extern crate toml;
 extern crate errors;
 extern crate utils;
 
-use errors::{Result, ResultExt};
+use errors::{Error, Result};
 use regex::Regex;
 use std::path::Path;
 
@@ -71,8 +71,11 @@ pub fn split_section_content(
     content: &str,
 ) -> Result<(SectionFrontMatter, String)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = SectionFrontMatter::parse(&front_matter).chain_err(|| {
-        format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy())
+    let meta = SectionFrontMatter::parse(&front_matter).map_err(|e| {
+        Error::chain(
+            format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy()),
+            e,
+        )
     })?;
     Ok((meta, content))
 }
@@ -81,8 +84,11 @@ pub fn split_section_content(
 /// Returns a parsed `PageFrontMatter` and the rest of the content
 pub fn split_page_content(file_path: &Path, content: &str) -> Result<(PageFrontMatter, String)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = PageFrontMatter::parse(&front_matter).chain_err(|| {
-        format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy())
+    let meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
+        Error::chain(
+            format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy()),
+            e,
+        )
     })?;
     Ok((meta, content))
 }

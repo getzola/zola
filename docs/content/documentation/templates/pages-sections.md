@@ -32,13 +32,13 @@ word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;
 // `earlier` and `later` are only populated if the section variable `sort_by` is set to `date`
+// and only set when rendering the page itself
 earlier: Page?;
 later: Page?;
 // `heavier` and `lighter` are only populated if the section variable `sort_by` is set to `weight`
+// and only set when rendering the page itself
 heavier: Page?;
 lighter: Page?;
-// See the Table of contents section below for more details
-toc: Array<Header>;
 // Year/month/day is only set if the page has a date and month/day are 1-indexed
 year: Number?;
 month: Number?;
@@ -51,8 +51,8 @@ assets: Array<String>;
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
-// The language for the page if there is one
-lang: String?;
+// The language for the page if there is one. Default to the config `default_language`
+lang: String;
 // Information about all the available languages for that content
 translations: Array<TranslatedContent>;
 ```
@@ -70,8 +70,6 @@ with the following fields:
 content: String;
 title: String?;
 description: String?;
-date: String?;
-slug: String;
 path: String;
 // the path, split on '/'
 components: Array<String>;
@@ -87,8 +85,6 @@ subsections: Array<String>;
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;
-// See the Table of contents section below for more details
-toc: Array<Header>;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
 // The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
@@ -97,15 +93,15 @@ assets: Array<String>;
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
-// The language for the section if there is one
-lang: String?;
+// The language for the section if there is one. Default to the config `default_language`
+lang: String;
 // Information about all the available languages for that content
 translations: Array<TranslatedContent>;
 ```
 
 ## Table of contents
 
-Both page and section have a `toc` field which corresponds to an array of `Header`.
+Both page and section templates have a `toc` variable which corresponds to an array of `Header`.
 A `Header` has the following fields:
 
 ```ts

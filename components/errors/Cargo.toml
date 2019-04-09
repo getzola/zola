@@ -4,8 +4,7 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
-error-chain = "0.12"
-tera = "0.11"
+tera = "1.0.0-alpha.3"
 toml = "0.4"
-image = "0.20"
+image = "0.21"
 syntect = "3"

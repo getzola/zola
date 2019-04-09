@@ -5,7 +5,7 @@ use slotmap::Key;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
-use errors::{Result, ResultExt};
+use errors::{Error, Result};
 use front_matter::{split_section_content, SectionFrontMatter};
 use rendering::{render_content, Header, RenderContext};
 use utils::fs::{find_related_assets, read_file};
@@ -51,19 +51,23 @@ pub struct Section {
     /// How long would it take to read the raw content.
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
-    /// The language of that section. `None` if the user doesn't setup `languages` in config.
+    /// The language of that section. Equal to the default lang if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the _index.{lang}.md file scheme
-    pub lang: Option<String>,
+    pub lang: String,
     /// Contains all the translated version of that section
     pub translations: Vec<Key>,
 }
 
 impl Section {
-    pub fn new<P: AsRef<Path>>(file_path: P, meta: SectionFrontMatter) -> Section {
+    pub fn new<P: AsRef<Path>>(
+        file_path: P,
+        meta: SectionFrontMatter,
+        base_path: &PathBuf,
+    ) -> Section {
         let file_path = file_path.as_ref();
 
         Section {
-            file: FileInfo::new_section(file_path),
+            file: FileInfo::new_section(file_path, base_path),
             meta,
             ancestors: vec![],
             path: "".to_string(),
@@ -79,24 +83,29 @@ impl Section {
             toc: vec![],
             word_count: None,
             reading_time: None,
-            lang: None,
+            lang: String::new(),
             translations: Vec::new(),
         }
     }
 
-    pub fn parse(file_path: &Path, content: &str, config: &Config) -> Result<Section> {
+    pub fn parse(
+        file_path: &Path,
+        content: &str,
+        config: &Config,
+        base_path: &PathBuf,
+    ) -> Result<Section> {
         let (meta, content) = split_section_content(file_path, content)?;
-        let mut section = Section::new(file_path, meta);
+        let mut section = Section::new(file_path, meta, base_path);
         section.lang = section.file.find_language(config)?;
         section.raw_content = content;
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
-        let path = format!("{}/", section.file.components.join("/"));
-        if let Some(ref lang) = section.lang {
-            section.path = format!("{}/{}", lang, path);
+        let path = section.file.components.join("/");
+        if section.lang != config.default_language {
+            section.path = format!("{}/{}", section.lang, path);
         } else {
-            section.path = path;
+            section.path = format!("{}/", path);
         }
         section.components = section
             .path
@@ -109,10 +118,14 @@ impl Section {
     }
 
     /// Read and parse a .md file into a Page struct
-    pub fn from_file<P: AsRef<Path>>(path: P, config: &Config) -> Result<Section> {
+    pub fn from_file<P: AsRef<Path>>(
+        path: P,
+        config: &Config,
+        base_path: &PathBuf,
+    ) -> Result<Section> {
         let path = path.as_ref();
         let content = read_file(path)?;
-        let mut section = Section::parse(path, &content, config)?;
+        let mut section = Section::parse(path, &content, config, base_path)?;
 
         let parent_dir = path.parent().unwrap();
         let assets = find_related_assets(parent_dir);
@@ -171,8 +184,9 @@ impl Section {
 
         context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
 
-        let res = render_content(&self.raw_content, &context)
-            .chain_err(|| format!("Failed to render content of {}", self.file.path.display()))?;
+        let res = render_content(&self.raw_content, &context).map_err(|e| {
+            Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
+        })?;
         self.content = res.body;
         self.toc = res.toc;
         Ok(())
@@ -188,9 +202,11 @@ impl Section {
         context.insert("current_path", &self.path);
         context.insert("section", &self.to_serialized(library));
         context.insert("lang", &self.lang);
+        context.insert("toc", &self.toc);
 
-        render_template(tpl_name, tera, &context, &config.theme)
-            .chain_err(|| format!("Failed to render section '{}'", self.file.path.display()))
+        render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
+            Error::chain(format!("Failed to render section '{}'", self.file.path.display()), e)
+        })
     }
 
     /// Is this the index section?
@@ -237,7 +253,7 @@ impl Default for Section {
             toc: vec![],
             reading_time: None,
             word_count: None,
-            lang: None,
+            lang: String::new(),
             translations: Vec::new(),
         }
     }
@@ -247,7 +263,7 @@ impl Default for Section {
 mod tests {
     use std::fs::{create_dir, File};
     use std::io::Write;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
@@ -269,7 +285,11 @@ mod tests {
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Section::from_file(nested_path.join("_index.md").as_path(), &Config::default());
+        let res = Section::from_file(
+            nested_path.join("_index.md").as_path(),
+            &Config::default(),
+            &PathBuf::new(),
+        );
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.assets.len(), 3);
@@ -295,7 +315,8 @@ mod tests {
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
-        let res = Section::from_file(nested_path.join("_index.md").as_path(), &config);
+        let res =
+            Section::from_file(nested_path.join("_index.md").as_path(), &config, &PathBuf::new());
 
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -312,10 +333,33 @@ mod tests {
 +++
 Bonjour le monde"#
             .to_string();
-        let res = Section::parse(Path::new("content/hello/nested/_index.fr.md"), &content, &config);
+        let res = Section::parse(
+            Path::new("content/hello/nested/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, Some("fr".to_string()));
+        assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/hello/nested/");
+    }
+
+    // https://zola.discourse.group/t/rfc-i18n/13/17?u=keats
+    #[test]
+    fn can_make_links_to_translated_sections_without_double_trailing_slash() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res =
+            Section::parse(Path::new("content/_index.fr.md"), &content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/");
     }
 }

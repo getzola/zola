@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use walkdir::WalkDir;
 
-use errors::{Result, ResultExt};
+use errors::{Error, Result};
 
 pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
     let canonical_path = path
@@ -19,7 +19,8 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
-    let mut file = File::create(&path).chain_err(|| format!("Failed to create {:?}", path))?;
+    let mut file =
+        File::create(&path).map_err(|e| Error::chain(format!("Failed to create {:?}", path), e))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }
@@ -36,8 +37,9 @@ pub fn ensure_directory_exists(path: &Path) -> Result<()> {
 /// exists before creating it
 pub fn create_directory(path: &Path) -> Result<()> {
     if !path.exists() {
-        create_dir_all(path)
-            .chain_err(|| format!("Was not able to create folder {}", path.display()))?;
+        create_dir_all(path).map_err(|e| {
+            Error::chain(format!("Was not able to create folder {}", path.display()), e)
+        })?;
     }
     Ok(())
 }
@@ -46,7 +48,7 @@ pub fn create_directory(path: &Path) -> Result<()> {
 pub fn read_file(path: &Path) -> Result<String> {
     let mut content = String::new();
     File::open(path)
-        .chain_err(|| format!("Failed to open '{:?}'", path.display()))?
+        .map_err(|e| Error::chain(format!("Failed to open '{:?}'", path.display()), e))?
         .read_to_string(&mut content)?;
 
     // Remove utf-8 BOM if any.
@@ -55,6 +57,19 @@ pub fn read_file(path: &Path) -> Result<String> {
     }
 
     Ok(content)
+}
+
+/// Return the content of a file, with error handling added.
+/// The default error message is overwritten by the message given.
+/// That means it is allocation 2 strings, oh well
+pub fn read_file_with_error(path: &Path, message: &str) -> Result<String> {
+    let res = read_file(&path);
+    if res.is_ok() {
+        return res;
+    }
+    let mut err = Error::msg(message);
+    err.source = res.unwrap_err().source;
+    Err(err)
 }
 
 /// Looks into the current folder for the path and see if there's anything that is not a .md

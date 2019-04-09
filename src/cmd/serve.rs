@@ -36,7 +36,7 @@ use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{Result, ResultExt};
+use errors::{Error as ZolaError, Result};
 use site::Site;
 use utils::fs::copy_file;
 
@@ -90,36 +90,39 @@ fn livereload_handler(_: &HttpRequest) -> &'static str {
     LIVE_RELOAD
 }
 
-fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
+fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_path: &str) {
     match res {
         Ok(_) => {
-            broadcaster
-                .send(format!(
-                    r#"
-                {{
-                    "command": "reload",
-                    "path": "{}",
-                    "originalPath": "",
-                    "liveCSS": true,
-                    "liveImg": true,
-                    "protocol": ["http://livereload.com/protocols/official-7"]
-                }}"#,
-                    reload_path
-                ))
-                .unwrap();
+            if let Some(broadcaster) = broadcaster.as_ref() {
+                broadcaster
+                    .send(format!(
+                        r#"
+                    {{
+                        "command": "reload",
+                        "path": "{}",
+                        "originalPath": "",
+                        "liveCSS": true,
+                        "liveImg": true,
+                        "protocol": ["http://livereload.com/protocols/official-7"]
+                    }}"#,
+                        reload_path
+                    ))
+                    .unwrap();
+            }
         }
         Err(e) => console::unravel_errors("Failed to build the site", &e),
     }
 }
 
-fn create_new_site(
+fn create_new_site<P: AsRef<Path>>(
     interface: &str,
     port: u16,
     output_dir: &str,
+    base_path: P,
     base_url: &str,
     config_file: &str,
 ) -> Result<(Site, String)> {
-    let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
+    let mut site = Site::new(base_path, config_file)?;
 
     let base_address = format!("{}:{}", base_url, port);
     let address = format!("{}:{}", interface, port);
@@ -164,12 +167,15 @@ pub fn serve(
     interface: &str,
     port: u16,
     output_dir: &str,
+    base_path: Option<&str>,
     base_url: &str,
     config_file: &str,
     watch_only: bool,
 ) -> Result<()> {
     let start = Instant::now();
-    let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
+    let bp = base_path.map(PathBuf::from).unwrap_or(env::current_dir().unwrap());
+    let (mut site, address) =
+        create_new_site(interface, port, output_dir, bp.clone(), base_url, config_file)?;
     console::report_elapsed_time(start);
 
     // Setup watchers
@@ -178,28 +184,28 @@ pub fn serve(
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher
-        .watch("content/", RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `content` folder. Does it exist?")?;
+        .watch(bp.join("content/"), RecursiveMode::Recursive)
+        .map_err(|e| ZolaError::chain("Can't watch the `content` folder. Does it exist?", e))?;
     watcher
-        .watch(config_file, RecursiveMode::Recursive)
-        .chain_err(|| "Can't watch the `config` file. Does it exist?")?;
+        .watch(bp.join(config_file), RecursiveMode::Recursive)
+        .map_err(|e| ZolaError::chain("Can't watch the `config` file. Does it exist?", e))?;
 
-    if Path::new("static").exists() {
+    if bp.join("static").exists() {
         watching_static = true;
         watcher
-            .watch("static/", RecursiveMode::Recursive)
-            .chain_err(|| "Can't watch the `static` folder.")?;
+            .watch(bp.join("static/"), RecursiveMode::Recursive)
+            .map_err(|e| ZolaError::chain("Can't watch the `static` folder.", e))?;
     }
 
-    if Path::new("templates").exists() {
+    if bp.join("templates").exists() {
         watching_templates = true;
         watcher
-            .watch("templates/", RecursiveMode::Recursive)
-            .chain_err(|| "Can't watch the `templates` folder.")?;
+            .watch(bp.join("templates/"), RecursiveMode::Recursive)
+            .map_err(|e| ZolaError::chain("Can't watch the `templates` folder.", e))?;
     }
 
     // Sass support is optional so don't make it an error to no have a sass folder
-    let _ = watcher.watch("sass/", RecursiveMode::Recursive);
+    let _ = watcher.watch(bp.join("sass/"), RecursiveMode::Recursive);
 
     let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
     let output_path = Path::new(output_dir).to_path_buf();
@@ -256,8 +262,6 @@ pub fn serve(
         None
     };
 
-    let pwd = env::current_dir().unwrap();
-
     let mut watchers = vec!["content", "config.toml"];
     if watching_static {
         watchers.push("static");
@@ -271,7 +275,7 @@ pub fn serve(
 
     println!(
         "Listening for changes in {}{}{{{}}}",
-        pwd.display(),
+        bp.display(),
         MAIN_SEPARATOR,
         watchers.join(", ")
     );
@@ -293,14 +297,8 @@ pub fn serve(
             format!("-> Template changed {}", path.display())
         };
         console::info(&msg);
-        if let Some(ref broadcaster) = broadcaster {
-            // Force refresh
-            rebuild_done_handling(
-                broadcaster,
-                rebuild::after_template_change(site, &path),
-                "/x.js",
-            );
-        }
+        // Force refresh
+        rebuild_done_handling(&broadcaster, rebuild::after_template_change(site, &path), "/x.js");
     };
 
     let reload_sass = |site: &Site, path: &Path, partial_path: &Path| {
@@ -310,13 +308,11 @@ pub fn serve(
             format!("-> Sass file changed {}", path.display())
         };
         console::info(&msg);
-        if let Some(ref broadcaster) = broadcaster {
-            rebuild_done_handling(
-                &broadcaster,
-                site.compile_sass(&site.base_path),
-                &partial_path.to_string_lossy(),
-            );
-        }
+        rebuild_done_handling(
+            &broadcaster,
+            site.compile_sass(&site.base_path),
+            &partial_path.to_string_lossy(),
+        );
     };
 
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
@@ -332,20 +328,18 @@ pub fn serve(
         };
 
         console::info(&msg);
-        if let Some(ref broadcaster) = broadcaster {
-            if path.is_dir() {
-                rebuild_done_handling(
-                    broadcaster,
-                    site.copy_static_directories(),
-                    &path.to_string_lossy(),
-                );
-            } else {
-                rebuild_done_handling(
-                    broadcaster,
-                    copy_file(&path, &site.output_path, &site.static_path),
-                    &partial_path.to_string_lossy(),
-                );
-            }
+        if path.is_dir() {
+            rebuild_done_handling(
+                &broadcaster,
+                site.copy_static_directories(),
+                &path.to_string_lossy(),
+            );
+        } else {
+            rebuild_done_handling(
+                &broadcaster,
+                copy_file(&path, &site.output_path, &site.static_path),
+                &partial_path.to_string_lossy(),
+            );
         }
     };
 
@@ -357,7 +351,8 @@ pub fn serve(
                         if path.is_file() && is_temp_file(&path) {
                             continue;
                         }
-                        let (change_kind, partial_path) = detect_change_kind(&pwd, &path);
+                        let (change_kind, partial_path) =
+                            detect_change_kind(&bp.canonicalize().unwrap(), &path);
 
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
@@ -373,14 +368,12 @@ pub fn serve(
                         match change_kind {
                             ChangeKind::Content => {
                                 console::info(&format!("-> Content renamed {}", path.display()));
-                                if let Some(ref broadcaster) = broadcaster {
-                                    // Force refresh
-                                    rebuild_done_handling(
-                                        broadcaster,
-                                        rebuild::after_content_rename(&mut site, &old_path, &path),
-                                        "/x.js",
-                                    );
-                                }
+                                // Force refresh
+                                rebuild_done_handling(
+                                    &broadcaster,
+                                    rebuild::after_content_rename(&mut site, &old_path, &path),
+                                    "/x.js",
+                                );
                             }
                             ChangeKind::Templates => reload_templates(&mut site, &path),
                             ChangeKind::StaticFiles => copy_static(&site, &path, &partial_path),
@@ -391,6 +384,7 @@ pub fn serve(
                                     interface,
                                     port,
                                     output_dir,
+                                    bp.clone(),
                                     base_url,
                                     config_file,
                                 )
@@ -411,17 +405,15 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&pwd, &path) {
+                        match detect_change_kind(&bp.canonicalize().unwrap(), &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
-                                if let Some(ref broadcaster) = broadcaster {
-                                    // Force refresh
-                                    rebuild_done_handling(
-                                        broadcaster,
-                                        rebuild::after_content_change(&mut site, &path),
-                                        "/x.js",
-                                    );
-                                }
+                                // Force refresh
+                                rebuild_done_handling(
+                                    &broadcaster,
+                                    rebuild::after_content_change(&mut site, &path),
+                                    "/x.js",
+                                );
                             }
                             (ChangeKind::Templates, _) => reload_templates(&mut site, &path),
                             (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
@@ -432,6 +424,7 @@ pub fn serve(
                                     interface,
                                     port,
                                     output_dir,
+                                    bp.clone(),
                                     base_url,
                                     config_file,
                                 )

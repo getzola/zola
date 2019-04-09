@@ -5,11 +5,10 @@ use tera::{Map, Value};
 
 use content::{Page, Section};
 use library::Library;
-use rendering::Header;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TranslatedContent<'a> {
-    lang: &'a Option<String>,
+    lang: &'a str,
     permalink: &'a str,
     title: &'a Option<String>,
 }
@@ -67,10 +66,9 @@ pub struct SerializingPage<'a> {
     summary: &'a Option<String>,
     word_count: Option<usize>,
     reading_time: Option<usize>,
-    toc: &'a [Header],
     assets: &'a [String],
     draft: bool,
-    lang: &'a Option<String>,
+    lang: &'a str,
     lighter: Option<Box<SerializingPage<'a>>>,
     heavier: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
@@ -129,7 +127,6 @@ impl<'a> SerializingPage<'a> {
             summary: &page.summary,
             word_count: page.word_count,
             reading_time: page.reading_time,
-            toc: &page.toc,
             assets: &page.serialized_assets,
             draft: page.is_draft(),
             lang: &page.lang,
@@ -185,7 +182,6 @@ impl<'a> SerializingPage<'a> {
             summary: &page.summary,
             word_count: page.word_count,
             reading_time: page.reading_time,
-            toc: &page.toc,
             assets: &page.serialized_assets,
             draft: page.is_draft(),
             lang: &page.lang,
@@ -211,8 +207,7 @@ pub struct SerializingSection<'a> {
     components: &'a [String],
     word_count: Option<usize>,
     reading_time: Option<usize>,
-    lang: &'a Option<String>,
-    toc: &'a [Header],
+    lang: &'a str,
     assets: &'a [String],
     pages: Vec<SerializingPage<'a>>,
     subsections: Vec<&'a str>,
@@ -225,7 +220,7 @@ impl<'a> SerializingSection<'a> {
         let mut subsections = Vec::with_capacity(section.subsections.len());
 
         for k in &section.pages {
-            pages.push(library.get_page_by_key(*k).to_serialized(library));
+            pages.push(library.get_page_by_key(*k).to_serialized_basic(library));
         }
 
         for k in &section.subsections {
@@ -251,7 +246,6 @@ impl<'a> SerializingSection<'a> {
             components: &section.components,
             word_count: section.word_count,
             reading_time: section.reading_time,
-            toc: &section.toc,
             assets: &section.serialized_assets,
             lang: &section.lang,
             pages,
@@ -290,7 +284,6 @@ impl<'a> SerializingSection<'a> {
             components: &section.components,
             word_count: section.word_count,
             reading_time: section.reading_time,
-            toc: &section.toc,
             assets: &section.serialized_assets,
             lang: &section.lang,
             pages: vec![],

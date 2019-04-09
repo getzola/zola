@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::PathBuf;
 
 use toml::Value as Toml;
 
-use errors::{Result, ResultExt};
+use errors::Result;
+use utils::fs::read_file_with_error;
 
 /// Holds the data from a `theme.toml` file.
 /// There are other fields than `extra` in it but Zola
@@ -40,15 +39,12 @@ impl Theme {
 
     /// Parses a theme file from the given path
     pub fn from_file(path: &PathBuf) -> Result<Theme> {
-        let mut content = String::new();
-        File::open(path)
-            .chain_err(|| {
-                "No `theme.toml` file found. \
-                 Is the `theme` defined in your `config.toml present in the `themes` directory \
-                 and does it have a `theme.toml` inside?"
-            })?
-            .read_to_string(&mut content)?;
-
+        let content = read_file_with_error(
+            path,
+            "No `theme.toml` file found. \
+             Is the `theme` defined in your `config.toml present in the `themes` directory \
+             and does it have a `theme.toml` inside?",
+        )?;
         Theme::parse(&content)
     }
 }

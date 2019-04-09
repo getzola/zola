@@ -16,7 +16,7 @@ use std::sync::{Arc, Mutex};
 
 use csv::Reader;
 use std::collections::HashMap;
-use tera::{from_value, to_value, Error, GlobalFn, Map, Result, Value};
+use tera::{from_value, to_value, Error, Function as TeraFn, Map, Result, Value};
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path` or `url` argument";
@@ -151,47 +151,56 @@ fn get_output_format_from_args(
     let format_arg = optional_arg!(
         String,
         args.get("format"),
-        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml)"
+        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, plain)"
     );
 
     if let Some(format) = format_arg {
+        if format == "plain" {
+            return Ok(OutputFormat::Plain);
+        }
         return OutputFormat::from_str(&format);
     }
 
     let from_extension = if let DataSource::Path(path) = data_source {
-        let extension_result: Result<&str> =
-            path.extension().map(|extension| extension.to_str().unwrap()).ok_or_else(|| {
-                format!("Could not determine format for {} from extension", path.display()).into()
-            });
-        extension_result?
+        path.extension().map(|extension| extension.to_str().unwrap()).unwrap_or_else(|| "plain")
     } else {
         "plain"
     };
-    OutputFormat::from_str(from_extension)
+
+    // Always default to Plain if we don't know what it is
+    OutputFormat::from_str(from_extension).or_else(|_| Ok(OutputFormat::Plain))
 }
 
-/// A global function to load data from a file or from a URL
+/// A Tera function to load data from a file or from a URL
 /// Currently the supported formats are json, toml, csv and plain text
-pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
-    let mut headers = header::HeaderMap::new();
-    headers.insert(header::USER_AGENT, "zola".parse().unwrap());
-    let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
-    let result_cache: Arc<Mutex<HashMap<u64, Value>>> = Arc::new(Mutex::new(HashMap::new()));
-    Box::new(move |args| -> Result<Value> {
-        let data_source = get_data_source_from_args(&content_path, &args)?;
+#[derive(Debug)]
+pub struct LoadData {
+    base_path: PathBuf,
+    client: Arc<Mutex<Client>>,
+    result_cache: Arc<Mutex<HashMap<u64, Value>>>,
+}
+impl LoadData {
+    pub fn new(base_path: PathBuf) -> Self {
+        let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
+        let result_cache = Arc::new(Mutex::new(HashMap::new()));
+        Self { base_path, client, result_cache }
+    }
+}
 
+impl TeraFn for LoadData {
+    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
+        let data_source = get_data_source_from_args(&self.base_path, &args)?;
         let file_format = get_output_format_from_args(&args, &data_source)?;
-
         let cache_key = data_source.get_cache_key(&file_format);
 
-        let mut cache = result_cache.lock().expect("result cache lock");
-        let response_client = client.lock().expect("response client lock");
+        let mut cache = self.result_cache.lock().expect("result cache lock");
+        let response_client = self.client.lock().expect("response client lock");
         if let Some(cached_result) = cache.get(&cache_key) {
             return Ok(cached_result.clone());
         }
 
         let data = match data_source {
-            DataSource::Path(path) => read_data_file(&base_path, path),
+            DataSource::Path(path) => read_data_file(&self.base_path, path),
             DataSource::Url(url) => {
                 let mut response = response_client
                     .get(url.as_str())
@@ -223,7 +232,7 @@ pub fn make_load_data(content_path: PathBuf, base_path: PathBuf) -> GlobalFn {
         }
 
         result_value
-    })
+    }
 }
 
 /// Parse a JSON string and convert it to a Tera Value
@@ -282,7 +291,16 @@ fn load_csv(csv_data: String) -> Result<Value> {
         let mut records_array: Vec<Value> = Vec::new();
 
         for result in records {
-            let record = result.unwrap();
+            let record = match result {
+                Ok(r) => r,
+                Err(e) => {
+                    return Err(tera::Error::chain(
+                        String::from("Error encountered when parsing csv records"),
+                        e,
+                    ));
+                }
+            };
+
             let mut elements_array: Vec<Value> = Vec::new();
 
             for e in record.into_iter() {
@@ -301,12 +319,12 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use super::{make_load_data, DataSource, OutputFormat};
+    use super::{DataSource, LoadData, OutputFormat};
 
     use std::collections::HashMap;
     use std::path::PathBuf;
 
-    use tera::to_value;
+    use tera::{to_value, Function};
 
     fn get_test_file(filename: &str) -> PathBuf {
         let test_files = PathBuf::from("../utils/test-files").canonicalize().unwrap();
@@ -315,27 +333,25 @@ mod tests {
 
     #[test]
     fn fails_when_missing_file() {
-        let static_fn =
-            make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+        let static_fn = LoadData::new(PathBuf::from("../utils"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
-        let result = static_fn(args);
+        let result = static_fn.call(&args);
         assert!(result.is_err());
-        assert!(result.unwrap_err().description().contains("READMEE.md doesn't exist"));
+        assert!(result.unwrap_err().to_string().contains("READMEE.md doesn't exist"));
     }
 
     #[test]
     fn cant_load_outside_content_dir() {
-        let static_fn =
-            make_load_data(PathBuf::from("../utils/test-files"), PathBuf::from("../utils"));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
         let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("../../../README.md").unwrap());
+        args.insert("path".to_string(), to_value("../../README.md").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
-        let result = static_fn(args);
+        let result = static_fn.call(&args);
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
-            .description()
+            .to_string()
             .contains("README.md is not inside the base site directory"));
     }
 
@@ -377,11 +393,11 @@ mod tests {
 
     #[test]
     fn can_load_remote_data() {
-        let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://httpbin.org/json").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
-        let result = static_fn(args).unwrap();
+        let result = static_fn.call(&args).unwrap();
         assert_eq!(
             result.get("slideshow").unwrap().get("title").unwrap(),
             &to_value("Sample Slide Show").unwrap()
@@ -390,29 +406,26 @@ mod tests {
 
     #[test]
     fn fails_when_request_404s() {
-        let static_fn = make_load_data(PathBuf::new(), PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://httpbin.org/status/404/").unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
-        let result = static_fn(args);
+        let result = static_fn.call(&args);
         assert!(result.is_err());
         assert_eq!(
-            result.unwrap_err().description(),
+            result.unwrap_err().to_string(),
             "Failed to request https://httpbin.org/status/404/: 404 Not Found"
         );
     }
 
     #[test]
     fn can_load_toml() {
-        let static_fn = make_load_data(
-            PathBuf::from("../utils/test-files"),
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.toml").unwrap());
-        let result = static_fn(args.clone()).unwrap();
+        let result = static_fn.call(&args.clone()).unwrap();
 
-        //TOML does not load in order
+        // TOML does not load in order
         assert_eq!(
             result,
             json!({
@@ -425,14 +438,52 @@ mod tests {
     }
 
     #[test]
-    fn can_load_csv() {
-        let static_fn = make_load_data(
-            PathBuf::from("../utils/test-files"),
-            PathBuf::from("../utils/test-files"),
+    fn unknown_extension_defaults_to_plain() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.css").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            ".hello {}\n",
         );
+    }
+
+    #[test]
+    fn can_override_known_extension_with_format() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.csv").unwrap());
-        let result = static_fn(args.clone()).unwrap();
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            "Number,Title\n1,Gutenberg\n2,Printing",
+        );
+    }
+
+    #[test]
+    fn will_use_format_on_unknown_extension() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.css").unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            ".hello {}\n",
+        );
+    }
+
+    #[test]
+    fn can_load_csv() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.csv").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
 
         assert_eq!(
             result,
@@ -446,15 +497,33 @@ mod tests {
         )
     }
 
+    // Test points to bad csv file with uneven row lengths
+    #[test]
+    fn bad_csv_should_result_in_error() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
+        let result = static_fn.call(&args.clone());
+
+        assert!(result.is_err());
+
+        let error_kind = result.err().unwrap().kind;
+        match error_kind {
+            tera::ErrorKind::Msg(msg) => {
+                if msg != String::from("Error encountered when parsing csv records") {
+                    panic!("Error message is wrong. Perhaps wrong error is being returned?");
+                }
+            }
+            _ => panic!("Error encountered was not expected CSV error"),
+        }
+    }
+
     #[test]
     fn can_load_json() {
-        let static_fn = make_load_data(
-            PathBuf::from("../utils/test-files"),
-            PathBuf::from("../utils/test-files"),
-        );
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.json").unwrap());
-        let result = static_fn(args.clone()).unwrap();
+        let result = static_fn.call(&args.clone()).unwrap();
 
         assert_eq!(
             result,
