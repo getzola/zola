@@ -103,6 +103,21 @@ fn main() {
                 }
             };
         }
+        ("check", Some(matches)) => {
+            console::info("Checking site...");
+            let start = Instant::now();
+            match cmd::check(
+                config_file,
+                matches.value_of("base_path"),
+                matches.value_of("base_url"),
+            ) {
+                Ok(()) => console::report_elapsed_time(start),
+                Err(e) => {
+                    console::unravel_errors("Failed to check the site", &e);
+                    ::std::process::exit(1);
+                }
+            };
+        }
         _ => unreachable!(),
     }
 }
