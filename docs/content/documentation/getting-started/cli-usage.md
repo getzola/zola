@@ -92,6 +92,11 @@ You can also point to another config file than `config.toml` like so - the posit
 $ zola --config config.staging.toml serve
 ```
 
+### check
+
+The check subcommand will try to build all pages just like the build command would, but without writing any of the
+results to disk. Additionally, it always checks external links regardless of the site configuration.
+
 ## Colored output
 
 Any of the three commands will emit colored output if your terminal supports it.
