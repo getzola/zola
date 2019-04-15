@@ -777,11 +777,15 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let library = self.library.read().unwrap();
-        let all_sitemap_entries = sitemap::find_entries(
-            &library,
-            &self.taxonomies[..],
-            &self.config,
-        );
+        let all_sitemap_entries = {
+            let mut all_sitemap_entries = sitemap::find_entries(
+                &library,
+                &self.taxonomies[..],
+                &self.config,
+            );
+            all_sitemap_entries.sort();
+            all_sitemap_entries
+        };
         let sitemap_limit = 30000;
 
         if all_sitemap_entries.len() < sitemap_limit {

@@ -5,6 +5,7 @@ use std::collections::{HashSet};
 use tera::{Map, Value};
 use config::{Config};
 use library::{Library, Taxonomy};
+use std::cmp::Ordering;
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that
@@ -36,6 +37,18 @@ impl<'a> SitemapEntry<'a> {
 
     pub fn add_extra(&mut self, extra: &'a Map<String, Value>) {
         self.extra = Some(extra);
+    }
+}
+
+impl<'a> PartialOrd for SitemapEntry<'a> {
+    fn partial_cmp(&self, other: &SitemapEntry) -> Option<Ordering> {
+        Some(self.permalink.as_ref().cmp(other.permalink.as_ref()))
+    }
+}
+
+impl<'a> Ord for SitemapEntry<'a> {
+    fn cmp(&self, other: &SitemapEntry) -> Ordering {
+        self.permalink.as_ref().cmp(other.permalink.as_ref())
     }
 }
 
