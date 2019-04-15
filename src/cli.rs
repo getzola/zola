@@ -67,5 +67,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .takes_value(false)
                         .help("Do not start a server, just re-build project on changes")
                 ]),
+            SubCommand::with_name("check")
+                .about("Try building the project without rendering it. Checks links")
         ])
 }
