@@ -3,7 +3,7 @@ title = "Creating a theme"
 weight = 30
 +++
 
-Creating is exactly like creating a normal site with Zola, except you
+Creating a theme is exactly like creating a normal site with Zola, except you
 will want to use many [Tera blocks](https://tera.netlify.com/docs/templates/#inheritance) to
 allow users to easily modify it.
 
