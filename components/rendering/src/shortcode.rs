@@ -16,6 +16,7 @@ pub struct ContentParser;
 
 lazy_static! {
     static ref MULTIPLE_NEWLINE_RE: Regex = Regex::new(r"\n\s*\n").unwrap();
+    static ref OUTER_NEWLINE_RE: Regex = Regex::new(r"^\s*\n|\n\s*$").unwrap();
 }
 
 fn replace_string_markers(input: &str) -> String {
@@ -121,6 +122,8 @@ fn render_shortcode(
     // A blank like will cause the markdown parser to think we're out of HTML and start looking
     // at indentation, making the output a code block.
     let res = MULTIPLE_NEWLINE_RE.replace_all(&res, "\n");
+
+    let res = OUTER_NEWLINE_RE.replace_all(&res, "");
 
     Ok(res.to_string())
 }
@@ -410,5 +413,21 @@ Some body {{ hello() }}{%/* end */%}"#,
         tera.add_raw_template("shortcodes/youtube.html", "{{body | safe}}").unwrap();
         let res = render_shortcodes("Body\n {% youtube() %}\nHello \n World{% end %}", &tera);
         assert_eq!(res, "Body\n Hello \n World");
+    }
+
+    #[test]
+    fn outer_newlines_removed_from_shortcodes_with_body() {
+        let mut tera = Tera::default();
+        tera.add_raw_template("shortcodes/youtube.html", "  \n  {{body}}  \n  ").unwrap();
+        let res = render_shortcodes("\n{% youtube() %}  \n  content  \n  {% end %}\n", &tera);
+        assert_eq!(res, "\n  content  \n");
+    }
+
+    #[test]
+    fn outer_newlines_removed_from_inline_shortcodes() {
+        let mut tera = Tera::default();
+        tera.add_raw_template("shortcodes/youtube.html", "  \n  Hello, Zola.  \n  ").unwrap();
+        let res = render_shortcodes("\n{{ youtube() }}\n", &tera);
+        assert_eq!(res, "\n  Hello, Zola.  \n");
     }
 }
