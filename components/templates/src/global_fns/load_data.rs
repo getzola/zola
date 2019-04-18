@@ -431,6 +431,7 @@ mod tests {
             json!({
                 "category": {
                     "date": "1979-05-27T07:32:00Z",
+                    "lt1": "07:32:00",
                     "key": "value"
                 },
             })

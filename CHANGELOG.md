@@ -2,6 +2,9 @@
 
 ## 0.6.1 (unreleased)
 
+- Strip wrapping whitespaces from shortcodes
+- Sort sitemap elements by permalink`
+
 ## 0.6.0 (2019-03-25)
 
 ### Breaking
