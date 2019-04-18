@@ -86,8 +86,8 @@ impl<S> Middleware<S> for NotFoundHandler {
     }
 }
 
-fn livereload_handler(_: &HttpRequest) -> &'static str {
-    LIVE_RELOAD
+fn livereload_handler(_: &HttpRequest) -> HttpResponse {
+    HttpResponse::Ok().content_type("text/javascript").body(LIVE_RELOAD)
 }
 
 fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_path: &str) {
