@@ -11,6 +11,7 @@ extern crate pest_derive;
 extern crate regex;
 #[macro_use]
 extern crate lazy_static;
+extern crate rayon;
 
 #[macro_use]
 extern crate errors;

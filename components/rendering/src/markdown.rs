@@ -4,6 +4,7 @@ use syntect::easy::HighlightLines;
 use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
 };
+use rayon::prelude::*;
 
 use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use context::RenderContext;
@@ -65,7 +66,7 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
-fn fix_link(link_type: LinkType, link: &str, context: &RenderContext) -> Result<String> {
+fn fix_link(link_type: LinkType, link: &str, context: &RenderContext, external_links: &mut Vec<String>) -> Result<String> {
     if link_type == LinkType::Email {
         return Ok(link.to_string());
     }
@@ -82,17 +83,13 @@ fn fix_link(link_type: LinkType, link: &str, context: &RenderContext) -> Result<
         }
     } else if is_colocated_asset_link(&link) {
         format!("{}{}", context.current_page_permalink, link)
-    } else if context.config.check_external_links
-        && !link.starts_with('#')
-        && !link.starts_with("mailto:")
-    {
-        let res = check_url(&link);
-        if res.is_valid() {
-            link.to_string()
-        } else {
-            return Err(format!("Link {} is not valid: {}", link, res.message()).into());
-        }
     } else {
+        if context.config.check_external_links
+            && !link.starts_with('#')
+            && !link.starts_with("mailto:")
+        {
+            external_links.push(link.to_owned());
+        }
         link.to_string()
     };
     Ok(result)
@@ -141,6 +138,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headers: Vec<Header> = vec![];
+    let mut external_links = Vec::new();
 
     let mut opts = Options::empty();
     let mut has_summary = false;
@@ -206,7 +204,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Start(Tag::Image(link_type, src, title))
                     }
                     Event::Start(Tag::Link(link_type, link, title)) => {
-                        let fixed_link = match fix_link(link_type, &link, context) {
+                        let fixed_link = match fix_link(link_type, &link, context, &mut external_links) {
                             Ok(fixed_link) => fixed_link,
                             Err(err) => {
                                 error = Some(err);
@@ -224,6 +222,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 }
             })
             .collect::<Vec<_>>(); // We need to collect the events to make a second pass
+
+        check_external_links(&external_links)?;
 
         let header_refs = get_header_refs(&events);
 
@@ -281,5 +281,27 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             body: html,
             toc: make_table_of_contents(headers),
         })
+    }
+}
+
+fn check_external_links(links: &[String]) -> Result<()> {
+    let mut err_msg = links.par_iter().filter_map(|link| {
+        let res = check_url(link);
+        if res.is_valid() {
+            None
+        } else {
+            Some(format!("Link {} is not valid: {}\n", link, res.message()))
+        }
+    }).reduce(|| String::new(), |acc, err| {
+        acc + &err
+    });
+
+    if err_msg.is_empty() {
+        Ok(())
+    } else {
+        // Remove trailing newline
+        let msg_len = err_msg.len();
+        err_msg.truncate(msg_len - 1);
+        Err(err_msg.into())
     }
 }
