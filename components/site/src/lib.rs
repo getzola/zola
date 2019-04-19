@@ -15,6 +15,7 @@ extern crate library;
 extern crate search;
 extern crate templates;
 extern crate utils;
+extern crate link_checker;
 
 #[cfg(test)]
 extern crate tempfile;
@@ -33,7 +34,7 @@ use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use tera::{Context, Tera};
 
 use config::{get_config, Config};
-use errors::{Error, Result};
+use errors::{Error, ErrorKind, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
@@ -42,6 +43,7 @@ use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
 use utils::templates::{render_template, rewrite_theme_paths};
+use link_checker::check_url;
 
 #[derive(Debug)]
 pub struct Site {
@@ -242,8 +244,41 @@ impl Site {
         self.populate_sections();
         self.render_markdown()?;
         self.register_tera_global_fns();
+        self.check_external_links()?;
 
         Ok(())
+    }
+
+    pub fn check_external_links(&self) -> Result<()> {
+        let library = self.library.write().expect("Get lock for check_external_links");
+
+        let page_links = library.pages()
+            .values()
+            .map(|p| p.external_links.iter())
+            .flatten();
+        let section_links = library.sections()
+            .values()
+            .map(|p| p.external_links.iter())
+            .flatten();
+        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+
+        let errors = all_links.par_iter().filter_map(|l| {
+            let res = check_url(l);
+            if res.is_valid() {
+                None
+            } else {
+                Some(res)
+            }
+        }).collect::<Vec<_>>();
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(Error {
+                kind: ErrorKind::Msg("Bad links!".into()),
+                source: None,
+            })
+        }
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create

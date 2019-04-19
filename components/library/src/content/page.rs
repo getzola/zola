@@ -76,6 +76,8 @@ pub struct Page {
     pub lang: String,
     /// Contains all the translated version of that page
     pub translations: Vec<Key>,
+    /// Contains the external links that need to be checked
+    pub external_links: Vec<String>,
 }
 
 impl Page {
@@ -104,6 +106,7 @@ impl Page {
             reading_time: None,
             lang: String::new(),
             translations: Vec::new(),
+            external_links: Vec::new(),
         }
     }
 
@@ -262,6 +265,7 @@ impl Page {
         self.summary = res.summary_len.map(|l| res.body[0..l].to_owned());
         self.content = res.body;
         self.toc = res.toc;
+        self.external_links = res.external_links;
 
         Ok(())
     }
@@ -329,6 +333,7 @@ impl Default for Page {
             reading_time: None,
             lang: String::new(),
             translations: Vec::new(),
+            external_links: Vec::new(),
         }
     }
 }

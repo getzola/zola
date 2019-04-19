@@ -56,6 +56,8 @@ pub struct Section {
     pub lang: String,
     /// Contains all the translated version of that section
     pub translations: Vec<Key>,
+    /// Contains the external links that need to be checked
+    pub external_links: Vec<String>,
 }
 
 impl Section {
@@ -85,6 +87,7 @@ impl Section {
             reading_time: None,
             lang: String::new(),
             translations: Vec::new(),
+            external_links: Vec::new(),
         }
     }
 
@@ -189,6 +192,8 @@ impl Section {
         })?;
         self.content = res.body;
         self.toc = res.toc;
+        self.external_links = res.external_links;
+
         Ok(())
     }
 
@@ -255,6 +260,7 @@ impl Default for Section {
             word_count: None,
             lang: String::new(),
             translations: Vec::new(),
+            external_links: Vec::new(),
         }
     }
 }
