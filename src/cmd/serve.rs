@@ -114,15 +114,14 @@ fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_p
     }
 }
 
-fn create_new_site<P: AsRef<Path>>(
+fn create_new_site(
     interface: &str,
     port: u16,
     output_dir: &str,
-    base_path: P,
     base_url: &str,
     config_file: &str,
 ) -> Result<(Site, String)> {
-    let mut site = Site::new(base_path, config_file)?;
+    let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
     let base_address = format!("{}:{}", base_url, port);
     let address = format!("{}:{}", interface, port);
@@ -167,15 +166,12 @@ pub fn serve(
     interface: &str,
     port: u16,
     output_dir: &str,
-    base_path: Option<&str>,
     base_url: &str,
     config_file: &str,
     watch_only: bool,
 ) -> Result<()> {
     let start = Instant::now();
-    let bp = base_path.map(PathBuf::from).unwrap_or(env::current_dir().unwrap());
-    let (mut site, address) =
-        create_new_site(interface, port, output_dir, bp.clone(), base_url, config_file)?;
+    let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
     console::report_elapsed_time(start);
 
     // Setup watchers
@@ -184,28 +180,28 @@ pub fn serve(
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher
-        .watch(bp.join("content/"), RecursiveMode::Recursive)
+        .watch("content/", RecursiveMode::Recursive)
         .map_err(|e| ZolaError::chain("Can't watch the `content` folder. Does it exist?", e))?;
     watcher
-        .watch(bp.join(config_file), RecursiveMode::Recursive)
+        .watch(config_file, RecursiveMode::Recursive)
         .map_err(|e| ZolaError::chain("Can't watch the `config` file. Does it exist?", e))?;
 
-    if bp.join("static").exists() {
+    if Path::new("static").exists() {
         watching_static = true;
         watcher
-            .watch(bp.join("static/"), RecursiveMode::Recursive)
+            .watch("static/", RecursiveMode::Recursive)
             .map_err(|e| ZolaError::chain("Can't watch the `static` folder.", e))?;
     }
 
-    if bp.join("templates").exists() {
+    if Path::new("templates").exists() {
         watching_templates = true;
         watcher
-            .watch(bp.join("templates/"), RecursiveMode::Recursive)
+            .watch("templates/", RecursiveMode::Recursive)
             .map_err(|e| ZolaError::chain("Can't watch the `templates` folder.", e))?;
     }
 
     // Sass support is optional so don't make it an error to no have a sass folder
-    let _ = watcher.watch(bp.join("sass/"), RecursiveMode::Recursive);
+    let _ = watcher.watch("sass/", RecursiveMode::Recursive);
 
     let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
     let output_path = Path::new(output_dir).to_path_buf();
@@ -262,6 +258,8 @@ pub fn serve(
         None
     };
 
+    let pwd = env::current_dir().unwrap();
+
     let mut watchers = vec!["content", "config.toml"];
     if watching_static {
         watchers.push("static");
@@ -275,7 +273,7 @@ pub fn serve(
 
     println!(
         "Listening for changes in {}{}{{{}}}",
-        bp.display(),
+        pwd.display(),
         MAIN_SEPARATOR,
         watchers.join(", ")
     );
@@ -351,8 +349,7 @@ pub fn serve(
                         if path.is_file() && is_temp_file(&path) {
                             continue;
                         }
-                        let (change_kind, partial_path) =
-                            detect_change_kind(&bp.canonicalize().unwrap(), &path);
+                        let (change_kind, partial_path) = detect_change_kind(&pwd, &path);
 
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
@@ -384,7 +381,6 @@ pub fn serve(
                                     interface,
                                     port,
                                     output_dir,
-                                    bp.clone(),
                                     base_url,
                                     config_file,
                                 )
@@ -405,7 +401,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&bp.canonicalize().unwrap(), &path) {
+                        match detect_change_kind(&pwd, &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
                                 // Force refresh
@@ -424,7 +420,6 @@ pub fn serve(
                                     interface,
                                     port,
                                     output_dir,
-                                    bp.clone(),
                                     base_url,
                                     config_file,
                                 )
