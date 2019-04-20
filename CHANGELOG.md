@@ -1,7 +1,11 @@
 # Changelog
 
-## 0.6.1 (unreleased)
+## 0.7.0 (unreleased)
 
+### Breaking
+- Remove --base-path option, it broke `serve` on Windows and wasn't properly tested
+
+### Other
 - Strip wrapping whitespaces from shortcodes
 - Sort sitemap elements by permalink`
 
