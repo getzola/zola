@@ -66,7 +66,7 @@ pub struct Site {
 
 impl Site {
     /// Parse a site at the given path. Defaults to the current dir
-    /// Passing in a path is possible using the `base-path` command line build option
+    /// Passing in a path is only used in tests
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
         let mut config = get_config(path, config_file);
@@ -777,11 +777,15 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let library = self.library.read().unwrap();
-        let all_sitemap_entries = sitemap::find_entries(
-            &library,
-            &self.taxonomies[..],
-            &self.config,
-        );
+        let all_sitemap_entries = {
+            let mut all_sitemap_entries = sitemap::find_entries(
+                &library,
+                &self.taxonomies[..],
+                &self.config,
+            );
+            all_sitemap_entries.sort();
+            all_sitemap_entries
+        };
         let sitemap_limit = 30000;
 
         if all_sitemap_entries.len() < sitemap_limit {

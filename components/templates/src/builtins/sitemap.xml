@@ -1,4 +1,4 @@
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
     {% for sitemap_entry in entries %}
         <url>
             <loc>{{ sitemap_entry.permalink | safe }}</loc>
