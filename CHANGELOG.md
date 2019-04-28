@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.0 (unreleased)
+## 0.7.0 (2019-04-28)
 
 ### Breaking
 - Remove --base-path option, it broke `serve` on Windows and wasn't properly tested
