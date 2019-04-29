@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.7.1 (unreleased)
+
 ## 0.7.0 (2019-04-28)
 
 ### Breaking
