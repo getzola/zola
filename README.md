@@ -17,9 +17,9 @@ in the `docs/content` folder of the repository and the community can use [its fo
 | Syntax highlighting             | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
 | Sass compilation                | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
 | Assets co-location              | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
-| Multilingual site               | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
+| Multilingual site               | ![ehh](./is-ehh.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
 | Image processing                | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
-| Sane & powerful template engine | ![yes](./is-yes.svg) | ![ehh](./is-ehh.svg) | ![ehh](./is-ehh.svg) | ![yes](./is-yes.svg) |
+| Sane & powerful template engine | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![ehh](./is-ehh.svg) | ![yes](./is-yes.svg) |
 | Themes                          | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
 | Shortcodes                      | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
 | Internal links                  | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
@@ -43,11 +43,11 @@ in the `docs/content` folder of the repository and the community can use [its fo
 - Hugo: markdown, asciidoc, org-mode
 - Pelican: reStructuredText, markdown, asciidoc, org-mode, whatever-you-want
 
-### Template engine explanation
+### ![ehh](./is-ehh.svg) explanations
 
-Cobalt gets ![ehh](./is-ehh.svg) because, while based on [Liquid](https://shopify.github.io/liquid/), the Rust library doesn't implement all its features and there is no documentation on what is and isn't implemented; the errors are cryptic; and Liquid itself is not powerful enough to do some of things you can do in Jinja2, Go templates, or Tera.
+Hugo gets ![ehh](./is-ehh.svg) for the template engine because while it is probably the most powerful template engine in the list, after Jinja2, it personally drives me insane, to the point of writing my own template engine and static site generator. Yes, this is a bit biased.
 
-Hugo gets ![ehh](./is-ehh.svg) because while it is probably the most powerful template engine in the list, after Jinja2, it personally drives me insane, to the point of writing my own template engine and static site generator. Yes, this is a bit biased.
+Zola gets ![ehh](./is-ehh.svg) for the multi-language support as it only has a basic support and does not offer (yet) things like i18n in templates.
 
 ### Pelican notes
 
