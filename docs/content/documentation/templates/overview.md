@@ -20,6 +20,8 @@ A few variables are available on all templates minus RSS and sitemap:
 - `current_url`: the full URL for that page
 - `lang`: the language for that page, `null` if the page/section doesn't have a language set
 
+The 404 template does not get `current_path` and `current_url` as it cannot know it.
+
 ## Standard Templates
 By default, Zola will look for three templates: `index.html`, which is applied
 to the site homepage; `section.html`, which is applied to all sections (any HTML
