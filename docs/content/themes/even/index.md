@@ -10,7 +10,7 @@ created = 2019-04-06T11:27:43+02:00
 updated = 2018-01-25T18:44:44+01:00
 repository = "https://github.com/getzola/even"
 homepage = "https://github.com/getzola/even"
-minimum_version = "0.6.0"
+minimum_version = "0.7.0"
 license = "MIT"
 demo = "https://zola-even.netlify.com"
 
