@@ -5,7 +5,7 @@ If you want to add a new feature, please open a thread there first in the featur
 
 Sanity check:
 
-* [ ] Have you checked to ensure there aren't other open [Pull Requests](../../pulls) for the same update/change?
+* [ ] Have you checked to ensure there aren't other open [Pull Requests](https://github.com/getzola/zola/pulls) for the same update/change?
 
 ## Code changes
 (Delete or ignore this section for documentation changes)
