@@ -120,6 +120,7 @@ Here is a full list of the supported languages and the short names you can use:
 - TypeScript -> ["ts"]
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]
+- Nix -> ["nix"]
 - TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock", "Pipfile"]
 ```
 
