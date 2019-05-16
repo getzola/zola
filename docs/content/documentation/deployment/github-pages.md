@@ -51,7 +51,7 @@ language: minimal
 before_script:
   # Download and unzip the zola executable
   # Replace the version numbers in the URL by the version you want to use
-  - curl -s -L https://github.com/getzola/zola/releases/download/v0.6.0/zola-v0.6.0-x86_64-unknown-linux-gnu.tar.gz | sudo tar xvzf - -C /usr/local/bin
+  - curl -s -L https://github.com/getzola/zola/releases/download/v0.7.0/zola-v0.7.0-x86_64-unknown-linux-gnu.tar.gz | sudo tar xvzf - -C /usr/local/bin
 
 script:
   - zola build

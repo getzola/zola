@@ -47,7 +47,6 @@ ZOLA_VERSION = "0.7.0"
 command = "zola build --base-url $DEPLOY_PRIME_URL"
 ```
 
-
 ## Manual Deploys
 If you would prefer to use a version of Zola that isn't a tagged release (for example, after having built Zola from
 source and made modifications), then you will need to manually deploy your `public` folder to Netlify.  You can do this through
