@@ -9,7 +9,6 @@ use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
-use link_checker::check_url;
 use table_of_contents::{make_table_of_contents, Header};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
@@ -84,17 +83,8 @@ fn fix_link(link_type: LinkType, link: &str, context: &RenderContext, external_l
     } else if is_colocated_asset_link(&link) {
         format!("{}{}", context.current_page_permalink, link)
     } else {
-        if context.config.check_external_links
-            && !link.starts_with('#')
-            && !link.starts_with("mailto:")
-        {
+        if !link.starts_with('#') && !link.starts_with("mailto:") {
             external_links.push(link.to_owned());
-            // let res = check_url(&link);
-            // if res.is_valid() {
-            //     link.to_string()
-            // } else {
-            //     return Err(format!("Link {} is not valid: {}", link, res.message()).into());
-            // }
         }
         link.to_string()
     };

@@ -657,6 +657,27 @@ Some text
 }
 
 #[test]
+fn correctly_captures_external_links() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(
+        &ZOLA_TERA,
+        &config,
+        "https://vincent.is/about/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+    let content = "
+[a link](http://google.com)
+[a link](http://google.comy)
+Email: [foo@bar.baz](mailto:foo@bar.baz)
+Email: <foo@bar.baz>
+    ";
+    let res = render_content(content, &context).unwrap();
+    assert_eq!(res.external_links, &["http://google.com".to_owned(), "http://google.comy".to_owned()]);
+}
+
+#[test]
 fn can_handle_summaries() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();

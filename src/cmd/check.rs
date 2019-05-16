@@ -15,6 +15,9 @@ pub fn check(
     let mut site = Site::new(bp, config_file)?;
     // Force the checking of external links
     site.config.check_external_links = true;
+    // Disable syntax highlighting since the results won't be used
+    // and this operation can be expensive.
+    site.config.highlight_code = false;
     if let Some(b) = base_url {
         site.set_base_url(b.to_string());
     }

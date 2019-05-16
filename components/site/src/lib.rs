@@ -244,38 +244,60 @@ impl Site {
         self.populate_sections();
         self.render_markdown()?;
         self.register_tera_global_fns();
-        self.check_external_links()?;
+
+        if self.config.check_external_links {
+            self.check_external_links()?;
+        }
 
         Ok(())
     }
 
     pub fn check_external_links(&self) -> Result<()> {
         let library = self.library.write().expect("Get lock for check_external_links");
-
         let page_links = library.pages()
             .values()
-            .map(|p| p.external_links.iter())
+            .map(|p| {
+                let path = &p.file.path;
+                p.external_links.iter().map(move |l| (path.clone(), l))
+            })
             .flatten();
         let section_links = library.sections()
             .values()
-            .map(|p| p.external_links.iter())
+            .map(|p| {
+                let path = &p.file.path;
+                p.external_links.iter().map(move |l| (path.clone(), l))
+            })
             .flatten();
         let all_links = page_links.chain(section_links).collect::<Vec<_>>();
 
-        let errors = all_links.par_iter().filter_map(|l| {
-            let res = check_url(l);
-            if res.is_valid() {
-                None
-            } else {
-                Some(res)
-            }
-        }).collect::<Vec<_>>();
+        // create thread pool with lots of threads so we can fetch
+        // (almost) all pages simultaneously
+        let threads = std::cmp::min(all_links.len(), 32);
+        let pool = rayon::ThreadPoolBuilder::new().num_threads(threads).build().map_err(|e| Error {
+            kind: ErrorKind::Msg(e.to_string().into()),
+            source: None,
+        })?;
+
+        let errors: Vec<_> = pool.install(|| {
+            all_links.par_iter().filter_map(|(path, link)| {
+                let res = check_url(link);
+                if res.is_valid() {
+                    None
+                } else {
+                    Some((path, res))
+                }
+            }).collect()
+        });
 
         if errors.is_empty() {
             Ok(())
         } else {
+            let msg = errors.into_iter()
+                .map(|(path, check_res)| format!("Dead link in {:?}: {:?}", path, check_res))
+                .collect::<Vec<_>>()
+                .join("\n");
             Err(Error {
-                kind: ErrorKind::Msg("Bad links!".into()),
+                kind: ErrorKind::Msg(msg.into()),
                 source: None,
             })
         }
