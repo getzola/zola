@@ -352,6 +352,46 @@ fn can_add_id_to_headers_same_slug() {
 }
 
 #[test]
+fn can_handle_manual_ids_on_headers() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    // Tested things: manual IDs; whitespace flexibility; that automatic IDs avoid collision with
+    // manual IDs; that duplicates are in fact permitted among manual IDs; that any non-plain-text
+    // in the middle of `{#…}` will disrupt it from being acknowledged as a manual ID (that last
+    // one could reasonably be considered a bug rather than a feature, but test it either way); one
+    // workaround for the improbable case where you actually want `{#…}` at the end of a header.
+    let res = render_content("\
+        # Hello\n\
+        # Hello{#hello}\n\
+        # Hello {#hello}\n\
+        # Hello     {#Something_else} \n\
+        # Workaround for literal {#…&#125;\n\
+        # Hello\n\
+        # Auto {#*matic*}", &context).unwrap();
+    assert_eq!(res.body, "\
+        <h1 id=\"hello-1\">Hello</h1>\n\
+        <h1 id=\"hello\">Hello</h1>\n\
+        <h1 id=\"hello\">Hello</h1>\n\
+        <h1 id=\"Something_else\">Hello</h1>\n\
+        <h1 id=\"workaround-for-literal\">Workaround for literal {#…}</h1>\n\
+        <h1 id=\"hello-2\">Hello</h1>\n\
+        <h1 id=\"auto-matic\">Auto {#<em>matic</em>}</h1>\n\
+        ");
+}
+
+#[test]
+fn blank_headers() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# \n#\n# {#hmm} \n# {#}", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"-1\"></h1>\n<h1 id=\"-2\"></h1>\n<h1 id=\"hmm\"></h1>\n<h1 id=\"\"></h1>\n");
+}
+
+#[test]
 fn can_insert_anchor_left() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
