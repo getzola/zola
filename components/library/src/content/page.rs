@@ -579,7 +579,8 @@ Hello world
         assert_eq!(page.file.parent, path.join("content").join("posts"));
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.serialized_assets.len(), 3);
-        assert_eq!(page.serialized_assets[0], "posts/with_assets/graph.jpg");
+        // We should not get with-assets since that's the slugified version
+        assert!(page.serialized_assets[0].contains("with_assets"));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
     }
 
