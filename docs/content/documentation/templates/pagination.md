@@ -5,11 +5,7 @@ weight = 30
 
 Two things can get paginated: a section or a taxonomy term.
 
-A paginated section gets the same `section` variable as a normal
-[section page](./documentation/templates/pages-sections.md#section-variables) minus its pages
-while
-
-Both get a paginated page gets a `paginator` variable of the `Pager` type:
+Every paginated template gets a `paginator` variable of the `Pager` type:
 
 ```ts
 // How many items per page
