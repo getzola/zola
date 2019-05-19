@@ -537,7 +537,6 @@ impl Site {
             self.compile_sass(&self.base_path)?;
         }
 
-        self.process_images()?;
         self.copy_static_directories()?;
 
         if self.config.build_search_index {
@@ -577,6 +576,9 @@ impl Site {
         self.render_404()?;
         self.render_robots()?;
         self.render_taxonomies()?;
+        // We process images at the end as we might have picked up images to process from markdown
+        // or from templates
+        self.process_images()?;
 
         Ok(())
     }
