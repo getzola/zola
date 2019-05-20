@@ -16,6 +16,14 @@ if the slug already exists for that article. For example:
 ## Example code <- example-code-1
 ```
 
+You can also manually specify an id with a `{#…}` suffix on the header line:
+
+```md
+# Something manual! {#manual}
+```
+
+This is useful for making deep links robust, either proactively (so that you can later change the text of a header without breaking links to it) or retroactively (keeping the slug of the old header text, when changing the text). It can also be useful for migration of existing sites with different header id schemes, so that you can keep deep links working.
+
 ## Anchor insertion
 It is possible to have Zola automatically insert anchor links next to the header, as you can see on the site you are currently
 reading if you hover a title.

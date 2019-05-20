@@ -33,11 +33,12 @@ struct HeaderRef {
     start_idx: usize,
     end_idx: usize,
     level: i32,
+    id: Option<String>,
 }
 
 impl HeaderRef {
     fn new(start: usize, level: i32) -> HeaderRef {
-        HeaderRef { start_idx: start, end_idx: 0, level }
+        HeaderRef { start_idx: start, end_idx: 0, level, id: None }
     }
 }
 
@@ -225,15 +226,36 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             })
             .collect::<Vec<_>>(); // We need to collect the events to make a second pass
 
-        let header_refs = get_header_refs(&events);
+        let mut header_refs = get_header_refs(&events);
 
         let mut anchors_to_insert = vec![];
 
+        // First header pass: look for a manually-specified IDs, e.g. `# Heading text {#hash}`
+        // (This is a separate first pass so that auto IDs can avoid collisions with manual IDs.)
+        for header_ref in header_refs.iter_mut() {
+            let end_idx = header_ref.end_idx;
+            if let Event::Text(ref mut text) = events[end_idx - 1] {
+                if text.as_bytes().last() == Some(&b'}') {
+                    if let Some(mut i) = text.find("{#") {
+                        let id = text[i + 2..text.len() - 1].to_owned();
+                        inserted_anchors.push(id.clone());
+                        while i > 0 && text.as_bytes()[i - 1] == b' ' {
+                            i -= 1;
+                        }
+                        header_ref.id = Some(id);
+                        *text = text[..i].to_owned().into();
+                    }
+                }
+            }
+        }
+
+        // Second header pass: auto-generate remaining IDs, and emit HTML
         for header_ref in header_refs {
             let start_idx = header_ref.start_idx;
             let end_idx = header_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
-            let id = find_anchor(&inserted_anchors, slugify(&title), 0);
+            let id = header_ref.id.unwrap_or_else(
+                || find_anchor(&inserted_anchors, slugify(&title), 0));
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag
