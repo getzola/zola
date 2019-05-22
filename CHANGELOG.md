@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.7.1 (unreleased)
+## 0.8.0 (unreleased)
+
+### Breaking
+
+- Allow specifying heading IDs. It is a breaking change in the unlikely case you are using `{#..}` in your heading
+
+### Other
+
+- Fix image processing not happening if called from the template
 
 ## 0.7.0 (2019-04-28)
 

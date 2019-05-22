@@ -14,7 +14,7 @@ If you don't have an account with Netlify, you can [sign up](https://app.netlify
 Once you are in the admin interface, you can add a site from a Git provider (GitHub, GitLab or Bitbucket). At the end
  of this process, you can select the deploy settings for the project:
 
- - build command: `ZOLA_VERSION=0.7.0 zola build` (replace the version number in the variable by the version you want to use)
+ - build command: `ZOLA_VERSION=0.8.0 zola build` (replace the version number in the variable by the version you want to use)
  - publish directory: the path to where the `public` directory is
 
 With this setup, your site should be automatically deployed on every commit on master.  For `ZOLA_VERSION`, you may
@@ -36,7 +36,7 @@ command = "zola build"
 
 [build.environment]
 # Set the version name that you want to use and Netlify will automatically use it
-ZOLA_VERSION = "0.7.0"
+ZOLA_VERSION = "0.8.0"
 
 # The magic for deploying previews of branches
 # We need to override the base url with whatever url Netlify assigns to our

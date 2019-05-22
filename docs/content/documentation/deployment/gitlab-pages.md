@@ -41,7 +41,7 @@ variables:
   # This variable will ensure that the CI runner pulls in your theme from the submodule
   GIT_SUBMODULE_STRATEGY: recursive  
   # Specify the zola version you want to use here
-  ZOLA_VERSION: "v0.7.0"
+  ZOLA_VERSION: "v0.8.0"
 
 pages:
   script:
