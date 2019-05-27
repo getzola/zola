@@ -280,11 +280,11 @@ impl Site {
 
         let errors: Vec<_> = pool.install(|| {
             all_links.par_iter().filter_map(|(path, link)| {
-                let res = check_url(link);
+                let res = check_url(&link);
                 if res.is_valid() {
                     None
                 } else {
-                    Some((path, res))
+                    Some((path, link, res))
                 }
             }).collect()
         });
@@ -293,7 +293,7 @@ impl Site {
             Ok(())
         } else {
             let msg = errors.into_iter()
-                .map(|(path, check_res)| format!("Dead link in {:?}: {:?}", path, check_res))
+                .map(|(path, link, check_res)| format!("Dead link in {} to {}: {}", path.to_string_lossy(), link, check_res.message()))
                 .collect::<Vec<_>>()
                 .join("\n");
             Err(Error {
