@@ -9,7 +9,6 @@ use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
-use link_checker::check_url;
 use table_of_contents::{make_table_of_contents, Header};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
@@ -25,6 +24,7 @@ pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
     pub toc: Vec<Header>,
+    pub external_links: Vec<String>,
 }
 
 // tracks a header in a slice of pulldown-cmark events
@@ -66,7 +66,7 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
-fn fix_link(link_type: LinkType, link: &str, context: &RenderContext) -> Result<String> {
+fn fix_link(link_type: LinkType, link: &str, context: &RenderContext, external_links: &mut Vec<String>) -> Result<String> {
     if link_type == LinkType::Email {
         return Ok(link.to_string());
     }
@@ -83,17 +83,10 @@ fn fix_link(link_type: LinkType, link: &str, context: &RenderContext) -> Result<
         }
     } else if is_colocated_asset_link(&link) {
         format!("{}{}", context.current_page_permalink, link)
-    } else if context.config.check_external_links
-        && !link.starts_with('#')
-        && !link.starts_with("mailto:")
-    {
-        let res = check_url(&link);
-        if res.is_valid() {
-            link.to_string()
-        } else {
-            return Err(format!("Link {} is not valid: {}", link, res.message()).into());
-        }
     } else {
+        if !link.starts_with('#') && !link.starts_with("mailto:") {
+            external_links.push(link.to_owned());
+        }
         link.to_string()
     };
     Ok(result)
@@ -142,6 +135,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headers: Vec<Header> = vec![];
+    let mut external_links = Vec::new();
 
     let mut opts = Options::empty();
     let mut has_summary = false;
@@ -207,7 +201,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Start(Tag::Image(link_type, src, title))
                     }
                     Event::Start(Tag::Link(link_type, link, title)) => {
-                        let fixed_link = match fix_link(link_type, &link, context) {
+                        let fixed_link = match fix_link(link_type, &link, context, &mut external_links) {
                             Ok(fixed_link) => fixed_link,
                             Err(err) => {
                                 error = Some(err);
@@ -302,6 +296,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
             toc: make_table_of_contents(headers),
+            external_links: external_links,
         })
     }
 }

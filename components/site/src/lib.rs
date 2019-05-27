@@ -15,6 +15,7 @@ extern crate library;
 extern crate search;
 extern crate templates;
 extern crate utils;
+extern crate link_checker;
 
 #[cfg(test)]
 extern crate tempfile;
@@ -33,7 +34,7 @@ use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use tera::{Context, Tera};
 
 use config::{get_config, Config};
-use errors::{Error, Result};
+use errors::{Error, ErrorKind, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
@@ -42,6 +43,7 @@ use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
 use utils::templates::{render_template, rewrite_theme_paths};
+use link_checker::check_url;
 
 #[derive(Debug)]
 pub struct Site {
@@ -243,7 +245,62 @@ impl Site {
         self.render_markdown()?;
         self.register_tera_global_fns();
 
+        if self.config.check_external_links {
+            self.check_external_links()?;
+        }
+
         Ok(())
+    }
+
+    pub fn check_external_links(&self) -> Result<()> {
+        let library = self.library.write().expect("Get lock for check_external_links");
+        let page_links = library.pages()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.external_links.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let section_links = library.sections()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.external_links.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+
+        // create thread pool with lots of threads so we can fetch
+        // (almost) all pages simultaneously
+        let threads = std::cmp::min(all_links.len(), 32);
+        let pool = rayon::ThreadPoolBuilder::new().num_threads(threads).build().map_err(|e| Error {
+            kind: ErrorKind::Msg(e.to_string().into()),
+            source: None,
+        })?;
+
+        let errors: Vec<_> = pool.install(|| {
+            all_links.par_iter().filter_map(|(path, link)| {
+                let res = check_url(link);
+                if res.is_valid() {
+                    None
+                } else {
+                    Some((path, res))
+                }
+            }).collect()
+        });
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            let msg = errors.into_iter()
+                .map(|(path, check_res)| format!("Dead link in {:?}: {:?}", path, check_res))
+                .collect::<Vec<_>>()
+                .join("\n");
+            Err(Error {
+                kind: ErrorKind::Msg(msg.into()),
+                source: None,
+            })
+        }
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create

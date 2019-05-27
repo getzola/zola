@@ -697,10 +697,9 @@ Some text
 }
 
 #[test]
-fn can_validate_valid_external_links() {
+fn correctly_captures_external_links() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
+    let config = Config::default();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -708,58 +707,14 @@ fn can_validate_valid_external_links() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
-    let res = render_content("[a link](http://google.com)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"http://google.com\">a link</a></p>\n");
-}
-
-#[test]
-fn can_show_error_message_for_invalid_external_links() {
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
-    let context = RenderContext::new(
-        &ZOLA_TERA,
-        &config,
-        "https://vincent.is/about/",
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-    let res = render_content("[a link](http://google.comy)", &context);
-    assert!(res.is_err());
-    let err = res.unwrap_err();
-    assert!(format!("{}", err).contains("Link http://google.comy is not valid"));
-}
-
-#[test]
-fn doesnt_try_to_validate_email_links_mailto() {
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
-    let context = RenderContext::new(
-        &ZOLA_TERA,
-        &config,
-        "https://vincent.is/about/",
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-    let res = render_content("Email: [foo@bar.baz](mailto:foo@bar.baz)", &context).unwrap();
-    assert_eq!(res.body, "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n");
-}
-
-#[test]
-fn doesnt_try_to_validate_email_links_angled_brackets() {
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
-    let context = RenderContext::new(
-        &ZOLA_TERA,
-        &config,
-        "https://vincent.is/about/",
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-    let res = render_content("Email: <foo@bar.baz>", &context).unwrap();
-    assert_eq!(res.body, "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n");
+    let content = "
+[a link](http://google.com)
+[a link](http://google.comy)
+Email: [foo@bar.baz](mailto:foo@bar.baz)
+Email: <foo@bar.baz>
+    ";
+    let res = render_content(content, &context).unwrap();
+    assert_eq!(res.external_links, &["http://google.com".to_owned(), "http://google.comy".to_owned()]);
 }
 
 #[test]

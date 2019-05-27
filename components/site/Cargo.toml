@@ -19,6 +19,7 @@ front_matter = { path = "../front_matter" }
 search = { path = "../search" }
 imageproc = { path = "../imageproc" }
 library = { path = "../library" }
+link_checker = { path = "../link_checker" }
 
 [dev-dependencies]
 tempfile = "3"
