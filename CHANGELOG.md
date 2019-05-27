@@ -9,6 +9,7 @@
 ### Other
 
 - Fix image processing not happening if called from the template
+- Add a `zola check` command to that validates the site and checks all external links
 
 ## 0.7.0 (2019-04-28)
 
