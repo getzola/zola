@@ -390,7 +390,9 @@ pub fn serve(
                         }
                         console::report_elapsed_time(start);
                     }
-                    Create(path) | Write(path) | Remove(path) => {
+                    // Intellij does weird things on edit, chmod is there to count those changes
+                    // https://github.com/passcod/notify/issues/150#issuecomment-494912080
+                    Create(path) | Write(path) | Remove(path) | Chmod(path) => {
                         if is_temp_file(&path) || path.is_dir() {
                             continue;
                         }
