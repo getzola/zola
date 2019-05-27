@@ -15,7 +15,7 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
 /// Resolves an internal link (of the `./posts/something.md#hey` sort) to its absolute link
 pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -> Result<String> {
     // First we remove the ./ since that's zola specific
-    let clean_link = link.replacen("./", "", 1);
+    let clean_link = link.replacen("@/", "", 1);
     // Then we remove any potential anchor
     // parts[0] will be the file path and parts[1] the anchor if present
     let parts = clean_link.split('#').collect::<Vec<_>>();
@@ -41,7 +41,7 @@ mod tests {
     fn can_resolve_valid_internal_link() {
         let mut permalinks = HashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
-        let res = resolve_internal_link("./pages/about.md", &permalinks).unwrap();
+        let res = resolve_internal_link("@/pages/about.md", &permalinks).unwrap();
         assert_eq!(res, "https://vincent.is/about");
     }
 
@@ -49,7 +49,7 @@ mod tests {
     fn can_resolve_valid_root_internal_link() {
         let mut permalinks = HashMap::new();
         permalinks.insert("about.md".to_string(), "https://vincent.is/about".to_string());
-        let res = resolve_internal_link("./about.md", &permalinks).unwrap();
+        let res = resolve_internal_link("@/about.md", &permalinks).unwrap();
         assert_eq!(res, "https://vincent.is/about");
     }
 
@@ -57,13 +57,13 @@ mod tests {
     fn can_resolve_internal_links_with_anchors() {
         let mut permalinks = HashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
-        let res = resolve_internal_link("./pages/about.md#hello", &permalinks).unwrap();
+        let res = resolve_internal_link("@/pages/about.md#hello", &permalinks).unwrap();
         assert_eq!(res, "https://vincent.is/about#hello");
     }
 
     #[test]
     fn errors_resolve_inexistant_internal_link() {
-        let res = resolve_internal_link("./pages/about.md#hello", &HashMap::new());
+        let res = resolve_internal_link("@/pages/about.md#hello", &HashMap::new());
         assert!(res.is_err());
     }
 

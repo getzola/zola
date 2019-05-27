@@ -5,7 +5,7 @@ weight = 90
 
 Zola has built-in support for taxonomies.
 
-The first step is to define the taxonomies in your [config.toml](./documentation/getting-started/configuration.md).
+The first step is to define the taxonomies in your [config.toml](@/documentation/getting-started/configuration.md).
 
 A taxonomy has 5 variables:
 

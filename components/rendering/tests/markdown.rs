@@ -299,7 +299,7 @@ fn can_make_valid_relative_link() {
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
     let res = render_content(
-        r#"[rel link](./pages/about.md), [abs link](https://vincent.is/about)"#,
+        r#"[rel link](@/pages/about.md), [abs link](https://vincent.is/about)"#,
         &context,
     )
     .unwrap();
@@ -316,7 +316,7 @@ fn can_make_relative_links_with_anchors() {
     let tera_ctx = Tera::default();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
-    let res = render_content(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
+    let res = render_content(r#"[rel link](@/pages/about.md#cv)"#, &context).unwrap();
 
     assert!(res.body.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#));
 }
@@ -327,7 +327,7 @@ fn errors_relative_link_inexistant() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("[rel link](./pages/about.md)", &context);
+    let res = render_content("[rel link](@/pages/about.md)", &context);
     assert!(res.is_err());
 }
 
@@ -623,7 +623,7 @@ fn can_make_valid_relative_link_in_header() {
     let tera_ctx = Tera::default();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
-    let res = render_content(r#" # [rel link](./pages/about.md)"#, &context).unwrap();
+    let res = render_content(r#" # [rel link](@/pages/about.md)"#, &context).unwrap();
 
     assert_eq!(
         res.body,

@@ -5,8 +5,8 @@ weight = 10
 
 
 Zola uses the folder structure to determine the site structure.
-Each folder in the `content` directory represents a [section](./documentation/content/section.md)
-that contains [pages](./documentation/content/page.md): your `.md` files.
+Each folder in the `content` directory represents a [section](@/documentation/content/section.md)
+that contains [pages](@/documentation/content/page.md): your `.md` files.
 
 ```bash
 .
@@ -24,7 +24,7 @@ that contains [pages](./documentation/content/page.md): your `.md` files.
 ```
 
 Each page path (the part after the `base_url`, for example `blog/cli-usage/`) can be customised by changing the `path` or `slug`
-attribute of the [page front-matter](./documentation/content/page.md#front-matter).
+attribute of the [page front-matter](@/documentation/content/page.md#front-matter).
 
 You might have noticed a file named `_index.md` in the example above.
 This file is used to store both metadata and content of the section itself and is not considered a page.
@@ -70,7 +70,7 @@ By default, this page will get the folder name as its slug. So its permalink wou
 ### Excluding files from assets
 
 It is possible to ignore selected asset files using the
-[ignored_content](./documentation/getting-started/configuration.md) setting in the config file.
+[ignored_content](@/documentation/getting-started/configuration.md) setting in the config file.
 For example, say you have an Excel spreadsheet from which you are taking several screenshots and
 then linking to those image files on your website. For maintainability purposes, you want to keep
 the spreadsheet in the same folder as the markdown, but you don't want to copy the spreadsheet to

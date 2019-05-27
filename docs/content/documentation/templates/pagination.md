@@ -32,7 +32,7 @@ current_index: Number;
 ## Section
 
 A paginated section gets the same `section` variable as a normal
-[section page](./documentation/templates/pages-sections.md#section-variables) minus its pages.
+[section page](@/documentation/templates/pages-sections.md#section-variables) minus its pages.
 
 ## Taxonomy term
 
@@ -41,4 +41,4 @@ A paginated taxonomy gets two variables:
 - a `taxonomy` variable of type `TaxonomyConfig`
 - a `term` variable of type `TaxonomyTerm`.
 
-See the [taxonomies page](./documentation/templates/taxonomies.md) for a detailed version of the types.
+See the [taxonomies page](@/documentation/templates/taxonomies.md) for a detailed version of the types.

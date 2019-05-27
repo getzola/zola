@@ -60,7 +60,7 @@ impl TeraFn for GetUrl {
             args.get("path"),
             "`get_url` requires a `path` argument with a string value"
         );
-        if path.starts_with("./") {
+        if path.starts_with("@/") {
             match resolve_internal_link(&path, &self.permalinks) {
                 Ok(url) => Ok(to_value(url).unwrap()),
                 Err(_) => {

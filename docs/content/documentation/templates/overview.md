@@ -15,7 +15,7 @@ to print the whole context.
 
 A few variables are available on all templates minus RSS and sitemap:
 
-- `config`: the [configuration](./documentation/getting-started/configuration.md) without any modifications
+- `config`: the [configuration](@/documentation/getting-started/configuration.md) without any modifications
 - `current_path`: the path (full URL without the `base_url`) of the current page, never starting with a `/`
 - `current_url`: the full URL for that page
 - `lang`: the language for that page, `null` if the page/section doesn't have a language set
@@ -105,11 +105,11 @@ If you only need the metadata of the section, you can pass `metadata_only=true` 
 
 ### ` get_url`
 Gets the permalink for the given path.
-If the path starts with `./`, it will be understood as an internal
-link like the ones used in markdown.
+If the path starts with `@/`, it will be understood as an internal
+link like the ones used in markdown, starting from the root `content` directory.
 
 ```jinja2
-{% set url = get_url(path="./blog/_index.md") %}
+{% set url = get_url(path="@/blog/_index.md") %}
 ```
 
 This can also be used to get the permalinks for static assets for example if
@@ -230,4 +230,4 @@ Gets the translation of the given `key`, for the `default_language` or the `lang
 
 ### `resize_image`
 Resizes an image file.
-Pease refer to [_Content / Image Processing_](./documentation/content/image-processing/index.md) for complete documentation.
+Pease refer to [_Content / Image Processing_](@/documentation/content/image-processing/index.md) for complete documentation.

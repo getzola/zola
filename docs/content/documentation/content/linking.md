@@ -29,7 +29,7 @@ It is possible to have Zola automatically insert anchor links next to the header
 reading if you hover a title.
 
 This option is set at the section level: the `insert_anchor_links` variable on the
-[Section front-matter page](./documentation/content/section.md#front-matter).
+[Section front-matter page](@/documentation/content/section.md#front-matter).
 
 The default template is very basic and will need CSS tweaks in your project to look decent.
 If you want to change the anchor template, it can easily be overwritten by
@@ -37,8 +37,8 @@ creating a `anchor-link.html` file in the `templates` directory.
 
 ## Internal links
 Linking to other pages and their headers is so common that Zola adds a
-special syntax to Markdown links to handle them: start the link with `./` and point to the `.md` file you want
+special syntax to Markdown links to handle them: start the link with `@/` and point to the `.md` file you want
 to link to. The path to the file starts from the `content` directory.
 
-For example, linking to a file located at `content/pages/about.md` would be `[my link](./pages/about.md)`.
-You can still link to a header directly: `[my link](./pages/about.md#example)` will work as expected.
+For example, linking to a file located at `content/pages/about.md` would be `[my link](@/pages/about.md)`.
+You can still link to a header directly: `[my link](@/pages/about.md#example)` will work as expected.

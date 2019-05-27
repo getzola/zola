@@ -71,10 +71,10 @@ fn fix_link(link_type: LinkType, link: &str, context: &RenderContext, external_l
         return Ok(link.to_string());
     }
     // A few situations here:
-    // - it could be a relative link (starting with `./`)
+    // - it could be a relative link (starting with `@/`)
     // - it could be a link to a co-located asset
     // - it could be a normal link
-    let result = if link.starts_with("./") {
+    let result = if link.starts_with("@/") {
         match resolve_internal_link(&link, context.permalinks) {
             Ok(url) => url,
             Err(_) => {
@@ -296,7 +296,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
             toc: make_table_of_contents(headers),
-            external_links: external_links,
+            external_links,
         })
     }
 }
