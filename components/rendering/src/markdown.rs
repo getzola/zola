@@ -97,8 +97,9 @@ fn get_text(parser_slice: &[Event]) -> String {
     let mut title = String::new();
 
     for event in parser_slice.iter() {
-        if let Event::Text(text) = event {
-            title += text;
+        match event {
+            Event::Text(text) | Event::Code(text) => title += text,
+            _ => continue
         }
     }
 
