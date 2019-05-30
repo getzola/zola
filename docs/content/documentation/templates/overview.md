@@ -130,6 +130,14 @@ In the case of non-internal links, you can also add a cachebust of the format `?
 by passing `cachebust=true` to the `get_url` function.
 
 
+### `get_image_metadata`
+Gets metadata for an image.  Today the only supported keys are `width` and `height`.
+
+```jinja2
+  {% set meta = get_image_metadata(path="...") %}
+  Our image is {{ meta.width }}x{{ meta.height }}
+```
+
 ### `get_taxonomy_url`
 Gets the permalink for the taxonomy item found.
 

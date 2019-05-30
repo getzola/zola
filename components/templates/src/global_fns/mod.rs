@@ -2,11 +2,13 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 
-use tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 
 use config::Config;
 use library::{Library, Taxonomy};
 use utils::site::resolve_internal_link;
+use image;
+use image::GenericImageView;
 
 use imageproc;
 
@@ -139,6 +141,39 @@ impl TeraFn for ResizeImage {
         to_value(url).map_err(|err| err.into())
     }
 }
+
+#[derive(Debug)]
+pub struct GetImageMeta {
+    content_path: PathBuf
+}
+
+impl GetImageMeta {
+    pub fn new(content_path: PathBuf) -> Self {
+        Self { content_path }
+    }
+}
+
+impl TeraFn for GetImageMeta {
+    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
+        let path = required_arg!(
+            String,
+            args.get("path"),
+            "`get_image_meta` requires a `path` argument with a string value"
+        );
+        let src_path = self.content_path.join(&path);
+        if !src_path.exists(){
+            return Err(format!("`get_image_meta`: Cannot find path: {}", path).into());
+        }
+        let img = image::open(&src_path)
+            .map_err(|e| Error::chain(format!("Failed to process image: {}", path), e))?;
+        let mut map = tera::Map::new();
+        map.insert(String::from("height"), Value::Number(tera::Number::from(img.height())));
+        map.insert(String::from("width"), Value::Number(tera::Number::from(img.width())));
+        Ok(Value::Object(map))
+    }
+}
+
+
 
 #[derive(Debug)]
 pub struct GetTaxonomyUrl {
