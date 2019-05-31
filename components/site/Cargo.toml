@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
 tera = "1.0.0-alpha.3"
-glob = "0.2"
+glob = "0.3"
 rayon = "1"
 serde = "1"
 serde_derive = "1"
