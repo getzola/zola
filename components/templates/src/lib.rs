@@ -4,10 +4,10 @@ extern crate lazy_static;
 extern crate tera;
 extern crate base64;
 extern crate csv;
+extern crate image;
 extern crate pulldown_cmark;
 extern crate reqwest;
 extern crate url;
-extern crate image;
 #[cfg(test)]
 #[macro_use]
 extern crate serde_json;

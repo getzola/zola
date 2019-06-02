@@ -65,12 +65,16 @@ impl ResizeOp {
             }
             "fit_height" => {
                 if height.is_none() {
-                    return Err("op=\"fit_height\" requires a `height` argument".to_string().into());
+                    return Err("op=\"fit_height\" requires a `height` argument"
+                        .to_string()
+                        .into());
                 }
             }
             "scale" | "fit" | "fill" => {
                 if width.is_none() || height.is_none() {
-                    return Err(format!("op={} requires a `width` and `height` argument", op).into());
+                    return Err(
+                        format!("op={} requires a `width` and `height` argument", op).into()
+                    );
                 }
             }
             _ => return Err(format!("Invalid image resize operation: {}", op).into()),
@@ -168,7 +172,7 @@ impl Format {
     pub fn is_lossy<P: AsRef<Path>>(p: P) -> Option<bool> {
         p.as_ref()
             .extension()
-            .and_then(|s| s.to_str())
+            .and_then(std::ffi::OsStr::to_str)
             .map(|ext| match ext.to_lowercase().as_str() {
                 "jpg" | "jpeg" => Some(true),
                 "png" => Some(false),

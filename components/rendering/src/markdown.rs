@@ -66,7 +66,12 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
-fn fix_link(link_type: LinkType, link: &str, context: &RenderContext, external_links: &mut Vec<String>) -> Result<String> {
+fn fix_link(
+    link_type: LinkType,
+    link: &str,
+    context: &RenderContext,
+    external_links: &mut Vec<String>,
+) -> Result<String> {
     if link_type == LinkType::Email {
         return Ok(link.to_string());
     }
@@ -99,7 +104,7 @@ fn get_text(parser_slice: &[Event]) -> String {
     for event in parser_slice.iter() {
         match event {
             Event::Text(text) | Event::Code(text) => title += text,
-            _ => continue
+            _ => continue,
         }
     }
 
@@ -202,13 +207,14 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Start(Tag::Image(link_type, src, title))
                     }
                     Event::Start(Tag::Link(link_type, link, title)) => {
-                        let fixed_link = match fix_link(link_type, &link, context, &mut external_links) {
-                            Ok(fixed_link) => fixed_link,
-                            Err(err) => {
-                                error = Some(err);
-                                return Event::Html("".into());
-                            }
-                        };
+                        let fixed_link =
+                            match fix_link(link_type, &link, context, &mut external_links) {
+                                Ok(fixed_link) => fixed_link,
+                                Err(err) => {
+                                    error = Some(err);
+                                    return Event::Html("".into());
+                                }
+                            };
 
                         Event::Start(Tag::Link(link_type, fixed_link.into(), title))
                     }
@@ -249,8 +255,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             let start_idx = header_ref.start_idx;
             let end_idx = header_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
-            let id = header_ref.id.unwrap_or_else(
-                || find_anchor(&inserted_anchors, slugify(&title), 0));
+            let id =
+                header_ref.id.unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag

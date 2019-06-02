@@ -11,6 +11,7 @@
 
 - Fix image processing not happening if called from the template
 - Add a `zola check` command to that validates the site and checks all external links
+- Sections can have `aliases` as well
 
 ## 0.7.0 (2019-04-28)
 

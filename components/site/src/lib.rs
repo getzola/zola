@@ -12,18 +12,17 @@ extern crate config;
 extern crate front_matter;
 extern crate imageproc;
 extern crate library;
+extern crate link_checker;
 extern crate search;
 extern crate templates;
 extern crate utils;
-extern crate link_checker;
 
 #[cfg(test)]
 extern crate tempfile;
 
-
 mod sitemap;
 
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use std::fs::{copy, create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
@@ -39,11 +38,11 @@ use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
 };
+use link_checker::check_url;
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
 use utils::templates::{render_template, rewrite_theme_paths};
-use link_checker::check_url;
 
 #[derive(Debug)]
 pub struct Site {
@@ -254,14 +253,16 @@ impl Site {
 
     pub fn check_external_links(&self) -> Result<()> {
         let library = self.library.write().expect("Get lock for check_external_links");
-        let page_links = library.pages()
+        let page_links = library
+            .pages()
             .values()
             .map(|p| {
                 let path = &p.file.path;
                 p.external_links.iter().map(move |l| (path.clone(), l))
             })
             .flatten();
-        let section_links = library.sections()
+        let section_links = library
+            .sections()
             .values()
             .map(|p| {
                 let path = &p.file.path;
@@ -273,33 +274,41 @@ impl Site {
         // create thread pool with lots of threads so we can fetch
         // (almost) all pages simultaneously
         let threads = std::cmp::min(all_links.len(), 32);
-        let pool = rayon::ThreadPoolBuilder::new().num_threads(threads).build().map_err(|e| Error {
-            kind: ErrorKind::Msg(e.to_string().into()),
-            source: None,
-        })?;
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(threads)
+            .build()
+            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string().into()), source: None })?;
 
         let errors: Vec<_> = pool.install(|| {
-            all_links.par_iter().filter_map(|(path, link)| {
-                let res = check_url(&link);
-                if res.is_valid() {
-                    None
-                } else {
-                    Some((path, link, res))
-                }
-            }).collect()
+            all_links
+                .par_iter()
+                .filter_map(|(path, link)| {
+                    let res = check_url(&link);
+                    if res.is_valid() {
+                        None
+                    } else {
+                        Some((path, link, res))
+                    }
+                })
+                .collect()
         });
 
         if errors.is_empty() {
             Ok(())
         } else {
-            let msg = errors.into_iter()
-                .map(|(path, link, check_res)| format!("Dead link in {} to {}: {}", path.to_string_lossy(), link, check_res.message()))
+            let msg = errors
+                .into_iter()
+                .map(|(path, link, check_res)| {
+                    format!(
+                        "Dead link in {} to {}: {}",
+                        path.to_string_lossy(),
+                        link,
+                        check_res.message()
+                    )
+                })
                 .collect::<Vec<_>>()
                 .join("\n");
-            Err(Error {
-                kind: ErrorKind::Msg(msg.into()),
-                source: None,
-            })
+            Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
         }
     }
 
@@ -725,35 +734,46 @@ impl Site {
         Ok(compiled_paths)
     }
 
+    fn render_alias(&self, alias: &str, permalink: &str) -> Result<()> {
+        let mut output_path = self.output_path.to_path_buf();
+        let mut split = alias.split('/').collect::<Vec<_>>();
+
+        // If the alias ends with an html file name, use that instead of mapping
+        // as a path containing an `index.html`
+        let page_name = match split.pop() {
+            Some(part) if part.ends_with(".html") => part,
+            Some(part) => {
+                split.push(part);
+                "index.html"
+            }
+            None => "index.html",
+        };
+
+        for component in split {
+            output_path.push(&component);
+
+            if !output_path.exists() {
+                create_directory(&output_path)?;
+            }
+        }
+
+        create_file(
+            &output_path.join(page_name),
+            &render_redirect_template(&permalink, &self.tera)?,
+        )
+    }
+
     pub fn render_aliases(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
-        for (_, page) in self.library.read().unwrap().pages() {
+        let library = self.library.read().unwrap();
+        for (_, page) in library.pages() {
             for alias in &page.meta.aliases {
-                let mut output_path = self.output_path.to_path_buf();
-                let mut split = alias.split('/').collect::<Vec<_>>();
-
-                // If the alias ends with an html file name, use that instead of mapping
-                // as a path containing an `index.html`
-                let page_name = match split.pop() {
-                    Some(part) if part.ends_with(".html") => part,
-                    Some(part) => {
-                        split.push(part);
-                        "index.html"
-                    }
-                    None => "index.html",
-                };
-
-                for component in split {
-                    output_path.push(&component);
-
-                    if !output_path.exists() {
-                        create_directory(&output_path)?;
-                    }
-                }
-                create_file(
-                    &output_path.join(page_name),
-                    &render_redirect_template(&page.permalink, &self.tera)?,
-                )?;
+                self.render_alias(&alias, &page.permalink)?;
+            }
+        }
+        for (_, section) in library.sections() {
+            for alias in &section.meta.aliases {
+                self.render_alias(&alias, &section.permalink)?;
             }
         }
         Ok(())
@@ -841,11 +861,8 @@ impl Site {
 
         let library = self.library.read().unwrap();
         let all_sitemap_entries = {
-            let mut all_sitemap_entries = sitemap::find_entries(
-                &library,
-                &self.taxonomies[..],
-                &self.config,
-            );
+            let mut all_sitemap_entries =
+                sitemap::find_entries(&library, &self.taxonomies[..], &self.config);
             all_sitemap_entries.sort();
             all_sitemap_entries
         };

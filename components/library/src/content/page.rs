@@ -303,7 +303,10 @@ impl Page {
                 // for our need here
                 path.pop();
                 path.push(filename);
-                path = path.strip_prefix(&base_path.join("content")).expect("Should be able to stripe prefix").to_path_buf();
+                path = path
+                    .strip_prefix(&base_path.join("content"))
+                    .expect("Should be able to stripe prefix")
+                    .to_path_buf();
                 path
             })
             .map(|path| path.to_string_lossy().to_string())
@@ -637,7 +640,8 @@ Hello world
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
-        let res = Page::from_file(nested_path.join("index.md").as_path(), &config, &path.to_path_buf());
+        let res =
+            Page::from_file(nested_path.join("index.md").as_path(), &config, &path.to_path_buf());
 
         assert!(res.is_ok());
         let page = res.unwrap();

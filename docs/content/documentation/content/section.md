@@ -89,6 +89,10 @@ redirect_to = ""
 # sections for each year under a posts section.
 transparent = false
 
+# Use aliases if you are moving content but want to redirect previous URLs to the
+# current one. This takes an array of path, not URLs.
+aliases = []
+
 # Your own data
 [extra]
 +++

@@ -58,6 +58,10 @@ pub struct SectionFrontMatter {
     /// Optional template for all pages in this section (including the pages of children section)
     #[serde(skip_serializing)]
     pub page_template: Option<String>,
+    /// All aliases for that page. Zola will create HTML templates that will
+    /// redirect to this
+    #[serde(skip_serializing)]
+    pub aliases: Vec<String>,
     /// Any extra parameter present in the front matter
     pub extra: HashMap<String, Value>,
 }
@@ -97,6 +101,7 @@ impl Default for SectionFrontMatter {
             in_search_index: true,
             transparent: false,
             page_template: None,
+            aliases: Vec::new(),
             extra: HashMap::new(),
         }
     }

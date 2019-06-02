@@ -1,11 +1,11 @@
 use std::borrow::Cow;
+use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
-use std::collections::{HashSet};
 
-use tera::{Map, Value};
-use config::{Config};
+use config::Config;
 use library::{Library, Taxonomy};
 use std::cmp::Ordering;
+use tera::{Map, Value};
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that
@@ -54,7 +54,11 @@ impl<'a> Ord for SitemapEntry<'a> {
 
 /// Finds out all the links to put in a sitemap from the pages/sections/taxonomies
 /// There are no duplicate permalinks in the output vec
-pub fn find_entries<'a>(library: &'a Library, taxonomies: &'a [Taxonomy], config: &'a Config) -> Vec<SitemapEntry<'a>> {
+pub fn find_entries<'a>(
+    library: &'a Library,
+    taxonomies: &'a [Taxonomy],
+    config: &'a Config,
+) -> Vec<SitemapEntry<'a>> {
     let pages = library
         .pages_values()
         .iter()
@@ -77,20 +81,14 @@ pub fn find_entries<'a>(library: &'a Library, taxonomies: &'a [Taxonomy], config
         .map(|s| SitemapEntry::new(Cow::Borrowed(&s.permalink), None))
         .collect::<Vec<_>>();
 
-    for section in library
-        .sections_values()
-        .iter()
-        .filter(|s| s.meta.paginate_by.is_some())
-        {
-            let number_pagers = (section.pages.len() as f64
-                / section.meta.paginate_by.unwrap() as f64)
-                .ceil() as isize;
-            for i in 1..=number_pagers {
-                let permalink =
-                    format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
-                sections.push(SitemapEntry::new(Cow::Owned(permalink), None))
-            }
+    for section in library.sections_values().iter().filter(|s| s.meta.paginate_by.is_some()) {
+        let number_pagers =
+            (section.pages.len() as f64 / section.meta.paginate_by.unwrap() as f64).ceil() as isize;
+        for i in 1..=number_pagers {
+            let permalink = format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
+            sections.push(SitemapEntry::new(Cow::Owned(permalink), None))
         }
+    }
 
     let mut taxonomies_entries = vec![];
     for taxonomy in taxonomies {

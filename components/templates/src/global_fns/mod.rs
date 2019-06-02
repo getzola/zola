@@ -5,10 +5,10 @@ use std::sync::{Arc, Mutex, RwLock};
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 
 use config::Config;
-use library::{Library, Taxonomy};
-use utils::site::resolve_internal_link;
 use image;
 use image::GenericImageView;
+use library::{Library, Taxonomy};
+use utils::site::resolve_internal_link;
 
 use imageproc;
 
@@ -144,7 +144,7 @@ impl TeraFn for ResizeImage {
 
 #[derive(Debug)]
 pub struct GetImageMeta {
-    content_path: PathBuf
+    content_path: PathBuf,
 }
 
 impl GetImageMeta {
@@ -161,7 +161,7 @@ impl TeraFn for GetImageMeta {
             "`get_image_meta` requires a `path` argument with a string value"
         );
         let src_path = self.content_path.join(&path);
-        if !src_path.exists(){
+        if !src_path.exists() {
             return Err(format!("`get_image_meta`: Cannot find path: {}", path).into());
         }
         let img = image::open(&src_path)
@@ -172,8 +172,6 @@ impl TeraFn for GetImageMeta {
         Ok(Value::Object(map))
     }
 }
-
-
 
 #[derive(Debug)]
 pub struct GetTaxonomyUrl {
