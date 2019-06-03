@@ -607,8 +607,6 @@ impl Site {
             self.compile_sass(&self.base_path)?;
         }
 
-        self.copy_static_directories()?;
-
         if self.config.build_search_index {
             self.build_search_index()?;
         }
@@ -649,6 +647,8 @@ impl Site {
         // We process images at the end as we might have picked up images to process from markdown
         // or from templates
         self.process_images()?;
+        // Processed images will be in static so the last step is to copy it
+        self.copy_static_directories()?;
 
         Ok(())
     }
