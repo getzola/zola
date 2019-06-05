@@ -13,7 +13,7 @@
 | [atlasreports.nl](http://www.atlasreports.nl)                      |                                                      |
 | [groksome.com](http://www.groksome.com)                            |                                                      |
 | [tuckersiemens.com](https://tuckersiemens.com)                     | https://github.com/reillysiemens/tuckersiemens.com   |
-| [andrei.blue](https://andrei.blue)                                 | https://github.com/azah/personal-blog                |
+| [andrewzah.com](https://andrewzah.com)                             | https://git.sr.ht/~andrewzah/personal-site/tree      |
 | [Axiomatic Semantics](https://axiomatic.neophilus.net)             | https://github.com/Libbum/AxiomaticSemantics         |
 | [Tinkering](https://tinkering.xyz)                                 |                                                      |
 | [Daniel Sockwell's codesections.com](https://www.codesections.com) | https://gitlab.com/codesections/codesections-website |
