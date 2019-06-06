@@ -17,6 +17,7 @@ use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 
 use content::file_info::FileInfo;
+use content::has_anchor;
 use content::ser::SerializingPage;
 
 lazy_static! {
@@ -76,6 +77,11 @@ pub struct Page {
     pub lang: String,
     /// Contains all the translated version of that page
     pub translations: Vec<Key>,
+    /// Contains the internal links that have an anchor: we can only check the anchor
+    /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
+    /// it would have errored before getting there
+    /// (path to markdown, anchor value)
+    pub internal_links_with_anchors: Vec<(String, String)>,
     /// Contains the external links that need to be checked
     pub external_links: Vec<String>,
 }
@@ -106,6 +112,7 @@ impl Page {
             reading_time: None,
             lang: String::new(),
             translations: Vec::new(),
+            internal_links_with_anchors: Vec::new(),
             external_links: Vec::new(),
         }
     }
@@ -267,6 +274,7 @@ impl Page {
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
+        self.internal_links_with_anchors = res.internal_links_with_anchors;
 
         Ok(())
     }
@@ -313,6 +321,10 @@ impl Page {
             .collect()
     }
 
+    pub fn has_anchor(&self, anchor: &str) -> bool {
+        has_anchor(&self.toc, anchor)
+    }
+
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
         SerializingPage::from_page(self, library)
     }
@@ -346,6 +358,7 @@ impl Default for Page {
             reading_time: None,
             lang: String::new(),
             translations: Vec::new(),
+            internal_links_with_anchors: Vec::new(),
             external_links: Vec::new(),
         }
     }

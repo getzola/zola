@@ -77,7 +77,7 @@ pub fn read_file_with_error(path: &Path, message: &str) -> Result<String> {
 pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
     let mut assets = vec![];
 
-    for entry in read_dir(path).unwrap().filter_map(|e| e.ok()) {
+    for entry in read_dir(path).unwrap().filter_map(std::result::Result::ok) {
         let entry_path = entry.path();
         if entry_path.is_file() {
             match entry_path.extension() {
@@ -108,7 +108,7 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf) -> Result<()> 
 }
 
 pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
-    for entry in WalkDir::new(src).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(src).into_iter().filter_map(std::result::Result::ok) {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
 

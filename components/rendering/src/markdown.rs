@@ -24,6 +24,7 @@ pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
     pub toc: Vec<Header>,
+    pub internal_links_with_anchors: Vec<(String, String)>,
     pub external_links: Vec<String>,
 }
 
@@ -70,6 +71,7 @@ fn fix_link(
     link_type: LinkType,
     link: &str,
     context: &RenderContext,
+    internal_links_with_anchors: &mut Vec<(String, String)>,
     external_links: &mut Vec<String>,
 ) -> Result<String> {
     if link_type == LinkType::Email {
@@ -81,7 +83,13 @@ fn fix_link(
     // - it could be a normal link
     let result = if link.starts_with("@/") {
         match resolve_internal_link(&link, context.permalinks) {
-            Ok(url) => url,
+            Ok(resolved) => {
+                if resolved.anchor.is_some() {
+                    internal_links_with_anchors
+                        .push((resolved.md_path.unwrap(), resolved.anchor.unwrap()));
+                }
+                resolved.permalink
+            }
             Err(_) => {
                 return Err(format!("Relative link {} not found.", link).into());
             }
@@ -141,6 +149,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headers: Vec<Header> = vec![];
+    let mut internal_links_with_anchors = Vec::new();
     let mut external_links = Vec::new();
 
     let mut opts = Options::empty();
@@ -207,14 +216,19 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Start(Tag::Image(link_type, src, title))
                     }
                     Event::Start(Tag::Link(link_type, link, title)) => {
-                        let fixed_link =
-                            match fix_link(link_type, &link, context, &mut external_links) {
-                                Ok(fixed_link) => fixed_link,
-                                Err(err) => {
-                                    error = Some(err);
-                                    return Event::Html("".into());
-                                }
-                            };
+                        let fixed_link = match fix_link(
+                            link_type,
+                            &link,
+                            context,
+                            &mut internal_links_with_anchors,
+                            &mut external_links,
+                        ) {
+                            Ok(fixed_link) => fixed_link,
+                            Err(err) => {
+                                error = Some(err);
+                                return Event::Html("".into());
+                            }
+                        };
 
                         Event::Start(Tag::Link(link_type, fixed_link.into(), title))
                     }
@@ -303,6 +317,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
             toc: make_table_of_contents(headers),
+            internal_links_with_anchors,
             external_links,
         })
     }

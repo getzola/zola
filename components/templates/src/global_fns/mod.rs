@@ -64,7 +64,7 @@ impl TeraFn for GetUrl {
         );
         if path.starts_with("@/") {
             match resolve_internal_link(&path, &self.permalinks) {
-                Ok(url) => Ok(to_value(url).unwrap()),
+                Ok(resolved) => Ok(to_value(resolved.permalink).unwrap()),
                 Err(_) => {
                     Err(format!("Could not resolve URL for link `{}` not found.", path).into())
                 }

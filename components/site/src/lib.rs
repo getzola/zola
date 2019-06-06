@@ -244,11 +244,86 @@ impl Site {
         self.render_markdown()?;
         self.register_tera_global_fns();
 
+        // Needs to be done after rendering markdown as we only get the anchors at that point
+        self.check_internal_links_with_anchors()?;
+
         if self.config.check_external_links {
             self.check_external_links()?;
         }
 
         Ok(())
+    }
+
+    /// Very similar to check_external_links but can't be merged as far as I can see since we always
+    /// want to check the internal links but only the external in zola check :/
+    pub fn check_internal_links_with_anchors(&self) -> Result<()> {
+        let library = self.library.write().expect("Get lock for check_internal_links_with_anchors");
+        let page_links = library
+            .pages()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let section_links = library
+            .sections()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+        let mut full_path = self.base_path.clone();
+        full_path.push("content");
+
+        let errors: Vec<_> = all_links
+            .iter()
+            .filter_map(|(page_path, (md_path, anchor))| {
+                // There are a few `expect` here since the presence of the .md file will
+                // already have been checked in the markdown rendering
+                let mut p = full_path.clone();
+                for part in md_path.split('/') {
+                    p.push(part);
+                }
+                if md_path.contains("_index.md") {
+                    let section = library
+                        .get_section(&p)
+                        .expect("Couldn't find section in check_internal_links_with_anchors");
+                    if section.has_anchor(&anchor) {
+                        None
+                    } else {
+                        Some((page_path, md_path, anchor))
+                    }
+                } else {
+                    let page = library
+                        .get_page(&p)
+                        .expect("Couldn't find section in check_internal_links_with_anchors");
+                    if page.has_anchor(&anchor) {
+                        None
+                    } else {
+                        Some((page_path, md_path, anchor))
+                    }
+                }
+            })
+            .collect();
+        if errors.is_empty() {
+            return Ok(());
+        }
+        let msg = errors
+            .into_iter()
+            .map(|(page_path, md_path, anchor)| {
+                format!(
+                    "The anchor in the link `@/{}#{}` in {} does not exist.",
+                    md_path,
+                    anchor,
+                    page_path.to_string_lossy(),
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
     }
 
     pub fn check_external_links(&self) -> Result<()> {
@@ -282,34 +357,33 @@ impl Site {
         let errors: Vec<_> = pool.install(|| {
             all_links
                 .par_iter()
-                .filter_map(|(path, link)| {
+                .filter_map(|(page_path, link)| {
                     let res = check_url(&link);
                     if res.is_valid() {
                         None
                     } else {
-                        Some((path, link, res))
+                        Some((page_path, link, res))
                     }
                 })
                 .collect()
         });
 
         if errors.is_empty() {
-            Ok(())
-        } else {
-            let msg = errors
-                .into_iter()
-                .map(|(path, link, check_res)| {
-                    format!(
-                        "Dead link in {} to {}: {}",
-                        path.to_string_lossy(),
-                        link,
-                        check_res.message()
-                    )
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
-            Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
+            return Ok(());
         }
+        let msg = errors
+            .into_iter()
+            .map(|(page_path, link, check_res)| {
+                format!(
+                    "Dead link in {} to {}: {}",
+                    page_path.to_string_lossy(),
+                    link,
+                    check_res.message()
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create

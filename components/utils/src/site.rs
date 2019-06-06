@@ -12,8 +12,21 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
     (word_count, (word_count / 200))
 }
 
-/// Resolves an internal link (of the `./posts/something.md#hey` sort) to its absolute link
-pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -> Result<String> {
+#[derive(Debug, PartialEq, Clone)]
+pub struct ResolvedInternalLink {
+    pub permalink: String,
+    // The 2 fields below are only set when there is an anchor
+    // as we will need that to check if it exists after the markdown rendering is done
+    pub md_path: Option<String>,
+    pub anchor: Option<String>,
+}
+
+/// Resolves an internal link (of the `@/posts/something.md#hey` sort) to its absolute link and
+/// returns the path + anchor as well
+pub fn resolve_internal_link(
+    link: &str,
+    permalinks: &HashMap<String, String>,
+) -> Result<ResolvedInternalLink> {
     // First we remove the ./ since that's zola specific
     let clean_link = link.replacen("@/", "", 1);
     // Then we remove any potential anchor
@@ -22,9 +35,13 @@ pub fn resolve_internal_link(link: &str, permalinks: &HashMap<String, String>) -
     match permalinks.get(parts[0]) {
         Some(p) => {
             if parts.len() > 1 {
-                Ok(format!("{}#{}", p, parts[1]))
+                Ok(ResolvedInternalLink {
+                    permalink: format!("{}#{}", p, parts[1]),
+                    md_path: Some(parts[0].to_string()),
+                    anchor: Some(parts[1].to_string()),
+                })
             } else {
-                Ok(p.to_string())
+                Ok(ResolvedInternalLink { permalink: p.to_string(), md_path: None, anchor: None })
             }
         }
         None => bail!(format!("Relative link {} not found.", link)),
@@ -42,7 +59,7 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let res = resolve_internal_link("@/pages/about.md", &permalinks).unwrap();
-        assert_eq!(res, "https://vincent.is/about");
+        assert_eq!(res.permalink, "https://vincent.is/about");
     }
 
     #[test]
@@ -50,7 +67,7 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("about.md".to_string(), "https://vincent.is/about".to_string());
         let res = resolve_internal_link("@/about.md", &permalinks).unwrap();
-        assert_eq!(res, "https://vincent.is/about");
+        assert_eq!(res.permalink, "https://vincent.is/about");
     }
 
     #[test]
@@ -58,7 +75,9 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let res = resolve_internal_link("@/pages/about.md#hello", &permalinks).unwrap();
-        assert_eq!(res, "https://vincent.is/about#hello");
+        assert_eq!(res.permalink, "https://vincent.is/about#hello");
+        assert_eq!(res.md_path, Some("pages/about.md".to_string()));
+        assert_eq!(res.anchor, Some("hello".to_string()));
     }
 
     #[test]
