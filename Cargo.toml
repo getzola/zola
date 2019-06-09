@@ -53,5 +53,6 @@ members = [
     "components/library",
 ]
 
-#[profile.release]
-#debug = true
+[profile.release]
+lto = true
+codegen-units = 1
