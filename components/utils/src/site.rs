@@ -9,7 +9,7 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
 
     // https://help.medium.com/hc/en-us/articles/214991667-Read-time
     // 275 seems a bit too high though
-    (word_count, (word_count / 200))
+    (word_count, ((word_count + 199) / 200))
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -87,10 +87,17 @@ mod tests {
     }
 
     #[test]
+    fn reading_analytics_empty_text() {
+        let (word_count, reading_time) = get_reading_analytics("  ");
+        assert_eq!(word_count, 0);
+        assert_eq!(reading_time, 0);
+    }
+
+    #[test]
     fn reading_analytics_short_text() {
         let (word_count, reading_time) = get_reading_analytics("Hello World");
         assert_eq!(word_count, 2);
-        assert_eq!(reading_time, 0);
+        assert_eq!(reading_time, 1);
     }
 
     #[test]
