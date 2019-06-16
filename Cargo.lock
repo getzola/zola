@@ -619,7 +619,7 @@ version = "0.1.0"
 dependencies = [
  "image 0.21.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "syntect 3.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -697,7 +697,7 @@ dependencies = [
  "regex 1.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.92 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.92 (registry+https://github.com/rust-lang/crates.io-index)",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
@@ -997,7 +997,7 @@ dependencies = [
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rayon 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
 
@@ -1114,7 +1114,7 @@ dependencies = [
  "slotmap 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "slug 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile 3.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
@@ -1896,7 +1896,7 @@ dependencies = [
  "slug 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "syntect 3.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "templates 0.1.0",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
 
@@ -2160,7 +2160,7 @@ dependencies = [
  "serde_derive 1.0.92 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile 3.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "templates 0.1.0",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
 ]
 
@@ -2333,7 +2333,7 @@ dependencies = [
  "pulldown-cmark 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.9.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.39 (registry+https://github.com/rust-lang/crates.io-index)",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 1.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "utils 0.1.0",
@@ -2351,7 +2351,7 @@ dependencies = [
 
 [[package]]
 name = "tera"
-version = "1.0.0-beta.9"
+version = "1.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2855,7 +2855,7 @@ dependencies = [
  "errors 0.1.0",
  "serde 1.0.92 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile 3.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-segmentation 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 2.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3304,7 +3304,7 @@ dependencies = [
 "checksum syntect 3.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e80b8831c5a543192ffc3727f01cf0e57579c6ac15558e3048bfb5708892167b"
 "checksum tempfile 3.0.8 (registry+https://github.com/rust-lang/crates.io-index)" = "7dc4738f2e68ed2855de5ac9cdbe05c9216773ecde4739b2f095002ab03a13ef"
 "checksum tendril 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "707feda9f2582d5d680d733e38755547a3e8fb471e7ba11452ecfd9ce93a5d3b"
-"checksum tera 1.0.0-beta.9 (registry+https://github.com/rust-lang/crates.io-index)" = "f868d9b04e269cc4bb2108e3f0631937ccb004c68ef715e489649385c0b04185"
+"checksum tera 1.0.0-beta.10 (registry+https://github.com/rust-lang/crates.io-index)" = "ad7811c7e5f4bb98b99edae8fb06fc6f4a393d645bc7721ec1905b278f10e951"
 "checksum termcolor 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "96d6098003bde162e4277c70665bd87c326f5a0c3f3fbfb285787fa482d54e6e"
 "checksum termion 1.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "6a8fb22f7cde82c8220e5aeacb3258ed7ce996142c77cba193f203515e26c330"
 "checksum textwrap 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
