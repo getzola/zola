@@ -162,7 +162,7 @@ Sorting sections is a bit less flexible: sections are always sorted by `weight`,
 and do not have any variables that point to the next heavier/lighter sections.
 
 Based on this, by default the lightest (lowest `weight`) subsections will be at
-the top of the list and the heaviest (highest `weight`) will be at the top;
+the top of the list and the heaviest (highest `weight`) will be at the bottom;
 the `reverse` filter reverses this order.
 
 **Note**: Unlike pages, permalinks will **not** be used to break ties between
