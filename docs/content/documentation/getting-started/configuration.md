@@ -99,8 +99,8 @@ Zola currently has the following highlight themes available:
 - [agola-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark)
 - [ascetic-white](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Ascetic%20White)
 - [axar](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Axar)
-- base16-ocean-dark
-- base16-ocean-light
+- [base16-ocean-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Base16%20Ocean%20Dark)
+- [base16-ocean-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Base16%20Ocean%20Light)
 - [bbedit](https://tmtheme-editor.herokuapp.com/#!/editor/theme/BBEdit)
 - [boron](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Boron)
 - [charcoal](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Charcoal)
