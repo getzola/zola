@@ -23,14 +23,15 @@
 
 use std::env;
 use std::fs::{read_dir, remove_dir_all, File};
-use std::io::{self, Read};
+use std::io::Read;
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use actix_web::middleware::{Middleware, Response, Started};
-use actix_web::{self, fs, http, server, App, HttpRequest, HttpResponse, Responder};
+use actix_files as fs;
+use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
+use actix_web::{dev, http, web, App, HttpResponse, HttpServer};
 use chrono::prelude::*;
 use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -58,35 +59,35 @@ enum ChangeKind {
 // errors
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
-struct NotFoundHandler {
-    rendered_template: PathBuf,
+struct ErrorFilePaths {
+    not_found: PathBuf,
 }
 
-impl<S> Middleware<S> for NotFoundHandler {
-    fn start(&self, _req: &HttpRequest<S>) -> actix_web::Result<Started> {
-        Ok(Started::Done)
-    }
+fn not_found<B>(
+    res: dev::ServiceResponse<B>
+) -> std::result::Result<ErrorHandlerResponse<B>, actix_web::Error> {
+    let buf: Vec<u8> = {
+        let error_files: &ErrorFilePaths = res.request().app_data().unwrap();
 
-    fn response(
-        &self,
-        _req: &HttpRequest<S>,
-        mut resp: HttpResponse,
-    ) -> actix_web::Result<Response> {
-        if http::StatusCode::NOT_FOUND == resp.status() {
-            let mut fh = File::open(&self.rendered_template)?;
-            let mut buf: Vec<u8> = vec![];
-            let _ = fh.read_to_end(&mut buf)?;
-            resp.replace_body(buf);
-            resp.headers_mut().insert(
-                http::header::CONTENT_TYPE,
-                http::header::HeaderValue::from_static("text/html"),
-            );
-        }
-        Ok(Response::Done(resp))
-    }
+        let mut fh = File::open(&error_files.not_found)?;
+        let mut buf: Vec<u8> = vec![];
+        let _ = fh.read_to_end(&mut buf)?;
+        buf
+    };
+
+    let new_resp = HttpResponse::build(http::StatusCode::NOT_FOUND)
+        .header(
+            http::header::CONTENT_TYPE,
+            http::header::HeaderValue::from_static("text/html"),
+        )
+        .body(buf);
+
+    Ok(ErrorHandlerResponse::Response(
+        res.into_response(new_resp.into_body()),
+    ))
 }
 
-fn livereload_handler(_: &HttpRequest) -> HttpResponse {
+fn livereload_handler() -> HttpResponse {
     HttpResponse::Ok().content_type("text/javascript").body(LIVE_RELOAD)
 }
 
@@ -141,27 +142,6 @@ fn create_new_site(
     Ok((site, address))
 }
 
-/// Attempt to render `index.html` when a directory is requested.
-///
-/// The default "batteries included" mechanisms for actix to handle directory
-/// listings rely on redirection which behaves oddly (the location headers
-/// seem to use relative paths for some reason).
-/// They also mean that the address in the browser will include the
-/// `index.html` on a successful redirect (rare), which is unsightly.
-///
-/// Rather than deal with all of that, we can hijack a hook for presenting a
-/// custom directory listing response and serve it up using their
-/// `NamedFile` responder.
-fn handle_directory<'a, 'b>(
-    dir: &'a fs::Directory,
-    req: &'b HttpRequest,
-) -> io::Result<HttpResponse> {
-    let mut path = PathBuf::from(&dir.base);
-    path.push(&dir.path);
-    path.push("index.html");
-    fs::NamedFile::open(path)?.respond_to(req)
-}
-
 pub fn serve(
     interface: &str,
     port: u16,
@@ -211,24 +191,30 @@ pub fn serve(
     let static_root = output_path.clone();
     let broadcaster = if !watch_only {
         thread::spawn(move || {
-            let s = server::new(move || {
+            let s = HttpServer::new(move || {
+                let error_handlers = ErrorHandlers::new()
+                    .handler(http::StatusCode::NOT_FOUND, not_found);
+
                 App::new()
-                    .middleware(NotFoundHandler { rendered_template: static_root.join("404.html") })
-                    .resource(r"/livereload.js", |r| r.f(livereload_handler))
+                    .data(ErrorFilePaths {
+                        not_found: static_root.join("404.html"),
+                    })
+                    .wrap(error_handlers)
+                    .route(
+                        "/livereload.js",
+                        web::get().to(livereload_handler)
+                    )
                     // Start a webserver that serves the `output_dir` directory
-                    .handler(
-                        r"/",
-                        fs::StaticFiles::new(&static_root)
-                            .unwrap()
-                            .show_files_listing()
-                            .files_listing_renderer(handle_directory),
+                    .service(
+                        fs::Files::new("/", &static_root)
+                            .index_file("index.html"),
                     )
             })
             .bind(&address)
             .expect("Can't start the webserver")
             .shutdown_timeout(20);
             println!("Web server is available at http://{}\n", &address);
-            s.run();
+            s.run()
         });
         // The websocket for livereload
         let ws_server = WebSocket::new(|output: Sender| {

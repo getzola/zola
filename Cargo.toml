@@ -26,7 +26,8 @@ termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
 # Below is for the serve cmd
-actix-web = { version = "0.7", default-features = false, features = [] }
+actix-files = "0.1"
+actix-web = { version = "1.0", default-features = false, features = [] }
 notify = "4"
 ws = "0.8"
 ctrlc = "3"

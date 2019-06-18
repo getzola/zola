@@ -1,3 +1,4 @@
+extern crate actix_files;
 extern crate actix_web;
 extern crate atty;
 #[macro_use]
