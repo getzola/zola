@@ -299,7 +299,7 @@ fn can_make_valid_relative_link() {
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
     let res = render_content(
-        r#"[rel link](./pages/about.md), [abs link](https://vincent.is/about)"#,
+        r#"[rel link](@/pages/about.md), [abs link](https://vincent.is/about)"#,
         &context,
     )
     .unwrap();
@@ -316,7 +316,7 @@ fn can_make_relative_links_with_anchors() {
     let tera_ctx = Tera::default();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
-    let res = render_content(r#"[rel link](./pages/about.md#cv)"#, &context).unwrap();
+    let res = render_content(r#"[rel link](@/pages/about.md#cv)"#, &context).unwrap();
 
     assert!(res.body.contains(r#"<p><a href="https://vincent.is/about#cv">rel link</a></p>"#));
 }
@@ -327,7 +327,7 @@ fn errors_relative_link_inexistant() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("[rel link](./pages/about.md)", &context);
+    let res = render_content("[rel link](@/pages/about.md)", &context);
     assert!(res.is_err());
 }
 
@@ -349,6 +349,56 @@ fn can_add_id_to_headers_same_slug() {
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# Hello\n# Hello", &context).unwrap();
     assert_eq!(res.body, "<h1 id=\"hello\">Hello</h1>\n<h1 id=\"hello-1\">Hello</h1>\n");
+}
+
+#[test]
+fn can_handle_manual_ids_on_headers() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    // Tested things: manual IDs; whitespace flexibility; that automatic IDs avoid collision with
+    // manual IDs; that duplicates are in fact permitted among manual IDs; that any non-plain-text
+    // in the middle of `{#…}` will disrupt it from being acknowledged as a manual ID (that last
+    // one could reasonably be considered a bug rather than a feature, but test it either way); one
+    // workaround for the improbable case where you actually want `{#…}` at the end of a header.
+    let res = render_content(
+        "\
+         # Hello\n\
+         # Hello{#hello}\n\
+         # Hello {#hello}\n\
+         # Hello     {#Something_else} \n\
+         # Workaround for literal {#…&#125;\n\
+         # Hello\n\
+         # Auto {#*matic*}",
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        "\
+         <h1 id=\"hello-1\">Hello</h1>\n\
+         <h1 id=\"hello\">Hello</h1>\n\
+         <h1 id=\"hello\">Hello</h1>\n\
+         <h1 id=\"Something_else\">Hello</h1>\n\
+         <h1 id=\"workaround-for-literal\">Workaround for literal {#…}</h1>\n\
+         <h1 id=\"hello-2\">Hello</h1>\n\
+         <h1 id=\"auto-matic\">Auto {#<em>matic</em>}</h1>\n\
+         "
+    );
+}
+
+#[test]
+fn blank_headers() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("# \n#\n# {#hmm} \n# {#}", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<h1 id=\"-1\"></h1>\n<h1 id=\"-2\"></h1>\n<h1 id=\"hmm\"></h1>\n<h1 id=\"\"></h1>\n"
+    );
 }
 
 #[test]
@@ -583,7 +633,7 @@ fn can_make_valid_relative_link_in_header() {
     let tera_ctx = Tera::default();
     let config = Config::default();
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks, InsertAnchor::None);
-    let res = render_content(r#" # [rel link](./pages/about.md)"#, &context).unwrap();
+    let res = render_content(r#" # [rel link](@/pages/about.md)"#, &context).unwrap();
 
     assert_eq!(
         res.body,
@@ -657,10 +707,9 @@ Some text
 }
 
 #[test]
-fn can_validate_valid_external_links() {
+fn correctly_captures_external_links() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
+    let config = Config::default();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -668,58 +717,17 @@ fn can_validate_valid_external_links() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
-    let res = render_content("[a link](http://google.com)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"http://google.com\">a link</a></p>\n");
-}
-
-#[test]
-fn can_show_error_message_for_invalid_external_links() {
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
-    let context = RenderContext::new(
-        &ZOLA_TERA,
-        &config,
-        "https://vincent.is/about/",
-        &permalinks_ctx,
-        InsertAnchor::None,
+    let content = "
+[a link](http://google.com)
+[a link](http://google.comy)
+Email: [foo@bar.baz](mailto:foo@bar.baz)
+Email: <foo@bar.baz>
+    ";
+    let res = render_content(content, &context).unwrap();
+    assert_eq!(
+        res.external_links,
+        &["http://google.com".to_owned(), "http://google.comy".to_owned()]
     );
-    let res = render_content("[a link](http://google.comy)", &context);
-    assert!(res.is_err());
-    let err = res.unwrap_err();
-    assert!(format!("{}", err).contains("Link http://google.comy is not valid"));
-}
-
-#[test]
-fn doesnt_try_to_validate_email_links_mailto() {
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
-    let context = RenderContext::new(
-        &ZOLA_TERA,
-        &config,
-        "https://vincent.is/about/",
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-    let res = render_content("Email: [foo@bar.baz](mailto:foo@bar.baz)", &context).unwrap();
-    assert_eq!(res.body, "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n");
-}
-
-#[test]
-fn doesnt_try_to_validate_email_links_angled_brackets() {
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
-    config.check_external_links = true;
-    let context = RenderContext::new(
-        &ZOLA_TERA,
-        &config,
-        "https://vincent.is/about/",
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-    let res = render_content("Email: <foo@bar.baz>", &context).unwrap();
-    assert_eq!(res.body, "<p>Email: <a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n");
 }
 
 #[test]

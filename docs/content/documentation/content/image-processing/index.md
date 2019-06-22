@@ -14,7 +14,7 @@ resize_image(path, width, height, op, quality)
 
 ### Arguments
 
-- `path`: The path to the source image relative to the `content` directory in the [directory structure](./documentation/getting-started/directory-structure.md).
+- `path`: The path to the source image relative to the `content` directory in the [directory structure](@/documentation/getting-started/directory-structure.md).
 - `width` and `height`: The dimensions in pixels of the resized image. Usage depends on the `op` argument.
 - `op` (_optional_): Resize operation. This can be one of:
     - `"scale"`
@@ -97,8 +97,8 @@ The source for all examples is this 300 × 380 pixels image:
 
 ## Using `resize_image` in markdown via shortcodes
 
-`resize_image` is a built-in Tera global function (see the [Templates](./documentation/templates/_index.md) chapter),
-but it can be used in markdown, too, using [Shortcodes](./documentation/content/shortcodes.md).
+`resize_image` is a built-in Tera global function (see the [Templates](@/documentation/templates/_index.md) chapter),
+but it can be used in markdown, too, using [Shortcodes](@/documentation/content/shortcodes.md).
 
 The examples above were generated using a shortcode file named `resize_image.html` with this content:
 
@@ -110,9 +110,9 @@ The examples above were generated using a shortcode file named `resize_image.htm
 
 The `resize_image()` can be used multiple times and/or in loops. It is designed to handle this efficiently.
 
-This can be used along with `assets` [page metadata](./documentation/templates/pages-sections.md) to create picture galleries.
+This can be used along with `assets` [page metadata](@/documentation/templates/pages-sections.md) to create picture galleries.
 The `assets` variable holds paths to all assets in the directory of a page with resources
-(see [assets colocation](./documentation/content/overview.md#assets-colocation)): if you have files other than images you
+(see [assets colocation](@/documentation/content/overview.md#assets-colocation)): if you have files other than images you
 will need to filter them out in the loop first like in the example below.
 
 This can be used in shortcodes. For example, we can create a very simple html-only clickable
@@ -145,3 +145,9 @@ Here is the result:
 <small>
   Image attribution: Public domain, except: _06-example.jpg_: Willi Heidelbach, _07-example.jpg_: Daniel Ullrich.
 </small>
+
+
+## Get image size
+
+Sometimes when building a gallery it is useful to know the dimensions of each asset.  You can get this information with
+[get_image_metadata](./documentation/templates/overview.md#get-image-metadata) 

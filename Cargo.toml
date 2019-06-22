@@ -1,6 +1,6 @@
 [package]
 name = "zola"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -26,9 +26,10 @@ termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
 # Below is for the serve cmd
-actix-web = { version = "0.7", default-features = false, features = [] }
+actix-files = "0.1"
+actix-web = { version = "1.0", default-features = false, features = [] }
 notify = "4"
-ws = "0.7"
+ws = "0.8"
 ctrlc = "3"
 
 site = { path = "components/site" }
@@ -53,5 +54,6 @@ members = [
     "components/library",
 ]
 
-#[profile.release]
-#debug = true
+[profile.release]
+lto = true
+codegen-units = 1

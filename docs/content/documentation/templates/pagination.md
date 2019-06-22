@@ -45,4 +45,4 @@ A paginated taxonomy gets two variables aside from the `paginator` variable:
 - a `taxonomy` variable of type `TaxonomyConfig`
 - a `term` variable of type `TaxonomyTerm`.
 
-See the [taxonomies page](./documentation/templates/taxonomies.md) for a detailed version of the types.
+See the [taxonomies page](@/documentation/templates/taxonomies.md) for a detailed version of the types.

@@ -67,12 +67,6 @@ compile_sass = false
 # content for the `default_language`
 build_search_index = false
 
-# Go through every links in all content and check if the links are valid
-# If a link is invalid (404, 500, etc), the build will error.
-# Link checking can take a very long time if you have many links so this should
-# only enabled once in a while to catch any dead links.
-check_external_links = false
-
 # A list of glob patterns specifying asset files to ignore when
 # processing the content directory.
 # Defaults to none, which means all asset files are copied over to the public folder.

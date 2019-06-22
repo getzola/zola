@@ -8,5 +8,5 @@ but still easy to update if needed.
 
 All themes can use the full power of Zola, from shortcodes to Sass compilation.
 
-A list of themes is available [on this very website](./themes/_index.md).
+A list of themes is available [on this very website](@/themes/_index.md).
 

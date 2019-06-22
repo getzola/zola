@@ -14,7 +14,7 @@ not have any content or metadata.  If you would like to add content or metadata,
 `_index.md` file at the root of the `content` folder and edit it just as you would edit any other
 `_index.md` file; your `index.html` template will then have access to that content and metadata.
 
-Any non-Markdown file in the section folder is added to the `assets` collection of the section, as explained in the [Content Overview](./documentation/content/overview.md#assets-colocation). These files are then available from the Markdown using relative links.
+Any non-Markdown file in the section folder is added to the `assets` collection of the section, as explained in the [Content Overview](@/documentation/content/overview.md#assets-colocation). These files are then available from the Markdown using relative links.
 
 ## Front-matter
 
@@ -89,6 +89,10 @@ redirect_to = ""
 # sections for each year under a posts section.
 transparent = false
 
+# Use aliases if you are moving content but want to redirect previous URLs to the
+# current one. This takes an array of path, not URLs.
+aliases = []
+
 # Your own data
 [extra]
 +++
@@ -101,7 +105,7 @@ Keep in mind that any configuration apply only to the direct pages, not to the s
 ## Pagination
 
 To enable pagination for a section's pages, simply set `paginate_by` to a positive number and it will automatically
-paginate by this much. See [pagination template documentation](./documentation/templates/pagination.md) for more information
+paginate by this much. See [pagination template documentation](@/documentation/templates/pagination.md) for more information
 on what will be available in the template.
 
 You can also change the pagination path (the word displayed while paginated in the URL, like `page/1`)

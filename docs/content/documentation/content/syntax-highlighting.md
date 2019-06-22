@@ -4,7 +4,7 @@ weight = 80
 +++
 
 Zola comes with built-in syntax highlighting but you first
-need to enable it in the [configuration](./documentation/getting-started/configuration.md).
+need to enable it in the [configuration](@/documentation/getting-started/configuration.md).
 
 Once this is done, Zola will automatically highlight all code blocks
 in your content. A code block in Markdown looks like the following:
@@ -120,6 +120,7 @@ Here is a full list of the supported languages and the short names you can use:
 - TypeScript -> ["ts"]
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]
+- Nix -> ["nix"]
 - TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock", "Pipfile"]
 ```
 

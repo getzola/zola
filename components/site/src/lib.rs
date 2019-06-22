@@ -12,6 +12,7 @@ extern crate config;
 extern crate front_matter;
 extern crate imageproc;
 extern crate library;
+extern crate link_checker;
 extern crate search;
 extern crate templates;
 extern crate utils;
@@ -19,10 +20,9 @@ extern crate utils;
 #[cfg(test)]
 extern crate tempfile;
 
-
 mod sitemap;
 
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use std::fs::{copy, create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
@@ -33,11 +33,12 @@ use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use tera::{Context, Tera};
 
 use config::{get_config, Config};
-use errors::{Error, Result};
+use errors::{Error, ErrorKind, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
 };
+use link_checker::check_url;
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
@@ -243,7 +244,146 @@ impl Site {
         self.render_markdown()?;
         self.register_tera_global_fns();
 
+        // Needs to be done after rendering markdown as we only get the anchors at that point
+        self.check_internal_links_with_anchors()?;
+
+        if self.config.check_external_links {
+            self.check_external_links()?;
+        }
+
         Ok(())
+    }
+
+    /// Very similar to check_external_links but can't be merged as far as I can see since we always
+    /// want to check the internal links but only the external in zola check :/
+    pub fn check_internal_links_with_anchors(&self) -> Result<()> {
+        let library = self.library.write().expect("Get lock for check_internal_links_with_anchors");
+        let page_links = library
+            .pages()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let section_links = library
+            .sections()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+        let mut full_path = self.base_path.clone();
+        full_path.push("content");
+
+        let errors: Vec<_> = all_links
+            .iter()
+            .filter_map(|(page_path, (md_path, anchor))| {
+                // There are a few `expect` here since the presence of the .md file will
+                // already have been checked in the markdown rendering
+                let mut p = full_path.clone();
+                for part in md_path.split('/') {
+                    p.push(part);
+                }
+                if md_path.contains("_index.md") {
+                    let section = library
+                        .get_section(&p)
+                        .expect("Couldn't find section in check_internal_links_with_anchors");
+                    if section.has_anchor(&anchor) {
+                        None
+                    } else {
+                        Some((page_path, md_path, anchor))
+                    }
+                } else {
+                    let page = library
+                        .get_page(&p)
+                        .expect("Couldn't find section in check_internal_links_with_anchors");
+                    if page.has_anchor(&anchor) {
+                        None
+                    } else {
+                        Some((page_path, md_path, anchor))
+                    }
+                }
+            })
+            .collect();
+        if errors.is_empty() {
+            return Ok(());
+        }
+        let msg = errors
+            .into_iter()
+            .map(|(page_path, md_path, anchor)| {
+                format!(
+                    "The anchor in the link `@/{}#{}` in {} does not exist.",
+                    md_path,
+                    anchor,
+                    page_path.to_string_lossy(),
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
+    }
+
+    pub fn check_external_links(&self) -> Result<()> {
+        let library = self.library.write().expect("Get lock for check_external_links");
+        let page_links = library
+            .pages()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.external_links.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let section_links = library
+            .sections()
+            .values()
+            .map(|p| {
+                let path = &p.file.path;
+                p.external_links.iter().map(move |l| (path.clone(), l))
+            })
+            .flatten();
+        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+
+        // create thread pool with lots of threads so we can fetch
+        // (almost) all pages simultaneously
+        let threads = std::cmp::min(all_links.len(), 32);
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(threads)
+            .build()
+            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string().into()), source: None })?;
+
+        let errors: Vec<_> = pool.install(|| {
+            all_links
+                .par_iter()
+                .filter_map(|(page_path, link)| {
+                    let res = check_url(&link);
+                    if res.is_valid() {
+                        None
+                    } else {
+                        Some((page_path, link, res))
+                    }
+                })
+                .collect()
+        });
+
+        if errors.is_empty() {
+            return Ok(());
+        }
+        let msg = errors
+            .into_iter()
+            .map(|(page_path, link, check_res)| {
+                format!(
+                    "Dead link in {} to {}: {}",
+                    page_path.to_string_lossy(),
+                    link,
+                    check_res.message()
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create
@@ -337,6 +477,10 @@ impl Site {
         self.tera.register_function(
             "resize_image",
             global_fns::ResizeImage::new(self.imageproc.clone()),
+        );
+        self.tera.register_function(
+            "get_image_metadata",
+            global_fns::GetImageMeta::new(self.content_path.clone()),
         );
         self.tera.register_function("load_data", global_fns::LoadData::new(self.base_path.clone()));
         self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
@@ -537,9 +681,6 @@ impl Site {
             self.compile_sass(&self.base_path)?;
         }
 
-        self.process_images()?;
-        self.copy_static_directories()?;
-
         if self.config.build_search_index {
             self.build_search_index()?;
         }
@@ -577,6 +718,11 @@ impl Site {
         self.render_404()?;
         self.render_robots()?;
         self.render_taxonomies()?;
+        // We process images at the end as we might have picked up images to process from markdown
+        // or from templates
+        self.process_images()?;
+        // Processed images will be in static so the last step is to copy it
+        self.copy_static_directories()?;
 
         Ok(())
     }
@@ -662,35 +808,46 @@ impl Site {
         Ok(compiled_paths)
     }
 
+    fn render_alias(&self, alias: &str, permalink: &str) -> Result<()> {
+        let mut output_path = self.output_path.to_path_buf();
+        let mut split = alias.split('/').collect::<Vec<_>>();
+
+        // If the alias ends with an html file name, use that instead of mapping
+        // as a path containing an `index.html`
+        let page_name = match split.pop() {
+            Some(part) if part.ends_with(".html") => part,
+            Some(part) => {
+                split.push(part);
+                "index.html"
+            }
+            None => "index.html",
+        };
+
+        for component in split {
+            output_path.push(&component);
+
+            if !output_path.exists() {
+                create_directory(&output_path)?;
+            }
+        }
+
+        create_file(
+            &output_path.join(page_name),
+            &render_redirect_template(&permalink, &self.tera)?,
+        )
+    }
+
     pub fn render_aliases(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
-        for (_, page) in self.library.read().unwrap().pages() {
+        let library = self.library.read().unwrap();
+        for (_, page) in library.pages() {
             for alias in &page.meta.aliases {
-                let mut output_path = self.output_path.to_path_buf();
-                let mut split = alias.split('/').collect::<Vec<_>>();
-
-                // If the alias ends with an html file name, use that instead of mapping
-                // as a path containing an `index.html`
-                let page_name = match split.pop() {
-                    Some(part) if part.ends_with(".html") => part,
-                    Some(part) => {
-                        split.push(part);
-                        "index.html"
-                    }
-                    None => "index.html",
-                };
-
-                for component in split {
-                    output_path.push(&component);
-
-                    if !output_path.exists() {
-                        create_directory(&output_path)?;
-                    }
-                }
-                create_file(
-                    &output_path.join(page_name),
-                    &render_redirect_template(&page.permalink, &self.tera)?,
-                )?;
+                self.render_alias(&alias, &page.permalink)?;
+            }
+        }
+        for (_, section) in library.sections() {
+            for alias in &section.meta.aliases {
+                self.render_alias(&alias, &section.permalink)?;
             }
         }
         Ok(())
@@ -778,11 +935,8 @@ impl Site {
 
         let library = self.library.read().unwrap();
         let all_sitemap_entries = {
-            let mut all_sitemap_entries = sitemap::find_entries(
-                &library,
-                &self.taxonomies[..],
-                &self.config,
-            );
+            let mut all_sitemap_entries =
+                sitemap::find_entries(&library, &self.taxonomies[..], &self.config);
             all_sitemap_entries.sort();
             all_sitemap_entries
         };

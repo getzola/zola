@@ -17,6 +17,7 @@ use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 
 use content::file_info::FileInfo;
+use content::has_anchor;
 use content::ser::SerializingPage;
 
 lazy_static! {
@@ -76,6 +77,13 @@ pub struct Page {
     pub lang: String,
     /// Contains all the translated version of that page
     pub translations: Vec<Key>,
+    /// Contains the internal links that have an anchor: we can only check the anchor
+    /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
+    /// it would have errored before getting there
+    /// (path to markdown, anchor value)
+    pub internal_links_with_anchors: Vec<(String, String)>,
+    /// Contains the external links that need to be checked
+    pub external_links: Vec<String>,
 }
 
 impl Page {
@@ -104,6 +112,8 @@ impl Page {
             reading_time: None,
             lang: String::new(),
             translations: Vec::new(),
+            internal_links_with_anchors: Vec::new(),
+            external_links: Vec::new(),
         }
     }
 
@@ -185,6 +195,7 @@ impl Page {
 
             page.path = path;
         }
+
         if !page.path.ends_with('/') {
             page.path = format!("{}/", page.path);
         }
@@ -233,7 +244,7 @@ impl Page {
                 page.assets = assets;
             }
 
-            page.serialized_assets = page.serialize_assets();
+            page.serialized_assets = page.serialize_assets(&base_path);
         } else {
             page.assets = vec![];
         }
@@ -262,6 +273,8 @@ impl Page {
         self.summary = res.summary_len.map(|l| res.body[0..l].to_owned());
         self.content = res.body;
         self.toc = res.toc;
+        self.external_links = res.external_links;
+        self.internal_links_with_anchors = res.internal_links_with_anchors;
 
         Ok(())
     }
@@ -287,13 +300,29 @@ impl Page {
     }
 
     /// Creates a vectors of asset URLs.
-    fn serialize_assets(&self) -> Vec<String> {
+    fn serialize_assets(&self, base_path: &PathBuf) -> Vec<String> {
         self.assets
             .iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())
-            .map(|filename| self.path.clone() + filename)
+            .map(|filename| {
+                let mut path = self.file.path.clone();
+                // Popping the index.md from the path since file.parent would be one level too high
+                // for our need here
+                path.pop();
+                path.push(filename);
+                path = path
+                    .strip_prefix(&base_path.join("content"))
+                    .expect("Should be able to stripe prefix")
+                    .to_path_buf();
+                path
+            })
+            .map(|path| path.to_string_lossy().to_string())
             .collect()
+    }
+
+    pub fn has_anchor(&self, anchor: &str) -> bool {
+        has_anchor(&self.toc, anchor)
     }
 
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
@@ -329,6 +358,8 @@ impl Default for Page {
             reading_time: None,
             lang: String::new(),
             translations: Vec::new(),
+            internal_links_with_anchors: Vec::new(),
+            external_links: Vec::new(),
         }
     }
 }
@@ -507,7 +538,7 @@ Hello world
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
             &Config::default(),
-            &PathBuf::new(),
+            &path.to_path_buf(),
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -534,7 +565,7 @@ Hello world
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
             &Config::default(),
-            &PathBuf::new(),
+            &path.to_path_buf(),
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -542,6 +573,36 @@ Hello world
         assert_eq!(page.slug, "hey");
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.permalink, "http://a-website.com/posts/hey/");
+    }
+
+    // https://github.com/getzola/zola/issues/674
+    #[test]
+    fn page_with_assets_uses_filepath_for_assets() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("with_assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        f.write_all(b"+++\n+++\n").unwrap();
+        File::create(nested_path.join("example.js")).unwrap();
+        File::create(nested_path.join("graph.jpg")).unwrap();
+        File::create(nested_path.join("fail.png")).unwrap();
+
+        let res = Page::from_file(
+            nested_path.join("index.md").as_path(),
+            &Config::default(),
+            &path.to_path_buf(),
+        );
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.file.parent, path.join("content").join("posts"));
+        assert_eq!(page.assets.len(), 3);
+        assert_eq!(page.serialized_assets.len(), 3);
+        // We should not get with-assets since that's the slugified version
+        assert!(page.serialized_assets[0].contains("with_assets"));
+        assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
     }
 
     // https://github.com/getzola/zola/issues/607
@@ -562,7 +623,7 @@ Hello world
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
             &Config::default(),
-            &PathBuf::new(),
+            &path.to_path_buf(),
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -592,7 +653,8 @@ Hello world
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
-        let res = Page::from_file(nested_path.join("index.md").as_path(), &config, &PathBuf::new());
+        let res =
+            Page::from_file(nested_path.join("index.md").as_path(), &config, &path.to_path_buf());
 
         assert!(res.is_ok());
         let page = res.unwrap();

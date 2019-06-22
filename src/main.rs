@@ -1,3 +1,4 @@
+extern crate actix_files;
 extern crate actix_web;
 extern crate atty;
 #[macro_use]
@@ -63,13 +64,15 @@ fn main() {
                     ::std::process::exit(1);
                 }
             };
+            let watch_only = matches.is_present("watch_only");
+
             // Default one
-            if port != 1111 && !port_is_available(port) {
+            if port != 1111 && !watch_only && !port_is_available(port) {
                 console::error("The requested port is not available");
                 ::std::process::exit(1);
             }
 
-            if !port_is_available(port) {
+            if  !watch_only && !port_is_available(port) {
                 port = if let Some(p) = get_available_port(1111) {
                     p
                 } else {
@@ -77,7 +80,6 @@ fn main() {
                     ::std::process::exit(1);
                 }
             }
-            let watch_only = matches.is_present("watch_only");
             let output_dir = matches.value_of("output_dir").unwrap();
             let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");
@@ -85,6 +87,21 @@ fn main() {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("", &e);
+                    ::std::process::exit(1);
+                }
+            };
+        }
+        ("check", Some(matches)) => {
+            console::info("Checking site...");
+            let start = Instant::now();
+            match cmd::check(
+                config_file,
+                matches.value_of("base_path"),
+                matches.value_of("base_url"),
+            ) {
+                Ok(()) => console::report_elapsed_time(start),
+                Err(e) => {
+                    console::unravel_errors("Failed to check the site", &e);
                     ::std::process::exit(1);
                 }
             };

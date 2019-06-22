@@ -25,7 +25,7 @@ character in a filename on Windows.
 As you can see, creating an `about.md` file is exactly equivalent to creating an
 `about/index.md` file.  The only difference between the two methods is that creating
 the `about` folder allows you to use asset colocation, as discussed in the
-[Overview](./documentation/content/overview.md#assets-colocation) section of this documentation.
+[Overview](@/documentation/content/overview.md#assets-colocation) section of this documentation.
 
 ## Front-matter
 
@@ -100,7 +100,7 @@ paragraph of each page in a list for example.
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
 where you want the summary to end and the content up to that point will be also
 available separately in the
-[template](./documentation/templates/pages-sections.md#page-variables).
+[template](@/documentation/templates/pages-sections.md#page-variables).
 
 An anchor link to this position named `continue-reading` is created, wrapped in a paragraph
 with a `zola-continue-reading` id, so you can link directly to it if needed for example:

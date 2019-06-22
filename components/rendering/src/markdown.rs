@@ -9,7 +9,6 @@ use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
-use link_checker::check_url;
 use table_of_contents::{make_table_of_contents, Header};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
@@ -25,6 +24,8 @@ pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
     pub toc: Vec<Header>,
+    pub internal_links_with_anchors: Vec<(String, String)>,
+    pub external_links: Vec<String>,
 }
 
 // tracks a header in a slice of pulldown-cmark events
@@ -33,11 +34,12 @@ struct HeaderRef {
     start_idx: usize,
     end_idx: usize,
     level: i32,
+    id: Option<String>,
 }
 
 impl HeaderRef {
     fn new(start: usize, level: i32) -> HeaderRef {
-        HeaderRef { start_idx: start, end_idx: 0, level }
+        HeaderRef { start_idx: start, end_idx: 0, level, id: None }
     }
 }
 
@@ -65,34 +67,39 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !link.starts_with("mailto:")
 }
 
-fn fix_link(link_type: LinkType, link: &str, context: &RenderContext) -> Result<String> {
+fn fix_link(
+    link_type: LinkType,
+    link: &str,
+    context: &RenderContext,
+    internal_links_with_anchors: &mut Vec<(String, String)>,
+    external_links: &mut Vec<String>,
+) -> Result<String> {
     if link_type == LinkType::Email {
         return Ok(link.to_string());
     }
     // A few situations here:
-    // - it could be a relative link (starting with `./`)
+    // - it could be a relative link (starting with `@/`)
     // - it could be a link to a co-located asset
     // - it could be a normal link
-    let result = if link.starts_with("./") {
+    let result = if link.starts_with("@/") {
         match resolve_internal_link(&link, context.permalinks) {
-            Ok(url) => url,
+            Ok(resolved) => {
+                if resolved.anchor.is_some() {
+                    internal_links_with_anchors
+                        .push((resolved.md_path.unwrap(), resolved.anchor.unwrap()));
+                }
+                resolved.permalink
+            }
             Err(_) => {
                 return Err(format!("Relative link {} not found.", link).into());
             }
         }
     } else if is_colocated_asset_link(&link) {
         format!("{}{}", context.current_page_permalink, link)
-    } else if context.config.check_external_links
-        && !link.starts_with('#')
-        && !link.starts_with("mailto:")
-    {
-        let res = check_url(&link);
-        if res.is_valid() {
-            link.to_string()
-        } else {
-            return Err(format!("Link {} is not valid: {}", link, res.message()).into());
-        }
     } else {
+        if !link.starts_with('#') && !link.starts_with("mailto:") {
+            external_links.push(link.to_owned());
+        }
         link.to_string()
     };
     Ok(result)
@@ -103,8 +110,9 @@ fn get_text(parser_slice: &[Event]) -> String {
     let mut title = String::new();
 
     for event in parser_slice.iter() {
-        if let Event::Text(text) = event {
-            title += text;
+        match event {
+            Event::Text(text) | Event::Code(text) => title += text,
+            _ => continue,
         }
     }
 
@@ -141,6 +149,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headers: Vec<Header> = vec![];
+    let mut internal_links_with_anchors = Vec::new();
+    let mut external_links = Vec::new();
 
     let mut opts = Options::empty();
     let mut has_summary = false;
@@ -206,7 +216,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Start(Tag::Image(link_type, src, title))
                     }
                     Event::Start(Tag::Link(link_type, link, title)) => {
-                        let fixed_link = match fix_link(link_type, &link, context) {
+                        let fixed_link = match fix_link(
+                            link_type,
+                            &link,
+                            context,
+                            &mut internal_links_with_anchors,
+                            &mut external_links,
+                        ) {
                             Ok(fixed_link) => fixed_link,
                             Err(err) => {
                                 error = Some(err);
@@ -225,15 +241,36 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             })
             .collect::<Vec<_>>(); // We need to collect the events to make a second pass
 
-        let header_refs = get_header_refs(&events);
+        let mut header_refs = get_header_refs(&events);
 
         let mut anchors_to_insert = vec![];
 
+        // First header pass: look for a manually-specified IDs, e.g. `# Heading text {#hash}`
+        // (This is a separate first pass so that auto IDs can avoid collisions with manual IDs.)
+        for header_ref in header_refs.iter_mut() {
+            let end_idx = header_ref.end_idx;
+            if let Event::Text(ref mut text) = events[end_idx - 1] {
+                if text.as_bytes().last() == Some(&b'}') {
+                    if let Some(mut i) = text.find("{#") {
+                        let id = text[i + 2..text.len() - 1].to_owned();
+                        inserted_anchors.push(id.clone());
+                        while i > 0 && text.as_bytes()[i - 1] == b' ' {
+                            i -= 1;
+                        }
+                        header_ref.id = Some(id);
+                        *text = text[..i].to_owned().into();
+                    }
+                }
+            }
+        }
+
+        // Second header pass: auto-generate remaining IDs, and emit HTML
         for header_ref in header_refs {
             let start_idx = header_ref.start_idx;
             let end_idx = header_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
-            let id = find_anchor(&inserted_anchors, slugify(&title), 0);
+            let id =
+                header_ref.id.unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag
@@ -280,6 +317,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
             toc: make_table_of_contents(headers),
+            internal_links_with_anchors,
+            external_links,
         })
     }
 }

@@ -16,6 +16,9 @@ _zola() {
             build)
                 cmd+="__build"
                 ;;
+            check)
+                cmd+="__check"
+                ;;
             help)
                 cmd+="__help"
                 ;;
@@ -32,64 +35,79 @@ _zola() {
 
     case "${cmd}" in
         zola)
-            opts=" -h -V -c  --help --version --config   init build serve help"
+            opts=" -h -V -c  --help --version --config   init build serve check help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
                 --config)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                     -c)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 *)
                     COMPREPLY=()
                     ;;
             esac
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
         
         zola__build)
             opts=" -h -V -u -o  --help --version --base-url --output-dir  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
                 --base-url)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                     -u)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --output-dir)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                     -o)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 *)
                     COMPREPLY=()
                     ;;
             esac
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        zola__check)
+            opts=" -h -V  --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
         zola__help)
             opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
@@ -98,13 +116,13 @@ _zola() {
                     COMPREPLY=()
                     ;;
             esac
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
         zola__init)
             opts=" -h -V  --help --version  <name> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
@@ -113,54 +131,54 @@ _zola() {
                     COMPREPLY=()
                     ;;
             esac
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
         zola__serve)
             opts=" -h -V -i -p -o -u  --watch-only --help --version --interface --port --output-dir --base-url  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
                 --interface)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                     -i)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --port)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                     -p)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --output-dir)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                     -o)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --base-url)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                     -u)
-                    COMPREPLY=($(compgen -f ${cur}))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 *)
                     COMPREPLY=()
                     ;;
             esac
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
     esac

@@ -58,7 +58,7 @@ Theme templates should use [macros](https://tera.netlify.com/docs/templates/#mac
 
 ## Submitting a theme to the gallery
 
-If you want your theme to be featured in the [themes](./themes/_index.md) section
+If you want your theme to be featured in the [themes](@/themes/_index.md) section
 of this site, the theme will require two more things:
 
 - `screenshot.png`: a screenshot of the theme in action with a max size of around 2000x1000

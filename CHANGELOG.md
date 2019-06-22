@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.0 (2019-06-22)
+
+### Breaking
+
+- Allow specifying heading IDs. It is a breaking change in the unlikely case you are using `{#..}` in your heading
+- Internal links are now starting by `@/` rather than `./` to avoid confusion with relative links
+
+### Other
+
+- Fix image processing not happening if called from the template
+- Add a `zola check` command to that validates the site and checks all external links
+- Sections can have `aliases` as well
+- Anchors in internal links are now checked for existence
+
 ## 0.7.0 (2019-04-28)
 
 ### Breaking

@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
     {% for sitemap_entry in entries %}
         <url>
-            <loc>{{ sitemap_entry.permalink | safe }}</loc>
+            <loc>{{ sitemap_entry.permalink | urlencode | safe }}</loc>
             {% if sitemap_entry.date %}
                 <lastmod>{{ sitemap_entry.date }}</lastmod>
             {% endif %}

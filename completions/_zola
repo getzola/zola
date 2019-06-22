@@ -68,6 +68,14 @@ _arguments "${_arguments_options[@]}" \
 '--version[Prints version information]' \
 && ret=0
 ;;
+(check)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
 (help)
 _arguments "${_arguments_options[@]}" \
 '-h[Prints help information]' \
@@ -85,8 +93,9 @@ esac
 _zola_commands() {
     local commands; commands=(
         "init:Create a new Zola project" \
-"build:Builds the site" \
+"build:Deletes the output directory if there is one and builds the site" \
 "serve:Serve the site. Rebuild and reload on change automatically" \
+"check:Try building the project without rendering it. Checks links" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'zola commands' commands "$@"
@@ -97,6 +106,13 @@ _zola__build_commands() {
         
     )
     _describe -t commands 'zola build commands' commands "$@"
+}
+(( $+functions[_zola__check_commands] )) ||
+_zola__check_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'zola check commands' commands "$@"
 }
 (( $+functions[_zola__help_commands] )) ||
 _zola__help_commands() {

@@ -32,7 +32,7 @@ in the `docs/content` folder of the repository and the community can use [its fo
 | Search                          | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![no](./is-no.svg)   | ![yes](./is-yes.svg) |
 | Data files                      | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) | ![no](./is-no.svg)   |
 | LiveReload                      | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![yes](./is-yes.svg) |
-| Netlify support                 | ![ehh](./is-ehh.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![no](./is-no.svg)   |
+| Netlify support                 | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![no](./is-no.svg)   |
 | Breadcrumbs                     | ![yes](./is-yes.svg) | ![no](./is-no.svg)   | ![no](./is-no.svg)   | ![yes](./is-yes.svg) |
 | Custom output formats           | ![no](./is-no.svg)   | ![no](./is-no.svg)   | ![yes](./is-yes.svg) | ![no](./is-no.svg)   |
 

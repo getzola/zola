@@ -60,5 +60,5 @@ current_path: String;
 term: TaxonomyTerm;
 ```
 
-A paginated taxonomy term will also get a `paginator` variable, see the [pagination page](./documentation/templates/pagination.md)
+A paginated taxonomy term will also get a `paginator` variable, see the [pagination page](@/documentation/templates/pagination.md)
 for more details on that.

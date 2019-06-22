@@ -27,8 +27,9 @@ Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Create a new Zola project')
-            [CompletionResult]::new('build', 'build', [CompletionResultType]::ParameterValue, 'Builds the site')
+            [CompletionResult]::new('build', 'build', [CompletionResultType]::ParameterValue, 'Deletes the output directory if there is one and builds the site')
             [CompletionResult]::new('serve', 'serve', [CompletionResultType]::ParameterValue, 'Serve the site. Rebuild and reload on change automatically')
+            [CompletionResult]::new('check', 'check', [CompletionResultType]::ParameterValue, 'Try building the project without rendering it. Checks links')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Prints this message or the help of the given subcommand(s)')
             break
         }
@@ -60,6 +61,13 @@ Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Changes the base_url')
             [CompletionResult]::new('--base-url', 'base-url', [CompletionResultType]::ParameterName, 'Changes the base_url')
             [CompletionResult]::new('--watch-only', 'watch-only', [CompletionResultType]::ParameterName, 'Do not start a server, just re-build project on changes')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'zola;check' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
