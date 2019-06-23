@@ -21,7 +21,7 @@ atty = "0.2.11"
 clap = "2"
 chrono = "0.4"
 lazy_static = "1.1.0"
-toml = "0.4"
+toml = "0.5"
 termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "1.5"
