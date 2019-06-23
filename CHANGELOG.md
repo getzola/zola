@@ -6,6 +6,7 @@
 
 - Allow specifying heading IDs. It is a breaking change in the unlikely case you are using `{#..}` in your heading
 - Internal links are now starting by `@/` rather than `./` to avoid confusion with relative links
+- Latest Tera version now cares about where the `safe` filter is, always put it at the end of an expression.
 
 ### Other
 
