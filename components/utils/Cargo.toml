@@ -8,7 +8,7 @@ errors = { path = "../errors" }
 tera = "1.0.0-beta.10"
 unicode-segmentation = "1.2"
 walkdir = "2"
-toml = "0.4"
+toml = "0.5"
 serde = "1"
 
 [dev-dependencies]
