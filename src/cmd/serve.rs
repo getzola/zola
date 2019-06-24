@@ -321,7 +321,7 @@ pub fn serve(
         } else {
             rebuild_done_handling(
                 &broadcaster,
-                copy_file(&path, &site.output_path, &site.static_path),
+                copy_file(&path, &site.output_path, &site.static_path, false),
                 &partial_path.to_string_lossy(),
             );
         }
