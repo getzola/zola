@@ -3168,7 +3168,7 @@ dependencies = [
 
 [[package]]
 name = "zola"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "actix-files 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "actix-web 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
