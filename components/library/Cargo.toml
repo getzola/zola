@@ -22,5 +22,5 @@ errors = { path = "../errors" }
 
 [dev-dependencies]
 tempfile = "3"
-toml = "0.4"
+toml = "0.5"
 globset = "0.4"
