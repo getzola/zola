@@ -41,9 +41,9 @@ generate_rss = false
 # not set (the default).
 # rss_limit = 20
 
-# Whether to copy or hardlink files in `static/` directory. Useful for sites
-# whose static files are large. Note that for this to work, both `static/` and
-# output directory need to be on the same filesystem. Also, theme's `static/`
+# Whether to copy or hardlink files in static/ directory. Useful for sites
+# whose static files are large. Note that for this to work, both static/ and
+# output directory need to be on the same filesystem. Also, theme's static/
 # files are always copies, regardles of this setting. False by default.
 # hard_link_static = true
 
