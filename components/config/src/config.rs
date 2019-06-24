@@ -106,6 +106,8 @@ pub struct Config {
     pub generate_rss: bool,
     /// The number of articles to include in the RSS feed. Defaults to including all items.
     pub rss_limit: Option<usize>,
+    /// If set, files from static/ will be hardlinked instead of copied to the output dir.
+    pub hard_link_static: bool,
 
     pub taxonomies: Vec<Taxonomy>,
 
@@ -280,6 +282,7 @@ impl Default for Config {
             languages: Vec::new(),
             generate_rss: false,
             rss_limit: None,
+            hard_link_static: false,
             taxonomies: Vec::new(),
             compile_sass: false,
             check_external_links: false,
