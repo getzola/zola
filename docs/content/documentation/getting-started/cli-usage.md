@@ -86,7 +86,8 @@ $ zola --config config.staging.toml serve
 ### check
 
 The check subcommand will try to build all pages just like the build command would, but without writing any of the
-results to disk. Additionally, it always checks external links regardless of the site configuration.
+results to disk. Additionally, it will also check all external links present in Markdown files by trying to fetch
+them (links present in the template files will not be checked).
 
 ## Colored output
 
