@@ -22,6 +22,14 @@ Use your favourite AUR helper to install the `zola-bin` package.
 $ yay -S zola-bin
 ```
 
+### Fedora
+
+Zola is available in official repositories since Fedora 29.
+
+```sh
+$ sudo dnf install zola
+```
+
 ### Snapcraft
 
 Zola is available on snapcraft:
