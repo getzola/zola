@@ -53,10 +53,7 @@ enum ChangeKind {
     Config,
 }
 
-// Uglified using uglifyjs
-// Also, commenting out the lines 330-340 (containing `e instanceof ProtocolError`) was needed
-// as it seems their build didn't work well and didn't include ProtocolError so it would error on
-// errors
+// This is dist/livereload.min.js from the LiveReload.js v3.0.0 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 struct ErrorFilePaths {
