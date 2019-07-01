@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Redirect</title>
-        <link rel="canonical" href="{{ url | safe }}" />
-        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <meta http-equiv="refresh" content="0;url={{ url | safe }}" />
-    </head>
-    <body>
-        <p><a href="{{ url | safe }}">Click here</a> to be redirected.</p>
-    </body>
-</html>
+<!doctype html>
+<meta charset="utf-8">
+<link rel="canonical" href="{{ url | safe }}">
+<meta http-equiv="refresh" content="0;url={{ url | safe }}">
+<title>Redirect</title>
+<p><a href="{{ url | safe }}">Click here</a> to be redirected.</p>
