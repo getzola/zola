@@ -31,6 +31,7 @@ actix-web = { version = "1.0", default-features = false, features = [] }
 notify = "4"
 ws = "0.8"
 ctrlc = "3"
+open = "1.2"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }

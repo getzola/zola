@@ -42,6 +42,7 @@ use site::Site;
 use utils::fs::copy_file;
 
 use console;
+use open;
 use rebuild;
 
 #[derive(Debug, PartialEq)]
@@ -146,6 +147,7 @@ pub fn serve(
     base_url: &str,
     config_file: &str,
     watch_only: bool,
+    open: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
@@ -211,6 +213,11 @@ pub fn serve(
             .expect("Can't start the webserver")
             .shutdown_timeout(20);
             println!("Web server is available at http://{}\n", &address);
+            if open {
+                if let Err(err) = open::that(format!("http://{}", &address)) {
+                    eprintln!("Failed to open URL in your browser: {}", err);
+                }
+            }
             s.run()
         });
         // The websocket for livereload
