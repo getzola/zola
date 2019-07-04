@@ -139,7 +139,7 @@ impl Library {
                 let parent_is_transparent;
                 // We need to get a reference to a section later so keep the scope of borrowing small
                 {
-                    let mut section = self.sections.get_mut(*section_key).unwrap();
+                    let section = self.sections.get_mut(*section_key).unwrap();
                     section.pages.push(key);
                     parent_is_transparent = section.meta.transparent;
                 }

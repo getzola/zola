@@ -300,7 +300,7 @@ impl ImageOp {
 
         match self.format {
             Format::Png => {
-                let mut enc = PNGEncoder::new(&mut f);
+                let enc = PNGEncoder::new(&mut f);
                 enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
             }
             Format::Jpeg(q) => {
