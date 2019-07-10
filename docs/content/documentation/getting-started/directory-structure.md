@@ -38,6 +38,8 @@ The directory structure of the `sass` folder will be preserved when copying over
 
 ## `static`
 Contains any kind of files. All the files/folders in the `static` folder will be copied as-is in the output directory.
+If your static files are large you can configure Zola to [hard link](https://en.wikipedia.org/wiki/Hard_link) them
+instead of copying by setting `hard_link_static = true` in the config file.
 
 ## `templates`
 Contains all the [Tera](https://tera.netlify.com) templates that will be used to render this site.
