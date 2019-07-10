@@ -1,4 +1,4 @@
-use std::fs::{copy, create_dir_all, hard_link, read_dir, File};
+use std::fs::{copy, create_dir_all, read_dir, File};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -95,7 +95,7 @@ pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 
 /// Copy a file but takes into account where to start the copy as
 /// there might be folders we need to create on the way
-pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hardlink: bool) -> Result<()> {
+pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: bool) -> Result<()> {
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
 
@@ -103,8 +103,8 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hardlink: bool
         create_dir_all(parent_directory)?;
     }
 
-    if hardlink {
-        hard_link(src, target_path)?
+    if hard_link {
+        std::fs::hard_link(src, target_path)?
     } else {
         copy(src, target_path)?;
     }

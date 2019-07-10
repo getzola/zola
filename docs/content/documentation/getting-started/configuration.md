@@ -45,7 +45,7 @@ generate_rss = false
 # whose static files are large. Note that for this to work, both static/ and
 # output directory need to be on the same filesystem. Also, theme's static/
 # files are always copies, regardles of this setting. False by default.
-# hard_link_static = true
+# hard_link_static = false
 
 # The taxonomies to be rendered for that site and their configuration
 # Example:
