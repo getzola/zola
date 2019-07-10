@@ -30,6 +30,14 @@ Zola is available in official repositories since Fedora 29.
 $ sudo dnf install zola
 ```
 
+### FreeBSD
+
+Zola is available in the official package repository.
+
+```sh
+$ pkg install zola
+```
+
 ### Snapcraft
 
 Zola is available on snapcraft:
