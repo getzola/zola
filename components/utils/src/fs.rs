@@ -111,7 +111,7 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: boo
     Ok(())
 }
 
-pub fn copy_directory(src: &PathBuf, dest: &PathBuf, hardlink: bool) -> Result<()> {
+pub fn copy_directory(src: &PathBuf, dest: &PathBuf, hard_link: bool) -> Result<()> {
     for entry in WalkDir::new(src).into_iter().filter_map(std::result::Result::ok) {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
@@ -121,7 +121,7 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf, hardlink: bool) -> Result<(
                 create_directory(&target_path)?;
             }
         } else {
-            copy_file(entry.path(), dest, src, hardlink)?;
+            copy_file(entry.path(), dest, src, hard_link)?;
         }
     }
     Ok(())
