@@ -597,11 +597,12 @@ impl Site {
             copy_directory(
                 &self.base_path.join("themes").join(theme).join("static"),
                 &self.output_path,
+                false
             )?;
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
-            copy_directory(&self.static_path, &self.output_path)?;
+            copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static)?;
         }
 
         Ok(())
