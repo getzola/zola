@@ -21,6 +21,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+extern crate globset;
+
 use std::env;
 use std::fs::{read_dir, remove_dir_all, File};
 use std::io::Read;
@@ -40,6 +42,7 @@ use ws::{Message, Sender, WebSocket};
 use errors::{Error as ZolaError, Result};
 use site::Site;
 use utils::fs::copy_file;
+use cmd::serve::globset::GlobSet;
 
 use console;
 use open;
@@ -345,6 +348,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
+
                         match change_kind {
                             ChangeKind::Content => {
                                 console::info(&format!("-> Content renamed {}", path.display()));
@@ -376,6 +380,9 @@ pub fn serve(
                     // Intellij does weird things on edit, chmod is there to count those changes
                     // https://github.com/passcod/notify/issues/150#issuecomment-494912080
                     Create(path) | Write(path) | Remove(path) | Chmod(path) => {
+                        if is_ignored_file(&site.config.ignored_content_globset, &path) {
+                            continue;
+                        }
                         if is_temp_file(&path) || path.is_dir() {
                             continue;
                         }
@@ -419,6 +426,13 @@ pub fn serve(
             }
             Err(e) => console::error(&format!("Watch error: {:?}", e)),
         };
+    }
+}
+
+fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bool {
+    match ignored_content_globset {
+        Some(gs) => gs.is_match(path),
+        None => false
     }
 }
 

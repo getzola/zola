@@ -210,6 +210,12 @@ impl Site {
 
             page_entries
                 .into_par_iter()
+                .filter(|entry| {
+                    match &config.ignored_content_globset {
+                        Some(gs) => !gs.is_match(entry.as_path()),
+                        None => true
+                    }
+                })
                 .map(|entry| {
                     let path = entry.as_path();
                     Page::from_file(path, config, &self.base_path)
