@@ -7,7 +7,7 @@ use site::Site;
 use console;
 
 pub fn check(config_file: &str, base_path: Option<&str>, base_url: Option<&str>) -> Result<()> {
-    let bp = base_path.map(PathBuf::from).unwrap_or(env::current_dir().unwrap());
+    let bp = base_path.map(PathBuf::from).unwrap_or_else(|| env::current_dir().unwrap());
     let mut site = Site::new(bp, config_file)?;
     // Force the checking of external links
     site.config.check_external_links = true;

@@ -8,6 +8,7 @@ use content::Page;
 
 /// Used by the RSS feed
 /// There to not have to import sorting stuff in the site crate
+#[allow(clippy::trivially_copy_pass_by_ref)]
 pub fn sort_actual_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
     let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
     if ord == Ordering::Equal {

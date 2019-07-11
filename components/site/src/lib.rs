@@ -323,7 +323,7 @@ impl Site {
             })
             .collect::<Vec<_>>()
             .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
+        Err(Error { kind: ErrorKind::Msg(msg), source: None })
     }
 
     pub fn check_external_links(&self) -> Result<()> {
@@ -352,7 +352,7 @@ impl Site {
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
             .build()
-            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string().into()), source: None })?;
+            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string()), source: None })?;
 
         let errors: Vec<_> = pool.install(|| {
             all_links
@@ -383,7 +383,7 @@ impl Site {
             })
             .collect::<Vec<_>>()
             .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
+        Err(Error { kind: ErrorKind::Msg(msg), source: None })
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create
@@ -699,7 +699,7 @@ impl Site {
                     .pages_values()
                     .iter()
                     .filter(|p| p.lang == self.config.default_language)
-                    .map(|p| *p)
+                    .cloned()
                     .collect()
             } else {
                 library.pages_values()
@@ -712,7 +712,7 @@ impl Site {
                 continue;
             }
             let pages =
-                library.pages_values().iter().filter(|p| p.lang == lang.code).map(|p| *p).collect();
+                library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
             self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
         }
 

@@ -129,6 +129,7 @@ impl From<ResizeOp> for u8 {
     }
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for ResizeOp {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         hasher.write_u8(u8::from(*self));
@@ -194,6 +195,7 @@ impl Format {
     }
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for Format {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         use Format::*;
