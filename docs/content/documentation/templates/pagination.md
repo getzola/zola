@@ -6,7 +6,7 @@ weight = 30
 Two things can get paginated: a section and a taxonomy term.
 
 A paginated section gets the same `section` variable as a normal
-[section page](./documentation/templates/pages-sections.md#section-variables) minus its pages
+[section page](@/documentation/templates/pages-sections.md#section-variables) minus its pages
 while both a paginated taxonomy page and a paginated section page gets a
 `paginator` variable of the `Pager` type:
 
@@ -35,7 +35,7 @@ current_index: Number;
 ## Section
 
 A paginated section gets the same `section` variable as a normal
-[section page](./documentation/templates/pages-sections.md#section-variables)
+[section page](@/documentation/templates/pages-sections.md#section-variables)
 minus its pages. The pages are instead in `paginator.pages`.
 
 ## Taxonomy term
