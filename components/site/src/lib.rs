@@ -229,6 +229,9 @@ impl Site {
         let mut pages_insert_anchors = HashMap::new();
         for page in pages {
             let p = page?;
+            if p.meta.draft {
+                continue;
+            }
             pages_insert_anchors.insert(
                 p.file.path.clone(),
                 self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),

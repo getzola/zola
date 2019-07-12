@@ -18,8 +18,8 @@ fn can_parse_site() {
     site.load().unwrap();
     let library = site.library.read().unwrap();
 
-    // Correct number of pages (sections do not count as pages)
-    assert_eq!(library.pages().len(), 22);
+    // Correct number of pages (sections do not count as pages, draft are ignored)
+    assert_eq!(library.pages().len(), 21);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -42,7 +42,7 @@ fn can_parse_site() {
 
     let posts_section = library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
-    assert_eq!(posts_section.pages.len(), 10);
+    assert_eq!(posts_section.pages.len(), 9);  // 10 with 1 draft == 9
     assert_eq!(
         posts_section.ancestors,
         vec![*library.get_section_key(&index_section.file.path).unwrap()]
@@ -229,7 +229,8 @@ fn can_build_site_with_live_reload() {
         "posts/python/index.html",
         r#"<a name="continue-reading"></a>"#
     ));
-    assert!(file_contains!(public, "posts/draft/index.html", r#"THEME_SHORTCODE"#));
+
+    assert_eq!(file_exists!(public, "posts/draft/index.html"), false);
 }
 
 #[test]
