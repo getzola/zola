@@ -250,7 +250,7 @@ impl Site {
         // Needs to be done after rendering markdown as we only get the anchors at that point
         self.check_internal_links_with_anchors()?;
 
-        if self.config.check_external_links {
+        if self.config.is_in_check_mode() {
             self.check_external_links()?;
         }
 
@@ -278,6 +278,15 @@ impl Site {
             })
             .flatten();
         let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+
+        if self.config.is_in_check_mode() {
+            println!("Checking {} internal link(s) with an anchor.", all_links.len());
+        }
+
+        if all_links.is_empty() {
+            return Ok(());
+        }
+
         let mut full_path = self.base_path.clone();
         full_path.push("content");
 
@@ -311,9 +320,15 @@ impl Site {
                 }
             })
             .collect();
+
+        if self.config.is_in_check_mode() {
+            println!("> Checked {} internal link(s) with an anchor: {} error(s) found.", all_links.len(), errors.len());
+        }
+
         if errors.is_empty() {
             return Ok(());
         }
+
         let msg = errors
             .into_iter()
             .map(|(page_path, md_path, anchor)| {
@@ -348,6 +363,11 @@ impl Site {
             })
             .flatten();
         let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+        println!("Checking {} external link(s).", all_links.len());
+
+        if all_links.is_empty() {
+            return Ok(());
+        }
 
         // create thread pool with lots of threads so we can fetch
         // (almost) all pages simultaneously
@@ -371,9 +391,12 @@ impl Site {
                 .collect()
         });
 
+        println!("> Checked {} external link(s): {} error(s) found.", all_links.len(), errors.len());
+
         if errors.is_empty() {
             return Ok(());
         }
+
         let msg = errors
             .into_iter()
             .map(|(page_path, link, check_res)| {
