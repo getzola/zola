@@ -59,14 +59,19 @@ pub fn notify_site_size(site: &Site) {
 }
 
 /// Display in the console only the number of pages/sections in the site
-pub fn notify_site_size_simple(site: &Site) {
+pub fn check_site_summary(site: &Site) {
     let library = site.library.read().unwrap();
+    let orphans = library.get_all_orphan_pages();
     println!(
-        "-> {} pages ({} orphan), {} sections",
+        "-> Site content: {} pages ({} orphan), {} sections",
         library.pages().len(),
-        site.get_number_orphan_pages(),
+        orphans.len(),
         library.sections().len() - 1, // -1 since we do not count the index as a section there
     );
+
+    for orphan in orphans {
+        warn(&format!("Orphan page found: {}", orphan.path));
+    }
 }
 
 /// Display a warning in the console if there are ignored pages in the site

@@ -15,7 +15,7 @@ pub fn check(config_file: &str, base_path: Option<&str>, base_url: Option<&str>)
         site.set_base_url(b.to_string());
     }
     site.load()?;
-    console::notify_site_size_simple(&site);
+    console::check_site_summary(&site);
     console::warn_about_ignored_pages(&site);
     Ok(())
 }
