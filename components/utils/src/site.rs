@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::hash::BuildHasher;
 use unicode_segmentation::UnicodeSegmentation;
 
 use errors::Result;
@@ -23,9 +24,9 @@ pub struct ResolvedInternalLink {
 
 /// Resolves an internal link (of the `@/posts/something.md#hey` sort) to its absolute link and
 /// returns the path + anchor as well
-pub fn resolve_internal_link(
+pub fn resolve_internal_link<S: BuildHasher>(
     link: &str,
-    permalinks: &HashMap<String, String>,
+    permalinks: &HashMap<String, String, S>,
 ) -> Result<ResolvedInternalLink> {
     // First we remove the ./ since that's zola specific
     let clean_link = link.replacen("@/", "", 1);

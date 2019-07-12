@@ -171,12 +171,10 @@ impl Page {
                 } else {
                     slugify(&page.file.name)
                 }
+            } else if let Some(slug) = slug_from_dated_filename {
+                slugify(&slug)
             } else {
-                if let Some(slug) = slug_from_dated_filename {
-                    slugify(&slug)
-                } else {
-                    slugify(&page.file.name)
-                }
+                slugify(&page.file.name)
             }
         };
 
