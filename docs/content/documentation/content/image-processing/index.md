@@ -150,4 +150,4 @@ Here is the result:
 ## Get image size
 
 Sometimes when building a gallery it is useful to know the dimensions of each asset.  You can get this information with
-[get_image_metadata](./documentation/templates/overview.md#get-image-metadata) 
+[get_image_metadata](@/documentation/templates/overview.md#get-image-metadata) 
