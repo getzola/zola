@@ -229,7 +229,8 @@ impl Site {
         let mut pages_insert_anchors = HashMap::new();
         for page in pages {
             let p = page?;
-            if p.meta.draft {
+            // Draft pages are not rendered in zola build so we just discard them
+            if p.meta.draft && self.config.is_in_build_mode() {
                 continue;
             }
             pages_insert_anchors.insert(

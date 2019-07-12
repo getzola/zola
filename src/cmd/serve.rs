@@ -130,6 +130,7 @@ fn create_new_site(
         format!("http://{}", base_address)
     };
 
+    site.config.enable_serve_mode();
     site.set_base_url(base_url);
     site.set_output_path(output_dir);
     site.load()?;
