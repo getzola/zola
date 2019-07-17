@@ -272,7 +272,7 @@ pub fn serve(
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
     ctrlc::set_handler(move || {
-        remove_dir_all(&output_path).expect("Failed to delete output directory");
+        let _ =remove_dir_all(&output_path);
         ::std::process::exit(0);
     })
     .expect("Error setting Ctrl-C handler");

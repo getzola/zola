@@ -6,8 +6,8 @@
 - Fix sitemaps namespace
 - Update livereload
 - Add `hard_link_static` config option to hard link things in the static directory instead of copying
-- Draft pages are not longer rendered in `zola build`
-- Add warning for old style internal links since they would still function
+- Pages with draft=true are not longer rendered in `zola build`
+- Add warning for old style internal links since they would still function silently
 - Add some counts to `zola check`
 
 ## 0.8.0 (2019-06-22)
