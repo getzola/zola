@@ -193,11 +193,6 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
     let mut all_taxonomies = HashMap::new();
 
     for (key, page) in library.pages() {
-        // Draft are not part of taxonomies
-        if page.is_draft() {
-            continue;
-        }
-
         for (name, val) in &page.meta.taxonomies {
             if taxonomies_def.contains_key(name) {
                 if taxonomies_def[name].lang != page.lang {
