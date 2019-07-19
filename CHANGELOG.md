@@ -1,12 +1,16 @@
 # Changelog
 
-## 0.8.1 (unreleased)
+## 0.9.0 (unreleased)
 
+### Breaking
+
+- Pages with draft=true are now only loaded/rendered in `zola serve`
+
+### Other
 - Add `--open` flag to open server URL in default browser
 - Fix sitemaps namespace
 - Update livereload
 - Add `hard_link_static` config option to hard link things in the static directory instead of copying
-- Pages with draft=true are not longer rendered in `zola build`
 - Add warning for old style internal links since they would still function silently
 - Add some counts to `zola check`
 

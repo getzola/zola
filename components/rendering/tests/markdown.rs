@@ -820,7 +820,6 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 //    assert_eq!(res.body, expected);
 //}
 
-
 // https://github.com/getzola/zola/issues/747
 #[test]
 fn leaves_custom_url_scheme_untouched() {

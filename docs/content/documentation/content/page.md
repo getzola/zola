@@ -55,7 +55,7 @@ date =
 # will not be rendered.
 weight = 0
 
-# A draft page will not be present in prev/next pagination
+# A draft page is only rendered in `zola serve`, they are ignored in `zola build` and `zola check`
 draft = false
 
 # If filled, it will use that slug instead of the filename to make up the URL

@@ -236,18 +236,7 @@ impl Library {
 
         for (key, (sorted, cannot_be_sorted, sort_by)) in updates {
             // Find sibling between sorted pages first
-            let with_siblings = find_siblings(
-                sorted
-                    .iter()
-                    .map(|k| {
-                        if let Some(page) = self.pages.get(*k) {
-                            (k, page.is_draft())
-                        } else {
-                            unreachable!("Sorting got an unknown page")
-                        }
-                    })
-                    .collect(),
-            );
+            let with_siblings = find_siblings(&sorted);
 
             for (k2, val1, val2) in with_siblings {
                 if let Some(page) = self.pages.get_mut(k2) {

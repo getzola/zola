@@ -62,7 +62,7 @@ struct ErrorFilePaths {
 }
 
 fn not_found<B>(
-    res: dev::ServiceResponse<B>
+    res: dev::ServiceResponse<B>,
 ) -> std::result::Result<ErrorHandlerResponse<B>, actix_web::Error> {
     let buf: Vec<u8> = {
         let error_files: &ErrorFilePaths = res.request().app_data().unwrap();
@@ -74,15 +74,10 @@ fn not_found<B>(
     };
 
     let new_resp = HttpResponse::build(http::StatusCode::NOT_FOUND)
-        .header(
-            http::header::CONTENT_TYPE,
-            http::header::HeaderValue::from_static("text/html"),
-        )
+        .header(http::header::CONTENT_TYPE, http::header::HeaderValue::from_static("text/html"))
         .body(buf);
 
-    Ok(ErrorHandlerResponse::Response(
-        res.into_response(new_resp.into_body()),
-    ))
+    Ok(ErrorHandlerResponse::Response(res.into_response(new_resp.into_body())))
 }
 
 fn livereload_handler() -> HttpResponse {
@@ -192,23 +187,15 @@ pub fn serve(
     let broadcaster = if !watch_only {
         thread::spawn(move || {
             let s = HttpServer::new(move || {
-                let error_handlers = ErrorHandlers::new()
-                    .handler(http::StatusCode::NOT_FOUND, not_found);
+                let error_handlers =
+                    ErrorHandlers::new().handler(http::StatusCode::NOT_FOUND, not_found);
 
                 App::new()
-                    .data(ErrorFilePaths {
-                        not_found: static_root.join("404.html"),
-                    })
+                    .data(ErrorFilePaths { not_found: static_root.join("404.html") })
                     .wrap(error_handlers)
-                    .route(
-                        "/livereload.js",
-                        web::get().to(livereload_handler)
-                    )
+                    .route("/livereload.js", web::get().to(livereload_handler))
                     // Start a webserver that serves the `output_dir` directory
-                    .service(
-                        fs::Files::new("/", &static_root)
-                            .index_file("index.html"),
-                    )
+                    .service(fs::Files::new("/", &static_root).index_file("index.html"))
             })
             .bind(&address)
             .expect("Can't start the webserver")
@@ -272,7 +259,7 @@ pub fn serve(
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
     ctrlc::set_handler(move || {
-        let _ =remove_dir_all(&output_path);
+        let _ = remove_dir_all(&output_path);
         ::std::process::exit(0);
     })
     .expect("Error setting Ctrl-C handler");
@@ -326,7 +313,12 @@ pub fn serve(
         } else {
             rebuild_done_handling(
                 &broadcaster,
-                copy_file(&path, &site.output_path, &site.static_path, site.config.hard_link_static),
+                copy_file(
+                    &path,
+                    &site.output_path,
+                    &site.static_path,
+                    site.config.hard_link_static,
+                ),
                 &partial_path.to_string_lossy(),
             );
         }

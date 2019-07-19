@@ -28,8 +28,7 @@ categories = ["programming"]
 +++
 ```
 
-The taxonomy pages will only be created if at least one non-draft page is found and
-are available at the following paths:
+The taxonomy pages are available at the following paths:
 
 ```plain
 $BASE_URL/$NAME/

@@ -74,7 +74,7 @@ fn main() {
                 ::std::process::exit(1);
             }
 
-            if  !watch_only && !port_is_available(port) {
+            if !watch_only && !port_is_available(port) {
                 port = if let Some(p) = get_available_port(1111) {
                     p
                 } else {

@@ -57,53 +57,21 @@ pub fn sort_pages_by_weight(pages: Vec<(&Key, Option<usize>, &str)>) -> (Vec<Key
 }
 
 /// Find the lighter/heavier and earlier/later pages for all pages having a date/weight
-/// and that are not drafts.
-pub fn find_siblings(sorted: Vec<(&Key, bool)>) -> Vec<(Key, Option<Key>, Option<Key>)> {
+pub fn find_siblings(sorted: &[Key]) -> Vec<(Key, Option<Key>, Option<Key>)> {
     let mut res = Vec::with_capacity(sorted.len());
     let length = sorted.len();
 
-    for (i, (key, is_draft)) in sorted.iter().enumerate() {
-        if *is_draft {
-            res.push((**key, None, None));
-            continue;
-        }
-        let mut with_siblings = (**key, None, None);
+    for (i, key) in sorted.iter().enumerate() {
+        let mut with_siblings = (*key, None, None);
 
         if i > 0 {
-            let mut j = i;
-            loop {
-                if j == 0 {
-                    break;
-                }
-
-                j -= 1;
-
-                if sorted[j].1 {
-                    continue;
-                }
-                // lighter / later
-                with_siblings.1 = Some(*sorted[j].0);
-                break;
-            }
+            // lighter / later
+            with_siblings.1 = Some(sorted[i - 1]);
         }
 
         if i < length - 1 {
-            let mut j = i;
-            loop {
-                if j == length - 1 {
-                    break;
-                }
-
-                j += 1;
-
-                if sorted[j].1 {
-                    continue;
-                }
-
-                // heavier/earlier
-                with_siblings.2 = Some(*sorted[j].0);
-                break;
-            }
+            // heavier/earlier
+            with_siblings.2 = Some(sorted[i + 1]);
         }
         res.push(with_siblings);
     }
@@ -208,10 +176,9 @@ mod tests {
         let page3 = create_page_with_weight(3);
         let key3 = dense.insert(page3.clone());
 
-        let input =
-            vec![(&key1, page1.is_draft()), (&key2, page2.is_draft()), (&key3, page3.is_draft())];
+        let input = vec![key1, key2, key3];
 
-        let pages = find_siblings(input);
+        let pages = find_siblings(&input);
 
         assert_eq!(pages[0].1, None);
         assert_eq!(pages[0].2, Some(key2));

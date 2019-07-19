@@ -62,7 +62,6 @@ pub fn find_entries<'a>(
     let pages = library
         .pages_values()
         .iter()
-        .filter(|p| !p.is_draft())
         .map(|p| {
             let date = match p.meta.date {
                 Some(ref d) => Some(d.to_string()),

@@ -230,7 +230,7 @@ impl Site {
         for page in pages {
             let p = page?;
             // Draft pages are not rendered in zola build so we just discard them
-            if p.meta.draft && self.config.is_in_build_mode() {
+            if p.meta.draft && !self.config.is_in_serve_mode() {
                 continue;
             }
             pages_insert_anchors.insert(
@@ -323,7 +323,11 @@ impl Site {
             .collect();
 
         if self.config.is_in_check_mode() {
-            println!("> Checked {} internal link(s) with an anchor: {} error(s) found.", all_links.len(), errors.len());
+            println!(
+                "> Checked {} internal link(s) with an anchor: {} error(s) found.",
+                all_links.len(),
+                errors.len()
+            );
         }
 
         if errors.is_empty() {
@@ -392,7 +396,11 @@ impl Site {
                 .collect()
         });
 
-        println!("> Checked {} external link(s): {} error(s) found.", all_links.len(), errors.len());
+        println!(
+            "> Checked {} external link(s): {} error(s) found.",
+            all_links.len(),
+            errors.len()
+        );
 
         if errors.is_empty() {
             return Ok(());
@@ -624,7 +632,7 @@ impl Site {
             copy_directory(
                 &self.base_path.join("themes").join(theme).join("static"),
                 &self.output_path,
-                false
+                false,
             )?;
         }
         // We're fine with missing static folders
@@ -901,7 +909,7 @@ impl Site {
         )
     }
 
-    /// Renders all taxonomies with at least one non-draft post
+    /// Renders all taxonomies
     pub fn render_taxonomies(&self) -> Result<()> {
         for taxonomy in &self.taxonomies {
             self.render_taxonomy(taxonomy)?;
@@ -1018,10 +1026,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let mut context = Context::new();
-        let mut pages = all_pages
-            .into_iter()
-            .filter(|p| p.meta.date.is_some() && !p.is_draft())
-            .collect::<Vec<_>>();
+        let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
 
         // Don't generate a RSS feed if none of the pages has a date
         if pages.is_empty() {
