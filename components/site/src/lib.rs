@@ -764,6 +764,7 @@ impl Site {
     }
 
     pub fn build_search_index(&self) -> Result<()> {
+        ensure_directory_exists(&self.output_path)?;
         // index first
         create_file(
             &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
