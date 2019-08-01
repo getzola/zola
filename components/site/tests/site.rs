@@ -653,3 +653,9 @@ fn can_build_site_custom_builtins_from_theme() {
     assert!(file_exists!(public, "404.html"));
     assert!(file_contains!(public, "404.html", "Oops"));
 }
+
+#[test]
+fn can_ignore_markdown_content() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(!file_exists!(public, "posts/ignored/index.html"));
+}

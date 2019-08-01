@@ -306,7 +306,17 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
         old.to_path_buf()
     };
     site.library.write().unwrap().remove_page(&old_path);
-    handle_page_editing(site, &new_path)
+
+    let ignored_content_globset = site.config.ignored_content_globset.clone();
+    let is_ignored_file = match ignored_content_globset {
+        Some(gs) => gs.is_match(new),
+        None => false
+    };
+
+    if !is_ignored_file {
+        return handle_page_editing(site, &new_path)
+    }
+    return Ok(())
 }
 
 /// What happens when a section or a page is created/edited

@@ -32,6 +32,7 @@ notify = "4"
 ws = "0.8"
 ctrlc = "3"
 open = "1.2"
+globset = "0.4"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
