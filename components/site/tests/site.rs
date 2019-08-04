@@ -167,12 +167,12 @@ fn can_build_site_without_live_reload() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/posts/simple/</loc>"
+        "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"
     ));
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/posts/</loc>"
+        "<loc>https://replace-this-with-your-url.com/posts/</loc>"
     ));
     // Drafts are not in the sitemap
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
@@ -280,7 +280,7 @@ fn can_build_site_with_taxonomies() {
     assert!(file_contains!(
         public,
         "categories/a/rss.xml",
-        "https%3A//replace-this-with-your-url.com/categories/a/rss.xml"
+        "https://replace-this-with-your-url.com/categories/a/rss.xml"
     ));
     // Extending from a theme works
     assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
@@ -291,12 +291,12 @@ fn can_build_site_with_taxonomies() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/categories/</loc>"
+        "<loc>https://replace-this-with-your-url.com/categories/</loc>"
     ));
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/categories/a/</loc>"
+        "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"
     ));
 }
 
@@ -425,7 +425,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/posts/page/4/</loc>"
+        "<loc>https://replace-this-with-your-url.com/posts/page/4/</loc>"
     ));
 }
 
@@ -478,7 +478,7 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/page/1/</loc>"
+        "<loc>https://replace-this-with-your-url.com/page/1/</loc>"
     ))
 }
 
@@ -559,7 +559,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/tags/a/page/6/</loc>"
+        "<loc>https://replace-this-with-your-url.com/tags/a/page/6/</loc>"
     ))
 }
 
@@ -643,7 +643,7 @@ fn can_apply_page_templates() {
     assert_eq!(child.meta.title, Some("Local section override".into()));
 }
 
-// https%3A//github.com/getzola/zola/issues/571
+// https://github.com/getzola/zola/issues/571
 #[test]
 fn can_build_site_custom_builtins_from_theme() {
     let (_, _tmp_dir, public) = build_site("test_site");

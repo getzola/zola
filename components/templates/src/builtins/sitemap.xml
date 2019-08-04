@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     {% for sitemap_entry in entries %}
         <url>
-            <loc>{{ sitemap_entry.permalink | urlencode | safe }}</loc>
+            <loc>{{ sitemap_entry.permalink | safe }}</loc>
             {% if sitemap_entry.date %}
                 <lastmod>{{ sitemap_entry.date }}</lastmod>
             {% endif %}
