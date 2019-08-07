@@ -8,11 +8,12 @@
 
 ### Other
 - Add `--open` flag to open server URL in default browser
-- Fix sitemaps namespace
+- Fix sitemaps namespace & do not urlencode URLs
 - Update livereload
 - Add `hard_link_static` config option to hard link things in the static directory instead of copying
 - Add warning for old style internal links since they would still function silently
-- Add some counts to `zola check`
+- Print some counts when running `zola check`
+- Re-render all pages/sections when `anchor-link.html` is changed
 
 ## 0.8.0 (2019-06-22)
 

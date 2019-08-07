@@ -24,12 +24,12 @@ lazy_static = "1.1.0"
 toml = "0.5"
 termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
-url = "1.5"
+url = "2"
 # Below is for the serve cmd
 actix-files = "0.1"
 actix-web = { version = "1.0", default-features = false, features = [] }
 notify = "4"
-ws = "0.8"
+ws = "0.9"
 ctrlc = "3"
 open = "1.2"
 globset = "0.4"

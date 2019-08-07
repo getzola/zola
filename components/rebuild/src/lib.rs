@@ -394,9 +394,11 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
         _ => {
             // If we are updating a shortcode, re-render the markdown of all pages/site
             // because we have no clue which one needs rebuilding
+            // Same for the anchor-link template
             // TODO: look if there the shortcode is used in the markdown instead of re-rendering
             // everything
-            if path.components().any(|x| x == Component::Normal("shortcodes".as_ref())) {
+            if filename == "anchor-link.html" ||  path.components().any(|x| x == Component::Normal("shortcodes".as_ref())) {
+                println!("Rendering markdown");
                 site.render_markdown()?;
             }
             site.populate_sections();
