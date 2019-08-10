@@ -421,7 +421,7 @@ mod tests {
                         if x.kind.lang == "en" {
                             t = Some(x)
                         }
-                    },
+                    }
                     "categories" => c = Some(x),
                     "auteurs" => a = Some(x),
                     _ => unreachable!(),

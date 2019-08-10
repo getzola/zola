@@ -254,23 +254,21 @@ impl<'a> SerializingSection<'a> {
         }
     }
 
-    /// Same as from_section but doesn't fetch pages and sections
+    /// Same as from_section but doesn't fetch pages
     pub fn from_section_basic(section: &'a Section, library: Option<&'a Library>) -> Self {
-        let ancestors = if let Some(ref lib) = library {
-            section
+        let mut ancestors = vec![];
+        let mut translations = vec![];
+        let mut subsections = vec![];
+        if let Some(ref lib) = library {
+            ancestors = section
                 .ancestors
                 .iter()
                 .map(|k| lib.get_section_by_key(*k).file.relative.clone())
-                .collect()
-        } else {
-            vec![]
-        };
-
-        let translations = if let Some(ref lib) = library {
-            TranslatedContent::find_all_sections(section, lib)
-        } else {
-            vec![]
-        };
+                .collect();
+            translations = TranslatedContent::find_all_sections(section, lib);
+            subsections =
+                section.subsections.iter().map(|k| lib.get_section_path_by_key(*k)).collect();
+        }
 
         SerializingSection {
             relative_path: &section.file.relative,
@@ -287,7 +285,7 @@ impl<'a> SerializingSection<'a> {
             assets: &section.serialized_assets,
             lang: &section.lang,
             pages: vec![],
-            subsections: vec![],
+            subsections,
             translations,
         }
     }
