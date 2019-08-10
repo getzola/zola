@@ -39,10 +39,10 @@ use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
+use cmd::serve::globset::GlobSet;
 use errors::{Error as ZolaError, Result};
 use site::Site;
 use utils::fs::copy_file;
-use cmd::serve::globset::GlobSet;
 
 use console;
 use open;
@@ -432,7 +432,7 @@ pub fn serve(
 fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bool {
     match ignored_content_globset {
         Some(gs) => gs.is_match(path),
-        None => false
+        None => false,
     }
 }
 

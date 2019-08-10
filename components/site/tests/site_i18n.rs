@@ -127,15 +127,25 @@ fn can_build_multilingual_site() {
     assert!(!file_exists!(public, "it/rss.xml"));
 
     // Taxonomies are per-language
+    // English
     assert!(file_exists!(public, "authors/index.html"));
     assert!(file_contains!(public, "authors/index.html", "Queen"));
     assert!(!file_contains!(public, "authors/index.html", "Vincent"));
     assert!(!file_exists!(public, "auteurs/index.html"));
     assert!(file_exists!(public, "authors/queen-elizabeth/rss.xml"));
 
+    assert!(file_exists!(public, "tags/index.html"));
+    assert!(file_contains!(public, "tags/index.html", "hello"));
+    assert!(!file_contains!(public, "tags/index.html", "bonjour"));
+
+    // French
     assert!(!file_exists!(public, "fr/authors/index.html"));
     assert!(file_exists!(public, "fr/auteurs/index.html"));
     assert!(!file_contains!(public, "fr/auteurs/index.html", "Queen"));
     assert!(file_contains!(public, "fr/auteurs/index.html", "Vincent"));
     assert!(!file_exists!(public, "fr/auteurs/vincent-prouillet/rss.xml"));
+
+    assert!(file_exists!(public, "fr/tags/index.html"));
+    assert!(file_contains!(public, "fr/tags/index.html", "bonjour"));
+    assert!(!file_contains!(public, "fr/tags/index.html", "hello"));
 }

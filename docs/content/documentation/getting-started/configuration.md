@@ -51,6 +51,7 @@ generate_rss = false
 # Example:
 #     taxonomies = [
 #       {name = "tags", rss = true}, # each tag will have its own RSS feed
+#       {name = "tags", lang = "fr"}, # you can have taxonomies with the same name in multiple languages
 #       {name = "categories", paginate_by = 5},  # 5 items per page for a term
 #       {name = "authors"}, # Basic definition: no RSS or pagination
 #     ]

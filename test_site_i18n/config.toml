@@ -16,6 +16,8 @@ generate_rss = true
 taxonomies = [
     {name = "authors", rss = true},
     {name = "auteurs", lang = "fr"},
+    {name = "tags"},
+    {name = "tags", lang = "fr"},
 ]
 
 languages = [

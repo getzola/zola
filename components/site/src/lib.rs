@@ -210,11 +210,9 @@ impl Site {
 
             page_entries
                 .into_par_iter()
-                .filter(|entry| {
-                    match &config.ignored_content_globset {
-                        Some(gs) => !gs.is_match(entry.as_path()),
-                        None => true
-                    }
+                .filter(|entry| match &config.ignored_content_globset {
+                    Some(gs) => !gs.is_match(entry.as_path()),
+                    None => true,
                 })
                 .map(|entry| {
                     let path = entry.as_path();

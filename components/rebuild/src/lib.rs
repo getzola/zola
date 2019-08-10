@@ -310,13 +310,13 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
     let ignored_content_globset = site.config.ignored_content_globset.clone();
     let is_ignored_file = match ignored_content_globset {
         Some(gs) => gs.is_match(new),
-        None => false
+        None => false,
     };
 
     if !is_ignored_file {
-        return handle_page_editing(site, &new_path)
+        return handle_page_editing(site, &new_path);
     }
-    return Ok(())
+    Ok(())
 }
 
 /// What happens when a section or a page is created/edited
@@ -397,7 +397,9 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             // Same for the anchor-link template
             // TODO: look if there the shortcode is used in the markdown instead of re-rendering
             // everything
-            if filename == "anchor-link.html" ||  path.components().any(|x| x == Component::Normal("shortcodes".as_ref())) {
+            if filename == "anchor-link.html"
+                || path.components().any(|x| x == Component::Normal("shortcodes".as_ref()))
+            {
                 println!("Rendering markdown");
                 site.render_markdown()?;
             }

@@ -14,6 +14,7 @@
 - Add warning for old style internal links since they would still function silently
 - Print some counts when running `zola check`
 - Re-render all pages/sections when `anchor-link.html` is changed
+- Taxonomies can now have the same name in multiple languages
 
 ## 0.8.0 (2019-06-22)
 
