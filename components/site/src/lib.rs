@@ -1065,7 +1065,7 @@ impl Site {
 
         pages.par_sort_unstable_by(sort_actual_pages_by_date);
 
-        context.insert("last_build_date", &pages[0].meta.date.clone());
+        context.insert("latest_date", &pages[0].meta.date.clone());
         let library = self.library.read().unwrap();
         // limit to the last n elements if the limit is set; otherwise use all.
         let num_entries = self.config.feed_limit.unwrap_or_else(|| pages.len());
