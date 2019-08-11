@@ -52,6 +52,7 @@ use rebuild;
 enum ChangeKind {
     Content,
     Templates,
+    Themes,
     StaticFiles,
     Sass,
     Config,
@@ -155,6 +156,7 @@ pub fn serve(
     // Setup watchers
     let mut watching_static = false;
     let mut watching_templates = false;
+    let mut watching_themes = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher
@@ -176,6 +178,13 @@ pub fn serve(
         watcher
             .watch("templates/", RecursiveMode::Recursive)
             .map_err(|e| ZolaError::chain("Can't watch the `templates` folder.", e))?;
+    }
+
+    if Path::new("themes").exists() {
+        watching_themes = true;
+        watcher
+            .watch("themes/", RecursiveMode::Recursive)
+            .map_err(|e| ZolaError::chain("Can't watch the `themes` folder.", e))?;
     }
 
     // Sass support is optional so don't make it an error to no have a sass folder
@@ -247,6 +256,9 @@ pub fn serve(
     }
     if watching_templates {
         watchers.push("templates");
+    }
+    if watching_themes {
+        watchers.push("themes");
     }
     if site.config.compile_sass {
         watchers.push("sass");
@@ -362,6 +374,19 @@ pub fn serve(
                             ChangeKind::Templates => reload_templates(&mut site, &path),
                             ChangeKind::StaticFiles => copy_static(&site, &path, &partial_path),
                             ChangeKind::Sass => reload_sass(&site, &path, &partial_path),
+                            ChangeKind::Themes => {
+                                console::info("-> Themes changed. The whole site will be reloaded.");
+                                site = create_new_site(
+                                    interface,
+                                    port,
+                                    output_dir,
+                                    base_url,
+                                    config_file,
+                                )
+                                .unwrap()
+                                .0;
+                                rebuild_done_handling(&broadcaster, Ok(()), "/x.js");
+                            },
                             ChangeKind::Config => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(
@@ -406,6 +431,19 @@ pub fn serve(
                             (ChangeKind::Templates, _) => reload_templates(&mut site, &path),
                             (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
                             (ChangeKind::Sass, p) => reload_sass(&site, &path, &p),
+                            (ChangeKind::Themes, _) => {
+                                console::info("-> Themes changed. The whole site will be reloaded.");
+                                site = create_new_site(
+                                    interface,
+                                    port,
+                                    output_dir,
+                                    base_url,
+                                    config_file,
+                                )
+                                .unwrap()
+                                .0;
+                                rebuild_done_handling(&broadcaster, Ok(()), "/x.js");
+                            },
                             (ChangeKind::Config, _) => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(
@@ -471,6 +509,8 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
 
     let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
+    } else if partial_path.starts_with("/themes") {
+        ChangeKind::Themes
     } else if partial_path.starts_with("/content") {
         ChangeKind::Content
     } else if partial_path.starts_with("/static") {
