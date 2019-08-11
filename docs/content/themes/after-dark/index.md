@@ -55,9 +55,9 @@ The theme requires tags and categories taxonomies to be enabled in your `config.
 
 ```toml
 taxonomies = [
-    # You can enable/disable RSS
-    {name = "categories", rss = true},
-    {name = "tags", rss = true},
+    # You can enable/disable feeds
+    {name = "categories", feed = true},
+    {name = "tags", feed = true},
 ]
 ```
 If you want to paginate taxonomies pages, you will need to overwrite the templates

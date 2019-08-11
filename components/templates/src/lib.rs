@@ -11,6 +11,7 @@ lazy_static! {
         let mut tera = Tera::default();
         tera.add_raw_templates(vec![
             ("__zola_builtins/404.html", include_str!("builtins/404.html")),
+            ("__zola_builtins/atom.xml", include_str!("builtins/atom.xml")),
             ("__zola_builtins/rss.xml", include_str!("builtins/rss.xml")),
             ("__zola_builtins/sitemap.xml", include_str!("builtins/sitemap.xml")),
             ("__zola_builtins/robots.txt", include_str!("builtins/robots.txt")),

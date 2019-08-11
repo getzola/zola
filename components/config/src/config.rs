@@ -47,15 +47,15 @@ impl Default for Slugify {
 pub struct Language {
     /// The language code
     pub code: String,
-    /// Whether to generate a RSS feed for that language, defaults to `false`
-    pub rss: bool,
+    /// Whether to generate a feed for that language, defaults to `false`
+    pub feed: bool,
     /// Whether to generate search index for that language, defaults to `false`
     pub search: bool,
 }
 
 impl Default for Language {
     fn default() -> Self {
-        Language { code: String::new(), rss: false, search: false }
+        Language { code: String::new(), feed: false, search: false }
     }
 }
 
@@ -68,8 +68,8 @@ pub struct Taxonomy {
     /// by this much
     pub paginate_by: Option<usize>,
     pub paginate_path: Option<String>,
-    /// Whether to generate a RSS feed only for each taxonomy term, defaults to false
-    pub rss: bool,
+    /// Whether to generate a feed only for each taxonomy term, defaults to false
+    pub feed: bool,
     /// The language for that taxonomy, only used in multilingual sites.
     /// Defaults to the config `default_language` if not set
     pub lang: String,
@@ -99,7 +99,7 @@ impl Default for Taxonomy {
             name: String::new(),
             paginate_by: None,
             paginate_path: None,
-            rss: false,
+            feed: false,
             lang: String::new(),
         }
     }
@@ -155,10 +155,13 @@ pub struct Config {
     /// Defaults to "base16-ocean-dark"
     pub highlight_theme: String,
 
-    /// Whether to generate RSS. Defaults to false
-    pub generate_rss: bool,
-    /// The number of articles to include in the RSS feed. Defaults to including all items.
-    pub rss_limit: Option<usize>,
+    /// Whether to generate a feed. Defaults to false.
+    pub generate_feed: bool,
+    /// The number of articles to include in the feed. Defaults to including all items.
+    pub feed_limit: Option<usize>,
+    /// The filename to use for feeds. Used to find the template, too.
+    /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
+    pub feed_filename: String,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
 
@@ -276,11 +279,12 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        let trailing_bit = if path.ends_with('/') || path.ends_with("rss.xml") || path.is_empty() {
-            ""
-        } else {
-            "/"
-        };
+        let trailing_bit =
+            if path.ends_with('/') || path.ends_with(&self.feed_filename) || path.is_empty() {
+                ""
+            } else {
+                "/"
+            };
 
         // Index section with a base url that has a trailing slash
         if self.base_url.ends_with('/') && path == "/" {
@@ -384,8 +388,9 @@ impl Default for Config {
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
             languages: Vec::new(),
-            generate_rss: false,
-            rss_limit: None,
+            generate_feed: false,
+            feed_limit: None,
+            feed_filename: "atom.xml".to_string(),
             hard_link_static: false,
             taxonomies: Vec::new(),
             compile_sass: false,
@@ -493,10 +498,10 @@ hello = "world"
 
     // https://github.com/Keats/gutenberg/issues/486
     #[test]
-    fn doesnt_add_trailing_slash_to_rss() {
+    fn doesnt_add_trailing_slash_to_feed() {
         let mut config = Config::default();
         config.base_url = "http://vincent.is/".to_string();
-        assert_eq!(config.make_permalink("rss.xml"), "http://vincent.is/rss.xml");
+        assert_eq!(config.make_permalink("atom.xml"), "http://vincent.is/atom.xml");
     }
 
     #[test]

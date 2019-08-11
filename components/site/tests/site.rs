@@ -152,7 +152,7 @@ fn can_build_site_without_live_reload() {
     // We do have categories
     assert_eq!(file_exists!(public, "categories/index.html"), true);
     assert_eq!(file_exists!(public, "categories/a-category/index.html"), true);
-    assert_eq!(file_exists!(public, "categories/a-category/rss.xml"), true);
+    assert_eq!(file_exists!(public, "categories/a-category/atom.xml"), true);
     // But no tags
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
@@ -232,7 +232,7 @@ fn can_build_site_with_live_reload_and_drafts() {
     // We do have categories
     assert_eq!(file_exists!(public, "categories/index.html"), true);
     assert_eq!(file_exists!(public, "categories/a-category/index.html"), true);
-    assert_eq!(file_exists!(public, "categories/a-category/rss.xml"), true);
+    assert_eq!(file_exists!(public, "categories/a-category/atom.xml"), true);
     // But no tags
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
@@ -294,11 +294,11 @@ fn can_build_site_with_taxonomies() {
     assert!(file_exists!(public, "categories/index.html"));
     assert!(file_exists!(public, "categories/a/index.html"));
     assert!(file_exists!(public, "categories/b/index.html"));
-    assert!(file_exists!(public, "categories/a/rss.xml"));
+    assert!(file_exists!(public, "categories/a/atom.xml"));
     assert!(file_contains!(
         public,
-        "categories/a/rss.xml",
-        "https://replace-this-with-your-url.com/categories/a/rss.xml"
+        "categories/a/atom.xml",
+        "https://replace-this-with-your-url.com/categories/a/atom.xml"
     ));
     // Extending from a theme works
     assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
@@ -513,7 +513,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
             name: "tags".to_string(),
             paginate_by: Some(2),
             paginate_path: None,
-            rss: true,
+            feed: true,
             lang: site.config.default_language.clone(),
         });
         site.load().unwrap();
@@ -547,9 +547,9 @@ fn can_build_site_with_pagination_for_taxonomy() {
 
     // Tags
     assert!(file_exists!(public, "tags/index.html"));
-    // With RSS
-    assert!(file_exists!(public, "tags/a/rss.xml"));
-    assert!(file_exists!(public, "tags/b/rss.xml"));
+    // With Atom
+    assert!(file_exists!(public, "tags/a/atom.xml"));
+    assert!(file_exists!(public, "tags/b/atom.xml"));
     // And pagination!
     assert!(file_exists!(public, "tags/a/page/1/index.html"));
     assert!(file_exists!(public, "tags/b/page/1/index.html"));
@@ -588,15 +588,15 @@ fn can_build_site_with_pagination_for_taxonomy() {
 }
 
 #[test]
-fn can_build_rss_feed() {
+fn can_build_feed() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
     assert!(&public.exists());
-    assert!(file_exists!(public, "rss.xml"));
+    assert!(file_exists!(public, "atom.xml"));
     // latest article is posts/extra-syntax.md
-    assert!(file_contains!(public, "rss.xml", "Extra Syntax"));
+    assert!(file_contains!(public, "atom.xml", "Extra Syntax"));
     // Next is posts/simple.md
-    assert!(file_contains!(public, "rss.xml", "Simple article with shortcodes"));
+    assert!(file_contains!(public, "atom.xml", "Simple article with shortcodes"));
 }
 
 #[test]

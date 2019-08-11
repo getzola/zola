@@ -23,7 +23,7 @@ and `TaxonomyConfig` has the following fields:
 name: String,
 paginate_by: Number?;
 paginate_path: String?;
-rss: Bool;
+feed: Bool;
 lang: String;
 ```
 
