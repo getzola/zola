@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ config.default_language }}">
+	<title>{{ config.title }}</title>
+	<subtitle>{{ config.description }}</subtitle>
+	<link href="{{ feed_url | safe }}" rel="self" type="application/atom+xml"/>
+	<link href="{{ config.base_url | safe }}"/>
+	<generator uri="https://www.getzola.org/">Zola</generator>
+	<updated>{{ last_build_date | date(format="%+") }}</updated>
+	<id>{{ feed_url | safe }}</id>
+	{%- for page in pages %}
+	<entry
+		{%- if page.lang != config.default_language %} xml:lang="{{ page.lang }}"{% endif -%}
+	>
+		<title>{{ page.title }}</title>
+		<published>{{ page.date | date(format="%+") }}</published>
+		<link href="{{ page.permalink | safe }}" type="text/html"/>
+		<id>{{ page.permalink | safe }}</id>
+		<content type="html">{{ page.content }}</description>
+	</item>
+	{%- endfor %}
+</feed>

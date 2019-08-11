@@ -745,7 +745,7 @@ impl Site {
         self.render_sitemap()?;
 
         let library = self.library.read().unwrap();
-        if self.config.generate_rss {
+        if self.config.generate_feed {
             let pages = if self.config.is_multilingual() {
                 library
                     .pages_values()
@@ -756,16 +756,16 @@ impl Site {
             } else {
                 library.pages_values()
             };
-            self.render_rss_feed(pages, None)?;
+            self.render_feed(pages, None)?;
         }
 
         for lang in &self.config.languages {
-            if !lang.rss {
+            if !lang.feed {
                 continue;
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
+            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
         }
 
         self.render_404()?;
@@ -983,8 +983,8 @@ impl Site {
                     create_file(&path.join("index.html"), &self.inject_livereload(single_output))?;
                 }
 
-                if taxonomy.kind.rss {
-                    self.render_rss_feed(
+                if taxonomy.kind.feed {
+                    self.render_feed(
                         item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
                     )
@@ -1045,10 +1045,10 @@ impl Site {
         Ok(())
     }
 
-    /// Renders a RSS feed for the given path and at the given path
-    /// If both arguments are `None`, it will render only the RSS feed for the whole
+    /// Renders a feed for the given path and at the given path
+    /// If both arguments are `None`, it will render only the feed for the whole
     /// site at the root folder.
-    pub fn render_rss_feed(
+    pub fn render_feed(
         &self,
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
@@ -1058,7 +1058,7 @@ impl Site {
         let mut context = Context::new();
         let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
 
-        // Don't generate a RSS feed if none of the pages has a date
+        // Don't generate a feed if none of the pages has a date
         if pages.is_empty() {
             return Ok(());
         }
@@ -1068,7 +1068,7 @@ impl Site {
         context.insert("last_build_date", &pages[0].meta.date.clone());
         let library = self.library.read().unwrap();
         // limit to the last n elements if the limit is set; otherwise use all.
-        let num_entries = self.config.rss_limit.unwrap_or_else(|| pages.len());
+        let num_entries = self.config.feed_limit.unwrap_or_else(|| pages.len());
         let p = pages
             .iter()
             .take(num_entries)
@@ -1078,15 +1078,21 @@ impl Site {
         context.insert("pages", &p);
         context.insert("config", &self.config);
 
-        let rss_feed_url = if let Some(ref base) = base_path {
-            self.config.make_permalink(&base.join("rss.xml").to_string_lossy().replace('\\', "/"))
+        let feed_filename = &self.config.feed_filename;
+        let feed_url = if let Some(ref base) = base_path {
+            self.config.make_permalink(
+                &base
+                    .join(feed_filename)
+                    .to_string_lossy()
+                    .replace('\\', "/"),
+            )
         } else {
-            self.config.make_permalink("rss.xml")
+            self.config.make_permalink(feed_filename)
         };
 
-        context.insert("feed_url", &rss_feed_url);
+        context.insert("feed_url", &feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, context, &self.config.theme)?;
+        let feed = &render_template(feed_filename, &self.tera, context, &self.config.theme)?;
 
         if let Some(ref base) = base_path {
             let mut output_path = self.output_path.clone();
@@ -1096,9 +1102,9 @@ impl Site {
                     create_directory(&output_path)?;
                 }
             }
-            create_file(&output_path.join("rss.xml"), feed)?;
+            create_file(&output_path.join(feed_filename), feed)?;
         } else {
-            create_file(&self.output_path.join("rss.xml"), feed)?;
+            create_file(&self.output_path.join(feed_filename), feed)?;
         }
         Ok(())
     }

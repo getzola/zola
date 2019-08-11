@@ -108,7 +108,7 @@ base_url = "https://replace-this-with-your-url.com"
 theme = "sample"
 
 taxonomies = [
- {name = "tags", rss = true}, 
+ {name = "tags", feed = true}, 
  {name = "categories"}
 ]
 

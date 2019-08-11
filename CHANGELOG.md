@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.11.0 (unreleased)
+
+### Breaking
+- RSS feed support has been altered to allow, *and default to*, Atom feeds, Atom being technically superior and just as widely-supported in normal use cases.
+  - New config value `feed_filename`, defaulting to `atom.xml` (change to `rss.xml` to reinstate the old behaviour)
+  - Config value `rss_limit` is renamed to `feed_limit`
+  - Config value `languages.*.rss` is renamed to `languages.*.feed`
+  - Config value `generate_rss` is renamed to `generate_feed`
+
+  Users with existing feeds should either set `feed_filename = "rss.xml"` in config.toml to keep things the same, or set up a 3xx redirect from rss.xml to atom.xml so that existing feed consumers aren’t broken.
+
 ## 0.10.2 (unreleased)
 
 - Fix link checker not looking for anchor with capital id/name
@@ -17,8 +28,6 @@
 ### Breaking
 - Remove `toc` variable in section/page context and pass it to `page.toc` and `section.toc` instead so they are
 accessible everywhere
-- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of paths, taxonomies and anchors is now configurable. By default, everything will still be slugified like in previous versions.
-See documentation for information on how to disable it.
 
 ### Other
 - Add zenburn syntax highlighting theme

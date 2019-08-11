@@ -35,12 +35,12 @@ fn bench_render_sitemap(b: &mut test::Bencher) {
 }
 
 #[bench]
-fn bench_render_rss_feed(b: &mut test::Bencher) {
+fn bench_render_feed(b: &mut test::Bencher) {
     let mut site = setup_site("big-blog");
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    b.iter(|| site.render_rss_feed(site.library.read().unwrap().pages_values(), None).unwrap());
+    b.iter(|| site.render_feed(site.library.read().unwrap().pages_values(), None).unwrap());
 }
 
 #[bench]
