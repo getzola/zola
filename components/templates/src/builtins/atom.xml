@@ -5,7 +5,7 @@
 	<link href="{{ feed_url | safe }}" rel="self" type="application/atom+xml"/>
 	<link href="{{ config.base_url | safe }}"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>{{ last_build_date | date(format="%+") }}</updated>
+	<updated>{{ latest_date | date(format="%+") }}</updated>
 	<id>{{ feed_url | safe }}</id>
 	{%- for page in pages %}
 	<entry

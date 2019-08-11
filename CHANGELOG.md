@@ -8,6 +8,7 @@
   - Config value `rss_limit` is renamed to `feed_limit`
   - Config value `languages.*.rss` is renamed to `languages.*.feed`
   - Config value `generate_rss` is renamed to `generate_feed`
+  - Feed template variable `last_build_date` is renamed to `latest_date`
 
   Users with existing feeds should either set `feed_filename = "rss.xml"` in config.toml to keep things the same, or set up a 3xx redirect from rss.xml to atom.xml so that existing feed consumers aren’t broken.
 
