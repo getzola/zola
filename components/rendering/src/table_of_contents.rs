@@ -87,6 +87,7 @@ pub fn make_table_of_contents(headers: Vec<Header>) -> Vec<Header> {
                 continue;
             }
         }
+    }
 
     toc
 }
