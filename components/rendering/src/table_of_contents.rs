@@ -27,34 +27,66 @@ impl Default for Header {
     }
 }
 
+// Takes a potential (mutable) parent and a header to try and insert into
+// Returns true when it performed the insertion, false otherwise
+fn insert_into_parent(potential_parent: Option<&mut Header>, header: &Header) -> bool {
+    match potential_parent {
+        None => {
+            // No potential parent to insert into so it needs to be insert higher
+            return false;
+        },
+        Some(parent) => {
+            let diff = header.level - parent.level;
+            if diff <= 0 {
+                // Heading is same level or higher so we don't insert here
+                return false;
+            } else {
+                if diff == 1 {
+                    // We have a direct child of the parent
+                    parent.children.push(header.clone());
+                    return true;
+                } else {
+                    // We need to go deeper
+                    match insert_into_parent(parent.children.iter_mut().last(), header) {
+                        true => {
+                            // Element was succesfully inserted deeper in the recursion
+                            return true;
+                        },
+                        false => {
+                            // No, we need to insert it here
+                            parent.children.push(header.clone());
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Converts the flat temp headers into a nested set of headers
 /// representing the hierarchy
 pub fn make_table_of_contents(headers: Vec<Header>) -> Vec<Header> {
     let mut toc = vec![];
-    'parent: for header in headers {
+    for header in headers {
         if toc.is_empty() {
+            // First header, nothing to compare it with
             toc.push(header);
             continue;
         }
 
-        // See if we have to insert as a child of a previous header
-        for h in toc.iter_mut().rev() {
-            // Look in its children first
-            for child in h.children.iter_mut().rev() {
-                if header.level > child.level {
-                    child.children.push(header);
-                    continue 'parent;
-                }
-            }
-            if header.level > h.level {
-                h.children.push(header);
-                continue 'parent;
+        // We try to insert the current header in a previous one
+        match insert_into_parent(toc.iter_mut().last(), &header) {
+            true => {
+                // Header was successfully inserted as a child of a previous element
+                continue;
+            },
+            false => {
+                // Couldn't insert in a previous header, so it's a top-level header
+                toc.push(header);
+                continue;
             }
         }
-
-        // Nop, just insert it
-        toc.push(header)
-    }
 
     toc
 }
