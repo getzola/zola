@@ -25,14 +25,41 @@ build_search_index = %SEARCH%
 # Put all your custom variables here
 "#;
 
+// Given a path, return true if it is a directory and it doesn't have any
+// non-hidden files, otherwise return false (path is assumed to exist)
+pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
+    if path.is_dir() {
+        let mut entries = match path.read_dir() {
+            Ok(entries) => entries,
+            Err(e) => { bail!("Could not read `{}` because of error: {}", path.to_string_lossy().to_string(), e); }
+        };
+        // If any entry raises an error or isn't hidden (i.e. starts with `.`), we raise an error
+        if entries.any(|x| match x {
+            Ok(file) => !file.file_name().to_str().expect("Could not convert filename to &str").starts_with("."),
+            Err(_) => true
+        }) {
+            return Ok(false)
+        }
+        return Ok(true)
+    } else {
+        return Ok(false)
+    }
+}
+
 pub fn create_new_project(name: &str) -> Result<()> {
     let path = Path::new(name);
     // Better error message than the rust default
-    if path.exists() && path.is_dir() {
-        bail!("Folder `{}` already exists", path.to_string_lossy().to_string());
+    if path.exists() {
+        if !is_directory_quasi_empty(&path)? {
+            if name == "." {
+                bail!("The current directory is not an empty folder (hidden files are ignored).");
+            } else {
+                bail!("`{}` is not an empty folder (hidden files are ignored).", path.to_string_lossy().to_string())
+            }
+        }
+    } else {
+        create_dir(path)?;
     }
-
-    create_dir(path)?;
     console::info("Welcome to Zola!");
 
     let base_url = ask_url("> What is the URL of your site?", "https://example.com")?;
