@@ -93,3 +93,57 @@ pub fn create_new_project(name: &str) -> Result<()> {
     println!("Visit https://www.getzola.org for the full documentation.");
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use std::env::temp_dir;
+    use std::fs::{create_dir,remove_dir,remove_dir_all};
+    use super::*;
+
+    #[test]
+    fn init_empty_directory() {
+        let mut dir = temp_dir();
+        dir.push("test_empty_dir");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        let allowed = is_directory_quasi_empty(&dir).expect("An error happened reading the directory's contents");
+        remove_dir(&dir).unwrap();
+        assert_eq!(true, allowed);
+    }
+
+    #[test]
+    fn init_non_empty_directory() {
+        let mut dir = temp_dir();
+        dir.push("test_non_empty_dir");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        let mut content = dir.clone();
+        content.push("content");
+        create_dir(&content).unwrap();
+        let allowed = is_directory_quasi_empty(&dir).expect("An error happened reading the directory's contents");
+        remove_dir(&content).unwrap();
+        remove_dir(&dir).unwrap();
+        assert_eq!(false, allowed);
+    }
+
+    #[test]
+    fn init_quasi_empty_directory() {
+        let mut dir = temp_dir();
+        dir.push("test_quasi_empty_dir");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        let mut git = dir.clone();
+        git.push(".git");
+        create_dir(&git).unwrap();
+        let allowed = is_directory_quasi_empty(&dir).expect("An error happened reading the directory's contents");
+        remove_dir(&git).unwrap();
+        remove_dir(&dir).unwrap();
+        assert_eq!(true, allowed);
+    }
+}
