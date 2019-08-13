@@ -395,8 +395,12 @@ Bonjour le monde"#
 +++
 Bonjour le monde"#
             .to_string();
-        let res =
-            Section::parse(Path::new("content/subcontent/_index.fr.md"), &content, &config, &PathBuf::new());
+        let res = Section::parse(
+            Path::new("content/subcontent/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());

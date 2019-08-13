@@ -31,19 +31,29 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
     if path.is_dir() {
         let mut entries = match path.read_dir() {
             Ok(entries) => entries,
-            Err(e) => { bail!("Could not read `{}` because of error: {}", path.to_string_lossy().to_string(), e); }
+            Err(e) => {
+                bail!(
+                    "Could not read `{}` because of error: {}",
+                    path.to_string_lossy().to_string(),
+                    e
+                );
+            }
         };
         // If any entry raises an error or isn't hidden (i.e. starts with `.`), we raise an error
         if entries.any(|x| match x {
-            Ok(file) => !file.file_name().to_str().expect("Could not convert filename to &str").starts_with("."),
-            Err(_) => true
+            Ok(file) => !file
+                .file_name()
+                .to_str()
+                .expect("Could not convert filename to &str")
+                .starts_with('.'),
+            Err(_) => true,
         }) {
-            return Ok(false)
+            return Ok(false);
         }
-        return Ok(true)
-    } else {
-        return Ok(false)
+        return Ok(true);
     }
+
+    Ok(false)
 }
 
 pub fn create_new_project(name: &str) -> Result<()> {
@@ -54,7 +64,10 @@ pub fn create_new_project(name: &str) -> Result<()> {
             if name == "." {
                 bail!("The current directory is not an empty folder (hidden files are ignored).");
             } else {
-                bail!("`{}` is not an empty folder (hidden files are ignored).", path.to_string_lossy().to_string())
+                bail!(
+                    "`{}` is not an empty folder (hidden files are ignored).",
+                    path.to_string_lossy().to_string()
+                )
             }
         }
     } else {
@@ -96,9 +109,9 @@ pub fn create_new_project(name: &str) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use std::env::temp_dir;
-    use std::fs::{create_dir,remove_dir,remove_dir_all};
     use super::*;
+    use std::env::temp_dir;
+    use std::fs::{create_dir, remove_dir, remove_dir_all};
 
     #[test]
     fn init_empty_directory() {
@@ -108,7 +121,8 @@ mod tests {
             remove_dir_all(&dir).expect("Could not free test directory");
         }
         create_dir(&dir).expect("Could not create test directory");
-        let allowed = is_directory_quasi_empty(&dir).expect("An error happened reading the directory's contents");
+        let allowed = is_directory_quasi_empty(&dir)
+            .expect("An error happened reading the directory's contents");
         remove_dir(&dir).unwrap();
         assert_eq!(true, allowed);
     }
@@ -124,7 +138,8 @@ mod tests {
         let mut content = dir.clone();
         content.push("content");
         create_dir(&content).unwrap();
-        let allowed = is_directory_quasi_empty(&dir).expect("An error happened reading the directory's contents");
+        let allowed = is_directory_quasi_empty(&dir)
+            .expect("An error happened reading the directory's contents");
         remove_dir(&content).unwrap();
         remove_dir(&dir).unwrap();
         assert_eq!(false, allowed);
@@ -141,7 +156,8 @@ mod tests {
         let mut git = dir.clone();
         git.push(".git");
         create_dir(&git).unwrap();
-        let allowed = is_directory_quasi_empty(&dir).expect("An error happened reading the directory's contents");
+        let allowed = is_directory_quasi_empty(&dir)
+            .expect("An error happened reading the directory's contents");
         remove_dir(&git).unwrap();
         remove_dir(&dir).unwrap();
         assert_eq!(true, allowed);
