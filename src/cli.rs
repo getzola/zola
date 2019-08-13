@@ -19,7 +19,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .about("Create a new Zola project")
                 .arg(
                     Arg::with_name("name")
-                        .required(true)
+                        .default_value(".")
                         .help("Name of the project. Will create a new directory with that name in the current directory")
                 ),
             SubCommand::with_name("build")
