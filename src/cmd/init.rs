@@ -70,10 +70,11 @@ pub fn create_new_project(name: &str) -> Result<()> {
                 )
             }
         }
-    } else {
-        create_dir(path)?;
     }
+
     console::info("Welcome to Zola!");
+    console::info("Please answer a few questions to get started quickly.");
+    console::info("Any choices made can be changed by modifying the `config.toml` file later.");
 
     let base_url = ask_url("> What is the URL of your site?", "https://example.com")?;
     let compile_sass = ask_bool("> Do you want to enable Sass compilation?", true)?;
@@ -87,6 +88,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
         .replace("%SEARCH%", &format!("{}", search))
         .replace("%HIGHLIGHT%", &format!("{}", highlight));
 
+    create_dir(path)?;
     create_file(&path.join("config.toml"), &config)?;
 
     create_dir(path.join("content"))?;

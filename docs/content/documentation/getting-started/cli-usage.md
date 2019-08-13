@@ -3,14 +3,15 @@ title = "CLI usage"
 weight = 2
 +++
 
-Zola only has 3 commands: init, build and serve.
+Zola only has 4 commands: `init`, `build`, `serve` and `check`.
 
 You can view the help of the whole program by running `zola --help` and
 the command help by running `zola <cmd> --help`.
 
 ## init
 
-Creates the directory structure used by Zola at the given directory.
+Creates the directory structure used by Zola at the given directory after asking a few basic configuration questions.
+Any choices made during those prompts can easily be changed by modifying the `config.toml`.
 
 ```bash
 $ zola init my_site
