@@ -45,14 +45,13 @@ fn insert_into_parent(potential_parent: Option<&mut Header>, header: &Header) ->
                 // We have a direct child of the parent
                 parent.children.push(header.clone());
                 return true;
-            } else {
-                // We need to go deeper
-                if !insert_into_parent(parent.children.iter_mut().last(), header) {
-                    // No, we need to insert it here
-                    parent.children.push(header.clone());
-                }
-                return true;
             }
+            // We need to go deeper
+            if !insert_into_parent(parent.children.iter_mut().last(), header) {
+                // No, we need to insert it here
+                parent.children.push(header.clone());
+            }
+            return true;
         }
     }
 }
