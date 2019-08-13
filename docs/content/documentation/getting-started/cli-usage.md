@@ -13,11 +13,17 @@ the command help by running `zola <cmd> --help`.
 Creates the directory structure used by Zola at the given directory.
 
 ```bash
-$ zola init my_site
+$ zola init [my_site]
 ```
 
-will create a new folder named `my_site` and the files/folders needed by
-zola.
+If the `my_site` folder already exists, Zola will only populate it if it does not contain non-hidden files (dotfiles are ignored). If no `my_site` argument is passed, Zola will try to populate the current directory.
+
+You can initialize a git repository and a Zola site directly from within a new folder:
+
+```bash
+$ git init
+$ zola init
+```
 
 ## build
 
