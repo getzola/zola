@@ -306,7 +306,17 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
         old.to_path_buf()
     };
     site.library.write().unwrap().remove_page(&old_path);
-    handle_page_editing(site, &new_path)
+
+    let ignored_content_globset = site.config.ignored_content_globset.clone();
+    let is_ignored_file = match ignored_content_globset {
+        Some(gs) => gs.is_match(new),
+        None => false,
+    };
+
+    if !is_ignored_file {
+        return handle_page_editing(site, &new_path);
+    }
+    Ok(())
 }
 
 /// What happens when a section or a page is created/edited
@@ -384,9 +394,13 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
         _ => {
             // If we are updating a shortcode, re-render the markdown of all pages/site
             // because we have no clue which one needs rebuilding
+            // Same for the anchor-link template
             // TODO: look if there the shortcode is used in the markdown instead of re-rendering
             // everything
-            if path.components().any(|x| x == Component::Normal("shortcodes".as_ref())) {
+            if filename == "anchor-link.html"
+                || path.components().any(|x| x == Component::Normal("shortcodes".as_ref()))
+            {
+                println!("Rendering markdown");
                 site.render_markdown()?;
             }
             site.populate_sections();

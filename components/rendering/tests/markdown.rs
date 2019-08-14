@@ -409,7 +409,7 @@ fn can_insert_anchor_left() {
     let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello</h1>\n"
+        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>Hello</h1>\n"
     );
 }
 
@@ -421,7 +421,7 @@ fn can_insert_anchor_right() {
     let res = render_content("# Hello", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\">Hello<a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n"
+        "<h1 id=\"hello\">Hello<a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a></h1>\n"
     );
 }
 
@@ -433,8 +433,8 @@ fn can_insert_anchor_for_multi_header() {
     let res = render_content("# Hello\n# World", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\">Hello<a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\n</h1>\n\
-<h1 id=\"world\">World<a class=\"zola-anchor\" href=\"#world\" aria-label=\"Anchor link for: world\">🔗</a>\n</h1>\n"
+        "<h1 id=\"hello\">Hello<a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a></h1>\n\
+<h1 id=\"world\">World<a class=\"zola-anchor\" href=\"#world\" aria-label=\"Anchor link for: world\">🔗</a></h1>\n"
     );
 }
 
@@ -447,7 +447,7 @@ fn can_insert_anchor_with_exclamation_mark() {
     let res = render_content("# Hello!", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello!</h1>\n"
+        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>Hello!</h1>\n"
     );
 }
 
@@ -460,7 +460,7 @@ fn can_insert_anchor_with_link() {
     let res = render_content("## [Rust](https://rust-lang.org)", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h2 id=\"rust\"><a class=\"zola-anchor\" href=\"#rust\" aria-label=\"Anchor link for: rust\">🔗</a>\n<a href=\"https://rust-lang.org\">Rust</a></h2>\n"
+        "<h2 id=\"rust\"><a class=\"zola-anchor\" href=\"#rust\" aria-label=\"Anchor link for: rust\">🔗</a><a href=\"https://rust-lang.org\">Rust</a></h2>\n"
     );
 }
 
@@ -472,7 +472,7 @@ fn can_insert_anchor_with_other_special_chars() {
     let res = render_content("# Hello*_()", &context).unwrap();
     assert_eq!(
         res.body,
-        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>\nHello*_()</h1>\n"
+        "<h1 id=\"hello\"><a class=\"zola-anchor\" href=\"#hello\" aria-label=\"Anchor link for: hello\">🔗</a>Hello*_()</h1>\n"
     );
 }
 
@@ -819,3 +819,14 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 //    let res = render_content(markdown_string, &context).unwrap();
 //    assert_eq!(res.body, expected);
 //}
+
+// https://github.com/getzola/zola/issues/747
+#[test]
+fn leaves_custom_url_scheme_untouched() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("[foo@bar.tld](xmpp:foo@bar.tld)", &context).unwrap();
+    assert_eq!(res.body, "<p><a href=\"xmpp:foo@bar.tld\">foo@bar.tld</a></p>\n");
+}

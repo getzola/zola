@@ -16,6 +16,7 @@ extern crate site;
 #[macro_use]
 extern crate errors;
 extern crate front_matter;
+extern crate open;
 extern crate rebuild;
 extern crate utils;
 
@@ -65,6 +66,7 @@ fn main() {
                 }
             };
             let watch_only = matches.is_present("watch_only");
+            let open = matches.is_present("open");
 
             // Default one
             if port != 1111 && !watch_only && !port_is_available(port) {
@@ -72,7 +74,7 @@ fn main() {
                 ::std::process::exit(1);
             }
 
-            if  !watch_only && !port_is_available(port) {
+            if !watch_only && !port_is_available(port) {
                 port = if let Some(p) = get_available_port(1111) {
                     p
                 } else {
@@ -83,7 +85,7 @@ fn main() {
             let output_dir = matches.value_of("output_dir").unwrap();
             let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");
-            match cmd::serve(interface, port, output_dir, base_url, config_file, watch_only) {
+            match cmd::serve(interface, port, output_dir, base_url, config_file, watch_only, open) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("", &e);

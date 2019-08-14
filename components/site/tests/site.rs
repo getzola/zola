@@ -18,8 +18,8 @@ fn can_parse_site() {
     site.load().unwrap();
     let library = site.library.read().unwrap();
 
-    // Correct number of pages (sections do not count as pages)
-    assert_eq!(library.pages().len(), 22);
+    // Correct number of pages (sections do not count as pages, draft are ignored)
+    assert_eq!(library.pages().len(), 21);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -42,7 +42,7 @@ fn can_parse_site() {
 
     let posts_section = library.get_section(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
-    assert_eq!(posts_section.pages.len(), 10);
+    assert_eq!(posts_section.pages.len(), 9); // 10 with 1 draft == 9
     assert_eq!(
         posts_section.ancestors,
         vec![*library.get_section_key(&index_section.file.path).unwrap()]
@@ -167,12 +167,12 @@ fn can_build_site_without_live_reload() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/posts/simple/</loc>"
+        "<loc>https://replace-this-with-your-url.com/posts/simple/</loc>"
     ));
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/posts/</loc>"
+        "<loc>https://replace-this-with-your-url.com/posts/</loc>"
     ));
     // Drafts are not in the sitemap
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
@@ -229,7 +229,8 @@ fn can_build_site_with_live_reload() {
         "posts/python/index.html",
         r#"<a name="continue-reading"></a>"#
     ));
-    assert!(file_contains!(public, "posts/draft/index.html", r#"THEME_SHORTCODE"#));
+
+    assert_eq!(file_exists!(public, "posts/draft/index.html"), false);
 }
 
 #[test]
@@ -279,7 +280,7 @@ fn can_build_site_with_taxonomies() {
     assert!(file_contains!(
         public,
         "categories/a/rss.xml",
-        "https%3A//replace-this-with-your-url.com/categories/a/rss.xml"
+        "https://replace-this-with-your-url.com/categories/a/rss.xml"
     ));
     // Extending from a theme works
     assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
@@ -290,12 +291,12 @@ fn can_build_site_with_taxonomies() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/categories/</loc>"
+        "<loc>https://replace-this-with-your-url.com/categories/</loc>"
     ));
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/categories/a/</loc>"
+        "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"
     ));
 }
 
@@ -424,7 +425,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/posts/page/4/</loc>"
+        "<loc>https://replace-this-with-your-url.com/posts/page/4/</loc>"
     ));
 }
 
@@ -477,7 +478,7 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/page/1/</loc>"
+        "<loc>https://replace-this-with-your-url.com/page/1/</loc>"
     ))
 }
 
@@ -558,7 +559,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https%3A//replace-this-with-your-url.com/tags/a/page/6/</loc>"
+        "<loc>https://replace-this-with-your-url.com/tags/a/page/6/</loc>"
     ))
 }
 
@@ -642,7 +643,7 @@ fn can_apply_page_templates() {
     assert_eq!(child.meta.title, Some("Local section override".into()));
 }
 
-// https%3A//github.com/getzola/zola/issues/571
+// https://github.com/getzola/zola/issues/571
 #[test]
 fn can_build_site_custom_builtins_from_theme() {
     let (_, _tmp_dir, public) = build_site("test_site");
@@ -651,4 +652,10 @@ fn can_build_site_custom_builtins_from_theme() {
     // 404.html is a theme template.
     assert!(file_exists!(public, "404.html"));
     assert!(file_contains!(public, "404.html", "Oops"));
+}
+
+#[test]
+fn can_ignore_markdown_content() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(!file_exists!(public, "posts/ignored/index.html"));
 }

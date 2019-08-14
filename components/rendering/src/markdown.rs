@@ -77,6 +77,12 @@ fn fix_link(
     if link_type == LinkType::Email {
         return Ok(link.to_string());
     }
+
+    // TODO: remove me in a few versions when people have upgraded
+    if link.starts_with("./") && link.contains(".md") {
+        println!("It looks like the link `{}` is using the previous syntax for internal links: start with @/ instead", link);
+    }
+
     // A few situations here:
     // - it could be a relative link (starting with `@/`)
     // - it could be a link to a co-located asset

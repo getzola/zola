@@ -113,7 +113,11 @@ impl Section {
         section.reading_time = Some(reading_time);
         let path = section.file.components.join("/");
         if section.lang != config.default_language {
-            section.path = format!("{}/{}", section.lang, path);
+            if path.is_empty() {
+                section.path = format!("{}/", section.lang);
+            } else {
+                section.path = format!("{}/{}/", section.lang, path);
+            }
         } else {
             section.path = format!("{}/", path);
         }
@@ -380,5 +384,26 @@ Bonjour le monde"#
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/");
+    }
+
+    #[test]
+    fn can_make_links_to_translated_subsections_with_trailing_slash() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false });
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Section::parse(
+            Path::new("content/subcontent/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
     }
 }

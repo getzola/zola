@@ -41,10 +41,17 @@ generate_rss = false
 # not set (the default).
 # rss_limit = 20
 
+# Whether to copy or hardlink files in static/ directory. Useful for sites
+# whose static files are large. Note that for this to work, both static/ and
+# output directory need to be on the same filesystem. Also, theme's static/
+# files are always copies, regardles of this setting. False by default.
+# hard_link_static = false
+
 # The taxonomies to be rendered for that site and their configuration
 # Example:
 #     taxonomies = [
 #       {name = "tags", rss = true}, # each tag will have its own RSS feed
+#       {name = "tags", lang = "fr"}, # you can have taxonomies with the same name in multiple languages
 #       {name = "categories", paginate_by = 5},  # 5 items per page for a term
 #       {name = "authors"}, # Basic definition: no RSS or pagination
 #     ]
@@ -121,6 +128,7 @@ Zola currently has the following highlight themes available:
 - [ayu-light](https://github.com/dempfi/ayu)
 - [ayu-dark](https://github.com/dempfi/ayu)
 - [ayu-mirage](https://github.com/dempfi/ayu)
+- [Tomorrow](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Tomorrow)
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).

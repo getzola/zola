@@ -21,6 +21,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+extern crate globset;
+
 use std::env;
 use std::fs::{read_dir, remove_dir_all, File};
 use std::io::Read;
@@ -37,11 +39,13 @@ use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
+use cmd::serve::globset::GlobSet;
 use errors::{Error as ZolaError, Result};
 use site::Site;
 use utils::fs::copy_file;
 
 use console;
+use open;
 use rebuild;
 
 #[derive(Debug, PartialEq)]
@@ -53,10 +57,7 @@ enum ChangeKind {
     Config,
 }
 
-// Uglified using uglifyjs
-// Also, commenting out the lines 330-340 (containing `e instanceof ProtocolError`) was needed
-// as it seems their build didn't work well and didn't include ProtocolError so it would error on
-// errors
+// This is dist/livereload.min.js from the LiveReload.js v3.0.0 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 struct ErrorFilePaths {
@@ -64,7 +65,7 @@ struct ErrorFilePaths {
 }
 
 fn not_found<B>(
-    res: dev::ServiceResponse<B>
+    res: dev::ServiceResponse<B>,
 ) -> std::result::Result<ErrorHandlerResponse<B>, actix_web::Error> {
     let buf: Vec<u8> = {
         let error_files: &ErrorFilePaths = res.request().app_data().unwrap();
@@ -76,15 +77,10 @@ fn not_found<B>(
     };
 
     let new_resp = HttpResponse::build(http::StatusCode::NOT_FOUND)
-        .header(
-            http::header::CONTENT_TYPE,
-            http::header::HeaderValue::from_static("text/html"),
-        )
+        .header(http::header::CONTENT_TYPE, http::header::HeaderValue::from_static("text/html"))
         .body(buf);
 
-    Ok(ErrorHandlerResponse::Response(
-        res.into_response(new_resp.into_body()),
-    ))
+    Ok(ErrorHandlerResponse::Response(res.into_response(new_resp.into_body())))
 }
 
 fn livereload_handler() -> HttpResponse {
@@ -132,6 +128,7 @@ fn create_new_site(
         format!("http://{}", base_address)
     };
 
+    site.config.enable_serve_mode();
     site.set_base_url(base_url);
     site.set_output_path(output_dir);
     site.load()?;
@@ -149,6 +146,7 @@ pub fn serve(
     base_url: &str,
     config_file: &str,
     watch_only: bool,
+    open: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
@@ -192,28 +190,25 @@ pub fn serve(
     let broadcaster = if !watch_only {
         thread::spawn(move || {
             let s = HttpServer::new(move || {
-                let error_handlers = ErrorHandlers::new()
-                    .handler(http::StatusCode::NOT_FOUND, not_found);
+                let error_handlers =
+                    ErrorHandlers::new().handler(http::StatusCode::NOT_FOUND, not_found);
 
                 App::new()
-                    .data(ErrorFilePaths {
-                        not_found: static_root.join("404.html"),
-                    })
+                    .data(ErrorFilePaths { not_found: static_root.join("404.html") })
                     .wrap(error_handlers)
-                    .route(
-                        "/livereload.js",
-                        web::get().to(livereload_handler)
-                    )
+                    .route("/livereload.js", web::get().to(livereload_handler))
                     // Start a webserver that serves the `output_dir` directory
-                    .service(
-                        fs::Files::new("/", &static_root)
-                            .index_file("index.html"),
-                    )
+                    .service(fs::Files::new("/", &static_root).index_file("index.html"))
             })
             .bind(&address)
             .expect("Can't start the webserver")
             .shutdown_timeout(20);
             println!("Web server is available at http://{}\n", &address);
+            if open {
+                if let Err(err) = open::that(format!("http://{}", &address)) {
+                    eprintln!("Failed to open URL in your browser: {}", err);
+                }
+            }
             s.run()
         });
         // The websocket for livereload
@@ -267,7 +262,7 @@ pub fn serve(
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
     ctrlc::set_handler(move || {
-        remove_dir_all(&output_path).expect("Failed to delete output directory");
+        let _ = remove_dir_all(&output_path);
         ::std::process::exit(0);
     })
     .expect("Error setting Ctrl-C handler");
@@ -321,7 +316,12 @@ pub fn serve(
         } else {
             rebuild_done_handling(
                 &broadcaster,
-                copy_file(&path, &site.output_path, &site.static_path),
+                copy_file(
+                    &path,
+                    &site.output_path,
+                    &site.static_path,
+                    site.config.hard_link_static,
+                ),
                 &partial_path.to_string_lossy(),
             );
         }
@@ -348,6 +348,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
+
                         match change_kind {
                             ChangeKind::Content => {
                                 console::info(&format!("-> Content renamed {}", path.display()));
@@ -379,6 +380,9 @@ pub fn serve(
                     // Intellij does weird things on edit, chmod is there to count those changes
                     // https://github.com/passcod/notify/issues/150#issuecomment-494912080
                     Create(path) | Write(path) | Remove(path) | Chmod(path) => {
+                        if is_ignored_file(&site.config.ignored_content_globset, &path) {
+                            continue;
+                        }
                         if is_temp_file(&path) || path.is_dir() {
                             continue;
                         }
@@ -422,6 +426,13 @@ pub fn serve(
             }
             Err(e) => console::error(&format!("Watch error: {:?}", e)),
         };
+    }
+}
+
+fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bool {
+    match ignored_content_globset {
+        Some(gs) => gs.is_match(path),
+        None => false,
     }
 }
 

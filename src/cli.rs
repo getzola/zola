@@ -19,7 +19,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .about("Create a new Zola project")
                 .arg(
                     Arg::with_name("name")
-                        .required(true)
+                        .default_value(".")
                         .help("Name of the project. Will create a new directory with that name in the current directory")
                 ),
             SubCommand::with_name("build")
@@ -65,7 +65,12 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("watch_only")
                         .long("watch-only")
                         .takes_value(false)
-                        .help("Do not start a server, just re-build project on changes")
+                        .help("Do not start a server, just re-build project on changes"),
+                    Arg::with_name("open")
+                        .short("O")
+                        .long("open")
+                        .takes_value(false)
+                        .help("Open site in the default browser"),
                 ]),
             SubCommand::with_name("check")
                 .about("Try building the project without rendering it. Checks links")

@@ -1,0 +1,3 @@
+{% for tag in terms %}
+    {{ tag.name }} {{ tag.slug }} {{ tag.pages | length }} {{ taxonomy.lang }}
+{% endfor %}

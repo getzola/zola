@@ -56,9 +56,8 @@ impl FileInfo {
         let file_path = path.to_path_buf();
         let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        let mut components = find_content_components(
-            &file_path.strip_prefix(base_path).expect("Strip base path prefix for page"),
-        );
+        let mut components =
+            find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         let relative = if !components.is_empty() {
             format!("{}/{}.md", components.join("/"), name)
         } else {
@@ -91,9 +90,8 @@ impl FileInfo {
         let file_path = path.to_path_buf();
         let parent = path.parent().expect("Get parent of section").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        let components = find_content_components(
-            &file_path.strip_prefix(base_path).expect("Strip base path prefix for section"),
-        );
+        let components =
+            find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         let relative = if !components.is_empty() {
             format!("{}/{}.md", components.join("/"), name)
         } else {

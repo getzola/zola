@@ -6,7 +6,7 @@ template = "theme.html"
 date = 2019-01-27T19:57:59+01:00
 
 [extra]
-created = 2019-04-06T11:27:43+02:00
+created = 2019-07-12T23:49:55+02:00
 updated = 2019-01-27T19:57:59+01:00
 repository = "https://github.com/waynee95/zola-theme-hikari"
 homepage = "https://github.com/waynee95/zola-theme-hikari"
@@ -21,13 +21,13 @@ homepage = "https://waynee95.me"
 
 # hikari
 
-> this is a port of the [hikari theme](https://github.com/mx3m/hikari-for-jekyll) for Zola
+> this is a port of the [hikari theme](https://github.com/mx3m/hikari-for-jekyll) for [Zola](https://www.getzola.org/)
 
 Hikari is a simple theme perfect for dev-savvy bloggers.
 
 ![screenshot](screenshot.png)
 
-[View demo](https://waynee95.me/zola-theme-hikari)
+[View demo](https://waynee95.github.io/zola-theme-hikari/)
 
 ## Installation
 

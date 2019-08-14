@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.0 (unreleased)
+
+### Breaking
+
+- Pages with draft=true are now only loaded/rendered in `zola serve`
+
+### Other
+- Add `--open` flag to open server URL in default browser
+- Fix sitemaps namespace & do not urlencode URLs
+- Update livereload
+- Add `hard_link_static` config option to hard link things in the static directory instead of copying
+- Add warning for old style internal links since they would still function silently
+- Print some counts when running `zola check`
+- Re-render all pages/sections when `anchor-link.html` is changed
+- Taxonomies can now have the same name in multiple languages
+- `zola init` can now be create sites inside the current directory
+
 ## 0.8.0 (2019-06-22)
 
 ### Breaking

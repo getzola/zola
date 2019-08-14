@@ -160,7 +160,7 @@ impl Page {
 
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                slug.trim().to_string()
+                slugify(&slug.trim())
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
@@ -171,12 +171,10 @@ impl Page {
                 } else {
                     slugify(&page.file.name)
                 }
+            } else if let Some(slug) = slug_from_dated_filename {
+                slugify(&slug)
             } else {
-                if let Some(slug) = slug_from_dated_filename {
-                    slugify(&slug)
-                } else {
-                    slugify(&page.file.name)
-                }
+                slugify(&page.file.name)
             }
         };
 
@@ -428,6 +426,22 @@ Hello world"#;
         let content = r#"
     +++
     slug = "hello-world"
+    +++
+    Hello world"#;
+        let config = Config::default();
+        let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.components, vec!["hello-world"]);
+        assert_eq!(page.permalink, config.make_permalink("hello-world"));
+    }
+
+    #[test]
+    fn can_make_url_from_slug_only_with_no_special_chars() {
+        let content = r#"
+    +++
+    slug = "hello-&-world"
     +++
     Hello world"#;
         let config = Config::default();

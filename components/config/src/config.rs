@@ -16,6 +16,13 @@ use utils::fs::read_file_with_error;
 static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Mode {
+    Build,
+    Serve,
+    Check,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Language {
     /// The language code
@@ -106,6 +113,8 @@ pub struct Config {
     pub generate_rss: bool,
     /// The number of articles to include in the RSS feed. Defaults to including all items.
     pub rss_limit: Option<usize>,
+    /// If set, files from static/ will be hardlinked instead of copied to the output dir.
+    pub hard_link_static: bool,
 
     pub taxonomies: Vec<Taxonomy>,
 
@@ -120,8 +129,10 @@ pub struct Config {
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are needed
     pub ignored_content_globset: Option<GlobSet>,
 
-    /// Whether to check all external links for validity
-    pub check_external_links: bool,
+    /// The mode Zola is currently being ran on. Some logging/feature can differ depending on the
+    /// command being used.
+    #[serde(skip_serializing)]
+    pub mode: Mode,
 
     /// A list of directories to search for additional `.sublime-syntax` files in.
     pub extra_syntaxes: Vec<String>,
@@ -265,6 +276,29 @@ impl Config {
     pub fn languages_codes(&self) -> Vec<&str> {
         self.languages.iter().map(|l| l.code.as_ref()).collect()
     }
+
+    pub fn is_in_build_mode(&self) -> bool {
+        self.mode == Mode::Build
+    }
+
+    pub fn is_in_serve_mode(&self) -> bool {
+        self.mode == Mode::Serve
+    }
+
+    pub fn is_in_check_mode(&self) -> bool {
+        self.mode == Mode::Check
+    }
+
+    pub fn enable_serve_mode(&mut self) {
+        self.mode = Mode::Serve;
+    }
+
+    pub fn enable_check_mode(&mut self) {
+        self.mode = Mode::Check;
+        // Disable syntax highlighting since the results won't be used
+        // and this operation can be expensive.
+        self.highlight_code = false;
+    }
 }
 
 impl Default for Config {
@@ -280,9 +314,10 @@ impl Default for Config {
             languages: Vec::new(),
             generate_rss: false,
             rss_limit: None,
+            hard_link_static: false,
             taxonomies: Vec::new(),
             compile_sass: false,
-            check_external_links: false,
+            mode: Mode::Build,
             build_search_index: false,
             ignored_content: Vec::new(),
             ignored_content_globset: None,

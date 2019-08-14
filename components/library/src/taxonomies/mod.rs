@@ -142,6 +142,7 @@ impl Taxonomy {
     ) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", config);
+        context.insert("lang", &self.kind.lang);
         context.insert("term", &SerializedTaxonomyItem::from_item(item, library));
         context.insert("taxonomy", &self.kind);
         context.insert(
@@ -186,33 +187,21 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
     let taxonomies_def = {
         let mut m = HashMap::new();
         for t in &config.taxonomies {
-            m.insert(t.name.clone(), t);
+            m.insert(format!("{}-{}", t.name, t.lang), t);
         }
         m
     };
+
     let mut all_taxonomies = HashMap::new();
-
     for (key, page) in library.pages() {
-        // Draft are not part of taxonomies
-        if page.is_draft() {
-            continue;
-        }
-
         for (name, val) in &page.meta.taxonomies {
-            if taxonomies_def.contains_key(name) {
-                if taxonomies_def[name].lang != page.lang {
-                    bail!(
-                        "Page `{}` has taxonomy `{}` which is not available in that language",
-                        page.file.path.display(),
-                        name
-                    );
-                }
-
-                all_taxonomies.entry(name).or_insert_with(HashMap::new);
+            let taxo_key = format!("{}-{}", name, page.lang);
+            if taxonomies_def.contains_key(&taxo_key) {
+                all_taxonomies.entry(taxo_key.clone()).or_insert_with(HashMap::new);
 
                 for v in val {
                     all_taxonomies
-                        .get_mut(name)
+                        .get_mut(&taxo_key)
                         .unwrap()
                         .entry(v.to_string())
                         .or_insert_with(|| vec![])
@@ -231,7 +220,7 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
     let mut taxonomies = vec![];
 
     for (name, taxo) in all_taxonomies {
-        taxonomies.push(Taxonomy::new(taxonomies_def[name].clone(), config, taxo, library));
+        taxonomies.push(Taxonomy::new(taxonomies_def[&name].clone(), config, taxo, library));
     }
 
     Ok(taxonomies)
@@ -390,6 +379,11 @@ mod tests {
                 lang: "fr".to_string(),
                 ..TaxonomyConfig::default()
             },
+            TaxonomyConfig {
+                name: "tags".to_string(),
+                lang: "fr".to_string(),
+                ..TaxonomyConfig::default()
+            },
         ];
 
         let mut page1 = Page::default();
@@ -411,6 +405,7 @@ mod tests {
         let mut page3 = Page::default();
         page3.lang = "fr".to_string();
         let mut taxo_page3 = HashMap::new();
+        taxo_page3.insert("tags".to_string(), vec!["rust".to_string()]);
         taxo_page3.insert("auteurs".to_string(), vec!["Vincent Prouillet".to_string()]);
         page3.meta.taxonomies = taxo_page3;
         library.insert_page(page3);
@@ -422,7 +417,11 @@ mod tests {
             let mut a = None;
             for x in taxonomies {
                 match x.kind.name.as_ref() {
-                    "tags" => t = Some(x),
+                    "tags" => {
+                        if x.kind.lang == "en" {
+                            t = Some(x)
+                        }
+                    }
                     "categories" => c = Some(x),
                     "auteurs" => a = Some(x),
                     _ => unreachable!(),
@@ -465,31 +464,5 @@ mod tests {
             "http://a-website.com/categories/programming-tutorials/"
         );
         assert_eq!(categories.items[1].pages.len(), 1);
-    }
-
-    #[test]
-    fn errors_on_taxonomy_of_different_language() {
-        let mut config = Config::default();
-        config.languages.push(Language { rss: false, code: "fr".to_string() });
-        let mut library = Library::new(2, 0, false);
-
-        config.taxonomies =
-            vec![TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() }];
-
-        let mut page1 = Page::default();
-        page1.lang = "fr".to_string();
-        let mut taxo_page1 = HashMap::new();
-        taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
-        page1.meta.taxonomies = taxo_page1;
-        library.insert_page(page1);
-
-        let taxonomies = find_taxonomies(&config, &library);
-        assert!(taxonomies.is_err());
-        let err = taxonomies.unwrap_err();
-        // no path as this is created by Default
-        assert_eq!(
-            format!("{}", err),
-            "Page `` has taxonomy `tags` which is not available in that language"
-        );
     }
 }

@@ -14,8 +14,10 @@ If you don't have an account with Netlify, you can [sign up](https://app.netlify
 Once you are in the admin interface, you can add a site from a Git provider (GitHub, GitLab or Bitbucket). At the end
  of this process, you can select the deploy settings for the project:
 
- - build command: `ZOLA_VERSION=0.8.0 zola build` (replace the version number in the variable by the version you want to use)
+ - build command: `zola build` (replace the version number in the variable by the version you want to use)
  - publish directory: the path to where the `public` directory is
+ - image selection: `Ubuntu Xenial 16.04 (default)`
+ - Environment variables: `ZOLA_VERSION` with for example `0.8.0` as value
 
 With this setup, your site should be automatically deployed on every commit on master.  For `ZOLA_VERSION`, you may
 use any of the tagged `release` versions in the GitHub repository — Netlify will automatically fetch the tagged version
