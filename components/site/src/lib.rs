@@ -525,7 +525,7 @@ impl Site {
         self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
         self.tera.register_function(
             "get_taxonomy_url",
-            global_fns::GetTaxonomyUrl::new(&self.taxonomies),
+            global_fns::GetTaxonomyUrl::new(&self.config.default_language,&self.taxonomies),
         );
     }
 
@@ -540,7 +540,7 @@ impl Site {
         );
         self.tera.register_function(
             "get_taxonomy",
-            global_fns::GetTaxonomy::new(self.taxonomies.clone(), self.library.clone()),
+            global_fns::GetTaxonomy::new(&self.config.default_language, self.taxonomies.clone(), self.library.clone()),
         );
     }
 

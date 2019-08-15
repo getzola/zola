@@ -211,10 +211,12 @@ impl<'a> Paginator<'a> {
             PaginationRoot::Section(s) => {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
+                context.insert("lang", &s.lang);
             }
             PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
                 context.insert("term", &item.serialize(library));
+                context.insert("lang", &t.kind.lang);
             }
         };
         context.insert("current_url", &pager.permalink);

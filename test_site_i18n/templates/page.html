@@ -6,3 +6,6 @@ Language: {{lang}}
 Translated in {{t.lang|default(value=config.default_language)}}: {{t.title}} {{t.permalink|safe}}
 {% endfor %}
 
+{% for taxo_kind, items in page.taxonomies %}
+    {% set taxo = get_taxonomy(kind=taxo_kind, lang=lang) %}
+{% endfor %}

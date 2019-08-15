@@ -169,6 +169,7 @@ impl Taxonomy {
             self.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
         context.insert("terms", &terms);
         context.insert("taxonomy", &self.kind);
+        context.insert("lang", &self.kind.lang);
         context.insert("current_url", &config.make_permalink(&self.kind.name));
         context.insert("current_path", &self.kind.name);
 
