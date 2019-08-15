@@ -16,6 +16,7 @@
 - Re-render all pages/sections when `anchor-link.html` is changed
 - Taxonomies can now have the same name in multiple languages
 - `zola init` can now be create sites inside the current directory
+- Fix table of contents generation for deep heading levels
 
 ## 0.8.0 (2019-06-22)
 
