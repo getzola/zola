@@ -568,6 +568,11 @@ mod tests {
                 Path::new("/home/vincent/site/templates/hello.html"),
             ),
             (
+                (ChangeKind::Themes, PathBuf::from("/themes/hello.html")),
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/themes/hello.html"),
+            ),
+            (
                 (ChangeKind::StaticFiles, PathBuf::from("/static/site.css")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/static/site.css"),
