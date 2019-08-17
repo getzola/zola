@@ -29,6 +29,7 @@ mod library;
 mod pagination;
 mod sorting;
 mod taxonomies;
+mod slugs;
 
 pub use slotmap::{DenseSlotMap, Key};
 
@@ -37,3 +38,4 @@ pub use library::Library;
 pub use pagination::Paginator;
 pub use sorting::sort_actual_pages_by_date;
 pub use taxonomies::{find_taxonomies, Taxonomy, TaxonomyItem};
+pub use slugs::{slugify, quasi_slugify, maybe_slugify};

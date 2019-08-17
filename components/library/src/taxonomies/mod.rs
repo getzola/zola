@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use slotmap::DefaultKey;
-use slug::slugify;
 use tera::{Context, Tera};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
@@ -9,6 +8,7 @@ use errors::{Error, Result};
 use utils::templates::render_template;
 
 use content::SerializingPage;
+use slugs::maybe_slugify;
 use library::Library;
 use sorting::sort_pages_by_date;
 
@@ -69,7 +69,7 @@ impl TaxonomyItem {
             })
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
-        let slug = slugify(name);
+        let slug = maybe_slugify(name, config.slugify);
         let permalink = if taxonomy.lang != config.default_language {
             config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
         } else {
@@ -169,7 +169,6 @@ impl Taxonomy {
             self.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
         context.insert("terms", &terms);
         context.insert("taxonomy", &self.kind);
-        context.insert("lang", &self.kind.lang);
         context.insert("current_url", &config.make_permalink(&self.kind.name));
         context.insert("current_path", &self.kind.name);
 

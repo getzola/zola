@@ -19,6 +19,7 @@ use utils::templates::render_template;
 use content::file_info::FileInfo;
 use content::has_anchor;
 use content::ser::SerializingPage;
+use slugs::maybe_slugify;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
@@ -160,21 +161,21 @@ impl Page {
 
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                slugify(&slug.trim())
+                maybe_slugify(&slug.trim(), config.slugify)
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
-                        slugify(&slug)
+                        maybe_slugify(&slug, config.slugify)
                     } else {
-                        slugify(parent.file_name().unwrap().to_str().unwrap())
+                        maybe_slugify(parent.file_name().unwrap().to_str().unwrap(), config.slugify)
                     }
                 } else {
-                    slugify(&page.file.name)
+                    maybe_slugify(&page.file.name, config.slugify)
                 }
             } else if let Some(slug) = slug_from_dated_filename {
-                slugify(&slug)
+                maybe_slugify(&slug, config.slugify)
             } else {
-                slugify(&page.file.name)
+                maybe_slugify(&page.file.name, config.slugify)
             }
         };
 
