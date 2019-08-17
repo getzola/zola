@@ -103,6 +103,8 @@ pub struct Config {
     /// Languages list and translated strings
     pub translations: HashMap<String, Toml>,
 
+    /// Whether to slugify page and taxonomy URLs (disable for UTF8 URLs)
+    pub slugify: bool,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
     /// Which themes to use for code highlighting. See Readme for supported themes
@@ -308,6 +310,7 @@ impl Default for Config {
             title: None,
             description: None,
             theme: None,
+            slugify: true,
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
