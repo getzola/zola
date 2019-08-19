@@ -27,6 +27,10 @@ default_language = "en"
 # Theme name to use
 theme = ""
 
+# Slugify paths for compatibility with ASCII-only URLs produced by Zola < 0.9
+# Enabling this setting prevents non-English (UTF8) characters in URLs
+slugify = false
+
 # Highlight all code blocks found
 highlight_code = false
 
