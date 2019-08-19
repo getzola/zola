@@ -310,7 +310,7 @@ impl Default for Config {
             title: None,
             description: None,
             theme: None,
-            slugify: true,
+            slugify: false,
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
