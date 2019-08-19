@@ -5,6 +5,7 @@
 ### Breaking
 - Remove `toc` variable in section/page context and pass it to `page.toc` and `section.toc` instead so they are
 accessible everywhere
+- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of page paths is now optional. By default, non-ASCII characters (international characters i.e. UTF8) will be retained in the generated pages. If you are currently using non-ASCII characters in your content file paths and want to keep the URLs Zola previously generated, set `slugify = true` in your config
 
 ### Other
 - Add zenburn syntax highlighting theme
