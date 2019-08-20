@@ -444,13 +444,30 @@ Hello world"#;
     slug = "hello-&-world"
     +++
     Hello world"#;
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify = true;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.path, "hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
+    }
+
+    #[test]
+    fn can_make_url_from_unslugified_slug_frontmatter() {
+        let content = r#"
+    +++
+    slug = "hello-&-world"
+    +++
+    Hello world"#;
+        let config = Config::default();
+        let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "hello-&-world/");
+        assert_eq!(page.components, vec!["hello-&-world"]);
+        assert_eq!(page.permalink, config.make_permalink("hello-&-world"));
     }
 
     #[test]
@@ -509,12 +526,23 @@ Hello world"#;
 
     #[test]
     fn can_make_slug_from_non_slug_filename() {
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify = true;
         let res =
             Page::parse(Path::new(" file with space.md"), "+++\n+++", &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.slug, "file-with-space");
+        assert_eq!(page.permalink, config.make_permalink(&page.slug));
+    }
+
+    #[test]
+    fn can_make_path_from_unslugified_filename() {
+        let config = Config::default();
+        let res = Page::parse(Path::new(" file with space.md"), "+++\n++++", &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.slug, " file with space");
         assert_eq!(page.permalink, config.make_permalink(&page.slug));
     }
 
@@ -616,7 +644,7 @@ Hello world
         assert_eq!(page.serialized_assets.len(), 3);
         // We should not get with-assets since that's the slugified version
         assert!(page.serialized_assets[0].contains("with_assets"));
-        assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+        assert_eq!(page.permalink, "http://a-website.com/posts/with_assets/");
     }
 
     // https://github.com/getzola/zola/issues/607
