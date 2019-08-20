@@ -389,7 +389,8 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy() {
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify = true;
         let taxo_config = TaxonomyConfig {
             name: "tags".to_string(),
             lang: config.default_language.clone(),
@@ -466,7 +467,8 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy_url() {
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify = true;
         let taxo_config = TaxonomyConfig {
             name: "tags".to_string(),
             lang: config.default_language.clone(),
