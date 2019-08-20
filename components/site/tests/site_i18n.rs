@@ -132,7 +132,7 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(public, "authors/index.html", "Queen"));
     assert!(!file_contains!(public, "authors/index.html", "Vincent"));
     assert!(!file_exists!(public, "auteurs/index.html"));
-    assert!(file_exists!(public, "authors/queen-elizabeth/rss.xml"));
+    assert!(file_exists!(public, "authors/Queen Elizabeth/rss.xml"));
 
     assert!(file_exists!(public, "tags/index.html"));
     assert!(file_contains!(public, "tags/index.html", "hello"));
