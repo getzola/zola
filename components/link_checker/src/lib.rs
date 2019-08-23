@@ -1,9 +1,16 @@
 extern crate reqwest;
+extern crate scraper;
 #[macro_use]
 extern crate lazy_static;
 
+extern crate errors;
+
 use reqwest::header::{HeaderMap, ACCEPT};
-use reqwest::StatusCode;
+use reqwest::{Response, StatusCode};
+use scraper::{Html, Selector};
+
+use errors::Result;
+
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, RwLock};
@@ -62,12 +69,40 @@ pub fn check_url(url: &str) -> LinkResult {
 
     // Need to actually do the link checking
     let res = match client.get(url).headers(headers).send() {
+        Ok(ref mut response) if has_anchor(url) => match check_page_for_anchor(url, response) {
+            Ok(_) => LinkResult { code: Some(response.status()), error: None },
+            Err(e) => LinkResult { code: None, error: Some(e.to_string()) }
+        },
         Ok(response) => LinkResult { code: Some(response.status()), error: None },
         Err(e) => LinkResult { code: None, error: Some(e.description().to_string()) },
     };
 
     LINKS.write().unwrap().insert(url.to_string(), res.clone());
     res
+}
+
+fn has_anchor(url: &str) -> bool {
+    match url.find('#') {
+        Some(index) => match url.get(index..=index + 1) {
+            Some("#/") | Some("#!") | None => false,
+            Some(_) => true,
+        },
+        None => false
+    }
+}
+
+fn check_page_for_anchor(url: &str, response: &mut Response) -> Result<()> {
+    let body = response.text().unwrap();
+    let document = Html::parse_document(&body[..]);
+    let index = url.find('#').unwrap();
+    let href = url.get(index..).unwrap().replace('.', "\\.");
+    let selector = Selector::parse(&href[..]).unwrap();
+
+    if document.select(&selector).count() == 0 {
+        Err(errors::Error::from(format!("Anchor `{}` not found on page", href)))
+    } else {
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -90,5 +125,23 @@ mod tests {
         assert_eq!(res.is_valid(), false);
         assert!(res.code.is_none());
         assert!(res.error.is_some());
+    }
+
+    #[test]
+    fn can_validate_anchors() {
+        let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
+        let res = check_url(url);
+        assert!(res.is_valid());
+        assert!(LINKS.read().unwrap().get(url).is_some());
+        let res = check_url(url);
+        assert!(res.is_valid());
+    }
+
+    #[test]
+    fn can_fail_when_anchor_not_found() {
+        let res = check_url("https://doc.rust-lang.org/std/iter/trait.Iterator.html#me");
+        assert_eq!(res.is_valid(), false);
+        assert!(res.code.is_none());
+        assert_eq!(res.error, Some("Anchor `#me` not found on page".to_string()));
     }
 }
