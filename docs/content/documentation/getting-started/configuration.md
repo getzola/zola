@@ -129,6 +129,7 @@ Zola currently has the following highlight themes available:
 - [ayu-dark](https://github.com/dempfi/ayu)
 - [ayu-mirage](https://github.com/dempfi/ayu)
 - [Tomorrow](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Tomorrow)
+- [one-dark](https://github.com/andresmichel/one-dark-theme)
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
