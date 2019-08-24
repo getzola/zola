@@ -19,6 +19,8 @@
 - Fix table of contents generation for deep heading levels
 - Add `lang` in all templates context except sitemap, robots etc
 - Add `lang` parameter to `get_taxonomy` and `get_taxonomy_url`
+- Rebuild whole site on changes in `themes` changes
+- Add one-dark syntax highlighting theme
 
 ## 0.8.0 (2019-06-22)
 
