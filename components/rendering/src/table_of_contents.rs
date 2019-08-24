@@ -33,14 +33,14 @@ fn insert_into_parent(potential_parent: Option<&mut Header>, header: &Header) ->
     match potential_parent {
         None => {
             // No potential parent to insert into so it needs to be insert higher
-            return false;
-        },
+            false
+        }
         Some(parent) => {
             let diff = header.level - parent.level;
             if diff <= 0 {
                 // Heading is same level or higher so we don't insert here
                 return false;
-            } 
+            }
             if diff == 1 {
                 // We have a direct child of the parent
                 parent.children.push(header.clone());
@@ -51,7 +51,7 @@ fn insert_into_parent(potential_parent: Option<&mut Header>, header: &Header) ->
                 // No, we need to insert it here
                 parent.children.push(header.clone());
             }
-            return true;
+            true
         }
     }
 }
@@ -61,23 +61,9 @@ fn insert_into_parent(potential_parent: Option<&mut Header>, header: &Header) ->
 pub fn make_table_of_contents(headers: Vec<Header>) -> Vec<Header> {
     let mut toc = vec![];
     for header in headers {
-        if toc.is_empty() {
-            // First header, nothing to compare it with
+        // First header or we try to insert the current header in a previous one
+        if toc.is_empty() || !insert_into_parent(toc.iter_mut().last(), &header) {
             toc.push(header);
-            continue;
-        }
-
-        // We try to insert the current header in a previous one
-        match insert_into_parent(toc.iter_mut().last(), &header) {
-            true => {
-                // Header was successfully inserted as a child of a previous element
-                continue;
-            },
-            false => {
-                // Couldn't insert in a previous header, so it's a top-level header
-                toc.push(header);
-                continue;
-            }
         }
     }
 

@@ -118,6 +118,7 @@ fn create_new_site(
     output_dir: &str,
     base_url: &str,
     config_file: &str,
+    include_drafts: bool,
 ) -> Result<(Site, String)> {
     let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
 
@@ -132,6 +133,9 @@ fn create_new_site(
     site.config.enable_serve_mode();
     site.set_base_url(base_url);
     site.set_output_path(output_dir);
+    if include_drafts {
+        site.include_drafts();
+    }
     site.load()?;
     site.enable_live_reload(port);
     console::notify_site_size(&site);
@@ -148,9 +152,11 @@ pub fn serve(
     config_file: &str,
     watch_only: bool,
     open: bool,
+    include_drafts: bool,
 ) -> Result<()> {
     let start = Instant::now();
-    let (mut site, address) = create_new_site(interface, port, output_dir, base_url, config_file)?;
+    let (mut site, address) =
+        create_new_site(interface, port, output_dir, base_url, config_file, include_drafts)?;
     console::report_elapsed_time(start);
 
     // Setup watchers
@@ -375,18 +381,21 @@ pub fn serve(
                             ChangeKind::StaticFiles => copy_static(&site, &path, &partial_path),
                             ChangeKind::Sass => reload_sass(&site, &path, &partial_path),
                             ChangeKind::Themes => {
-                                console::info("-> Themes changed. The whole site will be reloaded.");
+                                console::info(
+                                    "-> Themes changed. The whole site will be reloaded.",
+                                );
                                 site = create_new_site(
                                     interface,
                                     port,
                                     output_dir,
                                     base_url,
                                     config_file,
+                                    include_drafts,
                                 )
                                 .unwrap()
                                 .0;
                                 rebuild_done_handling(&broadcaster, Ok(()), "/x.js");
-                            },
+                            }
                             ChangeKind::Config => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(
@@ -395,6 +404,7 @@ pub fn serve(
                                     output_dir,
                                     base_url,
                                     config_file,
+                                    include_drafts,
                                 )
                                 .unwrap()
                                 .0;
@@ -432,18 +442,21 @@ pub fn serve(
                             (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
                             (ChangeKind::Sass, p) => reload_sass(&site, &path, &p),
                             (ChangeKind::Themes, _) => {
-                                console::info("-> Themes changed. The whole site will be reloaded.");
+                                console::info(
+                                    "-> Themes changed. The whole site will be reloaded.",
+                                );
                                 site = create_new_site(
                                     interface,
                                     port,
                                     output_dir,
                                     base_url,
                                     config_file,
+                                    include_drafts,
                                 )
                                 .unwrap()
                                 .0;
                                 rebuild_done_handling(&broadcaster, Ok(()), "/x.js");
-                            },
+                            }
                             (ChangeKind::Config, _) => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(
@@ -452,6 +465,7 @@ pub fn serve(
                                     output_dir,
                                     base_url,
                                     config_file,
+                                    include_drafts,
                                 )
                                 .unwrap()
                                 .0;

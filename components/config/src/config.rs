@@ -13,7 +13,7 @@ use theme::Theme;
 use utils::fs::read_file_with_error;
 
 // We want a default base url for tests
-static DEFAULT_BASE_URL: &'static str = "http://a-website.com";
+static DEFAULT_BASE_URL: &str = "http://a-website.com";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Mode {

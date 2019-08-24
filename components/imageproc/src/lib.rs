@@ -23,7 +23,7 @@ use regex::Regex;
 use errors::{Error, Result};
 use utils::fs as ufs;
 
-static RESIZED_SUBDIR: &'static str = "processed_images";
+static RESIZED_SUBDIR: &str = "processed_images";
 
 lazy_static! {
     pub static ref RESIZED_FILENAME: Regex =

@@ -117,9 +117,6 @@ impl<'a> Paginator<'a> {
 
         for key in self.all_pages {
             let page = library.get_page_by_key(*key);
-            if page.is_draft() {
-                continue;
-            }
             current_page.push(page.to_serialized_basic(library));
 
             if current_page.len() == self.paginate_by {
@@ -283,7 +280,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "posts/");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2/");
         assert_eq!(paginator.pagers[1].path, "posts/page/2/");
     }
@@ -300,7 +297,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/page/2/");
         assert_eq!(paginator.pagers[1].path, "page/2/");
     }
@@ -352,7 +349,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "tags/something");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
         assert_eq!(paginator.pagers[1].path, "tags/something/page/2/");
     }
