@@ -36,7 +36,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-':name -- Name of the project. Will create a new directory with that name in the current directory:_files' \
+'::name -- Name of the project. Will create a new directory with that name in the current directory:_files' \
 && ret=0
 ;;
 (build)
@@ -45,6 +45,7 @@ _arguments "${_arguments_options[@]}" \
 '--base-url=[Force the base URL to be that value (default to the one in config.toml)]' \
 '-o+[Outputs the generated site in the given path]' \
 '--output-dir=[Outputs the generated site in the given path]' \
+'--drafts[Include drafts when loading the site]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
@@ -62,6 +63,9 @@ _arguments "${_arguments_options[@]}" \
 '-u+[Changes the base_url]' \
 '--base-url=[Changes the base_url]' \
 '--watch-only[Do not start a server, just re-build project on changes]' \
+'--drafts[Include drafts when loading the site]' \
+'-O[Open site in the default browser]' \
+'--open[Open site in the default browser]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
@@ -70,6 +74,7 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (check)
 _arguments "${_arguments_options[@]}" \
+'--drafts[Include drafts when loading the site]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
