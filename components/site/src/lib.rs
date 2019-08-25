@@ -63,6 +63,8 @@ pub struct Site {
     pub permalinks: HashMap<String, String>,
     /// Contains all pages and sections of the site
     pub library: Arc<RwLock<Library>>,
+    /// Whether to load draft pages
+    include_drafts: bool,
 }
 
 impl Site {
@@ -131,11 +133,18 @@ impl Site {
             static_path,
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
+            include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(RwLock::new(Library::new(0, 0, false))),
         };
 
         Ok(site)
+    }
+
+    /// Set the site to load the drafts.
+    /// Needs to be called before loading it
+    pub fn include_drafts(&mut self) {
+        self.include_drafts = true;
     }
 
     /// The index sections are ALWAYS at those paths
@@ -233,8 +242,8 @@ impl Site {
         let mut pages_insert_anchors = HashMap::new();
         for page in pages {
             let p = page?;
-            // Draft pages are not rendered in zola build so we just discard them
-            if p.meta.draft && !self.config.is_in_serve_mode() {
+            // Should draft pages be ignored?
+            if p.meta.draft && !self.include_drafts {
                 continue;
             }
             pages_insert_anchors.insert(
@@ -525,7 +534,7 @@ impl Site {
         self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
         self.tera.register_function(
             "get_taxonomy_url",
-            global_fns::GetTaxonomyUrl::new(&self.config.default_language,&self.taxonomies),
+            global_fns::GetTaxonomyUrl::new(&self.config.default_language, &self.taxonomies),
         );
     }
 
@@ -540,7 +549,11 @@ impl Site {
         );
         self.tera.register_function(
             "get_taxonomy",
-            global_fns::GetTaxonomy::new(&self.config.default_language, self.taxonomies.clone(), self.library.clone()),
+            global_fns::GetTaxonomy::new(
+                &self.config.default_language,
+                self.taxonomies.clone(),
+                self.library.clone(),
+            ),
         );
     }
 

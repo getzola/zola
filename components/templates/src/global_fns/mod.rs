@@ -94,8 +94,8 @@ impl ResizeImage {
     }
 }
 
-static DEFAULT_OP: &'static str = "fill";
-static DEFAULT_FMT: &'static str = "auto";
+static DEFAULT_OP: &str = "fill";
+static DEFAULT_FMT: &str = "auto";
 const DEFAULT_Q: u8 = 75;
 
 impl TeraFn for ResizeImage {
@@ -203,8 +203,9 @@ impl TeraFn for GetTaxonomyUrl {
             args.get("name"),
             "`get_taxonomy_url` requires a `name` argument with a string value"
         );
-        let lang = optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
-            .unwrap_or_else(|| self.default_lang.clone());
+        let lang =
+            optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
+                .unwrap_or_else(|| self.default_lang.clone());
 
         let container = match self.taxonomies.get(&format!("{}-{}", kind, lang)) {
             Some(c) => c,
@@ -296,7 +297,11 @@ pub struct GetTaxonomy {
     default_lang: String,
 }
 impl GetTaxonomy {
-    pub fn new(default_lang: &str, all_taxonomies: Vec<Taxonomy>, library: Arc<RwLock<Library>>) -> Self {
+    pub fn new(
+        default_lang: &str,
+        all_taxonomies: Vec<Taxonomy>,
+        library: Arc<RwLock<Library>>,
+    ) -> Self {
         let mut taxonomies = HashMap::new();
         for taxo in all_taxonomies {
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), taxo);
@@ -312,8 +317,9 @@ impl TeraFn for GetTaxonomy {
             "`get_taxonomy` requires a `kind` argument with a string value"
         );
 
-        let lang = optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
-            .unwrap_or_else(|| self.default_lang.clone());
+        let lang =
+            optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
+                .unwrap_or_else(|| self.default_lang.clone());
 
         match self.taxonomies.get(&format!("{}-{}", kind, lang)) {
             Some(t) => Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap()),
@@ -408,8 +414,8 @@ mod tests {
         let tags_fr = Taxonomy { kind: taxo_config_fr, items: vec![tag_fr] };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
-        let static_fn = GetTaxonomy::new(&config.default_language, taxonomies.clone(), library.clone())
-            ;
+        let static_fn =
+            GetTaxonomy::new(&config.default_language, taxonomies.clone(), library.clone());
         // can find it correctly
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());

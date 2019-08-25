@@ -36,6 +36,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("public")
                         .takes_value(true)
                         .help("Outputs the generated site in the given path"),
+                    Arg::with_name("drafts")
+                        .long("drafts")
+                        .takes_value(false)
+                        .help("Include drafts when loading the site"),
                 ]),
             SubCommand::with_name("serve")
                 .about("Serve the site. Rebuild and reload on change automatically")
@@ -66,6 +70,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("watch-only")
                         .takes_value(false)
                         .help("Do not start a server, just re-build project on changes"),
+                    Arg::with_name("drafts")
+                        .long("drafts")
+                        .takes_value(false)
+                        .help("Include drafts when loading the site"),
                     Arg::with_name("open")
                         .short("O")
                         .long("open")
@@ -74,5 +82,11 @@ pub fn build_cli() -> App<'static, 'static> {
                 ]),
             SubCommand::with_name("check")
                 .about("Try building the project without rendering it. Checks links")
+                .args(&[
+                    Arg::with_name("drafts")
+                        .long("drafts")
+                        .takes_value(false)
+                        .help("Include drafts when loading the site"),
+                ])
         ])
 }

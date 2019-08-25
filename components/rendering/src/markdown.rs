@@ -317,7 +317,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     }
 
     if let Some(e) = error {
-        return Err(e);
+        Err(e)
     } else {
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },

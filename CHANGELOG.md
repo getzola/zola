@@ -4,7 +4,7 @@
 
 ### Breaking
 
-- Pages with draft=true are now only loaded/rendered in `zola serve`
+- Add `--drafts` flag to `build`, `serve` and `check` to load drafts. Drafts are never loaded by default anymore
 
 ### Other
 - Add `--open` flag to open server URL in default browser
@@ -17,7 +17,7 @@
 - Taxonomies can now have the same name in multiple languages
 - `zola init` can now be create sites inside the current directory
 - Fix table of contents generation for deep heading levels
-- Add `lang` in all templates context except sitemap, robots etc
+- Add `lang` in all templates context except sitemap, robots
 - Add `lang` parameter to `get_taxonomy` and `get_taxonomy_url`
 - Rebuild whole site on changes in `themes` changes
 - Add one-dark syntax highlighting theme

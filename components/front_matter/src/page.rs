@@ -24,7 +24,7 @@ pub struct PageFrontMatter {
     /// The converted date into a (year, month, day) tuple
     #[serde(default, skip_deserializing)]
     pub datetime_tuple: Option<(i32, u32, u32)>,
-    /// Whether this page is a draft and should be ignored for pagination etc
+    /// Whether this page is a draft
     pub draft: bool,
     /// The page slug. Will be used instead of the filename if present
     /// Can't be an empty string if present
