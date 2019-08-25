@@ -6,6 +6,5 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 [dependencies]
 reqwest = "0.9"
 lazy_static = "1"
-scraper = "0.10"
 
 errors = { path = "../errors" }
