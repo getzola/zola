@@ -1,7 +1,7 @@
 pub use slug::slugify;
 
 pub fn quasi_slugify(s: &str) -> String {
-    s.replace("#", "").replace("/", "")
+    s.replace("#", "").replace("/", "").replace("?", "").replace("\n", "")
 }
 
 pub fn maybe_slugify(s: &str, enabled: bool) -> String {
@@ -27,6 +27,15 @@ mod tests {
 
     #[test]
     fn quasi_slugify_strips_bad_symbols() {
-        assert_eq!(quasi_slugify("test#test/test"), "testtesttest");
+        assert_eq!(quasi_slugify("test#test/test?test"), "testtesttesttest");
+    }
+
+    #[test]
+    fn quasi_slugify_strips_newline() {
+        assert_eq!(
+            quasi_slugify("test
+test"),
+            "testtest"
+        );
     }
 }
