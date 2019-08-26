@@ -131,7 +131,7 @@ pub struct Config {
     translations: HashMap<String, TranslateTerm>,
 
     /// Whether to slugify page and taxonomy URLs (disable for UTF8 URLs)
-    pub slugify: bool,
+    pub slugify_paths: bool,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
     /// Which themes to use for code highlighting. See Readme for supported themes
