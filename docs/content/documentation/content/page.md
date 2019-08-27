@@ -14,7 +14,7 @@ For any page within your content folder, its output path will be defined by eith
 - its `slug` frontmatter key
 - its filename
 
-Either way, these proposed path will be sanitized before being used. If `slugify_paths` is enabled in the site's config, paths are [slugified](https://docs.rs/slug/0.1.4/slug/fn.slugify.html). Otherwise, a simpler sanitation is performed: the characters `/` and `#` are stripped from the proposed path.
+Either way, these proposed path will be sanitized before being used. If `slugify_paths` is enabled in the site's config, paths are [slugified](https://docs.rs/slug/0.1.4/slug/fn.slugify.html). Otherwise, a simpler sanitation is performed, outputting only valid NTFS paths. The following characters are removed: `<`, `>`, `:`, `/`, `|`, `?` `*` `#` `\\`, as well as newlines and tabulations. Additionally, trailing whitespace and dots are removed.
 
 **NOTE:** To produce URLs containing non-English characters (UTF8), `slugify_paths` needs to remain disabled.
 
