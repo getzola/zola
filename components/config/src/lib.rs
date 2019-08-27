@@ -14,7 +14,7 @@ extern crate utils;
 mod config;
 pub mod highlighting;
 mod theme;
-pub use config::{Config, Language, Slugifier, Taxonomy};
+pub use config::{Config, Language, Taxonomy};
 
 use std::path::Path;
 
