@@ -9,8 +9,9 @@ pub fn strip_chars(s: &str, chars: &str) -> String {
 
 pub fn quasi_slugify(s: &str) -> String {
     // NTFS forbidden characters : https://gist.github.com/doctaphred/d01d05291546186941e1b7ddc02034d3
-    let trimmed = s.trim_end_matches('.');
-    strip_chars(trimmed.trim_end(), "<>:/|?*#\n\"\\")
+    // Also we need to trim . and whitespace from the end of filename
+    let trimmed = s.trim_end_matches(|c| c == ' ' || c == '.');
+    strip_chars(trimmed, "<>:/|?*#\n\"\\")
 }
 
 pub fn maybe_slugify(s: &str, slugifier: &Slugifier) -> String {
@@ -61,5 +62,6 @@ test"),
     #[test]
     fn quasi_slugify_handles_invalid_ntfs_names() {
         assert_eq!(quasi_slugify("test ."), "test");
+        assert_eq!(quasi_slugify("test. "), "test");
     }
 }
