@@ -69,7 +69,7 @@ impl TaxonomyItem {
             })
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
-        let slug = maybe_slugify(name, config.slugify_paths);
+        let slug = maybe_slugify(name, &config.slugify_paths);
         let permalink = if taxonomy.lang != config.default_language {
             config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
         } else {
@@ -231,7 +231,7 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
-    use config::{Config, Language, Taxonomy as TaxonomyConfig};
+    use config::{Config, Language, Slugifier, Taxonomy as TaxonomyConfig};
     use content::Page;
     use library::Library;
 
@@ -333,7 +333,7 @@ mod tests {
     #[test]
     fn can_make_slugified_taxonomies() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify_paths = Slugifier::Active(true);
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
@@ -595,7 +595,7 @@ mod tests {
     #[test]
     fn can_make_slugified_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify_paths = Slugifier::Active(true);
         config.languages.push(Language { rss: false, code: "fr".to_string() });
         let mut library = Library::new(2, 0, true);
 

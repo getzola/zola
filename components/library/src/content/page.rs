@@ -160,21 +160,21 @@ impl Page {
 
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                maybe_slugify(&slug.trim(), config.slugify_paths)
+                maybe_slugify(&slug.trim(), &config.slugify_paths)
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
-                        maybe_slugify(&slug, config.slugify_paths)
+                        maybe_slugify(&slug, &config.slugify_paths)
                     } else {
-                        maybe_slugify(parent.file_name().unwrap().to_str().unwrap(), config.slugify_paths)
+                        maybe_slugify(parent.file_name().unwrap().to_str().unwrap(), &config.slugify_paths)
                     }
                 } else {
-                    maybe_slugify(&page.file.name, config.slugify_paths)
+                    maybe_slugify(&page.file.name, &config.slugify_paths)
                 }
             } else if let Some(slug) = slug_from_dated_filename {
-                maybe_slugify(&slug, config.slugify_paths)
+                maybe_slugify(&slug, &config.slugify_paths)
             } else {
-                maybe_slugify(&page.file.name, config.slugify_paths)
+                maybe_slugify(&page.file.name, &config.slugify_paths)
             }
         };
 
@@ -374,7 +374,7 @@ mod tests {
     use tera::Tera;
 
     use super::Page;
-    use config::{Config, Language};
+    use config::{Config, Language, Slugifier};
     use front_matter::InsertAnchor;
 
     #[test]
@@ -445,7 +445,7 @@ Hello world"#;
     +++
     Hello world"#;
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify_paths = Slugifier::Active(true);
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -527,7 +527,7 @@ Hello world"#;
     #[test]
     fn can_make_slug_from_non_slug_filename() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify_paths = Slugifier::Active(true);
         let res =
             Page::parse(Path::new(" file with space.md"), "+++\n+++", &config, &PathBuf::new());
         assert!(res.is_ok());
