@@ -309,9 +309,25 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
     handle_page_editing(site, &new_path)
 }
 
+fn is_section(path: &str, languages_codes: &[&str]) -> bool {
+    if path == "_index.md" {
+        return true;
+    }
+
+    for language_code in languages_codes {
+        let lang_section_string = format!("_index.{}.md", language_code);
+        if path == lang_section_string {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /// What happens when a section or a page is created/edited
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
-    let is_section = path.file_name().unwrap() == "_index.md";
+    let languages_codes = site.config.languages_codes();
+    let is_section = is_section(path.file_name().unwrap().to_str().unwrap(), &languages_codes);
     let is_md = path.extension().unwrap() == "md";
     let index = path.parent().unwrap().join("index.md");
 
