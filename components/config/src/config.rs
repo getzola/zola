@@ -104,6 +104,12 @@ impl Default for LinkChecker {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum Slugifier {
+    Active(bool),
+    Strip(String)
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
@@ -131,7 +137,7 @@ pub struct Config {
     translations: HashMap<String, TranslateTerm>,
 
     /// Whether to slugify page and taxonomy URLs (disable for UTF8 URLs)
-    pub slugify_paths: bool,
+    pub slugify_paths: Slugifier,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
     /// Which themes to use for code highlighting. See Readme for supported themes
@@ -356,7 +362,7 @@ impl Default for Config {
             title: None,
             description: None,
             theme: None,
-            slugify_paths: false,
+            slugify_paths: Slugifier::Active(false),
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),

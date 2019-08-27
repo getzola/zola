@@ -1,4 +1,5 @@
 pub use slug::slugify;
+pub use config::Slugifier;
 
 pub fn strip_chars(s: &str, chars: &str) -> String {
     let mut sanitized_string = s.to_string();
@@ -11,25 +12,35 @@ pub fn quasi_slugify(s: &str) -> String {
     strip_chars(s, "<>:/|?*#\n\"\\")
 }
 
-pub fn maybe_slugify(s: &str, enabled: bool) -> String {
-    if enabled == true {
-        return slugify(s);
+pub fn maybe_slugify(s: &str, slugifier: &Slugifier) -> String {
+    match slugifier {
+        Slugifier::Active(enabled) => {
+            if *enabled { slugify(s) }
+            else {
+                // Default forbidden characters
+                quasi_slugify(s)
+            }
+        },
+        Slugifier::Strip(chars) => {
+            // Config-supplied forbidden characters
+            strip_chars(s, &chars)
+        }
     }
-    return quasi_slugify(s);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use config::Slugifier;
 
     #[test]
     fn maybe_slugify_enabled() {
-        assert_eq!(maybe_slugify("héhé", true), "hehe");
+        assert_eq!(maybe_slugify("héhé", &Slugifier::Active(true)), "hehe");
     }
 
     #[test]
     fn maybe_slugify_disabled() {
-        assert_eq!(maybe_slugify("héhé", false), "héhé");
+        assert_eq!(maybe_slugify("héhé", &Slugifier::Active(false)), "héhé");
     }
 
     #[test]
