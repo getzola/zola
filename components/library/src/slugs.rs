@@ -1,7 +1,14 @@
 pub use slug::slugify;
 
+pub fn strip_chars(s: &str, chars: &str) -> String {
+    let mut sanitized_string = s.to_string();
+    sanitized_string.retain( |c| !chars.contains(c));
+    sanitized_string
+}
+
 pub fn quasi_slugify(s: &str) -> String {
-    s.replace("#", "").replace("/", "").replace("?", "").replace("\n", "")
+    // NTFS forbidden characters : https://gist.github.com/doctaphred/d01d05291546186941e1b7ddc02034d3
+    strip_chars(s, "<>:/|?*#\n\"\\")
 }
 
 pub fn maybe_slugify(s: &str, enabled: bool) -> String {
