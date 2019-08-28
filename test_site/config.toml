@@ -4,7 +4,7 @@ highlight_code = true
 compile_sass = true
 generate_rss = true
 theme = "sample"
-slugify = true
+slugify_paths = true
 
 taxonomies = [
     {name = "categories", rss = true},
