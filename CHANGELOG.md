@@ -21,6 +21,7 @@
 - Add `lang` parameter to `get_taxonomy` and `get_taxonomy_url`
 - Rebuild whole site on changes in `themes` changes
 - Add one-dark syntax highlighting theme
+- Process images on changes in `zola serve` if needed after change
 
 ## 0.8.0 (2019-06-22)
 

@@ -137,6 +137,7 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
         // Updating a section
         Some(prev) => {
             site.populate_sections();
+            site.process_images()?;
             {
                 let library = site.library.read().unwrap();
 
@@ -177,6 +178,7 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
         // New section, only render that one
         None => {
             site.populate_sections();
+            site.process_images()?;
             site.register_tera_global_fns();
             site.render_section(&site.library.read().unwrap().get_section(&pathbuf).unwrap(), true)
         }
@@ -201,6 +203,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
             site.populate_sections();
             site.populate_taxonomies()?;
             site.register_tera_global_fns();
+            site.process_images()?;
             {
                 let library = site.library.read().unwrap();
 
@@ -249,6 +252,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
             site.populate_taxonomies()?;
             site.register_early_global_fns();
             site.register_tera_global_fns();
+            site.process_images()?;
             // No need to optimise that yet, we can revisit if it becomes an issue
             site.build()
         }
@@ -406,6 +410,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             site.populate_sections();
             site.populate_taxonomies()?;
             site.render_sections()?;
+            site.process_images()?;
             site.render_orphan_pages()?;
             site.render_taxonomies()
         }
