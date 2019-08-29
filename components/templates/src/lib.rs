@@ -18,6 +18,7 @@ extern crate config;
 extern crate errors;
 extern crate imageproc;
 extern crate library;
+extern crate svg_metadata;
 extern crate utils;
 
 pub mod filters;

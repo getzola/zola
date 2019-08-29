@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -8,6 +9,7 @@ use config::Config;
 use image;
 use image::GenericImageView;
 use library::{Library, Taxonomy};
+use svg_metadata as svg;
 use utils::site::resolve_internal_link;
 
 use imageproc;
@@ -164,12 +166,25 @@ impl TeraFn for GetImageMeta {
         if !src_path.exists() {
             return Err(format!("`get_image_meta`: Cannot find path: {}", path).into());
         }
-        let img = image::open(&src_path)
-            .map_err(|e| Error::chain(format!("Failed to process image: {}", path), e))?;
+        let (height, width) = image_dimensions(&src_path)?;
         let mut map = tera::Map::new();
-        map.insert(String::from("height"), Value::Number(tera::Number::from(img.height())));
-        map.insert(String::from("width"), Value::Number(tera::Number::from(img.width())));
+        map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
+        map.insert(String::from("width"), Value::Number(tera::Number::from(width)));
         Ok(Value::Object(map))
+    }
+}
+// Try to read the image dimensions for a given image
+fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
+    if let Some("svg") = path.extension().and_then(OsStr::to_str) {
+        let img = svg::Metadata::parse_file(&path)
+            .map_err(|e| Error::chain(format!("Failed to process image: {}", path.display()), e))?;
+        let h = img.height().ok_or("Undefined height")?;
+        let w = img.width().ok_or("Undefined width")?;
+        Ok((h as u32, w as u32))
+    } else {
+        let img = image::open(&path)
+            .map_err(|e| Error::chain(format!("Failed to process image: {}", path.display()), e))?;
+        Ok((img.height(), img.width()))
     }
 }
 
