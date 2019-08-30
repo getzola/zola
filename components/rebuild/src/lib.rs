@@ -326,8 +326,11 @@ fn is_section(path: &str, languages_codes: &[&str]) -> bool {
 
 /// What happens when a section or a page is created/edited
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
-    let languages_codes = site.config.languages_codes();
-    let is_section = is_section(path.file_name().unwrap().to_str().unwrap(), &languages_codes);
+    let is_section = {
+        let languages_codes = site.config.languages_codes();
+        is_section(path.file_name().unwrap().to_str().unwrap(), &languages_codes)
+    };
+
     let is_md = path.extension().unwrap() == "md";
     let index = path.parent().unwrap().join("index.md");
 
