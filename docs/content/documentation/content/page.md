@@ -37,8 +37,7 @@ While none of the front-matter variables are mandatory, the opening and closing 
 Here is an example page with all the variables available.  The values provided below are the default
 values.
 
-```md
-+++
+```toml
 title = ""
 description = ""
 
@@ -87,9 +86,6 @@ template = "page.html"
 
 # Your own data
 [extra]
-+++
-
-Some content
 ```
 
 ## Summary

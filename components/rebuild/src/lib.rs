@@ -137,6 +137,7 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
         // Updating a section
         Some(prev) => {
             site.populate_sections();
+            site.process_images()?;
             {
                 let library = site.library.read().unwrap();
 
@@ -177,6 +178,7 @@ fn handle_section_editing(site: &mut Site, path: &Path) -> Result<()> {
         // New section, only render that one
         None => {
             site.populate_sections();
+            site.process_images()?;
             site.register_tera_global_fns();
             site.render_section(&site.library.read().unwrap().get_section(&pathbuf).unwrap(), true)
         }
@@ -201,6 +203,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
             site.populate_sections();
             site.populate_taxonomies()?;
             site.register_tera_global_fns();
+            site.process_images()?;
             {
                 let library = site.library.read().unwrap();
 
@@ -249,6 +252,7 @@ fn handle_page_editing(site: &mut Site, path: &Path) -> Result<()> {
             site.populate_taxonomies()?;
             site.register_early_global_fns();
             site.register_tera_global_fns();
+            site.process_images()?;
             // No need to optimise that yet, we can revisit if it becomes an issue
             site.build()
         }
@@ -319,9 +323,28 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
     Ok(())
 }
 
+fn is_section(path: &str, languages_codes: &[&str]) -> bool {
+    if path == "_index.md" {
+        return true;
+    }
+
+    for language_code in languages_codes {
+        let lang_section_string = format!("_index.{}.md", language_code);
+        if path == lang_section_string {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /// What happens when a section or a page is created/edited
 pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
-    let is_section = path.file_name().unwrap() == "_index.md";
+    let is_section = {
+        let languages_codes = site.config.languages_codes();
+        is_section(path.file_name().unwrap().to_str().unwrap(), &languages_codes)
+    };
+
     let is_md = path.extension().unwrap() == "md";
     let index = path.parent().unwrap().join("index.md");
 
@@ -406,6 +429,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             site.populate_sections();
             site.populate_taxonomies()?;
             site.render_sections()?;
+            site.process_images()?;
             site.render_orphan_pages()?;
             site.render_taxonomies()
         }

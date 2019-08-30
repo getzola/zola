@@ -45,6 +45,7 @@ Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
             [CompletionResult]::new('--base-url', 'base-url', [CompletionResultType]::ParameterName, 'Force the base URL to be that value (default to the one in config.toml)')
             [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
             [CompletionResult]::new('--output-dir', 'output-dir', [CompletionResultType]::ParameterName, 'Outputs the generated site in the given path')
+            [CompletionResult]::new('--drafts', 'drafts', [CompletionResultType]::ParameterName, 'Include drafts when loading the site')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
@@ -61,6 +62,9 @@ Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Changes the base_url')
             [CompletionResult]::new('--base-url', 'base-url', [CompletionResultType]::ParameterName, 'Changes the base_url')
             [CompletionResult]::new('--watch-only', 'watch-only', [CompletionResultType]::ParameterName, 'Do not start a server, just re-build project on changes')
+            [CompletionResult]::new('--drafts', 'drafts', [CompletionResultType]::ParameterName, 'Include drafts when loading the site')
+            [CompletionResult]::new('-O', 'O', [CompletionResultType]::ParameterName, 'Open site in the default browser')
+            [CompletionResult]::new('--open', 'open', [CompletionResultType]::ParameterName, 'Open site in the default browser')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
@@ -68,6 +72,7 @@ Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
             break
         }
         'zola;check' {
+            [CompletionResult]::new('--drafts', 'drafts', [CompletionResultType]::ParameterName, 'Include drafts when loading the site')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')

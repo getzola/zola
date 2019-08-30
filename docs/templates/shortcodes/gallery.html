@@ -3,6 +3,5 @@
     <a href="{{ get_url(path=asset) | safe }}" target="_blank">
       <img src="{{ resize_image(path=asset, width=240, height=180, op="fill", format="auto") | safe }}" />
     </a>
-    &ensp;
   {%- endif %}
 {%- endfor %}
