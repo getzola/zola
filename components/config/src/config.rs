@@ -8,6 +8,7 @@ use toml;
 use toml::Value as Toml;
 
 use errors::Result;
+use errors::Error;
 use highlighting::THEME_SET;
 use theme::Theme;
 use utils::fs::read_file_with_error;
@@ -83,6 +84,8 @@ impl Default for Taxonomy {
     }
 }
 
+type TranslateTerm  = HashMap<String, String>;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -100,8 +103,12 @@ pub struct Config {
     pub default_language: String,
     /// The list of supported languages outside of the default one
     pub languages: Vec<Language>,
+
     /// Languages list and translated strings
-    pub translations: HashMap<String, Toml>,
+    ///
+    /// The `String` key of `HashMap` is a language name, the value should be toml crate `Table`
+    /// with String key representing term and value another `String` representing its translation.
+    pub translations: HashMap<String, TranslateTerm>,
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
@@ -299,6 +306,16 @@ impl Config {
         // and this operation can be expensive.
         self.highlight_code = false;
     }
+
+    pub fn get_translation<S: AsRef<str>>(&self, lang: S, key: S) -> Result<String> {
+        let terms = self.translations.get(lang.as_ref()).ok_or_else(|| {
+            Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
+        })?;
+
+        terms.get(key.as_ref()).ok_or_else(|| {
+            Error::msg(format!("Translation key '{}' for language '{}' is missing", key.as_ref(), lang.as_ref()))
+        }).map(|term| term.to_string())
+    }
 }
 
 impl Default for Config {
@@ -447,9 +464,7 @@ a_value = 10
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
     }
 
-    #[test]
-    fn can_use_language_configuration() {
-        let config = r#"
+    const CONFIG_TRANSLATION: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 
@@ -459,14 +474,38 @@ title = "Un titre"
 
 [translations.en]
 title = "A title"
-
         "#;
 
-        let config = Config::parse(config);
+    #[test]
+    fn can_use_language_configuration() {
+        let config = Config::parse(CONFIG_TRANSLATION);
         assert!(config.is_ok());
         let translations = config.unwrap().translations;
-        assert_eq!(translations["fr"]["title"].as_str().unwrap(), "Un titre");
-        assert_eq!(translations["en"]["title"].as_str().unwrap(), "A title");
+        assert_eq!(translations["fr"]["title"].as_str(), "Un titre");
+        assert_eq!(translations["en"]["title"].as_str(), "A title");
+    }
+
+    #[test]
+    fn can_use_present_translation() {
+        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        assert_eq!(config.get_translation("fr", "title").unwrap(), "Un titre");
+        assert_eq!(config.get_translation("en", "title").unwrap(), "A title");
+    }
+
+    #[test]
+    fn error_on_absent_translation_lang() {
+        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        let error = config.get_translation("absent", "key").unwrap_err();
+
+        assert_eq!("Translation for language 'absent' is missing", format!("{}", error));
+    }
+
+    #[test]
+    fn error_on_absent_translation_key() {
+        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        let error = config.get_translation("en", "absent").unwrap_err();
+
+        assert_eq!("Translation key 'absent' for language 'en' is missing", format!("{}", error));
     }
 
     #[test]
