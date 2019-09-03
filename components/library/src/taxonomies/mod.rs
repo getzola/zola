@@ -361,7 +361,7 @@ mod tests {
     #[test]
     fn can_make_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.languages.push(Language { rss: false, code: "fr".to_string() });
+        config.languages.push(Language { rss: false, code: "fr".to_string(), search: false });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![

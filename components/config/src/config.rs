@@ -30,11 +30,13 @@ pub struct Language {
     pub code: String,
     /// Whether to generate a RSS feed for that language, defaults to `false`
     pub rss: bool,
+    /// Whether to generate search index for that language, defaults to `false`
+    pub search: bool,
 }
 
 impl Default for Language {
     fn default() -> Language {
-        Language { code: String::new(), rss: false }
+        Language { code: String::new(), rss: false, search: false }
     }
 }
 
