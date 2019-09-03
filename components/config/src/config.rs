@@ -110,7 +110,10 @@ pub struct Config {
     ///
     /// The `String` key of `HashMap` is a language name, the value should be toml crate `Table`
     /// with String key representing term and value another `String` representing its translation.
-    pub translations: HashMap<String, TranslateTerm>,
+    ///
+    /// The attribute is intentionally not public, use `get_translation()` method for translating
+    /// key into different language.
+    translations: HashMap<String, TranslateTerm>,
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
@@ -477,15 +480,6 @@ title = "Un titre"
 [translations.en]
 title = "A title"
         "#;
-
-    #[test]
-    fn can_use_language_configuration() {
-        let config = Config::parse(CONFIG_TRANSLATION);
-        assert!(config.is_ok());
-        let translations = config.unwrap().translations;
-        assert_eq!(translations["fr"]["title"].as_str(), "Un titre");
-        assert_eq!(translations["en"]["title"].as_str(), "A title");
-    }
 
     #[test]
     fn can_use_present_translation() {
