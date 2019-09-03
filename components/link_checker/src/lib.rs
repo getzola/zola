@@ -95,7 +95,12 @@ fn check_page_for_anchor(url: &str, body: reqwest::Result<String>) -> Result<()>
     let body = body.unwrap();
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks: [String; 2] = [format!(" id='{}'", anchor), format!(r#" id="{}""#, anchor)];
+    let checks: [String; 4] = [
+        format!(" id='{}'", anchor),
+        format!(r#" id="{}""#, anchor),
+        format!(" name='{}'", anchor),
+        format!(r#" name="{}""#, anchor),
+    ];
 
     if checks.iter().any(|check| body[..].contains(&check[..])) {
         Ok(())
@@ -138,6 +143,14 @@ mod tests {
     fn can_validate_anchors_with_other_quotes() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
+        let res = check_page_for_anchor(url, Ok(body));
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn can_validate_anchors_with_name_attr() {
+        let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
+        let body = r#"<body><h3 name="method.collect">collect</h3></body>"#.to_string();
         let res = check_page_for_anchor(url, Ok(body));
         assert!(res.is_ok());
     }
