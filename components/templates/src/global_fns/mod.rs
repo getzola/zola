@@ -33,8 +33,12 @@ impl TeraFn for Trans {
         let key = required_arg!(String, args.get("key"), "`trans` requires a `key` argument.");
         let lang = optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.")
             .unwrap_or_else(|| self.config.default_language.clone());
-        let translations = &self.config.translations[lang.as_str()];
-        Ok(to_value(&translations[key.as_str()]).unwrap())
+
+        let term = self.config.get_translation(lang, key).map_err(|e| {
+            Error::chain("Failed to retreive term translation", e)
+        })?;
+
+        Ok(to_value(term).unwrap())
     }
 }
 
@@ -505,9 +509,8 @@ mod tests {
         assert!(static_fn.call(&args).is_err());
     }
 
-    #[test]
-    fn can_translate_a_string() {
-        let trans_config = r#"
+
+    const TRANS_CONFIG: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 
@@ -517,10 +520,11 @@ title = "Un titre"
 
 [translations.en]
 title = "A title"
-
         "#;
 
-        let config = Config::parse(trans_config).unwrap();
+    #[test]
+    fn can_translate_a_string() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
         let static_fn = Trans::new(config);
         let mut args = HashMap::new();
 
@@ -532,5 +536,27 @@ title = "A title"
 
         args.insert("lang".to_string(), to_value("fr").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "Un titre");
+    }
+
+    #[test]
+    fn error_on_absent_translation_lang() {
+        let mut args = HashMap::new();
+        args.insert("lang".to_string(), to_value("absent").unwrap());
+        args.insert("key".to_string(), to_value("title").unwrap());
+
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let error = Trans::new(config).call(&args).unwrap_err();
+        assert_eq!("Failed to retreive term translation", format!("{}", error));
+    }
+
+    #[test]
+    fn error_on_absent_translation_key() {
+        let mut args = HashMap::new();
+        args.insert("lang".to_string(), to_value("en").unwrap());
+        args.insert("key".to_string(), to_value("absent").unwrap());
+
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let error = Trans::new(config).call(&args).unwrap_err();
+        assert_eq!("Failed to retreive term translation", format!("{}", error));
     }
 }
