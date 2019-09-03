@@ -791,6 +791,18 @@ impl Site {
             ),
         )?;
 
+        for language in &self.config.languages {
+            if language.code != self.config.default_language && language.search {
+                create_file(
+                    &self.output_path.join(&format!("search_index.{}.js", &language.code)),
+                    &format!(
+                        "window.searchIndex = {};",
+                        search::build_index(&language.code, &self.library.read().unwrap())?
+                    ),
+                )?;
+            }
+        }
+
         // then elasticlunr.min.js
         create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
 
