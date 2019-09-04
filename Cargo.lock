@@ -1223,6 +1223,7 @@ dependencies = [
 name = "link_checker"
 version = "0.1.0"
 dependencies = [
+ "errors 0.1.0",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.9.20 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
