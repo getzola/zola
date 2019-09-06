@@ -2,7 +2,7 @@
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Header {
     #[serde(skip_serializing)]
-    pub level: i32,
+    pub level: u32,
     pub id: String,
     pub permalink: String,
     pub title: String,
@@ -10,7 +10,7 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn new(level: i32) -> Header {
+    pub fn new(level: u32) -> Header {
         Header {
             level,
             id: String::new(),
@@ -36,12 +36,11 @@ fn insert_into_parent(potential_parent: Option<&mut Header>, header: &Header) ->
             false
         }
         Some(parent) => {
-            let diff = header.level - parent.level;
-            if diff <= 0 {
+            if header.level <= parent.level {
                 // Heading is same level or higher so we don't insert here
                 return false;
             }
-            if diff == 1 {
+            if header.level + 1 == parent.level {
                 // We have a direct child of the parent
                 parent.children.push(header.clone());
                 return true;

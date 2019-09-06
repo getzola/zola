@@ -33,12 +33,12 @@ pub struct Rendered {
 struct HeaderRef {
     start_idx: usize,
     end_idx: usize,
-    level: i32,
+    level: u32,
     id: Option<String>,
 }
 
 impl HeaderRef {
-    fn new(start: usize, level: i32) -> HeaderRef {
+    fn new(start: usize, level: u32) -> HeaderRef {
         HeaderRef { start_idx: start, end_idx: 0, level, id: None }
     }
 }
@@ -130,10 +130,10 @@ fn get_header_refs(events: &[Event]) -> Vec<HeaderRef> {
 
     for (i, event) in events.iter().enumerate() {
         match event {
-            Event::Start(Tag::Header(level)) => {
+            Event::Start(Tag::Heading(level)) => {
                 header_refs.push(HeaderRef::new(i, *level));
             }
-            Event::End(Tag::Header(_)) => {
+            Event::End(Tag::Heading(_)) => {
                 let msg = "Header end before start?";
                 header_refs.last_mut().expect(msg).end_idx = i;
             }
