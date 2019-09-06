@@ -9,7 +9,7 @@ use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
-use table_of_contents::{make_table_of_contents, Header};
+use table_of_contents::{make_table_of_contents, Heading};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
 
@@ -23,23 +23,23 @@ const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
-    pub toc: Vec<Header>,
+    pub toc: Vec<Heading>,
     pub internal_links_with_anchors: Vec<(String, String)>,
     pub external_links: Vec<String>,
 }
 
-// tracks a header in a slice of pulldown-cmark events
+// tracks a heading in a slice of pulldown-cmark events
 #[derive(Debug)]
-struct HeaderRef {
+struct HeadingRef {
     start_idx: usize,
     end_idx: usize,
     level: u32,
     id: Option<String>,
 }
 
-impl HeaderRef {
-    fn new(start: usize, level: u32) -> HeaderRef {
-        HeaderRef { start_idx: start, end_idx: 0, level, id: None }
+impl HeadingRef {
+    fn new(start: usize, level: u32) -> HeadingRef {
+        HeadingRef { start_idx: start, end_idx: 0, level, id: None }
     }
 }
 
@@ -125,23 +125,23 @@ fn get_text(parser_slice: &[Event]) -> String {
     title
 }
 
-fn get_header_refs(events: &[Event]) -> Vec<HeaderRef> {
-    let mut header_refs = vec![];
+fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
+    let mut heading_refs = vec![];
 
     for (i, event) in events.iter().enumerate() {
         match event {
             Event::Start(Tag::Heading(level)) => {
-                header_refs.push(HeaderRef::new(i, *level));
+                heading_refs.push(HeadingRef::new(i, *level));
             }
             Event::End(Tag::Heading(_)) => {
-                let msg = "Header end before start?";
-                header_refs.last_mut().expect(msg).end_idx = i;
+                let msg = "Heading end before start?";
+                heading_refs.last_mut().expect(msg).end_idx = i;
             }
             _ => (),
         }
     }
 
-    header_refs
+    heading_refs
 }
 
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
@@ -154,7 +154,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut highlighter: Option<(HighlightLines, bool)> = None;
 
     let mut inserted_anchors: Vec<String> = vec![];
-    let mut headers: Vec<Header> = vec![];
+    let mut headings: Vec<Heading> = vec![];
     let mut internal_links_with_anchors = Vec::new();
     let mut external_links = Vec::new();
 
@@ -247,14 +247,14 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             })
             .collect::<Vec<_>>(); // We need to collect the events to make a second pass
 
-        let mut header_refs = get_header_refs(&events);
+        let mut heading_refs = get_heading_refs(&events);
 
         let mut anchors_to_insert = vec![];
 
-        // First header pass: look for a manually-specified IDs, e.g. `# Heading text {#hash}`
+        // First heading pass: look for a manually-specified IDs, e.g. `# Heading text {#hash}`
         // (This is a separate first pass so that auto IDs can avoid collisions with manual IDs.)
-        for header_ref in header_refs.iter_mut() {
-            let end_idx = header_ref.end_idx;
+        for heading_ref in heading_refs.iter_mut() {
+            let end_idx = heading_ref.end_idx;
             if let Event::Text(ref mut text) = events[end_idx - 1] {
                 if text.as_bytes().last() == Some(&b'}') {
                     if let Some(mut i) = text.find("{#") {
@@ -263,24 +263,24 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         while i > 0 && text.as_bytes()[i - 1] == b' ' {
                             i -= 1;
                         }
-                        header_ref.id = Some(id);
+                        heading_ref.id = Some(id);
                         *text = text[..i].to_owned().into();
                     }
                 }
             }
         }
 
-        // Second header pass: auto-generate remaining IDs, and emit HTML
-        for header_ref in header_refs {
-            let start_idx = header_ref.start_idx;
-            let end_idx = header_ref.end_idx;
+        // Second heading pass: auto-generate remaining IDs, and emit HTML
+        for heading_ref in heading_refs {
+            let start_idx = heading_ref.start_idx;
+            let end_idx = heading_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
             let id =
-                header_ref.id.unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
+                heading_ref.id.unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag
-            let html = format!("<h{lvl} id=\"{id}\">", lvl = header_ref.level, id = id);
+            let html = format!("<h{lvl} id=\"{id}\">", lvl = heading_ref.level, id = id);
             events[start_idx] = Event::Html(html.into());
 
             // generate anchors and places to insert them
@@ -303,10 +303,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
             }
 
-            // record header to make table of contents
+            // record heading to make table of contents
             let permalink = format!("{}#{}", context.current_page_permalink, id);
-            let h = Header { level: header_ref.level, id, permalink, title, children: Vec::new() };
-            headers.push(h);
+            let h = Heading { level: heading_ref.level, id, permalink, title, children: Vec::new() };
+            headings.push(h);
         }
 
         if context.insert_anchor != InsertAnchor::None {
@@ -322,7 +322,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
-            toc: make_table_of_contents(headers),
+            toc: make_table_of_contents(headings),
             internal_links_with_anchors,
             external_links,
         })
