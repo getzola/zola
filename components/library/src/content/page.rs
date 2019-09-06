@@ -11,7 +11,7 @@ use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
 use library::Library;
-use rendering::{render_content, Header, RenderContext};
+use rendering::{render_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
@@ -65,8 +65,8 @@ pub struct Page {
     pub lighter: Option<Key>,
     /// The heavier page, for pages sorted by weight
     pub heavier: Option<Key>,
-    /// Toc made from the headers of the markdown file
-    pub toc: Vec<Header>,
+    /// Toc made from the headings of the markdown file
+    pub toc: Vec<Heading>,
     /// How many words in the raw content
     pub word_count: Option<usize>,
     /// How long would it take to read the raw content.

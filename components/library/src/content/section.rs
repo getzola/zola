@@ -7,7 +7,7 @@ use tera::{Context as TeraContext, Tera};
 use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_section_content, SectionFrontMatter};
-use rendering::{render_content, Header, RenderContext};
+use rendering::{render_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
@@ -45,8 +45,8 @@ pub struct Section {
     pub ancestors: Vec<Key>,
     /// All direct subsections
     pub subsections: Vec<Key>,
-    /// Toc made from the headers of the markdown file
-    pub toc: Vec<Header>,
+    /// Toc made from the headings of the markdown file
+    pub toc: Vec<Heading>,
     /// How many words in the raw content
     pub word_count: Option<usize>,
     /// How long would it take to read the raw content.
