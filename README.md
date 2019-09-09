@@ -51,7 +51,7 @@ Zola gets ![ehh] for multi-language support as it only has a basic support and d
 
 ### Pelican notes
 
-Many features of Pelican come from plugins, which might be tricky to use because of  aversion mismatch or inadequate documentation. Netlify supports Python and Pipenv but you still need to install your dependencies manually.
+Many features of Pelican come from plugins, which might be tricky to use because of a version mismatch or inadequate documentation. Netlify supports Python and Pipenv but you still need to install your dependencies manually.
 
 [yes]: ./is-yes.svg
 [ehh]: ./is-ehh.svg
