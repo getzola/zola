@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use slotmap::Key;
+use slotmap::DefaultKey;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
@@ -38,13 +38,13 @@ pub struct Section {
     /// All the non-md files we found next to the .md file as string for use in templates
     pub serialized_assets: Vec<String>,
     /// All direct pages of that section
-    pub pages: Vec<Key>,
+    pub pages: Vec<DefaultKey>,
     /// All pages that cannot be sorted in this section
-    pub ignored_pages: Vec<Key>,
+    pub ignored_pages: Vec<DefaultKey>,
     /// The list of parent sections
-    pub ancestors: Vec<Key>,
+    pub ancestors: Vec<DefaultKey>,
     /// All direct subsections
-    pub subsections: Vec<Key>,
+    pub subsections: Vec<DefaultKey>,
     /// Toc made from the headings of the markdown file
     pub toc: Vec<Heading>,
     /// How many words in the raw content
@@ -56,7 +56,7 @@ pub struct Section {
     /// Corresponds to the lang in the _index.{lang}.md file scheme
     pub lang: String,
     /// Contains all the translated version of that section
-    pub translations: Vec<Key>,
+    pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
     /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
     /// it would have errored before getting there

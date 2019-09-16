@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use slotmap::Key;
+use slotmap::DefaultKey;
 use slug::slugify;
 use tera::{Context, Tera};
 
@@ -44,7 +44,7 @@ pub struct TaxonomyItem {
     pub name: String,
     pub slug: String,
     pub permalink: String,
-    pub pages: Vec<Key>,
+    pub pages: Vec<DefaultKey>,
 }
 
 impl TaxonomyItem {
@@ -52,7 +52,7 @@ impl TaxonomyItem {
         name: &str,
         taxonomy: &TaxonomyConfig,
         config: &Config,
-        keys: Vec<Key>,
+        keys: Vec<DefaultKey>,
         library: &Library,
     ) -> Self {
         // Taxonomy are almost always used for blogs so we filter by dates
@@ -113,7 +113,7 @@ impl Taxonomy {
     fn new(
         kind: TaxonomyConfig,
         config: &Config,
-        items: HashMap<String, Vec<Key>>,
+        items: HashMap<String, Vec<DefaultKey>>,
         library: &Library,
     ) -> Taxonomy {
         let mut sorted_items = vec![];

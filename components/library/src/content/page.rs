@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use regex::Regex;
-use slotmap::Key;
+use slotmap::DefaultKey;
 use slug::slugify;
 use tera::{Context as TeraContext, Tera};
 
@@ -35,7 +35,7 @@ pub struct Page {
     /// The front matter meta-data
     pub meta: PageFrontMatter,
     /// The list of parent sections
-    pub ancestors: Vec<Key>,
+    pub ancestors: Vec<DefaultKey>,
     /// The actual content of the page, in markdown
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
@@ -58,13 +58,13 @@ pub struct Page {
     /// as summary
     pub summary: Option<String>,
     /// The earlier page, for pages sorted by date
-    pub earlier: Option<Key>,
+    pub earlier: Option<DefaultKey>,
     /// The later page, for pages sorted by date
-    pub later: Option<Key>,
+    pub later: Option<DefaultKey>,
     /// The lighter page, for pages sorted by weight
-    pub lighter: Option<Key>,
+    pub lighter: Option<DefaultKey>,
     /// The heavier page, for pages sorted by weight
-    pub heavier: Option<Key>,
+    pub heavier: Option<DefaultKey>,
     /// Toc made from the headings of the markdown file
     pub toc: Vec<Heading>,
     /// How many words in the raw content
@@ -76,7 +76,7 @@ pub struct Page {
     /// Corresponds to the lang in the {slug}.{lang}.md file scheme
     pub lang: String,
     /// Contains all the translated version of that page
-    pub translations: Vec<Key>,
+    pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
     /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
     /// it would have errored before getting there
