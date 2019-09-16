@@ -10,8 +10,9 @@ directory or, if one does not exist, will use the use the built-in rss template.
 
 **Only pages with a date will be available.**
 
-The RSS template gets two variables in addition of the config:
+The RSS template gets three variables in addition of the config:
 
+- `feed_url`: the full url to that specific feed
 - `last_build_date`: the date of the latest post
 - `pages`: see [the page variables](@/documentation/templates/pages-sections.md#page-variables) for
 a detailed description of what this contains
