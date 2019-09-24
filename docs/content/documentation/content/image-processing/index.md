@@ -78,9 +78,15 @@ The source for all examples is this 300 × 380 pixels image:
   {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=0, height=150, op="fit_height") }}
 
 ### **`"fit"`**
-  Like `"fit_width"` and `"fit_height"` combined.
+  Like `"fit_width"` and `"fit_height"` combined, but only resize if the image is bigger than any of the specified dimensions.
+  This mode is handy, if e.g. images are automatically shrinked to certain sizes in a shortcode for mobile optimization.
   Resizes the image such that the result fits within `width` and `height` preserving aspect ratio. This means that both width or height
   will be at max `width` and `height`, respectively, but possibly one of them smaller so as to preserve the aspect ratio.
+
+
+  `resize_image(..., width=5000, height=5000, op="fit")`
+
+  {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=5000, height=5000, op="fit") }}
 
   `resize_image(..., width=150, height=150, op="fit")`
 
