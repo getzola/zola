@@ -1,10 +1,11 @@
 # Changelog
 
-## 0.9.0 (unreleased)
+## 0.9.0 (2019-09-24)
 
 ### Breaking
 
 - Add `--drafts` flag to `build`, `serve` and `check` to load drafts. Drafts are never loaded by default anymore
+- Using `fit` in `resize_image` on an image smaller than the given height/width is now a no-op and will not upscale images anymore
 
 ### Other
 - Add `--open` flag to open server URL in default browser
