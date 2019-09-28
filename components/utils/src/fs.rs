@@ -95,7 +95,7 @@ pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 
 /// Copy a file but takes into account where to start the copy as
 /// there might be folders we need to create on the way
-pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf) -> Result<()> {
+pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: bool) -> Result<()> {
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
 
@@ -103,11 +103,15 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf) -> Result<()> 
         create_dir_all(parent_directory)?;
     }
 
-    copy(src, target_path)?;
+    if hard_link {
+        std::fs::hard_link(src, target_path)?
+    } else {
+        copy(src, target_path)?;
+    }
     Ok(())
 }
 
-pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
+pub fn copy_directory(src: &PathBuf, dest: &PathBuf, hard_link: bool) -> Result<()> {
     for entry in WalkDir::new(src).into_iter().filter_map(std::result::Result::ok) {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
@@ -117,7 +121,7 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf) -> Result<()> {
                 create_directory(&target_path)?;
             }
         } else {
-            copy_file(entry.path(), dest, src)?;
+            copy_file(entry.path(), dest, src, hard_link)?;
         }
     }
     Ok(())

@@ -33,8 +33,7 @@ Here is an example `_index.md` with all the variables available.  The values pro
 default values.
 
 
-```md
-+++
+```toml
 title = ""
 
 description = ""
@@ -95,9 +94,6 @@ aliases = []
 
 # Your own data
 [extra]
-+++
-
-Some content
 ```
 
 Keep in mind that any configuration apply only to the direct pages, not to the subsections' pages.

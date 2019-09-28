@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use slotmap::Key;
+use slotmap::DefaultKey;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_section_content, SectionFrontMatter};
-use rendering::{render_content, Header, RenderContext};
+use rendering::{render_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
@@ -38,15 +38,15 @@ pub struct Section {
     /// All the non-md files we found next to the .md file as string for use in templates
     pub serialized_assets: Vec<String>,
     /// All direct pages of that section
-    pub pages: Vec<Key>,
+    pub pages: Vec<DefaultKey>,
     /// All pages that cannot be sorted in this section
-    pub ignored_pages: Vec<Key>,
+    pub ignored_pages: Vec<DefaultKey>,
     /// The list of parent sections
-    pub ancestors: Vec<Key>,
+    pub ancestors: Vec<DefaultKey>,
     /// All direct subsections
-    pub subsections: Vec<Key>,
-    /// Toc made from the headers of the markdown file
-    pub toc: Vec<Header>,
+    pub subsections: Vec<DefaultKey>,
+    /// Toc made from the headings of the markdown file
+    pub toc: Vec<Heading>,
     /// How many words in the raw content
     pub word_count: Option<usize>,
     /// How long would it take to read the raw content.
@@ -56,7 +56,7 @@ pub struct Section {
     /// Corresponds to the lang in the _index.{lang}.md file scheme
     pub lang: String,
     /// Contains all the translated version of that section
-    pub translations: Vec<Key>,
+    pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
     /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
     /// it would have errored before getting there
@@ -113,7 +113,11 @@ impl Section {
         section.reading_time = Some(reading_time);
         let path = section.file.components.join("/");
         if section.lang != config.default_language {
-            section.path = format!("{}/{}", section.lang, path);
+            if path.is_empty() {
+                section.path = format!("{}/", section.lang);
+            } else {
+                section.path = format!("{}/{}/", section.lang, path);
+            }
         } else {
             section.path = format!("{}/", path);
         }
@@ -346,7 +350,7 @@ mod tests {
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let content = r#"
 +++
 +++
@@ -368,7 +372,7 @@ Bonjour le monde"#
     #[test]
     fn can_make_links_to_translated_sections_without_double_trailing_slash() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let content = r#"
 +++
 +++
@@ -380,5 +384,26 @@ Bonjour le monde"#
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/");
+    }
+
+    #[test]
+    fn can_make_links_to_translated_subsections_with_trailing_slash() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Section::parse(
+            Path::new("content/subcontent/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
     }
 }

@@ -48,7 +48,9 @@ pub fn build_index(lang: &str, library: &Library) -> Result<String> {
     let mut index = Index::with_language(language, &["title", "body"]);
 
     for section in library.sections_values() {
-        add_section_to_index(&mut index, section, library);
+        if section.lang == lang {
+            add_section_to_index(&mut index, section, library);
+        }
     }
 
     Ok(index.to_json())
@@ -72,7 +74,7 @@ fn add_section_to_index(index: &mut Index, section: &Section, library: &Library)
 
     for key in &section.pages {
         let page = library.get_page_by_key(*key);
-        if !page.meta.in_search_index || page.meta.draft {
+        if !page.meta.in_search_index {
             continue;
         }
 

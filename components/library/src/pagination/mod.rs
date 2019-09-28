@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use slotmap::Key;
+use slotmap::DefaultKey;
 use tera::{to_value, Context, Tera, Value};
 
 use config::Config;
@@ -44,7 +44,7 @@ impl<'a> Pager<'a> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Paginator<'a> {
     /// All pages in the section/taxonomy
-    all_pages: &'a [Key],
+    all_pages: &'a [DefaultKey],
     /// Pages split in chunks of `paginate_by`
     pub pagers: Vec<Pager<'a>>,
     /// How many content pages on a paginated page at max
@@ -117,9 +117,6 @@ impl<'a> Paginator<'a> {
 
         for key in self.all_pages {
             let page = library.get_page_by_key(*key);
-            if page.is_draft() {
-                continue;
-            }
             current_page.push(page.to_serialized_basic(library));
 
             if current_page.len() == self.paginate_by {
@@ -211,10 +208,12 @@ impl<'a> Paginator<'a> {
             PaginationRoot::Section(s) => {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
+                context.insert("lang", &s.lang);
             }
             PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
                 context.insert("term", &item.serialize(library));
+                context.insert("lang", &t.kind.lang);
             }
         };
         context.insert("current_url", &pager.permalink);
@@ -281,7 +280,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "posts/");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2/");
         assert_eq!(paginator.pagers[1].path, "posts/page/2/");
     }
@@ -298,7 +297,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/page/2/");
         assert_eq!(paginator.pagers[1].path, "page/2/");
     }
@@ -350,7 +349,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "tags/something");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
         assert_eq!(paginator.pagers[1].path, "tags/something/page/2/");
     }

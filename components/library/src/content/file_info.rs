@@ -56,9 +56,8 @@ impl FileInfo {
         let file_path = path.to_path_buf();
         let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        let mut components = find_content_components(
-            &file_path.strip_prefix(base_path).expect("Strip base path prefix for page"),
-        );
+        let mut components =
+            find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         let relative = if !components.is_empty() {
             format!("{}/{}.md", components.join("/"), name)
         } else {
@@ -91,9 +90,8 @@ impl FileInfo {
         let file_path = path.to_path_buf();
         let parent = path.parent().expect("Get parent of section").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        let components = find_content_components(
-            &file_path.strip_prefix(base_path).expect("Strip base path prefix for section"),
-        );
+        let components =
+            find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         let relative = if !components.is_empty() {
             format!("{}/{}.md", components.join("/"), name)
         } else {
@@ -196,7 +194,7 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_page() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
@@ -209,7 +207,7 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_page_with_assets() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),
@@ -235,7 +233,7 @@ mod tests {
     #[test]
     fn errors_on_unknown_language_in_page_with_i18n_on() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("it"), rss: false });
+        config.languages.push(Language { code: String::from("it"), rss: false, search: false });
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
@@ -247,7 +245,7 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_section() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let mut file = FileInfo::new_section(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
             &PathBuf::new(),

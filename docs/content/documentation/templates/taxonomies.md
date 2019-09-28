@@ -43,6 +43,8 @@ current_url: String;
 current_path: String;
 // All terms for that taxonomy
 terms: Array<TaxonomyTerm>;
+// The lang of the current page
+lang: String;
 ```
 
 
@@ -58,6 +60,8 @@ current_url: String;
 current_path: String;
 // The current term being rendered
 term: TaxonomyTerm;
+// The lang of the current page
+lang: String;
 ```
 
 A paginated taxonomy term will also get a `paginator` variable, see the [pagination page](@/documentation/templates/pagination.md)

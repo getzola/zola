@@ -445,7 +445,11 @@ mod tests {
         args.insert("path".to_string(), to_value("test.css").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
 
-        assert_eq!(result, ".hello {}\n",);
+        if cfg!(windows) {
+            assert_eq!(result, ".hello {}\r\n",);
+        } else {
+            assert_eq!(result, ".hello {}\n",);
+        };
     }
 
     #[test]
@@ -456,7 +460,11 @@ mod tests {
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
 
-        assert_eq!(result, "Number,Title\n1,Gutenberg\n2,Printing",);
+        if cfg!(windows) {
+            assert_eq!(result, "Number,Title\r\n1,Gutenberg\r\n2,Printing",);
+        } else {
+            assert_eq!(result, "Number,Title\n1,Gutenberg\n2,Printing",);
+        };
     }
 
     #[test]
@@ -467,7 +475,11 @@ mod tests {
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
 
-        assert_eq!(result, ".hello {}\n",);
+        if cfg!(windows) {
+            assert_eq!(result, ".hello {}\r\n",);
+        } else {
+            assert_eq!(result, ".hello {}\n",);
+        };
     }
 
     #[test]

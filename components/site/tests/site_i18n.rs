@@ -112,30 +112,45 @@ fn can_build_multilingual_site() {
 
     // sitemap contains all languages
     assert!(file_exists!(public, "sitemap.xml"));
-    assert!(file_contains!(public, "sitemap.xml", "https%3A//example.com/blog/something-else/"));
-    assert!(file_contains!(public, "sitemap.xml", "https%3A//example.com/fr/blog/something-else/"));
-    assert!(file_contains!(public, "sitemap.xml", "https%3A//example.com/it/blog/something-else/"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/blog/something-else/"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/fr/blog/something-else/"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/it/blog/something-else/"));
 
     // one rss per language
     assert!(file_exists!(public, "rss.xml"));
-    assert!(file_contains!(public, "rss.xml", "https%3A//example.com/blog/something-else/"));
-    assert!(!file_contains!(public, "rss.xml", "https%3A//example.com/fr/blog/something-else/"));
+    assert!(file_contains!(public, "rss.xml", "https://example.com/blog/something-else/"));
+    assert!(!file_contains!(public, "rss.xml", "https://example.com/fr/blog/something-else/"));
     assert!(file_exists!(public, "fr/rss.xml"));
-    assert!(!file_contains!(public, "fr/rss.xml", "https%3A//example.com/blog/something-else/"));
-    assert!(file_contains!(public, "fr/rss.xml", "https%3A//example.com/fr/blog/something-else/"));
+    assert!(!file_contains!(public, "fr/rss.xml", "https://example.com/blog/something-else/"));
+    assert!(file_contains!(public, "fr/rss.xml", "https://example.com/fr/blog/something-else/"));
     // Italian doesn't have RSS enabled
     assert!(!file_exists!(public, "it/rss.xml"));
 
     // Taxonomies are per-language
+    // English
     assert!(file_exists!(public, "authors/index.html"));
     assert!(file_contains!(public, "authors/index.html", "Queen"));
     assert!(!file_contains!(public, "authors/index.html", "Vincent"));
     assert!(!file_exists!(public, "auteurs/index.html"));
     assert!(file_exists!(public, "authors/queen-elizabeth/rss.xml"));
 
+    assert!(file_exists!(public, "tags/index.html"));
+    assert!(file_contains!(public, "tags/index.html", "hello"));
+    assert!(!file_contains!(public, "tags/index.html", "bonjour"));
+
+    // French
     assert!(!file_exists!(public, "fr/authors/index.html"));
     assert!(file_exists!(public, "fr/auteurs/index.html"));
     assert!(!file_contains!(public, "fr/auteurs/index.html", "Queen"));
     assert!(file_contains!(public, "fr/auteurs/index.html", "Vincent"));
     assert!(!file_exists!(public, "fr/auteurs/vincent-prouillet/rss.xml"));
+
+    assert!(file_exists!(public, "fr/tags/index.html"));
+    assert!(file_contains!(public, "fr/tags/index.html", "bonjour"));
+    assert!(!file_contains!(public, "fr/tags/index.html", "hello"));
+
+    // one lang index per language
+    assert!(file_exists!(public, "search_index.en.js"));
+    assert!(file_exists!(public, "search_index.it.js"));
+    assert!(!file_exists!(public, "search_index.fr.js"));
 }

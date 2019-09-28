@@ -11,5 +11,7 @@ taxonomies = [
 
 extra_syntaxes = ["syntaxes"]
 
+ignored_content = ["*/ignored.md"]
+
 [extra.author]
 name = "Vincent Prouillet"

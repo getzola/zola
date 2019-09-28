@@ -63,6 +63,8 @@ pub struct Site {
     pub permalinks: HashMap<String, String>,
     /// Contains all pages and sections of the site
     pub library: Arc<RwLock<Library>>,
+    /// Whether to load draft pages
+    include_drafts: bool,
 }
 
 impl Site {
@@ -131,11 +133,18 @@ impl Site {
             static_path,
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
+            include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(RwLock::new(Library::new(0, 0, false))),
         };
 
         Ok(site)
+    }
+
+    /// Set the site to load the drafts.
+    /// Needs to be called before loading it
+    pub fn include_drafts(&mut self) {
+        self.include_drafts = true;
     }
 
     /// The index sections are ALWAYS at those paths
@@ -210,6 +219,10 @@ impl Site {
 
             page_entries
                 .into_par_iter()
+                .filter(|entry| match &config.ignored_content_globset {
+                    Some(gs) => !gs.is_match(entry.as_path()),
+                    None => true,
+                })
                 .map(|entry| {
                     let path = entry.as_path();
                     Page::from_file(path, config, &self.base_path)
@@ -229,6 +242,10 @@ impl Site {
         let mut pages_insert_anchors = HashMap::new();
         for page in pages {
             let p = page?;
+            // Should draft pages be ignored?
+            if p.meta.draft && !self.include_drafts {
+                continue;
+            }
             pages_insert_anchors.insert(
                 p.file.path.clone(),
                 self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
@@ -247,7 +264,7 @@ impl Site {
         // Needs to be done after rendering markdown as we only get the anchors at that point
         self.check_internal_links_with_anchors()?;
 
-        if self.config.check_external_links {
+        if self.config.is_in_check_mode() {
             self.check_external_links()?;
         }
 
@@ -275,6 +292,15 @@ impl Site {
             })
             .flatten();
         let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+
+        if self.config.is_in_check_mode() {
+            println!("Checking {} internal link(s) with an anchor.", all_links.len());
+        }
+
+        if all_links.is_empty() {
+            return Ok(());
+        }
+
         let mut full_path = self.base_path.clone();
         full_path.push("content");
 
@@ -308,9 +334,19 @@ impl Site {
                 }
             })
             .collect();
+
+        if self.config.is_in_check_mode() {
+            println!(
+                "> Checked {} internal link(s) with an anchor: {} error(s) found.",
+                all_links.len(),
+                errors.len()
+            );
+        }
+
         if errors.is_empty() {
             return Ok(());
         }
+
         let msg = errors
             .into_iter()
             .map(|(page_path, md_path, anchor)| {
@@ -323,7 +359,7 @@ impl Site {
             })
             .collect::<Vec<_>>()
             .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
+        Err(Error { kind: ErrorKind::Msg(msg), source: None })
     }
 
     pub fn check_external_links(&self) -> Result<()> {
@@ -345,6 +381,11 @@ impl Site {
             })
             .flatten();
         let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+        println!("Checking {} external link(s).", all_links.len());
+
+        if all_links.is_empty() {
+            return Ok(());
+        }
 
         // create thread pool with lots of threads so we can fetch
         // (almost) all pages simultaneously
@@ -352,7 +393,7 @@ impl Site {
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
             .build()
-            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string().into()), source: None })?;
+            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string()), source: None })?;
 
         let errors: Vec<_> = pool.install(|| {
             all_links
@@ -368,9 +409,16 @@ impl Site {
                 .collect()
         });
 
+        println!(
+            "> Checked {} external link(s): {} error(s) found.",
+            all_links.len(),
+            errors.len()
+        );
+
         if errors.is_empty() {
             return Ok(());
         }
+
         let msg = errors
             .into_iter()
             .map(|(page_path, link, check_res)| {
@@ -383,7 +431,7 @@ impl Site {
             })
             .collect::<Vec<_>>()
             .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg.into()), source: None })
+        Err(Error { kind: ErrorKind::Msg(msg), source: None })
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create
@@ -486,7 +534,7 @@ impl Site {
         self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
         self.tera.register_function(
             "get_taxonomy_url",
-            global_fns::GetTaxonomyUrl::new(&self.taxonomies),
+            global_fns::GetTaxonomyUrl::new(&self.config.default_language, &self.taxonomies),
         );
     }
 
@@ -501,7 +549,11 @@ impl Site {
         );
         self.tera.register_function(
             "get_taxonomy",
-            global_fns::GetTaxonomy::new(self.taxonomies.clone(), self.library.clone()),
+            global_fns::GetTaxonomy::new(
+                &self.config.default_language,
+                self.taxonomies.clone(),
+                self.library.clone(),
+            ),
         );
     }
 
@@ -597,11 +649,12 @@ impl Site {
             copy_directory(
                 &self.base_path.join("themes").join(theme).join("static"),
                 &self.output_path,
+                false,
             )?;
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
-            copy_directory(&self.static_path, &self.output_path)?;
+            copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static)?;
         }
 
         Ok(())
@@ -698,7 +751,7 @@ impl Site {
                     .pages_values()
                     .iter()
                     .filter(|p| p.lang == self.config.default_language)
-                    .map(|p| *p)
+                    .cloned()
                     .collect()
             } else {
                 library.pages_values()
@@ -711,7 +764,7 @@ impl Site {
                 continue;
             }
             let pages =
-                library.pages_values().iter().filter(|p| p.lang == lang.code).map(|p| *p).collect();
+                library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
             self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
         }
 
@@ -728,6 +781,7 @@ impl Site {
     }
 
     pub fn build_search_index(&self) -> Result<()> {
+        ensure_directory_exists(&self.output_path)?;
         // index first
         create_file(
             &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
@@ -736,6 +790,18 @@ impl Site {
                 search::build_index(&self.config.default_language, &self.library.read().unwrap())?
             ),
         )?;
+
+        for language in &self.config.languages {
+            if language.code != self.config.default_language && language.search {
+                create_file(
+                    &self.output_path.join(&format!("search_index.{}.js", &language.code)),
+                    &format!(
+                        "window.searchIndex = {};",
+                        search::build_index(&language.code, &self.library.read().unwrap())?
+                    ),
+                )?;
+            }
+        }
 
         // then elasticlunr.min.js
         create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
@@ -873,7 +939,7 @@ impl Site {
         )
     }
 
-    /// Renders all taxonomies with at least one non-draft post
+    /// Renders all taxonomies
     pub fn render_taxonomies(&self) -> Result<()> {
         for taxonomy in &self.taxonomies {
             self.render_taxonomy(taxonomy)?;
@@ -990,10 +1056,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let mut context = Context::new();
-        let mut pages = all_pages
-            .into_iter()
-            .filter(|p| p.meta.date.is_some() && !p.is_draft())
-            .collect::<Vec<_>>();
+        let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
 
         // Don't generate a RSS feed if none of the pages has a date
         if pages.is_empty() {

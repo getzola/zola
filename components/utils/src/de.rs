@@ -40,7 +40,7 @@ pub fn fix_toml_dates(table: Map<String, Value>) -> Value {
 
     for (key, value) in table {
         match value {
-            Value::Object(mut o) => {
+            Value::Object(o) => {
                 new.insert(key, convert_toml_date(o));
             }
             _ => {

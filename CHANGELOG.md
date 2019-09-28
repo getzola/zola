@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.9.0 (2019-09-28)
+
+### Breaking
+
+- Add `--drafts` flag to `build`, `serve` and `check` to load drafts. Drafts are never loaded by default anymore
+- Using `fit` in `resize_image` on an image smaller than the given height/width is now a no-op and will not upscale images anymore
+
+### Other
+- Add `--open` flag to open server URL in default browser
+- Fix sitemaps namespace & do not urlencode URLs
+- Update livereload
+- Add `hard_link_static` config option to hard link things in the static directory instead of copying
+- Add warning for old style internal links since they would still function silently
+- Print some counts when running `zola check`
+- Re-render all pages/sections when `anchor-link.html` is changed
+- Taxonomies can now have the same name in multiple languages
+- `zola init` can now be create sites inside the current directory
+- Fix table of contents generation for deep heading levels
+- Add `lang` in all templates context except sitemap, robots
+- Add `lang` parameter to `get_taxonomy` and `get_taxonomy_url`
+- Rebuild whole site on changes in `themes` changes
+- Add one-dark syntax highlighting theme
+- Process images on changes in `zola serve` if needed after change
+
 ## 0.8.0 (2019-06-22)
 
 ### Breaking

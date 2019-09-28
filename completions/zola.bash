@@ -59,7 +59,7 @@ _zola() {
             ;;
         
         zola__build)
-            opts=" -h -V -u -o  --help --version --base-url --output-dir  "
+            opts=" -h -V -u -o  --drafts --help --version --base-url --output-dir  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -90,7 +90,7 @@ _zola() {
             return 0
             ;;
         zola__check)
-            opts=" -h -V  --help --version  "
+            opts=" -h -V  --drafts --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -135,7 +135,7 @@ _zola() {
             return 0
             ;;
         zola__serve)
-            opts=" -h -V -i -p -o -u  --watch-only --help --version --interface --port --output-dir --base-url  "
+            opts=" -O -h -V -i -p -o -u  --watch-only --drafts --open --help --version --interface --port --output-dir --base-url  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

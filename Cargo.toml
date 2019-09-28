@@ -1,7 +1,7 @@
 [package]
 name = "zola"
-version = "0.8.0"
-authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+version = "0.9.0"
+authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
 license = "MIT"
 readme = "README.md"
 description = "A fast static site generator with everything built-in"
@@ -21,16 +21,17 @@ atty = "0.2.11"
 clap = "2"
 chrono = "0.4"
 lazy_static = "1.1.0"
-toml = "0.4"
 termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
-url = "1.5"
+url = "2"
 # Below is for the serve cmd
 actix-files = "0.1"
 actix-web = { version = "1.0", default-features = false, features = [] }
 notify = "4"
-ws = "0.8"
+ws = "0.9"
 ctrlc = "3"
+open = "1.2"
+globset = "0.4"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }

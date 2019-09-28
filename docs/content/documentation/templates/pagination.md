@@ -5,32 +5,33 @@ weight = 30
 
 Two things can get paginated: a section and a taxonomy term.
 
-A paginated section gets the same `section` variable as a normal
-[section page](@/documentation/templates/pages-sections.md#section-variables) minus its pages
-while both a paginated taxonomy page and a paginated section page gets a
-`paginator` variable of the `Pager` type:
+Both kinds get a `paginator` variable of the `Pager` type, on top of the common variables mentioned in the
+[overview page](@/documentation/templates/overview.md):
 
 ```ts
-// How many items per page
+// How many items per pager
 paginate_by: Number;
 // The base URL for the pagination: section permalink + pagination path
-// You can concatenate an integer with that to get a link to a given pagination page.
+// You can concatenate an integer with that to get a link to a given pagination pager.
 base_url: String;
-// How many pagers in this paginator
+// How many pagers in total
 number_pagers: Number;
-// Permalink to the first page
+// Permalink to the first pager
 first: String;
-// Permalink to the last page
+// Permalink to the last pager
 last: String;
-// Permalink to the previous page, if there is one
+// Permalink to the previous pager, if there is one
 previous: String?;
-// Permalink to the next page, if there is one
+// Permalink to the next pager, if there is one
 next: String?;
-// All pages for the current page
+// All pages for the current pager
 pages: Array<Page>;
-// Which page are we on
+// Which pager are we on
 current_index: Number;
 ```
+
+A pager is a page of the pagination: if you have 100 pages and are paginating 10 by 10, you will have 10 pagers containing
+each 10 pages.
 
 ## Section
 

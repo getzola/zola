@@ -1,0 +1,133 @@
+trigger:
+  branches:
+    include: ['*']
+  tags:
+    include: ['*']
+
+stages:
+  - stage: Tests
+    jobs:
+      - job:
+        strategy:
+          matrix:
+            windows-stable:
+              imageName: 'vs2017-win2016'
+              rustup_toolchain: stable
+            mac-stable:
+              imageName: 'macos-10.14'
+              rustup_toolchain: stable
+            linux-stable:
+              imageName: 'ubuntu-16.04'
+              rustup_toolchain: stable
+            linux-1.35:
+              imageName: 'ubuntu-16.04'
+              rustup_toolchain: 1.35.0
+        pool:
+          vmImage: $(imageName)
+        steps:
+          - script: |
+              curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
+              echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+            displayName: Install rust
+            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+          - script: |
+                curl -sSf -o rustup-init.exe https://win.rustup.rs
+                rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
+                echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
+            displayName: Windows install rust
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+          - script: cargo build --all
+            displayName: Cargo build
+          - script: cargo test --all
+            displayName: Cargo test
+
+
+  - stage: Release
+    dependsOn: Tests
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+    jobs:
+      - job:
+        strategy:
+          matrix:
+            windows-stable:
+              imageName: 'vs2017-win2016'
+              rustup_toolchain: stable
+              target: 'x86_64-pc-windows-msvc'
+            mac-stable:
+              imageName: 'macos-10.14'
+              rustup_toolchain: stable
+              target: 'x86_64-apple-darwin'
+            linux-stable:
+              imageName: 'ubuntu-16.04'
+              rustup_toolchain: stable
+              target: 'x86_64-unknown-linux-gnu'
+        pool:
+          vmImage: $(imageName)
+        steps:
+          - script: |
+              curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
+              echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+            displayName: Install rust
+            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+          - script: |
+              curl -sSf -o rustup-init.exe https://win.rustup.rs
+              rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
+              echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
+            displayName: Windows install rust
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+
+          - script: |
+              rustup target add $TARGET
+              cargo build --release --target $TARGET
+            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+            displayName: Build
+          - script: |
+              rustup target add %TARGET%
+              cargo build --release --target %TARGET%
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+            displayName: Build on Windows
+
+          - task: CopyFiles@2
+            displayName: Copy assets
+            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+            inputs:
+              sourceFolder: '$(Build.SourcesDirectory)/target/$(TARGET)/release'
+              contents: zola
+              targetFolder: '$(Build.BinariesDirectory)/'
+          - task: CopyFiles@2
+            displayName: Copy assets on Windows
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+            inputs:
+              sourceFolder: '$(Build.SourcesDirectory)/target/$(TARGET)/release'
+              contents: zola.exe
+              targetFolder: '$(Build.BinariesDirectory)/'
+
+          - task: ArchiveFiles@2
+            displayName: Gather assets
+            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+            inputs:
+              rootFolderOrFile: '$(Build.BinariesDirectory)/zola'
+              archiveType: 'tar'
+              tarCompression: 'gz'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/zola-$(Build.SourceBranchName)-$(TARGET).tar.gz'
+          - task: ArchiveFiles@2
+            displayName: Gather assets
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+            inputs:
+              rootFolderOrFile: '$(Build.BinariesDirectory)/zola.exe'
+              archiveType: 'tar'
+              tarCompression: 'gz'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/zola-$(Build.SourceBranchName)-$(TARGET).tar.gz'
+
+          - task: GithubRelease@0
+            inputs:
+              gitHubConnection: 'zola'
+              repositoryName: 'keats/azure-pipelines-test'
+              action: 'edit'
+              target: '$(build.sourceVersion)'
+              tagSource: 'manual'
+              tag: '$(Build.SourceBranchName)'
+              assets: '$(Build.ArtifactStagingDirectory)/zola-$(Build.SourceBranchName)-$(TARGET).tar.gz'
+              title: '$(Build.SourceBranchName)'
+              assetUploadMode: 'replace'
+              addChangeLog: true
