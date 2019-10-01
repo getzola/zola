@@ -115,9 +115,8 @@ stages:
             condition: eq( variables['Agent.OS'], 'Windows_NT' )
             inputs:
               rootFolderOrFile: '$(Build.BinariesDirectory)/zola.exe'
-              archiveType: 'tar'
-              tarCompression: 'gz'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/zola-$(Build.SourceBranchName)-$(TARGET).tar.gz'
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/zola-$(Build.SourceBranchName)-$(TARGET).zip'
 
           - task: GithubRelease@0
             inputs:
