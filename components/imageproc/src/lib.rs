@@ -272,7 +272,7 @@ impl ImageOp {
                 } else {
                     img
                 }
-            },
+            }
             Fill(w, h) => {
                 let factor_w = img_w as f32 / w as f32;
                 let factor_h = img_h as f32 / h as f32;

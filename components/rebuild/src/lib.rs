@@ -335,7 +335,7 @@ fn is_section(path: &str, languages_codes: &[&str]) -> bool {
         }
     }
 
-    return false;
+    false
 }
 
 /// What happens when a section or a page is created/edited

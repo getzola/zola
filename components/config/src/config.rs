@@ -86,7 +86,7 @@ impl Default for Taxonomy {
     }
 }
 
-type TranslateTerm  = HashMap<String, String>;
+type TranslateTerm = HashMap<String, String>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -317,9 +317,16 @@ impl Config {
             Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
         })?;
 
-        terms.get(key.as_ref()).ok_or_else(|| {
-            Error::msg(format!("Translation key '{}' for language '{}' is missing", key.as_ref(), lang.as_ref()))
-        }).map(|term| term.to_string())
+        terms
+            .get(key.as_ref())
+            .ok_or_else(|| {
+                Error::msg(format!(
+                    "Translation key '{}' for language '{}' is missing",
+                    key.as_ref(),
+                    lang.as_ref()
+                ))
+            })
+            .map(|term| term.to_string())
     }
 }
 
