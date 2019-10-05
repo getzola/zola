@@ -662,3 +662,14 @@ fn can_ignore_markdown_content() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(!file_exists!(public, "posts/ignored/index.html"));
 }
+
+#[test]
+fn check_site() {
+    let (mut site, _tmp_dir, _public) = build_site("test_site");
+
+    let prefixes = &site.config.link_checker.skip_anchor_prefixes;
+    assert_eq!(prefixes, &vec!["https://github.com/rust-lang/rust/blob/"]);
+
+    site.config.enable_check_mode();
+    site.load().expect("link check test_site");
+}

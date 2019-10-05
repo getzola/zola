@@ -399,7 +399,7 @@ impl Site {
             all_links
                 .par_iter()
                 .filter_map(|(page_path, link)| {
-                    let res = check_url(&link);
+                    let res = check_url(&link, &self.config.link_checker);
                     if res.is_valid() {
                         None
                     } else {
