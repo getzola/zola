@@ -21,6 +21,10 @@ base_url = "mywebsite.com"
 title = ""
 description = ""
 
+# Can be a name as a string, or an object with keys "name",
+# "uri" and "email" (all optional), and string values.
+author = ""
+
 # The default language; used in feeds.
 default_language = "en"
 

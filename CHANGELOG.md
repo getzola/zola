@@ -12,6 +12,9 @@
 
   Users with existing feeds should either set `feed_filename = "rss.xml"` in config.toml to keep things the same, or set up a 3xx redirect from rss.xml to atom.xml so that existing feed consumers aren’t broken.
 
+### Other
+- Add `author` config option for feeds and HTML to use
+
 ## 0.10.2 (unreleased)
 
 - Fix link checker not looking for anchor with capital id/name

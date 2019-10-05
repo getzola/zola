@@ -105,6 +105,21 @@ impl Default for Taxonomy {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Author {
+    Name(String),
+    Details(AuthorDetails),
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct AuthorDetails {
+    name: Option<String>,
+    uri: Option<String>,
+    email: Option<String>,
+}
+
 type TranslateTerm = HashMap<String, String>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -134,6 +149,8 @@ pub struct Config {
     pub title: Option<String>,
     /// Description of the site
     pub description: Option<String>,
+    /// Author of the site
+    pub author: Option<Author>,
 
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
@@ -383,6 +400,7 @@ impl Default for Config {
             base_url: DEFAULT_BASE_URL.to_string(),
             title: None,
             description: None,
+            author: None,
             theme: None,
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
@@ -411,7 +429,7 @@ impl Default for Config {
 
 #[cfg(test)]
 mod tests {
-    use super::{Config, SlugifyStrategy, Theme};
+    use super::{Author, AuthorDetails, Config, SlugifyStrategy, Theme};
 
     #[test]
     fn can_import_valid_config() {
@@ -524,6 +542,37 @@ a_value = 10
         let extra = config.extra;
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
+    }
+
+    #[test]
+    fn parses_authors_correctly() {
+        let mut config = Config::parse(r#"
+            base_url = "."
+        "#).unwrap();
+        assert_eq!(config.author, None);
+        config = Config::parse(r#"
+            base_url = "."
+            author = "hello"
+        "#).unwrap();
+        assert_eq!(config.author, Some(Author::Name("hello".to_string())));
+        config = Config::parse(r#"
+            base_url = "."
+            author = {}
+        "#).unwrap();
+        assert_eq!(config.author, Some(Author::Details(AuthorDetails {
+            name: None,
+            uri: None,
+            email: None,
+        })));
+        config = Config::parse(r#"
+            base_url = "."
+            author = { name = "A", uri = "B", email = "C" }
+        "#).unwrap();
+        assert_eq!(config.author, Some(Author::Details(AuthorDetails {
+            name: Some("A".to_string()),
+            uri: Some("B".to_string()),
+            email: Some("C".to_string()),
+        })));
     }
 
     const CONFIG_TRANSLATION: &str = r#"

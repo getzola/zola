@@ -1,0 +1,17 @@
+{%- macro author(author, indentation="	") -%}
+<author>
+	{%- if author is string -%}
+{{ indentation }}	<name>{{ author }}</name>
+	{%- else %}
+		{%- if author.name -%}
+{{ indentation }}	<name>{{ author.name }}</name>
+		{%- endif %}
+		{%- if author.uri -%}
+{{ indentation }}	<uri>{{ author.uri }}</uri>
+		{%- endif %}
+		{%- if author.email -%}
+{{ indentation }}	<email>{{ author.email }}</email>
+		{%- endif %}
+	{%- endif %}
+{{ indentation }}</author>
+{%- endmacro author -%}
