@@ -1,12 +1,10 @@
 base_url = "https://www.getzola.org/"
 title = "Zola"
 description = "Everything you need to make a static site engine in one binary."
+author = "Vincent Prouillet"
 
 compile_sass = true
 highlight_code = true
 insert_anchor_links = true
 highlight_theme = "kronuz"
 build_search_index = true
-
-[extra]
-author = "Vincent Prouillet"

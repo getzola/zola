@@ -1,4 +1,5 @@
 title = "My site"
+author = { name = "Vincent Prouillet" }
 base_url = "https://replace-this-with-your-url.com"
 highlight_code = true
 compile_sass = true
@@ -22,6 +23,3 @@ skip_prefixes = [
 skip_anchor_prefixes = [
     "https://github.com/rust-lang/rust/blob/",
 ]
-
-[extra.author]
-name = "Vincent Prouillet"

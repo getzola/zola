@@ -5,7 +5,7 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
-        <meta name="author" content="{{ config.extra.author }}">
+        <meta name="author" content="{{ config.author }}">
         <title>{% block title %}{{ config.title }}{% endblock title %}</title>
         <link rel="stylesheet" href="{{ get_url(path="site.css") }}"/>
         <link rel="icon" href="{{ get_url(path="favicon.ico") }}">

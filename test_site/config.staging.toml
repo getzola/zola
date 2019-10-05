@@ -1,8 +1,6 @@
 title = "My site"
+author = { name = "Vincent Prouillet" }
 base_url = "https://staging.com"
 highlight_code = true
 theme = "sample"
-
-[extra.author]
-name = "Vincent Prouillet"
 
