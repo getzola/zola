@@ -3,8 +3,8 @@
     {%- for sitemap_entry in entries %}
     <url>
         <loc>{{ sitemap_entry.permalink | escape_xml | safe }}</loc>
-        {%- if sitemap_entry.date %}
-        <lastmod>{{ sitemap_entry.date }}</lastmod>
+        {%- if sitemap_entry.updated %}
+        <lastmod>{{ sitemap_entry.updated }}</lastmod>
         {%- endif %}
     </url>
     {%- endfor %}
