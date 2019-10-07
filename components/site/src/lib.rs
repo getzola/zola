@@ -1065,7 +1065,14 @@ impl Site {
 
         pages.par_sort_unstable_by(sort_actual_pages_by_date);
 
-        context.insert("latest_date", &pages[0].meta.date.clone());
+        context.insert(
+            "last_updated",
+            pages.iter()
+                .filter_map(|page| page.meta.updated.as_ref())
+                .chain(pages[0].meta.date.as_ref())
+                .max()  // I love lexicographically sorted date strings
+                .unwrap(),  // Guaranteed because of pages[0].meta.date
+        );
         let library = self.library.read().unwrap();
         // limit to the last n elements if the limit is set; otherwise use all.
         let num_entries = self.config.feed_limit.unwrap_or_else(|| pages.len());

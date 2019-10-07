@@ -7,7 +7,7 @@
 	<link href="{{ feed_url | safe }}" rel="self" type="application/atom+xml"/>
 	<link href="{{ config.base_url | safe }}"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>{{ latest_date | date(format="%+") }}</updated>
+	<updated>{{ last_updated | date(format="%+") }}</updated>
 	<id>{{ feed_url | safe }}</id>
 	{%- for page in pages %}
 	<entry
@@ -15,6 +15,7 @@
 	>
 		<title>{{ page.title }}</title>
 		<published>{{ page.date | date(format="%+") }}</published>
+		<updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>
 		<link href="{{ page.permalink | safe }}" type="text/html"/>
 		<id>{{ page.permalink | safe }}</id>
 		<content type="html">{{ page.content }}</description>

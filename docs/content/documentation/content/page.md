@@ -93,6 +93,10 @@ description = ""
 # Setting this overrides a date set in the filename.
 date =
 
+# The last updated date of the post, if different from the date.
+# Same format as `date`.
+updated =
+
 # The weight as defined on the Section page of the documentation.
 # If the section variable `sort_by` is set to `weight`, then any page that lacks a `weight`
 # will not be rendered.

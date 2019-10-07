@@ -16,6 +16,9 @@ pub struct PageFrontMatter {
     pub title: Option<String>,
     /// Description in <meta> that appears when linked, e.g. on twitter
     pub description: Option<String>,
+    /// Updated date
+    #[serde(default, deserialize_with = "from_toml_datetime")]
+    pub updated: Option<String>,
     /// Date if we want to order pages (ie blog post)
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub date: Option<String>,
@@ -117,6 +120,7 @@ impl Default for PageFrontMatter {
         PageFrontMatter {
             title: None,
             description: None,
+            updated: None,
             date: None,
             datetime: None,
             datetime_tuple: None,

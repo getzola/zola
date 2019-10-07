@@ -8,9 +8,14 @@
   - Config value `rss_limit` is renamed to `feed_limit`
   - Config value `languages.*.rss` is renamed to `languages.*.feed`
   - Config value `generate_rss` is renamed to `generate_feed`
-  - Feed template variable `last_build_date` is renamed to `latest_date`
 
   Users with existing feeds should either set `feed_filename = "rss.xml"` in config.toml to keep things the same, or set up a 3xx redirect from rss.xml to atom.xml so that existing feed consumers aren’t broken.
+
+- The feed template variable `last_build_date` is renamed to `last_updated` to more accurately reflect its semantics
+- The sitemap template’s `SitemapEntry` type’s `date` field has been renamed to `updated` to reflect that it will use the `updated` front-matter field if available, rather than `date`
+
+### Other
+- Add `updated` front-matter field for pages, which sitemap templates will use for the `SitemapEntry.date` field instead of the `date` front-matter field, and which the default Atom feed template will use
 
 ## 0.10.2 (unreleased)
 
