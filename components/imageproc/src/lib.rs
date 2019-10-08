@@ -23,7 +23,7 @@ use regex::Regex;
 use errors::{Error, Result};
 use utils::fs as ufs;
 
-static RESIZED_SUBDIR: &'static str = "processed_images";
+static RESIZED_SUBDIR: &str = "processed_images";
 
 lazy_static! {
     pub static ref RESIZED_FILENAME: Regex =
@@ -41,8 +41,8 @@ pub enum ResizeOp {
     /// Scales the image to a specified height with width computed such
     /// that aspect ratio is preserved
     FitHeight(u32),
-    /// Scales the image such that it fits within the specified width and
-    /// height preserving aspect ratio.
+    /// If the image is larger than the specified width or height, scales the image such
+    /// that it fits within the specified width and height preserving aspect ratio.
     /// Either dimension may end up being smaller, but never larger than specified.
     Fit(u32, u32),
     /// Scales the image such that it fills the specified width and height.
@@ -266,7 +266,13 @@ impl ImageOp {
             Scale(w, h) => img.resize_exact(w, h, RESIZE_FILTER),
             FitWidth(w) => img.resize(w, u32::max_value(), RESIZE_FILTER),
             FitHeight(h) => img.resize(u32::max_value(), h, RESIZE_FILTER),
-            Fit(w, h) => img.resize(w, h, RESIZE_FILTER),
+            Fit(w, h) => {
+                if img_w > w || img_h > h {
+                    img.resize(w, h, RESIZE_FILTER)
+                } else {
+                    img
+                }
+            },
             Fill(w, h) => {
                 let factor_w = img_w as f32 / w as f32;
                 let factor_h = img_h as f32 / h as f32;

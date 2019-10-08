@@ -56,8 +56,7 @@ While none of the front-matter variables are mandatory, the opening and closing 
 Here is an example page with all the variables available.  The values provided below are the default
 values.
 
-```md
-+++
+```toml
 title = ""
 description = ""
 
@@ -74,7 +73,7 @@ date =
 # will not be rendered.
 weight = 0
 
-# A draft page is only rendered in `zola serve`, they are ignored in `zola build` and `zola check`
+# A draft page is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`
 draft = false
 
 # If filled, it will use that slug instead of the filename to make up the URL
@@ -106,9 +105,6 @@ template = "page.html"
 
 # Your own data
 [extra]
-+++
-
-Some content
 ```
 
 ## Summary

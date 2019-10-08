@@ -148,4 +148,9 @@ fn can_build_multilingual_site() {
     assert!(file_exists!(public, "fr/tags/index.html"));
     assert!(file_contains!(public, "fr/tags/index.html", "bonjour"));
     assert!(!file_contains!(public, "fr/tags/index.html", "hello"));
+
+    // one lang index per language
+    assert!(file_exists!(public, "search_index.en.js"));
+    assert!(file_exists!(public, "search_index.it.js"));
+    assert!(!file_exists!(public, "search_index.fr.js"));
 }

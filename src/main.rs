@@ -48,7 +48,12 @@ fn main() {
             console::info("Building site...");
             let start = Instant::now();
             let output_dir = matches.value_of("output_dir").unwrap();
-            match cmd::build(config_file, matches.value_of("base_url"), output_dir) {
+            match cmd::build(
+                config_file,
+                matches.value_of("base_url"),
+                output_dir,
+                matches.is_present("drafts"),
+            ) {
                 Ok(()) => console::report_elapsed_time(start),
                 Err(e) => {
                     console::unravel_errors("Failed to build the site", &e);
@@ -67,6 +72,7 @@ fn main() {
             };
             let watch_only = matches.is_present("watch_only");
             let open = matches.is_present("open");
+            let include_drafts = matches.is_present("drafts");
 
             // Default one
             if port != 1111 && !watch_only && !port_is_available(port) {
@@ -85,7 +91,16 @@ fn main() {
             let output_dir = matches.value_of("output_dir").unwrap();
             let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");
-            match cmd::serve(interface, port, output_dir, base_url, config_file, watch_only, open) {
+            match cmd::serve(
+                interface,
+                port,
+                output_dir,
+                base_url,
+                config_file,
+                watch_only,
+                open,
+                include_drafts,
+            ) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("", &e);
@@ -100,6 +115,7 @@ fn main() {
                 config_file,
                 matches.value_of("base_path"),
                 matches.value_of("base_url"),
+                matches.is_present("drafts"),
             ) {
                 Ok(()) => console::report_elapsed_time(start),
                 Err(e) => {

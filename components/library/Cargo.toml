@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 
 [dependencies]
-slotmap = "0.2"
+slotmap = "0.4"
 rayon = "1"
 chrono = { version = "0.4", features = ["serde"] }
 tera = "1.0.0-beta.10"

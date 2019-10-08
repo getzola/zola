@@ -59,16 +59,14 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
 pub fn create_new_project(name: &str) -> Result<()> {
     let path = Path::new(name);
     // Better error message than the rust default
-    if path.exists() {
-        if !is_directory_quasi_empty(&path)? {
-            if name == "." {
-                bail!("The current directory is not an empty folder (hidden files are ignored).");
-            } else {
-                bail!(
-                    "`{}` is not an empty folder (hidden files are ignored).",
-                    path.to_string_lossy().to_string()
-                )
-            }
+    if path.exists() && !is_directory_quasi_empty(&path)? {
+        if name == "." {
+            bail!("The current directory is not an empty folder (hidden files are ignored).");
+        } else {
+            bail!(
+                "`{}` is not an empty folder (hidden files are ignored).",
+                path.to_string_lossy().to_string()
+            )
         }
     }
 

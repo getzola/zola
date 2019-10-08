@@ -56,6 +56,8 @@ You can also point to another config file than `config.toml` like so - the posit
 $ zola --config config.staging.toml build
 ```
 
+By defaults, drafts are not loaded. If you wish to include them, pass the `--drafts` flag.
+
 ## serve
 
 This will build and serve the site using a local server. You can also specify
@@ -95,11 +97,15 @@ You can also point to another config file than `config.toml` like so - the posit
 $ zola --config config.staging.toml serve
 ```
 
+By defaults, drafts are not loaded. If you wish to include them, pass the `--drafts` flag.
+
 ### check
 
 The check subcommand will try to build all pages just like the build command would, but without writing any of the
 results to disk. Additionally, it will also check all external links present in Markdown files by trying to fetch
 them (links present in the template files will not be checked).
+
+By defaults, drafts are not loaded. If you wish to include them, pass the `--drafts` flag.
 
 ## Colored output
 

@@ -8,9 +8,9 @@ pub use self::page::Page;
 pub use self::section::Section;
 pub use self::ser::{SerializingPage, SerializingSection};
 
-use rendering::Header;
+use rendering::Heading;
 
-pub fn has_anchor(headings: &[Header], anchor: &str) -> bool {
+pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
     for heading in headings {
         if heading.id == anchor {
             return true;
@@ -30,28 +30,28 @@ mod tests {
     #[test]
     fn can_find_anchor_at_root() {
         let input = vec![
-            Header {
+            Heading {
                 level: 1,
                 id: "1".to_string(),
                 permalink: String::new(),
                 title: String::new(),
                 children: vec![],
             },
-            Header {
+            Heading {
                 level: 2,
                 id: "1-1".to_string(),
                 permalink: String::new(),
                 title: String::new(),
                 children: vec![],
             },
-            Header {
+            Heading {
                 level: 3,
                 id: "1-1-1".to_string(),
                 permalink: String::new(),
                 title: String::new(),
                 children: vec![],
             },
-            Header {
+            Heading {
                 level: 2,
                 id: "1-2".to_string(),
                 permalink: String::new(),
@@ -65,27 +65,27 @@ mod tests {
 
     #[test]
     fn can_find_anchor_in_children() {
-        let input = vec![Header {
+        let input = vec![Heading {
             level: 1,
             id: "1".to_string(),
             permalink: String::new(),
             title: String::new(),
             children: vec![
-                Header {
+                Heading {
                     level: 2,
                     id: "1-1".to_string(),
                     permalink: String::new(),
                     title: String::new(),
                     children: vec![],
                 },
-                Header {
+                Heading {
                     level: 3,
                     id: "1-1-1".to_string(),
                     permalink: String::new(),
                     title: String::new(),
                     children: vec![],
                 },
-                Header {
+                Heading {
                     level: 2,
                     id: "1-2".to_string(),
                     permalink: String::new(),

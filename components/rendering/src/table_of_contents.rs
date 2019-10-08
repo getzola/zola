@@ -1,17 +1,17 @@
 /// Populated while receiving events from the markdown parser
 #[derive(Debug, PartialEq, Clone, Serialize)]
-pub struct Header {
+pub struct Heading {
     #[serde(skip_serializing)]
-    pub level: i32,
+    pub level: u32,
     pub id: String,
     pub permalink: String,
     pub title: String,
-    pub children: Vec<Header>,
+    pub children: Vec<Heading>,
 }
 
-impl Header {
-    pub fn new(level: i32) -> Header {
-        Header {
+impl Heading {
+    pub fn new(level: u32) -> Heading {
+        Heading {
             level,
             id: String::new(),
             permalink: String::new(),
@@ -21,63 +21,48 @@ impl Header {
     }
 }
 
-impl Default for Header {
+impl Default for Heading {
     fn default() -> Self {
-        Header::new(0)
+        Heading::new(0)
     }
 }
 
-// Takes a potential (mutable) parent and a header to try and insert into
+// Takes a potential (mutable) parent and a heading to try and insert into
 // Returns true when it performed the insertion, false otherwise
-fn insert_into_parent(potential_parent: Option<&mut Header>, header: &Header) -> bool {
+fn insert_into_parent(potential_parent: Option<&mut Heading>, heading: &Heading) -> bool {
     match potential_parent {
         None => {
             // No potential parent to insert into so it needs to be insert higher
-            return false;
-        },
+            false
+        }
         Some(parent) => {
-            let diff = header.level - parent.level;
-            if diff <= 0 {
+            if heading.level <= parent.level {
                 // Heading is same level or higher so we don't insert here
                 return false;
-            } 
-            if diff == 1 {
+            }
+            if heading.level + 1 == parent.level {
                 // We have a direct child of the parent
-                parent.children.push(header.clone());
+                parent.children.push(heading.clone());
                 return true;
             }
             // We need to go deeper
-            if !insert_into_parent(parent.children.iter_mut().last(), header) {
+            if !insert_into_parent(parent.children.iter_mut().last(), heading) {
                 // No, we need to insert it here
-                parent.children.push(header.clone());
+                parent.children.push(heading.clone());
             }
-            return true;
+            true
         }
     }
 }
 
-/// Converts the flat temp headers into a nested set of headers
+/// Converts the flat temp headings into a nested set of headings
 /// representing the hierarchy
-pub fn make_table_of_contents(headers: Vec<Header>) -> Vec<Header> {
+pub fn make_table_of_contents(headings: Vec<Heading>) -> Vec<Heading> {
     let mut toc = vec![];
-    for header in headers {
-        if toc.is_empty() {
-            // First header, nothing to compare it with
-            toc.push(header);
-            continue;
-        }
-
-        // We try to insert the current header in a previous one
-        match insert_into_parent(toc.iter_mut().last(), &header) {
-            true => {
-                // Header was successfully inserted as a child of a previous element
-                continue;
-            },
-            false => {
-                // Couldn't insert in a previous header, so it's a top-level header
-                toc.push(header);
-                continue;
-            }
+    for heading in headings {
+        // First heading or we try to insert the current heading in a previous one
+        if toc.is_empty() || !insert_into_parent(toc.iter_mut().last(), &heading) {
+            toc.push(heading);
         }
     }
 
@@ -90,7 +75,7 @@ mod tests {
 
     #[test]
     fn can_make_basic_toc() {
-        let input = vec![Header::new(1), Header::new(1), Header::new(1)];
+        let input = vec![Heading::new(1), Heading::new(1), Heading::new(1)];
         let toc = make_table_of_contents(input);
         assert_eq!(toc.len(), 3);
     }
@@ -98,15 +83,15 @@ mod tests {
     #[test]
     fn can_make_more_complex_toc() {
         let input = vec![
-            Header::new(1),
-            Header::new(2),
-            Header::new(2),
-            Header::new(3),
-            Header::new(2),
-            Header::new(1),
-            Header::new(2),
-            Header::new(3),
-            Header::new(3),
+            Heading::new(1),
+            Heading::new(2),
+            Heading::new(2),
+            Heading::new(3),
+            Heading::new(2),
+            Heading::new(1),
+            Heading::new(2),
+            Heading::new(3),
+            Heading::new(3),
         ];
         let toc = make_table_of_contents(input);
         assert_eq!(toc.len(), 2);
@@ -119,12 +104,12 @@ mod tests {
     #[test]
     fn can_make_deep_toc() {
         let input = vec![
-            Header::new(1),
-            Header::new(2),
-            Header::new(3),
-            Header::new(4),
-            Header::new(5),
-            Header::new(4),
+            Heading::new(1),
+            Heading::new(2),
+            Heading::new(3),
+            Heading::new(4),
+            Heading::new(5),
+            Heading::new(4),
         ];
         let toc = make_table_of_contents(input);
         assert_eq!(toc.len(), 1);
@@ -137,16 +122,16 @@ mod tests {
     #[test]
     fn can_make_deep_messy_toc() {
         let input = vec![
-            Header::new(2), // toc[0]
-            Header::new(3),
-            Header::new(4),
-            Header::new(5),
-            Header::new(4),
-            Header::new(2), // toc[1]
-            Header::new(1), // toc[2]
-            Header::new(2),
-            Header::new(3),
-            Header::new(4),
+            Heading::new(2), // toc[0]
+            Heading::new(3),
+            Heading::new(4),
+            Heading::new(5),
+            Heading::new(4),
+            Heading::new(2), // toc[1]
+            Heading::new(1), // toc[2]
+            Heading::new(2),
+            Heading::new(3),
+            Heading::new(4),
         ];
         let toc = make_table_of_contents(input);
         assert_eq!(toc.len(), 3);
@@ -162,13 +147,13 @@ mod tests {
     #[test]
     fn can_make_messy_toc() {
         let input = vec![
-            Header::new(3),
-            Header::new(2),
-            Header::new(2),
-            Header::new(3),
-            Header::new(2),
-            Header::new(1),
-            Header::new(4),
+            Heading::new(3),
+            Heading::new(2),
+            Heading::new(2),
+            Heading::new(3),
+            Heading::new(2),
+            Heading::new(1),
+            Heading::new(4),
         ];
         let toc = make_table_of_contents(input);
         println!("{:#?}", toc);

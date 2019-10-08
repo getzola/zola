@@ -2,8 +2,7 @@
 
 | Site                                                               |                   Source Code                        |
 |:-------------------------------------------------------------------|:----------------------------------------------------:|
-| [vincent.is](https://vincent.is)                                   | https://gitlab.com/Keats/vincent.is                  |
-| [code<future](http://www.codelessfuture.com/)                      |                                                      |
+| [vincentprouillet.com](https://www.vincentprouillet.com/)          | https://github.com/Keats/vincentprouillet/           |
 | [t-rex.tileserver.ch](https://t-rex.tileserver.ch)                 | https://github.com/t-rex-tileserver/t-rex-website/   |
 | [Philipp Oppermann's blog](https://os.phil-opp.com/)               | https://github.com/phil-opp/blog_os/tree/master/blog |
 | [seventeencups](https://www.seventeencups.net)                     | https://github.com/17cupsofcoffee/seventeencups.net  |
@@ -24,3 +23,4 @@
 | [Hello, Rust!](https://hello-rust.show)                            | https://github.com/hello-rust/hello-rust.github.io   |
 | [maxdeviant.com](https://maxdeviant.com/)                          |                                                      |
 | [Uwes Blog](https://uwe-arzt.de)                                   | https://github.com/uwearzt/site-uwe-arzt             |
+| [ozkriff.games](https://ozkriff.games)                             | https://github.com/ozkriff/ozkriff.github.io-src     |

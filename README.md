@@ -1,7 +1,6 @@
 # zola (né Gutenberg)
 
-[![Build Status](https://travis-ci.com/getzola/zola.svg?branch=master)](https://travis-ci.com/getzola/zola)
-[![Build status](https://ci.appveyor.com/api/projects/status/i0ufvx2sdm2cmawo/branch/master?svg=true)](https://ci.appveyor.com/project/Keats/zola/branch/master)
+[![Build Status](https://dev.azure.com/getzola/zola/_apis/build/status/getzola.zola?branchName=master)](https://dev.azure.com/getzola/zola/_build/latest?definitionId=1&branchName=master)
 
 A fast static site generator in a single binary with everything built-in.
 
@@ -45,13 +44,13 @@ in the `docs/content` folder of the repository and the community can use [its fo
 
 ### ![ehh] explanations
 
-Hugo gets ![ehh] for the template engine because while it is probably the most powerful template engine in the list, after Jinja2, it personally drives me insane, to the point of writing my own template engine and static site generator. Yes, this is a bit biased.
+Hugo gets ![ehh] for the template engine because while it is probably the most powerful template engine in the list (after Jinja2) it personally drives me insane, to the point of writing my own template engine and static site generator. Yes, this is a bit biased.
 
-Zola gets ![ehh] for the multi-language support as it only has a basic support and does not offer (yet) things like i18n in templates.
+Zola gets ![ehh] for multi-language support as it only has a basic support and does not (yet) offer things like i18n in templates.
 
 ### Pelican notes
 
-Many features of Pelican are coming from plugins, which might be tricky to use because of version mismatch or lacking documentation. Netlify supports Python and Pipenv but you still need to install your dependencies manually.
+Many features of Pelican come from plugins, which might be tricky to use because of a version mismatch or inadequate documentation. Netlify supports Python and Pipenv but you still need to install your dependencies manually.
 
 [yes]: ./is-yes.svg
 [ehh]: ./is-ehh.svg

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use slotmap::Key;
+use slotmap::DefaultKey;
 use tera::{Context, Tera};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
@@ -44,7 +44,7 @@ pub struct TaxonomyItem {
     pub name: String,
     pub slug: String,
     pub permalink: String,
-    pub pages: Vec<Key>,
+    pub pages: Vec<DefaultKey>,
 }
 
 impl TaxonomyItem {
@@ -52,7 +52,7 @@ impl TaxonomyItem {
         name: &str,
         taxonomy: &TaxonomyConfig,
         config: &Config,
-        keys: Vec<Key>,
+        keys: Vec<DefaultKey>,
         library: &Library,
     ) -> Self {
         // Taxonomy are almost always used for blogs so we filter by dates
@@ -113,7 +113,7 @@ impl Taxonomy {
     fn new(
         kind: TaxonomyConfig,
         config: &Config,
-        items: HashMap<String, Vec<Key>>,
+        items: HashMap<String, Vec<DefaultKey>>,
         library: &Library,
     ) -> Taxonomy {
         let mut sorted_items = vec![];
@@ -456,7 +456,7 @@ mod tests {
     #[test]
     fn can_make_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.languages.push(Language { rss: false, code: "fr".to_string() });
+        config.languages.push(Language { rss: false, code: "fr".to_string(), search: false });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![

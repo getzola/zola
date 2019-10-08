@@ -1,11 +1,18 @@
 # Changelog
 
-## 0.9.0 (unreleased)
+## 0.10.0 (unreleased)
+
+### Breaking
+- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of page paths is now optional. By default, non-ASCII characters (international characters i.e. UTF8) will be retained in the generated pages. If you are currently using non-ASCII characters in your content file paths and want to keep the URLs Zola previously generated, set `slugify_paths = true` in your config
+
+
+## 0.9.0 (2019-09-28)
 
 ### Breaking
 
 - Add `--drafts` flag to `build`, `serve` and `check` to load drafts. Drafts are never loaded by default anymore
-- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of page paths is now optional. By default, non-ASCII characters (international characters i.e. UTF8) will be retained in the generated pages. If you are currently using non-ASCII characters in your content file paths and want to keep the URLs Zola previously generated, set `slugify_paths = true` in your config
+- Using `fit` in `resize_image` on an image smaller than the given height/width is now a no-op and will not upscale images anymore
+
 
 ### Other
 - Add `--open` flag to open server URL in default browser
@@ -18,8 +25,11 @@
 - Taxonomies can now have the same name in multiple languages
 - `zola init` can now be create sites inside the current directory
 - Fix table of contents generation for deep heading levels
-- Add `lang` in all templates context except sitemap, robots etc
+- Add `lang` in all templates context except sitemap, robots
 - Add `lang` parameter to `get_taxonomy` and `get_taxonomy_url`
+- Rebuild whole site on changes in `themes` changes
+- Add one-dark syntax highlighting theme
+- Process images on changes in `zola serve` if needed after change
 
 ## 0.8.0 (2019-06-22)
 

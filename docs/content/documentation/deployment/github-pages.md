@@ -4,8 +4,7 @@ weight = 30
 +++
 
 By default, GitHub Pages uses Jekyll (A ruby based static site generator),
-but you can use whatever you want provided you have an `index.html` file in the root of a branch called `gh-pages`.
-That branch name can also be manually changed in the settings of a repository.
+but you can also publish any generated files provided you have an `index.html` file in the root of a branch called `gh-pages` or `master`, in addition you can also publish from a `docs` directory in your repository. That branch name can also be manually changed in the settings of a repository. **However** this only applies to publishing in a custom domain, i.e. if you want to publish to a GitHub provided web service under the `github.io` domain, you can **only** use the `master` branch of your repository as explained [here](https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages), so we will focus on the method which will work regardless of the domain.
 
 We can use any CI server to build and deploy our site. For example:
 
@@ -45,13 +44,15 @@ Make sure "Display value in build log" is off, and then click add. Now Travis ha
 
 We're almost done. We just need some scripts in a .travis.yml file to tell Travis what to do.
 
+**NOTE**: The script below assumes that we're taking the code from the `code` branch and will generate the HTML to be published in the `master` branch of the same repository. You're free to use any other branch for the Markdown files but if you want to use `<username>.github.io` or `<org>.github.io`, the destination branch **MUST** be `master`.
+
 ```yaml
 language: minimal
 
 before_script:
   # Download and unzip the zola executable
   # Replace the version numbers in the URL by the version you want to use
-  - curl -s -L https://github.com/getzola/zola/releases/download/v0.8.0/zola-v0.8.0-x86_64-unknown-linux-gnu.tar.gz | sudo tar xvzf - -C /usr/local/bin
+  - curl -s -L https://github.com/getzola/zola/releases/download/v0.9.0/zola-v0.9.0-x86_64-unknown-linux-gnu.tar.gz | sudo tar xvzf - -C /usr/local/bin
 
 script:
   - zola build
@@ -59,12 +60,12 @@ script:
 # If you are using a different folder than `public` for the output directory, you will
 # need to change the `zola` command and the `ghp-import` path
 after_success: |
-  [ $TRAVIS_BRANCH = master ] &&
+  [ $TRAVIS_BRANCH = code ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
   zola build &&
   sudo pip install ghp-import &&
-  ghp-import -n public &&
-  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+  ghp-import -n public -b master &&
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git master
 ```
 
 If your site is using a custom domain, you will need to mention it in the `ghp-import` command: `ghp-import -c vaporsoft.net -n public`

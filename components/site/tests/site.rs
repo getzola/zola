@@ -189,9 +189,10 @@ fn can_build_site_without_live_reload() {
 }
 
 #[test]
-fn can_build_site_with_live_reload() {
+fn can_build_site_with_live_reload_and_drafts() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.enable_live_reload(1000);
+        site.include_drafts();
         (site, true)
     });
 
@@ -230,7 +231,9 @@ fn can_build_site_with_live_reload() {
         r#"<a name="continue-reading"></a>"#
     ));
 
-    assert_eq!(file_exists!(public, "posts/draft/index.html"), false);
+    // Drafts are included
+    assert!(file_exists!(public, "posts/draft/index.html"));
+    assert!(file_contains!(public, "sitemap.xml", "draft"));
 }
 
 #[test]

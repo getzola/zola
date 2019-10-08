@@ -7,7 +7,7 @@ use errors::Result;
 
 use super::{InsertAnchor, SortBy};
 
-static DEFAULT_PAGINATE_PATH: &'static str = "page";
+static DEFAULT_PAGINATE_PATH: &str = "page";
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
