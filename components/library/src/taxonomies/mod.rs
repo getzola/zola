@@ -8,8 +8,8 @@ use errors::{Error, Result};
 use utils::templates::render_template;
 
 use content::SerializingPage;
-use slugs::maybe_slugify;
 use library::Library;
+use slugs::maybe_slugify;
 use sorting::sort_pages_by_date;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -565,16 +565,18 @@ mod tests {
     #[test]
     fn can_make_utf8_taxonomies() {
         let mut config = Config::default();
-        config.languages.push(Language { rss: false, code: "fr".to_string() });
+        config.languages.push(Language {
+            rss: false,
+            code: "fr".to_string(),
+            ..Language::default()
+        });
         let mut library = Library::new(2, 0, true);
 
-        config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "catégories".to_string(),
-                lang: "fr".to_string(),
-                ..TaxonomyConfig::default()
-            }
-        ];
+        config.taxonomies = vec![TaxonomyConfig {
+            name: "catégories".to_string(),
+            lang: "fr".to_string(),
+            ..TaxonomyConfig::default()
+        }];
 
         let mut page = Page::default();
         page.lang = "fr".to_string();
@@ -588,7 +590,10 @@ mod tests {
 
         assert_eq!(categories.items.len(), 1);
         assert_eq!(categories.items[0].name, "Tutoriels de programmation");
-        assert_eq!(categories.items[0].permalink, "http://a-website.com/fr/catégories/Tutoriels de programmation/");
+        assert_eq!(
+            categories.items[0].permalink,
+            "http://a-website.com/fr/catégories/Tutoriels de programmation/"
+        );
         assert_eq!(categories.items[0].pages.len(), 1);
     }
 
@@ -596,7 +601,11 @@ mod tests {
     fn can_make_slugified_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
         config.slugify_paths = true;
-        config.languages.push(Language { rss: false, code: "fr".to_string() });
+        config.languages.push(Language {
+            rss: false,
+            code: "fr".to_string(),
+            ..Language::default()
+        });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
