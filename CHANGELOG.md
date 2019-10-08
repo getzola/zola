@@ -2,6 +2,8 @@
 
 ## 0.10.0 (unreleased)
 
+### Other
+- Add zenburn syntax highlighting theme
 
 ## 0.9.0 (2019-09-28)
 
