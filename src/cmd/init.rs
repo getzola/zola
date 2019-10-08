@@ -86,7 +86,9 @@ pub fn create_new_project(name: &str) -> Result<()> {
         .replace("%SEARCH%", &format!("{}", search))
         .replace("%HIGHLIGHT%", &format!("{}", highlight));
 
-    create_dir(path)?;
+    if !path.exists() {
+        create_dir(path)?;
+    }
     create_file(&path.join("config.toml"), &config)?;
 
     create_dir(path.join("content"))?;
