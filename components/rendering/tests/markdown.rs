@@ -821,12 +821,34 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 //}
 
 // https://github.com/getzola/zola/issues/747
+// https://github.com/getzola/zola/issues/816
 #[test]
 fn leaves_custom_url_scheme_untouched() {
+    let content = r#"[foo@bar.tld](xmpp:foo@bar.tld)
+
+[(123) 456-7890](tel:+11234567890)
+
+[blank page](about:blank)
+"#;
+
     let tera_ctx = Tera::default();
-    let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("[foo@bar.tld](xmpp:foo@bar.tld)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"xmpp:foo@bar.tld\">foo@bar.tld</a></p>\n");
+    let permalinks_ctx = HashMap::new();
+
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        "https://vincent.is/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+
+    let res = render_content(content, &context).unwrap();
+
+    let expected = r#"<p><a href="xmpp:foo@bar.tld">foo@bar.tld</a></p>
+<p><a href="tel:+11234567890">(123) 456-7890</a></p>
+<p><a href="about:blank">blank page</a></p>
+"#;
+
+    assert_eq!(res.body, expected);
 }
