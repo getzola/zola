@@ -27,6 +27,7 @@ permalink: String;
 summary: String?;
 taxonomies: HashMap<String, Array<String>>;
 extra: HashMap<String, Any>;
+toc: Array<Header>,
 // Naive word count, will not work for languages without whitespace
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
@@ -81,6 +82,7 @@ pages: Array<Pages>;
 // This only contains the path to use in the `get_section` Tera function to get
 // the actual section object if you need it
 subsections: Array<String>;
+toc: Array<Header>,
 // Unicode word count
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
