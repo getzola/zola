@@ -219,7 +219,6 @@ impl Section {
         context.insert("current_path", &self.path);
         context.insert("section", &self.to_serialized(library));
         context.insert("lang", &self.lang);
-        context.insert("toc", &self.toc);
 
         render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render section '{}'", self.file.path.display()), e)
