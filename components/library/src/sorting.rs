@@ -21,7 +21,9 @@ pub fn sort_actual_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
 /// Takes a list of (page key, date, permalink) and sort them by dates if possible
 /// Pages without date will be put in the unsortable bucket
 /// The permalink is used to break ties
-pub fn sort_pages_by_date(pages: Vec<(&DefaultKey, Option<NaiveDateTime>, &str)>) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
+pub fn sort_pages_by_date(
+    pages: Vec<(&DefaultKey, Option<NaiveDateTime>, &str)>,
+) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) =
         pages.into_par_iter().partition(|page| page.1.is_some());
 
@@ -40,7 +42,9 @@ pub fn sort_pages_by_date(pages: Vec<(&DefaultKey, Option<NaiveDateTime>, &str)>
 /// Takes a list of (page key, weight, permalink) and sort them by weight if possible
 /// Pages without weight will be put in the unsortable bucket
 /// The permalink is used to break ties
-pub fn sort_pages_by_weight(pages: Vec<(&DefaultKey, Option<usize>, &str)>) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
+pub fn sort_pages_by_weight(
+    pages: Vec<(&DefaultKey, Option<usize>, &str)>,
+) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) =
         pages.into_par_iter().partition(|page| page.1.is_some());
 
@@ -57,7 +61,9 @@ pub fn sort_pages_by_weight(pages: Vec<(&DefaultKey, Option<usize>, &str)>) -> (
 }
 
 /// Find the lighter/heavier and earlier/later pages for all pages having a date/weight
-pub fn find_siblings(sorted: &[DefaultKey]) -> Vec<(DefaultKey, Option<DefaultKey>, Option<DefaultKey>)> {
+pub fn find_siblings(
+    sorted: &[DefaultKey],
+) -> Vec<(DefaultKey, Option<DefaultKey>, Option<DefaultKey>)> {
     let mut res = Vec::with_capacity(sorted.len());
     let length = sorted.len();
 

@@ -2,11 +2,13 @@ extern crate reqwest;
 #[macro_use]
 extern crate lazy_static;
 
+extern crate config;
 extern crate errors;
 
 use reqwest::header::{HeaderMap, ACCEPT};
 use reqwest::StatusCode;
 
+use config::LinkChecker;
 use errors::Result;
 
 use std::collections::HashMap;
@@ -51,7 +53,7 @@ lazy_static! {
     static ref LINKS: Arc<RwLock<HashMap<String, LinkResult>>> = Arc::new(RwLock::new(HashMap::new()));
 }
 
-pub fn check_url(url: &str) -> LinkResult {
+pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
     {
         let guard = LINKS.read().unwrap();
         if let Some(res) = guard.get(url) {
@@ -65,9 +67,11 @@ pub fn check_url(url: &str) -> LinkResult {
 
     let client = reqwest::Client::new();
 
+    let check_anchor = !config.skip_anchor_prefixes.iter().any(|prefix| url.starts_with(prefix));
+
     // Need to actually do the link checking
     let res = match client.get(url).headers(headers).send() {
-        Ok(ref mut response) if has_anchor(url) => {
+        Ok(ref mut response) if check_anchor && has_anchor(url) => {
             match check_page_for_anchor(url, response.text()) {
                 Ok(_) => LinkResult { code: Some(response.status()), error: None },
                 Err(e) => LinkResult { code: None, error: Some(e.to_string()) },
@@ -111,21 +115,21 @@ fn check_page_for_anchor(url: &str, body: reqwest::Result<String>) -> Result<()>
 
 #[cfg(test)]
 mod tests {
-    use super::{check_page_for_anchor, check_url, has_anchor, LINKS};
+    use super::{check_page_for_anchor, check_url, has_anchor, LinkChecker, LINKS};
 
     #[test]
     fn can_validate_ok_links() {
         let url = "https://google.com";
-        let res = check_url(url);
+        let res = check_url(url, &LinkChecker::default());
         assert!(res.is_valid());
         assert!(LINKS.read().unwrap().get(url).is_some());
-        let res = check_url(url);
+        let res = check_url(url, &LinkChecker::default());
         assert!(res.is_valid());
     }
 
     #[test]
     fn can_fail_404_links() {
-        let res = check_url("https://google.comys");
+        let res = check_url("https://google.comys", &LinkChecker::default());
         assert_eq!(res.is_valid(), false);
         assert!(res.code.is_none());
         assert!(res.error.is_some());
@@ -189,5 +193,24 @@ mod tests {
         let url = "https://doc.rust-lang.org/#!/std";
         let res = has_anchor(url);
         assert_eq!(res, false);
+    }
+
+    #[test]
+    fn skip_anchor_prefixes() {
+        let config = LinkChecker {
+            skip_anchor_prefixes: vec!["https://github.com/rust-lang/rust/blob/".to_owned()],
+        };
+
+        // anchor check is ignored because the url matches the prefix
+        let permalink = "https://github.com/rust-lang/rust/blob/c772948b687488a087356cb91432425662e034b9/src/librustc_back/target/mod.rs#L194-L214";
+        assert!(check_url(&permalink, &config).is_valid());
+
+        // other anchors are checked
+        let glossary = "https://help.github.com/en/articles/github-glossary#blame";
+        assert!(check_url(&glossary, &config).is_valid());
+
+        let glossary_invalid =
+            "https://help.github.com/en/articles/github-glossary#anchor-does-not-exist";
+        assert_eq!(check_url(&glossary_invalid, &config).is_valid(), false);
     }
 }

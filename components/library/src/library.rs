@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
-use slotmap::{DenseSlotMap, DefaultKey};
+use slotmap::{DefaultKey, DenseSlotMap};
 
 use front_matter::SortBy;
 

@@ -95,8 +95,14 @@ extra_syntaxes = []
 #
 #     [translations.en]
 #     title = "A title"
-#
-[translations]
+
+
+# Configure the link checker
+[link_checker]
+# Skip anchor checking for external URLs that start with these prefixes
+skip_anchor_prefixes = [
+    "https://caniuse.com/",
+]
 
 # You can put any kind of data in there and it
 # will be accessible in all templates
