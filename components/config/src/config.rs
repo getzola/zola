@@ -7,8 +7,8 @@ use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use toml;
 use toml::Value as Toml;
 
-use errors::Result;
 use errors::Error;
+use errors::Result;
 use highlighting::THEME_SET;
 use theme::Theme;
 use utils::fs::read_file_with_error;
@@ -86,7 +86,20 @@ impl Default for Taxonomy {
     }
 }
 
-type TranslateTerm  = HashMap<String, String>;
+type TranslateTerm = HashMap<String, String>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LinkChecker {
+    /// Skip anchor checking for these URL prefixes
+    pub skip_anchor_prefixes: Vec<String>,
+}
+
+impl Default for LinkChecker {
+    fn default() -> LinkChecker {
+        LinkChecker { skip_anchor_prefixes: Vec::new() }
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -151,6 +164,8 @@ pub struct Config {
     /// The compiled extra syntaxes into a syntax set
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_syntax_set: Option<SyntaxSet>,
+
+    pub link_checker: LinkChecker,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -317,9 +332,16 @@ impl Config {
             Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
         })?;
 
-        terms.get(key.as_ref()).ok_or_else(|| {
-            Error::msg(format!("Translation key '{}' for language '{}' is missing", key.as_ref(), lang.as_ref()))
-        }).map(|term| term.to_string())
+        terms
+            .get(key.as_ref())
+            .ok_or_else(|| {
+                Error::msg(format!(
+                    "Translation key '{}' for language '{}' is missing",
+                    key.as_ref(),
+                    lang.as_ref()
+                ))
+            })
+            .map(|term| term.to_string())
     }
 }
 
@@ -346,6 +368,7 @@ impl Default for Config {
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
+            link_checker: LinkChecker::default(),
             extra: HashMap::new(),
             build_timestamp: Some(1),
         }
@@ -550,5 +573,26 @@ ignored_content = ["*.{graphml,iso}", "*.py?"]
         assert!(g.is_match("foo.py2"));
         assert!(g.is_match("foo.py3"));
         assert!(!g.is_match("foo.py"));
+    }
+
+    #[test]
+    fn link_checker_skip_anchor_prefixes() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[link_checker]
+skip_anchor_prefixes = [
+    "https://caniuse.com/#feat=",
+    "https://github.com/rust-lang/rust/blob/",
+]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        let v = config.link_checker.skip_anchor_prefixes;
+        assert_eq!(
+            v,
+            vec!["https://caniuse.com/#feat=", "https://github.com/rust-lang/rust/blob/"]
+        );
     }
 }
