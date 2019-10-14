@@ -34,9 +34,10 @@ impl TeraFn for Trans {
         let lang = optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.")
             .unwrap_or_else(|| self.config.default_language.clone());
 
-        let term = self.config.get_translation(lang, key).map_err(|e| {
-            Error::chain("Failed to retreive term translation", e)
-        })?;
+        let term = self
+            .config
+            .get_translation(lang, key)
+            .map_err(|e| Error::chain("Failed to retreive term translation", e))?;
 
         Ok(to_value(term).unwrap())
     }
@@ -508,7 +509,6 @@ mod tests {
         args.insert("name".to_string(), to_value("random").unwrap());
         assert!(static_fn.call(&args).is_err());
     }
-
 
     const TRANS_CONFIG: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"
