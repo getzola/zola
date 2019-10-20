@@ -7,7 +7,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 slotmap = "0.4"
 rayon = "1"
 chrono = { version = "0.4", features = ["serde"] }
-tera = "1.0.0-beta.10"
+tera = "1.0.0-beta.17"
 serde = "1"
 serde_derive = "1"
 slug = "0.1"

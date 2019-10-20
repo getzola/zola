@@ -69,6 +69,6 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
     let mut context = Context::new();
     context.insert("url", &url);
 
-    tera.render("internal/alias.html", context)
+    tera.render("internal/alias.html", &context)
         .map_err(|e| Error::chain(format!("Failed to render alias for '{}'", url), e))
 }
