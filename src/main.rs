@@ -36,7 +36,16 @@ fn main() {
 
     match matches.subcommand() {
         ("init", Some(matches)) => {
-            match cmd::create_new_project(matches.value_of("name").unwrap()) {
+            let name = matches.value_of("name");
+
+            if name.is_none() {
+                println!("You have to provide folder name as an argument to init.");
+                ::std::process::exit(1);
+            }
+
+            let name = name.unwrap();
+
+            match cmd::create_new_project(name) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("Failed to create the project", &e);
