@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use regex::Regex;
-use slotmap::Key;
+use slotmap::DefaultKey;
 use slug::slugify;
 use tera::{Context as TeraContext, Tera};
 
@@ -11,7 +11,7 @@ use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
 use library::Library;
-use rendering::{render_content, Header, RenderContext};
+use rendering::{render_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
@@ -35,7 +35,7 @@ pub struct Page {
     /// The front matter meta-data
     pub meta: PageFrontMatter,
     /// The list of parent sections
-    pub ancestors: Vec<Key>,
+    pub ancestors: Vec<DefaultKey>,
     /// The actual content of the page, in markdown
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
@@ -58,15 +58,15 @@ pub struct Page {
     /// as summary
     pub summary: Option<String>,
     /// The earlier page, for pages sorted by date
-    pub earlier: Option<Key>,
+    pub earlier: Option<DefaultKey>,
     /// The later page, for pages sorted by date
-    pub later: Option<Key>,
+    pub later: Option<DefaultKey>,
     /// The lighter page, for pages sorted by weight
-    pub lighter: Option<Key>,
+    pub lighter: Option<DefaultKey>,
     /// The heavier page, for pages sorted by weight
-    pub heavier: Option<Key>,
-    /// Toc made from the headers of the markdown file
-    pub toc: Vec<Header>,
+    pub heavier: Option<DefaultKey>,
+    /// Toc made from the headings of the markdown file
+    pub toc: Vec<Heading>,
     /// How many words in the raw content
     pub word_count: Option<usize>,
     /// How long would it take to read the raw content.
@@ -76,7 +76,7 @@ pub struct Page {
     /// Corresponds to the lang in the {slug}.{lang}.md file scheme
     pub lang: String,
     /// Contains all the translated version of that page
-    pub translations: Vec<Key>,
+    pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
     /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
     /// it would have errored before getting there
@@ -290,7 +290,6 @@ impl Page {
         context.insert("current_path", &self.path);
         context.insert("page", &self.to_serialized(library));
         context.insert("lang", &self.lang);
-        context.insert("toc", &self.toc);
 
         render_template(&tpl_name, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render page '{}'", self.file.path.display()), e)
@@ -736,7 +735,7 @@ Hello world
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let content = r#"
 +++
 +++
@@ -753,7 +752,7 @@ Bonjour le monde"#
     #[test]
     fn can_specify_language_in_filename_with_date() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let content = r#"
 +++
 +++
@@ -772,7 +771,7 @@ Bonjour le monde"#
     #[test]
     fn i18n_frontmatter_path_overrides_default_permalink() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), rss: false });
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
         let content = r#"
 +++
 path = "bonjour"

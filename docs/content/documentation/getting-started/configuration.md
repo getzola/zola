@@ -62,6 +62,7 @@ taxonomies = []
 # Example:
 #     languages = [
 #       {code = "fr", rss = true}, # there will be a RSS feed for French content
+#       {code = "fr", search = true}, # there will be a Search Index for French content
 #       {code = "it"}, # there won't be a RSS feed for Italian content
 #     ]
 #
@@ -83,6 +84,13 @@ ignored_content = []
 
 # A list of directories to search for additional `.sublime-syntax` files in.
 extra_syntaxes = []
+
+# Configure the link checker
+[link_checker]
+# Skip anchor checking for external URLs that start with these prefixes
+skip_anchor_prefixes = [
+    "https://caniuse.com/",
+]
 
 # Optional translation object. The key if present should be a language code
 [translations]
@@ -130,6 +138,7 @@ Zola currently has the following highlight themes available:
 - [ayu-mirage](https://github.com/dempfi/ayu)
 - [Tomorrow](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Tomorrow)
 - [one-dark](https://github.com/andresmichel/one-dark-theme)
+- [zenburn](https://github.com/colinta/zenburn)
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).

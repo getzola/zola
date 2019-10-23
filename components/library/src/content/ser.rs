@@ -5,6 +5,7 @@ use tera::{Map, Value};
 
 use content::{Page, Section};
 use library::Library;
+use rendering::Heading;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TranslatedContent<'a> {
@@ -64,6 +65,7 @@ pub struct SerializingPage<'a> {
     path: &'a str,
     components: &'a [String],
     summary: &'a Option<String>,
+    toc: &'a [Heading],
     word_count: Option<usize>,
     reading_time: Option<usize>,
     assets: &'a [String],
@@ -125,6 +127,7 @@ impl<'a> SerializingPage<'a> {
             path: &page.path,
             components: &page.components,
             summary: &page.summary,
+            toc: &page.toc,
             word_count: page.word_count,
             reading_time: page.reading_time,
             assets: &page.serialized_assets,
@@ -180,6 +183,7 @@ impl<'a> SerializingPage<'a> {
             path: &page.path,
             components: &page.components,
             summary: &page.summary,
+            toc: &page.toc,
             word_count: page.word_count,
             reading_time: page.reading_time,
             assets: &page.serialized_assets,
@@ -205,6 +209,7 @@ pub struct SerializingSection<'a> {
     extra: &'a HashMap<String, Value>,
     path: &'a str,
     components: &'a [String],
+    toc: &'a [Heading],
     word_count: Option<usize>,
     reading_time: Option<usize>,
     lang: &'a str,
@@ -244,6 +249,7 @@ impl<'a> SerializingSection<'a> {
             extra: &section.meta.extra,
             path: &section.path,
             components: &section.components,
+            toc: &section.toc,
             word_count: section.word_count,
             reading_time: section.reading_time,
             assets: &section.serialized_assets,
@@ -280,6 +286,7 @@ impl<'a> SerializingSection<'a> {
             extra: &section.meta.extra,
             path: &section.path,
             components: &section.components,
+            toc: &section.toc,
             word_count: section.word_count,
             reading_time: section.reading_time,
             assets: &section.serialized_assets,

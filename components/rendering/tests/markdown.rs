@@ -332,7 +332,7 @@ fn errors_relative_link_inexistant() {
 }
 
 #[test]
-fn can_add_id_to_headers() {
+fn can_add_id_to_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
@@ -342,7 +342,7 @@ fn can_add_id_to_headers() {
 }
 
 #[test]
-fn can_add_id_to_headers_same_slug() {
+fn can_add_id_to_headings_same_slug() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
@@ -352,7 +352,7 @@ fn can_add_id_to_headers_same_slug() {
 }
 
 #[test]
-fn can_handle_manual_ids_on_headers() {
+fn can_handle_manual_ids_on_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
@@ -361,7 +361,7 @@ fn can_handle_manual_ids_on_headers() {
     // manual IDs; that duplicates are in fact permitted among manual IDs; that any non-plain-text
     // in the middle of `{#…}` will disrupt it from being acknowledged as a manual ID (that last
     // one could reasonably be considered a bug rather than a feature, but test it either way); one
-    // workaround for the improbable case where you actually want `{#…}` at the end of a header.
+    // workaround for the improbable case where you actually want `{#…}` at the end of a heading.
     let res = render_content(
         "\
          # Hello\n\
@@ -389,7 +389,7 @@ fn can_handle_manual_ids_on_headers() {
 }
 
 #[test]
-fn blank_headers() {
+fn blank_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
@@ -426,7 +426,7 @@ fn can_insert_anchor_right() {
 }
 
 #[test]
-fn can_insert_anchor_for_multi_header() {
+fn can_insert_anchor_for_multi_heading() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::Right);
@@ -490,11 +490,11 @@ fn can_make_toc() {
 
     let res = render_content(
         r#"
-# Header 1
+# Heading 1
 
-## Header 2
+## Heading 2
 
-## Another Header 2
+## Another Heading 2
 
 ### Last one
     "#,
@@ -522,9 +522,9 @@ fn can_ignore_tags_in_toc() {
 
     let res = render_content(
         r#"
-## header with `code`
+## heading with `code`
 
-## [anchor](https://duckduckgo.com/) in header
+## [anchor](https://duckduckgo.com/) in heading
 
 ## **bold** and *italics*
     "#,
@@ -534,11 +534,11 @@ fn can_ignore_tags_in_toc() {
 
     let toc = res.toc;
 
-    assert_eq!(toc[0].id, "header-with-code");
-    assert_eq!(toc[0].title, "header with code");
+    assert_eq!(toc[0].id, "heading-with-code");
+    assert_eq!(toc[0].title, "heading with code");
 
-    assert_eq!(toc[1].id, "anchor-in-header");
-    assert_eq!(toc[1].title, "anchor in header");
+    assert_eq!(toc[1].id, "anchor-in-heading");
+    assert_eq!(toc[1].title, "anchor in heading");
 
     assert_eq!(toc[2].id, "bold-and-italics");
     assert_eq!(toc[2].title, "bold and italics");
@@ -564,7 +564,7 @@ fn can_understand_backtick_in_paragraphs() {
 
 // https://github.com/Keats/gutenberg/issues/297
 #[test]
-fn can_understand_links_in_header() {
+fn can_understand_links_in_heading() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
@@ -573,7 +573,7 @@ fn can_understand_links_in_header() {
 }
 
 #[test]
-fn can_understand_link_with_title_in_header() {
+fn can_understand_link_with_title_in_heading() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
@@ -586,7 +586,7 @@ fn can_understand_link_with_title_in_header() {
 }
 
 #[test]
-fn can_understand_emphasis_in_header() {
+fn can_understand_emphasis_in_heading() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
@@ -595,7 +595,7 @@ fn can_understand_emphasis_in_header() {
 }
 
 #[test]
-fn can_understand_strong_in_header() {
+fn can_understand_strong_in_heading() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
@@ -604,7 +604,7 @@ fn can_understand_strong_in_header() {
 }
 
 #[test]
-fn can_understand_code_in_header() {
+fn can_understand_code_in_heading() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
@@ -614,7 +614,7 @@ fn can_understand_code_in_header() {
 
 // See https://github.com/getzola/zola/issues/569
 #[test]
-fn can_understand_footnote_in_header() {
+fn can_understand_footnote_in_heading() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
@@ -627,7 +627,7 @@ fn can_understand_footnote_in_header() {
 }
 
 #[test]
-fn can_make_valid_relative_link_in_header() {
+fn can_make_valid_relative_link_in_heading() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about/".to_string());
     let tera_ctx = Tera::default();
@@ -821,12 +821,34 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 //}
 
 // https://github.com/getzola/zola/issues/747
+// https://github.com/getzola/zola/issues/816
 #[test]
 fn leaves_custom_url_scheme_untouched() {
+    let content = r#"[foo@bar.tld](xmpp:foo@bar.tld)
+
+[(123) 456-7890](tel:+11234567890)
+
+[blank page](about:blank)
+"#;
+
     let tera_ctx = Tera::default();
-    let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("[foo@bar.tld](xmpp:foo@bar.tld)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"xmpp:foo@bar.tld\">foo@bar.tld</a></p>\n");
+    let permalinks_ctx = HashMap::new();
+
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        "https://vincent.is/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+
+    let res = render_content(content, &context).unwrap();
+
+    let expected = r#"<p><a href="xmpp:foo@bar.tld">foo@bar.tld</a></p>
+<p><a href="tel:+11234567890">(123) 456-7890</a></p>
+<p><a href="about:blank">blank page</a></p>
+"#;
+
+    assert_eq!(res.body, expected);
 }

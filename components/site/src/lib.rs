@@ -399,7 +399,7 @@ impl Site {
             all_links
                 .par_iter()
                 .filter_map(|(page_path, link)| {
-                    let res = check_url(&link);
+                    let res = check_url(&link, &self.config.link_checker);
                     if res.is_valid() {
                         None
                     } else {
@@ -790,6 +790,18 @@ impl Site {
                 search::build_index(&self.config.default_language, &self.library.read().unwrap())?
             ),
         )?;
+
+        for language in &self.config.languages {
+            if language.code != self.config.default_language && language.search {
+                create_file(
+                    &self.output_path.join(&format!("search_index.{}.js", &language.code)),
+                    &format!(
+                        "window.searchIndex = {};",
+                        search::build_index(&language.code, &self.library.read().unwrap())?
+                    ),
+                )?;
+            }
+        }
 
         // then elasticlunr.min.js
         create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;

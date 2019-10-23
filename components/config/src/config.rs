@@ -7,6 +7,7 @@ use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use toml;
 use toml::Value as Toml;
 
+use errors::Error;
 use errors::Result;
 use highlighting::THEME_SET;
 use theme::Theme;
@@ -29,11 +30,13 @@ pub struct Language {
     pub code: String,
     /// Whether to generate a RSS feed for that language, defaults to `false`
     pub rss: bool,
+    /// Whether to generate search index for that language, defaults to `false`
+    pub search: bool,
 }
 
 impl Default for Language {
     fn default() -> Language {
-        Language { code: String::new(), rss: false }
+        Language { code: String::new(), rss: false, search: false }
     }
 }
 
@@ -83,6 +86,21 @@ impl Default for Taxonomy {
     }
 }
 
+type TranslateTerm = HashMap<String, String>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LinkChecker {
+    /// Skip anchor checking for these URL prefixes
+    pub skip_anchor_prefixes: Vec<String>,
+}
+
+impl Default for LinkChecker {
+    fn default() -> LinkChecker {
+        LinkChecker { skip_anchor_prefixes: Vec::new() }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -100,8 +118,15 @@ pub struct Config {
     pub default_language: String,
     /// The list of supported languages outside of the default one
     pub languages: Vec<Language>,
+
     /// Languages list and translated strings
-    pub translations: HashMap<String, Toml>,
+    ///
+    /// The `String` key of `HashMap` is a language name, the value should be toml crate `Table`
+    /// with String key representing term and value another `String` representing its translation.
+    ///
+    /// The attribute is intentionally not public, use `get_translation()` method for translating
+    /// key into different language.
+    translations: HashMap<String, TranslateTerm>,
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
@@ -139,6 +164,8 @@ pub struct Config {
     /// The compiled extra syntaxes into a syntax set
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_syntax_set: Option<SyntaxSet>,
+
+    pub link_checker: LinkChecker,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -299,6 +326,23 @@ impl Config {
         // and this operation can be expensive.
         self.highlight_code = false;
     }
+
+    pub fn get_translation<S: AsRef<str>>(&self, lang: S, key: S) -> Result<String> {
+        let terms = self.translations.get(lang.as_ref()).ok_or_else(|| {
+            Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
+        })?;
+
+        terms
+            .get(key.as_ref())
+            .ok_or_else(|| {
+                Error::msg(format!(
+                    "Translation key '{}' for language '{}' is missing",
+                    key.as_ref(),
+                    lang.as_ref()
+                ))
+            })
+            .map(|term| term.to_string())
+    }
 }
 
 impl Default for Config {
@@ -324,6 +368,7 @@ impl Default for Config {
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
+            link_checker: LinkChecker::default(),
             extra: HashMap::new(),
             build_timestamp: Some(1),
         }
@@ -447,9 +492,7 @@ a_value = 10
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
     }
 
-    #[test]
-    fn can_use_language_configuration() {
-        let config = r#"
+    const CONFIG_TRANSLATION: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 
@@ -459,14 +502,29 @@ title = "Un titre"
 
 [translations.en]
 title = "A title"
-
         "#;
 
-        let config = Config::parse(config);
-        assert!(config.is_ok());
-        let translations = config.unwrap().translations;
-        assert_eq!(translations["fr"]["title"].as_str().unwrap(), "Un titre");
-        assert_eq!(translations["en"]["title"].as_str().unwrap(), "A title");
+    #[test]
+    fn can_use_present_translation() {
+        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        assert_eq!(config.get_translation("fr", "title").unwrap(), "Un titre");
+        assert_eq!(config.get_translation("en", "title").unwrap(), "A title");
+    }
+
+    #[test]
+    fn error_on_absent_translation_lang() {
+        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        let error = config.get_translation("absent", "key").unwrap_err();
+
+        assert_eq!("Translation for language 'absent' is missing", format!("{}", error));
+    }
+
+    #[test]
+    fn error_on_absent_translation_key() {
+        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        let error = config.get_translation("en", "absent").unwrap_err();
+
+        assert_eq!("Translation key 'absent' for language 'en' is missing", format!("{}", error));
     }
 
     #[test]
@@ -515,5 +573,26 @@ ignored_content = ["*.{graphml,iso}", "*.py?"]
         assert!(g.is_match("foo.py2"));
         assert!(g.is_match("foo.py3"));
         assert!(!g.is_match("foo.py"));
+    }
+
+    #[test]
+    fn link_checker_skip_anchor_prefixes() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[link_checker]
+skip_anchor_prefixes = [
+    "https://caniuse.com/#feat=",
+    "https://github.com/rust-lang/rust/blob/",
+]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        let v = config.link_checker.skip_anchor_prefixes;
+        assert_eq!(
+            v,
+            vec!["https://caniuse.com/#feat=", "https://github.com/rust-lang/rust/blob/"]
+        );
     }
 }

@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
-use slotmap::{DenseSlotMap, Key};
+use slotmap::{DefaultKey, DenseSlotMap};
 
 use front_matter::SortBy;
 
@@ -19,13 +19,13 @@ use sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
 #[derive(Debug)]
 pub struct Library {
     /// All the pages of the site
-    pages: DenseSlotMap<Page>,
+    pages: DenseSlotMap<DefaultKey, Page>,
     /// All the sections of the site
-    sections: DenseSlotMap<Section>,
+    sections: DenseSlotMap<DefaultKey, Section>,
     /// A mapping path -> key for pages so we can easily get their key
-    pub paths_to_pages: HashMap<PathBuf, Key>,
+    pub paths_to_pages: HashMap<PathBuf, DefaultKey>,
     /// A mapping path -> key for sections so we can easily get their key
-    pub paths_to_sections: HashMap<PathBuf, Key>,
+    pub paths_to_sections: HashMap<PathBuf, DefaultKey>,
     /// Whether we need to look for translations
     is_multilingual: bool,
 }
@@ -42,7 +42,7 @@ impl Library {
     }
 
     /// Add a section and return its Key
-    pub fn insert_section(&mut self, section: Section) -> Key {
+    pub fn insert_section(&mut self, section: Section) -> DefaultKey {
         let path = section.file.path.clone();
         let key = self.sections.insert(section);
         self.paths_to_sections.insert(path, key);
@@ -50,18 +50,18 @@ impl Library {
     }
 
     /// Add a page and return its Key
-    pub fn insert_page(&mut self, page: Page) -> Key {
+    pub fn insert_page(&mut self, page: Page) -> DefaultKey {
         let path = page.file.path.clone();
         let key = self.pages.insert(page);
         self.paths_to_pages.insert(path, key);
         key
     }
 
-    pub fn pages(&self) -> &DenseSlotMap<Page> {
+    pub fn pages(&self) -> &DenseSlotMap<DefaultKey, Page> {
         &self.pages
     }
 
-    pub fn pages_mut(&mut self) -> &mut DenseSlotMap<Page> {
+    pub fn pages_mut(&mut self) -> &mut DenseSlotMap<DefaultKey, Page> {
         &mut self.pages
     }
 
@@ -69,11 +69,11 @@ impl Library {
         self.pages.values().collect::<Vec<_>>()
     }
 
-    pub fn sections(&self) -> &DenseSlotMap<Section> {
+    pub fn sections(&self) -> &DenseSlotMap<DefaultKey, Section> {
         &self.sections
     }
 
-    pub fn sections_mut(&mut self) -> &mut DenseSlotMap<Section> {
+    pub fn sections_mut(&mut self) -> &mut DenseSlotMap<DefaultKey, Section> {
         &mut self.sections
     }
 
@@ -336,7 +336,7 @@ impl Library {
     }
 
     /// Only used in tests
-    pub fn get_section_key<P: AsRef<Path>>(&self, path: P) -> Option<&Key> {
+    pub fn get_section_key<P: AsRef<Path>>(&self, path: P) -> Option<&DefaultKey> {
         self.paths_to_sections.get(path.as_ref())
     }
 
@@ -349,15 +349,15 @@ impl Library {
             .get_mut(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
-    pub fn get_section_by_key(&self, key: Key) -> &Section {
+    pub fn get_section_by_key(&self, key: DefaultKey) -> &Section {
         self.sections.get(key).unwrap()
     }
 
-    pub fn get_section_mut_by_key(&mut self, key: Key) -> &mut Section {
+    pub fn get_section_mut_by_key(&mut self, key: DefaultKey) -> &mut Section {
         self.sections.get_mut(key).unwrap()
     }
 
-    pub fn get_section_path_by_key(&self, key: Key) -> &str {
+    pub fn get_section_path_by_key(&self, key: DefaultKey) -> &str {
         &self.get_section_by_key(key).file.relative
     }
 
@@ -365,11 +365,11 @@ impl Library {
         self.pages.get(self.paths_to_pages.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
-    pub fn get_page_by_key(&self, key: Key) -> &Page {
+    pub fn get_page_by_key(&self, key: DefaultKey) -> &Page {
         self.pages.get(key).unwrap()
     }
 
-    pub fn get_page_mut_by_key(&mut self, key: Key) -> &mut Page {
+    pub fn get_page_mut_by_key(&mut self, key: DefaultKey) -> &mut Page {
         self.pages.get_mut(key).unwrap()
     }
 

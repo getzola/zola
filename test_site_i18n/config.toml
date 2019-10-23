@@ -9,7 +9,9 @@ compile_sass = false
 highlight_code = false
 
 # Whether to build a search index to be used later on by a JavaScript library
-build_search_index = false
+build_search_index = true
+
+default_language = "en"
 
 generate_rss = true
 
@@ -22,7 +24,7 @@ taxonomies = [
 
 languages = [
  {code = "fr", rss = true},
- {code = "it", rss = false},
+ {code = "it", rss = false, search = true },
 ]
 
 [extra]

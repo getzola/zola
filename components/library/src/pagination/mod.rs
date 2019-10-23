@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use slotmap::Key;
+use slotmap::DefaultKey;
 use tera::{to_value, Context, Tera, Value};
 
 use config::Config;
@@ -44,7 +44,7 @@ impl<'a> Pager<'a> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Paginator<'a> {
     /// All pages in the section/taxonomy
-    all_pages: &'a [Key],
+    all_pages: &'a [DefaultKey],
     /// Pages split in chunks of `paginate_by`
     pub pagers: Vec<Pager<'a>>,
     /// How many content pages on a paginated page at max
