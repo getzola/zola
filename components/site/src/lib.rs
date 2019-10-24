@@ -633,7 +633,7 @@ impl Site {
             return html.replace(
                 "</body>",
                 &format!(
-                    r#"<script src="/livereload.js?port={}&mindelay=10"></script></body>"#,
+                    r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script></body>"#,
                     port
                 ),
             );

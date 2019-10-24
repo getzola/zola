@@ -161,7 +161,7 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "nested_sass/scss.css"));
 
     // no live reload code
-    assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
+    assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"), false);
 
     // Both pages and sections are in the sitemap
     assert!(file_contains!(
