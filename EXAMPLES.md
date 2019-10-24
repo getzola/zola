@@ -24,3 +24,4 @@
 | [maxdeviant.com](https://maxdeviant.com/)                          |                                                      |
 | [Uwes Blog](https://uwe-arzt.de)                                   | https://github.com/uwearzt/site-uwe-arzt             |
 | [ozkriff.games](https://ozkriff.games)                             | https://github.com/ozkriff/ozkriff.github.io-src     |
+| [Sylvain Kerkour](https://kerkour.fr)                              | https://gitlab.com/z0mbie42/kerkour.fr               |
