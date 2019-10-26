@@ -191,6 +191,7 @@ impl<'a> Paginator<'a> {
         );
         paginator.insert("pages", to_value(&current_pager.pages).unwrap());
         paginator.insert("current_index", to_value(current_pager.index).unwrap());
+        paginator.insert("total_pages", to_value(self.all_pages.len()).unwrap());
 
         paginator
     }
