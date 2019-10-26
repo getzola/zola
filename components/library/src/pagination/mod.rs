@@ -324,6 +324,7 @@ mod tests {
         assert_eq!(context["next"], to_value::<Option<()>>(None).unwrap());
         assert_eq!(context["previous"], to_value("https://vincent.is/posts/").unwrap());
         assert_eq!(context["current_index"], to_value(2).unwrap());
+        assert_eq!(context["total_pages"], to_value(4).unwrap());
     }
 
     #[test]
