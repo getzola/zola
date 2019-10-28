@@ -86,16 +86,7 @@ pub fn create_new_project(name: &str) -> Result<()> {
         .replace("%SEARCH%", &format!("{}", search))
         .replace("%HIGHLIGHT%", &format!("{}", highlight));
 
-    create_dir(path)?;
-    create_file(&path.join("config.toml"), &config)?;
-
-    create_dir(path.join("content"))?;
-    create_dir(path.join("templates"))?;
-    create_dir(path.join("static"))?;
-    create_dir(path.join("themes"))?;
-    if compile_sass {
-        create_dir(path.join("sass"))?;
-    }
+    populate(&path, compile_sass, &config)?;
 
     println!();
     console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));
@@ -104,6 +95,22 @@ pub fn create_new_project(name: &str) -> Result<()> {
         "Get started by moving into the directory and using the built-in server: `zola serve`",
     );
     println!("Visit https://www.getzola.org for the full documentation.");
+    Ok(())
+}
+
+fn populate(path: &Path, compile_sass: bool, config: &str) -> Result<()> {
+    if !path.exists() {
+        create_dir(path)?;
+    }
+    create_file(&path.join("config.toml"), &config)?;
+    create_dir(path.join("content"))?;
+    create_dir(path.join("templates"))?;
+    create_dir(path.join("static"))?;
+    create_dir(path.join("themes"))?;
+    if compile_sass {
+        create_dir(path.join("sass"))?;
+    }
+
     Ok(())
 }
 
@@ -161,5 +168,60 @@ mod tests {
         remove_dir(&git).unwrap();
         remove_dir(&dir).unwrap();
         assert_eq!(true, allowed);
+    }
+
+    #[test]
+    fn populate_existing_directory() {
+        let mut dir = temp_dir();
+        dir.push("test_existing_dir");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        populate(&dir, true, "").expect("Could not populate zola directories");
+
+        assert_eq!(true, dir.join("config.toml").exists());
+        assert_eq!(true, dir.join("content").exists());
+        assert_eq!(true, dir.join("templates").exists());
+        assert_eq!(true, dir.join("static").exists());
+        assert_eq!(true, dir.join("themes").exists());
+        assert_eq!(true, dir.join("sass").exists());
+
+        remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn populate_non_existing_directory() {
+        let mut dir = temp_dir();
+        dir.push("test_non_existing_dir");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        populate(&dir, true, "").expect("Could not populate zola directories");
+
+        assert_eq!(true, dir.exists());
+        assert_eq!(true, dir.join("config.toml").exists());
+        assert_eq!(true, dir.join("content").exists());
+        assert_eq!(true, dir.join("templates").exists());
+        assert_eq!(true, dir.join("static").exists());
+        assert_eq!(true, dir.join("themes").exists());
+        assert_eq!(true, dir.join("sass").exists());
+
+        remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn populate_without_sass() {
+        let mut dir = temp_dir();
+        dir.push("test_wihout_sass_dir");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        populate(&dir, false, "").expect("Could not populate zola directories");
+
+        assert_eq!(false, dir.join("sass").exists());
+
+        remove_dir_all(&dir).unwrap();
     }
 }
