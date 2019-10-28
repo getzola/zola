@@ -191,6 +191,7 @@ impl<'a> Paginator<'a> {
         );
         paginator.insert("pages", to_value(&current_pager.pages).unwrap());
         paginator.insert("current_index", to_value(current_pager.index).unwrap());
+        paginator.insert("total_pages", to_value(self.all_pages.len()).unwrap());
 
         paginator
     }
@@ -323,6 +324,7 @@ mod tests {
         assert_eq!(context["next"], to_value::<Option<()>>(None).unwrap());
         assert_eq!(context["previous"], to_value("https://vincent.is/posts/").unwrap());
         assert_eq!(context["current_index"], to_value(2).unwrap());
+        assert_eq!(context["total_pages"], to_value(4).unwrap());
     }
 
     #[test]
