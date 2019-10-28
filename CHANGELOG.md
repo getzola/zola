@@ -2,8 +2,15 @@
 
 ## 0.10.0 (unreleased)
 
+### Breaking
+- Remove `toc` variable in section/page context and pass it to `page.toc` and `section.toc` instead so they are
+accessible everywhere
+
 ### Other
 - Add zenburn syntax highlighting theme
+- Fix `zola init .`
+- Add `total_pages` to paginator
+- Do not prepend URL prefix to links that start with a scheme
 
 ## 0.9.0 (2019-09-28)
 
