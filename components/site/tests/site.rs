@@ -470,6 +470,16 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
     ));
+    assert!(file_contains!(
+        public,
+        "page/1/index.html",
+        "<title>Redirect</title>"
+    ));
+    assert!(file_contains!(
+        public,
+        "page/1/index.html",
+        "<a href=\"https://replace-this-with-your-url.com/\">Click here</a>"
+    ));
     assert!(file_contains!(public, "index.html", "Num pages: 1"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
