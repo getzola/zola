@@ -28,6 +28,8 @@ next: String?;
 pages: Array<Page>;
 // Which pager are we on
 current_index: Number;
+// Total number of pages accross all the pagers
+total_pages: Number;
 ```
 
 A pager is a page of the pagination: if you have 100 pages and are paginating 10 by 10, you will have 10 pagers containing
