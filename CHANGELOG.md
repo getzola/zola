@@ -11,6 +11,7 @@ accessible everywhere
 - Fix `zola init .`
 - Add `total_pages` to paginator
 - Do not prepend URL prefix to links that start with a scheme
+- Allow skipping anchor checking in `zola check` for some URL prefixes
 
 ## 0.9.0 (2019-09-28)
 
