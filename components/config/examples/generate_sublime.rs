@@ -2,7 +2,10 @@
 //! syntect, not as a helpful example for beginners.
 //! Although it is a valid example for serializing syntaxes, you probably won't need
 //! to do this yourself unless you want to cache your own compiled grammars.
+extern crate itertools;
 extern crate syntect;
+
+use itertools::Itertools;
 use std::env;
 use syntect::dumps::*;
 use syntect::highlighting::ThemeSet;
@@ -26,8 +29,24 @@ fn main() {
             builder.add_from_folder(package_dir, true).unwrap();
             let ss = builder.build();
             dump_to_file(&ss, packpath_newlines).unwrap();
-
-            for s in ss.syntaxes() {
+            let syntaxes_sorted = ss
+                .syntaxes()
+                .iter()
+                .sorted_by(|a, b| {
+                    Ord::cmp(&a.name.to_ascii_lowercase(), &b.name.to_ascii_lowercase())
+                })
+                .coalesce(|x, y| {
+                    if x.name == y.name {
+                        if x.file_extensions.len() > y.file_extensions.len() {
+                            Ok(x)
+                        } else {
+                            Ok(y)
+                        }
+                    } else {
+                        Err((x, y))
+                    }
+                });
+            for s in syntaxes_sorted {
                 if !s.file_extensions.is_empty() {
                     println!("- {} -> {:?}", s.name, s.file_extensions);
                 }

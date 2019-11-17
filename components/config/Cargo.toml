@@ -11,6 +11,7 @@ chrono = "0.4"
 globset = "0.4"
 lazy_static = "1"
 syntect = "=3.2.0"
+itertools = "0.8.1"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
