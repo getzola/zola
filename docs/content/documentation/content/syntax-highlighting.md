@@ -115,7 +115,7 @@ Here is a full list of the supported languages and the short names you can use:
 - Tcl -> ["tcl"]
 - TeX -> ["sty", "cls"]
 - Textile -> ["textile"]
-- TOML -> ["toml", "tml", "Cargo.lock", "Gopkg.lock", "Pipfile"]
+- TOML -> ["Cargo.lock", "Gopkg.lock", "Pipfile", "tml", "toml"]
 - TypeScript -> ["ts"]
 - TypeScriptReact -> ["tsx"]
 - VimL -> ["vim"]

@@ -2,14 +2,14 @@
 //! syntect, not as a helpful example for beginners.
 //! Although it is a valid example for serializing syntaxes, you probably won't need
 //! to do this yourself unless you want to cache your own compiled grammars.
-extern crate itertools;
 extern crate syntect;
 
-use itertools::Itertools;
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::env;
 use syntect::dumps::*;
 use syntect::highlighting::ThemeSet;
-use syntect::parsing::SyntaxSetBuilder;
+use syntect::parsing::{SyntaxReference, SyntaxSetBuilder};
 
 fn usage_and_exit() -> ! {
     println!("USAGE: cargo run --example generate_sublime synpack source-dir newlines.packdump nonewlines.packdump\n
@@ -29,26 +29,31 @@ fn main() {
             builder.add_from_folder(package_dir, true).unwrap();
             let ss = builder.build();
             dump_to_file(&ss, packpath_newlines).unwrap();
-            let syntaxes_sorted = ss
-                .syntaxes()
-                .iter()
-                .sorted_by(|a, b| {
-                    Ord::cmp(&a.name.to_ascii_lowercase(), &b.name.to_ascii_lowercase())
-                })
-                .coalesce(|x, y| {
-                    if x.name == y.name {
-                        if x.file_extensions.len() > y.file_extensions.len() {
-                            Ok(x)
-                        } else {
-                            Ok(y)
+            let mut syntaxes: HashMap<String, SyntaxReference> = HashMap::new();
+            for s in ss.syntaxes().iter() {
+                if !syntaxes.contains_key(&s.name) {
+                    syntaxes.insert(s.name.clone(), s.clone());
+                } else {
+                    if let Some(some_s) = syntaxes.get_mut(&s.name) {
+                        let mut extensions: HashSet<String> =
+                            some_s.file_extensions.iter().cloned().collect();
+                        for fe in s.clone().file_extensions.iter() {
+                            extensions.insert(fe.clone());
                         }
-                    } else {
-                        Err((x, y))
+                        let mut extensions_merged = extensions.iter().cloned().collect::<Vec<_>>();
+                        extensions_merged.sort();
+                        some_s.file_extensions.clear();
+                        some_s.file_extensions.extend(extensions_merged);
                     }
-                });
-            for s in syntaxes_sorted {
-                if !s.file_extensions.is_empty() {
-                    println!("- {} -> {:?}", s.name, s.file_extensions);
+                }
+            }
+            let mut keys = syntaxes.keys().collect::<Vec<_>>();
+            keys.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+            for k in keys {
+                if let Some(s) = syntaxes.get(k) {
+                    if !s.file_extensions.is_empty() {
+                        println!("- {} -> {:?}", s.name, s.file_extensions);
+                    }
                 }
             }
         }
