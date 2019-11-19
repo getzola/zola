@@ -3,7 +3,11 @@
 //! Although it is a valid example for serializing syntaxes, you probably won't need
 //! to do this yourself unless you want to cache your own compiled grammars.
 extern crate syntect;
+
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::env;
+use std::iter::FromIterator;
 use syntect::dumps::*;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSetBuilder;
@@ -26,10 +30,25 @@ fn main() {
             builder.add_from_folder(package_dir, true).unwrap();
             let ss = builder.build();
             dump_to_file(&ss, packpath_newlines).unwrap();
+            let mut syntaxes: HashMap<String, HashSet<String>> = HashMap::new();
 
-            for s in ss.syntaxes() {
-                if !s.file_extensions.is_empty() {
-                    println!("- {} -> {:?}", s.name, s.file_extensions);
+            for s in ss.syntaxes().iter() {
+                syntaxes
+                    .entry(s.name.clone())
+                    .and_modify(|e| {
+                        for ext in &s.file_extensions {
+                            e.insert(ext.clone());
+                        }
+                    })
+                    .or_insert_with(|| HashSet::from_iter(s.file_extensions.iter().cloned()));
+            }
+            let mut keys = syntaxes.keys().collect::<Vec<_>>();
+            keys.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+            for k in keys {
+                if !syntaxes[k].is_empty() {
+                    let mut extensions_sorted = syntaxes[k].iter().cloned().collect::<Vec<_>>();
+                    extensions_sorted.sort();
+                    println!("- {} -> {:?}", k, extensions_sorted);
                 }
             }
         }
