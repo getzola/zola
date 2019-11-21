@@ -24,7 +24,7 @@ $ yay -S zola-bin
 
 ### Fedora
 
-Zola is available in official repositories since Fedora 29.
+Zola has been available in the official repositories since Fedora 29.
 
 ```sh
 $ sudo dnf install zola
