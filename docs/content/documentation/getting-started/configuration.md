@@ -3,51 +3,51 @@ title = "Configuration"
 weight = 4
 +++
 
-The default configuration will be enough to get Zola running locally but not more than that.
-It follows the philosophy of only paying for what you need: almost everything is turned off by default.
+The default configuration is sufficient to get Zola running locally but not more than that.
+It follows the philosophy of paying for only what you need; almost everything is turned off by default.
 
-To change the config, edit the `config.toml` file.
-If you are not familiar with TOML, have a look at [the TOML Spec](https://github.com/toml-lang/toml)
-to learn about it.
+To change the configuration, edit the `config.toml` file.
+If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
-Only one variable - `base_url` - is mandatory, everything else is optional. You can find all variables
-used by Zola config as well as their default values below:
+Only the `base_url` variable is mandatory; everything else is optional. All configuration variables
+used by Zola as well as their default values are listed below:
 
 
 ```toml
-# Base URL of the site, the only required config argument
+# The base URL of the site; the only required configuration variable.
 base_url = "mywebsite.com"
 
-# Used in RSS by default
+# The site title and description; used in RSS by default.
 title = ""
 description = ""
-# The default language, used in RSS
+
+# The default language; used in RSS.
 default_language = "en"
 
-# Theme name to use
+# The site theme to use.
 theme = ""
 
-# Highlight all code blocks found
+# When set to *true*, all code blocks are highlighted.
 highlight_code = false
 
-# Which theme to use for the code highlighting.
-# See below for list of accepted values
+# The theme to use for code highlighting.
+# See below for list of allowed values.
 highlight_theme = "base16-ocean-dark"
 
-# Whether to generate a RSS feed automatically
+# When set to *true*, an RSS feed is automatically generated.
 generate_rss = false
 
-# The number of articles to include in the RSS feed. Will include all items if
-# not set (the default).
+# The number of articles to include in the RSS feed. All items are included if
+# this limit is not set (the default).
 # rss_limit = 20
 
-# Whether to copy or hardlink files in static/ directory. Useful for sites
-# whose static files are large. Note that for this to work, both static/ and
-# output directory need to be on the same filesystem. Also, theme's static/
-# files are always copies, regardles of this setting. False by default.
+# When set to *true*, files in the `static` directory are hard-linked. Useful for large
+# static files. Note that for this to work, both `static` and the
+# output directory need to be on the same filesystem. Note that the theme's `static`
+# files are always copied, regardles of this setting.
 # hard_link_static = false
 
-# The taxonomies to be rendered for that site and their configuration
+# The taxonomies to be rendered for the site and their configuration.
 # Example:
 #     taxonomies = [
 #       {name = "tags", rss = true}, # each tag will have its own RSS feed
@@ -58,7 +58,7 @@ generate_rss = false
 #
 taxonomies = []
 
-# The additional languages for that site
+# The additional languages for the site.
 # Example:
 #     languages = [
 #       {code = "fr", rss = true}, # there will be a RSS feed for French content
@@ -68,35 +68,35 @@ taxonomies = []
 #
 languages = []
 
-# Whether to compile the Sass files found in the `sass` directory
+# When set to *true*, the Sass files in the `sass` directory are compiled.
 compile_sass = false
 
-# Whether to build a search index out of the pages and section
-# content for the `default_language`
+# When set to *true*, a search index is built from the pages and section
+# content for `default_language`.
 build_search_index = false
 
-# A list of glob patterns specifying asset files to ignore when
-# processing the content directory.
-# Defaults to none, which means all asset files are copied over to the public folder.
+# A list of glob patterns specifying asset files to ignore when the content
+# directory is processed. Defaults to none, which means that all asset files are
+# copied over to the `public` directory.
 # Example:
 #     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
 ignored_content = []
 
-# A list of directories to search for additional `.sublime-syntax` files in.
+# A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
-# Configure the link checker
+# Configuration of the link checker.
 [link_checker]
 # Skip anchor checking for external URLs that start with these prefixes
 skip_anchor_prefixes = [
     "https://caniuse.com/",
 ]
 
-# Optional translation object. The key if present should be a language code
+# Optional translation object. Keys should be language codes.
 [translations]
 
-# You can put any kind of data in there and it
-# will be accessible in all templates
+# You can put any kind of data here. The data
+# will be accessible in all templates.
 [extra]
 ```
 
@@ -141,4 +141,4 @@ Zola currently has the following highlight themes available:
 - [zenburn](https://github.com/colinta/zenburn)
 
 Zola uses the Sublime Text themes, making it very easy to add more.
-If you want a theme not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
+If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
