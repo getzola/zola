@@ -27,21 +27,21 @@ default_language = "en"
 # The site theme to use.
 theme = ""
 
-# When set to *true*, all code blocks are highlighted.
+# When set to "true", all code blocks are highlighted.
 highlight_code = false
 
 # The theme to use for code highlighting.
 # See below for list of allowed values.
 highlight_theme = "base16-ocean-dark"
 
-# When set to *true*, an RSS feed is automatically generated.
+# When set to "true", an RSS feed is automatically generated.
 generate_rss = false
 
 # The number of articles to include in the RSS feed. All items are included if
 # this limit is not set (the default).
 # rss_limit = 20
 
-# When set to *true*, files in the `static` directory are hard-linked. Useful for large
+# When set to "true", files in the `static` directory are hard-linked. Useful for large
 # static files. Note that for this to work, both `static` and the
 # output directory need to be on the same filesystem. Note that the theme's `static`
 # files are always copied, regardles of this setting.
@@ -68,10 +68,10 @@ taxonomies = []
 #
 languages = []
 
-# When set to *true*, the Sass files in the `sass` directory are compiled.
+# When set to "true", the Sass files in the `sass` directory are compiled.
 compile_sass = false
 
-# When set to *true*, a search index is built from the pages and section
+# When set to "true", a search index is built from the pages and section
 # content for `default_language`.
 build_search_index = false
 
