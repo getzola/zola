@@ -71,9 +71,9 @@ path = ""
 # current one. This takes an array of paths, not URLs.
 aliases = []
 
-# When set to *true*, the page will be in the search index. This is only used if
-# `build_search_index` is set to *true* in the Zola configuration and the parent section
-# hasn't set `in_search_index` to *false* in its front matter.
+# When set to "true", the page will be in the search index. This is only used if
+# `build_search_index` is set to "true" in the Zola configuration and the parent section
+# hasn't set `in_search_index` to "false" in its front matter.
 in_search_index = true
 
 # Template to use to render this page.
