@@ -24,7 +24,7 @@ resize_image(path, width, height, op, format, quality)
     - `"fill"`
 
   What each of these does is explained below. The default is `"fill"`.
-- `format` (_optional_): Encoding format of the resized image. May be one of: 
+- `format` (_optional_): Encoding format of the resized image. May be one of:
     - `"auto"`
     - `"jpg"`
     - `"png"`
@@ -121,7 +121,7 @@ The `resize_image()` can be used multiple times and/or in loops. It is designed 
 
 This can be used along with `assets` [page metadata](@/documentation/templates/pages-sections.md) to create picture galleries.
 The `assets` variable holds paths to all assets in the directory of a page with resources
-(see [asset co-location](@/documentation/content/overview.md#assets-colocation)); if you have files other than images you
+(see [asset co-location](@/documentation/content/overview.md#asset-co-location)); if you have files other than images you
 will need to filter them out in the loop first like in the example below.
 
 This can be used in shortcodes. For example, we can create a very simple html-only clickable
@@ -159,4 +159,4 @@ Here is the result:
 ## Get image size
 
 Sometimes when building a gallery it is useful to know the dimensions of each asset.  You can get this information with
-[get_image_metadata](@/documentation/templates/overview.md#get-image-metadata). 
+[get_image_metadata](@/documentation/templates/overview.md#get-image-metadata).
