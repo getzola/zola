@@ -27,7 +27,7 @@ As you can see, creating an `about.md` file is equivalent to creating an
 the `about` directory allows you to use asset co-location, as discussed in the
 [overview](@/documentation/content/overview.md#assets-colocation) section.
 
-## Front Matter
+## Front matter
 
 The TOML front matter is a set of metadata embedded in a file at the beginning of the file enclosed
 by triple pluses (`+++`).
