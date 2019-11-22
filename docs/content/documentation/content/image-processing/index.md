@@ -121,7 +121,7 @@ The `resize_image()` can be used multiple times and/or in loops. It is designed 
 
 This can be used along with `assets` [page metadata](@/documentation/templates/pages-sections.md) to create picture galleries.
 The `assets` variable holds paths to all assets in the directory of a page with resources
-(see [asset co-location](@/documentation/content/overview.md#assets-colocation)); if you have files other than images you
+(see [asset co-location](@/documentation/content/overview.md#asset-co-location)); if you have files other than images you
 will need to filter them out in the loop first like in the example below.
 
 This can be used in shortcodes. For example, we can create a very simple html-only clickable
