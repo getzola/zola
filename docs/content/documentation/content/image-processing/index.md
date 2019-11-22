@@ -29,9 +29,9 @@ resize_image(path, width, height, op, format, quality)
     - `"jpg"`
     - `"png"`
 
-  The default is `"auto"`, this means the format is chosen based on input image format.
-  JPEG is chosen for JPEGs and other lossy formats, while PNG is chosen for PNGs and other lossless formats.
-- `quality` (_optional_): JPEG quality of the resized image, in percents. Only used when encoding JPEGs, default value is `75`.
+  The default is `"auto"`, this means that the format is chosen based on input image format.
+  JPEG is chosen for JPEGs and other lossy formats, and PNG is chosen for PNGs and other lossless formats.
+- `quality` (_optional_): JPEG quality of the resized image, in percent. Only used when encoding JPEGs; default value is `75`.
 
 ### Image processing and return value
 
@@ -41,7 +41,7 @@ Zola performs image processing during the build process and places the resized i
 static/processed_images/
 ```
 
-Filename of each resized image is a hash of the function arguments,
+The filename of each resized image is a hash of the function arguments,
 which means that once an image is resized in a certain way, it will be stored in the above directory and will not
 need to be resized again during subsequent builds (unless the image itself, the dimensions, or other arguments are changed).
 Therefore, if you have a large number of images, they will only need to be resized once.
@@ -50,7 +50,7 @@ The function returns a full URL to the resized image.
 
 ## Resize operations
 
-The source for all examples is this 300 × 380 pixels image:
+The source for all examples is this 300 pixel × 380 pixel image:
 
 ![zola](01-zola.png)
 
@@ -79,9 +79,11 @@ The source for all examples is this 300 × 380 pixels image:
 
 ### **`"fit"`**
   Like `"fit_width"` and `"fit_height"` combined, but only resize if the image is bigger than any of the specified dimensions.
-  This mode is handy, if e.g. images are automatically shrinked to certain sizes in a shortcode for mobile optimization.
-  Resizes the image such that the result fits within `width` and `height` preserving aspect ratio. This means that both width or height
-  will be at max `width` and `height`, respectively, but possibly one of them smaller so as to preserve the aspect ratio.
+  This mode is handy, if for example images are automatically shrunk to certain sizes in a shortcode for
+  mobile optimization.
+  Resizes the image such that the result fits within `width` and `height` while preserving the aspect ratio. This
+  means that both width or height will be at max `width` and `height`, respectively, but possibly one of them
+  smaller so as to preserve the aspect ratio.
 
 
   `resize_image(..., width=5000, height=5000, op="fit")`
@@ -93,8 +95,9 @@ The source for all examples is this 300 × 380 pixels image:
   {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=150, height=150, op="fit") }}
 
 ### **`"fill"`**
-  This is the default operation. It takes the image's center part with the same aspect ratio as the `width` & `height` given and resizes that
-  to `width` & `height`. This means that parts of the image that are outsize of the resized aspect ratio are cropped away.
+  This is the default operation. It takes the image's center part with the same aspect ratio as the `width` and
+  `height` given and resizes that to `width` and `height`. This means that parts of the image that are outside
+  of the resized aspect ratio are cropped away.
 
   `resize_image(..., width=150, height=150, op="fill")`
 
@@ -103,8 +106,8 @@ The source for all examples is this 300 × 380 pixels image:
 
 ## Using `resize_image` in markdown via shortcodes
 
-`resize_image` is a built-in Tera global function (see the [Templates](@/documentation/templates/_index.md) chapter),
-but it can be used in markdown, too, using [Shortcodes](@/documentation/content/shortcodes.md).
+`resize_image` is a built-in Tera global function (see the [templates](@/documentation/templates/_index.md) chapter),
+but it can be used in Markdown using [shortcodes](@/documentation/content/shortcodes.md).
 
 The examples above were generated using a shortcode file named `resize_image.html` with this content:
 
@@ -118,7 +121,7 @@ The `resize_image()` can be used multiple times and/or in loops. It is designed 
 
 This can be used along with `assets` [page metadata](@/documentation/templates/pages-sections.md) to create picture galleries.
 The `assets` variable holds paths to all assets in the directory of a page with resources
-(see [assets colocation](@/documentation/content/overview.md#assets-colocation)): if you have files other than images you
+(see [asset co-location](@/documentation/content/overview.md#assets-colocation)); if you have files other than images you
 will need to filter them out in the loop first like in the example below.
 
 This can be used in shortcodes. For example, we can create a very simple html-only clickable
@@ -135,10 +138,10 @@ picture gallery with the following shortcode named `gallery.html`:
 {% endfor %}
 ```
 
-As you can notice, we didn't specify an `op` argument, which means it'll default to `"fill"`. Similarly, the format will default to
-`"auto"` (choosing PNG or JPEG as appropriate) and the JPEG quality will default to `75`.
+As you can notice, we didn't specify an `op` argument, which means that it'll default to `"fill"`. Similarly,
+the format will default to `"auto"` (choosing PNG or JPEG as appropriate) and the JPEG quality will default to `75`.
 
-To call it from a markdown file, simply do:
+To call it from a Markdown file, simply do:
 
 ```jinja2
 {{/* gallery() */}}
@@ -156,4 +159,4 @@ Here is the result:
 ## Get image size
 
 Sometimes when building a gallery it is useful to know the dimensions of each asset.  You can get this information with
-[get_image_metadata](@/documentation/templates/overview.md#get-image-metadata) 
+[get_image_metadata](@/documentation/templates/overview.md#get-image-metadata). 
