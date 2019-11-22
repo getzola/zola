@@ -18,7 +18,7 @@ Any non-Markdown file in a section directory is added to the `assets` collection
 [content overview](@/documentation/content/overview.md#assets-colocation). These files are then available in the
 Markdown file using relative links.
 
-## Front Matter
+## Front matter
 
 The `_index.md` file within a directory defines the content and metadata for that section.  To set
 the metadata, add front matter to the file.
@@ -135,7 +135,7 @@ The terminal will warn you if this occurs.
 If several pages have the same date/weight/order, their permalink will be used
 to break the tie based on alphabetical order.
 
-## Sorting Pages
+## Sorting pages
 The `sort_by` front-matter variable can have the following values:
 
 ### `date`
@@ -158,7 +158,7 @@ to newest (at the bottom).
 
 `reverse` has no effect on `page.later`/`page.earlier` or `page.heavier`/`page.lighter`.
 
-## Sorting Subsections
+## Sorting subsections
 Sorting sections is a bit less flexible: sections are always sorted by `weight`,
 and do not have variables that point to the heavier/lighter sections.
 
