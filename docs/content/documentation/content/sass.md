@@ -3,8 +3,8 @@ title = "Sass"
 weight = 110
 +++
 
-Sass is a popular CSS extension language that approaches some of the harder
-parts of maintaining large sets of CSS rules. If you're curious about what Sass
+Sass is a popular CSS preprocessor that adds special features (e.g., variables, nested rules) to facilate the
+maintenance of large sets of CSS rules. If you're curious about what Sass
 is and why it might be useful for styling your static site, the following links
 may be of interest:
 
@@ -13,7 +13,7 @@ may be of interest:
 
 ## Using Sass in Zola
 
-Zola processes any files with the `sass` or `scss` extensions in the `sass`
+Zola processes any files with the `sass` or `scss` extension in the `sass`
 folder, and places the processed output into a `css` file with the same folder
 structure and base name into the `public` folder:
 
@@ -38,5 +38,5 @@ folder, but can still be used as `@import` dependencies. For more information, s
 
 Files with the `scss` extension use ["Sassy CSS" syntax](http://sass-lang.com/documentation/#Formatting),
 while files with the `sass` extension use the ["indented" syntax](http://sass-lang.com/documentation/file.INDENTED_SYNTAX.html).
-Zola will return an error if a `scss` and `sass` file exist with the same
-base name in the same folder to avoid confusion -- see the example above.
+Zola will return an error if `scss` and `sass` files with the same
+base name exist in the same folder to avoid confusion -- see the example above.
