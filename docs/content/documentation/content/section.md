@@ -70,11 +70,11 @@ paginate_path = "page"
 # This value can be "left", "right" or "none".
 insert_anchor_links = "none"
 
-# If set to *true*, the section pages will be in the search index. This is only used if
-# `build_search_index` is set to *true* in the Zola configuration file.
+# If set to "true", the section pages will be in the search index. This is only used if
+# `build_search_index` is set to "true" in the Zola configuration file.
 in_search_index = true
 
-# If set to *true*, the section homepage is rendered.
+# If set to "true", the section homepage is rendered.
 # Useful when the section is used to organize pages (not used directly).
 render = true
 
@@ -84,7 +84,7 @@ render = true
 # Example: redirect_to = "documentation/content/overview"
 redirect_to = ""
 
-# If set to *true, the section will pass its pages on to the parent section. Defaults to `false`.
+# If set to "true", the section will pass its pages on to the parent section. Defaults to `false`.
 # Useful when the section shouldn't split up the parent section, like
 # sections for each year under a posts section.
 transparent = false
