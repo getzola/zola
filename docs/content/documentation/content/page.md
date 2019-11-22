@@ -25,7 +25,7 @@ character in a filename on Windows.
 As you can see, creating an `about.md` file is equivalent to creating an
 `about/index.md` file.  The only difference between the two methods is that creating
 the `about` directory allows you to use asset co-location, as discussed in the
-[overview](@/documentation/content/overview.md#assets-colocation) section.
+[overview](@/documentation/content/overview.md#asset-co-location) section.
 
 ## Front matter
 
