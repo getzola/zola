@@ -8,6 +8,7 @@ use std::path::Path;
 
 use common::{build_site, build_site_with_setup};
 use config::Taxonomy;
+use site::sitemap;
 use site::Site;
 
 #[test]
@@ -87,6 +88,19 @@ fn can_parse_site() {
         .unwrap();
     assert_eq!(prog_section.subsections.len(), 0);
     assert_eq!(prog_section.pages.len(), 2);
+
+    // Testing extra variables in sections & sitemaps
+    // Regression test for #https://github.com/getzola/zola/issues/842
+    assert_eq!(
+        prog_section.meta.extra.get("we_have_extra").and_then(|s| s.as_str()),
+        Some("variables")
+    );
+    let sitemap_entries = sitemap::find_entries(&library, &site.taxonomies[..], &site.config);
+    let sitemap_entry = sitemap_entries
+        .iter()
+        .find(|e| e.permalink.ends_with("tutorials/programming/"))
+        .expect("expected to find programming section in sitemap");
+    assert_eq!(Some(&prog_section.meta.extra), sitemap_entry.extra);
 }
 
 #[test]
@@ -161,7 +175,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "nested_sass/scss.css"));
 
     // no live reload code
-    assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"), false);
+    assert_eq!(
+        file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"),
+        false
+    );
 
     // Both pages and sections are in the sitemap
     assert!(file_contains!(
@@ -470,11 +487,7 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
     ));
-    assert!(file_contains!(
-        public,
-        "page/1/index.html",
-        "<title>Redirect</title>"
-    ));
+    assert!(file_contains!(public, "page/1/index.html", "<title>Redirect</title>"));
     assert!(file_contains!(
         public,
         "page/1/index.html",
