@@ -99,6 +99,11 @@ extra_syntaxes = []
 
 # Configure the link checker
 [link_checker]
+# Skip link checking for external URLs that start with these prefixes
+skip_prefixes = [
+    "http://[2001:db8::]/",
+]
+
 # Skip anchor checking for external URLs that start with these prefixes
 skip_anchor_prefixes = [
     "https://caniuse.com/",

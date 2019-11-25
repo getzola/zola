@@ -198,6 +198,7 @@ mod tests {
     #[test]
     fn skip_anchor_prefixes() {
         let config = LinkChecker {
+            skip_prefixes: vec![],
             skip_anchor_prefixes: vec!["https://github.com/rust-lang/rust/blob/".to_owned()],
         };
 

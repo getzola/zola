@@ -161,7 +161,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "nested_sass/scss.css"));
 
     // no live reload code
-    assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"), false);
+    assert_eq!(
+        file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"),
+        false
+    );
 
     // Both pages and sections are in the sitemap
     assert!(file_contains!(
@@ -470,11 +473,7 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
     ));
-    assert!(file_contains!(
-        public,
-        "page/1/index.html",
-        "<title>Redirect</title>"
-    ));
+    assert!(file_contains!(public, "page/1/index.html", "<title>Redirect</title>"));
     assert!(file_contains!(
         public,
         "page/1/index.html",
@@ -677,8 +676,11 @@ fn can_ignore_markdown_content() {
 fn check_site() {
     let (mut site, _tmp_dir, _public) = build_site("test_site");
 
-    let prefixes = &site.config.link_checker.skip_anchor_prefixes;
-    assert_eq!(prefixes, &vec!["https://github.com/rust-lang/rust/blob/"]);
+    assert_eq!(
+        site.config.link_checker.skip_anchor_prefixes,
+        vec!["https://github.com/rust-lang/rust/blob/"]
+    );
+    assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
 
     site.config.enable_check_mode();
     site.load().expect("link check test_site");

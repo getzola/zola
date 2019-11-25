@@ -399,6 +399,15 @@ impl Site {
             all_links
                 .par_iter()
                 .filter_map(|(page_path, link)| {
+                    if self
+                        .config
+                        .link_checker
+                        .skip_prefixes
+                        .iter()
+                        .any(|prefix| link.starts_with(prefix))
+                    {
+                        return None;
+                    }
                     let res = check_url(&link, &self.config.link_checker);
                     if res.is_valid() {
                         None
