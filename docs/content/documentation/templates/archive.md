@@ -3,8 +3,8 @@ title = "Archive"
 weight = 90
 +++
 
-Zola doesn't have a built-in way to display an archive page, a page showing
-all post titles ordered by year. However, this can be accomplished directly in the templates:
+Zola doesn't have a built-in way to display an archive page (a page showing
+all post titles ordered by year). However, this can be accomplished directly in the templates:
 
 ```jinja2
 {% for year, posts in section.pages | group_by(attribute="year") %}
@@ -19,5 +19,5 @@ all post titles ordered by year. However, this can be accomplished directly in t
 ```
 
 This snippet assumes that posts are sorted by date and that you want to display the archive
-in a descending order. If you want to show articles in a ascending order, simply add a `reverse` filter
-after the `group_by`.
+in descending order. If you want to show articles in ascending order, add a `reverse` filter
+after `group_by`.

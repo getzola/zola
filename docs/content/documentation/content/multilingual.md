@@ -21,7 +21,7 @@ If you want to use per-language taxonomies, ensure you set the `lang` field in t
 configuration.
 
 ## Content
-Once the languages are added in, you can start to translate your content. Zola
+Once the languages have been added, you can start to translate your content. Zola
 uses the filename to detect the language:
 
 - `content/an-article.md`: this will be the default language
@@ -30,9 +30,9 @@ uses the filename to detect the language:
 If the language code in the filename does not correspond to one of the languages configured,
 an error will be shown.
 
-If your default language has an `_index.md` in a directory, you will need to add a `_index.{code}.md`
+If your default language has an `_index.md` in a directory, you will need to add an `_index.{code}.md`
 file with the desired front-matter options as there is no language fallback.
 
 ## Output
 Zola outputs the translated content with a base URL of `{base_url}/{code}/`.
-The only exception to that is if you are setting a translated page `path` directly in the front-matter.
+The only exception to this is if you are setting a translated page `path` directly in the front matter.

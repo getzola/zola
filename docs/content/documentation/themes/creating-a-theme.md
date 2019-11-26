@@ -8,9 +8,9 @@ will want to use many [Tera blocks](https://tera.netlify.com/docs#inheritance) t
 allow users to easily modify it.
 
 ## Getting started
-As mentioned, a theme is just like any site: start with running `zola init MY_THEME_NAME`.
+As mentioned, a theme is just like any site; start by running `zola init MY_THEME_NAME`.
 
-The only thing needed to turn that site into a theme is to add `theme.toml` configuration file with the
+The only thing needed to turn that site into a theme is to add a `theme.toml` configuration file with the
 following fields:
 
 ```toml
@@ -42,11 +42,11 @@ homepage = "http://markdotto.com/"
 repo = "https://www.github.com/mdo/hyde"
 ```
 
-A simple theme you can use as example is [Hyde](https://github.com/Keats/hyde).
+A simple theme you can use as an example is [Hyde](https://github.com/Keats/hyde).
 
 ## Working on a theme
 As a theme is just a site, you can simply use `zola serve` and make changes to your
-theme, with live reloading working as expected.
+theme, with live reload working as expected.
 
 Make sure to commit every directory (including `content`) in order for other people
 to be able to build the theme from your repository.
@@ -65,7 +65,7 @@ of this site, the theme will require two more things:
 - `README.md`: a thorough README explaining how to use the theme and any other information
 of importance
 
-The first step is to make sure the theme is fulfilling those three requirements:
+The first step is to make sure that the theme meets the following three requirements:
 
 - have a `screenshot.png` of the theme in action with a max size of around 2000x1000
 - have a thorough `README.md` explaining how to use the theme and any other information
