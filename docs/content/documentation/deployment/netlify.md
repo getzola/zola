@@ -28,7 +28,7 @@ However, if you want to use everything that Netlify gives you, you should also p
 This is done by adding the following `netlify.toml` file in your repository and removing the build command/publish
 directory in the admin interface.
 
-```TOML
+```toml
 [build]
 # This assumes that the Zola site is in a docs folder. If it isn't, you don't need
 # to have a `base` variable but you do need the `publish` and `command` variables.
