@@ -37,7 +37,7 @@ one page (`something.md`), the `landing` section has no pages and the `blog` sec
 
 Sections can be nested indefinitely.
 
-## Asset co-location
+## Asset colocation
 
 The `content` directory is not limited to markup files. It's natural to want to co-locate a page and some related
 assets, such as images or spreadsheets. Zola supports this pattern out of the box for both sections and pages.

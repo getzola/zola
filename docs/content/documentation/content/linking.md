@@ -28,7 +28,7 @@ can also be useful for migration of existing sites with different header id sche
 links working.
 
 ## Anchor insertion
-It is possible to have Zola automatically insert anchor links next to the heading, as you can see on this site
+It is possible to have Zola automatically insert anchor links next to the heading, as you can see on this documentation
 if you hover a title.
 
 This option is set at the section level: the `insert_anchor_links` variable on the
