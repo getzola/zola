@@ -17,10 +17,10 @@ let highlight = true;
 
 ````
 
-You can replace the `rust` by the language you want to highlight or not put anything to get it
+You can replace `rust` with another language or not put anything to get the text
 interpreted as plain text.
 
-Here is a full list of the supported languages and the short names you can use:
+Here is a full list of supported languages and their short names:
 
 ```
 - ActionScript -> ["as"]
@@ -123,8 +123,8 @@ Here is a full list of the supported languages and the short names you can use:
 - YAML -> ["sublime-syntax", "yaml", "yml"]
 ```
 
-If you want to highlight a language not on that list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
-Alternatively, the `extra_syntaxes` config option can be used to add additional syntax files.
+If you want to highlight a language not on this list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
+Alternatively, the `extra_syntaxes` configuration option can be used to add additional syntax files.
 
 If your site source is laid out as follows:
 
@@ -143,4 +143,4 @@ If your site source is laid out as follows:
     └── ...
 ```
 
-you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1"]` in order to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
+you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.

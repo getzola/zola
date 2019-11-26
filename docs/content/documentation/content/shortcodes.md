@@ -3,13 +3,13 @@ title = "Shortcodes"
 weight = 40
 +++
 
-While Markdown is good at writing, it isn't great when you need write inline
+Although Markdown is good for writing, it isn't great when you need write inline
 HTML to add some styling for example.
 
 To solve this, Zola borrows the concept of [shortcodes](https://codex.wordpress.org/Shortcode_API)
 from WordPress.
-In our case, the shortcode corresponds to a template that is defined in the `templates/shortcodes` directory or a built-in one that can
-be used in a Markdown file. If you want to use something similar to shortcodes in your templates, try [Tera macros](https://tera.netlify.com/docs/templates/#macros).
+In our case, a shortcode corresponds to a template defined in the `templates/shortcodes` directory or
+a built-in one that can be used in a Markdown file. If you want to use something similar to shortcodes in your templates, try [Tera macros](https://tera.netlify.com/docs/templates/#macros).
 
 ## Writing a shortcode
 Let's write a shortcode to embed YouTube videos as an example.
@@ -28,44 +28,44 @@ following:
 ```
 
 This template is very straightforward: an iframe pointing to the YouTube embed URL wrapped in a `<div>`.
-In terms of input, it expects at least one variable: `id`. Since the other variables
-are in a `if` statement, we can assume they are optional.
+In terms of input, this shortcode expects at least one variable: `id`. Because the other variables
+are in an `if` statement, they are optional.
 
-That's it, Zola will now recognise this template as a shortcode named `youtube` (the filename minus the `.html` extension).
+That's it. Zola will now recognise this template as a shortcode named `youtube` (the filename minus the `.html` extension).
 
-The markdown renderer will wrap an inline HTML node like `<a>` or `<span>` into a paragraph. If you want to disable that,
-simply wrap your shortcode in a `div`.
+The Markdown renderer will wrap an inline HTML node such as `<a>` or `<span>` into a paragraph. 
+If you want to disable this behaviour, wrap your shortcode in a `<div>`.
 
-Shortcodes are rendered before parsing the markdown so it doesn't have access to the table of contents. Because of that,
-you also cannot use the `get_page`/`get_section`/`get_taxonomy` global function. It might work while running `zola serve` because
-it has been loaded but it will fail during `zola build`.
+Shortcodes are rendered before the Markdown is parsed so they don't have access to the table of contents. Because of that,
+you also cannot use the `get_page`/`get_section`/`get_taxonomy` global functions. It might work while running
+`zola serve` because it has been loaded but it will fail during `zola build`.
 
 ## Using shortcodes
 
 There are two kinds of shortcodes:
 
-- ones that do not take a body like the YouTube example above
-- ones that do, a quote for example
+- ones that do not take a body, such as the YouTube example above
+- ones that do, such as one that styles a quote
 
-In both cases, their arguments must be named and they will all be passed to the template.
+In both cases, the arguments must be named and they will all be passed to the template.
 
-Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the arguments name
-can only contain numbers, letters and underscores, or in Regex terms the following: `[0-9A-Za-z_]`.
-While theoretically an argument name could be a number, it will not be possible to use it in the template in that case.
+Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the argument names
+can only contain numbers, letters and underscores, or in Regex terms `[0-9A-Za-z_]`.
+Although theoretically an argument name could be a number, it will not be possible to use such an argument in the template.
 
-Argument values can be of 5 types:
+Argument values can be of one of five types:
 
 - string: surrounded by double quotes, single quotes or backticks
 - bool: `true` or `false`
-- float: a number with a `.` in it
-- integer: a number without a `.` in it
-- array: an array of any kind of values, except arrays
+- float: a number with a decimal point (e.g., 1.2)
+- integer: a whole number or its negative counterpart (e.g., 3)
+- array: an array of any kind of value, except arrays
 
 Malformed values will be silently ignored.
 
-Both type of shortcodes will also get either a `page` or `section` variable depending on where they were used and a `config`
-one. Those values will overwrite any arguments passed to a shortcode so shortcodes should not use arguments called like one
-of these.
+Both types of shortcode will also get either a `page` or `section` variable depending on where they were used
+and a `config` variable. These values will overwrite any arguments passed to a shortcode so these variable names
+should not be used as argument names in shortcodes.
 
 ### Shortcodes without body
 
@@ -86,7 +86,7 @@ Note that if you want to have some content that looks like a shortcode but not h
 you will need to escape it by using `{{/*` and `*/}}` instead of `{{` and `}}`.
 
 ### Shortcodes with body
-For example, let's imagine we have the following shortcode `quote.html` template:
+Let's imagine that we have the following shortcode `quote.html` template:
 
 ```jinja2
 <blockquote>
@@ -95,7 +95,7 @@ For example, let's imagine we have the following shortcode `quote.html` template
 </blockquote>
 ```
 
-We could use it in our markup file like so:
+We could use it in our Markdown file like so:
 
 ```md
 As someone said:
@@ -106,7 +106,7 @@ A quote
 ```
 
 The body of the shortcode will be automatically passed down to the rendering context as the `body` variable and needs
-to be in a newline.
+to be on a new line.
 
 If you want to have some content that looks like a shortcode but not have Zola try to render it,
 you will need to escape it by using `{%/*` and `*/%}` instead of `{%` and `%}`. You won't need to escape
@@ -124,8 +124,8 @@ Embed a responsive player for a YouTube video.
 The arguments are:
 
 - `id`: the video id (mandatory)
-- `class`: a class to add the `div` surrounding the iframe
-- `autoplay`: whether to autoplay the video on load
+- `class`: a class to add to the `<div>` surrounding the iframe
+- `autoplay`: when set to "true", the video autoplays on load
 
 Usage example:
 
@@ -147,7 +147,7 @@ Embed a player for a Vimeo video.
 The arguments are:
 
 - `id`: the video id (mandatory)
-- `class`: a class to add the `div` surrounding the iframe
+- `class`: a class to add to the `<div>` surrounding the iframe
 
 Usage example:
 
@@ -167,7 +167,7 @@ Embed a player for a Streamable video.
 The arguments are:
 
 - `id`: the video id (mandatory)
-- `class`: a class to add the `div` surrounding the iframe
+- `class`: a class to add to the `<div>` surrounding the iframe
 
 Usage example:
 
@@ -188,7 +188,7 @@ The arguments are:
 
 - `url`: the url to the gist (mandatory)
 - `file`: by default, the shortcode will pull every file from the URL unless a specific filename is requested
-- `class`: a class to add the `div` surrounding the iframe
+- `class`: a class to add to the `<div>` surrounding the iframe
 
 Usage example:
 

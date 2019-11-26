@@ -3,11 +3,11 @@ title = "Sections and Pages"
 weight = 20
 +++
 
-Pages and sections are actually very similar.
+Templates for pages and sections are very similar.
 
 ## Page variables
 Zola will try to load the `templates/page.html` template, the `page.html` template of the theme if one is used
-or will render the built-in template: a blank page.
+or render the built-in template (a blank page).
 
 Whichever template you decide to render, you will get a `page` variable in your template
 with the following fields:
@@ -60,8 +60,8 @@ translations: Array<TranslatedContent>;
 
 ## Section variables
 By default, Zola will try to load `templates/index.html` for `content/_index.md`
-and `templates/section.html` for others `_index.md` files. If there isn't
-one, it will render the built-in template: a blank page.
+and `templates/section.html` for other `_index.md` files. If there isn't
+one, it will render the built-in template (a blank page).
 
 Whichever template you decide to render, you will get a `section` variable in your template
 with the following fields:
@@ -103,7 +103,7 @@ translations: Array<TranslatedContent>;
 
 ## Table of contents
 
-Both page and section templates have a `toc` variable which corresponds to an array of `Header`.
+Both page and section templates have a `toc` variable that corresponds to an array of `Header`.
 A `Header` has the following fields:
 
 ```ts
@@ -121,9 +121,9 @@ children: Array<Header>;
 
 ## Translated content
 
-Both page and section have a `translations` field which corresponds to an array of `TranslatedContent`. If your site is not using multiple languages,
-this will always be an empty array.
-A `TranslatedContent` has the following fields:
+Both pages and sections have a `translations` field that corresponds to an array of `TranslatedContent`. If your
+site is not using multiple languages, this will always be an empty array.
+`TranslatedContent` has the following fields:
 
 ```ts
 // The language code for that content, empty if it is the default language

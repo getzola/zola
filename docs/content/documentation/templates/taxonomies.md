@@ -8,7 +8,7 @@ Zola will look up the following files in the `templates` directory:
 - `$TAXONOMY_NAME/single.html`
 - `$TAXONOMY_NAME/list.html`
 
-First, a `TaxonomyTerm` has the following fields:
+First, `TaxonomyTerm` has the following fields:
 
 ```ts
 name: String;
@@ -17,7 +17,7 @@ permalink: String;
 pages: Array<Page>;
 ```
 
-and a `TaxonomyConfig`:
+and `TaxonomyConfig` has the following fields:
 
 ```ts
 name: String,
@@ -30,7 +30,7 @@ rss: Bool;
 
 ### Taxonomy list (`list.html`)
 
-This template is never paginated and therefore get the following variables in all cases.
+This template is never paginated and therefore gets the following variables in all cases.
 
 ```ts
 // The site config
@@ -64,5 +64,5 @@ term: TaxonomyTerm;
 lang: String;
 ```
 
-A paginated taxonomy term will also get a `paginator` variable, see the [pagination page](@/documentation/templates/pagination.md)
-for more details on that.
+A paginated taxonomy term will also get a `paginator` variable; see the [pagination page]
+(@/documentation/templates/pagination.md) for more details.
