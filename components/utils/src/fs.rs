@@ -1,4 +1,4 @@
-use std::fs::{copy, create_dir_all, read_dir, File};
+use std::fs::{copy, create_dir_all, read_dir, File, OpenOptions};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -19,8 +19,7 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
-    let mut file =
-        File::create(&path).map_err(|e| Error::chain(format!("Failed to create {:?}", path), e))?;
+    let mut file = OpenOptions::new().write(true).create_new(true).open(&path).map_err(|e| Error::chain(format!("Failed to create {:?}", path), e))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }
