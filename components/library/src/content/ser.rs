@@ -206,7 +206,7 @@ pub struct SerializingSection<'a> {
     ancestors: Vec<String>,
     title: &'a Option<String>,
     description: &'a Option<String>,
-    extra: &'a HashMap<String, Value>,
+    extra: &'a Map<String, Value>,
     path: &'a str,
     components: &'a [String],
     toc: &'a [Heading],

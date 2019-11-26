@@ -20,7 +20,7 @@ extern crate utils;
 #[cfg(test)]
 extern crate tempfile;
 
-mod sitemap;
+pub mod sitemap;
 
 use std::collections::HashMap;
 use std::fs::{copy, create_dir_all, remove_dir_all};
