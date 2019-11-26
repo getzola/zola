@@ -34,9 +34,9 @@ structure and base name into the `public` folder:
 
 Files with a leading underscore in the name are not placed into the `public`
 folder, but can still be used as `@import` dependencies. For more information, see the "Partials" section of
-[Sass Basics](https://sass-lang.com/guide#partials).
+[Sass Basics](https://sass-lang.com/guide).
 
-Files with the `scss` extension use ["Sassy CSS" syntax](http://sass-lang.com/documentation/#Formatting),
-while files with the `sass` extension use the ["indented" syntax](http://sass-lang.com/documentation/file.INDENTED_SYNTAX.html).
+Files with the `scss` extension use "Sassy CSS" syntax,
+while files with the `sass` extension use the "indented" syntax: <https://sass-lang.com/documentation/syntax>.
 Zola will return an error if `scss` and `sass` files with the same
 base name exist in the same folder to avoid confusion -- see the example above.
