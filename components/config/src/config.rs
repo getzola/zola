@@ -91,13 +91,15 @@ type TranslateTerm = HashMap<String, String>;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct LinkChecker {
+    /// Skip link checking for these URL prefixes
+    pub skip_prefixes: Vec<String>,
     /// Skip anchor checking for these URL prefixes
     pub skip_anchor_prefixes: Vec<String>,
 }
 
 impl Default for LinkChecker {
     fn default() -> LinkChecker {
-        LinkChecker { skip_anchor_prefixes: Vec::new() }
+        LinkChecker { skip_prefixes: Vec::new(), skip_anchor_prefixes: Vec::new() }
     }
 }
 
@@ -589,10 +591,29 @@ skip_anchor_prefixes = [
         "#;
 
         let config = Config::parse(config_str).unwrap();
-        let v = config.link_checker.skip_anchor_prefixes;
         assert_eq!(
-            v,
+            config.link_checker.skip_anchor_prefixes,
             vec!["https://caniuse.com/#feat=", "https://github.com/rust-lang/rust/blob/"]
+        );
+    }
+
+    #[test]
+    fn link_checker_skip_prefixes() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[link_checker]
+skip_prefixes = [
+    "http://[2001:db8::]/",
+    "https://www.example.com/path",
+]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(
+            config.link_checker.skip_prefixes,
+            vec!["http://[2001:db8::]/", "https://www.example.com/path",]
         );
     }
 }

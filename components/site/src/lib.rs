@@ -20,7 +20,7 @@ extern crate utils;
 #[cfg(test)]
 extern crate tempfile;
 
-mod sitemap;
+pub mod sitemap;
 
 use std::collections::HashMap;
 use std::fs::{copy, create_dir_all, remove_dir_all};
@@ -399,6 +399,15 @@ impl Site {
             all_links
                 .par_iter()
                 .filter_map(|(page_path, link)| {
+                    if self
+                        .config
+                        .link_checker
+                        .skip_prefixes
+                        .iter()
+                        .any(|prefix| link.starts_with(prefix))
+                    {
+                        return None;
+                    }
                     let res = check_url(&link, &self.config.link_checker);
                     if res.is_valid() {
                         None

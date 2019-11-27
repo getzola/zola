@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
-use tera::Value;
+use tera::{Map, Value};
 use toml;
 
-use errors::Result;
-
 use super::{InsertAnchor, SortBy};
+use errors::Result;
+use utils::de::fix_toml_dates;
 
 static DEFAULT_PAGINATE_PATH: &str = "page";
 
@@ -63,14 +61,19 @@ pub struct SectionFrontMatter {
     #[serde(skip_serializing)]
     pub aliases: Vec<String>,
     /// Any extra parameter present in the front matter
-    pub extra: HashMap<String, Value>,
+    pub extra: Map<String, Value>,
 }
 
 impl SectionFrontMatter {
     pub fn parse(toml: &str) -> Result<SectionFrontMatter> {
-        let f: SectionFrontMatter = match toml::from_str(toml) {
+        let mut f: SectionFrontMatter = match toml::from_str(toml) {
             Ok(d) => d,
             Err(e) => bail!(e),
+        };
+
+        f.extra = match fix_toml_dates(f.extra) {
+            Value::Object(o) => o,
+            _ => unreachable!("Got something other than a table in section extra"),
         };
 
         Ok(f)
@@ -102,7 +105,7 @@ impl Default for SectionFrontMatter {
             transparent: false,
             page_template: None,
             aliases: Vec::new(),
-            extra: HashMap::new(),
+            extra: Map::new(),
         }
     }
 }
