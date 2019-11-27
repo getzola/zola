@@ -1,6 +1,6 @@
 +++
 title = "Configuration"
-weight = 4
+weight = 40
 +++
 
 The default configuration is sufficient to get Zola running locally but not more than that.

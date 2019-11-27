@@ -15,7 +15,7 @@ not have any content or metadata.  If you would like to add content or metadata,
 `_index.md` file; your `index.html` template will then have access to that content and metadata.
 
 Any non-Markdown file in a section directory is added to the `assets` collection of the section, as explained in the
-[content overview](@/documentation/content/overview.md#assets-colocation). These files are then available in the
+[content overview](@/documentation/content/overview.md#asset-co-location). These files are then available in the
 Markdown file using relative links.
 
 ## Front matter

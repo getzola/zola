@@ -25,7 +25,7 @@ character in a filename on Windows.
 As you can see, creating an `about.md` file is equivalent to creating an
 `about/index.md` file.  The only difference between the two methods is that creating
 the `about` directory allows you to use asset co-location, as discussed in the
-[overview](@/documentation/content/overview.md#assets-colocation) section.
+[overview](@/documentation/content/overview.md#asset-co-location) section.
 
 ## Front matter
 
@@ -94,7 +94,7 @@ You can ask Zola to create a summary if, for example, you only want to show the 
 paragraph of the page content in a list.
 
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
-where you want the summary to end. The content up to that point will be 
+where you want the summary to end. The content up to that point will be
 available separately in the
 [template](@/documentation/templates/pages-sections.md#page-variables).
 
