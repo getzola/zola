@@ -136,7 +136,7 @@ impl FileInfo {
         }
 
         self.name = parts.swap_remove(0);
-        self.canonical = self.parent.join(&self.name);
+        self.canonical = self.path.parent().expect("Get parent of page path").join(&self.name);
         let lang = parts.swap_remove(0);
 
         Ok(lang)
