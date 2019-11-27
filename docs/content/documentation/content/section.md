@@ -34,7 +34,7 @@ Here is an example `_index.md` with all the available variables. The values prov
 default values.
 
 
-```TOML
+```toml
 title = ""
 
 description = ""
