@@ -255,4 +255,28 @@ mod tests {
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");
     }
+
+    /// Regression test for https://github.com/getzola/zola/pull/856.
+    #[test]
+    fn correct_canonical_for_index() {
+        let file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+            &PathBuf::new(),
+        );
+        assert_eq!(file.canonical, Path::new("/home/vincent/code/site/content/posts/tutorials/python/index"));
+    }
+
+    /// Regression test for https://github.com/getzola/zola/pull/856.
+    #[test]
+    fn correct_canonical_after_find_language() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
+            &PathBuf::new(),
+        );
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert_eq!(file.canonical, Path::new("/home/vincent/code/site/content/posts/tutorials/python/index"));
+    }
 }
