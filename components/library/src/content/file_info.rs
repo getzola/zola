@@ -256,7 +256,7 @@ mod tests {
         assert_eq!(res.unwrap(), "fr");
     }
 
-    /// Regression test for https://github.com/getzola/zola/pull/856.
+    /// Regression test for https://github.com/getzola/zola/issues/854
     #[test]
     fn correct_canonical_for_index() {
         let file = FileInfo::new_page(
@@ -266,7 +266,7 @@ mod tests {
         assert_eq!(file.canonical, Path::new("/home/vincent/code/site/content/posts/tutorials/python/index"));
     }
 
-    /// Regression test for https://github.com/getzola/zola/pull/856.
+    /// Regression test for https://github.com/getzola/zola/issues/854
     #[test]
     fn correct_canonical_after_find_language() {
         let mut config = Config::default();
