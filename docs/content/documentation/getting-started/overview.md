@@ -199,4 +199,4 @@ The `index.html` file inside the `templates` directory should be:
 {% endblock content %}
 ```  
 
-This has been a quick overview of Zola. You can see a full tutorial [here](#) or to dive into the rest of the documentation.
+This has been a quick overview of Zola. You can now dive into the rest of the documentation.
