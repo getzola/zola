@@ -37,7 +37,7 @@ Although none of the front matter variables are mandatory, the opening and closi
 Here is an example page with all the available variables. The values provided below are the
 default values.
 
-```TOML
+```toml
 title = ""
 description = ""
 
