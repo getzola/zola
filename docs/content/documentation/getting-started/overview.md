@@ -5,11 +5,11 @@ weight = 5
 
 ## Zola at a Glance
 
-Zola is a static site generator (SSG), similar to [Hugo](https://gohugo.io/), [Pelican](https://blog.getpelican.com/), and [Jekyll](https://jekyllrb.com/) (for a comprehensive list of SSGs, please see the [StaticGen](https://www.staticgen.com/) site). It is written in [Rust](https://www.rust-lang.org/) and uses the [Tera](https://tera.netlify.com/) template engine, which is similar to [Jinja2](https://jinja.palletsprojects.com/en/2.10.x/), [Django templates](https://docs.djangoproject.com/en/2.2/topics/templates/), [Liquid](https://shopify.github.io/liquid/), and [Twig](https://twig.symfony.com/). Content is written in [Markdown](https://www.markdownguide.org/).
+Zola is a static site generator (SSG), similar to [Hugo](https://gohugo.io/), [Pelican](https://blog.getpelican.com/), and [Jekyll](https://jekyllrb.com/) (for a comprehensive list of SSGs, please see the [StaticGen](https://www.staticgen.com/) site). It is written in [Rust](https://www.rust-lang.org/) and uses the [Tera](https://tera.netlify.com/) template engine, which is similar to [Jinja2](https://jinja.palletsprojects.com/en/2.10.x/), [Django templates](https://docs.djangoproject.com/en/2.2/topics/templates/), [Liquid](https://shopify.github.io/liquid/), and [Twig](https://twig.symfony.com/). Content is written in [CommonMark](https://commonmark.org/), a strongly defined, highly compatible specification of [Markdown](https://www.markdownguide.org/).
 
 SSGs use dynamic templates to transform content into static HTML pages. Static sites are thus very fast and require no databases, making them easy to host. A comparison between static and dynamic sites, such as WordPress, Drupal, and Django, can be found [here](https://dev.to/ashenmaster/static-vs-dynamic-sites-61f).
 
-If you are new to SSGs, please see the quick overview below.
+To get a taste of Zola, please see the quick overview below.
 
 ## First Steps with Zola
 
@@ -55,7 +55,7 @@ Building site...
 
 > This command must be run in the base Zola directory, which contains `config.toml`.
 
-If you point your web browser to [127.0.0.1:1111](http://127.0.0.1:1111), you should see a "Welcome to Zola" message.
+If you point your web browser to <http://127.0.0.1:1111>, you should see a "Welcome to Zola" message.
 
 ### Home Page
 
@@ -123,7 +123,7 @@ page_template = "blog-page.html"
 
 ### Templates
 
-Let's now create some templates. In the `templates` directory, create a `blog.html` file with the following contents:
+Let's now create some more templates. In the `templates` directory, create a `blog.html` file with the following contents:
 
 ```html
 {% extends "base.html" %}
@@ -140,7 +140,7 @@ Let's now create some templates. In the `templates` directory, create a `blog.ht
 {% endblock content %}
 ```
 
-As done by `index.html`, `blog.html` extends `base.html`, but this time we want to list the blog posts. The *title* we set in the `_index.md` file above is available to us as `{{ section.title }}`. In the list below the title, we loop through all the pages in our section (`blog` directory) and output the page title and URL using `{{ page.title }}` and `{{ page.permalink }}`, respectively. If you go to [127.0.0.1:1111/blog/](http://127.0.0.1:1111/blog/), you will see the section page for `blog`. The list is empty because we don't have any blog posts. Let's fix that now.
+As done by `index.html`, `blog.html` extends `base.html`, but this time we want to list the blog posts. The *title* we set in the `_index.md` file above is available to us as `{{ section.title }}`. In the list below the title, we loop through all the pages in our section (`blog` directory) and output the page title and URL using `{{ page.title }}` and `{{ page.permalink }}`, respectively. If you go to <http://127.0.0.1:1111/blog/>, you will see the section page for `blog`. The list is empty because we don't have any blog posts. Let's fix that now.
 
 ### Markdown Content
 
@@ -173,7 +173,7 @@ We now need to make the `blog-page.html` template. In the `templates` directory,
 
 > Note the `| safe` filter for `{{ page.content }}`.
 
-This should start to look familiar. If you now go back to our blog list page at [127.0.0.1:1111/blog/](http://127.0.0.1:1111/blog/), you should see our lonely post. Let's add another. In the `content/blog` directory, let's create the file `second.md` with the contents:
+This should start to look familiar. If you now go back to our blog list page at <http://127.0.0.1:1111/blog/>, you should see our lonely post. Let's add another. In the `content/blog` directory, let's create the file `second.md` with the contents:
 
 ```md
 +++
@@ -184,7 +184,7 @@ date = 2019-11-28
 This is my second blog post.
 ```
 
-Back at [127.0.0.1:1111/blog/](http://127.0.0.1:1111/blog/), our second post shows up on top of the list because it's newer than the first post and we had set *sort_by = "date"* in our `_index.md` file. As a final step, let's modify our home page to link to our blog posts.
+Back at <http://127.0.0.1:1111/blog/>, our second post shows up on top of the list because it's newer than the first post and we had set *sort_by = "date"* in our `_index.md` file. As a final step, let's modify our home page to link to our blog posts.
 
 The `index.html` file inside the `templates` directory should be:
 
