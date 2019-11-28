@@ -108,7 +108,7 @@ Now let's add some content. We'll start by making a `blog` subdirectory in the `
 
 In the `_index.md` file, we'll set the following variables in [TOML](https://github.com/toml-lang/toml) format:
 
-```toml
+```md
 +++
 title = "List of blog posts"
 sort_by = "date"
