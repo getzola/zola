@@ -85,7 +85,17 @@ ignored_content = []
 # A list of directories to search for additional `.sublime-syntax` files in.
 extra_syntaxes = []
 
-# Optional translation object. The key if present should be a language code
+# Optional translation object. The key if present should be a language code.
+# Example:
+#     default_language = "fr"
+#
+#     [translations]
+#     [translations.fr]
+#     title = "Un titre"
+#
+#     [translations.en]
+#     title = "A title"
+#
 [translations]
 
 # You can put any kind of data in there and it
