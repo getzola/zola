@@ -263,7 +263,10 @@ mod tests {
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
             &PathBuf::new(),
         );
-        assert_eq!(file.canonical, Path::new("/home/vincent/code/site/content/posts/tutorials/python/index"));
+        assert_eq!(
+            file.canonical,
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index")
+        );
     }
 
     /// Regression test for https://github.com/getzola/zola/issues/854
@@ -277,6 +280,9 @@ mod tests {
         );
         let res = file.find_language(&config);
         assert!(res.is_ok());
-        assert_eq!(file.canonical, Path::new("/home/vincent/code/site/content/posts/tutorials/python/index"));
+        assert_eq!(
+            file.canonical,
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index")
+        );
     }
 }

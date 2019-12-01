@@ -121,6 +121,7 @@ impl Section {
         } else {
             section.path = format!("{}/", path);
         }
+
         section.components = section
             .path
             .split('/')
@@ -131,7 +132,7 @@ impl Section {
         Ok(section)
     }
 
-    /// Read and parse a .md file into a Page struct
+    /// Read and parse a .md file into a Section struct
     pub fn from_file<P: AsRef<Path>>(
         path: P,
         config: &Config,

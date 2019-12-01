@@ -253,6 +253,14 @@ impl Site {
             self.add_page(p, false)?;
         }
 
+        {
+            let library = self.library.read().unwrap();
+            let collisions = library.check_for_path_collisions();
+            if !collisions.is_empty() {
+                return Err(Error::from_collisions(collisions));
+            }
+        }
+
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
@@ -465,6 +473,7 @@ impl Site {
                     index_path.file_name().unwrap().to_string_lossy().to_string();
                 if let Some(ref l) = lang {
                     index_section.file.name = format!("_index.{}", l);
+                    index_section.path = format!("{}/", l);
                     index_section.permalink = self.config.make_permalink(l);
                     let filename = format!("_index.{}.md", l);
                     index_section.file.path = self.content_path.join(&filename);

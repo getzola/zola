@@ -9,6 +9,19 @@ use config::Config;
 use content::{Page, Section};
 use sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
 
+// Like vec! but for HashSet
+macro_rules! set {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut s = HashSet::new();
+            $(
+                s.insert($x);
+            )*
+            s
+        }
+    };
+}
+
 /// Houses everything about pages and sections
 /// Think of it as a database where each page and section has an id (Key here)
 /// that can be used to find the actual value
@@ -397,5 +410,129 @@ impl Library {
     /// Used in rebuild, to check if we know it already
     pub fn contains_page<P: AsRef<Path>>(&self, path: P) -> bool {
         self.paths_to_pages.contains_key(path.as_ref())
+    }
+
+    /// This will check every section/page paths + the aliases and ensure none of them
+    /// are colliding.
+    /// Returns (path colliding, [list of files causing that collision])
+    pub fn check_for_path_collisions(&self) -> Vec<(&str, Vec<String>)> {
+        let mut paths: HashMap<&str, HashSet<DefaultKey>> = HashMap::new();
+
+        for (key, page) in &self.pages {
+            paths
+                .entry(&page.path)
+                .and_modify(|s| {
+                    s.insert(key);
+                })
+                .or_insert_with(|| set!(key));
+
+            for alias in &page.meta.aliases {
+                paths
+                    .entry(&alias)
+                    .and_modify(|s| {
+                        s.insert(key);
+                    })
+                    .or_insert_with(|| set!(key));
+            }
+        }
+
+        for (key, section) in &self.sections {
+            if !section.meta.render {
+                continue;
+            }
+            paths
+                .entry(&section.path)
+                .and_modify(|s| {
+                    s.insert(key);
+                })
+                .or_insert_with(|| set!(key));
+        }
+
+        let mut collisions = vec![];
+        for (p, keys) in paths {
+            if keys.len() > 1 {
+                let file_paths: Vec<String> = keys
+                    .iter()
+                    .map(|k| {
+                        self.pages.get(*k).map(|p| p.file.relative.clone()).unwrap_or_else(|| {
+                            self.sections.get(*k).map(|s| s.file.relative.clone()).unwrap()
+                        })
+                    })
+                    .collect();
+
+                collisions.push((p, file_paths));
+            }
+        }
+
+        collisions
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_find_no_collisions() {
+        let mut library = Library::new(10, 10, false);
+        let mut page = Page::default();
+        page.path = "hello".to_string();
+        let mut page2 = Page::default();
+        page2.path = "hello-world".to_string();
+        let mut section = Section::default();
+        section.path = "blog".to_string();
+        library.insert_page(page);
+        library.insert_page(page2);
+        library.insert_section(section);
+
+        let collisions = library.check_for_path_collisions();
+        assert_eq!(collisions.len(), 0);
+    }
+
+    #[test]
+    fn can_find_collisions_between_pages() {
+        let mut library = Library::new(10, 10, false);
+        let mut page = Page::default();
+        page.path = "hello".to_string();
+        page.file.relative = "hello".to_string();
+        let mut page2 = Page::default();
+        page2.path = "hello".to_string();
+        page2.file.relative = "hello-world".to_string();
+        let mut section = Section::default();
+        section.path = "blog".to_string();
+        section.file.relative = "hello-world".to_string();
+        library.insert_page(page.clone());
+        library.insert_page(page2.clone());
+        library.insert_section(section);
+
+        let collisions = library.check_for_path_collisions();
+        assert_eq!(collisions.len(), 1);
+        assert_eq!(collisions[0].0, page.path);
+        assert!(collisions[0].1.contains(&page.file.relative));
+        assert!(collisions[0].1.contains(&page2.file.relative));
+    }
+
+    #[test]
+    fn can_find_collisions_with_an_alias() {
+        let mut library = Library::new(10, 10, false);
+        let mut page = Page::default();
+        page.path = "hello".to_string();
+        page.file.relative = "hello".to_string();
+        let mut page2 = Page::default();
+        page2.path = "hello-world".to_string();
+        page2.file.relative = "hello-world".to_string();
+        page2.meta.aliases = vec!["hello".to_string()];
+        let mut section = Section::default();
+        section.path = "blog".to_string();
+        section.file.relative = "hello-world".to_string();
+        library.insert_page(page.clone());
+        library.insert_page(page2.clone());
+        library.insert_section(section);
+
+        let collisions = library.check_for_path_collisions();
+        assert_eq!(collisions.len(), 1);
+        assert_eq!(collisions[0].0, page.path);
+        assert!(collisions[0].1.contains(&page.file.relative));
+        assert!(collisions[0].1.contains(&page2.file.relative));
     }
 }

@@ -12,6 +12,8 @@ accessible everywhere
 - Add `total_pages` to paginator
 - Do not prepend URL prefix to links that start with a scheme
 - Allow skipping anchor checking in `zola check` for some URL prefixes
+- Allow skipping prefixes in `zola check`
+- Check for path collisions when building the site
 
 ## 0.9.0 (2019-09-28)
 
