@@ -423,7 +423,6 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             if filename == "anchor-link.html"
                 || path.components().any(|x| x == Component::Normal("shortcodes".as_ref()))
             {
-                println!("Rendering markdown");
                 site.render_markdown()?;
             }
             site.populate_sections();
