@@ -137,7 +137,11 @@ impl<'a> Paginator<'a> {
                 continue;
             }
 
-            let page_path = format!("{}/{}/", self.paginate_path, index + 1);
+            let page_path = if self.paginate_path.is_empty() {
+                format!("{}/", index + 1)
+            } else {
+                format!("{}/{}/", self.paginate_path, index + 1)
+            };
             let permalink = format!("{}{}", self.permalink, page_path);
 
             let pager_path = if self.is_index {
@@ -185,9 +189,14 @@ impl<'a> Paginator<'a> {
             paginator.insert("next", Value::Null);
         }
         paginator.insert("number_pagers", to_value(&self.pagers.len()).unwrap());
+        let base_url = if self.paginate_path.is_empty() {
+            format!("{}", self.permalink)
+        } else {
+            format!("{}{}/", self.permalink, self.paginate_path)
+        };
         paginator.insert(
             "base_url",
-            to_value(&format!("{}{}/", self.permalink, self.paginate_path)).unwrap(),
+            to_value(&base_url).unwrap(),
         );
         paginator.insert("pages", to_value(&current_pager.pages).unwrap());
         paginator.insert("current_index", to_value(current_pager.index).unwrap());
@@ -354,5 +363,28 @@ mod tests {
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
         assert_eq!(paginator.pagers[1].path, "tags/something/page/2/");
+    }
+
+    // https://github.com/getzola/zola/issues/866
+    #[test]
+    fn works_with_empty_paginate_path() {
+        let (mut section, library) = create_library(false);
+        section.meta.paginate_path = String::new();
+        let paginator = Paginator::from_section(&section, &library);
+        assert_eq!(paginator.pagers.len(), 2);
+
+        assert_eq!(paginator.pagers[0].index, 1);
+        assert_eq!(paginator.pagers[0].pages.len(), 2);
+        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts/");
+        assert_eq!(paginator.pagers[0].path, "posts/");
+
+        assert_eq!(paginator.pagers[1].index, 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/2/");
+        assert_eq!(paginator.pagers[1].path, "posts/2/");
+
+
+        let context = paginator.build_paginator_context(&paginator.pagers[0]);
+        assert_eq!(context["base_url"], to_value("https://vincent.is/posts/").unwrap());
     }
 }
