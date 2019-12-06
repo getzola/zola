@@ -132,5 +132,8 @@ lang: String?;
 title: String?;
 // A permalink to that content
 permalink: String;
+// The path to the markdown file; useful for retrieving the full page through
+// the `get_page` function.
+path: String;
 ```
 

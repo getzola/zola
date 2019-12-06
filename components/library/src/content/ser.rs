@@ -1,5 +1,6 @@
 //! What we are sending to the templates when rendering them
 use std::collections::HashMap;
+use std::path::Path;
 
 use tera::{Map, Value};
 
@@ -12,6 +13,9 @@ pub struct TranslatedContent<'a> {
     lang: &'a str,
     permalink: &'a str,
     title: &'a Option<String>,
+    /// The path to the markdown file; useful for retrieving the full page through
+    /// the `get_page` function.
+    path: &'a Path,
 }
 
 impl<'a> TranslatedContent<'a> {
@@ -25,6 +29,7 @@ impl<'a> TranslatedContent<'a> {
                 lang: &other.lang,
                 permalink: &other.permalink,
                 title: &other.meta.title,
+                path: &other.file.path,
             });
         }
 
@@ -40,6 +45,7 @@ impl<'a> TranslatedContent<'a> {
                 lang: &other.lang,
                 permalink: &other.permalink,
                 title: &other.meta.title,
+                path: &other.file.path,
             });
         }
 
