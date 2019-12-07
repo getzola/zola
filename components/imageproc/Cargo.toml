@@ -6,7 +6,7 @@ authors = ["Vojtěch Král <vojtech@kral.hk>"]
 [dependencies]
 lazy_static = "1"
 regex = "1.0"
-tera = "1.0.0-beta.17"
+tera = "1"
 image = "0.22"
 rayon = "1"
 
