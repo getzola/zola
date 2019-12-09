@@ -4,7 +4,7 @@ weight = 30
 +++
 
 Creating a theme is exactly like creating a normal site with Zola, except you
-will want to use many [Tera blocks](https://tera.netlify.com/docs/templates/#inheritance) to
+will want to use many [Tera blocks](https://tera.netlify.com/docs#inheritance) to
 allow users to easily modify it.
 
 ## Getting started
@@ -53,8 +53,8 @@ to be able to build the theme from your repository.
 
 ### Caveat
 
-Please note that [include paths](https://tera.netlify.com/docs/templates/#include) can only be used in normal templates.
-Theme templates should use [macros](https://tera.netlify.com/docs/templates/#macros) instead.
+Please note that [include paths](https://tera.netlify.com/docs#include) can only be used in normal templates.
+Theme templates should use [macros](https://tera.netlify.com/docs#macros) instead.
 
 ## Submitting a theme to the gallery
 

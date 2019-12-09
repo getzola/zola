@@ -7,7 +7,7 @@ Zola uses the [Tera](https://tera.netlify.com) template engine and is very simil
 to Jinja2, Liquid or Twig.
 
 As this documentation will only talk about how templates work in Zola, please read
-the [Tera template documentation](https://tera.netlify.com/docs/templates/) if you want
+the [Tera template documentation](https://tera.netlify.com/docs#templates) if you want
 to learn more about it first.
 
 All templates live in the `templates` directory.  If you are not sure what variables are available in a template, you can just stick `{{ __tera_context }}` in it
@@ -58,7 +58,7 @@ Custom templates are not required to live at the root of your `templates` direct
 For example, `product_pages/with_pictures.html` is a valid template.
 
 ## Built-in filters
-Zola adds a few filters, in addition of the ones [ones already present](https://tera.netlify.com/docs/templates/#built-in-filters) in Tera.
+Zola adds a few filters, in addition of the ones [ones already present](https://tera.netlify.com/docs#built-in-filters) in Tera.
 
 ### markdown
 Converts the given variable to HTML using Markdown. This doesn't apply any of the
@@ -80,7 +80,7 @@ Decode the variable from base64.
 
 ## Built-in global functions
 
-Zola adds a few global functions to [those in Tera](https://tera.netlify.com/docs/templates/#built-in-functions) in order to make it easier to develop complex sites.
+Zola adds a few global functions to [those in Tera](https://tera.netlify.com/docs#built-in-functions) in order to make it easier to develop complex sites.
 
 
 ### `get_page`

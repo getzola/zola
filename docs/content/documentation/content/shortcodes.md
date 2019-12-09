@@ -9,7 +9,7 @@ HTML to add some styling for example.
 To solve this, Zola borrows the concept of [shortcodes](https://codex.wordpress.org/Shortcode_API)
 from WordPress.
 In our case, the shortcode corresponds to a template that is defined in the `templates/shortcodes` directory or a built-in one that can
-be used in a Markdown file. If you want to use something similar to shortcodes in your templates, try [Tera macros](https://tera.netlify.com/docs/templates/#macros).
+be used in a Markdown file. If you want to use something similar to shortcodes in your templates, try [Tera macros](https://tera.netlify.com/docs#macros).
 
 ## Writing a shortcode
 Let's write a shortcode to embed YouTube videos as an example.
