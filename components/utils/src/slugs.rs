@@ -1,12 +1,10 @@
-pub use slug::slugify;
-
-pub fn strip_chars(s: &str, chars: &str) -> String {
+fn strip_chars(s: &str, chars: &str) -> String {
     let mut sanitized_string = s.to_string();
     sanitized_string.retain( |c| !chars.contains(c));
     sanitized_string
 }
 
-pub fn quasi_slugify(s: &str) -> String {
+fn quasi_slugify(s: &str) -> String {
     // NTFS forbidden characters : https://gist.github.com/doctaphred/d01d05291546186941e1b7ddc02034d3
     // Also we need to trim . from the end of filename
     let trimmed = s.trim_end_matches(|c| c == ' ' || c == '.');
@@ -15,10 +13,10 @@ pub fn quasi_slugify(s: &str) -> String {
     strip_chars(trimmed, "<>:/|?*#()[] \n\"\\\r\t")
 }
 
-pub fn maybe_slugify(s: &str, enabled: bool) -> String {
-    if enabled {
+pub fn maybe_slugify(s: &str, slugify: bool) -> String {
+    if slugify {
         // ASCII slugification
-        slugify(s)
+        slug::slugify(s)
     }
     else {
         // Only remove forbidden characters

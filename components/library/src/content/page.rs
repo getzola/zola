@@ -18,7 +18,7 @@ use utils::templates::render_template;
 use content::file_info::FileInfo;
 use content::has_anchor;
 use content::ser::SerializingPage;
-use slugs::maybe_slugify;
+use utils::slugs::maybe_slugify;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests

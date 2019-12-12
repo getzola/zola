@@ -9,7 +9,7 @@ use utils::templates::render_template;
 
 use content::SerializingPage;
 use library::Library;
-use slugs::maybe_slugify;
+use utils::slugs::maybe_slugify;
 use sorting::sort_pages_by_date;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
