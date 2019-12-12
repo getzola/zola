@@ -317,15 +317,15 @@ mod tests {
         assert_eq!(tags.items[2].pages.len(), 2);
 
         assert_eq!(categories.items[0].name, "Other");
-        assert_eq!(categories.items[0].slug, "Other");
-        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/Other/");
+        assert_eq!(categories.items[0].slug, "other");
+        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/other/");
         assert_eq!(categories.items[0].pages.len(), 1);
 
         assert_eq!(categories.items[1].name, "Programming tutorials");
-        assert_eq!(categories.items[1].slug, "Programming tutorials");
+        assert_eq!(categories.items[1].slug, "programming-tutorials");
         assert_eq!(
             categories.items[1].permalink,
-            "http://a-website.com/categories/Programming tutorials/"
+            "http://a-website.com/categories/programming-tutorials/"
         );
         assert_eq!(categories.items[1].pages.len(), 1);
     }
@@ -333,7 +333,6 @@ mod tests {
     #[test]
     fn can_make_slugified_taxonomies() {
         let mut config = Config::default();
-        config.slugify_paths = true;
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
@@ -541,23 +540,23 @@ mod tests {
         assert_eq!(tags.items[1].pages.len(), 2);
 
         assert_eq!(authors.items[0].name, "Vincent Prouillet");
-        assert_eq!(authors.items[0].slug, "Vincent Prouillet");
+        assert_eq!(authors.items[0].slug, "vincent-prouillet");
         assert_eq!(
             authors.items[0].permalink,
-            "http://a-website.com/fr/auteurs/Vincent Prouillet/"
+            "http://a-website.com/fr/auteurs/vincent-prouillet/"
         );
         assert_eq!(authors.items[0].pages.len(), 1);
 
         assert_eq!(categories.items[0].name, "Other");
-        assert_eq!(categories.items[0].slug, "Other");
-        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/Other/");
+        assert_eq!(categories.items[0].slug, "other");
+        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/other/");
         assert_eq!(categories.items[0].pages.len(), 1);
 
         assert_eq!(categories.items[1].name, "Programming tutorials");
-        assert_eq!(categories.items[1].slug, "Programming tutorials");
+        assert_eq!(categories.items[1].slug, "programming-tutorials");
         assert_eq!(
             categories.items[1].permalink,
-            "http://a-website.com/categories/Programming tutorials/"
+            "http://a-website.com/categories/programming-tutorials/"
         );
         assert_eq!(categories.items[1].pages.len(), 1);
     }
@@ -565,6 +564,7 @@ mod tests {
     #[test]
     fn can_make_utf8_taxonomies() {
         let mut config = Config::default();
+        config.slugify_paths = false;
         config.languages.push(Language {
             rss: false,
             code: "fr".to_string(),
@@ -581,7 +581,7 @@ mod tests {
         let mut page = Page::default();
         page.lang = "fr".to_string();
         let mut taxo_page = HashMap::new();
-        taxo_page.insert("catégories".to_string(), vec!["Tutoriels de programmation".to_string()]);
+        taxo_page.insert("catégories".to_string(), vec!["Écologie".to_string()]);
         page.meta.taxonomies = taxo_page;
         library.insert_page(page);
 
@@ -589,10 +589,10 @@ mod tests {
         let categories = &taxonomies[0];
 
         assert_eq!(categories.items.len(), 1);
-        assert_eq!(categories.items[0].name, "Tutoriels de programmation");
+        assert_eq!(categories.items[0].name, "Écologie");
         assert_eq!(
             categories.items[0].permalink,
-            "http://a-website.com/fr/catégories/Tutoriels de programmation/"
+            "http://a-website.com/fr/catégories/Écologie/"
         );
         assert_eq!(categories.items[0].pages.len(), 1);
     }

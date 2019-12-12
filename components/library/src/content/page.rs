@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 
 use regex::Regex;
 use slotmap::DefaultKey;
-use slug::slugify;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
@@ -455,19 +454,20 @@ Hello world"#;
     }
 
     #[test]
-    fn can_make_url_from_unslugified_slug_frontmatter() {
+    fn can_make_url_from_utf8_slug_frontmatter() {
         let content = r#"
     +++
-    slug = "hello-&-world"
+    slug = "日本"
     +++
     Hello world"#;
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify_paths = false;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-&-world/");
-        assert_eq!(page.components, vec!["hello-&-world"]);
-        assert_eq!(page.permalink, config.make_permalink("hello-&-world"));
+        assert_eq!(page.path, "日本/");
+        assert_eq!(page.components, vec!["日本"]);
+        assert_eq!(page.permalink, config.make_permalink("日本"));
     }
 
     #[test]
@@ -537,12 +537,13 @@ Hello world"#;
     }
 
     #[test]
-    fn can_make_path_from_unslugified_filename() {
-        let config = Config::default();
-        let res = Page::parse(Path::new(" file with space.md"), "+++\n++++", &config, &PathBuf::new());
+    fn can_make_path_from_utf8_filename() {
+        let mut config = Config::default();
+        config.slugify_paths = false;
+        let res = Page::parse(Path::new("日本.md"), "+++\n++++", &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.slug, " file with space");
+        assert_eq!(page.slug, "日本");
         assert_eq!(page.permalink, config.make_permalink(&page.slug));
     }
 
@@ -644,7 +645,7 @@ Hello world
         assert_eq!(page.serialized_assets.len(), 3);
         // We should not get with-assets since that's the slugified version
         assert!(page.serialized_assets[0].contains("with_assets"));
-        assert_eq!(page.permalink, "http://a-website.com/posts/with_assets/");
+        assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
     }
 
     // https://github.com/getzola/zola/issues/607
