@@ -9,7 +9,7 @@ use utils::templates::render_template;
 
 use content::SerializingPage;
 use library::Library;
-use utils::slugs::maybe_slugify;
+use utils::slugs::maybe_slugify_paths;
 use sorting::sort_pages_by_date;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -69,7 +69,7 @@ impl TaxonomyItem {
             })
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
-        let slug = maybe_slugify(name, config.slugify_paths);
+        let slug = maybe_slugify_paths(name, config.slugify_paths);
         let permalink = if taxonomy.lang != config.default_language {
             config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
         } else {

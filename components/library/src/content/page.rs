@@ -18,7 +18,7 @@ use utils::templates::render_template;
 use content::file_info::FileInfo;
 use content::has_anchor;
 use content::ser::SerializingPage;
-use utils::slugs::maybe_slugify;
+use utils::slugs::maybe_slugify_paths;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
@@ -160,21 +160,21 @@ impl Page {
 
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                maybe_slugify(&slug.trim(), config.slugify_paths)
+                maybe_slugify_paths(&slug.trim(), config.slugify_paths)
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
-                        maybe_slugify(&slug, config.slugify_paths)
+                        maybe_slugify_paths(&slug, config.slugify_paths)
                     } else {
-                        maybe_slugify(parent.file_name().unwrap().to_str().unwrap(), config.slugify_paths)
+                        maybe_slugify_paths(parent.file_name().unwrap().to_str().unwrap(), config.slugify_paths)
                     }
                 } else {
-                    maybe_slugify(&page.file.name, config.slugify_paths)
+                    maybe_slugify_paths(&page.file.name, config.slugify_paths)
                 }
             } else if let Some(slug) = slug_from_dated_filename {
-                maybe_slugify(&slug, config.slugify_paths)
+                maybe_slugify_paths(&slug, config.slugify_paths)
             } else {
-                maybe_slugify(&page.file.name, config.slugify_paths)
+                maybe_slugify_paths(&page.file.name, config.slugify_paths)
             }
         };
 
