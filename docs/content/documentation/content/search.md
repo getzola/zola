@@ -20,3 +20,4 @@ After `zola build` or `zola serve`, you should see two files in your static dire
 As each site will be different, Zola makes no assumptions about how your search and doesn't provide
 the JavaScript/CSS code to do an actual search and display results. You can however look at how this very site
 is implementing it to have an idea: [search.js](https://github.com/getzola/zola/tree/master/docs/static/search.js).
+

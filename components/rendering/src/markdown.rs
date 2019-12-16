@@ -275,8 +275,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             let start_idx = heading_ref.start_idx;
             let end_idx = heading_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
-            let id =
-                heading_ref.id.unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
+            let id = heading_ref
+                .id
+                .unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag
@@ -296,7 +297,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 let anchor_link = utils::templates::render_template(
                     &ANCHOR_LINK_TEMPLATE,
                     context.tera,
-                    c,
+                    &c,
                     &None,
                 )
                 .map_err(|e| Error::chain("Failed to render anchor link template", e))?;
@@ -305,7 +306,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
             // record heading to make table of contents
             let permalink = format!("{}#{}", context.current_page_permalink, id);
-            let h = Heading { level: heading_ref.level, id, permalink, title, children: Vec::new() };
+            let h =
+                Heading { level: heading_ref.level, id, permalink, title, children: Vec::new() };
             headings.push(h);
         }
 

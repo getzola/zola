@@ -924,7 +924,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
-        let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
+        let output = render_template("404.html", &self.tera, &context, &self.config.theme)?;
         create_file(&self.output_path.join("404.html"), &self.inject_livereload(output))
     }
 
@@ -935,7 +935,7 @@ impl Site {
         context.insert("config", &self.config);
         create_file(
             &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, context, &self.config.theme)?,
+            &render_template("robots.txt", &self.tera, &context, &self.config.theme)?,
         )
     }
 
@@ -1012,7 +1012,8 @@ impl Site {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap =
+                &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
             create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
             return Ok(());
         }
@@ -1024,7 +1025,8 @@ impl Site {
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap =
+                &render_template("sitemap.xml", &self.tera, &context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
             create_file(&self.output_path.join(&file_name), sitemap)?;
             let mut sitemap_url: String = self.config.make_permalink(&file_name);
@@ -1037,7 +1039,7 @@ impl Site {
         let sitemap = &render_template(
             "split_sitemap_index.xml",
             &self.tera,
-            main_context,
+            &main_context,
             &self.config.theme,
         )?;
         create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
@@ -1086,7 +1088,7 @@ impl Site {
 
         context.insert("feed_url", &rss_feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, context, &self.config.theme)?;
+        let feed = &render_template("rss.xml", &self.tera, &context, &self.config.theme)?;
 
         if let Some(ref base) = base_path {
             let mut output_path = self.output_path.clone();

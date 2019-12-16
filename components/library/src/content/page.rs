@@ -292,7 +292,7 @@ impl Page {
         context.insert("lang", &self.lang);
         context.insert("toc", &self.toc);
 
-        render_template(&tpl_name, tera, context, &config.theme).map_err(|e| {
+        render_template(&tpl_name, tera, &context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render page '{}'", self.file.path.display()), e)
         })
     }
