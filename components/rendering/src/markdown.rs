@@ -242,6 +242,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
                         Event::Start(Tag::Image(link_type, src, title))
                     }
+                    Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
+                        error = Some(Error::msg("There is a link that is missing a URL"));
+                        Event::Start(Tag::Link(link_type, "#".into(), title))
+                    }
                     Event::Start(Tag::Link(link_type, link, title)) => {
                         let fixed_link = match fix_link(
                             link_type,
