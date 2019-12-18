@@ -77,6 +77,11 @@ pub struct Config {
     /// Defaults to "base16-ocean-dark"
     pub highlight_theme: String,
 
+    /// External programs to use for highlighting. If a string appears as a key here, any code
+    /// blocks with that language will be replaced with the result of piping the contents of the
+    /// code block through the shell command given as the value.
+    pub external_highlighters: HashMap<String, String>,
+
     /// Whether to generate RSS. Defaults to false
     pub generate_rss: bool,
     /// The number of articles to include in the RSS feed. Defaults to including all items.
@@ -238,6 +243,7 @@ impl Default for Config {
             theme: None,
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
+            external_highlighters: HashMap::new(),
             default_language: "en".to_string(),
             generate_rss: false,
             rss_limit: None,

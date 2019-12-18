@@ -1,4 +1,6 @@
 use std::borrow::Cow::{Borrowed, Owned};
+use std::io::Write;
+use std::process::{Child, Command, Stdio};
 
 use self::cmark::{Event, Options, Parser, Tag};
 use pulldown_cmark as cmark;
@@ -57,6 +59,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut background = IncludeBackground::Yes;
     let mut highlighter: Option<(HighlightLines, bool)> = None;
+    let mut external: Option<Child> = None;
     // If we get text in header, we need to insert the id and a anchor
     let mut in_header = false;
     // pulldown_cmark can send several text events for a title if there are markdown
@@ -106,12 +109,43 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         return Event::Html(Owned(html));
                     }
 
+                    if let Some(external) = external.as_mut() {
+                        let stdin = external.stdin.as_mut().unwrap();
+                        if let Err(e) = stdin.write_all(text.as_bytes()) {
+                            error = Some(format!("Failed to write to external: {}", e).into());
+                        }
+                        return Event::Text("".into());
+                    }
+
                     // Business as usual
                     Event::Text(text)
                 }
                 Event::Start(Tag::CodeBlock(ref info)) => {
                     if !context.config.highlight_code {
                         return Event::Html(Borrowed("<pre><code>"));
+                    }
+
+                    if let Some(cmd) = context.config.external_highlighters.get(info.as_ref()) {
+                        let (exec, arg1) =
+                            if cfg!(target_os = "windows") { ("cmd", "/C") } else { ("sh", "-c") };
+                        let result = Command::new(exec)
+                            .arg(arg1)
+                            .arg(cmd)
+                            .env("ZOLA_BASE_URL", &context.config.base_url)
+                            .env("ZOLA_CURRENT_PAGE", &context.current_page_permalink)
+                            .env("ZOLA_OUTPUT_DIR", &context.output_dir)
+                            .stdin(Stdio::piped())
+                            .stdout(Stdio::piped())
+                            .spawn();
+                        match result {
+                            Ok(child) => external = Some(child),
+                            Err(e) => {
+                                error = Some(
+                                    format!("Failed to start external {:?}: {}", cmd, e).into(),
+                                )
+                            }
+                        }
+                        return Event::Text("".into());
                     }
 
                     let theme = &THEME_SET.themes[&context.config.highlight_theme];
@@ -127,6 +161,28 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     if !context.config.highlight_code {
                         return Event::Html(Borrowed("</code></pre>\n"));
                     }
+
+                    if let Some(external) = external.take() {
+                        // wait closes stdin for us
+                        match external.wait_with_output() {
+                            Ok(output) => {
+                                if !output.status.success() {
+                                    error = Some(
+                                        format!("external exited with code {}", output.status)
+                                            .into(),
+                                    );
+                                }
+
+                                return Event::Html(
+                                    String::from_utf8_lossy(&output.stdout).into_owned().into(),
+                                );
+                            }
+                            Err(e) => {
+                                error = Some(format!("waiting on external failed: {}", e).into())
+                            }
+                        }
+                    }
+
                     // reset highlight and close the code block
                     highlighter = None;
                     Event::Html(Borrowed("</pre>"))
