@@ -190,7 +190,7 @@ impl<'a> Paginator<'a> {
         }
         paginator.insert("number_pagers", to_value(&self.pagers.len()).unwrap());
         let base_url = if self.paginate_path.is_empty() {
-            format!("{}", self.permalink)
+            self.permalink.to_string()
         } else {
             format!("{}{}/", self.permalink, self.paginate_path)
         };
