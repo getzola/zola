@@ -224,7 +224,7 @@ pub fn serve(
                     eprintln!("Failed to open URL in your browser: {}", err);
                 }
             }
-            s.run()
+            s.start()
         });
         // The websocket for livereload
         let ws_server = WebSocket::new(|output: Sender| {
