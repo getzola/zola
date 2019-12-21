@@ -5,7 +5,7 @@ weight = 90
 
 Zola has built-in support for taxonomies.
 
-The first step is to define the taxonomies in your [config.toml](@/documentation/getting-started/configuration.md).
+## Configuration
 
 A taxonomy has five variables:
 
@@ -16,21 +16,48 @@ For example the default would be page/1.
 - `rss`: if set to `true`, an RSS feed will be generated for each term.
 - `lang`: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for
 
-Once this is done, you can then set taxonomies in your content and Zola will pick
-them up:
+**Example 1:** (one language)
+
+```toml
+taxonomies = [ name = "categories", rss = true ]
+```
+
+**Example 2:** (multilingual site)
+
+```toml
+taxonomies = [
+    {name = "tags", lang = "fr"},
+    {name = "tags", lang = "eo"},
+    {name = "tags", lang = "en"},
+]
+```
+
+## Using taxonomies
+
+Once the configuration is done, you can then set taxonomies in your content and Zola will pick them up:
+
+**Example:**
 
 ```toml
 +++
-...
+title = "Writing a static-site generator in Rust"
+date = 2019-08-15
 [taxonomies]
 tags = ["rust", "web"]
 categories = ["programming"]
 +++
 ```
 
-The taxonomy pages are available at the following paths:
+## Output paths
+
+In a similar manner to how section and pages calculate their output path:
+- the taxonomy name is never slugified
+- the taxonomy entry (eg. as specific tag) is slugified when `slugify_paths` is enabled in the configuration
+
+The taxonomy pages are then available at the following paths:
 
 ```plain
-$BASE_URL/$NAME/
-$BASE_URL/$NAME/$SLUG
+$BASE_URL/$NAME/ (taxonomy)
+$BASE_URL/$NAME/$SLUG (taxonomy entry)
 ```
+

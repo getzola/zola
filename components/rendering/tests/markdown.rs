@@ -352,6 +352,17 @@ fn can_add_id_to_headings_same_slug() {
 }
 
 #[test]
+fn can_add_non_slug_id_to_headings() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.slugify_paths = false;
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"# L'écologie et vous"#, &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"L'écologie_et_vous\">L'écologie et vous</h1>\n");
+}
+
+#[test]
 fn can_handle_manual_ids_on_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();

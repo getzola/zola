@@ -1,5 +1,4 @@
 extern crate serde;
-extern crate slug;
 extern crate tera;
 #[macro_use]
 extern crate serde_derive;

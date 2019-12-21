@@ -10,6 +10,7 @@ unicode-segmentation = "1.2"
 walkdir = "2"
 toml = "0.5"
 serde = "1"
+slug = "0.1"
 
 [dev-dependencies]
 tempfile = "3"
