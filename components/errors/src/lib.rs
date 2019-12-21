@@ -1,8 +1,3 @@
-extern crate image;
-extern crate syntect;
-extern crate tera;
-extern crate toml;
-
 use std::convert::Into;
 use std::error::Error as StdError;
 use std::fmt;

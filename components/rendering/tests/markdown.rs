@@ -1,9 +1,3 @@
-extern crate config;
-extern crate front_matter;
-extern crate rendering;
-extern crate templates;
-extern crate tera;
-
 use std::collections::HashMap;
 
 use tera::Tera;

@@ -1,18 +1,7 @@
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde_derive;
-extern crate chrono;
-extern crate regex;
-extern crate serde;
-extern crate tera;
-extern crate toml;
+use lazy_static::lazy_static;
+use serde_derive::{Deserialize, Serialize};
 
-#[macro_use]
-extern crate errors;
-extern crate utils;
-
-use errors::{Error, Result};
+use errors::{bail, Error, Result};
 use regex::Regex;
 use std::path::Path;
 

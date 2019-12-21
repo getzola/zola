@@ -1,3 +1,5 @@
+use serde_derive::Serialize;
+
 /// Populated while receiving events from the markdown parser
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Heading {

@@ -1,4 +1,3 @@
-extern crate site;
 mod common;
 
 use std::env;

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use serde_derive::Serialize;
 use slotmap::DefaultKey;
 use tera::{to_value, Context, Tera, Value};
 
@@ -7,9 +8,9 @@ use config::Config;
 use errors::{Error, Result};
 use utils::templates::render_template;
 
-use content::{Section, SerializingPage, SerializingSection};
-use library::Library;
-use taxonomies::{Taxonomy, TaxonomyItem};
+use crate::content::{Section, SerializingPage, SerializingSection};
+use crate::library::Library;
+use crate::taxonomies::{Taxonomy, TaxonomyItem};
 
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
@@ -240,11 +241,11 @@ mod tests {
     use std::path::PathBuf;
     use tera::to_value;
 
+    use crate::content::{Page, Section};
+    use crate::library::Library;
+    use crate::taxonomies::{Taxonomy, TaxonomyItem};
     use config::Taxonomy as TaxonomyConfig;
-    use content::{Page, Section};
     use front_matter::SectionFrontMatter;
-    use library::Library;
-    use taxonomies::{Taxonomy, TaxonomyItem};
 
     use super::Paginator;
 

@@ -12,10 +12,10 @@ use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 
-use content::file_info::FileInfo;
-use content::has_anchor;
-use content::ser::SerializingSection;
-use library::Library;
+use crate::content::file_info::FileInfo;
+use crate::content::has_anchor;
+use crate::content::ser::SerializingSection;
+use crate::library::Library;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Section {

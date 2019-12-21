@@ -21,8 +21,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-extern crate globset;
-
 use std::env;
 use std::fs::{read_dir, remove_dir_all, File};
 use std::io::Read;
@@ -39,12 +37,12 @@ use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use cmd::serve::globset::GlobSet;
 use errors::{Error as ZolaError, Result};
+use globset::GlobSet;
 use site::Site;
 use utils::fs::copy_file;
 
-use console;
+use crate::console;
 use open;
 use rebuild;
 

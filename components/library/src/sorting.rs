@@ -4,7 +4,7 @@ use chrono::NaiveDateTime;
 use rayon::prelude::*;
 use slotmap::DefaultKey;
 
-use content::Page;
+use crate::content::Page;
 
 /// Used by the RSS feed
 /// There to not have to import sorting stuff in the site crate
@@ -91,7 +91,7 @@ mod tests {
     use std::path::PathBuf;
 
     use super::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
-    use content::Page;
+    use crate::content::Page;
     use front_matter::PageFrontMatter;
 
     fn create_page_with_date(date: &str) -> Page {

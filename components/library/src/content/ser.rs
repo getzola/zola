@@ -2,10 +2,11 @@
 use std::collections::HashMap;
 use std::path::Path;
 
+use serde_derive::Serialize;
 use tera::{Map, Value};
 
-use content::{Page, Section};
-use library::Library;
+use crate::content::{Page, Section};
+use crate::library::Library;
 use rendering::Heading;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]

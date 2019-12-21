@@ -1,10 +1,12 @@
+use lazy_static::lazy_static;
 use pest::iterators::Pair;
 use pest::Parser;
+use pest_derive::Parser;
 use regex::Regex;
 use tera::{to_value, Context, Map, Value};
 
-use context::RenderContext;
-use errors::{Error, Result};
+use crate::context::RenderContext;
+use errors::{bail, Error, Result};
 
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file

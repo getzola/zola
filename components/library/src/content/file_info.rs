@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use config::Config;
-use errors::Result;
+use errors::{bail, Result};
 
 /// Takes a full path to a file and returns only the components after the first `content` directory
 /// Will not return the filename as last component

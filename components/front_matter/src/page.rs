@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
 use chrono::prelude::*;
+use serde_derive::Deserialize;
 use tera::{Map, Value};
 use toml;
 
-use errors::Result;
+use errors::{bail, Result};
 use utils::de::{fix_toml_dates, from_toml_datetime};
 
 /// The front matter of every page

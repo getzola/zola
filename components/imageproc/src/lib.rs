@@ -1,12 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-extern crate image;
-extern crate rayon;
-extern crate regex;
-
-extern crate errors;
-extern crate utils;
-
 use std::collections::hash_map::DefaultHasher;
 use std::collections::hash_map::Entry as HEntry;
 use std::collections::HashMap;
@@ -17,6 +8,7 @@ use std::path::{Path, PathBuf};
 use image::jpeg::JPEGEncoder;
 use image::png::PNGEncoder;
 use image::{FilterType, GenericImageView};
+use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
 

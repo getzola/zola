@@ -1,11 +1,3 @@
-#![feature(test)]
-extern crate tera;
-extern crate test;
-
-extern crate config;
-extern crate front_matter;
-extern crate rendering;
-
 use std::collections::HashMap;
 use std::path::Path;
 

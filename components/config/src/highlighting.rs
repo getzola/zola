@@ -1,9 +1,10 @@
+use lazy_static::lazy_static;
 use syntect::dumps::from_binary;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 
-use Config;
+use crate::config::Config;
 
 lazy_static! {
     pub static ref SYNTAX_SET: SyntaxSet = {

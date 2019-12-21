@@ -2,6 +2,8 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
+use serde_derive::Serialize;
+
 use config::Config;
 use library::{Library, Taxonomy};
 use std::cmp::Ordering;
