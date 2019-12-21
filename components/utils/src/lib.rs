@@ -8,6 +8,7 @@ extern crate tera;
 extern crate toml;
 extern crate unicode_segmentation;
 extern crate walkdir;
+extern crate slug;
 
 pub mod de;
 pub mod fs;
@@ -15,3 +16,4 @@ pub mod net;
 pub mod site;
 pub mod templates;
 pub mod vec;
+pub mod slugs;

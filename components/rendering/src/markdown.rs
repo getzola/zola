@@ -1,6 +1,5 @@
 use pulldown_cmark as cmark;
 use regex::Regex;
-use slug::slugify;
 use syntect::easy::HighlightLines;
 use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
@@ -13,6 +12,7 @@ use front_matter::InsertAnchor;
 use table_of_contents::{make_table_of_contents, Heading};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
+use utils::slugs::maybe_slugify_anchors;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 
@@ -298,7 +298,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             let title = get_text(&events[start_idx + 1..end_idx]);
             let id = heading_ref
                 .id
-                .unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
+                .unwrap_or_else(|| find_anchor(&inserted_anchors, maybe_slugify_anchors(&title, context.config.slugify_paths), 0));
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag

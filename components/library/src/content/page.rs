@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 
 use regex::Regex;
 use slotmap::DefaultKey;
-use slug::slugify;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
@@ -19,6 +18,7 @@ use utils::templates::render_template;
 use content::file_info::FileInfo;
 use content::has_anchor;
 use content::ser::SerializingPage;
+use utils::slugs::maybe_slugify_paths;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
@@ -160,21 +160,21 @@ impl Page {
 
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                slugify(&slug.trim())
+                maybe_slugify_paths(&slug.trim(), config.slugify_paths)
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
-                        slugify(&slug)
+                        maybe_slugify_paths(&slug, config.slugify_paths)
                     } else {
-                        slugify(parent.file_name().unwrap().to_str().unwrap())
+                        maybe_slugify_paths(parent.file_name().unwrap().to_str().unwrap(), config.slugify_paths)
                     }
                 } else {
-                    slugify(&page.file.name)
+                    maybe_slugify_paths(&page.file.name, config.slugify_paths)
                 }
             } else if let Some(slug) = slug_from_dated_filename {
-                slugify(&slug)
+                maybe_slugify_paths(&slug, config.slugify_paths)
             } else {
-                slugify(&page.file.name)
+                maybe_slugify_paths(&page.file.name, config.slugify_paths)
             }
         };
 
@@ -443,13 +443,31 @@ Hello world"#;
     slug = "hello-&-world"
     +++
     Hello world"#;
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify_paths = true;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.path, "hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
+    }
+
+    #[test]
+    fn can_make_url_from_utf8_slug_frontmatter() {
+        let content = r#"
+    +++
+    slug = "日本"
+    +++
+    Hello world"#;
+        let mut config = Config::default();
+        config.slugify_paths = false;
+        let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "日本/");
+        assert_eq!(page.components, vec!["日本"]);
+        assert_eq!(page.permalink, config.make_permalink("日本"));
     }
 
     #[test]
@@ -508,12 +526,24 @@ Hello world"#;
 
     #[test]
     fn can_make_slug_from_non_slug_filename() {
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify_paths = true;
         let res =
             Page::parse(Path::new(" file with space.md"), "+++\n+++", &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.slug, "file-with-space");
+        assert_eq!(page.permalink, config.make_permalink(&page.slug));
+    }
+
+    #[test]
+    fn can_make_path_from_utf8_filename() {
+        let mut config = Config::default();
+        config.slugify_paths = false;
+        let res = Page::parse(Path::new("日本.md"), "+++\n++++", &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.slug, "日本");
         assert_eq!(page.permalink, config.make_permalink(&page.slug));
     }
 

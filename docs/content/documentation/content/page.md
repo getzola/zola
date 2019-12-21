@@ -27,6 +27,49 @@ As you can see, creating an `about.md` file is equivalent to creating an
 the `about` directory allows you to use asset co-location, as discussed in the
 [overview](@/documentation/content/overview.md#asset-colocation) section.
 
+## Output paths
+
+For any page within your content folder, its output path will be defined by either:
+
+- its `slug` frontmatter key
+- its filename
+
+Either way, these proposed path will be sanitized before being used.
+If `slugify_paths` is enabled in the site's config - the default - paths are [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug). 
+Otherwise, a simpler sanitation is performed, outputting only valid NTFS paths. 
+The following characters are removed: `<`, `>`, `:`, `/`, `|`, `?`, `*`, `#`, `\\`, `(`, `)`, `[`, `]` as well as newlines and tabulations. 
+Additionally, trailing whitespace and dots are removed and whitespaces are replaced by `_`.
+
+**NOTE:** To produce URLs containing non-English characters (UTF8), `slugify_paths` needs to be set to `false`.
+
+### Path from frontmatter
+
+The output path for the page will first be read from the `slug` key in the page's frontmatter.
+
+**Example:** (file `content/zines/mlf-kurdistan.md`)
+
+```
++++
+title = "Le mouvement des Femmes Libres, à la tête de la libération kurde"
+slug = "femmes-libres-libération-kurde"
++++
+This is my article.
+```
+
+This frontmatter will output the article to `[base_url]/zines/femmes-libres-libération-kurde` with `slugify_paths` disabled, and to `[base_url]/zines/femmes-libres-liberation-kurde` with `slugify_enabled` enabled.
+
+### Path from filename
+
+When the article's output path is not specified in the frontmatter, it is extracted from the file's path in the content folder. Consider a file `content/foo/bar/thing.md`. The output path is constructed:
+- if the filename is `index.md`, its parent folder name (`bar`) is used as output path
+- otherwise, the output path is extracted from `thing` (the filename without the `.md` extension)
+
+If the path found starts with a datetime string (`YYYY-mm-dd` or [a RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by an underscore (`_`) or a dash (`-`), this date is removed from the output path and will be used as the page date (unless already set in the front-matter). Note that the full RFC3339 datetime contains colons, which is not a valid character in a filename on Windows.
+
+The output path extracted from the file path is then slugified or not depending on the `slugify_paths` config, as explained previously.
+
+**Example:** The file `content/blog/2018-10-10-hello-world.md` will generated a page available at will be available at `[base_url]/hello-world`.
+
 ## Front matter
 
 The TOML front matter is a set of metadata embedded in a file at the beginning of the file enclosed
