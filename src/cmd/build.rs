@@ -3,7 +3,7 @@ use std::env;
 use errors::Result;
 use site::Site;
 
-use console;
+use crate::console;
 
 pub fn build(
     config_file: &str,

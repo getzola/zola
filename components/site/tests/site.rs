@@ -1,5 +1,3 @@
-extern crate config;
-extern crate site;
 mod common;
 
 use std::collections::HashMap;

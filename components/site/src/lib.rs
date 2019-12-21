@@ -1,25 +1,3 @@
-extern crate glob;
-extern crate rayon;
-extern crate serde;
-extern crate tera;
-#[macro_use]
-extern crate serde_derive;
-extern crate sass_rs;
-
-#[macro_use]
-extern crate errors;
-extern crate config;
-extern crate front_matter;
-extern crate imageproc;
-extern crate library;
-extern crate link_checker;
-extern crate search;
-extern crate templates;
-extern crate utils;
-
-#[cfg(test)]
-extern crate tempfile;
-
 pub mod sitemap;
 
 use std::collections::HashMap;
@@ -33,7 +11,7 @@ use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use tera::{Context, Tera};
 
 use config::{get_config, Config};
-use errors::{Error, ErrorKind, Result};
+use errors::{bail, Error, ErrorKind, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,

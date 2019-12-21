@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use tera::{Context, Tera};
 
-use errors::Result;
+use errors::{bail, Result};
 
 static DEFAULT_TPL: &str = include_str!("default_tpl.html");
 

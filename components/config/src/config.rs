@@ -3,14 +3,14 @@ use std::path::{Path, PathBuf};
 
 use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use serde_derive::{Deserialize, Serialize};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use toml;
 use toml::Value as Toml;
 
-use errors::Error;
-use errors::Result;
-use highlighting::THEME_SET;
-use theme::Theme;
+use crate::highlighting::THEME_SET;
+use crate::theme::Theme;
+use errors::{bail, Error, Result};
 use utils::fs::read_file_with_error;
 
 // We want a default base url for tests

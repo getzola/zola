@@ -2,7 +2,6 @@
 //! syntect, not as a helpful example for beginners.
 //! Although it is a valid example for serializing syntaxes, you probably won't need
 //! to do this yourself unless you want to cache your own compiled grammars.
-extern crate syntect;
 
 use std::collections::HashMap;
 use std::collections::HashSet;

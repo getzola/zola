@@ -1,6 +1,3 @@
-extern crate serde_json;
-extern crate toml;
-
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
@@ -324,6 +321,7 @@ mod tests {
     use std::collections::HashMap;
     use std::path::PathBuf;
 
+    use serde_json::json;
     use tera::{to_value, Function};
 
     fn get_test_file(filename: &str) -> PathBuf {

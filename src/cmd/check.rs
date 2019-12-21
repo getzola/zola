@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use errors::Result;
 use site::Site;
 
-use console;
+use crate::console;
 
 pub fn check(
     config_file: &str,

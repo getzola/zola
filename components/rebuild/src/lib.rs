@@ -1,12 +1,6 @@
-extern crate site;
-#[macro_use]
-extern crate errors;
-extern crate front_matter;
-extern crate library;
-
 use std::path::{Component, Path};
 
-use errors::Result;
+use errors::{bail, Result};
 use front_matter::{PageFrontMatter, SectionFrontMatter};
 use library::{Page, Section};
 use site::Site;

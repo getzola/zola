@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use serde_derive::{Deserialize, Serialize};
 use toml::Value as Toml;
 
-use errors::Result;
+use errors::{bail, Result};
 use utils::fs::read_file_with_error;
 
 /// Holds the data from a `theme.toml` file.
