@@ -1,8 +1,9 @@
+use serde_derive::{Deserialize, Serialize};
 use tera::{Map, Value};
 use toml;
 
 use super::{InsertAnchor, SortBy};
-use errors::Result;
+use errors::{bail, Result};
 use utils::de::fix_toml_dates;
 
 static DEFAULT_PAGINATE_PATH: &str = "page";

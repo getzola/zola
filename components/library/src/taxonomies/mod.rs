@@ -1,16 +1,17 @@
 use std::collections::HashMap;
 
+use serde_derive::Serialize;
 use slotmap::DefaultKey;
 use tera::{Context, Tera};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
-use errors::{Error, Result};
+use errors::{bail, Error, Result};
 use utils::templates::render_template;
 
-use content::SerializingPage;
-use library::Library;
+use crate::content::SerializingPage;
+use crate::library::Library;
+use crate::sorting::sort_pages_by_date;
 use utils::slugs::maybe_slugify_paths;
-use sorting::sort_pages_by_date;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SerializedTaxonomyItem<'a> {
@@ -231,9 +232,9 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
+    use crate::content::Page;
+    use crate::library::Library;
     use config::{Config, Language, Taxonomy as TaxonomyConfig};
-    use content::Page;
-    use library::Library;
 
     #[test]
     fn can_make_taxonomies() {

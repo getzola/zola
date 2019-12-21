@@ -1,9 +1,3 @@
-#![feature(test)]
-extern crate library;
-extern crate site;
-extern crate tempfile;
-extern crate test;
-
 use std::env;
 
 use library::Paginator;

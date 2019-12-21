@@ -1,11 +1,11 @@
 use std::fs::{canonicalize, create_dir};
 use std::path::Path;
 
-use errors::Result;
+use errors::{bail, Result};
 use utils::fs::create_file;
 
-use console;
-use prompt::{ask_bool, ask_url};
+use crate::console;
+use crate::prompt::{ask_bool, ask_url};
 
 const CONFIG: &str = r#"
 # The URL the site will be built for

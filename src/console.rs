@@ -1,3 +1,5 @@
+use lazy_static::lazy_static;
+
 use std::env;
 use std::error::Error as StdError;
 use std::io::Write;

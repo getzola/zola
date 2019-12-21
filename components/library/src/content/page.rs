@@ -2,22 +2,23 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use lazy_static::lazy_static;
 use regex::Regex;
 use slotmap::DefaultKey;
 use tera::{Context as TeraContext, Tera};
 
+use crate::library::Library;
 use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
-use library::Library;
 use rendering::{render_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 
-use content::file_info::FileInfo;
-use content::has_anchor;
-use content::ser::SerializingPage;
+use crate::content::file_info::FileInfo;
+use crate::content::has_anchor;
+use crate::content::ser::SerializingPage;
 use utils::slugs::maybe_slugify_paths;
 
 lazy_static! {

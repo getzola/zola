@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use pulldown_cmark as cmark;
 use regex::Regex;
 use syntect::easy::HighlightLines;
@@ -5,11 +6,11 @@ use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
 };
 
+use crate::context::RenderContext;
+use crate::table_of_contents::{make_table_of_contents, Heading};
 use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
-use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
-use table_of_contents::{make_table_of_contents, Heading};
 use utils::site::resolve_internal_link;
 use utils::vec::InsertMany;
 use utils::slugs::maybe_slugify_anchors;

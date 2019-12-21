@@ -3,7 +3,7 @@ use std::hash::BuildHasher;
 
 use base64::{decode, encode};
 use pulldown_cmark as cmark;
-use tera::{to_value, Result as TeraResult, Value};
+use tera::{to_value, try_get_value, Result as TeraResult, Value};
 
 pub fn markdown<S: BuildHasher>(
     value: &Value,

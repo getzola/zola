@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 use unicode_segmentation::UnicodeSegmentation;
 
-use errors::Result;
+use errors::{bail, Result};
 
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {

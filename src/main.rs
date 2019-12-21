@@ -1,25 +1,3 @@
-extern crate actix_files;
-extern crate actix_web;
-extern crate atty;
-#[macro_use]
-extern crate clap;
-extern crate chrono;
-#[macro_use]
-extern crate lazy_static;
-extern crate ctrlc;
-extern crate notify;
-extern crate termcolor;
-extern crate url;
-extern crate ws;
-
-extern crate site;
-#[macro_use]
-extern crate errors;
-extern crate front_matter;
-extern crate open;
-extern crate rebuild;
-extern crate utils;
-
 use std::time::Instant;
 
 use utils::net::{get_available_port, port_is_available};
