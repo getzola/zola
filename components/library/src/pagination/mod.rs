@@ -195,10 +195,7 @@ impl<'a> Paginator<'a> {
         } else {
             format!("{}{}/", self.permalink, self.paginate_path)
         };
-        paginator.insert(
-            "base_url",
-            to_value(&base_url).unwrap(),
-        );
+        paginator.insert("base_url", to_value(&base_url).unwrap());
         paginator.insert("pages", to_value(&current_pager.pages).unwrap());
         paginator.insert("current_index", to_value(current_pager.index).unwrap());
         paginator.insert("total_pages", to_value(self.all_pages.len()).unwrap());
@@ -383,7 +380,6 @@ mod tests {
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/2/");
         assert_eq!(paginator.pagers[1].path, "posts/2/");
-
 
         let context = paginator.build_paginator_context(&paginator.pagers[0]);
         assert_eq!(context["base_url"], to_value("https://vincent.is/posts/").unwrap());

@@ -1,6 +1,6 @@
 fn strip_chars(s: &str, chars: &str) -> String {
     let mut sanitized_string = s.to_string();
-    sanitized_string.retain( |c| !chars.contains(c));
+    sanitized_string.retain(|c| !chars.contains(c));
     sanitized_string
 }
 
@@ -24,8 +24,7 @@ pub fn maybe_slugify_paths(s: &str, slugify: bool) -> String {
     if slugify {
         // ASCII slugification
         slug::slugify(s)
-    }
-    else {
+    } else {
         // Only remove forbidden characters
         strip_invalid_paths_chars(s)
     }
@@ -35,8 +34,7 @@ pub fn maybe_slugify_anchors(s: &str, slugify: bool) -> String {
     if slugify {
         // ASCII slugification
         slug::slugify(s)
-    }
-    else {
+    } else {
         // Only remove forbidden characters
         strip_invalid_anchors_chars(s)
     }

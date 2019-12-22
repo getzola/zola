@@ -167,7 +167,10 @@ impl Page {
                     if let Some(slug) = slug_from_dated_filename {
                         maybe_slugify_paths(&slug, config.slugify_paths)
                     } else {
-                        maybe_slugify_paths(parent.file_name().unwrap().to_str().unwrap(), config.slugify_paths)
+                        maybe_slugify_paths(
+                            parent.file_name().unwrap().to_str().unwrap(),
+                            config.slugify_paths,
+                        )
                     }
                 } else {
                     maybe_slugify_paths(&page.file.name, config.slugify_paths)
