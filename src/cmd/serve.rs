@@ -56,7 +56,7 @@ enum ChangeKind {
     Config,
 }
 
-// This is dist/livereload.min.js from the LiveReload.js v3.0.0 release
+// This is dist/livereload.min.js from the LiveReload.js v3.1.0 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 struct ErrorFilePaths {
