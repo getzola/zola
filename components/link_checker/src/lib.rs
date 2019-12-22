@@ -71,7 +71,37 @@ pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
                 Err(e) => LinkResult { code: None, error: Some(e.to_string()) },
             }
         }
-        Ok(response) => LinkResult { code: Some(response.status()), error: None },
+        Ok(response) => {
+            if response.status().is_success() {
+                LinkResult { code: Some(response.status()), error: None }
+            } else {
+                let error_string = if response.status().is_informational() {
+                    String::from(format!(
+                        "Informational status code ({}) received",
+                        response.status()
+                    ))
+                } else if response.status().is_redirection() {
+                    String::from(format!(
+                        "Redirection status code ({}) received",
+                        response.status()
+                    ))
+                } else if response.status().is_client_error() {
+                    String::from(format!(
+                        "Client error status code ({}) received",
+                        response.status()
+                    ))
+                } else if response.status().is_server_error() {
+                    String::from(format!(
+                        "Server error status code ({}) received",
+                        response.status()
+                    ))
+                } else {
+                    String::from("Non-success status code received")
+                };
+
+                LinkResult { code: None, error: Some(error_string) }
+            }
+        }
         Err(e) => LinkResult { code: None, error: Some(e.description().to_string()) },
     };
 
