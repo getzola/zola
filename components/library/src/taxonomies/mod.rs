@@ -591,10 +591,7 @@ mod tests {
 
         assert_eq!(categories.items.len(), 1);
         assert_eq!(categories.items[0].name, "Écologie");
-        assert_eq!(
-            categories.items[0].permalink,
-            "http://a-website.com/fr/catégories/Écologie/"
-        );
+        assert_eq!(categories.items[0].permalink, "http://a-website.com/fr/catégories/Écologie/");
         assert_eq!(categories.items[0].pages.len(), 1);
     }
 
@@ -711,5 +708,4 @@ mod tests {
         );
         assert_eq!(categories.items[1].pages.len(), 1);
     }
-
 }

@@ -90,9 +90,7 @@ impl PageFrontMatter {
             if d.contains('T') {
                 DateTime::parse_from_rfc3339(&d).ok().map(|s| s.naive_local())
             } else {
-                NaiveDate::parse_from_str(&d, "%Y-%m-%d")
-                    .ok()
-                    .map(|s| s.and_hms(0, 0, 0))
+                NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok().map(|s| s.and_hms(0, 0, 0))
             }
         } else {
             None
