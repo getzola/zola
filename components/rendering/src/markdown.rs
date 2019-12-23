@@ -12,8 +12,8 @@ use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use utils::site::resolve_internal_link;
-use utils::vec::InsertMany;
 use utils::slugs::maybe_slugify_anchors;
+use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 
@@ -297,9 +297,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             let start_idx = heading_ref.start_idx;
             let end_idx = heading_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
-            let id = heading_ref
-                .id
-                .unwrap_or_else(|| find_anchor(&inserted_anchors, maybe_slugify_anchors(&title, context.config.slugify_paths), 0));
+            let id = heading_ref.id.unwrap_or_else(|| {
+                find_anchor(
+                    &inserted_anchors,
+                    maybe_slugify_anchors(&title, context.config.slugify_paths),
+                    0,
+                )
+            });
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag
