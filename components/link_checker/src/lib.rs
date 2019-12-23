@@ -140,20 +140,51 @@ fn check_page_for_anchor(url: &str, body: reqwest::Result<String>) -> Result<()>
 #[cfg(test)]
 mod tests {
     use super::{check_page_for_anchor, check_url, has_anchor, LinkChecker, LINKS};
+    use mockito::mock;
 
     #[test]
     fn can_validate_ok_links() {
-        let url = "https://google.com";
-        let res = check_url(url, &LinkChecker::default());
+        let url = format!("{}{}", mockito::server_url(), "/test");
+        let _m = mock("GET", "/test")
+            .with_header("content-type", "text/html")
+            .with_body(format!(
+                r#"<!DOCTYPE html>
+<html>
+<head>
+  <title>Test</title>
+</head>
+<body>
+  <a href="{}">Mock URL</a>
+</body>
+</html>
+"#,
+                url
+            ))
+            .create();
+
+        let res = check_url(&url, &LinkChecker::default());
         assert!(res.is_valid());
-        assert!(LINKS.read().unwrap().get(url).is_some());
-        let res = check_url(url, &LinkChecker::default());
-        assert!(res.is_valid());
+        assert!(LINKS.read().unwrap().get(&url).is_some());
+    }
+
+    #[test]
+    fn can_fail_unresolved_links() {
+        let res = check_url("https://google.comys", &LinkChecker::default());
+        assert_eq!(res.is_valid(), false);
+        assert!(res.code.is_none());
+        assert!(res.error.is_some());
     }
 
     #[test]
     fn can_fail_404_links() {
-        let res = check_url("https://google.comys", &LinkChecker::default());
+        let _m = mock("GET", "/404")
+            .with_status(404)
+            .with_header("content-type", "text/plain")
+            .with_body("Not Found")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/404");
+        let res = check_url(&url, &LinkChecker::default());
         assert_eq!(res.is_valid(), false);
         assert!(res.code.is_none());
         assert!(res.error.is_some());
@@ -162,7 +193,7 @@ mod tests {
     #[test]
     fn can_validate_anchors() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
-        let body = "<body><h3 id='method.collect'>collect</h3></body>".to_string();
+        let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
         let res = check_page_for_anchor(url, Ok(body));
         assert!(res.is_ok());
     }
@@ -186,7 +217,7 @@ mod tests {
     #[test]
     fn can_fail_when_anchor_not_found() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#me";
-        let body = "<body><h3 id='method.collect'>collect</h3></body>".to_string();
+        let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
         let res = check_page_for_anchor(url, Ok(body));
         assert!(res.is_err());
     }
@@ -221,21 +252,50 @@ mod tests {
 
     #[test]
     fn skip_anchor_prefixes() {
-        let config = LinkChecker {
-            skip_prefixes: vec![],
-            skip_anchor_prefixes: vec!["https://github.com/rust-lang/rust/blob/".to_owned()],
-        };
+        let ignore_url = format!("{}{}", mockito::server_url(), "/ignore/");
+        let config = LinkChecker { skip_prefixes: vec![], skip_anchor_prefixes: vec![ignore_url] };
+
+        let _m1 = mock("GET", "/ignore/test")
+            .with_header("content-type", "text/html")
+            .with_body(
+                r#"<!DOCTYPE html>
+<html>
+<head>
+  <title>Ignore</title>
+</head>
+<body>
+  <p id="existent"></p>
+</body>
+</html>
+"#,
+            )
+            .create();
 
         // anchor check is ignored because the url matches the prefix
-        let permalink = "https://github.com/rust-lang/rust/blob/c772948b687488a087356cb91432425662e034b9/src/librustc_back/target/mod.rs#L194-L214";
-        assert!(check_url(&permalink, &config).is_valid());
+        let ignore = format!("{}{}", mockito::server_url(), "/ignore/test#nonexistent");
+        assert!(check_url(&ignore, &config).is_valid());
+
+        let _m2 = mock("GET", "/test")
+            .with_header("content-type", "text/html")
+            .with_body(
+                r#"<!DOCTYPE html>
+<html>
+<head>
+  <title>Test</title>
+</head>
+<body>
+  <p id="existent"></p>
+</body>
+</html>
+"#,
+            )
+            .create();
 
         // other anchors are checked
-        let glossary = "https://help.github.com/en/articles/github-glossary#blame";
-        assert!(check_url(&glossary, &config).is_valid());
+        let existent = format!("{}{}", mockito::server_url(), "/test#existent");
+        assert!(check_url(&existent, &config).is_valid());
 
-        let glossary_invalid =
-            "https://help.github.com/en/articles/github-glossary#anchor-does-not-exist";
-        assert_eq!(check_url(&glossary_invalid, &config).is_valid(), false);
+        let nonexistent = format!("{}{}", mockito::server_url(), "/test#nonexistent");
+        assert_eq!(check_url(&nonexistent, &config).is_valid(), false);
     }
 }

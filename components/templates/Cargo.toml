@@ -21,3 +21,6 @@ utils = { path = "../utils" }
 library = { path = "../library" }
 config = { path = "../config" }
 imageproc = { path = "../imageproc" }
+
+[dev-dependencies]
+mockito = "0.22"
