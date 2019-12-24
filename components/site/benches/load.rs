@@ -1,4 +1,7 @@
 //! Benchmarking loading/markdown rendering of generated sites of various sizes
+#![feature(test)]
+extern crate test;
+
 use std::env;
 
 use site::Site;

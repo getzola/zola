@@ -1,3 +1,6 @@
+#![feature(test)]
+extern crate test;
+
 use std::env;
 
 use library::Paginator;
