@@ -325,6 +325,11 @@ mod tests {
     use serde_json::json;
     use tera::{to_value, Function};
 
+    // NOTE: HTTP mock paths below are randomly generated to avoid name
+    // collisions. Mocks with the same path can sometimes bleed between tests
+    // and cause them to randomly pass/fail. Please make sure to use unique
+    // paths when adding or modifying tests that use Mockito.
+
     fn get_test_file(filename: &str) -> PathBuf {
         let test_files = PathBuf::from("../utils/test-files").canonicalize().unwrap();
         return test_files.join(filename);
@@ -366,14 +371,14 @@ mod tests {
 
     #[test]
     fn calculates_cache_key_for_url() {
-        let _m = mock("GET", "/test")
+        let _m = mock("GET", "/kr1zdgbm4y")
             .with_header("content-type", "text/plain")
             .with_body("Test")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/test");
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
         let cache_key = DataSource::Url(url.parse().unwrap()).get_cache_key(&OutputFormat::Plain);
-        assert_eq!(cache_key, 12502656262443320092);
+        assert_eq!(cache_key, 425638486551656875);
     }
 
     #[test]
@@ -396,7 +401,7 @@ mod tests {
 
     #[test]
     fn can_load_remote_data() {
-        let _m = mock("GET", "/json")
+        let _m = mock("GET", "/zpydpkjj67")
             .with_header("content-type", "application/json")
             .with_body(
                 r#"{
@@ -408,7 +413,7 @@ mod tests {
             )
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/json");
+        let url = format!("{}{}", mockito::server_url(), "/zpydpkjj67");
         let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
@@ -419,13 +424,13 @@ mod tests {
 
     #[test]
     fn fails_when_request_404s() {
-        let _m = mock("GET", "/404")
+        let _m = mock("GET", "/aazeow0kog")
             .with_status(404)
             .with_header("content-type", "text/plain")
             .with_body("Not Found")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/404");
+        let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
         let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
