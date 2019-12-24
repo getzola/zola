@@ -23,7 +23,7 @@ impl LinkResult {
         }
 
         if let Some(c) = self.code {
-            return c.is_success();
+            return c.is_success() || c == StatusCode::NOT_MODIFIED;
         }
 
         true
@@ -72,31 +72,19 @@ pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
             }
         }
         Ok(response) => {
-            if response.status().is_success() {
+            if response.status().is_success() || response.status() == StatusCode::NOT_MODIFIED {
                 LinkResult { code: Some(response.status()), error: None }
             } else {
                 let error_string = if response.status().is_informational() {
-                    String::from(format!(
-                        "Informational status code ({}) received",
-                        response.status()
-                    ))
+                    format!("Informational status code ({}) received", response.status())
                 } else if response.status().is_redirection() {
-                    String::from(format!(
-                        "Redirection status code ({}) received",
-                        response.status()
-                    ))
+                    format!("Redirection status code ({}) received", response.status())
                 } else if response.status().is_client_error() {
-                    String::from(format!(
-                        "Client error status code ({}) received",
-                        response.status()
-                    ))
+                    format!("Client error status code ({}) received", response.status())
                 } else if response.status().is_server_error() {
-                    String::from(format!(
-                        "Server error status code ({}) received",
-                        response.status()
-                    ))
+                    format!("Server error status code ({}) received", response.status())
                 } else {
-                    String::from("Non-success status code received")
+                    format!("Non-success status code ({}) received", response.status())
                 };
 
                 LinkResult { code: None, error: Some(error_string) }
@@ -142,11 +130,16 @@ mod tests {
     use super::{check_page_for_anchor, check_url, has_anchor, LinkChecker, LINKS};
     use mockito::mock;
 
+    // NOTE: HTTP mock paths below are randomly generated to avoid name
+    // collisions. Mocks with the same path can sometimes bleed between tests
+    // and cause them to randomly pass/fail. Please make sure to use unique
+    // paths when adding or modifying tests that use Mockito.
+
     #[test]
     fn can_validate_ok_links() {
-        let url = format!("{}{}", mockito::server_url(), "/test");
-        let _m = mock("GET", "/test")
-            .with_header("content-type", "text/html")
+        let url = format!("{}{}", mockito::server_url(), "/ekbtwxfhjw");
+        let _m = mock("GET", "/ekbtwxfhjw")
+            .with_header("Content-Type", "text/html")
             .with_body(format!(
                 r#"<!DOCTYPE html>
 <html>
@@ -168,8 +161,43 @@ mod tests {
     }
 
     #[test]
-    fn can_fail_unresolved_links() {
-        let res = check_url("https://google.comys", &LinkChecker::default());
+    fn can_follow_301_links() {
+        let _m1 = mock("GET", "/c7qrtrv3zz")
+            .with_status(301)
+            .with_header("Content-Type", "text/plain")
+            .with_header("Location", format!("{}/rbs5avjs8e", mockito::server_url()).as_str())
+            .with_body("Redirecting...")
+            .create();
+
+        let _m2 = mock("GET", "/rbs5avjs8e")
+            .with_header("Content-Type", "text/plain")
+            .with_body("Test")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/c7qrtrv3zz");
+        let res = check_url(&url, &LinkChecker::default());
+        assert!(res.is_valid());
+        assert!(res.code.is_some());
+        assert!(res.error.is_none());
+    }
+
+    #[test]
+    fn can_fail_301_to_404_links() {
+        let _m1 = mock("GET", "/cav9vibhsc")
+            .with_status(301)
+            .with_header("Content-Type", "text/plain")
+            .with_header("Location", format!("{}/72zmfg4smd", mockito::server_url()).as_str())
+            .with_body("Redirecting...")
+            .create();
+
+        let _m2 = mock("GET", "/72zmfg4smd")
+            .with_status(404)
+            .with_header("Content-Type", "text/plain")
+            .with_body("Not Found")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/cav9vibhsc");
+        let res = check_url(&url, &LinkChecker::default());
         assert_eq!(res.is_valid(), false);
         assert!(res.code.is_none());
         assert!(res.error.is_some());
@@ -177,14 +205,37 @@ mod tests {
 
     #[test]
     fn can_fail_404_links() {
-        let _m = mock("GET", "/404")
+        let _m = mock("GET", "/nlhab9c1vc")
             .with_status(404)
-            .with_header("content-type", "text/plain")
+            .with_header("Content-Type", "text/plain")
             .with_body("Not Found")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/404");
+        let url = format!("{}{}", mockito::server_url(), "/nlhab9c1vc");
         let res = check_url(&url, &LinkChecker::default());
+        assert_eq!(res.is_valid(), false);
+        assert!(res.code.is_none());
+        assert!(res.error.is_some());
+    }
+
+    #[test]
+    fn can_fail_500_links() {
+        let _m = mock("GET", "/qdbrssazes")
+            .with_status(500)
+            .with_header("Content-Type", "text/plain")
+            .with_body("Internal Server Error")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/qdbrssazes");
+        let res = check_url(&url, &LinkChecker::default());
+        assert_eq!(res.is_valid(), false);
+        assert!(res.code.is_none());
+        assert!(res.error.is_some());
+    }
+
+    #[test]
+    fn can_fail_unresolved_links() {
+        let res = check_url("https://t6l5cn9lpm.lxizfnzckd", &LinkChecker::default());
         assert_eq!(res.is_valid(), false);
         assert!(res.code.is_none());
         assert!(res.error.is_some());
@@ -255,8 +306,8 @@ mod tests {
         let ignore_url = format!("{}{}", mockito::server_url(), "/ignore/");
         let config = LinkChecker { skip_prefixes: vec![], skip_anchor_prefixes: vec![ignore_url] };
 
-        let _m1 = mock("GET", "/ignore/test")
-            .with_header("content-type", "text/html")
+        let _m1 = mock("GET", "/ignore/i30hobj1cy")
+            .with_header("Content-Type", "text/html")
             .with_body(
                 r#"<!DOCTYPE html>
 <html>
@@ -272,11 +323,11 @@ mod tests {
             .create();
 
         // anchor check is ignored because the url matches the prefix
-        let ignore = format!("{}{}", mockito::server_url(), "/ignore/test#nonexistent");
+        let ignore = format!("{}{}", mockito::server_url(), "/ignore/i30hobj1cy#nonexistent");
         assert!(check_url(&ignore, &config).is_valid());
 
-        let _m2 = mock("GET", "/test")
-            .with_header("content-type", "text/html")
+        let _m2 = mock("GET", "/guvqcqwmth")
+            .with_header("Content-Type", "text/html")
             .with_body(
                 r#"<!DOCTYPE html>
 <html>
@@ -292,10 +343,10 @@ mod tests {
             .create();
 
         // other anchors are checked
-        let existent = format!("{}{}", mockito::server_url(), "/test#existent");
+        let existent = format!("{}{}", mockito::server_url(), "/guvqcqwmth#existent");
         assert!(check_url(&existent, &config).is_valid());
 
-        let nonexistent = format!("{}{}", mockito::server_url(), "/test#nonexistent");
+        let nonexistent = format!("{}{}", mockito::server_url(), "/guvqcqwmth#nonexistent");
         assert_eq!(check_url(&nonexistent, &config).is_valid(), false);
     }
 }
