@@ -76,7 +76,7 @@ components: Array<String>;
 permalink: String;
 extra: HashMap<String, Any>;
 // Pages directly in this section, sorted if asked
-pages: Array<Pages>;
+pages: Array<Page>;
 // Direct subsections to this section, sorted by subsections weight
 // This only contains the path to use in the `get_section` Tera function to get
 // the actual section object if you need it
