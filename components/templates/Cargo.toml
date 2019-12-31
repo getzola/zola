@@ -13,7 +13,7 @@ toml = "0.5"
 csv = "1"
 image = "0.22"
 serde_json = "1.0"
-reqwest = "0.9"
+reqwest = { version = "0.10", features = ["blocking"] }
 url = "2"
 
 errors = { path = "../errors" }
