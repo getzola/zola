@@ -1,7 +1,7 @@
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
-use reqwest::{header, Client};
+use reqwest::{blocking::Client, header};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -199,7 +199,7 @@ impl TeraFn for LoadData {
         let data = match data_source {
             DataSource::Path(path) => read_data_file(&self.base_path, path),
             DataSource::Url(url) => {
-                let mut response = response_client
+                let response = response_client
                     .get(url.as_str())
                     .header(header::ACCEPT, file_format.as_accept_header())
                     .send()

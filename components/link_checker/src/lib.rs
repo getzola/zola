@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use reqwest::header::{HeaderMap, ACCEPT};
-use reqwest::StatusCode;
+use reqwest::{blocking::Client, StatusCode};
 
 use config::LinkChecker;
 use errors::Result;
@@ -59,14 +59,20 @@ pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
     headers.insert(ACCEPT, "text/html".parse().unwrap());
     headers.append(ACCEPT, "*/*".parse().unwrap());
 
-    let client = reqwest::Client::new();
+    let client = Client::new();
 
     let check_anchor = !config.skip_anchor_prefixes.iter().any(|prefix| url.starts_with(prefix));
 
     // Need to actually do the link checking
     let res = match client.get(url).headers(headers).send() {
         Ok(ref mut response) if check_anchor && has_anchor(url) => {
-            match check_page_for_anchor(url, response.text()) {
+            let body = {
+                let mut buf: Vec<u8> = vec![];
+                response.copy_to(&mut buf).unwrap();
+                String::from_utf8(buf).unwrap()
+            };
+
+            match check_page_for_anchor(url, body) {
                 Ok(_) => LinkResult { code: Some(response.status()), error: None },
                 Err(e) => LinkResult { code: None, error: Some(e.to_string()) },
             }
@@ -107,8 +113,7 @@ fn has_anchor(url: &str) -> bool {
     }
 }
 
-fn check_page_for_anchor(url: &str, body: reqwest::Result<String>) -> Result<()> {
-    let body = body.unwrap();
+fn check_page_for_anchor(url: &str, body: String) -> Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
     let checks: [String; 4] = [
@@ -245,7 +250,7 @@ mod tests {
     fn can_validate_anchors() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
-        let res = check_page_for_anchor(url, Ok(body));
+        let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }
 
@@ -253,7 +258,7 @@ mod tests {
     fn can_validate_anchors_with_other_quotes() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
-        let res = check_page_for_anchor(url, Ok(body));
+        let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }
 
@@ -261,7 +266,7 @@ mod tests {
     fn can_validate_anchors_with_name_attr() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 name="method.collect">collect</h3></body>"#.to_string();
-        let res = check_page_for_anchor(url, Ok(body));
+        let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }
 
@@ -269,7 +274,7 @@ mod tests {
     fn can_fail_when_anchor_not_found() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#me";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
-        let res = check_page_for_anchor(url, Ok(body));
+        let res = check_page_for_anchor(url, body);
         assert!(res.is_err());
     }
 

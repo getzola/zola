@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-reqwest = "0.9"
+reqwest = { version = "0.10", features = ["blocking"] }
 lazy_static = "1"
 
 config = { path = "../config" }
