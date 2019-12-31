@@ -22,16 +22,18 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::env;
-use std::fs::{read_dir, remove_dir_all, File};
-use std::io::Read;
+use std::fs::{read_dir, remove_dir_all};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use actix_files as fs;
-use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
-use actix_web::{dev, http, web, App, HttpResponse, HttpServer};
+use hyper::header;
+use hyper::service::{make_service_fn, service_fn};
+use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use hyper_staticfile::ResolveResult;
+use tokio::io::AsyncReadExt;
+
 use chrono::prelude::*;
 use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -56,34 +58,79 @@ enum ChangeKind {
     Config,
 }
 
+static INTERNAL_SERVER_ERROR_TEXT: &[u8] = b"Internal Server Error";
+static METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
+static NOT_FOUND_TEXT: &[u8] = b"Not Found";
+
 // This is dist/livereload.min.js from the LiveReload.js v3.1.0 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
-struct ErrorFilePaths {
-    not_found: PathBuf,
-}
+async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
+    // livereload.js is served using the LIVE_RELOAD str, not a file
+    if req.uri().path() == "/livereload.js" {
+        if req.method() == Method::GET {
+            return Ok(livereload_js());
+        } else {
+            return Ok(method_not_allowed());
+        }
+    }
 
-fn not_found<B>(
-    res: dev::ServiceResponse<B>,
-) -> std::result::Result<ErrorHandlerResponse<B>, actix_web::Error> {
-    let buf: Vec<u8> = {
-        let error_files: &ErrorFilePaths = res.request().app_data().unwrap();
-
-        let mut fh = File::open(&error_files.not_found)?;
-        let mut buf: Vec<u8> = vec![];
-        let _ = fh.read_to_end(&mut buf)?;
-        buf
+    let result = hyper_staticfile::resolve(&root, &req).await.unwrap();
+    match result {
+        ResolveResult::MethodNotMatched => return Ok(method_not_allowed()),
+        ResolveResult::NotFound | ResolveResult::UriNotMatched => {
+            return Ok(not_found(Path::new(&root.join("404.html"))).await)
+        }
+        _ => (),
     };
 
-    let new_resp = HttpResponse::build(http::StatusCode::NOT_FOUND)
-        .header(http::header::CONTENT_TYPE, http::header::HeaderValue::from_static("text/html"))
-        .body(buf);
-
-    Ok(ErrorHandlerResponse::Response(res.into_response(new_resp.into_body())))
+    Ok(hyper_staticfile::ResponseBuilder::new().request(&req).build(result).unwrap())
 }
 
-fn livereload_handler() -> HttpResponse {
-    HttpResponse::Ok().content_type("text/javascript").body(LIVE_RELOAD)
+fn livereload_js() -> Response<Body> {
+    Response::builder()
+        .header(header::CONTENT_TYPE, "text/javascript")
+        .status(StatusCode::OK)
+        .body(LIVE_RELOAD.into())
+        .expect("Could not build livereload.js response")
+}
+
+fn internal_server_error() -> Response<Body> {
+    Response::builder()
+        .header(header::CONTENT_TYPE, "text/plain")
+        .status(StatusCode::INTERNAL_SERVER_ERROR)
+        .body(INTERNAL_SERVER_ERROR_TEXT.into())
+        .expect("Could not build Internal Server Error response")
+}
+
+fn method_not_allowed() -> Response<Body> {
+    Response::builder()
+        .header(header::CONTENT_TYPE, "text/plain")
+        .status(StatusCode::METHOD_NOT_ALLOWED)
+        .body(METHOD_NOT_ALLOWED_TEXT.into())
+        .expect("Could not build Method Not Allowed response")
+}
+
+async fn not_found(page_path: &Path) -> Response<Body> {
+    if let Ok(mut file) = tokio::fs::File::open(page_path).await {
+        let mut buf = Vec::new();
+        if file.read_to_end(&mut buf).await.is_ok() {
+            return Response::builder()
+                .header(header::CONTENT_TYPE, "text/html")
+                .status(StatusCode::NOT_FOUND)
+                .body(buf.into())
+                .expect("Could not build Not Found response");
+        }
+
+        return internal_server_error();
+    }
+
+    // Use a plain text response when page_path isn't available
+    Response::builder()
+        .header(header::CONTENT_TYPE, "text/plain")
+        .status(StatusCode::NOT_FOUND)
+        .body(NOT_FOUND_TEXT.into())
+        .expect("Could not build Not Found response")
 }
 
 fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_path: &str) {
@@ -202,28 +249,38 @@ pub fn serve(
     let static_root = output_path.clone();
     let broadcaster = if !watch_only {
         thread::spawn(move || {
-            let s = HttpServer::new(move || {
-                let error_handlers =
-                    ErrorHandlers::new().handler(http::StatusCode::NOT_FOUND, not_found);
+            let addr = address.parse().unwrap();
 
-                App::new()
-                    .data(ErrorFilePaths { not_found: static_root.join("404.html") })
-                    .wrap(error_handlers)
-                    .route("/livereload.js", web::get().to(livereload_handler))
-                    // Start a webserver that serves the `output_dir` directory
-                    .service(fs::Files::new("/", &static_root).index_file("index.html"))
-            })
-            .bind(&address)
-            .expect("Can't start the webserver")
-            .shutdown_timeout(20);
-            println!("Web server is available at http://{}\n", &address);
-            if open {
-                if let Err(err) = open::that(format!("http://{}", &address)) {
-                    eprintln!("Failed to open URL in your browser: {}", err);
+            let mut rt = tokio::runtime::Builder::new()
+                .enable_all()
+                .basic_scheduler()
+                .build()
+                .expect("Could not build tokio runtime");
+
+            rt.block_on(async {
+                let make_service = make_service_fn(move |_| {
+                    let static_root = static_root.clone();
+
+                    async {
+                        Ok::<_, hyper::Error>(service_fn(move |req| {
+                            handle_request(req, static_root.clone())
+                        }))
+                    }
+                });
+
+                let server = Server::bind(&addr).serve(make_service);
+
+                println!("Web server is available at http://{}\n", &address);
+                if open {
+                    if let Err(err) = open::that(format!("http://{}", &address)) {
+                        eprintln!("Failed to open URL in your browser: {}", err);
+                    }
                 }
-            }
-            s.run()
+
+                server.await.expect("Could not start web server");
+            });
         });
+
         // The websocket for livereload
         let ws_server = WebSocket::new(|output: Sender| {
             move |msg: Message| {
