@@ -3,7 +3,6 @@ use serde_derive::Serialize;
 /// Populated while receiving events from the markdown parser
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Heading {
-    #[serde(skip_serializing)]
     pub level: u32,
     pub id: String,
     pub permalink: String,
@@ -115,6 +114,7 @@ mod tests {
         ];
         let toc = make_table_of_contents(input);
         assert_eq!(toc.len(), 1);
+        assert_eq!(toc[0].level, 1);
         assert_eq!(toc[0].children.len(), 1);
         assert_eq!(toc[0].children[0].children.len(), 1);
         assert_eq!(toc[0].children[0].children[0].children.len(), 2);
