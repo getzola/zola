@@ -5,8 +5,8 @@
 ### Breaking
 - Remove `toc` variable in section/page context and pass it to `page.toc` and `section.toc` instead so they are
 accessible everywhere
-- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of page paths is now optional. By default, every path will be slugified as it is happening right now.
-To keep non-ASCII characters,  set `slugify_paths = true` in your config.
+- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of page paths is no longer performed by default.
+  To return to the 0.9.0 behaviour, set `slugify_paths = true` in your config.
 
 ### Other
 - Add zenburn syntax highlighting theme
@@ -16,6 +16,7 @@ To keep non-ASCII characters,  set `slugify_paths = true` in your config.
 - Allow skipping anchor checking in `zola check` for some URL prefixes
 - Allow skipping prefixes in `zola check`
 - Check for path collisions when building the site
+- Add `slugify_anchors` config option to disable slugification of anchors
 
 ## 0.9.0 (2019-09-28)
 

@@ -1,6 +1,8 @@
 # The URL the site will be built for
 base_url = "https://example.com"
 
+slugify_paths = true
+
 # Whether to automatically compile all Sass files in the sass directory
 compile_sass = false
 

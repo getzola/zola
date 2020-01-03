@@ -11,7 +11,7 @@ use utils::templates::render_template;
 use crate::content::SerializingPage;
 use crate::library::Library;
 use crate::sorting::sort_pages_by_date;
-use utils::slugs::maybe_slugify_paths;
+use utils::slugs::maybe_slugify;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SerializedTaxonomyItem<'a> {
@@ -70,7 +70,7 @@ impl TaxonomyItem {
             })
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
-        let slug = maybe_slugify_paths(name, config.slugify_paths);
+        let slug = maybe_slugify(name, config.slugify_paths);
         let permalink = if taxonomy.lang != config.default_language {
             config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
         } else {
@@ -241,6 +241,7 @@ mod tests {
         let mut config = Config::default();
         let mut library = Library::new(2, 0, false);
 
+        config.slugify_paths = true;
         config.taxonomies = vec![
             TaxonomyConfig {
                 name: "categories".to_string(),
@@ -336,6 +337,7 @@ mod tests {
         let mut config = Config::default();
         let mut library = Library::new(2, 0, false);
 
+        config.slugify_paths = true;
         config.taxonomies = vec![
             TaxonomyConfig {
                 name: "categories".to_string(),
@@ -459,6 +461,7 @@ mod tests {
         config.languages.push(Language { rss: false, code: "fr".to_string(), search: false });
         let mut library = Library::new(2, 0, true);
 
+        config.slugify_paths = true;
         config.taxonomies = vec![
             TaxonomyConfig {
                 name: "categories".to_string(),

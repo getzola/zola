@@ -34,13 +34,7 @@ For any page within your content folder, its output path will be defined by eith
 - its `slug` frontmatter key
 - its filename
 
-Either way, these proposed path will be sanitized before being used.
-If `slugify_paths` is enabled in the site's config - the default - paths are [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug). 
-Otherwise, a simpler sanitation is performed, outputting only valid NTFS paths. 
-The following characters are removed: `<`, `>`, `:`, `/`, `|`, `?`, `*`, `#`, `\\`, `(`, `)`, `[`, `]` as well as newlines and tabulations. 
-Additionally, trailing whitespace and dots are removed and whitespaces are replaced by `_`.
-
-**NOTE:** To produce URLs containing non-English characters (UTF8), `slugify_paths` needs to be set to `false`.
+If `slugify_paths` is enabled in the site's config, paths are [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug).
 
 ### Path from frontmatter
 

@@ -27,9 +27,15 @@ default_language = "en"
 # The site theme to use.
 theme = ""
 
-# Slugify paths for compatibility with ASCII-only URLs produced by Zola < 0.9
-# Enabling this setting removes non-English (UTF8) characters in URLs
+# Slugify paths for compatibility with ASCII-only URLs produced by Zola < 0.10.0
+# Enabling this makes URLs lowercase, ASCII-only, and turns spaces into hyphens.
+# Most sites won't need to touch this, if they are in the habit of putting the
+# URLs they want in the filenames or page/section slug field.
 slugify_paths = false
+
+# Slugify anchors. Enabled by default; disabling this causes automatic heading
+# IDs to be the heading text, unaltered.
+slugify_anchors = true
 
 # When set to "true", all code blocks are highlighted.
 highlight_code = false

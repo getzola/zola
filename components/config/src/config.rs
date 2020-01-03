@@ -132,6 +132,8 @@ pub struct Config {
 
     /// Whether to slugify page and taxonomy URLs (disable for UTF-8 URLs)
     pub slugify_paths: bool,
+    /// Whether to slugify anchors (disable for UTF-8 URLs)
+    pub slugify_anchors: bool,
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
     /// Which themes to use for code highlighting. See Readme for supported themes
@@ -356,7 +358,8 @@ impl Default for Config {
             title: None,
             description: None,
             theme: None,
-            slugify_paths: true,
+            slugify_paths: false,
+            slugify_anchors: true,
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),

@@ -5,6 +5,7 @@ compile_sass = true
 generate_rss = true
 theme = "sample"
 slugify_paths = true
+slugify_anchors = true
 
 taxonomies = [
     {name = "categories", rss = true},

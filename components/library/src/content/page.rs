@@ -19,7 +19,7 @@ use utils::templates::render_template;
 use crate::content::file_info::FileInfo;
 use crate::content::has_anchor;
 use crate::content::ser::SerializingPage;
-use utils::slugs::maybe_slugify_paths;
+use utils::slugs::maybe_slugify;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
@@ -161,24 +161,24 @@ impl Page {
 
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                maybe_slugify_paths(&slug.trim(), config.slugify_paths)
+                maybe_slugify(&slug.trim(), config.slugify_paths)
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
-                        maybe_slugify_paths(&slug, config.slugify_paths)
+                        maybe_slugify(&slug, config.slugify_paths)
                     } else {
-                        maybe_slugify_paths(
+                        maybe_slugify(
                             parent.file_name().unwrap().to_str().unwrap(),
                             config.slugify_paths,
                         )
                     }
                 } else {
-                    maybe_slugify_paths(&page.file.name, config.slugify_paths)
+                    maybe_slugify(&page.file.name, config.slugify_paths)
                 }
             } else if let Some(slug) = slug_from_dated_filename {
-                maybe_slugify_paths(&slug, config.slugify_paths)
+                maybe_slugify(&slug, config.slugify_paths)
             } else {
-                maybe_slugify_paths(&page.file.name, config.slugify_paths)
+                maybe_slugify(&page.file.name, config.slugify_paths)
             }
         };
 
@@ -637,9 +637,11 @@ Hello world
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
+        let mut config = Config::default();
+        config.slugify_paths = true;
         let res = Page::from_file(
             nested_path.join("index.md").as_path(),
-            &Config::default(),
+            &config,
             &path.to_path_buf(),
         );
         assert!(res.is_ok());
