@@ -70,7 +70,7 @@ impl TaxonomyItem {
             })
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
-        let slug = maybe_slugify(name, config.slugify_paths);
+        let slug = maybe_slugify(name, config.slugify_taxonomy_terms);
         let permalink = if taxonomy.lang != config.default_language {
             config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
         } else {
@@ -241,7 +241,6 @@ mod tests {
         let mut config = Config::default();
         let mut library = Library::new(2, 0, false);
 
-        config.slugify_paths = true;
         config.taxonomies = vec![
             TaxonomyConfig {
                 name: "categories".to_string(),
@@ -337,7 +336,6 @@ mod tests {
         let mut config = Config::default();
         let mut library = Library::new(2, 0, false);
 
-        config.slugify_paths = true;
         config.taxonomies = vec![
             TaxonomyConfig {
                 name: "categories".to_string(),
@@ -461,7 +459,6 @@ mod tests {
         config.languages.push(Language { rss: false, code: "fr".to_string(), search: false });
         let mut library = Library::new(2, 0, true);
 
-        config.slugify_paths = true;
         config.taxonomies = vec![
             TaxonomyConfig {
                 name: "categories".to_string(),
@@ -568,7 +565,7 @@ mod tests {
     #[test]
     fn can_make_utf8_taxonomies() {
         let mut config = Config::default();
-        config.slugify_paths = false;
+        config.slugify_taxonomy_terms = false;
         config.languages.push(Language {
             rss: false,
             code: "fr".to_string(),
@@ -601,7 +598,7 @@ mod tests {
     #[test]
     fn can_make_slugified_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify_taxonomy_terms = true;
         config.languages.push(Language {
             rss: false,
             code: "fr".to_string(),

@@ -33,6 +33,10 @@ theme = ""
 # URLs they want in the filenames or page/section slug field.
 slugify_paths = false
 
+# Slugify taxonomy terms. Enabled by default; disabling this causes taxonomy
+# terms to be used as slugs without any modification.
+slugify_taxonomy_terms = false
+
 # Slugify anchors. Enabled by default; disabling this causes automatic heading
 # IDs to be the heading text, with ASCII whitespace replaced with underscores.
 slugify_anchors = true

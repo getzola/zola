@@ -17,6 +17,7 @@ accessible everywhere
 - Allow skipping prefixes in `zola check`
 - Check for path collisions when building the site
 - Add `slugify_anchors` config option to disable slugification of anchors
+- Add `slugify_taxonomy_terms` config option to disable slugification of taxonomy terms
 
 ## 0.9.0 (2019-09-28)
 

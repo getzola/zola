@@ -52,7 +52,7 @@ categories = ["programming"]
 
 In a similar manner to how section and pages calculate their output path:
 - the taxonomy name is never slugified
-- the taxonomy entry (eg. as specific tag) is slugified when `slugify_paths` is enabled in the configuration
+- the taxonomy entry (eg. as specific tag) is slugified when `slugify_taxonomy_terms` is enabled in the configuration
 
 The taxonomy pages are then available at the following paths:
 
