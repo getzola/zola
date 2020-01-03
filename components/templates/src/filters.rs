@@ -3,7 +3,37 @@ use std::hash::BuildHasher;
 
 use base64::{decode, encode};
 use pulldown_cmark as cmark;
-use tera::{to_value, try_get_value, Result as TeraResult, Value};
+use regex::Regex;
+use tera::{to_value, try_get_value, Error as TeraError, Result as TeraResult, Value};
+
+pub fn replace_all<S: BuildHasher>(
+    value: &Value,
+    args: &HashMap<String, Value, S>,
+) -> TeraResult<Value> {
+    let s = try_get_value!("replace_all", "value", String, value);
+
+    let regex = match args.get("regex") {
+        Some(val) => try_get_value!("replace_all", "regex", String, val),
+        None => return Err(TeraError::msg("Filter `replace_all` expected an arg called `regex`")),
+    };
+
+    let rep = match args.get("rep") {
+        Some(val) => try_get_value!("replace_all", "rep", String, val),
+        None => return Err(TeraError::msg("Filter `replace_all` expected an arg called `rep`")),
+    };
+
+    let regex = match Regex::new(&regex) {
+        Ok(regex) => regex,
+        Err(err) => {
+            return Err(TeraError::msg(format!(
+                "Filter `replace_all`: Invalid regular expression: {}",
+                err
+            )));
+        }
+    };
+
+    Ok(to_value(&regex.replace_all(&s, &*rep)).unwrap())
+}
 
 pub fn markdown<S: BuildHasher>(
     value: &Value,
@@ -57,7 +87,20 @@ mod tests {
 
     use tera::to_value;
 
-    use super::{base64_decode, base64_encode, markdown};
+    use super::{base64_decode, base64_encode, markdown, replace_all};
+
+    #[test]
+    fn replace_all_filter() {
+        let mut args = HashMap::new();
+        args.insert("regex".to_string(), to_value("(\\d{4})-(\\d{2})-(\\d{2})").unwrap());
+        args.insert("rep".to_string(), to_value("$3/$2/$1").unwrap());
+        let result = replace_all(
+            &to_value(&"The date is 1234-56-78. Or is it 2345-67-89?").unwrap(),  // No.
+            &args,
+        );
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"The date is 78/56/1234. Or is it 89/67/2345?").unwrap());
+    }
 
     #[test]
     fn markdown_filter() {

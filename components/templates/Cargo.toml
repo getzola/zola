@@ -12,6 +12,7 @@ pulldown-cmark = "0.7"
 toml = "0.5"
 csv = "1"
 image = "0.23"
+regex = "1"
 serde_json = "1.0"
 reqwest = { version = "0.10", features = ["blocking"] }
 url = "2"
