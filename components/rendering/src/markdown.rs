@@ -300,7 +300,16 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             let id = heading_ref.id.unwrap_or_else(|| {
                 find_anchor(
                     &inserted_anchors,
-                    maybe_slugify(&title, context.config.slugify_anchors),
+                    if context.config.slugify_anchors {
+                        maybe_slugify(&title, true)
+                    } else {
+                        // In conformant HTML documents, id values “must not contain any ASCII
+                        // whitespace”, so we turn it into underscores. (In practice, space in IDs
+                        // work fine across the board, hence not filtering it out from any
+                        // manually-specified IDs: if the user wrote a space in explicitly, they
+                        // probably want it.)
+                        title.replace(|c: char| c.is_ascii_whitespace(), "_")
+                    },
                     0,
                 )
             });

@@ -6,7 +6,7 @@ weight = 50
 ## Heading id and anchor insertion
 While rendering the Markdown content, a unique id will automatically be assigned to each heading. 
 This id is created by converting the heading text to a [slug](https://en.wikipedia.org/wiki/Semantic_URL#Slug) if `slugify_anchors` is enabled.
-if `slugify_anchors` is disabled, the heading text is used verbatim.
+If `slugify_anchors` is disabled, ASCII whitespace is replaced by `_` (since it's forbidden in IDs in conforming HTML documents) but no other modifications to the heading text are made.
 A number is appended at the end if the slug already exists for that article 
 For example:
 

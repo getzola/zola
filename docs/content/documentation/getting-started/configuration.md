@@ -34,7 +34,7 @@ theme = ""
 slugify_paths = false
 
 # Slugify anchors. Enabled by default; disabling this causes automatic heading
-# IDs to be the heading text, unaltered.
+# IDs to be the heading text, with ASCII whitespace replaced with underscores.
 slugify_anchors = true
 
 # When set to "true", all code blocks are highlighted.

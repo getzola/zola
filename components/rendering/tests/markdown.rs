@@ -353,7 +353,7 @@ fn can_add_non_slug_id_to_headings() {
     config.slugify_anchors = false;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(r#"# L'écologie et vous"#, &context).unwrap();
-    assert_eq!(res.body, "<h1 id=\"L'écologie et vous\">L'écologie et vous</h1>\n");
+    assert_eq!(res.body, "<h1 id=\"L'écologie_et_vous\">L'écologie et vous</h1>\n");
 }
 
 #[test]
