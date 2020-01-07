@@ -1,11 +1,13 @@
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
+#[cfg(feature = "request")]
 use reqwest::{blocking::Client, header};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
+#[cfg(feature = "request")]
 use url::Url;
 
 use std::path::PathBuf;
@@ -19,6 +21,7 @@ static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path` or `url` argument";
 
 enum DataSource {
+    #[cfg(feature = "request")]
     Url(Url),
     Path(PathBuf),
 }
@@ -58,6 +61,7 @@ impl FromStr for OutputFormat {
 }
 
 impl OutputFormat {
+    #[cfg(feature = "request")]
     fn as_accept_header(&self) -> header::HeaderValue {
         header::HeaderValue::from_static(match self {
             OutputFormat::Json => "application/json",
@@ -86,10 +90,13 @@ impl DataSource {
             return Ok(DataSource::Path(full_path));
         }
 
-        if let Some(url) = url_arg {
-            return Url::parse(&url)
-                .map(DataSource::Url)
-                .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
+        #[cfg(feature = "request")]
+        {
+            if let Some(url) = url_arg {
+                return Url::parse(&url)
+                    .map(DataSource::Url)
+                    .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
+            }
         }
 
         Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
@@ -106,6 +113,7 @@ impl DataSource {
 impl Hash for DataSource {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
+            #[cfg(feature = "request")]
             DataSource::Url(url) => url.hash(state),
             DataSource::Path(path) => {
                 path.hash(state);
@@ -158,6 +166,7 @@ fn get_output_format_from_args(
         return OutputFormat::from_str(&format);
     }
 
+    #[allow(irrefutable_let_patterns)]
     let from_extension = if let DataSource::Path(path) = data_source {
         path.extension().map(|extension| extension.to_str().unwrap()).unwrap_or_else(|| "plain")
     } else {
@@ -173,14 +182,23 @@ fn get_output_format_from_args(
 #[derive(Debug)]
 pub struct LoadData {
     base_path: PathBuf,
+    #[cfg(feature = "request")]
     client: Arc<Mutex<Client>>,
     result_cache: Arc<Mutex<HashMap<u64, Value>>>,
 }
 impl LoadData {
     pub fn new(base_path: PathBuf) -> Self {
+        #[cfg(feature = "request")]
         let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
-        Self { base_path, client, result_cache }
+        #[cfg(feature = "request")]
+        {
+            Self { base_path, client, result_cache }
+        }
+        #[cfg(not(feature = "request"))]
+        {
+            Self { base_path, result_cache }
+        }
     }
 }
 
@@ -191,6 +209,7 @@ impl TeraFn for LoadData {
         let cache_key = data_source.get_cache_key(&file_format);
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
+        #[cfg(feature = "request")]
         let response_client = self.client.lock().expect("response client lock");
         if let Some(cached_result) = cache.get(&cache_key) {
             return Ok(cached_result.clone());
@@ -198,6 +217,7 @@ impl TeraFn for LoadData {
 
         let data = match data_source {
             DataSource::Path(path) => read_data_file(&self.base_path, path),
+            #[cfg(feature = "request")]
             DataSource::Url(url) => {
                 let response = response_client
                     .get(url.as_str())
@@ -370,6 +390,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "request")]
     fn calculates_cache_key_for_url() {
         let _m = mock("GET", "/kr1zdgbm4y")
             .with_header("content-type", "text/plain")
@@ -400,6 +421,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "request")]
     fn can_load_remote_data() {
         let _m = mock("GET", "/zpydpkjj67")
             .with_header("content-type", "application/json")
@@ -423,6 +445,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "request")]
     fn fails_when_request_404s() {
         let _m = mock("GET", "/aazeow0kog")
             .with_status(404)

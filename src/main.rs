@@ -2,6 +2,7 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Instant;
 
+#[cfg(feature = "serve")]
 use utils::net::{get_available_port, port_is_available};
 
 mod cli;
@@ -46,6 +47,7 @@ fn main() {
                 }
             };
         }
+        #[cfg(feature = "serve")]
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
             let mut port: u16 = match matches.value_of("port").unwrap().parse() {

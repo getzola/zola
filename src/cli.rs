@@ -49,6 +49,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .takes_value(false)
                         .help("Include drafts when loading the site"),
                 ]),
+            #[cfg(feature = "serve")]
             SubCommand::with_name("serve")
                 .about("Serve the site. Rebuild and reload on change automatically")
                 .args(&[
@@ -89,7 +90,13 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Open site in the default browser"),
                 ]),
             SubCommand::with_name("check")
-                .about("Try building the project without rendering it. Checks links")
+                .about({
+                    #[cfg(feature = "request")]
+                    let s = "Try building the project without rendering it. Checks links";
+                    #[cfg(not(feature = "request"))]
+                    let s = "Try building the project without rendering it. Checks internal links";
+                    s
+                })
                 .args(&[
                     Arg::with_name("drafts")
                         .long("drafts")

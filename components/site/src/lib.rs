@@ -16,6 +16,7 @@ use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
 };
+#[cfg(feature = "request")]
 use link_checker::check_url;
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
@@ -250,8 +251,11 @@ impl Site {
         // Needs to be done after rendering markdown as we only get the anchors at that point
         self.check_internal_links_with_anchors()?;
 
-        if self.config.is_in_check_mode() {
-            self.check_external_links()?;
+        #[cfg(feature = "request")]
+        {
+            if self.config.is_in_check_mode() {
+                self.check_external_links()?;
+            }
         }
 
         Ok(())
@@ -348,6 +352,7 @@ impl Site {
         Err(Error { kind: ErrorKind::Msg(msg), source: None })
     }
 
+    #[cfg(feature = "request")]
     pub fn check_external_links(&self) -> Result<()> {
         let library = self.library.write().expect("Get lock for check_external_links");
         let page_links = library

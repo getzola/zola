@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
+[features]
+default = ["request"]
+request = ["rendering/request"]
+
 [dependencies]
 slotmap = "0.4"
 rayon = "1"
@@ -17,7 +21,7 @@ lazy_static = "1"
 front_matter = { path = "../front_matter" }
 config = { path = "../config" }
 utils = { path = "../utils" }
-rendering = { path = "../rendering" }
+rendering = { path = "../rendering", default-features = false }
 errors = { path = "../errors" }
 
 [dev-dependencies]

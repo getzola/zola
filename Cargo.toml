@@ -17,6 +17,20 @@ clap = "2"
 [[bin]]
 name = "zola"
 
+[features]
+default = ["request", "serve"]
+request = ["rebuild/request", "site/request"]
+serve = [
+    "hyper",
+    "hyper-staticfile",
+    "tokio",
+    "notify",
+    "ws",
+    "ctrlc",
+    "open",
+    "globset",
+]
+
 [dependencies]
 atty = "0.2.11"
 clap = "2"
@@ -26,20 +40,20 @@ termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "2"
 # Below is for the serve cmd
-hyper = { version = "0.13", default-features = false, features = ["runtime"] }
-hyper-staticfile = "0.5"
-tokio = { version = "0.2", default-features = false, features = [] }
-notify = "4"
-ws = "0.9"
-ctrlc = "3"
-open = "1.2"
-globset = "0.4"
+hyper = { version = "0.13", default-features = false, features = ["runtime"], optional = true }
+hyper-staticfile = { version = "0.5", optional = true }
+tokio = { version = "0.2", default-features = false, features = [], optional = true }
+notify = { version = "4", optional = true }
+ws = { version = "0.9", optional = true }
+ctrlc = { version = "3", optional = true }
+open = { version = "1.2", optional = true }
+globset = { version = "0.4", optional = true }
 
-site = { path = "components/site" }
+site = { path = "components/site", default-features = false }
 errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
-rebuild = { path = "components/rebuild" }
+rebuild = { path = "components/rebuild", default-features = false }
 
 [workspace]
 members = [

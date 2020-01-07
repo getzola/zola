@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
+[features]
+default = ["request"]
+request = ["link_checker", "library/request", "search/request", "templates/request"]
+
 [dependencies]
 tera = "1"
 glob = "0.3"
@@ -15,12 +19,12 @@ sass-rs = "0.2"
 errors = { path = "../errors" }
 config = { path = "../config" }
 utils = { path = "../utils" }
-templates = { path = "../templates" }
+templates = { path = "../templates", default-features = false }
 front_matter = { path = "../front_matter" }
-search = { path = "../search" }
+search = { path = "../search", default-features = false }
 imageproc = { path = "../imageproc" }
-library = { path = "../library" }
-link_checker = { path = "../link_checker" }
+library = { path = "../library", default-features = false }
+link_checker = { path = "../link_checker", optional = true }
 
 [dev-dependencies]
 tempfile = "3"

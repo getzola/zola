@@ -91,3 +91,24 @@ $ cargo build --release
 The binary will be available in the `target/release` directory. You can move it in your `$PATH` to have the
 `zola` command available globally or in a directory if you want for example to have the binary in the
 same repository as the site.
+
+### Feature flags
+
+Zola provides Cargo feature flags to control the set of dependencies
+that are built. The supported feature flags are:
+
+- `request` *(default)* - Support making outbound HTTP/S requests. If
+  not set, support for external link checking is disabled.
+
+- `serve` *(default)* - Provide an embedded HTTP server. If not set,
+  the `zola serve` command is disabled.
+
+With `request` unset, building Zola does not depend on `openssl` or
+`pkg-config`.
+
+To build Zola without the default features or with a subset of the
+default features, run:
+
+```bash
+$ cargo build --release --no-default-features --features ""
+```

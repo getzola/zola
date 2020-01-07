@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
+[features]
+default = ["request"]
+request = ["link_checker"]
+
 [dependencies]
 tera = { version = "1", features = ["preserve_order"] }
 syntect = "=3.2.0"
@@ -19,7 +23,7 @@ errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }
 utils = { path = "../utils" }
 config = { path = "../config" }
-link_checker = { path = "../link_checker" }
+link_checker = { path = "../link_checker", optional = true }
 
 [dev-dependencies]
 templates = { path = "../templates" }
