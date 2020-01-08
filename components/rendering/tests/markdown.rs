@@ -852,3 +852,24 @@ fn leaves_custom_url_scheme_untouched() {
 
     assert_eq!(res.body, expected);
 }
+
+#[test]
+fn stops_with_an_error_on_an_empty_link() {
+    let content = r#"[some link]()"#;
+
+    let tera_ctx = Tera::default();
+    let config = Config::default();
+    let permalinks_ctx = HashMap::new();
+
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        "https://vincent.is/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+
+    let res = render_content(content, &context);
+
+    assert!(res.is_err());
+}
