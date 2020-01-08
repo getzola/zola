@@ -31,3 +31,4 @@
 | [rust-gamedev.github.io](https://rust-gamedev.github.io)           | https://github.com/rust-gamedev/rust-gamedev.github.io   |
 | [arewegameyet.rs](http://arewegameyet.rs)                          | https://github.com/rust-gamedev/arewegameyet             |
 | [klau.si](https://klau.si)                                         | https://github.com/klausi/klau.si                        |
+| [peterlyons.com](https://peterlyons.com)                           | https://github.com/focusaurus/peterlyons.com-zola        |
