@@ -871,5 +871,8 @@ fn stops_with_an_error_on_an_empty_link() {
 
     let res = render_content(content, &context);
 
+    let expected = "There is a link that is missing a URL";
+
     assert!(res.is_err());
+    assert_eq!(res.unwrap_err().to_string(), expected);
 }
