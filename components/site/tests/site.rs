@@ -684,17 +684,16 @@ fn can_ignore_markdown_content() {
     assert!(!file_exists!(public, "posts/ignored/index.html"));
 }
 
-// Can timeout CI https://github.com/getzola/zola/issues/908
-//#[test]
-//fn check_site() {
-//    let (mut site, _tmp_dir, _public) = build_site("test_site");
-//
-//    assert_eq!(
-//        site.config.link_checker.skip_anchor_prefixes,
-//        vec!["https://github.com/rust-lang/rust/blob/"]
-//    );
-//    assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
-//
-//    site.config.enable_check_mode();
-//    site.load().expect("link check test_site");
-//}
+#[test]
+fn check_site() {
+   let (mut site, _tmp_dir, _public) = build_site("test_site");
+
+   assert_eq!(
+       site.config.link_checker.skip_anchor_prefixes,
+       vec!["https://github.com/rust-lang/rust/blob/"]
+   );
+   assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
+
+   site.config.enable_check_mode();
+   site.load().expect("link check test_site");
+}
