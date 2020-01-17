@@ -184,6 +184,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut has_summary = false;
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_FOOTNOTES);
+    opts.insert(Options::ENABLE_STRIKETHROUGH);
 
     {
         let mut events = Parser::new_ext(content, opts)
