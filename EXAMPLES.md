@@ -32,3 +32,4 @@
 | [arewegameyet.rs](http://arewegameyet.rs)                          | https://github.com/rust-gamedev/arewegameyet             |
 | [klau.si](https://klau.si)                                         | https://github.com/klausi/klau.si                        |
 | [peterlyons.com](https://peterlyons.com)                           | https://github.com/focusaurus/peterlyons.com-zola        |
+| [blog.turbo.fish](https://blog.turbo.fish)                         | https://git.sr.ht/~jplatte/blog.turbo.fish             |
