@@ -1,6 +1,6 @@
 +++
 title = "Directory structure"
-weight = 3
+weight = 30
 +++
 
 After running `zola init`, you should see the following structure in your directory:

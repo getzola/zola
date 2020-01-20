@@ -1,6 +1,6 @@
 +++
 title = "Installation"
-weight = 1
+weight = 10
 +++
 
 Zola provides pre-built binaries for MacOS, Linux and Windows on the
