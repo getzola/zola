@@ -16,7 +16,6 @@ use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
 };
-use link_checker::check_url;
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
@@ -396,8 +395,8 @@ impl Site {
                     {
                         return None;
                     }
-                    let res = check_url(&link, &self.config.link_checker);
-                    if res.is_valid() {
+                    let res = link_checker::check_url(&link, &self.config.link_checker);
+                    if link_checker::is_valid(&res) {
                         None
                     } else {
                         Some((page_path, link, res))
@@ -423,7 +422,7 @@ impl Site {
                     "Dead link in {} to {}: {}",
                     page_path.to_string_lossy(),
                     link,
-                    check_res.message()
+                    link_checker::message(&check_res)
                 )
             })
             .collect::<Vec<_>>()
