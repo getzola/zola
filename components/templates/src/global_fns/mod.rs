@@ -346,6 +346,7 @@ mod tests {
 
     use config::{Config, Taxonomy as TaxonomyConfig};
     use library::{Library, Taxonomy, TaxonomyItem};
+    use utils::slugs::SlugifyStrategy;
 
     #[test]
     fn can_add_cachebust_to_url() {
@@ -390,7 +391,7 @@ mod tests {
     #[test]
     fn can_get_taxonomy() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify.taxonomies = SlugifyStrategy::On;
         let taxo_config = TaxonomyConfig {
             name: "tags".to_string(),
             lang: config.default_language.clone(),
@@ -468,7 +469,7 @@ mod tests {
     #[test]
     fn can_get_taxonomy_url() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify.taxonomies = SlugifyStrategy::On;
         let taxo_config = TaxonomyConfig {
             name: "tags".to_string(),
             lang: config.default_language.clone(),

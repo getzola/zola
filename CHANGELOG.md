@@ -5,8 +5,8 @@
 ### Breaking
 - Remove `toc` variable in section/page context and pass it to `page.toc` and `section.toc` instead so they are
 accessible everywhere
-- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of page paths is now optional. By default, every path will be slugified as it is happening right now.
-To keep non-ASCII characters,  set `slugify_paths = true` in your config.
+- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of paths, taxonomies and anchors is now optional. By default, everything will still be slugified like in previous versions.
+See documentation for information on how to disable it.
 
 ### Other
 - Add zenburn syntax highlighting theme

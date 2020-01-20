@@ -19,7 +19,7 @@ use utils::templates::render_template;
 use crate::content::file_info::FileInfo;
 use crate::content::has_anchor;
 use crate::content::ser::SerializingPage;
-use utils::slugs::maybe_slugify_paths;
+use utils::slugs::slugify_paths;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
@@ -161,24 +161,24 @@ impl Page {
 
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
-                maybe_slugify_paths(&slug.trim(), config.slugify_paths)
+                slugify_paths(slug, config.slugify.paths)
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
-                        maybe_slugify_paths(&slug, config.slugify_paths)
+                        slugify_paths(&slug, config.slugify.paths)
                     } else {
-                        maybe_slugify_paths(
+                        slugify_paths(
                             parent.file_name().unwrap().to_str().unwrap(),
-                            config.slugify_paths,
+                            config.slugify.paths,
                         )
                     }
                 } else {
-                    maybe_slugify_paths(&page.file.name, config.slugify_paths)
+                    slugify_paths(&page.file.name, config.slugify.paths)
                 }
             } else if let Some(slug) = slug_from_dated_filename {
-                maybe_slugify_paths(&slug, config.slugify_paths)
+                slugify_paths(&slug, config.slugify.paths)
             } else {
-                maybe_slugify_paths(&page.file.name, config.slugify_paths)
+                slugify_paths(&page.file.name, config.slugify.paths)
             }
         };
 
@@ -379,6 +379,7 @@ mod tests {
     use super::Page;
     use config::{Config, Language};
     use front_matter::InsertAnchor;
+    use utils::slugs::SlugifyStrategy;
 
     #[test]
     fn test_can_parse_a_valid_page() {
@@ -448,7 +449,7 @@ Hello world"#;
     +++
     Hello world"#;
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify.paths = SlugifyStrategy::On;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -465,7 +466,7 @@ Hello world"#;
     +++
     Hello world"#;
         let mut config = Config::default();
-        config.slugify_paths = false;
+        config.slugify.paths = SlugifyStrategy::Safe;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -531,7 +532,7 @@ Hello world"#;
     #[test]
     fn can_make_slug_from_non_slug_filename() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify.paths = SlugifyStrategy::On;
         let res =
             Page::parse(Path::new(" file with space.md"), "+++\n+++", &config, &PathBuf::new());
         assert!(res.is_ok());
@@ -543,7 +544,7 @@ Hello world"#;
     #[test]
     fn can_make_path_from_utf8_filename() {
         let mut config = Config::default();
-        config.slugify_paths = false;
+        config.slugify.paths = SlugifyStrategy::Safe;
         let res = Page::parse(Path::new("日本.md"), "+++\n++++", &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
