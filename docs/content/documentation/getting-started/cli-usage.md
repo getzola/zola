@@ -50,10 +50,15 @@ You can override the default output directory `public` by passing another value 
 $ zola build --output-dir $DOCUMENT_ROOT
 ```
 
-You can also point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
+You can point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
 
 ```bash
 $ zola --config config.staging.toml build
+```
+
+You can also process a project from a different directory with the `root` flag. If building a project 'out-of-tree' with the `root` flag, you may want to combine it with the `output-dir` flag. (Note that like `config`, the position is important):
+```bash
+$ zola --root /path/to/project build
 ```
 
 By default, drafts are not loaded. If you wish to include them, pass the `--drafts` flag.
