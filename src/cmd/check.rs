@@ -1,5 +1,4 @@
-use std::env;
-use std::path::PathBuf;
+use std::path::{Path,PathBuf};
 
 use errors::Result;
 use site::Site;
@@ -7,12 +6,13 @@ use site::Site;
 use crate::console;
 
 pub fn check(
+    root_dir: &Path,
     config_file: &str,
     base_path: Option<&str>,
     base_url: Option<&str>,
     include_drafts: bool,
 ) -> Result<()> {
-    let bp = base_path.map(PathBuf::from).unwrap_or_else(|| env::current_dir().unwrap());
+    let bp = base_path.map(PathBuf::from).unwrap_or_else(|| PathBuf::from(root_dir));
     let mut site = Site::new(bp, config_file)?;
     // Force the checking of external links
     site.config.enable_check_mode();

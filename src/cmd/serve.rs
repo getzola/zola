@@ -158,6 +158,7 @@ fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_p
 }
 
 fn create_new_site(
+    root_dir: &Path,
     interface: &str,
     port: u16,
     output_dir: &str,
@@ -165,7 +166,7 @@ fn create_new_site(
     config_file: &str,
     include_drafts: bool,
 ) -> Result<(Site, String)> {
-    let mut site = Site::new(env::current_dir().unwrap(), config_file)?;
+    let mut site = Site::new(root_dir, config_file)?;
 
     let base_address = format!("{}:{}", base_url, port);
     let address = format!("{}:{}", interface, port);
@@ -190,6 +191,7 @@ fn create_new_site(
 }
 
 pub fn serve(
+    root_dir: &Path,
     interface: &str,
     port: u16,
     output_dir: &str,
@@ -201,7 +203,7 @@ pub fn serve(
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) =
-        create_new_site(interface, port, output_dir, base_url, config_file, include_drafts)?;
+        create_new_site(root_dir, interface, port, output_dir, base_url, config_file, include_drafts)?;
     console::report_elapsed_time(start);
 
     // Setup watchers
@@ -443,6 +445,7 @@ pub fn serve(
                                     "-> Themes changed. The whole site will be reloaded.",
                                 );
                                 site = create_new_site(
+                                    root_dir,
                                     interface,
                                     port,
                                     output_dir,
@@ -457,6 +460,7 @@ pub fn serve(
                             ChangeKind::Config => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(
+                                    root_dir,
                                     interface,
                                     port,
                                     output_dir,
@@ -504,6 +508,7 @@ pub fn serve(
                                     "-> Themes changed. The whole site will be reloaded.",
                                 );
                                 site = create_new_site(
+                                    root_dir,
                                     interface,
                                     port,
                                     output_dir,
@@ -518,6 +523,7 @@ pub fn serve(
                             (ChangeKind::Config, _) => {
                                 console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
                                 site = create_new_site(
+                                    root_dir,
                                     interface,
                                     port,
                                     output_dir,
