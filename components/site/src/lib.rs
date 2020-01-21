@@ -203,7 +203,7 @@ impl Site {
                 })
                 .map(|entry| {
                     let path = entry.as_path();
-                    Page::from_file(path, config, &self.base_path)
+                    Page::from_file(path, config, &self.base_path, &self.static_path)
                 })
                 .collect::<Vec<_>>()
         };
@@ -704,6 +704,12 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
             let asset_path = asset.as_path();
+
+            // These are copied separately in `copy_static_directories`
+            if asset_path.starts_with(&self.static_path) {
+                continue;
+            }
+
             copy(
                 &asset_path,
                 &current_path

@@ -218,6 +218,7 @@ impl Page {
         path: P,
         config: &Config,
         base_path: &PathBuf,
+        static_path: &PathBuf,
     ) -> Result<Page> {
         let path = path.as_ref();
         let content = read_file(path)?;
@@ -225,7 +226,15 @@ impl Page {
 
         if page.file.name == "index" {
             let parent_dir = path.parent().unwrap();
-            let assets = find_related_assets(parent_dir);
+            let mut assets = find_related_assets(parent_dir);
+
+            if let Some(common) = parent_dir.strip_prefix(base_path.join("content")).ok() {
+                let page_static_path = static_path.join(common);
+
+                if page_static_path.exists() {
+                    assets.extend(find_related_assets(&page_static_path));
+                }
+            }
 
             if let Some(ref globset) = config.ignored_content_globset {
                 // `find_related_assets` only scans the immediate directory (it is not recursive) so our
@@ -314,7 +323,8 @@ impl Page {
                 path.push(filename);
                 path = path
                     .strip_prefix(&base_path.join("content"))
-                    .expect("Should be able to stripe prefix")
+                    .or(path.strip_prefix(&base_path.join("static")))
+                    .expect("Should be able to strip prefix")
                     .to_path_buf();
                 path
             })
@@ -586,6 +596,7 @@ Hello world
             nested_path.join("index.md").as_path(),
             &Config::default(),
             &path.to_path_buf(),
+            &path.to_path_buf().join("static")
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -613,6 +624,7 @@ Hello world
             nested_path.join("index.md").as_path(),
             &Config::default(),
             &path.to_path_buf(),
+            &path.join("static")
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -641,6 +653,7 @@ Hello world
             nested_path.join("index.md").as_path(),
             &Config::default(),
             &path.to_path_buf(),
+            &path.join("static")
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -650,6 +663,38 @@ Hello world
         // We should not get with-assets since that's the slugified version
         assert!(page.serialized_assets[0].contains("with_assets"));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+    }
+
+    #[test]
+    fn page_with_assets_uses_static_filepath_for_assets() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        create_dir(&path.join("static")).expect("create static temp dir");
+        create_dir(&path.join("content").join("posts")).expect("create content posts dir");
+        create_dir(&path.join("static").join("posts")).expect("create static posts dir");
+        let nested_path = path.join("content").join("posts").join("with_assets");
+        create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        f.write_all(b"+++\n+++\n").unwrap();
+
+        let nested_static_path = path.join("static").join("posts").join("with_assets");
+        create_dir(&nested_static_path).expect("create nested static temp dir");
+        File::create(nested_static_path.join("example.js")).unwrap();
+        File::create(nested_static_path.join("graph.jpg")).unwrap();
+        File::create(nested_static_path.join("fail.png")).unwrap();
+
+        let res = Page::from_file(
+            nested_path.join("index.md").as_path(),
+            &Config::default(),
+            &path.to_path_buf(),
+            &path.join("static")
+        );
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.assets.len(), 3);
+        assert_eq!(page.serialized_assets.len(), 3);
+        assert!(page.assets.contains(&nested_static_path.join("graph.jpg")))
     }
 
     // https://github.com/getzola/zola/issues/607
@@ -671,6 +716,7 @@ Hello world
             nested_path.join("index.md").as_path(),
             &Config::default(),
             &path.to_path_buf(),
+            &path.join("static")
         );
         assert!(res.is_ok());
         let page = res.unwrap();
@@ -701,7 +747,7 @@ Hello world
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
         let res =
-            Page::from_file(nested_path.join("index.md").as_path(), &config, &path.to_path_buf());
+            Page::from_file(nested_path.join("index.md").as_path(), &config, &path.to_path_buf(), &path.join("static"));
 
         assert!(res.is_ok());
         let page = res.unwrap();
