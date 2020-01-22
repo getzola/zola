@@ -33,3 +33,5 @@
 | [klau.si](https://klau.si)                                         | https://github.com/klausi/klau.si                        |
 | [peterlyons.com](https://peterlyons.com)                           | https://github.com/focusaurus/peterlyons.com-zola        |
 | [blog.turbo.fish](https://blog.turbo.fish)                         | https://git.sr.ht/~jplatte/blog.turbo.fish             |
+| [guerinpe.com](https://guerinpe.com)                               | https://github.com/Grelot/blog |
+
