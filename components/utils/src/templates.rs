@@ -11,7 +11,7 @@ macro_rules! render_default_tpl {
         let mut context = Context::new();
         context.insert("filename", $filename);
         context.insert("url", $url);
-        Tera::one_off(DEFAULT_TPL, context, true).map_err(std::convert::Into::into)
+        Tera::one_off(DEFAULT_TPL, &context, true).map_err(std::convert::Into::into)
     }};
 }
 
@@ -27,21 +27,21 @@ pub fn render_template(
 ) -> Result<String> {
     // check if it is in the templates
     if tera.templates.contains_key(name) {
-        return tera.render(name, context).map_err(std::convert::Into::into);
+        return tera.render(name, &context).map_err(std::convert::Into::into);
     }
 
     // check if it is part of a theme
     if let Some(ref t) = *theme {
         let theme_template_name = format!("{}/templates/{}", t, name);
         if tera.templates.contains_key(&theme_template_name) {
-            return tera.render(&theme_template_name, context).map_err(std::convert::Into::into);
+            return tera.render(&theme_template_name, &context).map_err(std::convert::Into::into);
         }
     }
 
     // check if it is part of ZOLA_TERA defaults
     let default_name = format!("__zola_builtins/{}", name);
     if tera.templates.contains_key(&default_name) {
-        return tera.render(&default_name, context).map_err(std::convert::Into::into);
+        return tera.render(&default_name, &context).map_err(std::convert::Into::into);
     }
 
     // maybe it's a default one?
