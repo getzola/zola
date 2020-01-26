@@ -1,4 +1,4 @@
-// Contains an embedded version of livereload-js
+// Contains an embedded version of livereload-js 3.2.1
 //
 // Copyright (c) 2010-2012 Andrey Tarantsov
 //
