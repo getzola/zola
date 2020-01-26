@@ -163,11 +163,11 @@ impl TeraFn for GetImageMeta {
         let path = required_arg!(
             String,
             args.get("path"),
-            "`get_image_meta` requires a `path` argument with a string value"
+            "`get_image_metadata` requires a `path` argument with a string value"
         );
         let src_path = self.content_path.join(&path);
         if !src_path.exists() {
-            return Err(format!("`get_image_meta`: Cannot find path: {}", path).into());
+            return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
         }
         let img = image::open(&src_path)
             .map_err(|e| Error::chain(format!("Failed to process image: {}", path), e))?;
