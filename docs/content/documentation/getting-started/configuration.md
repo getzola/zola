@@ -89,7 +89,6 @@ ignored_content = []
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
-<<<<<<< HEAD
 # Optional translation object. The key if present should be a language code.
 # Example:
 #     default_language = "fr"
