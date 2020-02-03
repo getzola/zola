@@ -1,10 +1,18 @@
-FROM bitnami/minideb AS builder
-RUN install_packages python-pip curl tar python-setuptools rsync binutils
-RUN pip install dockerize
+FROM rust:slim AS builder
+
+RUN apt-get update -y && \
+  apt-get install -y python-pip make g++ python-setuptools libssl-dev pkg-config rsync && \
+  pip install dockerize && \
+  rustup target add x86_64-unknown-linux-gnu
+
+WORKDIR /app
+COPY . .
+
+RUN cargo build --release --target x86_64-unknown-linux-gnu
+
+RUN mv target/x86_64-unknown-linux-gnu/release/zola /usr/bin
 RUN mkdir -p /workdir
 WORKDIR /workdir
-RUN curl -L https://github.com/getzola/zola/releases/download/$DOCKER_TAG/zola-$DOCKER_TAG-x86_64-unknown-linux-gnu.tar.gz | tar xz
-RUN mv zola /usr/bin
 RUN dockerize -n  -o /workdir  /usr/bin/zola
 
 
