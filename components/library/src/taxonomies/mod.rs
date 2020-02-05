@@ -11,7 +11,7 @@ use utils::templates::render_template;
 use crate::content::SerializingPage;
 use crate::library::Library;
 use crate::sorting::sort_pages_by_date;
-use utils::slugs::maybe_slugify_paths;
+use utils::slugs::slugify_paths;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SerializedTaxonomyItem<'a> {
@@ -70,7 +70,7 @@ impl TaxonomyItem {
             })
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
-        let slug = maybe_slugify_paths(name, config.slugify_paths);
+        let slug = slugify_paths(name, config.slugify.taxonomies);
         let permalink = if taxonomy.lang != config.default_language {
             config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
         } else {
@@ -235,6 +235,7 @@ mod tests {
     use crate::content::Page;
     use crate::library::Library;
     use config::{Config, Language, Taxonomy as TaxonomyConfig};
+    use utils::slugs::SlugifyStrategy;
 
     #[test]
     fn can_make_taxonomies() {
@@ -565,7 +566,7 @@ mod tests {
     #[test]
     fn can_make_utf8_taxonomies() {
         let mut config = Config::default();
-        config.slugify_paths = false;
+        config.slugify.taxonomies = SlugifyStrategy::Safe;
         config.languages.push(Language {
             rss: false,
             code: "fr".to_string(),
@@ -598,7 +599,7 @@ mod tests {
     #[test]
     fn can_make_slugified_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.slugify_paths = true;
+        config.slugify.taxonomies = SlugifyStrategy::On;
         config.languages.push(Language {
             rss: false,
             code: "fr".to_string(),

@@ -27,10 +27,6 @@ default_language = "en"
 # The site theme to use.
 theme = ""
 
-# Slugify paths for compatibility with ASCII-only URLs produced by Zola < 0.9
-# Enabling this setting removes non-English (UTF8) characters in URLs
-slugify_paths = false
-
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
 
@@ -113,6 +109,18 @@ skip_anchor_prefixes = [
     "https://caniuse.com/",
 ]
 
+# Various slugification strategies, see below for details
+# Defauls to everything being a slug
+[slugify]
+paths = "on"
+taxonomies = "on"
+anchors = "on"
+
+# Optional translation object. Keys should be language codes.
+[translations]
+
+# You can put any kind of data here. The data
+# will be accessible in all templates.
 [extra]
 ```
 
@@ -158,3 +166,19 @@ Zola currently has the following highlight themes available:
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
+
+## Slugification strategies
+
+By default, Zola will turn every path, taxonomies and anchors to a slug, an ASCII representation with no special characters.
+You can however change that strategy for each kind of item, if you want UTF-8 characters in your URLs for example. There are 3 strategies:
+
+- `on`: the default one, everything is turned into a slug
+- `safe`: characters that cannot exist in files on Windows (`<>:"/\|?*`) or Unix (`/`) are removed, everything else stays
+- `off`: nothing is changed, your site might not build on some OS and/or break various URL parsers
+
+Since there are no filename issues with anchors, the `safe` and `off` strategies are identical in their case: the only change
+is space being replaced by `_` since a space is not valid in an anchor.
+
+Note that if you are using a strategy other than the default, you will have to manually escape whitespace and Markdown
+tokens to be able to link to your pages. For example an internal link to a file named `some space.md` will need to be
+written like `some%20space.md` in your Markdown files.

@@ -12,7 +12,7 @@ use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use utils::site::resolve_internal_link;
-use utils::slugs::maybe_slugify_anchors;
+use utils::slugs::slugify_anchors;
 use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
@@ -305,7 +305,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             let id = heading_ref.id.unwrap_or_else(|| {
                 find_anchor(
                     &inserted_anchors,
-                    maybe_slugify_anchors(&title, context.config.slugify_paths),
+                    slugify_anchors(&title, context.config.slugify.anchors),
                     0,
                 )
             });

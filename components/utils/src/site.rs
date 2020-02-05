@@ -1,3 +1,4 @@
+use percent_encoding::percent_decode;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
 use unicode_segmentation::UnicodeSegmentation;
@@ -33,12 +34,15 @@ pub fn resolve_internal_link<S: BuildHasher>(
     // Then we remove any potential anchor
     // parts[0] will be the file path and parts[1] the anchor if present
     let parts = clean_link.split('#').collect::<Vec<_>>();
-    match permalinks.get(parts[0]) {
+    // If we have slugification turned off, we might end up with some escaped characters so we need
+    // to decode them first
+    let decoded = &*percent_decode(parts[0].as_bytes()).decode_utf8_lossy();
+    match permalinks.get(decoded) {
         Some(p) => {
             if parts.len() > 1 {
                 Ok(ResolvedInternalLink {
                     permalink: format!("{}#{}", p, parts[1]),
-                    md_path: Some(parts[0].to_string()),
+                    md_path: Some(decoded.to_string()),
                     anchor: Some(parts[1].to_string()),
                 })
             } else {
@@ -78,6 +82,19 @@ mod tests {
         let res = resolve_internal_link("@/pages/about.md#hello", &permalinks).unwrap();
         assert_eq!(res.permalink, "https://vincent.is/about#hello");
         assert_eq!(res.md_path, Some("pages/about.md".to_string()));
+        assert_eq!(res.anchor, Some("hello".to_string()));
+    }
+
+    #[test]
+    fn can_resolve_escaped_internal_links() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "pages/about space.md".to_string(),
+            "https://vincent.is/about%20space/".to_string(),
+        );
+        let res = resolve_internal_link("@/pages/about%20space.md#hello", &permalinks).unwrap();
+        assert_eq!(res.permalink, "https://vincent.is/about%20space/#hello");
+        assert_eq!(res.md_path, Some("pages/about space.md".to_string()));
         assert_eq!(res.anchor, Some("hello".to_string()));
     }
 

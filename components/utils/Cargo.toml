@@ -5,13 +5,16 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-errors = { path = "../errors" }
 tera = "1"
 unicode-segmentation = "1.2"
 walkdir = "2"
 toml = "0.5"
 serde = "1"
+serde_derive = "1"
 slug = "0.1"
+percent-encoding = "2"
+
+errors = { path = "../errors" }
 
 [dev-dependencies]
 tempfile = "3"

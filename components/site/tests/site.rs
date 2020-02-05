@@ -686,14 +686,14 @@ fn can_ignore_markdown_content() {
 
 #[test]
 fn check_site() {
-   let (mut site, _tmp_dir, _public) = build_site("test_site");
+    let (mut site, _tmp_dir, _public) = build_site("test_site");
 
-   assert_eq!(
-       site.config.link_checker.skip_anchor_prefixes,
-       vec!["https://github.com/rust-lang/rust/blob/"]
-   );
-   assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
+    assert_eq!(
+        site.config.link_checker.skip_anchor_prefixes,
+        vec!["https://github.com/rust-lang/rust/blob/"]
+    );
+    assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
 
-   site.config.enable_check_mode();
-   site.load().expect("link check test_site");
+    site.config.enable_check_mode();
+    site.load().expect("link check test_site");
 }
