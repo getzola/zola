@@ -239,11 +239,11 @@ fn can_build_site_with_live_reload_and_drafts() {
     // no live reload code
     assert!(file_contains!(public, "index.html", "/livereload.js"));
 
-    // the summary anchor link has been created
+    // the summary target has been created
     assert!(file_contains!(
         public,
         "posts/python/index.html",
-        r#"<a name="continue-reading"></a>"#
+        r#"<span id="continue-reading"></span>"#
     ));
 
     // Drafts are included

@@ -17,8 +17,7 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 
-const CONTINUE_READING: &str =
-    "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
+const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 
 #[derive(Debug)]

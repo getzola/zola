@@ -757,7 +757,7 @@ Bla bla
     .unwrap();
     assert_eq!(
         res.body,
-        "<p>Hello <a href=\"https://vincentprouillet.com\">My site</a></p>\n<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
+        "<p>Hello <a href=\"https://vincentprouillet.com\">My site</a></p>\n<span id=\"continue-reading\"></span>\n<p>Bla bla</p>\n"
     );
     assert_eq!(
         res.summary_len,
