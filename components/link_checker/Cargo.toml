@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-reqwest = { version = "0.10", features = ["blocking"] }
+reqwest = { version = "0.10", features = ["blocking", "rustls-tls"] }
 lazy_static = "1"
 
 config = { path = "../config" }
