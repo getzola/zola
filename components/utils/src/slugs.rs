@@ -35,7 +35,9 @@ pub fn slugify_paths(s: &str, strategy: SlugifyStrategy) -> String {
 pub fn slugify_anchors(s: &str, strategy: SlugifyStrategy) -> String {
     match strategy {
         SlugifyStrategy::On => slug::slugify(s),
-        SlugifyStrategy::Safe | SlugifyStrategy::Off => s.replace(|c: char| c.is_ascii_whitespace(), "_"),
+        SlugifyStrategy::Safe | SlugifyStrategy::Off => {
+            s.replace(|c: char| c.is_ascii_whitespace(), "_")
+        }
     }
 }
 

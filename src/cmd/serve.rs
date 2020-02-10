@@ -202,8 +202,15 @@ pub fn serve(
     include_drafts: bool,
 ) -> Result<()> {
     let start = Instant::now();
-    let (mut site, address) =
-        create_new_site(root_dir, interface, port, output_dir, base_url, config_file, include_drafts)?;
+    let (mut site, address) = create_new_site(
+        root_dir,
+        interface,
+        port,
+        output_dir,
+        base_url,
+        config_file,
+        include_drafts,
+    )?;
     console::report_elapsed_time(start);
 
     // Setup watchers

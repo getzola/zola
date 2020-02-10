@@ -625,11 +625,14 @@ fn can_understand_footnote_in_heading() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# text [^1] there\n[^1]: footnote", &context).unwrap();
-    assert_eq!(res.body, r##"<h1 id="text-there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
+    assert_eq!(
+        res.body,
+        r##"<h1 id="text-there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p>footnote</p>
 </div>
-"##);
+"##
+    );
 }
 
 #[test]
