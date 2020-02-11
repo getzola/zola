@@ -5,7 +5,7 @@
 ### Breaking
 - Remove `toc` variable in section/page context and pass it to `page.toc` and `section.toc` instead so they are
 accessible everywhere
-- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of paths, taxonomies and anchors is now optional. By default, everything will still be slugified like in previous versions.
+- [Slugification](https://en.wikipedia.org/wiki/Slug_(web_publishing)#Slug) of paths, taxonomies and anchors is now configurable. By default, everything will still be slugified like in previous versions.
 See documentation for information on how to disable it.
 
 ### Other
@@ -16,6 +16,11 @@ See documentation for information on how to disable it.
 - Allow skipping anchor checking in `zola check` for some URL prefixes
 - Allow skipping prefixes in `zola check`
 - Check for path collisions when building the site
+- Fix bug in template extension with themes
+- Use Rustls instead of openssl
+- The continue reading HTML element is now a <span> instead of a <p>
+- Update livereload.js
+- Add --root global argument
 
 ## 0.9.0 (2019-09-28)
 
