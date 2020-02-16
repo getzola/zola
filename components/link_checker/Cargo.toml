@@ -12,4 +12,4 @@ config = { path = "../config" }
 errors = { path = "../errors" }
 
 [dev-dependencies]
-mockito = "0.22"
+mockito = "0.23"

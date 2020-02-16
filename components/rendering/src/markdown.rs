@@ -16,6 +16,7 @@ use utils::slugs::slugify_anchors;
 use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
+use pulldown_cmark::CodeBlockKind;
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -211,13 +212,18 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         // Business as usual
                         Event::Text(text)
                     }
-                    Event::Start(Tag::CodeBlock(ref info)) => {
+                    Event::Start(Tag::CodeBlock(ref kind)) => {
                         if !context.config.highlight_code {
                             return Event::Html("<pre><code>".into());
                         }
 
                         let theme = &THEME_SET.themes[&context.config.highlight_theme];
-                        highlighter = Some(get_highlighter(info, &context.config));
+                        match kind {
+                            CodeBlockKind::Indented => (),
+                            CodeBlockKind::Fenced(info) => {
+                                highlighter = Some(get_highlighter(info, &context.config));
+                            }
+                        };
                         // This selects the background color the same way that start_coloured_html_snippet does
                         let color = theme
                             .settings
