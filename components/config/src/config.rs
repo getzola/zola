@@ -3,15 +3,16 @@ use std::path::{Path, PathBuf};
 
 use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use serde_derive::{Deserialize, Serialize};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use toml;
 use toml::Value as Toml;
 
-use errors::Result;
-use errors::Error;
-use highlighting::THEME_SET;
-use theme::Theme;
+use crate::highlighting::THEME_SET;
+use crate::theme::Theme;
+use errors::{bail, Error, Result};
 use utils::fs::read_file_with_error;
+use utils::slugs::SlugifyStrategy;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
@@ -21,6 +22,24 @@ pub enum Mode {
     Build,
     Serve,
     Check,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Slugify {
+    pub paths: SlugifyStrategy,
+    pub taxonomies: SlugifyStrategy,
+    pub anchors: SlugifyStrategy,
+}
+
+impl Default for Slugify {
+    fn default() -> Self {
+        Slugify {
+            paths: SlugifyStrategy::On,
+            taxonomies: SlugifyStrategy::On,
+            anchors: SlugifyStrategy::On,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -35,7 +54,7 @@ pub struct Language {
 }
 
 impl Default for Language {
-    fn default() -> Language {
+    fn default() -> Self {
         Language { code: String::new(), rss: false, search: false }
     }
 }
@@ -75,7 +94,7 @@ impl Taxonomy {
 }
 
 impl Default for Taxonomy {
-    fn default() -> Taxonomy {
+    fn default() -> Self {
         Taxonomy {
             name: String::new(),
             paginate_by: None,
@@ -86,7 +105,22 @@ impl Default for Taxonomy {
     }
 }
 
-type TranslateTerm  = HashMap<String, String>;
+type TranslateTerm = HashMap<String, String>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LinkChecker {
+    /// Skip link checking for these URL prefixes
+    pub skip_prefixes: Vec<String>,
+    /// Skip anchor checking for these URL prefixes
+    pub skip_anchor_prefixes: Vec<String>,
+}
+
+impl Default for LinkChecker {
+    fn default() -> LinkChecker {
+        LinkChecker { skip_prefixes: Vec::new(), skip_anchor_prefixes: Vec::new() }
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -151,6 +185,11 @@ pub struct Config {
     /// The compiled extra syntaxes into a syntax set
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_syntax_set: Option<SyntaxSet>,
+
+    pub link_checker: LinkChecker,
+
+    /// The setup for which slugification strategies to use for paths, taxonomies and anchors
+    pub slugify: Slugify,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -317,9 +356,16 @@ impl Config {
             Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
         })?;
 
-        terms.get(key.as_ref()).ok_or_else(|| {
-            Error::msg(format!("Translation key '{}' for language '{}' is missing", key.as_ref(), lang.as_ref()))
-        }).map(|term| term.to_string())
+        terms
+            .get(key.as_ref())
+            .ok_or_else(|| {
+                Error::msg(format!(
+                    "Translation key '{}' for language '{}' is missing",
+                    key.as_ref(),
+                    lang.as_ref()
+                ))
+            })
+            .map(|term| term.to_string())
     }
 }
 
@@ -346,6 +392,8 @@ impl Default for Config {
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
+            link_checker: LinkChecker::default(),
+            slugify: Slugify::default(),
             extra: HashMap::new(),
             build_timestamp: Some(1),
         }
@@ -354,7 +402,7 @@ impl Default for Config {
 
 #[cfg(test)]
 mod tests {
-    use super::{Config, Theme};
+    use super::{Config, SlugifyStrategy, Theme};
 
     #[test]
     fn can_import_valid_config() {
@@ -550,5 +598,63 @@ ignored_content = ["*.{graphml,iso}", "*.py?"]
         assert!(g.is_match("foo.py2"));
         assert!(g.is_match("foo.py3"));
         assert!(!g.is_match("foo.py"));
+    }
+
+    #[test]
+    fn link_checker_skip_anchor_prefixes() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[link_checker]
+skip_anchor_prefixes = [
+    "https://caniuse.com/#feat=",
+    "https://github.com/rust-lang/rust/blob/",
+]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(
+            config.link_checker.skip_anchor_prefixes,
+            vec!["https://caniuse.com/#feat=", "https://github.com/rust-lang/rust/blob/"]
+        );
+    }
+
+    #[test]
+    fn link_checker_skip_prefixes() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[link_checker]
+skip_prefixes = [
+    "http://[2001:db8::]/",
+    "https://www.example.com/path",
+]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(
+            config.link_checker.skip_prefixes,
+            vec!["http://[2001:db8::]/", "https://www.example.com/path",]
+        );
+    }
+
+    #[test]
+    fn slugify_strategies() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[slugify]
+paths = "on"
+taxonomies = "safe"
+anchors = "off"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.slugify.paths, SlugifyStrategy::On);
+        assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Safe);
+        assert_eq!(config.slugify.anchors, SlugifyStrategy::Off);
     }
 }

@@ -1,8 +1,3 @@
-extern crate fs_extra;
-extern crate rebuild;
-extern crate site;
-extern crate tempfile;
-
 use std::env;
 use std::fs::{self, File};
 use std::io::prelude::*;

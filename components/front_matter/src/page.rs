@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
 use chrono::prelude::*;
+use serde_derive::Deserialize;
 use tera::{Map, Value};
 use toml;
 
-use errors::Result;
+use errors::{bail, Result};
 use utils::de::{fix_toml_dates, from_toml_datetime};
 
 /// The front matter of every page
@@ -87,11 +88,9 @@ impl PageFrontMatter {
     pub fn date_to_datetime(&mut self) {
         self.datetime = if let Some(ref d) = self.date {
             if d.contains('T') {
-                DateTime::parse_from_rfc3339(&d).ok().and_then(|s| Some(s.naive_local()))
+                DateTime::parse_from_rfc3339(&d).ok().map(|s| s.naive_local())
             } else {
-                NaiveDate::parse_from_str(&d, "%Y-%m-%d")
-                    .ok()
-                    .and_then(|s| Some(s.and_hms(0, 0, 0)))
+                NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok().map(|s| s.and_hms(0, 0, 0))
             }
         } else {
             None

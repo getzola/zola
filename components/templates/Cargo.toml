@@ -2,17 +2,18 @@
 name = "templates"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-tera = "1.0.0-beta.10"
-base64 = "0.10"
+tera = "1"
+base64 = "0.11"
 lazy_static = "1"
-pulldown-cmark = "0.6"
+pulldown-cmark = "0.7"
 toml = "0.5"
 csv = "1"
-image = "0.22"
+image = "0.23"
 serde_json = "1.0"
-reqwest = "0.9"
+reqwest = { version = "0.10", features = ["blocking"] }
 url = "2"
 
 errors = { path = "../errors" }
@@ -20,3 +21,6 @@ utils = { path = "../utils" }
 library = { path = "../library" }
 config = { path = "../config" }
 imageproc = { path = "../imageproc" }
+
+[dev-dependencies]
+mockito = "0.23"

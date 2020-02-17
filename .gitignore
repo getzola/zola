@@ -25,3 +25,5 @@ stage
 
 # nixos dependencies snippet
 shell.nix
+# vim temporary files
+**/.*.sw*

@@ -1,8 +1,3 @@
-extern crate image;
-extern crate syntect;
-extern crate tera;
-extern crate toml;
-
 use std::convert::Into;
 use std::error::Error as StdError;
 use std::fmt;
@@ -62,6 +57,18 @@ impl Error {
     /// Creates generic error with a cause
     pub fn chain(value: impl ToString, source: impl Into<Box<dyn StdError>>) -> Self {
         Self { kind: ErrorKind::Msg(value.to_string()), source: Some(source.into()) }
+    }
+
+    /// Create an error from a list of path collisions, formatting the output
+    pub fn from_collisions(collisions: Vec<(&str, Vec<String>)>) -> Self {
+        let mut msg = String::from("Found path collisions:\n");
+
+        for (path, filepaths) in collisions {
+            let row = format!("- `{}` from files {:?}\n", path, filepaths);
+            msg.push_str(&row);
+        }
+
+        Self { kind: ErrorKind::Msg(msg), source: None }
     }
 }
 

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use tera::{Context, Tera};
 
-use errors::Result;
+use errors::{bail, Result};
 
 static DEFAULT_TPL: &str = include_str!("default_tpl.html");
 
@@ -11,7 +11,7 @@ macro_rules! render_default_tpl {
         let mut context = Context::new();
         context.insert("filename", $filename);
         context.insert("url", $url);
-        Tera::one_off(DEFAULT_TPL, context, true).map_err(std::convert::Into::into)
+        Tera::one_off(DEFAULT_TPL, &context, true).map_err(std::convert::Into::into)
     }};
 }
 
@@ -27,21 +27,21 @@ pub fn render_template(
 ) -> Result<String> {
     // check if it is in the templates
     if tera.templates.contains_key(name) {
-        return tera.render(name, context).map_err(std::convert::Into::into);
+        return tera.render(name, &context).map_err(std::convert::Into::into);
     }
 
     // check if it is part of a theme
     if let Some(ref t) = *theme {
         let theme_template_name = format!("{}/templates/{}", t, name);
         if tera.templates.contains_key(&theme_template_name) {
-            return tera.render(&theme_template_name, context).map_err(std::convert::Into::into);
+            return tera.render(&theme_template_name, &context).map_err(std::convert::Into::into);
         }
     }
 
     // check if it is part of ZOLA_TERA defaults
     let default_name = format!("__zola_builtins/{}", name);
     if tera.templates.contains_key(&default_name) {
-        return tera.render(&default_name, context).map_err(std::convert::Into::into);
+        return tera.render(&default_name, &context).map_err(std::convert::Into::into);
     }
 
     // maybe it's a default one?
@@ -67,17 +67,21 @@ pub fn render_template(
 /// or macros is always better anyway for themes
 /// This will also rename the shortcodes to NOT have the themes in the path
 /// so themes shortcodes can be used.
-pub fn rewrite_theme_paths(tera: &mut Tera, theme: &str) {
+pub fn rewrite_theme_paths(tera_theme: &mut Tera, site_templates: Vec<&str>, theme: &str) {
     let mut shortcodes_to_move = vec![];
     let mut templates = HashMap::new();
-    let old_templates = ::std::mem::replace(&mut tera.templates, HashMap::new());
+    let old_templates = ::std::mem::replace(&mut tera_theme.templates, HashMap::new());
 
     // We want to match the paths in the templates to the new names
     for (key, mut tpl) in old_templates {
         tpl.name = format!("{}/templates/{}", theme, tpl.name);
-        // First the parent if there is none
+        // First the parent if there is one
+        // If a template with the same name is also in site, assumes it overrides the theme one
+        // and do not change anything
         if let Some(ref p) = tpl.parent.clone() {
-            tpl.parent = Some(format!("{}/templates/{}", theme, p));
+            if !site_templates.contains(&p.as_ref()) {
+                tpl.parent = Some(format!("{}/templates/{}", theme, p));
+            }
         }
 
         // Next the macros import
@@ -96,12 +100,12 @@ pub fn rewrite_theme_paths(tera: &mut Tera, theme: &str) {
         templates.insert(tpl.name.clone(), tpl);
     }
 
-    tera.templates = templates;
+    tera_theme.templates = templates;
 
     // and then replace shortcodes in the Tera instance using the new names
     for (old_name, new_name) in shortcodes_to_move {
-        let tpl = tera.templates.remove(&old_name).unwrap();
-        tera.templates.insert(new_name, tpl);
+        let tpl = tera_theme.templates.remove(&old_name).unwrap();
+        tera_theme.templates.insert(new_name, tpl);
     }
 }
 
@@ -113,12 +117,23 @@ mod tests {
     #[test]
     fn can_rewrite_all_paths_of_theme() {
         let mut tera = Tera::parse("test-templates/*.html").unwrap();
-        rewrite_theme_paths(&mut tera, "hyde");
+        rewrite_theme_paths(&mut tera, vec!["base.html"], "hyde");
         // special case to make the test work: we also rename the files to
         // match the imports
-        for (key, val) in tera.templates.clone() {
+        for (key, val) in &tera.templates.clone() {
             tera.templates.insert(format!("hyde/templates/{}", key), val.clone());
         }
+        // Adding our fake base
+        tera.add_raw_template("base.html", "Hello").unwrap();
         tera.build_inheritance_chains().unwrap();
+
+        assert_eq!(
+            tera.templates["hyde/templates/index.html"].parent,
+            Some("base.html".to_string())
+        );
+        assert_eq!(
+            tera.templates["hyde/templates/child.html"].parent,
+            Some("hyde/templates/index.html".to_string())
+        );
     }
 }

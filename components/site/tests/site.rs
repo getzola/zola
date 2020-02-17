@@ -1,5 +1,3 @@
-extern crate config;
-extern crate site;
 mod common;
 
 use std::collections::HashMap;
@@ -8,6 +6,7 @@ use std::path::Path;
 
 use common::{build_site, build_site_with_setup};
 use config::Taxonomy;
+use site::sitemap;
 use site::Site;
 
 #[test]
@@ -87,6 +86,19 @@ fn can_parse_site() {
         .unwrap();
     assert_eq!(prog_section.subsections.len(), 0);
     assert_eq!(prog_section.pages.len(), 2);
+
+    // Testing extra variables in sections & sitemaps
+    // Regression test for #https://github.com/getzola/zola/issues/842
+    assert_eq!(
+        prog_section.meta.extra.get("we_have_extra").and_then(|s| s.as_str()),
+        Some("variables")
+    );
+    let sitemap_entries = sitemap::find_entries(&library, &site.taxonomies[..], &site.config);
+    let sitemap_entry = sitemap_entries
+        .iter()
+        .find(|e| e.permalink.ends_with("tutorials/programming/"))
+        .expect("expected to find programming section in sitemap");
+    assert_eq!(Some(&prog_section.meta.extra), sitemap_entry.extra);
 }
 
 #[test]
@@ -161,7 +173,10 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "nested_sass/scss.css"));
 
     // no live reload code
-    assert_eq!(file_contains!(public, "index.html", "/livereload.js?port=1112&mindelay=10"), false);
+    assert_eq!(
+        file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"),
+        false
+    );
 
     // Both pages and sections are in the sitemap
     assert!(file_contains!(
@@ -224,11 +239,11 @@ fn can_build_site_with_live_reload_and_drafts() {
     // no live reload code
     assert!(file_contains!(public, "index.html", "/livereload.js"));
 
-    // the summary anchor link has been created
+    // the summary target has been created
     assert!(file_contains!(
         public,
         "posts/python/index.html",
-        r#"<a name="continue-reading"></a>"#
+        r#"<span id="continue-reading"></span>"#
     ));
 
     // Drafts are included
@@ -470,6 +485,12 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
     ));
+    assert!(file_contains!(public, "page/1/index.html", "<title>Redirect</title>"));
+    assert!(file_contains!(
+        public,
+        "page/1/index.html",
+        "<a href=\"https://replace-this-with-your-url.com/\">Click here</a>"
+    ));
     assert!(file_contains!(public, "index.html", "Num pages: 1"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
@@ -661,4 +682,18 @@ fn can_build_site_custom_builtins_from_theme() {
 fn can_ignore_markdown_content() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(!file_exists!(public, "posts/ignored/index.html"));
+}
+
+#[test]
+fn check_site() {
+    let (mut site, _tmp_dir, _public) = build_site("test_site");
+
+    assert_eq!(
+        site.config.link_checker.skip_anchor_prefixes,
+        vec!["https://github.com/rust-lang/rust/blob/"]
+    );
+    assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
+
+    site.config.enable_check_mode();
+    site.load().expect("link check test_site");
 }

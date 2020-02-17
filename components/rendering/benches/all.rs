@@ -1,13 +1,7 @@
 #![feature(test)]
-extern crate tera;
 extern crate test;
 
-extern crate config;
-extern crate front_matter;
-extern crate rendering;
-
 use std::collections::HashMap;
-use std::path::Path;
 
 use config::Config;
 use front_matter::InsertAnchor;
@@ -92,8 +86,7 @@ fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
     tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context =
-        RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new(""), InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
@@ -104,8 +97,7 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = false;
-    let context =
-        RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new(""), InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
@@ -116,8 +108,7 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     let mut config = Config::default();
     config.highlight_code = false;
     let permalinks_ctx = HashMap::new();
-    let context =
-        RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new(""), InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
     b.iter(|| render_content(&content2, &context).unwrap());
 }
@@ -128,8 +119,7 @@ fn bench_render_shortcodes_one_present(b: &mut test::Bencher) {
     tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let config = Config::default();
     let permalinks_ctx = HashMap::new();
-    let context =
-        RenderContext::new(&tera, &config, "", &permalinks_ctx, Path::new(""), InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
     b.iter(|| render_shortcodes(CONTENT, &context));
 }

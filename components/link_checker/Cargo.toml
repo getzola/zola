@@ -2,9 +2,14 @@
 name = "link_checker"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-reqwest = "0.9"
+reqwest = { version = "0.10", features = ["blocking", "rustls-tls"] }
 lazy_static = "1"
 
+config = { path = "../config" }
 errors = { path = "../errors" }
+
+[dev-dependencies]
+mockito = "0.23"

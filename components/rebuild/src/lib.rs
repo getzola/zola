@@ -1,12 +1,6 @@
-extern crate site;
-#[macro_use]
-extern crate errors;
-extern crate front_matter;
-extern crate library;
-
 use std::path::{Component, Path};
 
-use errors::Result;
+use errors::{bail, Result};
 use front_matter::{PageFrontMatter, SectionFrontMatter};
 use library::{Page, Section};
 use site::Site;
@@ -335,7 +329,7 @@ fn is_section(path: &str, languages_codes: &[&str]) -> bool {
         }
     }
 
-    return false;
+    false
 }
 
 /// What happens when a section or a page is created/edited
@@ -423,7 +417,6 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
             if filename == "anchor-link.html"
                 || path.components().any(|x| x == Component::Normal("shortcodes".as_ref()))
             {
-                println!("Rendering markdown");
                 site.render_markdown()?;
             }
             site.populate_sections();

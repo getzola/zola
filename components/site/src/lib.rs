@@ -1,26 +1,4 @@
-extern crate glob;
-extern crate rayon;
-extern crate serde;
-extern crate tera;
-#[macro_use]
-extern crate serde_derive;
-extern crate sass_rs;
-
-#[macro_use]
-extern crate errors;
-extern crate config;
-extern crate front_matter;
-extern crate imageproc;
-extern crate library;
-extern crate link_checker;
-extern crate search;
-extern crate templates;
-extern crate utils;
-
-#[cfg(test)]
-extern crate tempfile;
-
-mod sitemap;
+pub mod sitemap;
 
 use std::collections::HashMap;
 use std::fs::{copy, create_dir_all, remove_dir_all};
@@ -33,7 +11,7 @@ use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use tera::{Context, Tera};
 
 use config::{get_config, Config};
-use errors::{Error, ErrorKind, Result};
+use errors::{bail, Error, ErrorKind, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
@@ -69,7 +47,7 @@ pub struct Site {
 
 impl Site {
     /// Parse a site at the given path. Defaults to the current dir
-    /// Passing in a path is only used in tests
+    /// Passing in a path is used in tests and when --root argument is passed
     pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
         let path = path.as_ref();
         let mut config = get_config(path, config_file);
@@ -98,17 +76,19 @@ impl Site {
             );
             let mut tera_theme = Tera::parse(&theme_tpl_glob)
                 .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
-            rewrite_theme_paths(&mut tera_theme, &theme);
+            rewrite_theme_paths(
+                &mut tera_theme,
+                tera.templates.values().map(|v| v.name.as_ref()).collect(),
+                &theme,
+            );
             // TODO: we do that twice, make it dry?
             if theme_path.join("templates").join("robots.txt").exists() {
                 tera_theme
                     .add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
             }
-            tera_theme.build_inheritance_chains()?;
             tera.extend(&tera_theme)?;
         }
         tera.extend(&ZOLA_TERA)?;
-        // the `extend` above already does it but hey
         tera.build_inheritance_chains()?;
 
         // TODO: Tera doesn't use globset right now so we can load the robots.txt as part
@@ -251,6 +231,14 @@ impl Site {
                 self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
             );
             self.add_page(p, false)?;
+        }
+
+        {
+            let library = self.library.read().unwrap();
+            let collisions = library.check_for_path_collisions();
+            if !collisions.is_empty() {
+                return Err(Error::from_collisions(collisions));
+            }
         }
 
         // taxonomy Tera fns are loaded in `register_early_global_fns`
@@ -399,7 +387,16 @@ impl Site {
             all_links
                 .par_iter()
                 .filter_map(|(page_path, link)| {
-                    let res = check_url(&link);
+                    if self
+                        .config
+                        .link_checker
+                        .skip_prefixes
+                        .iter()
+                        .any(|prefix| link.starts_with(prefix))
+                    {
+                        return None;
+                    }
+                    let res = check_url(&link, &self.config.link_checker);
                     if res.is_valid() {
                         None
                     } else {
@@ -456,6 +453,7 @@ impl Site {
                     index_path.file_name().unwrap().to_string_lossy().to_string();
                 if let Some(ref l) = lang {
                     index_section.file.name = format!("_index.{}", l);
+                    index_section.path = format!("{}/", l);
                     index_section.permalink = self.config.make_permalink(l);
                     let filename = format!("_index.{}.md", l);
                     index_section.file.path = self.content_path.join(&filename);
@@ -633,7 +631,7 @@ impl Site {
             return html.replace(
                 "</body>",
                 &format!(
-                    r#"<script src="/livereload.js?port={}&mindelay=10"></script></body>"#,
+                    r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script></body>"#,
                     port
                 ),
             );

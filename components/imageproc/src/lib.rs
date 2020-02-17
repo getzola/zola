@@ -1,12 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-extern crate image;
-extern crate rayon;
-extern crate regex;
-
-extern crate errors;
-extern crate utils;
-
 use std::collections::hash_map::DefaultHasher;
 use std::collections::hash_map::Entry as HEntry;
 use std::collections::HashMap;
@@ -14,9 +5,9 @@ use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
-use image::jpeg::JPEGEncoder;
-use image::png::PNGEncoder;
-use image::{FilterType, GenericImageView};
+use image::imageops::FilterType;
+use image::{GenericImageView, ImageOutputFormat};
+use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
 
@@ -272,7 +263,7 @@ impl ImageOp {
                 } else {
                     img
                 }
-            },
+            }
             Fill(w, h) => {
                 let factor_w = img_w as f32 / w as f32;
                 let factor_h = img_h as f32 / h as f32;
@@ -304,16 +295,13 @@ impl ImageOp {
         };
 
         let mut f = File::create(target_path)?;
-        let (img_w, img_h) = img.dimensions();
 
         match self.format {
             Format::Png => {
-                let enc = PNGEncoder::new(&mut f);
-                enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
+                img.write_to(&mut f, ImageOutputFormat::Png)?;
             }
             Format::Jpeg(q) => {
-                let mut enc = JPEGEncoder::new_with_quality(&mut f, q);
-                enc.encode(&img.raw_pixels(), img_w, img_h, img.color())?;
+                img.write_to(&mut f, ImageOutputFormat::Jpeg(q))?;
             }
         }
 

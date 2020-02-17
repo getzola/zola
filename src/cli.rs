@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{crate_authors, crate_description, crate_version, App, AppSettings, Arg, SubCommand};
 
 pub fn build_cli() -> App<'static, 'static> {
     App::new("zola")
@@ -6,6 +6,14 @@ pub fn build_cli() -> App<'static, 'static> {
         .author(crate_authors!())
         .about(crate_description!())
         .setting(AppSettings::SubcommandRequiredElseHelp)
+        .arg(
+            Arg::with_name("root")
+                .short("r")
+                .long("root")
+                .takes_value(true)
+                .default_value(".")
+                .help("Directory to use as root of project")
+        )
         .arg(
             Arg::with_name("config")
                 .short("c")

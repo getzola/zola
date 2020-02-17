@@ -1,11 +1,9 @@
-extern crate site;
-extern crate tempfile;
-
+#![allow(dead_code)]
 use std::env;
 use std::path::PathBuf;
 
-use self::site::Site;
-use self::tempfile::{tempdir, TempDir};
+use site::Site;
+use tempfile::{tempdir, TempDir};
 
 // 2 helper macros to make all the build testing more bearable
 #[macro_export]

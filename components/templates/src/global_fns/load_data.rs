@@ -1,10 +1,7 @@
-extern crate serde_json;
-extern crate toml;
-
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
-use reqwest::{header, Client};
+use reqwest::{blocking::Client, header};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -202,7 +199,7 @@ impl TeraFn for LoadData {
         let data = match data_source {
             DataSource::Path(path) => read_data_file(&self.base_path, path),
             DataSource::Url(url) => {
-                let mut response = response_client
+                let response = response_client
                     .get(url.as_str())
                     .header(header::ACCEPT, file_format.as_accept_header())
                     .send()
@@ -324,7 +321,14 @@ mod tests {
     use std::collections::HashMap;
     use std::path::PathBuf;
 
+    use mockito::mock;
+    use serde_json::json;
     use tera::{to_value, Function};
+
+    // NOTE: HTTP mock paths below are randomly generated to avoid name
+    // collisions. Mocks with the same path can sometimes bleed between tests
+    // and cause them to randomly pass/fail. Please make sure to use unique
+    // paths when adding or modifying tests that use Mockito.
 
     fn get_test_file(filename: &str) -> PathBuf {
         let test_files = PathBuf::from("../utils/test-files").canonicalize().unwrap();
@@ -367,10 +371,14 @@ mod tests {
 
     #[test]
     fn calculates_cache_key_for_url() {
-        let cache_key =
-            DataSource::Url("https://api.github.com/repos/getzola/zola".parse().unwrap())
-                .get_cache_key(&OutputFormat::Plain);
-        assert_eq!(cache_key, 8916756616423791754);
+        let _m = mock("GET", "/kr1zdgbm4y")
+            .with_header("content-type", "text/plain")
+            .with_body("Test")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
+        let cache_key = DataSource::Url(url.parse().unwrap()).get_cache_key(&OutputFormat::Plain);
+        assert_eq!(cache_key, 425638486551656875);
     }
 
     #[test]
@@ -393,28 +401,45 @@ mod tests {
 
     #[test]
     fn can_load_remote_data() {
+        let _m = mock("GET", "/zpydpkjj67")
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+  "test": {
+    "foo": "bar"
+  }
+}
+"#,
+            )
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/zpydpkjj67");
         let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value("https://httpbin.org/json").unwrap());
+        args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn.call(&args).unwrap();
-        assert_eq!(
-            result.get("slideshow").unwrap().get("title").unwrap(),
-            &to_value("Sample Slide Show").unwrap()
-        );
+        assert_eq!(result.get("test").unwrap().get("foo").unwrap(), &to_value("bar").unwrap());
     }
 
     #[test]
     fn fails_when_request_404s() {
+        let _m = mock("GET", "/aazeow0kog")
+            .with_status(404)
+            .with_header("content-type", "text/plain")
+            .with_body("Not Found")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
         let static_fn = LoadData::new(PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value("https://httpbin.org/status/404/").unwrap());
+        args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err().to_string(),
-            "Failed to request https://httpbin.org/status/404/: 404 Not Found"
+            format!("Failed to request {}: 404 Not Found", url)
         );
     }
 

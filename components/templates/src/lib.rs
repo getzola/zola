@@ -1,28 +1,7 @@
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate tera;
-extern crate base64;
-extern crate csv;
-extern crate image;
-extern crate pulldown_cmark;
-extern crate reqwest;
-extern crate url;
-#[cfg(test)]
-#[macro_use]
-extern crate serde_json;
-#[cfg(not(test))]
-extern crate serde_json;
-
-extern crate config;
-extern crate errors;
-extern crate imageproc;
-extern crate library;
-extern crate utils;
-
 pub mod filters;
 pub mod global_fns;
 
+use lazy_static::lazy_static;
 use tera::{Context, Tera};
 
 use errors::{Error, Result};
@@ -69,6 +48,6 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
     let mut context = Context::new();
     context.insert("url", &url);
 
-    tera.render("internal/alias.html", context)
+    tera.render("internal/alias.html", &context)
         .map_err(|e| Error::chain(format!("Failed to render alias for '{}'", url), e))
 }

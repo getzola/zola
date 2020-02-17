@@ -1,22 +1,24 @@
+use lazy_static::lazy_static;
 use pulldown_cmark as cmark;
-use slug::slugify;
+use regex::Regex;
 use syntect::easy::HighlightLines;
 use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
 };
 
+use crate::context::RenderContext;
+use crate::table_of_contents::{make_table_of_contents, Heading};
 use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
-use context::RenderContext;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
-use table_of_contents::{make_table_of_contents, Heading};
 use utils::site::resolve_internal_link;
+use utils::slugs::slugify_anchors;
 use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
+use pulldown_cmark::CodeBlockKind;
 
-const CONTINUE_READING: &str =
-    "<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n";
+const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 
 #[derive(Debug)]
@@ -60,11 +62,31 @@ fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
     find_anchor(anchors, name, level + 1)
 }
 
+// Returns whether the given string starts with a schema.
+//
+// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
+// private schemes. This function checks if the given string starts with something that just looks
+// like a scheme, i.e., a case-insensitive identifier followed by a colon.
+//
+// [uri-schemes]: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+fn starts_with_schema(s: &str) -> bool {
+    lazy_static! {
+        static ref PATTERN: Regex = Regex::new(r"^[0-9A-Za-z\-]+:").unwrap();
+    }
+
+    PATTERN.is_match(s)
+}
+
 // Colocated asset links refers to the files in the same directory,
 // there it should be a filename only
 fn is_colocated_asset_link(link: &str) -> bool {
     !link.contains('/')  // http://, ftp://, ../ etc
-        && !link.starts_with("mailto:")
+        && !starts_with_schema(link)
+}
+
+// Returns whether a link starts with an HTTP(s) scheme.
+fn is_external_link(link: &str) -> bool {
+    link.starts_with("http:") || link.starts_with("https:")
 }
 
 fn fix_link(
@@ -103,7 +125,7 @@ fn fix_link(
     } else if is_colocated_asset_link(&link) {
         format!("{}{}", context.current_page_permalink, link)
     } else {
-        if !link.starts_with('#') && !link.starts_with("mailto:") {
+        if is_external_link(link) {
             external_links.push(link.to_owned());
         }
         link.to_string()
@@ -162,6 +184,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut has_summary = false;
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_FOOTNOTES);
+    opts.insert(Options::ENABLE_STRIKETHROUGH);
 
     {
         let mut events = Parser::new_ext(content, opts)
@@ -189,13 +212,18 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         // Business as usual
                         Event::Text(text)
                     }
-                    Event::Start(Tag::CodeBlock(ref info)) => {
+                    Event::Start(Tag::CodeBlock(ref kind)) => {
                         if !context.config.highlight_code {
                             return Event::Html("<pre><code>".into());
                         }
 
                         let theme = &THEME_SET.themes[&context.config.highlight_theme];
-                        highlighter = Some(get_highlighter(info, &context.config));
+                        match kind {
+                            CodeBlockKind::Indented => (),
+                            CodeBlockKind::Fenced(info) => {
+                                highlighter = Some(get_highlighter(info, &context.config));
+                            }
+                        };
                         // This selects the background color the same way that start_coloured_html_snippet does
                         let color = theme
                             .settings
@@ -220,6 +248,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
 
                         Event::Start(Tag::Image(link_type, src, title))
+                    }
+                    Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
+                        error = Some(Error::msg("There is a link that is missing a URL"));
+                        Event::Start(Tag::Link(link_type, "#".into(), title))
                     }
                     Event::Start(Tag::Link(link_type, link, title)) => {
                         let fixed_link = match fix_link(
@@ -275,8 +307,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             let start_idx = heading_ref.start_idx;
             let end_idx = heading_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
-            let id =
-                heading_ref.id.unwrap_or_else(|| find_anchor(&inserted_anchors, slugify(&title), 0));
+            let id = heading_ref.id.unwrap_or_else(|| {
+                find_anchor(
+                    &inserted_anchors,
+                    slugify_anchors(&title, context.config.slugify.anchors),
+                    0,
+                )
+            });
             inserted_anchors.push(id.clone());
 
             // insert `id` to the tag
@@ -305,7 +342,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
             // record heading to make table of contents
             let permalink = format!("{}#{}", context.current_page_permalink, id);
-            let h = Heading { level: heading_ref.level, id, permalink, title, children: Vec::new() };
+            let h =
+                Heading { level: heading_ref.level, id, permalink, title, children: Vec::new() };
             headings.push(h);
         }
 
@@ -326,5 +364,43 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             internal_links_with_anchors,
             external_links,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_starts_with_schema() {
+        // registered
+        assert!(starts_with_schema("https://example.com/"));
+        assert!(starts_with_schema("ftp://example.com/"));
+        assert!(starts_with_schema("mailto:user@example.com"));
+        assert!(starts_with_schema("xmpp:node@example.com"));
+        assert!(starts_with_schema("tel:18008675309"));
+        assert!(starts_with_schema("sms:18008675309"));
+        assert!(starts_with_schema("h323:user@example.com"));
+
+        // arbitrary
+        assert!(starts_with_schema("zola:post?content=hi"));
+
+        // case-insensitive
+        assert!(starts_with_schema("MailTo:user@example.com"));
+        assert!(starts_with_schema("MAILTO:user@example.com"));
+    }
+
+    #[test]
+    fn test_is_external_link() {
+        assert!(is_external_link("http://example.com/"));
+        assert!(is_external_link("https://example.com/"));
+        assert!(is_external_link("https://example.com/index.html#introduction"));
+
+        assert!(!is_external_link("mailto:user@example.com"));
+        assert!(!is_external_link("tel:18008675309"));
+
+        assert!(!is_external_link("#introduction"));
+
+        assert!(!is_external_link("http.jpg"))
     }
 }

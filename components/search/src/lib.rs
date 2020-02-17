@@ -1,17 +1,9 @@
-extern crate elasticlunr;
-#[macro_use]
-extern crate lazy_static;
-extern crate ammonia;
-
-#[macro_use]
-extern crate errors;
-extern crate library;
-
 use std::collections::{HashMap, HashSet};
 
 use elasticlunr::{Index, Language};
+use lazy_static::lazy_static;
 
-use errors::Result;
+use errors::{bail, Result};
 use library::{Library, Section};
 
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");

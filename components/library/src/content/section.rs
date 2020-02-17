@@ -12,10 +12,10 @@ use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
 
-use content::file_info::FileInfo;
-use content::has_anchor;
-use content::ser::SerializingSection;
-use library::Library;
+use crate::content::file_info::FileInfo;
+use crate::content::has_anchor;
+use crate::content::ser::SerializingSection;
+use crate::library::Library;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Section {
@@ -121,6 +121,7 @@ impl Section {
         } else {
             section.path = format!("{}/", path);
         }
+
         section.components = section
             .path
             .split('/')
@@ -131,7 +132,7 @@ impl Section {
         Ok(section)
     }
 
-    /// Read and parse a .md file into a Page struct
+    /// Read and parse a .md file into a Section struct
     pub fn from_file<P: AsRef<Path>>(
         path: P,
         config: &Config,
@@ -219,7 +220,6 @@ impl Section {
         context.insert("current_path", &self.path);
         context.insert("section", &self.to_serialized(library));
         context.insert("lang", &self.lang);
-        context.insert("toc", &self.toc);
 
         render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render section '{}'", self.file.path.display()), e)

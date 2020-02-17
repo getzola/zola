@@ -34,9 +34,10 @@ impl TeraFn for Trans {
         let lang = optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.")
             .unwrap_or_else(|| self.config.default_language.clone());
 
-        let term = self.config.get_translation(lang, key).map_err(|e| {
-            Error::chain("Failed to retreive term translation", e)
-        })?;
+        let term = self
+            .config
+            .get_translation(lang, key)
+            .map_err(|e| Error::chain("Failed to retreive term translation", e))?;
 
         Ok(to_value(term).unwrap())
     }
@@ -162,11 +163,11 @@ impl TeraFn for GetImageMeta {
         let path = required_arg!(
             String,
             args.get("path"),
-            "`get_image_meta` requires a `path` argument with a string value"
+            "`get_image_metadata` requires a `path` argument with a string value"
         );
         let src_path = self.content_path.join(&path);
         if !src_path.exists() {
-            return Err(format!("`get_image_meta`: Cannot find path: {}", path).into());
+            return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
         }
         let img = image::open(&src_path)
             .map_err(|e| Error::chain(format!("Failed to process image: {}", path), e))?;
@@ -345,6 +346,7 @@ mod tests {
 
     use config::{Config, Taxonomy as TaxonomyConfig};
     use library::{Library, Taxonomy, TaxonomyItem};
+    use utils::slugs::SlugifyStrategy;
 
     #[test]
     fn can_add_cachebust_to_url() {
@@ -388,7 +390,8 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy() {
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify.taxonomies = SlugifyStrategy::On;
         let taxo_config = TaxonomyConfig {
             name: "tags".to_string(),
             lang: config.default_language.clone(),
@@ -465,7 +468,8 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy_url() {
-        let config = Config::default();
+        let mut config = Config::default();
+        config.slugify.taxonomies = SlugifyStrategy::On;
         let taxo_config = TaxonomyConfig {
             name: "tags".to_string(),
             lang: config.default_language.clone(),
@@ -508,7 +512,6 @@ mod tests {
         args.insert("name".to_string(), to_value("random").unwrap());
         assert!(static_fn.call(&args).is_err());
     }
-
 
     const TRANS_CONFIG: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"

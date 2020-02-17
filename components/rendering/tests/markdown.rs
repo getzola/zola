@@ -1,9 +1,3 @@
-extern crate config;
-extern crate front_matter;
-extern crate rendering;
-extern crate templates;
-extern crate tera;
-
 use std::collections::HashMap;
 
 use tera::Tera;
@@ -12,6 +6,7 @@ use config::Config;
 use front_matter::InsertAnchor;
 use rendering::{render_content, RenderContext};
 use templates::ZOLA_TERA;
+use utils::slugs::SlugifyStrategy;
 
 #[test]
 fn can_do_render_content_simple() {
@@ -352,6 +347,17 @@ fn can_add_id_to_headings_same_slug() {
 }
 
 #[test]
+fn can_add_non_slug_id_to_headings() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.slugify.anchors = SlugifyStrategy::Safe;
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"# L'écologie et vous"#, &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"L'écologie_et_vous\">L'écologie et vous</h1>\n");
+}
+
+#[test]
 fn can_handle_manual_ids_on_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
@@ -619,11 +625,14 @@ fn can_understand_footnote_in_heading() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("# text [^1] there\n[^1]: footnote", &context).unwrap();
-    assert_eq!(res.body, r##"<h1 id="text-there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
+    assert_eq!(
+        res.body,
+        r##"<h1 id="text-there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p>footnote</p>
 </div>
-"##);
+"##
+    );
 }
 
 #[test]
@@ -751,7 +760,7 @@ Bla bla
     .unwrap();
     assert_eq!(
         res.body,
-        "<p>Hello <a href=\"https://vincentprouillet.com\">My site</a></p>\n<p id=\"zola-continue-reading\"><a name=\"continue-reading\"></a></p>\n<p>Bla bla</p>\n"
+        "<p>Hello <a href=\"https://vincentprouillet.com\">My site</a></p>\n<span id=\"continue-reading\"></span>\n<p>Bla bla</p>\n"
     );
     assert_eq!(
         res.summary_len,
@@ -821,12 +830,58 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 //}
 
 // https://github.com/getzola/zola/issues/747
+// https://github.com/getzola/zola/issues/816
 #[test]
 fn leaves_custom_url_scheme_untouched() {
+    let content = r#"[foo@bar.tld](xmpp:foo@bar.tld)
+
+[(123) 456-7890](tel:+11234567890)
+
+[blank page](about:blank)
+"#;
+
     let tera_ctx = Tera::default();
-    let permalinks_ctx = HashMap::new();
     let config = Config::default();
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content("[foo@bar.tld](xmpp:foo@bar.tld)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"xmpp:foo@bar.tld\">foo@bar.tld</a></p>\n");
+    let permalinks_ctx = HashMap::new();
+
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        "https://vincent.is/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+
+    let res = render_content(content, &context).unwrap();
+
+    let expected = r#"<p><a href="xmpp:foo@bar.tld">foo@bar.tld</a></p>
+<p><a href="tel:+11234567890">(123) 456-7890</a></p>
+<p><a href="about:blank">blank page</a></p>
+"#;
+
+    assert_eq!(res.body, expected);
+}
+
+#[test]
+fn stops_with_an_error_on_an_empty_link() {
+    let content = r#"[some link]()"#;
+
+    let tera_ctx = Tera::default();
+    let config = Config::default();
+    let permalinks_ctx = HashMap::new();
+
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        "https://vincent.is/",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+
+    let res = render_content(content, &context);
+
+    let expected = "There is a link that is missing a URL";
+
+    assert!(res.is_err());
+    assert_eq!(res.unwrap_err().to_string(), expected);
 }

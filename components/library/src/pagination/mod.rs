@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use serde_derive::Serialize;
 use slotmap::DefaultKey;
 use tera::{to_value, Context, Tera, Value};
 
@@ -7,9 +8,9 @@ use config::Config;
 use errors::{Error, Result};
 use utils::templates::render_template;
 
-use content::{Section, SerializingPage, SerializingSection};
-use library::Library;
-use taxonomies::{Taxonomy, TaxonomyItem};
+use crate::content::{Section, SerializingPage, SerializingSection};
+use crate::library::Library;
+use crate::taxonomies::{Taxonomy, TaxonomyItem};
 
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
@@ -137,7 +138,11 @@ impl<'a> Paginator<'a> {
                 continue;
             }
 
-            let page_path = format!("{}/{}/", self.paginate_path, index + 1);
+            let page_path = if self.paginate_path.is_empty() {
+                format!("{}/", index + 1)
+            } else {
+                format!("{}/{}/", self.paginate_path, index + 1)
+            };
             let permalink = format!("{}{}", self.permalink, page_path);
 
             let pager_path = if self.is_index {
@@ -185,12 +190,15 @@ impl<'a> Paginator<'a> {
             paginator.insert("next", Value::Null);
         }
         paginator.insert("number_pagers", to_value(&self.pagers.len()).unwrap());
-        paginator.insert(
-            "base_url",
-            to_value(&format!("{}{}/", self.permalink, self.paginate_path)).unwrap(),
-        );
+        let base_url = if self.paginate_path.is_empty() {
+            self.permalink.to_string()
+        } else {
+            format!("{}{}/", self.permalink, self.paginate_path)
+        };
+        paginator.insert("base_url", to_value(&base_url).unwrap());
         paginator.insert("pages", to_value(&current_pager.pages).unwrap());
         paginator.insert("current_index", to_value(current_pager.index).unwrap());
+        paginator.insert("total_pages", to_value(self.all_pages.len()).unwrap());
 
         paginator
     }
@@ -230,11 +238,11 @@ mod tests {
     use std::path::PathBuf;
     use tera::to_value;
 
+    use crate::content::{Page, Section};
+    use crate::library::Library;
+    use crate::taxonomies::{Taxonomy, TaxonomyItem};
     use config::Taxonomy as TaxonomyConfig;
-    use content::{Page, Section};
     use front_matter::SectionFrontMatter;
-    use library::Library;
-    use taxonomies::{Taxonomy, TaxonomyItem};
 
     use super::Paginator;
 
@@ -323,6 +331,7 @@ mod tests {
         assert_eq!(context["next"], to_value::<Option<()>>(None).unwrap());
         assert_eq!(context["previous"], to_value("https://vincent.is/posts/").unwrap());
         assert_eq!(context["current_index"], to_value(2).unwrap());
+        assert_eq!(context["total_pages"], to_value(4).unwrap());
     }
 
     #[test]
@@ -352,5 +361,27 @@ mod tests {
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
         assert_eq!(paginator.pagers[1].path, "tags/something/page/2/");
+    }
+
+    // https://github.com/getzola/zola/issues/866
+    #[test]
+    fn works_with_empty_paginate_path() {
+        let (mut section, library) = create_library(false);
+        section.meta.paginate_path = String::new();
+        let paginator = Paginator::from_section(&section, &library);
+        assert_eq!(paginator.pagers.len(), 2);
+
+        assert_eq!(paginator.pagers[0].index, 1);
+        assert_eq!(paginator.pagers[0].pages.len(), 2);
+        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts/");
+        assert_eq!(paginator.pagers[0].path, "posts/");
+
+        assert_eq!(paginator.pagers[1].index, 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/2/");
+        assert_eq!(paginator.pagers[1].path, "posts/2/");
+
+        let context = paginator.build_paginator_context(&paginator.pagers[0]);
+        assert_eq!(context["base_url"], to_value("https://vincent.is/posts/").unwrap());
     }
 }

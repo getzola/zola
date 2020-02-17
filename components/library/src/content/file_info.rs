@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use config::Config;
-use errors::Result;
+use errors::{bail, Result};
 
 /// Takes a full path to a file and returns only the components after the first `content` directory
 /// Will not return the filename as last component
@@ -56,6 +56,7 @@ impl FileInfo {
         let file_path = path.to_path_buf();
         let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
+        let canonical = parent.join(&name);
         let mut components =
             find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         let relative = if !components.is_empty() {
@@ -78,7 +79,7 @@ impl FileInfo {
             path: file_path,
             // We don't care about grand parent for pages
             grand_parent: None,
-            canonical: parent.join(&name),
+            canonical,
             parent,
             name,
             components,
@@ -135,7 +136,7 @@ impl FileInfo {
         }
 
         self.name = parts.swap_remove(0);
-        self.canonical = self.parent.join(&self.name);
+        self.canonical = self.path.parent().expect("Get parent of page path").join(&self.name);
         let lang = parts.swap_remove(0);
 
         Ok(lang)
@@ -253,5 +254,35 @@ mod tests {
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");
+    }
+
+    /// Regression test for https://github.com/getzola/zola/issues/854
+    #[test]
+    fn correct_canonical_for_index() {
+        let file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+            &PathBuf::new(),
+        );
+        assert_eq!(
+            file.canonical,
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index")
+        );
+    }
+
+    /// Regression test for https://github.com/getzola/zola/issues/854
+    #[test]
+    fn correct_canonical_after_find_language() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), rss: false, search: false });
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
+            &PathBuf::new(),
+        );
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert_eq!(
+            file.canonical,
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index")
+        );
     }
 }

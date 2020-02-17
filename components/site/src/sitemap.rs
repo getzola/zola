@@ -2,6 +2,8 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
+use serde_derive::Serialize;
+
 use config::Config;
 use library::{Library, Taxonomy};
 use std::cmp::Ordering;
@@ -11,9 +13,9 @@ use tera::{Map, Value};
 /// for examples so we trim down all entries to only that
 #[derive(Debug, Serialize)]
 pub struct SitemapEntry<'a> {
-    permalink: Cow<'a, str>,
-    date: Option<String>,
-    extra: Option<&'a Map<String, Value>>,
+    pub permalink: Cow<'a, str>,
+    pub date: Option<String>,
+    pub extra: Option<&'a Map<String, Value>>,
 }
 
 // Hash/Eq is not implemented for tera::Map but in our case we only care about the permalink
@@ -77,7 +79,11 @@ pub fn find_entries<'a>(
         .sections_values()
         .iter()
         .filter(|s| s.meta.render)
-        .map(|s| SitemapEntry::new(Cow::Borrowed(&s.permalink), None))
+        .map(|s| {
+            let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), None);
+            entry.add_extra(&s.meta.extra);
+            entry
+        })
         .collect::<Vec<_>>();
 
     for section in library.sections_values().iter().filter(|s| s.meta.paginate_by.is_some()) {

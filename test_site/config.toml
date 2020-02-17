@@ -4,6 +4,7 @@ highlight_code = true
 compile_sass = true
 generate_rss = true
 theme = "sample"
+slugify_paths = true
 
 taxonomies = [
     {name = "categories", rss = true},
@@ -12,6 +13,15 @@ taxonomies = [
 extra_syntaxes = ["syntaxes"]
 
 ignored_content = ["*/ignored.md"]
+
+[link_checker]
+skip_prefixes = [
+    "http://[2001:db8::]/",
+]
+
+skip_anchor_prefixes = [
+    "https://github.com/rust-lang/rust/blob/",
+]
 
 [extra.author]
 name = "Vincent Prouillet"

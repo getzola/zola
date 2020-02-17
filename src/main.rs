@@ -1,25 +1,5 @@
-extern crate actix_files;
-extern crate actix_web;
-extern crate atty;
-#[macro_use]
-extern crate clap;
-extern crate chrono;
-#[macro_use]
-extern crate lazy_static;
-extern crate ctrlc;
-extern crate notify;
-extern crate termcolor;
-extern crate url;
-extern crate ws;
-
-extern crate site;
-#[macro_use]
-extern crate errors;
-extern crate front_matter;
-extern crate open;
-extern crate rebuild;
-extern crate utils;
-
+use std::env;
+use std::path::PathBuf;
 use std::time::Instant;
 
 use utils::net::{get_available_port, port_is_available};
@@ -32,6 +12,10 @@ mod prompt;
 fn main() {
     let matches = cli::build_cli().get_matches();
 
+    let root_dir = match matches.value_of("root").unwrap() {
+        "." => env::current_dir().unwrap(),
+        path => PathBuf::from(path),
+    };
     let config_file = matches.value_of("config").unwrap();
 
     match matches.subcommand() {
@@ -49,6 +33,7 @@ fn main() {
             let start = Instant::now();
             let output_dir = matches.value_of("output_dir").unwrap();
             match cmd::build(
+                &root_dir,
                 config_file,
                 matches.value_of("base_url"),
                 output_dir,
@@ -92,6 +77,7 @@ fn main() {
             let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");
             match cmd::serve(
+                &root_dir,
                 interface,
                 port,
                 output_dir,
@@ -112,6 +98,7 @@ fn main() {
             console::info("Checking site...");
             let start = Instant::now();
             match cmd::check(
+                &root_dir,
                 config_file,
                 matches.value_of("base_path"),
                 matches.value_of("base_url"),
