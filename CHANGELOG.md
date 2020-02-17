@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.10.0 (unreleased)
+## 0.10.0 (2020-02-17)
 
 ### Breaking
 - Remove `toc` variable in section/page context and pass it to `page.toc` and `section.toc` instead so they are
