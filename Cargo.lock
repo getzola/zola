@@ -2732,7 +2732,7 @@ dependencies = [
 
 [[package]]
 name = "zola"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
