@@ -1,0 +1,35 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.subrip
+file_extensions:
+  - srt
+  - subrip
+contexts:
+  main:
+    - match: "^([1-9][0-9]*)$"
+      scope: variable.other.readwrite.subrip
+    - match: '^(\d{2}:[0-5][0-9]:[0-5][0-9],\d{3}) (-->) (\d{2}:[0-5][0-9]:[0-5][0-9],\d{3})$'
+      captures:
+        1: constant.other.time.subrip
+        2: keyword.operator.assignment.subrip
+        3: constant.other.time.subrip
+    - match: .+
+      push:
+        - meta_scope: string.literal.subrip
+        - match: (\n\r|\n)
+          pop: true
+        - match: (\</?)((?i:b|i|u|font)\b)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.inline.any.html
+          push:
+            - match: '((?: ?/)?\>)'
+              captures:
+                1: punctuation.definition.tag.end.html
+              pop: true
+        - match: (<b>)(.*)(<\/b>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.inline.any.html
+            3: punctuation.definition.tag.end.html

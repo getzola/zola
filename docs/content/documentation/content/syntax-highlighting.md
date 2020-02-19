@@ -111,6 +111,7 @@ Here is a full list of supported languages and their short names:
 - Scala -> ["sbt", "scala"]
 - SQL -> ["ddl", "dml", "sql"]
 - SQL (Rails) -> ["erbsql", "sql.erb"]
+- Subtitle -> ["srt", "subrip"]
 - SWI-Prolog -> ["pro"]
 - Swift -> ["swift"]
 - Tcl -> ["tcl"]
