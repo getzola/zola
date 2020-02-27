@@ -276,7 +276,17 @@ mod tests {
     }
 
     #[test]
-    fn cannot_parse_date_as_string() {
+    fn can_parse_valid_date_as_string() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = "2016-10-10""#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.date.is_some());
+    }
+
+    #[test]
+    fn cannot_parse_invalid_date_as_string() {
         let content = r#"
     title = "Hello"
     description = "hey there"
