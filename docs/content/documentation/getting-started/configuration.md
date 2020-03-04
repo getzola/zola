@@ -9,6 +9,8 @@ It follows the philosophy of paying for only what you need; almost everything is
 To change the configuration, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
+Config variables can be accessed like `config.variable`, in html for example with `{{ config.base_url }}`
+
 Only the `base_url` variable is mandatory; everything else is optional. All configuration variables
 used by Zola as well as their default values are listed below:
 
