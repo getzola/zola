@@ -58,7 +58,7 @@ Custom templates are not required to live at the root of your `templates` direct
 For example, `product_pages/with_pictures.html` is a valid template.
 
 ## Built-in filters
-Zola adds a few filters in addition to [those](https://tera.netlify.com/docs/templates/#built-in-filters) already present
+Zola adds a few filters in addition to [those](https://tera.netlify.com/docs/#filters) already present
 in Tera.
 
 ### markdown
