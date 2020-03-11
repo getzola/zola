@@ -81,7 +81,7 @@ Decode the variable from base64.
 
 ## Built-in global functions
 
-Zola adds a few global functions to [those in Tera](https://tera.netlify.com/docs/templates/#built-in-functions)
+Zola adds a few global functions to [those in Tera](https://tera.netlify.com/docs#built-in-functions)
 to make it easier to develop complex sites.
 
 
