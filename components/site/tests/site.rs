@@ -298,7 +298,7 @@ fn can_build_site_with_taxonomies() {
     assert!(file_contains!(
         public,
         "categories/a/rss.xml",
-        "https://replace-this-with-your-url.com/categories/a/rss.xml"
+        "https://replace-this-with-your-url.com/posts/with-assets/"
     ));
     // Extending from a theme works
     assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
