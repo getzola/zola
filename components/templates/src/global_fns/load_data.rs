@@ -178,7 +178,12 @@ pub struct LoadData {
 }
 impl LoadData {
     pub fn new(base_path: PathBuf) -> Self {
-        let client = Arc::new(Mutex::new(Client::builder().build().expect("reqwest client build")));
+        let client = Arc::new(Mutex::new(
+            Client::builder()
+                .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
+                .build()
+                .expect("reqwest client build"),
+        ));
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
         Self { base_path, client, result_cache }
     }
@@ -441,6 +446,31 @@ mod tests {
             result.unwrap_err().to_string(),
             format!("Failed to request {}: 404 Not Found", url)
         );
+    }
+
+    #[test]
+    fn set_default_user_agent() {
+        let user_agent = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+        let _m = mock("GET", "/chu8aizahBiy")
+            .match_header("User-Agent", user_agent)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+  "test": {
+    "foo": "bar"
+  }
+}
+"#,
+            )
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/chu8aizahBiy");
+        let static_fn = LoadData::new(PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
+        let result = static_fn.call(&args).unwrap();
+        assert_eq!(result.get("test").unwrap().get("foo").unwrap(), &to_value("bar").unwrap());
     }
 
     #[test]

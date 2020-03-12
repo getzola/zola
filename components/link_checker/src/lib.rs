@@ -58,7 +58,10 @@ pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
     headers.insert(ACCEPT, "text/html".parse().unwrap());
     headers.append(ACCEPT, "*/*".parse().unwrap());
 
-    let client = Client::new();
+    let client = Client::builder()
+        .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
+        .build()
+        .expect("reqwest client build");
 
     let check_anchor = !config.skip_anchor_prefixes.iter().any(|prefix| url.starts_with(prefix));
 
@@ -179,6 +182,22 @@ mod tests {
             .create();
 
         let url = format!("{}{}", mockito::server_url(), "/c7qrtrv3zz");
+        let res = check_url(&url, &LinkChecker::default());
+        assert!(res.is_valid());
+        assert!(res.code.is_some());
+        assert!(res.error.is_none());
+    }
+
+    #[test]
+    fn set_default_user_agent() {
+        let user_agent = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+        let _m1 = mock("GET", "/C4Szbfnvj6M0LoPk")
+            .match_header("User-Agent", user_agent)
+            .with_status(200)
+            .with_body("Test")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/C4Szbfnvj6M0LoPk");
         let res = check_url(&url, &LinkChecker::default());
         assert!(res.is_valid());
         assert!(res.code.is_some());

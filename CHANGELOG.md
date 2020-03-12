@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.1 (2020-03-12)
+
+- Set user agent for HTTP requests
+- Add nyx-bold highlight theme
+- Add lyric and subtitles highlighting
+- Enable strikethrough in markdown filter
+
 ## 0.10.0 (2020-02-17)
 
 ### Breaking
