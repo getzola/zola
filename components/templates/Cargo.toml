@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 tera = "1"
-base64 = "0.11"
+base64 = "0.12"
 lazy_static = "1"
 pulldown-cmark = "0.7"
 toml = "0.5"
