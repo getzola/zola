@@ -27,6 +27,19 @@ paginate_path: String?;
 rss: Bool;
 ```
 
+`Taxonomy` has the following fields:
+```ts
+kind: TaxonomyConfig,
+items: Array<TaxonomyItem>
+```
+
+`TaxonomyItem` has the following fields:
+```ts
+name: String,
+slug: String,
+permalink: String,
+pages: Array<DefaultKey>
+```
 
 ### Taxonomy list (`list.html`)
 

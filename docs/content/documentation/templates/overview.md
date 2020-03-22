@@ -156,6 +156,7 @@ Gets the whole taxonomy of a specific kind.
 ```jinja2
 {% set categories = get_taxonomy(kind="categories") %}
 ```
+This returns [`Taxonomy`](https://www.getzola.org/documentation/templates/taxonomies/)
 
 ### `load_data`
 Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*.
