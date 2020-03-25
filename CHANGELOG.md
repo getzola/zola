@@ -3,6 +3,7 @@
 ## 0.10.2 (unreleased)
 
 - Fix link checker not looking for anchor with capital id/name
+- Pass missing `lang` template parameter to taxonomy list template
 
 ## 0.10.1 (2020-03-12)
 
