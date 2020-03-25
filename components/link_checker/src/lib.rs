@@ -118,11 +118,15 @@ fn has_anchor(url: &str) -> bool {
 fn check_page_for_anchor(url: &str, body: String) -> Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks: [String; 4] = [
+    let checks: [String; 8] = [
         format!(" id='{}'", anchor),
+        format!(" ID='{}'", anchor),
         format!(r#" id="{}""#, anchor),
+        format!(r#" ID="{}""#, anchor),
         format!(" name='{}'", anchor),
+        format!(" NAME='{}'", anchor),
         format!(r#" name="{}""#, anchor),
+        format!(r#" NAME="{}""#, anchor),
     ];
 
     if checks.iter().any(|check| body[..].contains(&check[..])) {
@@ -268,6 +272,15 @@ mod tests {
     fn can_validate_anchors() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
+        let res = check_page_for_anchor(url, body);
+        assert!(res.is_ok());
+    }
+
+    // https://github.com/getzola/zola/issues/948
+    #[test]
+    fn can_validate_anchors_in_capital() {
+        let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
+        let body = r#"<body><h3 ID="method.collect">collect</h3></body>"#.to_string();
         let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }
