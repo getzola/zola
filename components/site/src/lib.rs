@@ -626,15 +626,17 @@ impl Site {
     }
 
     /// Inject live reload script tag if in live reload mode
-    fn inject_livereload(&self, html: String) -> String {
+    fn inject_livereload(&self, mut html: String) -> String {
         if let Some(port) = self.live_reload {
-            return html.replace(
-                "</body>",
-                &format!(
-                    r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script></body>"#,
-                    port
-                ),
+            let script = format!(
+                r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#,
+                port,
             );
+            if let Some(index) = html.rfind("</body>") {
+                html.insert_str(index, &script);
+            } else {
+                html.push_str(&script);
+            }
         }
 
         html
