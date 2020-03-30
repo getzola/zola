@@ -53,6 +53,22 @@ impl GetUrl {
         Self { config, permalinks }
     }
 }
+
+fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<String> {
+    if lang == &config.default_language {
+        return Ok(path);
+    }
+
+    if !config.languages.iter().any(|x| x.code == lang) {
+        return Err(format!("`{}` is not an authorized language (check config.languages).", lang).into());
+    }
+
+    let mut splitted_path: Vec<String> = path.split(".").map(String::from).collect();
+    let ilast = splitted_path.len() - 1;
+    splitted_path[ilast] = format!("{}.{}", lang, splitted_path[ilast]);
+    Ok(splitted_path.join("."))
+}
+
 impl TeraFn for GetUrl {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let cachebust =
@@ -67,11 +83,20 @@ impl TeraFn for GetUrl {
             args.get("path"),
             "`get_url` requires a `path` argument with a string value"
         );
+
+        let lang = optional_arg!(String, args.get("lang"), "`get_url`: `lang` must be a string.")
+            .unwrap_or_else(|| self.config.default_language.clone());
+
         if path.starts_with("@/") {
-            match resolve_internal_link(&path, &self.permalinks) {
+            let path_with_lang = match make_path_with_lang(path, &lang, &self.config) {
+                Ok(x) => x,
+                Err(e) => return Err(e)
+            };
+
+            match resolve_internal_link(&path_with_lang, &self.permalinks) {
                 Ok(resolved) => Ok(to_value(resolved.permalink).unwrap()),
                 Err(_) => {
-                    Err(format!("Could not resolve URL for link `{}` not found.", path).into())
+                    Err(format!("Could not resolve URL for link `{}` not found.", path_with_lang).into())
                 }
             }
         } else {
@@ -516,6 +541,10 @@ mod tests {
     const TRANS_CONFIG: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
+languages = [
+    { code = "fr" },
+    { code = "en" },
+]
 
 [translations]
 [translations.fr]
@@ -561,5 +590,54 @@ title = "A title"
         let config = Config::parse(TRANS_CONFIG).unwrap();
         let error = Trans::new(config).call(&args).unwrap_err();
         assert_eq!("Failed to retreive term translation", format!("{}", error));
+    }
+
+    #[test]
+    fn error_when_language_not_available() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let static_fn = GetUrl::new(config, HashMap::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
+        args.insert("lang".to_string(), to_value("it").unwrap());
+        let err = static_fn.call(&args).unwrap_err();
+        assert_eq!("`it` is not an authorized language (check config.languages).", format!("{}", err));
+    }
+
+    #[test]
+    fn can_get_url_with_default_language() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "a_section/a_page.md".to_string(),
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string()
+        );
+        permalinks.insert(
+            "a_section/a_page.en.md".to_string(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string()
+        );
+        let static_fn = GetUrl::new(config, permalinks);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/a_section/a_page/");
+    }
+
+    #[test]
+    fn can_get_url_with_other_language() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "a_section/a_page.md".to_string(),
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string()
+        );
+        permalinks.insert(
+            "a_section/a_page.en.md".to_string(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string()
+        );
+        let static_fn = GetUrl::new(config, permalinks);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
+        args.insert("lang".to_string(), to_value("en").unwrap());
+        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/en/a_section/a_page/");
     }
 }
