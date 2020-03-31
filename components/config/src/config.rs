@@ -215,6 +215,10 @@ impl Config {
             bail!("Highlight theme {} not available", config.highlight_theme)
         }
 
+        if config.languages.iter().any(|l| l.code == config.default_language) {
+            bail!("Default language `{}` should not appear both in `config.default_language` and `config.languages`", config.default_language)
+        }
+
         config.build_timestamp = Some(Utc::now().timestamp());
 
         if !config.ignored_content.is_empty() {
@@ -656,5 +660,20 @@ anchors = "off"
         assert_eq!(config.slugify.paths, SlugifyStrategy::On);
         assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Safe);
         assert_eq!(config.slugify.anchors, SlugifyStrategy::Off);
+    }
+
+    #[test]
+    fn error_on_language_set_twice() {
+        let config_str = r#"
+base_url = "https://remplace-par-ton-url.fr"
+default_language = "fr"
+languages = [
+    { code = "fr" },
+    { code = "en" },
+]
+        "#;
+        let config = Config::parse(config_str);
+        let err = config.unwrap_err();
+        assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
     }
 }
