@@ -114,6 +114,16 @@ link like the ones used in Markdown, starting from the root `content` directory.
 {% set url = get_url(path="@/blog/_index.md") %}
 ```
 
+It accepts an optionnal parameter `lang` in order to compute a *language-aware URL* in multilingual websites. Assuming `config.base_url` is `"http://example.com"`, the following snippet will:
+
+- return `"http://example.com/blog/"` if `config.default_language` is `"en"`
+- return `"http://example.com/en/blog/"` if `config.default_language` is **not** `"en"` and `"en"` appears in `config.languages`
+- fail otherwise, with the error message `"'en' is not an authorized language (check config.languages)."`
+
+```jinja2
+{% set url = get_url(path="@/blog/_index.md", lang="en") %}
+```
+
 This can also be used to get the permalinks for static assets, for example if
 we want to link to the file that is located at `static/css/app.css`:
 
