@@ -217,12 +217,6 @@ mod tests {
             metadata(&src_file_path).and_then(|m| m.modified()).unwrap(),
             metadata(&dest_file_path).and_then(|m| m.modified()).unwrap()
         );
-
-        let m = metadata(&dest_file_path).and_then(|m| m.created()).unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
-        let m2 = metadata(&dest_file_path).and_then(|m| m.created()).unwrap();
-        assert_eq!(m2, m);
-        dbg!(&m2, &m);
     }
 
     #[test]
