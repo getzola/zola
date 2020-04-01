@@ -96,9 +96,10 @@ pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 
 /// Copy a file but takes into account where to start the copy as
 /// there might be folders we need to create on the way.
-/// No copy occurs if both of the following conditions are satisfied:
+/// No copy occurs if all of the following conditions are satisfied:
 /// 1. A file with the same name already exists in the dest path.
 /// 2. Its modification timestamp is identical to that of the src file.
+/// 3. Its filesize is identical to that of the src file.
 pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: bool) -> Result<()> {
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
@@ -115,7 +116,7 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: boo
         if Path::new(&target_path).is_file() {
             let target_metadata = metadata(&target_path)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
-            if src_mtime != target_mtime {
+            if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
                 copy(src, &target_path)?;
                 set_file_mtime(&target_path, src_mtime)?;
             }
@@ -230,27 +231,38 @@ mod tests {
         let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
         {
             let mut src_file = File::create(&src_file_path).unwrap();
-            src_file.write_all(b"src file").unwrap();
+            src_file.write_all(b"file1").unwrap();
         }
         copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
         {
             let mut dest_file = File::create(&dest_file_path).unwrap();
-            dest_file.write_all(b"dest file").unwrap();
+            dest_file.write_all(b"file2").unwrap();
         }
 
-        // Check copy does not occur when moditication timestamps are same.
+        // Check copy does not occur when moditication timestamps and filesizes are same.
         filetime::set_file_mtime(&src_file_path, filetime::FileTime::from_unix_time(0, 0)).unwrap();
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
         copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
-        assert_eq!(read_to_string(&src_file_path).unwrap(), "src file");
-        assert_eq!(read_to_string(&dest_file_path).unwrap(), "dest file");
+        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file2");
 
-        // Copy occurs if the timestamps are different.
+        // Copy occurs if the timestamps are different while the filesizes are same.
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(42, 42))
             .unwrap();
         copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
-        assert_eq!(read_to_string(&src_file_path).unwrap(), "src file");
-        assert_eq!(read_to_string(&dest_file_path).unwrap(), "src file");
+        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
+
+        // Copy occurs if the timestamps are same while the filesizes are different.
+        {
+            let mut dest_file = File::create(&dest_file_path).unwrap();
+            dest_file.write_all(b"This file has different file size to the source file!").unwrap();
+        }
+        filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
+            .unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
     }
 }
