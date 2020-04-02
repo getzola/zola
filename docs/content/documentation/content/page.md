@@ -35,12 +35,13 @@ For any page within your content folder, its output path will be defined by eith
 - its filename
 
 Either way, these proposed path will be sanitized before being used.
-If `slugify_paths` is enabled in the site's config - the default - paths are [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug). 
-Otherwise, a simpler sanitation is performed, outputting only valid NTFS paths. 
-The following characters are removed: `<`, `>`, `:`, `/`, `|`, `?`, `*`, `#`, `\\`, `(`, `)`, `[`, `]` as well as newlines and tabulations. 
+If `slugify.paths` is set to `"on"` in the site's config - the default - paths are [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug). 
+If it is set to `"safe"`, only sanitation is performed, with the following characters being removed: `<`, `>`, `:`, `/`, `|`, `?`, `*`, `#`, `\\`, `(`, `)`, `[`, `]` as well as newlines and tabulations. This ensures that the path can be represented on all operating systems.
 Additionally, trailing whitespace and dots are removed and whitespaces are replaced by `_`.
 
-**NOTE:** To produce URLs containing non-English characters (UTF8), `slugify_paths` needs to be set to `false`.
+If `slugify.paths` is set to `"off"`, no modifications are made.
+
+If you want URLs containing non-ASCII characters, `slugify.paths` needs to be set to `"safe"` or `"off"`.
 
 ### Path from frontmatter
 
@@ -56,7 +57,7 @@ slug = "femmes-libres-libération-kurde"
 This is my article.
 ```
 
-This frontmatter will output the article to `[base_url]/zines/femmes-libres-libération-kurde` with `slugify_paths` disabled, and to `[base_url]/zines/femmes-libres-liberation-kurde` with `slugify_enabled` enabled.
+This frontmatter will output the article to `[base_url]/zines/femmes-libres-libération-kurde` with `slugify.paths` set to `"safe"` or `"off"`, and to `[base_url]/zines/femmes-libres-liberation-kurde` with the default value for `slugify.paths` of `"on"`.
 
 ### Path from filename
 
@@ -66,7 +67,7 @@ When the article's output path is not specified in the frontmatter, it is extrac
 
 If the path found starts with a datetime string (`YYYY-mm-dd` or [a RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by an underscore (`_`) or a dash (`-`), this date is removed from the output path and will be used as the page date (unless already set in the front-matter). Note that the full RFC3339 datetime contains colons, which is not a valid character in a filename on Windows.
 
-The output path extracted from the file path is then slugified or not depending on the `slugify_paths` config, as explained previously.
+The output path extracted from the file path is then slugified or not, depending on the `slugify.paths` config, as explained previously.
 
 **Example:** The file `content/blog/2018-10-10-hello-world.md` will generated a page available at will be available at `[base_url]/hello-world`.
 

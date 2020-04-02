@@ -5,8 +5,9 @@ weight = 50
 
 ## Heading id and anchor insertion
 While rendering the Markdown content, a unique id will automatically be assigned to each heading. 
-This id is created by converting the heading text to a [slug](https://en.wikipedia.org/wiki/Semantic_URL#Slug) if `slugify_paths` is enabled.
-if `slugify_paths` is disabled, whitespaces are replaced by `_` and the following characters are stripped: `#`, `%`, `<`, `>`, `[`, `]`, `(`, `)`, \`, `^`, `{`, `|`, `}`.
+This id is created by converting the heading text to a [slug](https://en.wikipedia.org/wiki/Semantic_URL#Slug) if `slugify.anchors` is set to `"on"` (the default).
+If `slugify.paths` is set to `"safe"`, whitespaces are replaced by `_` and the following characters are stripped: `#`, `%`, `<`, `>`, `[`, `]`, `(`, `)`, \`, `^`, `{`, `|`, `}`.
+If `slugify.paths` is set to `"off"`, no modifications are made, and you may be left with nominally illegal ids.
 A number is appended at the end if the slug already exists for that article 
 For example:
 
