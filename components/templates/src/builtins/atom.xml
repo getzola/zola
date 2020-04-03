@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ config.default_language }}">
-	<title>{{ config.title }}</title>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
+	<title>{{ config.title }}
+		{%- if term %} - {{ term.name }}
+		{%- endif -%}
+	</title>
 	{%- if config.description %}
 	<subtitle>{{ config.description }}</subtitle>
 	{%- endif %}
@@ -11,7 +14,7 @@
 	<id>{{ feed_url | safe }}</id>
 	{%- for page in pages %}
 	<entry
-		{%- if page.lang != config.default_language %} xml:lang="{{ page.lang }}"{% endif -%}
+		{%- if page.lang != lang %} xml:lang="{{ page.lang }}"{% endif -%}
 	>
 		<title>{{ page.title }}</title>
 		<published>{{ page.date | date(format="%+") }}</published>

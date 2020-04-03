@@ -17,9 +17,18 @@ need to provide a template yourself.
 
 **Only pages with a date will be available.**
 
-The feed template gets three variables in addition to `config`:
+The feed template gets five variables:
 
+- `config`: the site config
 - `feed_url`: the full url to that specific feed
 - `last_updated`: the most recent `updated` or `date` field of any post
-- `pages`: see [page variables](@/documentation/templates/pages-sections.md#page-variables) for
-a detailed description of what this contains
+- `pages`: see [page variables](@/documentation/templates/pages-sections.md#page-variables)
+  for a detailed description of what this contains
+- `lang`: the language code that applies to all of the pages in the feed,
+  if the site is multilingual, or `config.default_language` if it is not
+
+Feeds for taxonomy terms get two more variables, using types from the
+[taxonomies templates](@/documentation/templates/taxonomies.md):
+
+- `taxonomy`: of type `TaxonomyConfig`
+- `term`: of type `TaxonomyTerm`, but without `term.pages` (use `pages` instead)
