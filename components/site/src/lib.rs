@@ -8,13 +8,15 @@ use std::sync::{Arc, Mutex, RwLock};
 use glob::glob;
 use rayon::prelude::*;
 use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
+use serde_derive::Serialize;
 use tera::{Context, Tera};
 
-use config::{get_config, Config};
+use config::{get_config, Config, Taxonomy as TaxonomyConfig};
 use errors::{bail, Error, ErrorKind, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
+    TaxonomyItem,
 };
 use link_checker::check_url;
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
@@ -43,6 +45,23 @@ pub struct Site {
     pub library: Arc<RwLock<Library>>,
     /// Whether to load draft pages
     include_drafts: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+struct SerializedTaxonomyItem<'a> {
+    name: &'a str,
+    slug: &'a str,
+    permalink: &'a str,
+}
+
+impl<'a> SerializedTaxonomyItem<'a> {
+    pub fn from_item(item: &'a TaxonomyItem) -> Self {
+        SerializedTaxonomyItem {
+            name: &item.name,
+            slug: &item.slug,
+            permalink: &item.permalink,
+        }
+    }
 }
 
 impl Site {
@@ -746,7 +765,8 @@ impl Site {
 
         let library = self.library.read().unwrap();
         if self.config.generate_feed {
-            let pages = if self.config.is_multilingual() {
+            let is_multilingual = self.config.is_multilingual();
+            let pages = if is_multilingual {
                 library
                     .pages_values()
                     .iter()
@@ -756,7 +776,12 @@ impl Site {
             } else {
                 library.pages_values()
             };
-            self.render_feed(pages, None)?;
+            self.render_feed(
+                pages,
+                None,
+                &self.config.default_language,
+                None,
+            )?;
         }
 
         for lang in &self.config.languages {
@@ -765,7 +790,12 @@ impl Site {
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
+            self.render_feed(
+                pages,
+                Some(&PathBuf::from(lang.code.clone())),
+                &lang.code,
+                None,
+            )?;
         }
 
         self.render_404()?;
@@ -987,6 +1017,12 @@ impl Site {
                     self.render_feed(
                         item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
+                        if self.config.is_multilingual() && !taxonomy.kind.lang.is_empty() {
+                            &taxonomy.kind.lang
+                        } else {
+                            &self.config.default_language
+                        },
+                        Some((&taxonomy.kind, &item)),
                     )
                 } else {
                     Ok(())
@@ -1052,6 +1088,8 @@ impl Site {
         &self,
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
+        lang: &str,
+        taxonomy_and_item: Option<(&TaxonomyConfig, &TaxonomyItem)>,
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
@@ -1084,6 +1122,7 @@ impl Site {
 
         context.insert("pages", &p);
         context.insert("config", &self.config);
+        context.insert("lang", lang);
 
         let feed_filename = &self.config.feed_filename;
         let feed_url = if let Some(ref base) = base_path {
@@ -1098,6 +1137,11 @@ impl Site {
         };
 
         context.insert("feed_url", &feed_url);
+
+        if let Some((taxonomy, item)) = taxonomy_and_item {
+            context.insert("taxonomy", taxonomy);
+            context.insert("term", &SerializedTaxonomyItem::from_item(item));
+        }
 
         let feed = &render_template(feed_filename, &self.tera, context, &self.config.theme)?;
 

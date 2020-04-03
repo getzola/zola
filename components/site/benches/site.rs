@@ -40,7 +40,14 @@ fn bench_render_feed(b: &mut test::Bencher) {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    b.iter(|| site.render_feed(site.library.read().unwrap().pages_values(), None).unwrap());
+    b.iter(|| {
+        site.render_feed(
+            site.library.read().unwrap().pages_values(),
+            None,
+            &site.config.default_language,
+            None,
+        ).unwrap();
+    });
 }
 
 #[bench]
