@@ -21,10 +21,10 @@ and `TaxonomyConfig` has the following fields:
 
 ```ts
 name: String,
-slug: String,
 paginate_by: Number?;
 paginate_path: String?;
 rss: Bool;
+lang: String;
 ```
 
 
