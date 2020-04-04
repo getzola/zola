@@ -1,4 +1,5 @@
-use std::fs::{copy, create_dir_all, read_dir, File};
+use filetime::{set_file_mtime, FileTime};
+use std::fs::{copy, create_dir_all, metadata, read_dir, File};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -94,7 +95,11 @@ pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 }
 
 /// Copy a file but takes into account where to start the copy as
-/// there might be folders we need to create on the way
+/// there might be folders we need to create on the way.
+/// No copy occurs if all of the following conditions are satisfied:
+/// 1. A file with the same name already exists in the dest path.
+/// 2. Its modification timestamp is identical to that of the src file.
+/// 3. Its filesize is identical to that of the src file.
 pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: bool) -> Result<()> {
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
@@ -106,7 +111,19 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: boo
     if hard_link {
         std::fs::hard_link(src, target_path)?
     } else {
-        copy(src, target_path)?;
+        let src_metadata = metadata(src)?;
+        let src_mtime = FileTime::from_last_modification_time(&src_metadata);
+        if Path::new(&target_path).is_file() {
+            let target_metadata = metadata(&target_path)?;
+            let target_mtime = FileTime::from_last_modification_time(&target_metadata);
+            if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
+                copy(src, &target_path)?;
+                set_file_mtime(&target_path, src_mtime)?;
+            }
+        } else {
+            copy(src, &target_path)?;
+            set_file_mtime(&target_path, src_mtime)?;
+        }
     }
     Ok(())
 }
@@ -160,11 +177,14 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
+    use std::fs::{metadata, read_to_string, File};
+    use std::io::Write;
+    use std::path::PathBuf;
+    use std::str::FromStr;
 
-    use tempfile::tempdir;
+    use tempfile::{tempdir, tempdir_in};
 
-    use super::find_related_assets;
+    use super::{copy_file, find_related_assets};
 
     #[test]
     fn can_find_related_assets() {
@@ -180,5 +200,69 @@ mod tests {
         assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "example.js").count(), 1);
         assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "graph.jpg").count(), 1);
         assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "fail.png").count(), 1);
+    }
+
+    #[test]
+    fn test_copy_file_timestamp_preserved() {
+        let base_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+        let src_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary source directory.");
+        let dest_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary destination directory.");
+        let src_file_path = src_dir.path().join("test.txt");
+        let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
+        File::create(&src_file_path).unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+
+        assert_eq!(
+            metadata(&src_file_path).and_then(|m| m.modified()).unwrap(),
+            metadata(&dest_file_path).and_then(|m| m.modified()).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_copy_file_already_exists() {
+        let base_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+        let src_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary source directory.");
+        let dest_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary destination directory.");
+        let src_file_path = src_dir.path().join("test.txt");
+        let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
+        {
+            let mut src_file = File::create(&src_file_path).unwrap();
+            src_file.write_all(b"file1").unwrap();
+        }
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        {
+            let mut dest_file = File::create(&dest_file_path).unwrap();
+            dest_file.write_all(b"file2").unwrap();
+        }
+
+        // Check copy does not occur when moditication timestamps and filesizes are same.
+        filetime::set_file_mtime(&src_file_path, filetime::FileTime::from_unix_time(0, 0)).unwrap();
+        filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
+            .unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file2");
+
+        // Copy occurs if the timestamps are different while the filesizes are same.
+        filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(42, 42))
+            .unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
+
+        // Copy occurs if the timestamps are same while the filesizes are different.
+        {
+            let mut dest_file = File::create(&dest_file_path).unwrap();
+            dest_file.write_all(b"This file has different file size to the source file!").unwrap();
+        }
+        filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
+            .unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
     }
 }
