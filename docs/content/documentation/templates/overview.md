@@ -20,6 +20,7 @@ A few variables are available on all templates except RSS and the sitemap:
 - `current_url`: the full URL for the current page
 - `lang`: the language for the current page; `null` if the page/section doesn't have a language set
 
+Config variables can be accessed like `config.variable`, in HTML for example with `{{ config.base_url }}`.
 The 404 template does not get `current_path` and `current_url` (this information cannot be determined).
 
 ## Standard templates
