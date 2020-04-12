@@ -23,4 +23,4 @@ config = { path = "../config" }
 imageproc = { path = "../imageproc" }
 
 [dev-dependencies]
-mockito = "0.23"
+mockito = "0.25"
