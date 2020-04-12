@@ -72,6 +72,8 @@ pass `true` to the inline argument:
 {{ some_text | markdown(inline=true) }}
 ```
 
+You do not need to use this filter with `page.content` or `section.content`, the content is already rendered.
+
 ### base64_encode
 Encode the variable to base64.
 

@@ -14,6 +14,7 @@ with the following fields:
 
 
 ```ts
+// The HTML output of the Markdown content
 content: String;
 title: String?;
 description: String?;
@@ -68,6 +69,7 @@ with the following fields:
 
 
 ```ts
+// The HTML output of the Markdown content
 content: String;
 title: String?;
 description: String?;
