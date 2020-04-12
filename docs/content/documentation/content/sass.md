@@ -29,7 +29,7 @@ structure and base name into the `public` folder:
     │   ├── same_name.sass # CONFLICT! This has the same base name as the file above, so Zola will return an error.
     │   └── _common_mixins.scss # This file won't get put into the `public` folder, but other files can @import it.
     └── secret-side-project
-        └── style.scss // -> ./public/secret-side-project/fancy.css
+        └── style.scss // -> ./public/secret-side-project/style.css
 ```
 
 Files with a leading underscore in the name are not placed into the `public`
