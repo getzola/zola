@@ -542,7 +542,6 @@ mod tests {
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 languages = [
-    { code = "fr" },
     { code = "en" },
 ]
 
