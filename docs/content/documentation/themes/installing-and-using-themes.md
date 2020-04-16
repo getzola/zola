@@ -58,7 +58,7 @@ you can update your `config.toml` like so:
 
 ```toml
 [extra]
-show_twitter = false
+show_twitter = true
 ```
 
 You can modify files directly in the `themes` directory but this will make updating the theme harder and live reload
