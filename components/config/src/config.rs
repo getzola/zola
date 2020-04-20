@@ -105,7 +105,7 @@ impl Default for Taxonomy {
     }
 }
 
-type TranslateTerm = HashMap<String, String>;
+pub type TranslateTerm = HashMap<String, String>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
@@ -303,7 +303,7 @@ impl Config {
             if !self.extra.contains_key(key) {
                 // The key was not in site config, so we create it now
                 self.extra.insert(key.to_string(), val.clone());
-                continue
+                continue;
             }
             match val {
                 Toml::Table(child) => {
@@ -317,19 +317,44 @@ impl Config {
                                     orig_table.insert(child_key.to_string(), child_val.clone());
                                 }
                             }
-                        },
+                        }
                         _ => {
                             // ERROR because user rewrote a theme config's mapping
                             // with another type in site config
-                            bail!("Cannot replace mapping theme.extra.{} with {} in site config.", key, self.extra.get(key).unwrap());
+                            bail!(
+                                "Cannot replace mapping theme.extra.{} with {} in site config.",
+                                key,
+                                self.extra.get(key).unwrap()
+                            );
                         }
                     }
-                },
+                }
                 _ => {
                     // We don't want to merge this because it's not a map
-                    continue
+                    continue;
                 }
             }
+        }
+        Ok(())
+    }
+
+    /// Merges the translations from the theme with the config translations
+    fn add_theme_translations(&mut self, theme: &Theme) -> Result<()> {
+        for (key, val) in &theme.translations {
+            // Ideally we don't have to merge the translations for languages
+            // not enabled in config.languages. However currently zola loads from
+            // config translations for disabled languages so let's not care for now.
+
+            if !self.translations.contains_key(key) {
+                // The key was not in site config, so we create it now
+                self.translations.insert(key.to_string(), val.clone().into());
+                continue;
+            }
+
+            let mut t = val.clone();
+            // Can unwrap safely
+            t.extend(self.translations.get(key).unwrap().clone());
+            self.translations.insert(key.to_string(), t);
         }
         Ok(())
     }
@@ -338,7 +363,8 @@ impl Config {
     /// with the config extra data
     pub fn merge_with_theme(&mut self, path: &PathBuf) -> Result<()> {
         let theme = Theme::from_file(path)?;
-        self.add_theme_extra(&theme)
+        self.add_theme_extra(&theme)?;
+        self.add_theme_translations(&theme)
     }
 
     /// Is this site using i18n?
@@ -598,6 +624,26 @@ title = "A title"
         let error = config.get_translation("en", "absent").unwrap_err();
 
         assert_eq!("Translation key 'absent' for language 'en' is missing", format!("{}", error));
+    }
+
+    #[test]
+    fn can_inherit_theme_translations() {
+        let theme_str = r#"
+[translations]
+[translations.fr]
+title = "Titre"
+date = "Date"
+[translations.de]
+title = "Titel"
+date = "Datum"
+        "#;
+        let mut config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        let theme = Theme::parse(theme_str).unwrap();
+        assert!(config.add_theme_translations(&theme).is_ok());
+        assert_eq!(config.get_translation("en", "title").unwrap(), "A title");
+        assert_eq!(config.get_translation("fr", "title").unwrap(), "Un titre");
+        assert_eq!(config.get_translation("fr", "date").unwrap(), "Date");
+        assert_eq!(config.get_translation("de", "title").unwrap(), "Titel");
     }
 
     #[test]

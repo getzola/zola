@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use serde_derive::{Deserialize, Serialize};
 use toml::Value as Toml;
 
+use crate::config::TranslateTerm;
 use errors::{bail, Result};
 use utils::fs::read_file_with_error;
 
@@ -14,6 +15,7 @@ use utils::fs::read_file_with_error;
 pub struct Theme {
     /// All user params set in [extra] in the theme.toml
     pub extra: HashMap<String, Toml>,
+    pub translations: HashMap<String, TranslateTerm>,
 }
 
 impl Theme {
@@ -25,17 +27,23 @@ impl Theme {
         };
 
         let mut extra = HashMap::new();
+        let mut translations = HashMap::new();
         if let Some(theme_table) = theme.as_table() {
             if let Some(ex) = theme_table.get("extra") {
                 if ex.is_table() {
                     extra = ex.clone().try_into().unwrap();
                 }
             }
+            if let Some(t) = theme_table.get("translations") {
+                if t.is_table() {
+                    translations = t.clone().try_into().unwrap();
+                }
+            }
         } else {
             bail!("Expected the `theme.toml` to be a TOML table")
         }
 
-        Ok(Theme { extra })
+        Ok(Theme { extra, translations })
     }
 
     /// Parses a theme file from the given path
