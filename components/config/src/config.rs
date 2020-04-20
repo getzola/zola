@@ -305,33 +305,28 @@ impl Config {
                 self.extra.insert(key.to_string(), val.clone());
                 continue;
             }
-            match val {
-                Toml::Table(child) => {
-                    // We borrow mutably the site's extra subsection but only if it's a Table
-                    // We can unwrap safely because we just checked the key was in there
-                    match self.extra.get_mut(key).unwrap() {
-                        Toml::Table(orig_table) => {
-                            for (child_key, child_val) in child {
-                                if !orig_table.contains_key(child_key) {
-                                    // The site's extra subsection doesn't have specific setting
-                                    orig_table.insert(child_key.to_string(), child_val.clone());
-                                }
-                            }
-                        }
-                        _ => {
-                            // ERROR because user rewrote a theme config's mapping
-                            // with another type in site config
-                            bail!(
-                                "Cannot replace mapping theme.extra.{} with {} in site config.",
-                                key,
-                                self.extra.get(key).unwrap()
-                            );
-                        }
-                    }
-                }
-                _ => {
-                    // We don't want to merge this because it's not a map
-                    continue;
+            if !val.is_table() {
+                // We don't want to merge this because it's not a map
+                continue;
+            }
+            let child = val.as_table().unwrap();
+            // We borrow mutably the site's extra subsection but only if it's a Table
+            // We can unwrap safely because we just checked the key was in there
+            let site_val = self.extra.get_mut(key).unwrap();
+            if !site_val.is_table() {
+                // ERROR because user rewrote a theme config's mapping
+                // with another type in site config
+                bail!(
+                    "Cannot replace mapping theme.extra.{} with {} in site config.",
+                    key,
+                    self.extra.get(key).unwrap()
+                );
+            }
+            let site_val = site_val.as_table_mut().unwrap();
+            for (child_key, child_val) in child {
+                if !site_val.contains_key(child_key) {
+                    // The site's extra subsection doesn't have specific setting
+                    site_val.insert(child_key.to_string(), child_val.clone());
                 }
             }
         }
