@@ -306,12 +306,11 @@ impl Config {
                 continue;
             }
             if !val.is_table() {
-                // We don't want to merge this because it's not a map
+                // We don't want to merge this because it's not a map (table)
                 continue;
             }
             let child = val.as_table().unwrap();
             // We borrow mutably the site's extra subsection but only if it's a Table
-            // We can unwrap safely because we just checked the key was in there
             let site_val = self.extra.get_mut(key).unwrap();
             if !site_val.is_table() {
                 // ERROR because user rewrote a theme config's mapping
@@ -336,18 +335,16 @@ impl Config {
     /// Merges the translations from the theme with the config translations
     fn add_theme_translations(&mut self, theme: &Theme) -> Result<()> {
         for (key, val) in &theme.translations {
-            // Ideally we don't have to merge the translations for languages
-            // not enabled in config.languages. However currently zola loads from
-            // config translations for disabled languages so let's not care for now.
-
             if !self.translations.contains_key(key) {
                 // The key was not in site config, so we create it now
                 self.translations.insert(key.to_string(), val.clone().into());
                 continue;
             }
 
+            // There is already translations in this language in the site config,
+            // so we create a new map from theme's translations for this language,
+            // and extend the site translations with it
             let mut t = val.clone();
-            // Can unwrap safely
             t.extend(self.translations.get(key).unwrap().clone());
             self.translations.insert(key.to_string(), t);
         }
