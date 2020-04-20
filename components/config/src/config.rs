@@ -299,19 +299,38 @@ impl Config {
 
     /// Merges the extra data from the theme with the config extra data
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
-        // 3 pass merging
-        // 1. save config to preserve user
-        let original = self.extra.clone();
-        // 2. inject theme extra values
         for (key, val) in &theme.extra {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
+            if !self.extra.contains_key(key) {
+                // The key was not in site config, so we create it now
+                self.extra.insert(key.to_string(), val.clone());
+                continue
+            }
+            match val {
+                Toml::Table(child) => {
+                    // We borrow mutably the site's extra subsection but only if it's a Table
+                    // We can unwrap safely because we just checked the key was in there
+                    match self.extra.get_mut(key).unwrap() {
+                        Toml::Table(orig_table) => {
+                            for (child_key, child_val) in child {
+                                if !orig_table.contains_key(child_key) {
+                                    // The site's extra subsection doesn't have specific setting
+                                    orig_table.insert(child_key.to_string(), child_val.clone());
+                                }
+                            }
+                        },
+                        _ => {
+                            // ERROR because user rewrote a theme config's mapping
+                            // with another type in site config
+                            bail!("Cannot replace mapping theme.extra.{} with {} in site config.", key, self.extra.get(key).unwrap());
+                        }
+                    }
+                },
+                _ => {
+                    // We don't want to merge this because it's not a map
+                    continue
+                }
+            }
         }
-
-        // 3. overwrite with original config
-        for (key, val) in &original {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
-        }
-
         Ok(())
     }
 
@@ -500,6 +519,24 @@ hello = "world"
     }
 
     #[test]
+    #[should_panic]
+    fn cannot_overwrite_theme_mapping_with_invalid_type() {
+        let config_str = r#"
+[extra]
+foo = "bar"
+        "#;
+        let mut config = Config::parse(config_str).unwrap();
+        let theme_str = r#"
+[extra]
+[extra.foo]
+bar = "baz"
+        "#;
+        let theme = Theme::parse(theme_str).unwrap();
+        // Should panic!
+        assert!(config.add_theme_extra(&theme).is_ok());
+    }
+
+    #[test]
     fn can_merge_with_theme_data_and_preserve_config_value() {
         let config_str = r#"
 title = "My site"
@@ -507,18 +544,25 @@ base_url = "https://replace-this-with-your-url.com"
 
 [extra]
 hello = "world"
+[extra.sub]
+foo = "bar"
         "#;
         let mut config = Config::parse(config_str).unwrap();
         let theme_str = r#"
 [extra]
 hello = "foo"
 a_value = 10
+[extra.sub]
+foo = "default"
+truc = "default"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         assert!(config.add_theme_extra(&theme).is_ok());
         let extra = config.extra;
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
+        assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
+        assert_eq!(extra["sub"]["truc"].as_str().unwrap(), "default".to_string())
     }
 
     const CONFIG_TRANSLATION: &str = r#"
