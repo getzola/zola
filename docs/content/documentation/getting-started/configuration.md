@@ -85,9 +85,12 @@ ignored_content = []
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
-# Optional translation object. The key if present should be a language code.
+# Optionally, use translation strings in your templates. The key,
+# if present should be a language code. If a theme provides translation
+# strings, they can be overriden here.
 # Example:
 #     default_language = "fr"
+#     languages = [{ code = "en" }]
 #
 #     [translations]
 #     [translations.fr]
@@ -119,8 +122,9 @@ anchors = "on"
 # Optional translation object. Keys should be language codes.
 [translations]
 
-# You can put any kind of data here. The data
-# will be accessible in all templates.
+# You can put any kind of data here. The data will be accessible
+# in all templates. If a theme defines some extra variables, they
+# can be overriden here.
 [extra]
 ```
 

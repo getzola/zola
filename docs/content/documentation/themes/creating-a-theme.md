@@ -29,6 +29,10 @@ demo = ""
 # Use snake_casing to be consistent with the rest of Zola
 [extra]
 
+# Similar to extra, any variable here can be overriden in `config.toml`
+# This is used to hold translation strings for your theme
+[translations]
+
 # The theme author info: you!
 [author]
 name = "Vincent Prouillet"
