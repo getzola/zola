@@ -13,7 +13,7 @@ to learn more about it first.
 All templates live in the `templates` directory.  If you are not sure what variables are available in a template,
 you can place `{{ __tera_context }}` in the template to print the whole context.
 
-A few variables are available on all templates except RSS and the sitemap:
+A few variables are available on all templates except feeds and the sitemap:
 
 - `config`: the [configuration](@/documentation/getting-started/configuration.md) without any modifications
 - `current_path`: the path (full URL without `base_url`) of the current page, never starting with a `/`
@@ -36,12 +36,13 @@ section variables.  The `page.html` template has access to the page variables.
 The page and section variables are described in more detail in the next section.
 
 ## Built-in templates
-Zola comes with three built-in templates: `rss.xml`, `sitemap.xml` and
-`robots.txt` (each is described in its own section of this documentation).
+Zola comes with four built-in templates: `atom.xml` and `rss.xml` (described in
+[Feeds](@/documentation/templates/feeds.md)), `sitemap.xml` (described in [Sitemap](@/documentation/templates/sitemap.md)),
+and `robots.txt` (described in [Robots.txt](@/documentation/templates/robots.md)).
 Additionally, themes can add their own templates, which will be applied if not
 overridden.  You can override built-in or theme templates by creating a template with
-the same name in the correct path. For example, you can override the RSS template by
-creating a `templates/rss.xml` file.
+the same name in the correct path. For example, you can override the Atom template by
+creating a `templates/atom.xml` file.
 
 ## Custom templates
 In addition to the standard `index.html`, `section.html` and `page.html` templates,

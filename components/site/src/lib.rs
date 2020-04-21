@@ -8,13 +8,15 @@ use std::sync::{Arc, Mutex, RwLock};
 use glob::glob;
 use rayon::prelude::*;
 use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
+use serde_derive::Serialize;
 use tera::{Context, Tera};
 
-use config::{get_config, Config};
+use config::{get_config, Config, Taxonomy as TaxonomyConfig};
 use errors::{bail, Error, ErrorKind, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
+    TaxonomyItem,
 };
 use link_checker::check_url;
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
@@ -43,6 +45,23 @@ pub struct Site {
     pub library: Arc<RwLock<Library>>,
     /// Whether to load draft pages
     include_drafts: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+struct SerializedTaxonomyItem<'a> {
+    name: &'a str,
+    slug: &'a str,
+    permalink: &'a str,
+}
+
+impl<'a> SerializedTaxonomyItem<'a> {
+    pub fn from_item(item: &'a TaxonomyItem) -> Self {
+        SerializedTaxonomyItem {
+            name: &item.name,
+            slug: &item.slug,
+            permalink: &item.permalink,
+        }
+    }
 }
 
 impl Site {
@@ -626,15 +645,17 @@ impl Site {
     }
 
     /// Inject live reload script tag if in live reload mode
-    fn inject_livereload(&self, html: String) -> String {
+    fn inject_livereload(&self, mut html: String) -> String {
         if let Some(port) = self.live_reload {
-            return html.replace(
-                "</body>",
-                &format!(
-                    r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script></body>"#,
-                    port
-                ),
+            let script = format!(
+                r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#,
+                port,
             );
+            if let Some(index) = html.rfind("</body>") {
+                html.insert_str(index, &script);
+            } else {
+                html.push_str(&script);
+            }
         }
 
         html
@@ -743,8 +764,9 @@ impl Site {
         self.render_sitemap()?;
 
         let library = self.library.read().unwrap();
-        if self.config.generate_rss {
-            let pages = if self.config.is_multilingual() {
+        if self.config.generate_feed {
+            let is_multilingual = self.config.is_multilingual();
+            let pages = if is_multilingual {
                 library
                     .pages_values()
                     .iter()
@@ -754,16 +776,26 @@ impl Site {
             } else {
                 library.pages_values()
             };
-            self.render_rss_feed(pages, None)?;
+            self.render_feed(
+                pages,
+                None,
+                &self.config.default_language,
+                None,
+            )?;
         }
 
         for lang in &self.config.languages {
-            if !lang.rss {
+            if !lang.feed {
                 continue;
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_rss_feed(pages, Some(&PathBuf::from(lang.code.clone())))?;
+            self.render_feed(
+                pages,
+                Some(&PathBuf::from(lang.code.clone())),
+                &lang.code,
+                None,
+            )?;
         }
 
         self.render_404()?;
@@ -981,10 +1013,16 @@ impl Site {
                     create_file(&path.join("index.html"), &self.inject_livereload(single_output))?;
                 }
 
-                if taxonomy.kind.rss {
-                    self.render_rss_feed(
+                if taxonomy.kind.feed {
+                    self.render_feed(
                         item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
+                        if self.config.is_multilingual() && !taxonomy.kind.lang.is_empty() {
+                            &taxonomy.kind.lang
+                        } else {
+                            &self.config.default_language
+                        },
+                        Some((&taxonomy.kind, &item)),
                     )
                 } else {
                     Ok(())
@@ -1043,30 +1081,39 @@ impl Site {
         Ok(())
     }
 
-    /// Renders a RSS feed for the given path and at the given path
-    /// If both arguments are `None`, it will render only the RSS feed for the whole
+    /// Renders a feed for the given path and at the given path
+    /// If both arguments are `None`, it will render only the feed for the whole
     /// site at the root folder.
-    pub fn render_rss_feed(
+    pub fn render_feed(
         &self,
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
+        lang: &str,
+        taxonomy_and_item: Option<(&TaxonomyConfig, &TaxonomyItem)>,
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
         let mut context = Context::new();
         let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
 
-        // Don't generate a RSS feed if none of the pages has a date
+        // Don't generate a feed if none of the pages has a date
         if pages.is_empty() {
             return Ok(());
         }
 
         pages.par_sort_unstable_by(sort_actual_pages_by_date);
 
-        context.insert("last_build_date", &pages[0].meta.date.clone());
+        context.insert(
+            "last_updated",
+            pages.iter()
+                .filter_map(|page| page.meta.updated.as_ref())
+                .chain(pages[0].meta.date.as_ref())
+                .max()  // I love lexicographically sorted date strings
+                .unwrap(),  // Guaranteed because of pages[0].meta.date
+        );
         let library = self.library.read().unwrap();
         // limit to the last n elements if the limit is set; otherwise use all.
-        let num_entries = self.config.rss_limit.unwrap_or_else(|| pages.len());
+        let num_entries = self.config.feed_limit.unwrap_or_else(|| pages.len());
         let p = pages
             .iter()
             .take(num_entries)
@@ -1075,16 +1122,28 @@ impl Site {
 
         context.insert("pages", &p);
         context.insert("config", &self.config);
+        context.insert("lang", lang);
 
-        let rss_feed_url = if let Some(ref base) = base_path {
-            self.config.make_permalink(&base.join("rss.xml").to_string_lossy().replace('\\', "/"))
+        let feed_filename = &self.config.feed_filename;
+        let feed_url = if let Some(ref base) = base_path {
+            self.config.make_permalink(
+                &base
+                    .join(feed_filename)
+                    .to_string_lossy()
+                    .replace('\\', "/"),
+            )
         } else {
-            self.config.make_permalink("rss.xml")
+            self.config.make_permalink(feed_filename)
         };
 
-        context.insert("feed_url", &rss_feed_url);
+        context.insert("feed_url", &feed_url);
 
-        let feed = &render_template("rss.xml", &self.tera, context, &self.config.theme)?;
+        if let Some((taxonomy, item)) = taxonomy_and_item {
+            context.insert("taxonomy", taxonomy);
+            context.insert("term", &SerializedTaxonomyItem::from_item(item));
+        }
+
+        let feed = &render_template(feed_filename, &self.tera, context, &self.config.theme)?;
 
         if let Some(ref base) = base_path {
             let mut output_path = self.output_path.clone();
@@ -1094,9 +1153,9 @@ impl Site {
                     create_directory(&output_path)?;
                 }
             }
-            create_file(&output_path.join("rss.xml"), feed)?;
+            create_file(&output_path.join(feed_filename), feed)?;
         } else {
-            create_file(&self.output_path.join("rss.xml"), feed)?;
+            create_file(&self.output_path.join(feed_filename), feed)?;
         }
         Ok(())
     }
