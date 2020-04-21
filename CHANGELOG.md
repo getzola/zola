@@ -18,9 +18,6 @@
 - Add `updated` front-matter field for pages, which sitemap templates will use for the `SitemapEntry.date` field instead of the `date` front-matter field, and which the default Atom feed template will use
 - Add `lang` to the feed template context
 - Add `taxonomy` and `term` to the feed template context for taxonomy feeds
-
-## 0.10.2 (unreleased)
-
 - Fix link checker not looking for anchor with capital id/name
 - Pass missing `lang` template parameter to taxonomy list template
 

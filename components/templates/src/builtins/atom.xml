@@ -13,9 +13,7 @@
 	<updated>{{ last_updated | date(format="%+") }}</updated>
 	<id>{{ feed_url | safe }}</id>
 	{%- for page in pages %}
-	<entry
-		{%- if page.lang != lang %} xml:lang="{{ page.lang }}"{% endif -%}
-	>
+	<entry xml:lang="{{ page.lang }}">
 		<title>{{ page.title }}</title>
 		<published>{{ page.date | date(format="%+") }}</published>
 		<updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>

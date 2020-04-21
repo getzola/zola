@@ -13,7 +13,7 @@ A taxonomy has five variables:
 - `paginate_by`: if this is set to a number, each term page will be paginated by this much.
 - `paginate_path`: if set, this path will be used by the paginated page and the page number will be appended after it.
 For example the default would be page/1.
-- `feed`: if set to `true`, a feed will be generated for each term.
+- `feed`: if set to `true`, a feed (atom by default) will be generated for each term.
 - `lang`: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for
 
 **Example 1:** (one language)
