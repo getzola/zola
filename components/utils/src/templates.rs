@@ -61,51 +61,18 @@ pub fn render_template(
     }
 }
 
-/// Rewrites the path from extend/macros of the theme used to ensure
-/// that they will point to the right place (theme/templates/...)
-/// Include is NOT supported as it would be a pain to add and using blocks
-/// or macros is always better anyway for themes
-/// This will also rename the shortcodes to NOT have the themes in the path
-/// so themes shortcodes can be used.
+/// Rewrites the path of duplicate templates to include the complete theme path
+/// Theme templates  will be injected into site templates, with higher priority for site
+/// templates. To keep a copy of the template in case it's being extended from a site template
+/// of the same name, we reinsert it with the theme path prepended
 pub fn rewrite_theme_paths(tera_theme: &mut Tera, site_templates: Vec<&str>, theme: &str) {
-    let mut shortcodes_to_move = vec![];
-    let mut templates = HashMap::new();
-    let old_templates = ::std::mem::replace(&mut tera_theme.templates, HashMap::new());
-
-    // We want to match the paths in the templates to the new names
-    for (key, mut tpl) in old_templates {
-        tpl.name = format!("{}/templates/{}", theme, tpl.name);
-        // First the parent if there is one
-        // If a template with the same name is also in site, assumes it overrides the theme one
-        // and do not change anything
-        if let Some(ref p) = tpl.parent.clone() {
-            if !site_templates.contains(&p.as_ref()) {
-                tpl.parent = Some(format!("{}/templates/{}", theme, p));
-            }
+    let theme_basepath = format!("{}/templates/", theme);
+    for template in site_templates {
+        if tera_theme.templates.contains_key(template) {
+            let mut tpl = tera_theme.templates.get(template).unwrap().clone();
+            tpl.name = format!("{}{}", theme_basepath, template);
+            tera_theme.templates.insert(tpl.name.clone(), tpl.clone());
         }
-
-        // Next the macros import
-        let mut updated = vec![];
-        for &(ref filename, ref namespace) in &tpl.imported_macro_files {
-            updated.push((format!("{}/templates/{}", theme, filename), namespace.to_string()));
-        }
-        tpl.imported_macro_files = updated;
-
-        if tpl.name.starts_with(&format!("{}/templates/shortcodes", theme)) {
-            let new_name = tpl.name.replace(&format!("{}/templates/", theme), "");
-            shortcodes_to_move.push((key, new_name.clone()));
-            tpl.name = new_name;
-        }
-
-        templates.insert(tpl.name.clone(), tpl);
-    }
-
-    tera_theme.templates = templates;
-
-    // and then replace shortcodes in the Tera instance using the new names
-    for (old_name, new_name) in shortcodes_to_move {
-        let tpl = tera_theme.templates.remove(&old_name).unwrap();
-        tera_theme.templates.insert(new_name, tpl);
     }
 }
 

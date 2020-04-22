@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://replace-this-with-your-url.com/sitemap.xml
