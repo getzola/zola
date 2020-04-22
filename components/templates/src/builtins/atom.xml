@@ -19,7 +19,7 @@
 		<updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>
 		<link href="{{ page.permalink | safe }}" type="text/html"/>
 		<id>{{ page.permalink | safe }}</id>
-		<content type="html">{{ page.content }}</description>
-	</item>
+		<content type="html">{{ page.content }}</content>
+	</entry>
 	{%- endfor %}
 </feed>

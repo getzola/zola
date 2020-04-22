@@ -125,6 +125,7 @@ mod tests {
         check_page_for_anchor, check_url, has_anchor, is_valid, message, LinkChecker, LINKS,
     };
     use mockito::mock;
+    use reqwest::StatusCode;
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -189,9 +190,8 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/C4Szbfnvj6M0LoPk");
         let res = check_url(&url, &LinkChecker::default());
-        assert!(res.is_valid());
-        assert!(res.code.is_some());
-        assert!(res.error.is_none());
+        assert!(is_valid(&res));
+        assert_eq!(res.unwrap(), StatusCode::OK);
     }
 
     #[test]

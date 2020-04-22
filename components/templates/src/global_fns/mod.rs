@@ -60,7 +60,9 @@ fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<Stri
     }
 
     if !config.languages.iter().any(|x| x.code == lang) {
-        return Err(format!("`{}` is not an authorized language (check config.languages).", lang).into());
+        return Err(
+            format!("`{}` is not an authorized language (check config.languages).", lang).into()
+        );
     }
 
     let mut splitted_path: Vec<String> = path.split(".").map(String::from).collect();
@@ -90,13 +92,14 @@ impl TeraFn for GetUrl {
         if path.starts_with("@/") {
             let path_with_lang = match make_path_with_lang(path, &lang, &self.config) {
                 Ok(x) => x,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             };
 
             match resolve_internal_link(&path_with_lang, &self.permalinks) {
                 Ok(resolved) => Ok(to_value(resolved.permalink).unwrap()),
                 Err(_) => {
-                    Err(format!("Could not resolve URL for link `{}` not found.", path_with_lang).into())
+                    Err(format!("Could not resolve URL for link `{}` not found.", path_with_lang)
+                        .into())
                 }
             }
         } else {
@@ -599,7 +602,10 @@ title = "A title"
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
         let err = static_fn.call(&args).unwrap_err();
-        assert_eq!("`it` is not an authorized language (check config.languages).", format!("{}", err));
+        assert_eq!(
+            "`it` is not an authorized language (check config.languages).",
+            format!("{}", err)
+        );
     }
 
     #[test]
@@ -608,17 +614,20 @@ title = "A title"
         let mut permalinks = HashMap::new();
         permalinks.insert(
             "a_section/a_page.md".to_string(),
-            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
         );
         permalinks.insert(
             "a_section/a_page.en.md".to_string(),
-            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
         let static_fn = GetUrl::new(config, permalinks);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/a_section/a_page/");
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/a_section/a_page/"
+        );
     }
 
     #[test]
@@ -627,16 +636,19 @@ title = "A title"
         let mut permalinks = HashMap::new();
         permalinks.insert(
             "a_section/a_page.md".to_string(),
-            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
         );
         permalinks.insert(
             "a_section/a_page.en.md".to_string(),
-            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
         let static_fn = GetUrl::new(config, permalinks);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/en/a_section/a_page/");
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/"
+        );
     }
 }

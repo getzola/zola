@@ -55,11 +55,7 @@ struct SerializedTaxonomyItem<'a> {
 
 impl<'a> SerializedTaxonomyItem<'a> {
     pub fn from_item(item: &'a TaxonomyItem) -> Self {
-        SerializedTaxonomyItem {
-            name: &item.name,
-            slug: &item.slug,
-            permalink: &item.permalink,
-        }
+        SerializedTaxonomyItem { name: &item.name, slug: &item.slug, permalink: &item.permalink }
     }
 }
 
@@ -646,10 +642,8 @@ impl Site {
     /// Inject live reload script tag if in live reload mode
     fn inject_livereload(&self, mut html: String) -> String {
         if let Some(port) = self.live_reload {
-            let script = format!(
-                r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#,
-                port,
-            );
+            let script =
+                format!(r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#, port,);
             if let Some(index) = html.rfind("</body>") {
                 html.insert_str(index, &script);
             } else {
@@ -775,12 +769,7 @@ impl Site {
             } else {
                 library.pages_values()
             };
-            self.render_feed(
-                pages,
-                None,
-                &self.config.default_language,
-                None,
-            )?;
+            self.render_feed(pages, None, &self.config.default_language, None)?;
         }
 
         for lang in &self.config.languages {
@@ -789,12 +778,7 @@ impl Site {
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(
-                pages,
-                Some(&PathBuf::from(lang.code.clone())),
-                &lang.code,
-                None,
-            )?;
+            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, None)?;
         }
 
         self.render_404()?;
@@ -1104,11 +1088,12 @@ impl Site {
 
         context.insert(
             "last_updated",
-            pages.iter()
+            pages
+                .iter()
                 .filter_map(|page| page.meta.updated.as_ref())
                 .chain(pages[0].meta.date.as_ref())
-                .max()  // I love lexicographically sorted date strings
-                .unwrap(),  // Guaranteed because of pages[0].meta.date
+                .max() // I love lexicographically sorted date strings
+                .unwrap(), // Guaranteed because of pages[0].meta.date
         );
         let library = self.library.read().unwrap();
         // limit to the last n elements if the limit is set; otherwise use all.
@@ -1125,12 +1110,8 @@ impl Site {
 
         let feed_filename = &self.config.feed_filename;
         let feed_url = if let Some(ref base) = base_path {
-            self.config.make_permalink(
-                &base
-                    .join(feed_filename)
-                    .to_string_lossy()
-                    .replace('\\', "/"),
-            )
+            self.config
+                .make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
         } else {
             self.config.make_permalink(feed_filename)
         };

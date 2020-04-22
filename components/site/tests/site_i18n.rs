@@ -119,11 +119,19 @@ fn can_build_multilingual_site() {
     assert!(file_exists!(public, "atom.xml"));
     assert!(file_contains!(public, "atom.xml", "https://example.com/blog/something-else/"));
     assert!(!file_contains!(public, "atom.xml", "https://example.com/fr/blog/something-else/"));
-    assert!(file_contains!(public, "atom.xml", r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">"#));
+    assert!(file_contains!(
+        public,
+        "atom.xml",
+        r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">"#
+    ));
     assert!(file_exists!(public, "fr/atom.xml"));
     assert!(!file_contains!(public, "fr/atom.xml", "https://example.com/blog/something-else/"));
     assert!(file_contains!(public, "fr/atom.xml", "https://example.com/fr/blog/something-else/"));
-    assert!(file_contains!(public, "fr/atom.xml", r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">"#));
+    assert!(file_contains!(
+        public,
+        "fr/atom.xml",
+        r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">"#
+    ));
     // Italian doesn't have feed enabled
     assert!(!file_exists!(public, "it/atom.xml"));
 
@@ -134,8 +142,16 @@ fn can_build_multilingual_site() {
     assert!(!file_contains!(public, "authors/index.html", "Vincent"));
     assert!(!file_exists!(public, "auteurs/index.html"));
     assert!(file_exists!(public, "authors/queen-elizabeth/atom.xml"));
-    assert!(file_contains!(public, "authors/queen-elizabeth/atom.xml", r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">"#));
-    assert!(file_contains!(public, "authors/queen-elizabeth/atom.xml", r#"<title> - Queen Elizabeth</title>"#));
+    assert!(file_contains!(
+        public,
+        "authors/queen-elizabeth/atom.xml",
+        r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">"#
+    ));
+    assert!(file_contains!(
+        public,
+        "authors/queen-elizabeth/atom.xml",
+        r#"<title> - Queen Elizabeth</title>"#
+    ));
 
     assert!(file_exists!(public, "tags/index.html"));
     assert!(file_contains!(public, "tags/index.html", "hello"));

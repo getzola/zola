@@ -46,7 +46,8 @@ fn bench_render_feed(b: &mut test::Bencher) {
             None,
             &site.config.default_language,
             None,
-        ).unwrap();
+        )
+        .unwrap();
     });
 }
 
