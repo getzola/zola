@@ -95,11 +95,7 @@ impl Site {
             );
             let mut tera_theme = Tera::parse(&theme_tpl_glob)
                 .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
-            rewrite_theme_paths(
-                &mut tera_theme,
-                tera.templates.values().map(|v| v.name.as_ref()).collect(),
-                &theme,
-            );
+            rewrite_theme_paths(&mut tera_theme, &theme);
             // TODO: we do that twice, make it dry?
             if theme_path.join("templates").join("robots.txt").exists() {
                 tera_theme

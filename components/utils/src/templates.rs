@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use tera::{Context, Tera};
 
 use errors::{bail, Result};
@@ -63,15 +65,17 @@ pub fn render_template(
 /// Theme templates  will be injected into site templates, with higher priority for site
 /// templates. To keep a copy of the template in case it's being extended from a site template
 /// of the same name, we reinsert it with the theme path prepended
-pub fn rewrite_theme_paths(tera_theme: &mut Tera, site_templates: Vec<&str>, theme: &str) {
+pub fn rewrite_theme_paths(tera_theme: &mut Tera, theme: &str) {
     let theme_basepath = format!("{}/templates/", theme);
-    for template in site_templates {
-        if tera_theme.templates.contains_key(template) {
-            let mut tpl = tera_theme.templates.get(template).unwrap().clone();
-            tpl.name = format!("{}{}", theme_basepath, template);
-            tera_theme.templates.insert(tpl.name.clone(), tpl.clone());
-        }
+    let mut new_templates = HashMap::new();
+    for (key, template) in &tera_theme.templates {
+        let mut tpl = template.clone();
+        tpl.name = format!("{}{}", theme_basepath, key);
+        new_templates.insert(tpl.name.clone(), tpl);
     }
+    // Contrary to tera.extend, hashmap.extend does replace existing keys
+    // We can safely extend because there's no conflicting paths anymore
+    tera_theme.templates.extend(new_templates);
 }
 
 #[cfg(test)]
@@ -82,7 +86,7 @@ mod tests {
     #[test]
     fn can_rewrite_all_paths_of_theme() {
         let mut tera = Tera::parse("test-templates/*.html").unwrap();
-        rewrite_theme_paths(&mut tera, vec!["base.html"], "hyde");
+        rewrite_theme_paths(&mut tera, "hyde");
         // special case to make the test work: we also rename the files to
         // match the imports
         for (key, val) in &tera.templates.clone() {
@@ -98,7 +102,7 @@ mod tests {
         );
         assert_eq!(
             tera.templates["hyde/templates/child.html"].parent,
-            Some("hyde/templates/index.html".to_string())
+            Some("index.html".to_string())
         );
     }
 }
