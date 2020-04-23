@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use tera::{Context, Tera};
 
 use errors::{bail, Result};
