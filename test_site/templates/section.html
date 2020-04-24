@@ -1,5 +1,7 @@
 {% extends "sample/templates/section-specific-extends.html" %}
 {% block content %}
-    CANEXTENDPARENT
+     {% for page in section.pages %}
+        {{page.title}}
+    {% endfor %}
     {{ super() }}
 {% endblock content %}
