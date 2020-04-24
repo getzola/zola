@@ -697,3 +697,12 @@ fn check_site() {
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
 }
+
+#[test]
+fn can_always_extend_theme_template() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+
+    assert!(&public.exists());
+    assert!(file_exists!(public, "posts/tutorials/index.html"));
+    assert!(file_contains!(public, "posts/tutorials/index.html", "CANEXTENDPARENT"));
+}
