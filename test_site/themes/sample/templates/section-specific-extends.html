@@ -1,2 +1,12 @@
 {% extends "index.html" %}
-{% block content %}This is extended by a site template and should not appear anywhere{% endblock %}
+{% block content %}
+    {% for page in section.pages %}
+        {{page.title}}
+    {% endfor %}
+    {{ section.relative_path | safe }}
+    {% for sub in section.subsections %}
+        {% set subsection = get_section(path=sub) %}
+        {{subsection.title}}
+        Sub-pages: {{subsection.pages | length}}
+    {% endfor %}
+{% endblock content %}
