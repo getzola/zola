@@ -39,7 +39,12 @@ This option is set at the section level: the `insert_anchor_links` variable on t
 
 The default template is very basic and will need CSS tweaks in your project to look decent.
 If you want to change the anchor template, it can be easily overwritten by
-creating an `anchor-link.html` file in the `templates` directory, which gets an `id` variable.
+creating an `anchor-link.html` file in the `templates` directory.
+
+The anchor link template has the following variables:
+
+- `id`: the heading's id after applying the rules defined by `slugify.anchors`
+- `lvl`: the heading level (between 1 and 6)
 
 ## Internal links
 Linking to other pages and their headings is so common that Zola adds a
