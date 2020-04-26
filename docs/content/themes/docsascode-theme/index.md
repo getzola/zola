@@ -12,7 +12,7 @@ repository = "https://github.com/codeandmedia/zola_docsascode_theme.git"
 homepage = "https://github.com/codeandmedia/zola_docsascode_theme"
 minimum_version = "0.10.0"
 license = "MIT"
-demo = "docsascode.codeandmedia.com"
+demo = "https://docsascode.codeandmedia.com"
 
 [extra.author]
 name = "Roman Soldatenkov"
