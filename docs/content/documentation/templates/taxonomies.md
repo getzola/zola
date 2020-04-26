@@ -64,5 +64,5 @@ term: TaxonomyTerm;
 lang: String;
 ```
 
-A paginated taxonomy term will also get a `paginator` variable; see the [pagination page]
-(@/documentation/templates/pagination.md) for more details.
+A paginated taxonomy term will also get a `paginator` variable; see the
+[pagination page](@/documentation/templates/pagination.md) for more details.
