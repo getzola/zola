@@ -44,7 +44,7 @@ creating an `anchor-link.html` file in the `templates` directory.
 The anchor link template has the following variables:
 
 - `id`: the heading's id after applying the rules defined by `slugify.anchors`
-- `lvl`: the heading level (between 1 and 6)
+- `level`: the heading level (between 1 and 6)
 
 ## Internal links
 Linking to other pages and their headings is so common that Zola adds a
