@@ -160,6 +160,7 @@ Zola currently has the following highlight themes available:
 - [material-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Material%20Dark)
 - [material-light](https://github.com/morhetz/gruvbox)
 - [monokai](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Monokai)
+- [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
 - [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
 - [one-dark](https://github.com/andresmichel/one-dark-theme)
 - [solarized-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(dark))
@@ -167,6 +168,7 @@ Zola currently has the following highlight themes available:
 - [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
 - [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
 - [Tomorrow](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Tomorrow)
+- [TwoDark](https://github.com/erremauro/TwoDark)
 - [visual-studio-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Visual%20Studio%20Dark)
 - [zenburn](https://github.com/colinta/zenburn)
 

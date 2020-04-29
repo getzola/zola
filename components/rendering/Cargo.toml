@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 tera = { version = "1", features = ["preserve_order"] }
-syntect = "=3.2.0"
+syntect = { version = "4.1", default-features = false, features = ["default-fancy"]}
 pulldown-cmark = "0.7"
 serde = "1"
 serde_derive = "1"

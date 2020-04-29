@@ -16,18 +16,19 @@ contexts:
     - include: imports
     - include: statements
   classes:
-    - match: (?=\s*(?:companion|class|object|interface))
+    - match: (?<!::)(?=\b(?:companion|class|object|interface)\b)
       push:
-        - match: "}|(?=$)"
+        - match: '(?=$|\})'
           pop: true
+        - include: comments
         - match: \b(companion\s*)?(class|object|interface)\b
           captures:
-            1: keyword.other.kotlin
+            1: storage.modifier.kotlin
+            2: storage.modifier.kotlin
           push:
-            - match: '(?=<|{|\(|:)'
+            - match: '(?=<|\{|\(|:|$)'
               pop: true
-            - match: \b(object)\b
-              scope: keyword.other.kotlin
+            - include: comments
             - match: \w+
               scope: entity.name.type.class.kotlin
         - match: <
@@ -75,7 +76,7 @@ contexts:
   constants:
     - match: \b(true|false|null|this|super)\b
       scope: constant.language.kotlin
-    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFfUuDd]|UL|ul)?\b'
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFf])?\b'
       scope: constant.numeric.kotlin
     - match: '\b([A-Z][A-Z0-9_]+)\b'
       scope: constant.other.kotlin
@@ -91,9 +92,9 @@ contexts:
     - include: comments
     - include: keywords
   functions:
-    - match: (?=\s*(?:fun))
+    - match: (?=\s*\b(?:fun)\b)
       push:
-        - match: "}|(?=$)"
+        - match: '(?=$|\})'
           pop: true
         - match: \b(fun)\b
           captures:
@@ -192,32 +193,40 @@ contexts:
         1: keyword.other.kotlin
         2: keyword.other.kotlin
   keywords:
-    - match: \b(var|val|public|private|protected|abstract|final|enum|open|attribute|annotation|override|inline|var|val|vararg|lazy|in|out|internal|data|tailrec|operator|infix|const|yield|typealias|typeof)\b
+    - match: \b(var|val|public|private|protected|abstract|final|sealed|enum|open|attribute|annotation|override|inline|vararg|in|out|internal|data|tailrec|operator|infix|const|yield|typealias|typeof|reified|suspend)\b
       scope: storage.modifier.kotlin
     - match: \b(try|catch|finally|throw)\b
       scope: keyword.control.catch-exception.kotlin
     - match: \b(if|else|while|for|do|return|when|where|break|continue)\b
       scope: keyword.control.kotlin
-    - match: \b(in|is|as|assert)\b
+    - match: \b(in|is|!in|!is|as|as\?|assert)\b
       scope: keyword.operator.kotlin
     - match: (==|!=|===|!==|<=|>=|<|>)
       scope: keyword.operator.comparison.kotlin
     - match: (=)
       scope: keyword.operator.assignment.kotlin
+    - match: (::)
+      scope: keyword.operator.kotlin
     - match: (:)
       scope: keyword.operator.declaration.kotlin
+    - match: \b(by)\b
+      scope: keyword.other.by.kotlin
+    - match: (\?\.)
+      scope: keyword.operator.safenav.kotlin
     - match: (\.)
       scope: keyword.operator.dot.kotlin
+    - match: (\?:)
+      scope: keyword.operator.elvis.kotlin
     - match: (\-\-|\+\+)
       scope: keyword.operator.increment-decrement.kotlin
-    - match: (\-|\+|\*|\/|%)
-      scope: keyword.operator.arithmetic.kotlin
     - match: (\+=|\-=|\*=|\/=)
       scope: keyword.operator.arithmetic.assign.kotlin
-    - match: (!|&&|\|\|)
-      scope: keyword.operator.logical.kotlin
     - match: (\.\.)
       scope: keyword.operator.range.kotlin
+    - match: (\-|\+|\*|\/|%)
+      scope: keyword.operator.arithmetic.kotlin
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.kotlin
     - match: (;)
       scope: punctuation.terminator.kotlin
   namespaces:
@@ -315,11 +324,11 @@ contexts:
             - include: generics
         - include: expressions
   types:
-    - match: \b(Any|Unit|String|Int|Boolean|Char|Long|Double|Float|Short|Byte|dynamic)\b
+    - match: \b(Nothing|Any|Unit|String|CharSequence|Int|Boolean|Char|Long|Double|Float|Short|Byte|dynamic)\b
       scope: storage.type.buildin.kotlin
     - match: \b(IntArray|BooleanArray|CharArray|LongArray|DoubleArray|FloatArray|ShortArray|ByteArray)\b
       scope: storage.type.buildin.array.kotlin
-    - match: \b(Array|List|Map)<\b
+    - match: \b(Array|Collection|List|Map|Set|MutableList|MutableMap|MutableSet|Sequence)<\b
       captures:
         1: storage.type.buildin.collection.kotlin
       push:
@@ -333,13 +342,6 @@ contexts:
           pop: true
         - include: types
         - include: keywords
-    - match: (#)\(
-      captures:
-        1: keyword.operator.tuple.kotlin
-      push:
-        - match: \)
-          pop: true
-        - include: expressions
     - match: '\{'
       push:
         - match: '\}'
@@ -353,15 +355,15 @@ contexts:
     - match: (->)
       scope: keyword.operator.declaration.kotlin
   variables:
-    - match: (?=\s*(?:var|val))
+    - match: (?=\s*\b(?:var|val)\b)
       push:
-        - match: (?=:|=|$)
+        - match: (?=:|=|(\b(by)\b)|$)
           pop: true
         - match: \b(var|val)\b
           captures:
             1: keyword.other.kotlin
           push:
-            - match: (?=:|=|$)
+            - match: (?=:|=|(\b(by)\b)|$)
               pop: true
             - match: <
               push:
@@ -379,6 +381,13 @@ contexts:
               pop: true
             - include: types
             - include: getters-and-setters
+        - match: \b(by)\b
+          captures:
+            1: keyword.other.kotlin
+          push:
+            - match: (?=$)
+              pop: true
+            - include: expressions
         - match: (=)
           captures:
             1: keyword.operator.assignment.kotlin

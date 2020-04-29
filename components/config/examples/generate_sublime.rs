@@ -26,7 +26,10 @@ fn main() {
         (Some(ref cmd), Some(ref package_dir), Some(ref packpath_newlines)) if cmd == "synpack" => {
             let mut builder = SyntaxSetBuilder::new();
             builder.add_plain_text_syntax();
-            builder.add_from_folder(package_dir, true).unwrap();
+            match builder.add_from_folder(package_dir, true) {
+                Ok(_) => println!("Added from folder"),
+                Err(e) => println!("Loading error: {:?}", e)
+            };
             let ss = builder.build();
             dump_to_file(&ss, packpath_newlines).unwrap();
             let mut syntaxes: HashMap<String, HashSet<String>> = HashMap::new();

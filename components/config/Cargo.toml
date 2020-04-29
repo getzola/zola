@@ -11,7 +11,7 @@ serde_derive = "1"
 chrono = "0.4"
 globset = "0.4"
 lazy_static = "1"
-syntect = "=3.2.0"
+syntect = { version = "4.1", default-features = false, features = ["default-fancy"]}
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

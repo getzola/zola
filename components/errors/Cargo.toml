@@ -8,4 +8,4 @@ edition = "2018"
 tera = "1"
 toml = "0.5"
 image = "0.23"
-syntect = "=3.2.0"
+syntect = { version = "4.1", default-features = false, features = ["default-fancy"]}

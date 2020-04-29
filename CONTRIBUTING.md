@@ -35,7 +35,7 @@ Tools > Developer > New Syntax from ... and put it at the root of `sublime_synta
 You can also add a submodule to the repository of the wanted syntax:
 
 ```bash
-$ cd sublime_syntaxes
+$ cd sublime/syntaxes
 $ git submodule add https://github.com/elm-community/SublimeElmLanguageSupport
 ```
 
@@ -51,7 +51,7 @@ $ git submodule update --remote --merge
 And finally from the root of the components/config crate run the following command:
 
 ```bash
-$ cargo run --example generate_sublime synpack ../../sublime_syntaxes ../../sublime_syntaxes/newlines.packdump
+$ cargo run --example generate_sublime synpack ../../sublime/syntaxes ../../sublime/syntaxes/newlines.packdump
 ```
 
 ### Adding a theme
@@ -60,7 +60,7 @@ More themes can be easily added to Zola, just make a PR with the wanted theme ad
 and run the following command from the root of the components/config:
 
 ```bash
-$ cargo run --example generate_sublime themepack ../../sublime_themes ../../sublime_themes/all.themedump
+$ cargo run --example generate_sublime themepack ../../sublime/themes ../../sublime/themes/all.themedump
 ```
 
 You should see the list of themes being added.
