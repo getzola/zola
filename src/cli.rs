@@ -90,6 +90,14 @@ pub fn build_cli() -> App<'static, 'static> {
                 ]),
             SubCommand::with_name("check")
                 .about("Try building the project without rendering it. Checks links")
+                .args(&[
+                    Arg::with_name("drafts")
+                        .long("drafts")
+                        .takes_value(false)
+                        .help("Include drafts when loading the site"),
+                ]),
+            SubCommand::with_name("index")
+                .about("Create a search index as a stand-alone task, and with additional options")
                 .args({
                     let drafts = Arg::with_name("drafts") .long("drafts")
                         .takes_value(false)
