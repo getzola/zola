@@ -29,7 +29,7 @@ lazy_static! {
 /// the language given
 /// Errors if the language given is not available in Elasticlunr
 /// TODO: is making `in_search_index` apply to subsections of a `false` section useful?
-pub fn build_index(lang: &str, library: &Library) -> Result<String> {
+pub fn build_index(lang: &str, library: &Library) -> Result<Index> {
     let language = match Language::from_code(lang) {
         Some(l) => l,
         None => {
@@ -45,7 +45,7 @@ pub fn build_index(lang: &str, library: &Library) -> Result<String> {
         }
     }
 
-    Ok(index.to_json())
+    Ok(index)
 }
 
 fn add_section_to_index(index: &mut Index, section: &Section, library: &Library) {
@@ -105,12 +105,11 @@ fn parse_language(lang: &str) -> Option<tantivy::tokenizer::Language> {
     }
 }
 
-pub fn build_tantivy_index(
+pub fn build_tantivy_index<P: AsRef<std::path::Path>>(
     lang: &str,
     library: &Library,
-    output_dir: &str,
-    //skip_section_pages: bool,
-) -> Result<()> {
+    index_dir: P,
+) -> Result<usize> {
     use tantivy::{schema::*, tokenizer::*, Index, Document};
     use tantivy::doc;
 
@@ -119,10 +118,10 @@ pub fn build_tantivy_index(
 
     let tokenizer_name: String = match parsed_lang {
         Language::English => "en_stem".to_string(),
-        other => format!("{:?}_stem", parsed_lang).to_lowercase(),
+        other => format!("{:?}_stem", other).to_lowercase(),
     };
 
-    let mut text_indexing_options = TextFieldIndexing::default()
+    let text_indexing_options = TextFieldIndexing::default()
     .set_index_option(IndexRecordOption::WithFreqsAndPositions)
     .set_tokenizer(&tokenizer_name);
 
@@ -137,10 +136,7 @@ pub fn build_tantivy_index(
     let permalink = schema.add_text_field("permalink", STORED); 
     let schema = schema.build();
 
-    let index_dir = std::path::Path::new(output_dir).join("tantivy-index"); 
-    //utils::fs::ensure_directory_exists(&index_dir)?;
-
-    let mut index = Index::create_in_dir(&index_dir, schema.clone())
+    let index = Index::create_in_dir(&index_dir, schema.clone())
     .map_err(|e| { Error::from(format!("creating tantivy index failed: {}", e)) })?;
 
     if index.tokenizers().get(&tokenizer_name).is_none() { // if non-english, we need to register stemmer
@@ -151,73 +147,47 @@ pub fn build_tantivy_index(
         index.tokenizers().register(&tokenizer_name, tokenizer);
     }
 
-    //let mut wtr = index.writer_with_num_threads(num_cpus::get_physical(), 1024 * 1024 * 256)
-    //let mut wtr = index.writer_with_num_threads(4, 1024 * 1024 * 256)
     let mut wtr = index.writer(1024 * 1024 * 256)
     .map_err(|e| { Error::from(format!("creating tantivy index writer failed: {}", e)) })?;
 
-    //index_writer.set_merge_policy(Box::new(NoMergePolicy));
-
-    //let mut sections_it = library.sections_values().iter().filter(|s| s.lang == lang && s.meta.in_search_index);
-
     let mut seen: HashSet<String> = Default::default();
     let mut n_indexed = 0;
-    //let group_size = 100_000;
 
     for section in library.sections_values() {
-        if section.lang != lang { continue }
 
-        if ! section.meta.in_search_index { continue }
+        // reason for macro: Section/Page are different types but have same attributes
+        macro_rules! index_page {
+            ($page:ident) => {{
+                let already_indexed = seen.contains(&$page.permalink);
+                if ! already_indexed  && $page.meta.in_search_index && $page.lang == lang {
+                    seen.insert($page.permalink.clone()); // mark ask indexed
+                    let cleaned_body: String = AMMONIA.clean(&$page.content).to_string();
+                    let page_doc: Document = doc!(
+                        title => $page.meta.title.as_ref().map(|x| x.as_str()).unwrap_or(""),
+                        body => cleaned_body.as_str(),
+                        permalink => $page.permalink.as_str(),
+                    );
+                    wtr.add_document(page_doc);
+                    n_indexed += 1;
+                }
+            }}
+        }
 
-        // Don't index redirecting sections
-        //if section.meta.redirect_to.is_none() {
-        //    index.add_doc(
-        //        &section.permalink,
-        //        &[
-        //            &section.meta.title.clone().unwrap_or_default(),
-        //            &AMMONIA.clean(&section.content).to_string(),
-        //        ],
-        //    );
-        //}
+        if section.meta.redirect_to.is_none() {
+            index_page!(section);
+        }
 
         for key in &section.pages {
             let page = library.get_page_by_key(*key);
-
-            if !page.meta.in_search_index { continue; }
-
-            if seen.contains(&page.permalink) { continue }
-
-            seen.insert(page.permalink.clone());
-
-
-            //let mut doc = Document::default();
-            //doc.add(FieldValue::new(title, Value::from(page.meta.title.as_ref().map(|x| x.as_str()).unwrap_or(""))));
-
-            let cleaned_body: String = AMMONIA.clean(&page.content).to_string();
-            //doc.add(FieldValue::new(body, Value::from(cleaned_body.as_str())));
-
-            //doc.add(FieldValue::new(permalink, Value::from(page.permalink.as_str())));
-
-            let opstamp = wtr.add_document(doc!(
-                title => page.meta.title.as_ref().map(|x| x.as_str()).unwrap_or(""),
-                body => cleaned_body.as_str(),
-                permalink => page.permalink.as_str(),
-            ));
-
-            println!("added {:?} {}", opstamp, page.permalink);
-
-            n_indexed += 1;
-             //if n_indexed % group_size == 0 { }
-        
+            index_page!(page);
+        }
     }
-}
 
-    wtr.prepare_commit().map_err(|e| { Error::from(format!("tantivy IndexWriter::commit failed: {}", e)) })?;
-    let commit_opstamp = wtr.commit().map_err(|e| { Error::from(format!("tantivy IndexWriter::commit failed: {}", e)) })?;
-    println!("finished indexing {} pages", n_indexed);
+    //wtr.prepare_commit().map_err(|e| { Error::from(format!("tantivy IndexWriter::commit failed: {}", e)) })?;
+    wtr.commit().map_err(|e| { Error::from(format!("tantivy IndexWriter::commit failed: {}", e)) })?;
     wtr.wait_merging_threads().map_err(|e| { Error::from(format!("tantivy IndexWriter::wait_merging_threads failed: {}", e)) })?;
 
     drop(index);
 
-    Ok(())
+    Ok(n_indexed)
 }

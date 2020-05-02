@@ -793,24 +793,32 @@ impl Site {
         Ok(())
     }
 
-    pub fn build_search_index(&self) -> Result<()> {
+    pub fn build_search_index(&self) -> Result<usize> {
+        let mut n_indexed = 0;
         ensure_directory_exists(&self.output_path)?;
         // index first
+        let index = search::build_index(&self.config.default_language, &self.library.read().unwrap())
+        .map_err(|e| Error::from(format!("creating elasticlunr index failed: {}", e)))?;
+        n_indexed += index.document_store.len();
         create_file(
             &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
             &format!(
                 "window.searchIndex = {};",
-                search::build_index(&self.config.default_language, &self.library.read().unwrap())?
+                index.to_json()
             ),
         )?;
 
         for language in &self.config.languages {
             if language.code != self.config.default_language && language.search {
+                let index = search::build_index(&self.config.default_language, &self.library.read().unwrap())
+                .map_err(|e| Error::from(format!("creating elasticlunr index failed: {}", e)))?;
+                n_indexed += index.document_store.len();
+
                 create_file(
                     &self.output_path.join(&format!("search_index.{}.js", &language.code)),
                     &format!(
                         "window.searchIndex = {};",
-                        search::build_index(&language.code, &self.library.read().unwrap())?
+                        index.to_json()
                     ),
                 )?;
             }
@@ -819,7 +827,7 @@ impl Site {
         // then elasticlunr.min.js
         create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
 
-        Ok(())
+        Ok(n_indexed)
     }
 
     pub fn compile_sass(&self, base_path: &Path) -> Result<()> {

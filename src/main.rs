@@ -115,15 +115,11 @@ fn main() {
             console::info("Building search index...");
             let start = Instant::now();
             let output_dir = matches.value_of("output_dir").unwrap();
-            let index_type = matches.value_of("index_type").unwrap();
-            match cmd::index(
-                &root_dir,
-                config_file,
-                matches.value_of("base_url"),
-                output_dir,
-                matches.is_present("drafts"),
-                index_type,
-            ) {
+            let show_drafts = matches.is_present("drafts");
+
+            let indexing_result = cmd::index( &root_dir, config_file, matches.value_of("base_url"), output_dir, show_drafts, matches.value_of("index_type").unwrap());
+
+            match indexing_result {
                 Ok(()) => console::report_elapsed_time(start),
                 Err(e) => {
                     console::unravel_errors("Failed to build search index", &e);

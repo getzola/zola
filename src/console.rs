@@ -97,6 +97,16 @@ pub fn warn_about_ignored_pages(site: &Site) {
     }
 }
 
+pub fn report_n_pages_indexed(n_pages_indexed: usize, took: std::time::Duration) {
+    let duration_sec = took.as_secs_f64();
+    let duration_ms = duration_sec * 1000.0;
+    if duration_ms < 1000.0 {
+        success(&format!("Search: indexed {} pages in {}ms.\n", n_pages_indexed, duration_ms));
+    } else {
+        success(&format!("Search: indexed {} pages in {:.1}s.\n", n_pages_indexed, ((duration_sec * 10.0).round() / 10.0)));
+    }
+}
+
 /// Print the time elapsed rounded to 1 decimal
 pub fn report_elapsed_time(instant: Instant) {
     let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64;

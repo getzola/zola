@@ -1,9 +1,9 @@
 use std::path::Path;
+use std::time::*;
 
-use errors::Result;
+use errors::{Result, Error};
 use site::Site;
-
-//use crate::console;
+use crate::console;
 
 pub fn index(
     root_dir: &Path,
@@ -25,27 +25,34 @@ pub fn index(
         site.include_drafts();
     }
     site.load()?;
+    console::notify_site_size(&site);
+    console::warn_about_ignored_pages(&site);
 
-    // TODO: could skipping the theme and/or sass prep end up
-    // somehow impacting the search indexing? doesn't seem like
-    // it could, but maybe
+    let do_elastic_index = || -> Result<()> {
+        let indexing_start = Instant::now();
+        let n_indexed = site.build_search_index()
+            .map_err(|e| Error::from(format!("creating elasticlunr index failed: {}", e)))?;
+        let indexing_took = Instant::now() - indexing_start;
+        console::report_n_pages_indexed(n_indexed, indexing_took);
+        Ok(())
+    };
 
     match index_type {
-        "elasticlunr" => {
-            site.build_search_index()?;
-        }
-
+        "elasticlunr" => do_elastic_index()?,
         "tantivy" => {
-            //if ! Path::new(output_dir).exists() {
-            //    std::fs::create_dir_all(output_dir)?;
-            //}
             let index_dir = Path::new(output_dir).join("tantivy-index");
+            if index_dir.exists() {
+                std::fs::remove_dir_all(&index_dir)?;
+            }
             utils::fs::ensure_directory_exists(&index_dir)?;
 
             let lang = &site.config.default_language;
             let library = site.library.read().unwrap(); // unwrap originally in Site::build_search_index, just parroting here, no idea if safe
 
-            search::build_tantivy_index(lang, &library, output_dir)?;
+            let indexing_start = Instant::now();
+            let n_pages_indexed = search::build_tantivy_index(lang, &library, &index_dir)?;
+            let indexing_took = Instant::now() - indexing_start;
+            console::report_n_pages_indexed(n_pages_indexed, indexing_took);
         }
 
         _ => unreachable!()
