@@ -95,6 +95,29 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("drafts")
                         .takes_value(false)
                         .help("Include drafts when loading the site"),
-                ])
+                        ]),
+                        SubCommand::with_name("index")
+                        .about("Create a search index as a stand-alone task, and with additional options")
+                        .args(&[
+                            Arg::with_name("index_type")
+                            .long("index-type")
+                            .short("t")
+                            .takes_value(true)
+                            .possible_values(&["elasticlunr", "tantivy"])
+                            .required(true)
+                            .help("what kind of search index to build"),
+                            Arg::with_name("output_dir")
+                            .short("o")
+                            .long("output-dir")
+                            .default_value("public")
+                            .takes_value(true)
+                            .help("Outputs the generated search index files into the provided dir. \
+                            Note: Tantivy indexing produces a directory instead of a file, \
+                            which will be located at output-dir/tantivy-index"),
+                            Arg::with_name("drafts")
+                            .long("drafts")
+                            .takes_value(false)
+                            .help("Include drafts when loading the site"),
+                            ])
         ])
 }
