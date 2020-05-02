@@ -36,7 +36,16 @@ pub fn index(
         }
 
         "tantivy" => {
-            unimplemented!()
+            //if ! Path::new(output_dir).exists() {
+            //    std::fs::create_dir_all(output_dir)?;
+            //}
+            let index_dir = Path::new(output_dir).join("tantivy-index");
+            utils::fs::ensure_directory_exists(&index_dir)?;
+
+            let lang = &site.config.default_language;
+            let library = site.library.read().unwrap(); // unwrap originally in Site::build_search_index, just parroting here, no idea if safe
+
+            search::build_tantivy_index(lang, &library, output_dir)?;
         }
 
         _ => unreachable!()

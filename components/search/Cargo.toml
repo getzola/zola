@@ -8,6 +8,12 @@ edition = "2018"
 elasticlunr-rs = "2"
 ammonia = "3"
 lazy_static = "1"
+tantivy = "0.12"
+isolang = "1.0"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+num_cpus = "1.12"
 
 errors = { path = "../errors" }
 library = { path = "../library" }

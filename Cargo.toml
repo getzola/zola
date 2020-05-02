@@ -34,12 +34,14 @@ ws = "0.9"
 ctrlc = "3"
 open = "1.2"
 globset = "0.4"
+tantivy = "0.12.0"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
 rebuild = { path = "components/rebuild" }
+search = { path = "components/search" }
 
 [workspace]
 members = [
