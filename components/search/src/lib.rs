@@ -133,7 +133,7 @@ pub fn build_tantivy_index(
     let mut schema = SchemaBuilder::new();
 
     let title = schema.add_text_field("title", text_options.clone());
-    //let body = schema.add_text_field("body", text_options.clone());
+    let body = schema.add_text_field("body", text_options.clone());
     let permalink = schema.add_text_field("permalink", STORED); 
     let schema = schema.build();
 
@@ -160,6 +160,7 @@ pub fn build_tantivy_index(
 
     //let mut sections_it = library.sections_values().iter().filter(|s| s.lang == lang && s.meta.in_search_index);
 
+    let mut seen: HashSet<String> = Default::default();
     let mut n_indexed = 0;
     //let group_size = 100_000;
 
@@ -179,39 +180,41 @@ pub fn build_tantivy_index(
         //    );
         //}
 
-        for _ in 0..16 {
-            for key in &section.pages {
-                let page = library.get_page_by_key(*key);
+        for key in &section.pages {
+            let page = library.get_page_by_key(*key);
 
-                if !page.meta.in_search_index {
-                    continue;
-                }
+            if !page.meta.in_search_index { continue; }
 
-                //let mut doc = Document::default();
-                //doc.add(FieldValue::new(title, Value::from(page.meta.title.as_ref().map(|x| x.as_str()).unwrap_or(""))));
+            if seen.contains(&page.permalink) { continue }
 
-                let cleaned_body: String = AMMONIA.clean(&page.content).to_string();
-                //doc.add(FieldValue::new(body, Value::from(cleaned_body.as_str())));
+            seen.insert(page.permalink.clone());
 
-                //doc.add(FieldValue::new(permalink, Value::from(page.permalink.as_str())));
 
-                let opstamp = wtr.add_document(doc!(
-                    title => page.meta.title.as_ref().map(|x| x.as_str()).unwrap_or(""),
-                    //body => cleaned_body.as_str(),
-                    permalink => page.permalink.as_str(),
-                ));
+            //let mut doc = Document::default();
+            //doc.add(FieldValue::new(title, Value::from(page.meta.title.as_ref().map(|x| x.as_str()).unwrap_or(""))));
 
-                println!("added {:?} {}", opstamp, page.permalink);
+            let cleaned_body: String = AMMONIA.clean(&page.content).to_string();
+            //doc.add(FieldValue::new(body, Value::from(cleaned_body.as_str())));
 
-                n_indexed += 1;
-                 //if n_indexed % group_size == 0 { }
-            }
-        }
+            //doc.add(FieldValue::new(permalink, Value::from(page.permalink.as_str())));
+
+            let opstamp = wtr.add_document(doc!(
+                title => page.meta.title.as_ref().map(|x| x.as_str()).unwrap_or(""),
+                body => cleaned_body.as_str(),
+                permalink => page.permalink.as_str(),
+            ));
+
+            println!("added {:?} {}", opstamp, page.permalink);
+
+            n_indexed += 1;
+             //if n_indexed % group_size == 0 { }
+        
     }
+}
 
     wtr.prepare_commit().map_err(|e| { Error::from(format!("tantivy IndexWriter::commit failed: {}", e)) })?;
     let commit_opstamp = wtr.commit().map_err(|e| { Error::from(format!("tantivy IndexWriter::commit failed: {}", e)) })?;
-    println!("committed {:?}", commit_opstamp);
+    println!("finished indexing {} pages", n_indexed);
     wtr.wait_merging_threads().map_err(|e| { Error::from(format!("tantivy IndexWriter::wait_merging_threads failed: {}", e)) })?;
 
     drop(index);

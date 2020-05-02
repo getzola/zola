@@ -17,7 +17,7 @@ pub fn index(
     site.set_output_path(output_dir);
 
     // TODO: is base_url even necessary for this command?
- 
+
     if let Some(b) = base_url {
         site.set_base_url(b.to_string());
     }
