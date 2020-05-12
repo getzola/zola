@@ -27,7 +27,7 @@ fn main() {
             let mut builder = SyntaxSetBuilder::new();
             builder.add_plain_text_syntax();
             match builder.add_from_folder(package_dir, true) {
-                Ok(_) => println!("Added from folder"),
+                Ok(_) => (),
                 Err(e) => println!("Loading error: {:?}", e)
             };
             let ss = builder.build();
