@@ -161,9 +161,9 @@ fn create_new_site(
     root_dir: &Path,
     interface: &str,
     port: u16,
-    output_dir: &str,
+    output_dir: &Path,
     base_url: &str,
-    config_file: &str,
+    config_file: &Path,
     include_drafts: bool,
 ) -> Result<(Site, String)> {
     let mut site = Site::new(root_dir, config_file)?;
@@ -194,9 +194,9 @@ pub fn serve(
     root_dir: &Path,
     interface: &str,
     port: u16,
-    output_dir: &str,
+    output_dir: &Path,
     base_url: &str,
-    config_file: &str,
+    config_file: &Path,
     watch_only: bool,
     open: bool,
     include_drafts: bool,

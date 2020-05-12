@@ -7,7 +7,7 @@ use crate::console;
 
 pub fn check(
     root_dir: &Path,
-    config_file: &str,
+    config_file: &Path,
     base_path: Option<&str>,
     base_url: Option<&str>,
     include_drafts: bool,

@@ -62,9 +62,10 @@ impl<'a> SerializedTaxonomyItem<'a> {
 impl Site {
     /// Parse a site at the given path. Defaults to the current dir
     /// Passing in a path is used in tests and when --root argument is passed
-    pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
+    pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
-        let mut config = get_config(path, config_file);
+        let config_file = config_file.as_ref();
+        let mut config = get_config(config_file);
         config.load_extra_syntaxes(path)?;
 
         let tpl_glob =

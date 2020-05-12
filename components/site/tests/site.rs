@@ -13,7 +13,8 @@ use site::Site;
 fn can_parse_site() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
     let library = site.library.read().unwrap();
 
@@ -628,7 +629,8 @@ fn can_build_with_extra_syntaxes() {
 fn can_apply_page_templates() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
 
     let template_path = path.join("content").join("applying_page_template");
