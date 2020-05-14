@@ -231,7 +231,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             .unwrap_or(::syntect::highlighting::Color::WHITE);
                         background = IncludeBackground::IfDifferent(color);
                         let snippet = start_highlighted_html_snippet(theme);
-                        Event::Html(snippet.0.into())
+                        let mut html = snippet.0;
+                        html.push_str("<code>");
+                        Event::Html(html.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
                         if !context.config.highlight_code {
@@ -239,7 +241,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                         // reset highlight and close the code block
                         highlighter = None;
-                        Event::Html("</pre>".into())
+                        Event::Html("</code></pre>".into())
                     }
                     Event::Start(Tag::Image(link_type, src, title)) => {
                         if is_colocated_asset_link(&src) {
