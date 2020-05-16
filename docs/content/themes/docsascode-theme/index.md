@@ -12,14 +12,14 @@ repository = "https://github.com/codeandmedia/zola_docsascode_theme.git"
 homepage = "https://github.com/codeandmedia/zola_docsascode_theme"
 minimum_version = "0.10.0"
 license = "MIT"
-demo = "docsascode.codeandmedia.com"
+demo = "https://docsascode.codeandmedia.com"
 
 [extra.author]
 name = "Roman Soldatenkov"
 homepage = "https://codeandmedia.com"
 +++        
 
-**Demo: [docsascode.codeandmedia.com](http://docsascode.codeandmedia.com)**
+**Demo: [docsascode.codeandmedia.com](https://docsascode.codeandmedia.com)**
 
 I was inspired by [Linode's approach](https://www.linode.com/2020/01/17/docs-as-code-at-linode/) to creating and managing docs. They call it _docs as code methodology._  Thereby my aim was making simple and productive way to work with any sort of documents and articles through Markdown, Git and Docker/k8s optionally. 
 
