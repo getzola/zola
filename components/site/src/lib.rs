@@ -532,7 +532,7 @@ impl Site {
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_function(
             "get_url",
-            global_fns::GetUrl::new(self.config.clone(), self.permalinks.clone()),
+            global_fns::GetUrl::new(self.config.clone(), self.permalinks.clone(), self.content_path.clone()),
         );
         self.tera.register_function(
             "resize_image",

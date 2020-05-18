@@ -142,7 +142,7 @@ An example is:
 {{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
-In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
+In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
 by passing `cachebust=true` to the `get_url` function.
 
 
