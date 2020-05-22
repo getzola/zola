@@ -22,6 +22,7 @@ search = { path = "../search" }
 imageproc = { path = "../imageproc" }
 library = { path = "../library" }
 link_checker = { path = "../link_checker" }
+fluent-templates = { version = "0.5.4", features = ["tera"], default-features = false }
 
 [dev-dependencies]
 tempfile = "3"

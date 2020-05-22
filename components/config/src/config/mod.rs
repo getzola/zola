@@ -40,6 +40,10 @@ pub struct Config {
     /// Description of the site
     pub description: Option<String>,
 
+    /// The location of the fluent localisation files.
+    pub fluent_dir: String,
+    /// The location of the fluent localisation files.
+    pub shared_fluent_resources: Vec<PathBuf>,
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
     /// The list of supported languages outside of the default one
@@ -312,6 +316,8 @@ impl Default for Config {
             theme: None,
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
+            fluent_dir: String::new(),
+            shared_fluent_resources: Vec::new(),
             default_language: "en".to_string(),
             languages: Vec::new(),
             generate_feed: false,
