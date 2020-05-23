@@ -20,6 +20,8 @@
 - Add `taxonomy` and `term` to the feed template context for taxonomy feeds
 - Fix link checker not looking for anchor with capital id/name
 - Pass missing `lang` template parameter to taxonomy list template
+- Fix default index section not having its path set to '/'
+- Change cachebust strategy to use SHA256 instead of timestamp
 
 ## 0.10.1 (2020-03-12)
 
