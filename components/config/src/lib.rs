@@ -7,11 +7,11 @@ use std::path::Path;
 
 /// Get and parse the config.
 /// If it doesn't succeed, exit
-pub fn get_config(path: &Path, filename: &str) -> Config {
-    match Config::from_file(path.join(filename)) {
+pub fn get_config(filename: &Path) -> Config {
+    match Config::from_file(filename) {
         Ok(c) => c,
         Err(e) => {
-            println!("Failed to load {}", filename);
+            println!("Failed to load {}", filename.display());
             println!("Error: {}", e);
             ::std::process::exit(1);
         }

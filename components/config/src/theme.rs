@@ -43,7 +43,7 @@ impl Theme {
         let content = read_file_with_error(
             path,
             "No `theme.toml` file found. \
-             Is the `theme` defined in your `config.toml present in the `themes` directory \
+             Is the `theme` defined in your `config.toml` present in the `themes` directory \
              and does it have a `theme.toml` inside?",
         )?;
         Theme::parse(&content)

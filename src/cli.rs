@@ -18,9 +18,8 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("config")
                 .short("c")
                 .long("config")
-                .default_value("config.toml")
                 .takes_value(true)
-                .help("Path to a config file other than config.toml")
+                .help("Path to a config file other than config.toml in the root of project")
         )
         .subcommands(vec![
             SubCommand::with_name("init")
