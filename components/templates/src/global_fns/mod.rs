@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
+use std::{fs, io, result};
 
+use sha2::{Digest, Sha256};
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 
 use config::Config;
@@ -47,10 +49,11 @@ impl TeraFn for Trans {
 pub struct GetUrl {
     config: Config,
     permalinks: HashMap<String, String>,
+    content_path: PathBuf,
 }
 impl GetUrl {
-    pub fn new(config: Config, permalinks: HashMap<String, String>) -> Self {
-        Self { config, permalinks }
+    pub fn new(config: Config, permalinks: HashMap<String, String>, content_path: PathBuf) -> Self {
+        Self { config, permalinks, content_path }
     }
 }
 
@@ -69,6 +72,13 @@ fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<Stri
     let ilast = splitted_path.len() - 1;
     splitted_path[ilast] = format!("{}.{}", lang, splitted_path[ilast]);
     Ok(splitted_path.join("."))
+}
+
+fn compute_file_sha256(path: &PathBuf) -> result::Result<String, io::Error> {
+    let mut file = fs::File::open(path)?;
+    let mut hasher = Sha256::new();
+    io::copy(&mut file, &mut hasher)?;
+    Ok(format!("{:x}", hasher.result()))
 }
 
 impl TeraFn for GetUrl {
@@ -110,7 +120,11 @@ impl TeraFn for GetUrl {
             }
 
             if cachebust {
-                permalink = format!("{}?t={}", permalink, self.config.build_timestamp.unwrap());
+                let full_path = self.content_path.join(&path);
+                permalink = match compute_file_sha256(&full_path) {
+                    Ok(digest) => format!("{}?h={}", permalink, digest),
+                    Err(_) => return Err(format!("Could not read file `{}`. Expected location: {}", path, full_path.to_str().unwrap()).into()),
+                };
             }
             Ok(to_value(permalink).unwrap())
         }
@@ -368,28 +382,56 @@ mod tests {
     use super::{GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans};
 
     use std::collections::HashMap;
+    use std::env::temp_dir;
+    use std::fs::remove_dir_all;
+    use std::path::PathBuf;
     use std::sync::{Arc, RwLock};
+
+    use lazy_static::lazy_static;
 
     use tera::{to_value, Function, Value};
 
     use config::{Config, Taxonomy as TaxonomyConfig};
     use library::{Library, Taxonomy, TaxonomyItem};
+    use utils::fs::{create_directory, create_file};
     use utils::slugs::SlugifyStrategy;
+
+    struct TestContext {
+        content_path: PathBuf,
+    }
+    impl TestContext {
+        fn setup() -> Self {
+            let dir = temp_dir().join("test_global_fns");
+            create_directory(&dir).expect("Could not create test directory");
+            create_file(&dir.join("app.css"), "// Hello world!")
+                .expect("Could not create test content (app.css)");
+            Self { content_path: dir }
+        }
+    }
+    impl Drop for TestContext {
+        fn drop(&mut self) {
+            remove_dir_all(&self.content_path).expect("Could not free test directory");
+        }
+    }
+
+    lazy_static! {
+        static ref TEST_CONTEXT: TestContext = TestContext::setup();
+    }
 
     #[test]
     fn can_add_cachebust_to_url() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css?t=1");
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css?h=572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
     }
 
     #[test]
     fn can_add_trailing_slashes() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -399,18 +441,18 @@ mod tests {
     #[test]
     fn can_add_slashes_and_cachebust() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css/?t=1");
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css/?h=572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
     }
 
     #[test]
     fn can_link_to_some_static_file() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
@@ -597,7 +639,7 @@ title = "A title"
     #[test]
     fn error_when_language_not_available() {
         let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
@@ -620,7 +662,7 @@ title = "A title"
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks);
+        let static_fn = GetUrl::new(config, permalinks, TEST_CONTEXT.content_path.clone());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -642,7 +684,7 @@ title = "A title"
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks);
+        let static_fn = GetUrl::new(config, permalinks, TEST_CONTEXT.content_path.clone());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
