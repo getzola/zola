@@ -71,7 +71,7 @@ Here is a full list of supported languages and their short names:
 - Haskell -> ["hs"]
 - HTML -> ["htm", "html", "shtml", "xhtml"]
 - HTML (ASP) -> ["asp"]
-- HTML (EEx) -> ["html.eex"]
+- HTML (EEx) -> ["html.eex", "html.leex"]
 - HTML (Erlang) -> ["yaws"]
 - HTML (Jinja2) -> ["htm.j2", "html.j2", "xhtml.j2", "xml.j2"]
 - HTML (Rails) -> ["erb", "html.erb", "rails", "rhtml"]
