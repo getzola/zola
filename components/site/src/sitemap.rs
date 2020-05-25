@@ -14,7 +14,7 @@ use tera::{Map, Value};
 #[derive(Debug, Serialize)]
 pub struct SitemapEntry<'a> {
     pub permalink: Cow<'a, str>,
-    pub date: Option<String>,
+    pub updated: Option<String>,
     pub extra: Option<&'a Map<String, Value>>,
 }
 
@@ -33,8 +33,8 @@ impl<'a> PartialEq for SitemapEntry<'a> {
 impl<'a> Eq for SitemapEntry<'a> {}
 
 impl<'a> SitemapEntry<'a> {
-    pub fn new(permalink: Cow<'a, str>, date: Option<String>) -> Self {
-        SitemapEntry { permalink, date, extra: None }
+    pub fn new(permalink: Cow<'a, str>, updated: Option<String>) -> Self {
+        SitemapEntry { permalink, updated, extra: None }
     }
 
     pub fn add_extra(&mut self, extra: &'a Map<String, Value>) {
@@ -65,11 +65,10 @@ pub fn find_entries<'a>(
         .pages_values()
         .iter()
         .map(|p| {
-            let date = match p.meta.date {
-                Some(ref d) => Some(d.to_string()),
-                None => None,
-            };
-            let mut entry = SitemapEntry::new(Cow::Borrowed(&p.permalink), date);
+            let mut entry = SitemapEntry::new(
+                Cow::Borrowed(&p.permalink),
+                p.meta.updated.clone().or_else(|| p.meta.date.clone()),
+            );
             entry.add_extra(&p.meta.extra);
             entry
         })

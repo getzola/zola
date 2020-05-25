@@ -17,11 +17,11 @@ used by Zola as well as their default values are listed below:
 # The base URL of the site; the only required configuration variable.
 base_url = "mywebsite.com"
 
-# The site title and description; used in RSS by default.
+# The site title and description; used in feeds by default.
 title = ""
 description = ""
 
-# The default language; used in RSS.
+# The default language; used in feeds.
 default_language = "en"
 
 # The site theme to use.
@@ -34,12 +34,17 @@ highlight_code = false
 # See below for list of allowed values.
 highlight_theme = "base16-ocean-dark"
 
-# When set to "true", an RSS feed is automatically generated.
-generate_rss = false
+# When set to "true", a feed is automatically generated.
+generate_feed = false
 
-# The number of articles to include in the RSS feed. All items are included if
+# The filename to use for the feed. Used as the template filename, too.
+# Defaults to "atom.xml", which has a builtin template that renders an Atom 1.0 feed.
+# There is also a builtin template "rss.xml" that renders an RSS 2.0 feed.
+# feed_filename = "atom.xml"
+
+# The number of articles to include in the feed. All items are included if
 # this limit is not set (the default).
-# rss_limit = 20
+# feed_limit = 20
 
 # When set to "true", files in the `static` directory are hard-linked. Useful for large
 # static files. Note that for this to work, both `static` and the
@@ -50,10 +55,10 @@ generate_rss = false
 # The taxonomies to be rendered for the site and their configuration.
 # Example:
 #     taxonomies = [
-#       {name = "tags", rss = true}, # each tag will have its own RSS feed
+#       {name = "tags", feed = true}, # each tag will have its own feed
 #       {name = "tags", lang = "fr"}, # you can have taxonomies with the same name in multiple languages
 #       {name = "categories", paginate_by = 5},  # 5 items per page for a term
-#       {name = "authors"}, # Basic definition: no RSS or pagination
+#       {name = "authors"}, # Basic definition: no feed or pagination
 #     ]
 #
 taxonomies = []
@@ -61,9 +66,9 @@ taxonomies = []
 # The additional languages for the site.
 # Example:
 #     languages = [
-#       {code = "fr", rss = true}, # there will be a RSS feed for French content
+#       {code = "fr", feed = true}, # there will be a feed for French content
 #       {code = "fr", search = true}, # there will be a Search Index for French content
-#       {code = "it"}, # there won't be a RSS feed for Italian content
+#       {code = "it"}, # there won't be a feed for Italian content
 #     ]
 #
 languages = []
@@ -155,6 +160,7 @@ Zola currently has the following highlight themes available:
 - [material-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Material%20Dark)
 - [material-light](https://github.com/morhetz/gruvbox)
 - [monokai](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Monokai)
+- [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
 - [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
 - [one-dark](https://github.com/andresmichel/one-dark-theme)
 - [solarized-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(dark))
@@ -162,6 +168,7 @@ Zola currently has the following highlight themes available:
 - [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
 - [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
 - [Tomorrow](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Tomorrow)
+- [TwoDark](https://github.com/erremauro/TwoDark)
 - [visual-studio-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Visual%20Studio%20Dark)
 - [zenburn](https://github.com/colinta/zenburn)
 

@@ -38,7 +38,8 @@ macro_rules! file_contains {
 pub fn build_site(name: &str) -> (Site, TempDir, PathBuf) {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push(name);
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
@@ -54,7 +55,8 @@ where
 {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push(name);
-    let site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let site = Site::new(&path, &config_file).unwrap();
     let (mut site, needs_loading) = setup_cb(site);
     if needs_loading {
         site.load().unwrap();

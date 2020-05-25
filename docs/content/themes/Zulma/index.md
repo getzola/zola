@@ -100,8 +100,8 @@ Zulma has 3 taxonomies already set internally: `tags`, `cateogories` and `author
 ```toml
 taxonomies = [
     {name = "categories"},
-    {name = "tags", paginate_by = 5, rss = true},
-    {name = "authors", rss = true},
+    {name = "tags", paginate_by = 5, feed = true},
+    {name = "authors", feed = true},
 ]
 ```
 

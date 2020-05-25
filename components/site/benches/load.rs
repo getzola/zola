@@ -11,7 +11,8 @@ fn bench_loading_small_blog(b: &mut test::Bencher) {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("benches");
     path.push("small-blog");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
 
     b.iter(|| site.load().unwrap());
 }
@@ -21,7 +22,8 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("benches");
     path.push("small-blog");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.config.highlight_code = true;
 
     b.iter(|| site.load().unwrap());
@@ -32,7 +34,8 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("medium-blog");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -42,7 +45,8 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("medium-blog");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //    site.config.highlight_code = true;
 //
 //    b.iter(|| site.load().unwrap());
@@ -53,7 +57,8 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("big-blog");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -63,7 +68,8 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("big-blog");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //    site.config.highlight_code = true;
 //
 //    b.iter(|| site.load().unwrap());
@@ -74,7 +80,8 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("huge-blog");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -84,7 +91,8 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("huge-blog");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //    site.config.highlight_code = true;
 //
 //    b.iter(|| site.load().unwrap());
@@ -95,7 +103,8 @@ fn bench_loading_small_kb(b: &mut test::Bencher) {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("benches");
     path.push("small-kb");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
 
     b.iter(|| site.load().unwrap());
 }
@@ -105,7 +114,8 @@ fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("benches");
     path.push("small-kb");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.config.highlight_code = true;
 
     b.iter(|| site.load().unwrap());
@@ -116,7 +126,8 @@ fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("medium-kb");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -126,7 +137,8 @@ fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("medium-kb");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //    site.config.highlight_code = Some(true);
 //
 //    b.iter(|| site.load().unwrap());
@@ -137,7 +149,8 @@ fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("huge-kb");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //
 //    b.iter(|| site.load().unwrap());
 //}
@@ -147,7 +160,8 @@ fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
 //    let mut path = env::current_dir().unwrap().to_path_buf();
 //    path.push("benches");
 //    path.push("huge-kb");
-//    let mut site = Site::new(&path, "config.toml").unwrap();
+//    let config_file = path.join("config.toml");
+//    let mut site = Site::new(&path, &config_file).unwrap();
 //    site.config.highlight_code = Some(true);
 //
 //    b.iter(|| site.load().unwrap());

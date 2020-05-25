@@ -395,7 +395,17 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
 
     match filename {
         "sitemap.xml" => site.render_sitemap(),
-        "rss.xml" => site.render_rss_feed(site.library.read().unwrap().pages_values(), None),
+        filename if filename == site.config.feed_filename => {
+            // FIXME: this is insufficient; for multilingual sites, it’s rendering the wrong
+            // content into the root feed, and it’s not regenerating any of the other feeds (other
+            // languages or taxonomies with feed enabled).
+            site.render_feed(
+                site.library.read().unwrap().pages_values(),
+                None,
+                &site.config.default_language,
+                None,
+            )
+        }
         "split_sitemap_index.xml" => site.render_sitemap(),
         "robots.txt" => site.render_robots(),
         "single.html" | "list.html" => site.render_taxonomies(),

@@ -13,7 +13,7 @@ A taxonomy has five variables:
 - `paginate_by`: if this is set to a number, each term page will be paginated by this much.
 - `paginate_path`: if set, this path will be used by the paginated page and the page number will be appended after it.
 For example the default would be page/1.
-- `rss`: if set to `true`, an RSS feed will be generated for each term.
+- `feed`: if set to `true`, a feed (atom by default) will be generated for each term.
 - `lang`: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for
 
 **Example 1:** (one language)
@@ -52,7 +52,7 @@ categories = ["programming"]
 
 In a similar manner to how section and pages calculate their output path:
 - the taxonomy name is never slugified
-- the taxonomy entry (eg. as specific tag) is slugified when `slugify_paths` is enabled in the configuration
+- the taxonomy term (eg. as specific tag) is slugified when `slugify.taxonomies` is enabled (`"on"`, the default) in the configuration
 
 The taxonomy pages are then available at the following paths:
 

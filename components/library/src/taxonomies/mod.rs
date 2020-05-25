@@ -169,6 +169,7 @@ impl Taxonomy {
         let terms: Vec<SerializedTaxonomyItem> =
             self.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
         context.insert("terms", &terms);
+        context.insert("lang", &self.kind.lang);
         context.insert("taxonomy", &self.kind);
         context.insert("current_url", &config.make_permalink(&self.kind.name));
         context.insert("current_path", &self.kind.name);
@@ -457,7 +458,7 @@ mod tests {
     #[test]
     fn can_make_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.languages.push(Language { rss: false, code: "fr".to_string(), search: false });
+        config.languages.push(Language { feed: false, code: "fr".to_string(), search: false });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
@@ -568,7 +569,7 @@ mod tests {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::Safe;
         config.languages.push(Language {
-            rss: false,
+            feed: false,
             code: "fr".to_string(),
             ..Language::default()
         });
@@ -601,7 +602,7 @@ mod tests {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::On;
         config.languages.push(Language {
-            rss: false,
+            feed: false,
             code: "fr".to_string(),
             ..Language::default()
         });

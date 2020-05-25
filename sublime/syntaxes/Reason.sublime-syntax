@@ -10,6 +10,7 @@ contexts:
   main:
     - include: reason_comment_doc_block
     - include: reason_comment_block
+    - include: reason_comment
     - include: reason_named_arg
     - include: reason_module
     - include: reason_lifetime
@@ -102,6 +103,12 @@ contexts:
       scope: storage.modifier.rec.source.reason
     - match: \bmodule\b
       scope: storage.modifier.module.source.reason
+  reason_comment:
+    - match: //
+      push:
+        - meta_scope: comment.source.reason
+        - match: (?=^)
+          pop: true
   reason_comment_block:
     - match: /\*
       push:

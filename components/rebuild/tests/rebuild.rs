@@ -20,7 +20,8 @@ macro_rules! load_and_build_site {
         dir::copy(&path, &$tmp_dir, &options).unwrap();
 
         let site_path = $tmp_dir.path().join($site);
-        let mut site = Site::new(&site_path, "config.toml").unwrap();
+        let config_file = site_path.join("config.toml");
+        let mut site = Site::new(&site_path, &config_file).unwrap();
         site.load().unwrap();
         let public = &site_path.join("public");
         site.set_output_path(&public);

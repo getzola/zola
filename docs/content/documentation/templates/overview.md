@@ -13,13 +13,14 @@ to learn more about it first.
 All templates live in the `templates` directory.  If you are not sure what variables are available in a template,
 you can place `{{ __tera_context }}` in the template to print the whole context.
 
-A few variables are available on all templates except RSS and the sitemap:
+A few variables are available on all templates except feeds and the sitemap:
 
 - `config`: the [configuration](@/documentation/getting-started/configuration.md) without any modifications
 - `current_path`: the path (full URL without `base_url`) of the current page, never starting with a `/`
 - `current_url`: the full URL for the current page
-- `lang`: the language for the current page; `null` if the page/section doesn't have a language set
+- `lang`: the language for the current page
 
+Config variables can be accessed like `config.variable`, in HTML for example with `{{ config.base_url }}`.
 The 404 template does not get `current_path` and `current_url` (this information cannot be determined).
 
 ## Standard templates
@@ -35,12 +36,13 @@ section variables.  The `page.html` template has access to the page variables.
 The page and section variables are described in more detail in the next section.
 
 ## Built-in templates
-Zola comes with three built-in templates: `rss.xml`, `sitemap.xml` and
-`robots.txt` (each is described in its own section of this documentation).
+Zola comes with four built-in templates: `atom.xml` and `rss.xml` (described in
+[Feeds](@/documentation/templates/feeds.md)), `sitemap.xml` (described in [Sitemap](@/documentation/templates/sitemap.md)),
+and `robots.txt` (described in [Robots.txt](@/documentation/templates/robots.md)).
 Additionally, themes can add their own templates, which will be applied if not
 overridden.  You can override built-in or theme templates by creating a template with
-the same name in the correct path. For example, you can override the RSS template by
-creating a `templates/rss.xml` file.
+the same name in the correct path. For example, you can override the Atom template by
+creating a `templates/atom.xml` file.
 
 ## Custom templates
 In addition to the standard `index.html`, `section.html` and `page.html` templates,
@@ -71,6 +73,8 @@ pass `true` to the inline argument:
 ```jinja2
 {{ some_text | markdown(inline=true) }}
 ```
+
+You do not need to use this filter with `page.content` or `section.content`, the content is already rendered.
 
 ### base64_encode
 Encode the variable to base64.
@@ -114,6 +118,16 @@ link like the ones used in Markdown, starting from the root `content` directory.
 {% set url = get_url(path="@/blog/_index.md") %}
 ```
 
+It accepts an optionnal parameter `lang` in order to compute a *language-aware URL* in multilingual websites. Assuming `config.base_url` is `"http://example.com"`, the following snippet will:
+
+- return `"http://example.com/blog/"` if `config.default_language` is `"en"`
+- return `"http://example.com/en/blog/"` if `config.default_language` is **not** `"en"` and `"en"` appears in `config.languages`
+- fail otherwise, with the error message `"'en' is not an authorized language (check config.languages)."`
+
+```jinja2
+{% set url = get_url(path="@/blog/_index.md", lang="en") %}
+```
+
 This can also be used to get the permalinks for static assets, for example if
 we want to link to the file that is located at `static/css/app.css`:
 
@@ -128,7 +142,7 @@ An example is:
 {{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
-In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
+In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
 by passing `cachebust=true` to the `get_url` function.
 
 

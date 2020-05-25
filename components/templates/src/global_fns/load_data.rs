@@ -210,11 +210,10 @@ impl TeraFn for LoadData {
                     .send()
                     .and_then(|res| res.error_for_status())
                     .map_err(|e| {
-                        format!(
-                            "Failed to request {}: {}",
-                            url,
-                            e.status().expect("response status")
-                        )
+                        match e.status() {
+                            Some(status) => format!("Failed to request {}: {}", url, status),
+                            None => format!("Could not get response status for url: {}", url),
+                        }
                     })?;
                 response
                     .text()

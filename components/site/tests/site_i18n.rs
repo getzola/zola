@@ -9,7 +9,8 @@ use site::Site;
 fn can_parse_multilingual_site() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site_i18n");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
 
     let library = site.library.read().unwrap();
@@ -115,15 +116,25 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(public, "sitemap.xml", "https://example.com/fr/blog/something-else/"));
     assert!(file_contains!(public, "sitemap.xml", "https://example.com/it/blog/something-else/"));
 
-    // one rss per language
-    assert!(file_exists!(public, "rss.xml"));
-    assert!(file_contains!(public, "rss.xml", "https://example.com/blog/something-else/"));
-    assert!(!file_contains!(public, "rss.xml", "https://example.com/fr/blog/something-else/"));
-    assert!(file_exists!(public, "fr/rss.xml"));
-    assert!(!file_contains!(public, "fr/rss.xml", "https://example.com/blog/something-else/"));
-    assert!(file_contains!(public, "fr/rss.xml", "https://example.com/fr/blog/something-else/"));
-    // Italian doesn't have RSS enabled
-    assert!(!file_exists!(public, "it/rss.xml"));
+    // one feed per language
+    assert!(file_exists!(public, "atom.xml"));
+    assert!(file_contains!(public, "atom.xml", "https://example.com/blog/something-else/"));
+    assert!(!file_contains!(public, "atom.xml", "https://example.com/fr/blog/something-else/"));
+    assert!(file_contains!(
+        public,
+        "atom.xml",
+        r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">"#
+    ));
+    assert!(file_exists!(public, "fr/atom.xml"));
+    assert!(!file_contains!(public, "fr/atom.xml", "https://example.com/blog/something-else/"));
+    assert!(file_contains!(public, "fr/atom.xml", "https://example.com/fr/blog/something-else/"));
+    assert!(file_contains!(
+        public,
+        "fr/atom.xml",
+        r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">"#
+    ));
+    // Italian doesn't have feed enabled
+    assert!(!file_exists!(public, "it/atom.xml"));
 
     // Taxonomies are per-language
     // English
@@ -131,7 +142,17 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(public, "authors/index.html", "Queen"));
     assert!(!file_contains!(public, "authors/index.html", "Vincent"));
     assert!(!file_exists!(public, "auteurs/index.html"));
-    assert!(file_exists!(public, "authors/queen-elizabeth/rss.xml"));
+    assert!(file_exists!(public, "authors/queen-elizabeth/atom.xml"));
+    assert!(file_contains!(
+        public,
+        "authors/queen-elizabeth/atom.xml",
+        r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">"#
+    ));
+    assert!(file_contains!(
+        public,
+        "authors/queen-elizabeth/atom.xml",
+        r#"<title> - Queen Elizabeth</title>"#
+    ));
 
     assert!(file_exists!(public, "tags/index.html"));
     assert!(file_contains!(public, "tags/index.html", "hello"));
@@ -142,7 +163,7 @@ fn can_build_multilingual_site() {
     assert!(file_exists!(public, "fr/auteurs/index.html"));
     assert!(!file_contains!(public, "fr/auteurs/index.html", "Queen"));
     assert!(file_contains!(public, "fr/auteurs/index.html", "Vincent"));
-    assert!(!file_exists!(public, "fr/auteurs/vincent-prouillet/rss.xml"));
+    assert!(!file_exists!(public, "fr/auteurs/vincent-prouillet/atom.xml"));
 
     assert!(file_exists!(public, "fr/tags/index.html"));
     assert!(file_contains!(public, "fr/tags/index.html", "bonjour"));

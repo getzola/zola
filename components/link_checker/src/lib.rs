@@ -3,50 +3,33 @@ use reqwest::header::{HeaderMap, ACCEPT};
 use reqwest::{blocking::Client, StatusCode};
 
 use config::LinkChecker;
-use errors::Result;
 
 use std::collections::HashMap;
+use std::result;
 use std::sync::{Arc, RwLock};
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct LinkResult {
-    pub code: Option<StatusCode>,
-    /// Whether the HTTP request didn't make it to getting a HTTP code
-    pub error: Option<String>,
+pub type Result = result::Result<StatusCode, String>;
+
+pub fn is_valid(res: &Result) -> bool {
+    match res {
+        Ok(ref code) => code.is_success() || *code == StatusCode::NOT_MODIFIED,
+        Err(_) => false,
+    }
 }
 
-impl LinkResult {
-    pub fn is_valid(&self) -> bool {
-        if self.error.is_some() {
-            return false;
-        }
-
-        if let Some(c) = self.code {
-            return c.is_success() || c == StatusCode::NOT_MODIFIED;
-        }
-
-        true
-    }
-
-    pub fn message(&self) -> String {
-        if let Some(ref e) = self.error {
-            return e.clone();
-        }
-
-        if let Some(c) = self.code {
-            return format!("{}", c);
-        }
-
-        "Unknown error".to_string()
+pub fn message(res: &Result) -> String {
+    match res {
+        Ok(ref code) => format!("{}", code),
+        Err(ref error) => error.clone(),
     }
 }
 
 lazy_static! {
     // Keep history of link checks so a rebuild doesn't have to check again
-    static ref LINKS: Arc<RwLock<HashMap<String, LinkResult>>> = Arc::new(RwLock::new(HashMap::new()));
+    static ref LINKS: Arc<RwLock<HashMap<String, Result>>> = Arc::new(RwLock::new(HashMap::new()));
 }
 
-pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
+pub fn check_url(url: &str, config: &LinkChecker) -> Result {
     {
         let guard = LINKS.read().unwrap();
         if let Some(res) = guard.get(url) {
@@ -75,13 +58,13 @@ pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
             };
 
             match check_page_for_anchor(url, body) {
-                Ok(_) => LinkResult { code: Some(response.status()), error: None },
-                Err(e) => LinkResult { code: None, error: Some(e.to_string()) },
+                Ok(_) => Ok(response.status()),
+                Err(e) => Err(e.to_string()),
             }
         }
         Ok(response) => {
             if response.status().is_success() || response.status() == StatusCode::NOT_MODIFIED {
-                LinkResult { code: Some(response.status()), error: None }
+                Ok(response.status())
             } else {
                 let error_string = if response.status().is_informational() {
                     format!("Informational status code ({}) received", response.status())
@@ -95,10 +78,10 @@ pub fn check_url(url: &str, config: &LinkChecker) -> LinkResult {
                     format!("Non-success status code ({}) received", response.status())
                 };
 
-                LinkResult { code: None, error: Some(error_string) }
+                Err(error_string)
             }
         }
-        Err(e) => LinkResult { code: None, error: Some(e.to_string()) },
+        Err(e) => Err(e.to_string()),
     };
 
     LINKS.write().unwrap().insert(url.to_string(), res.clone());
@@ -115,14 +98,18 @@ fn has_anchor(url: &str) -> bool {
     }
 }
 
-fn check_page_for_anchor(url: &str, body: String) -> Result<()> {
+fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks: [String; 4] = [
+    let checks: [String; 8] = [
         format!(" id='{}'", anchor),
+        format!(" ID='{}'", anchor),
         format!(r#" id="{}""#, anchor),
+        format!(r#" ID="{}""#, anchor),
         format!(" name='{}'", anchor),
+        format!(" NAME='{}'", anchor),
         format!(r#" name="{}""#, anchor),
+        format!(r#" NAME="{}""#, anchor),
     ];
 
     if checks.iter().any(|check| body[..].contains(&check[..])) {
@@ -134,8 +121,11 @@ fn check_page_for_anchor(url: &str, body: String) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{check_page_for_anchor, check_url, has_anchor, LinkChecker, LINKS};
+    use super::{
+        check_page_for_anchor, check_url, has_anchor, is_valid, message, LinkChecker, LINKS,
+    };
     use mockito::mock;
+    use reqwest::StatusCode;
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -163,7 +153,8 @@ mod tests {
             .create();
 
         let res = check_url(&url, &LinkChecker::default());
-        assert!(res.is_valid());
+        assert!(is_valid(&res));
+        assert_eq!(message(&res), "200 OK");
         assert!(LINKS.read().unwrap().get(&url).is_some());
     }
 
@@ -183,9 +174,9 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/c7qrtrv3zz");
         let res = check_url(&url, &LinkChecker::default());
-        assert!(res.is_valid());
-        assert!(res.code.is_some());
-        assert!(res.error.is_none());
+        assert!(is_valid(&res));
+        assert!(res.is_ok());
+        assert_eq!(message(&res), "200 OK");
     }
 
     #[test]
@@ -199,9 +190,8 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/C4Szbfnvj6M0LoPk");
         let res = check_url(&url, &LinkChecker::default());
-        assert!(res.is_valid());
-        assert!(res.code.is_some());
-        assert!(res.error.is_none());
+        assert!(is_valid(&res));
+        assert_eq!(res.unwrap(), StatusCode::OK);
     }
 
     #[test]
@@ -221,9 +211,9 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/cav9vibhsc");
         let res = check_url(&url, &LinkChecker::default());
-        assert_eq!(res.is_valid(), false);
-        assert!(res.code.is_none());
-        assert!(res.error.is_some());
+        assert!(!is_valid(&res));
+        assert!(res.is_err());
+        assert_eq!(message(&res), "Client error status code (404 Not Found) received");
     }
 
     #[test]
@@ -236,9 +226,9 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/nlhab9c1vc");
         let res = check_url(&url, &LinkChecker::default());
-        assert_eq!(res.is_valid(), false);
-        assert!(res.code.is_none());
-        assert!(res.error.is_some());
+        assert!(!is_valid(&res));
+        assert!(res.is_err());
+        assert_eq!(message(&res), "Client error status code (404 Not Found) received");
     }
 
     #[test]
@@ -251,23 +241,33 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/qdbrssazes");
         let res = check_url(&url, &LinkChecker::default());
-        assert_eq!(res.is_valid(), false);
-        assert!(res.code.is_none());
-        assert!(res.error.is_some());
+        assert!(!is_valid(&res));
+        assert!(res.is_err());
+        assert_eq!(message(&res), "Server error status code (500 Internal Server Error) received");
     }
 
     #[test]
     fn can_fail_unresolved_links() {
         let res = check_url("https://t6l5cn9lpm.lxizfnzckd", &LinkChecker::default());
-        assert_eq!(res.is_valid(), false);
-        assert!(res.code.is_none());
-        assert!(res.error.is_some());
+        assert!(!is_valid(&res));
+        assert!(res.is_err());
+        assert!(message(&res)
+            .starts_with("error sending request for url (https://t6l5cn9lpm.lxizfnzckd/)"));
     }
 
     #[test]
     fn can_validate_anchors() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
+        let res = check_page_for_anchor(url, body);
+        assert!(res.is_ok());
+    }
+
+    // https://github.com/getzola/zola/issues/948
+    #[test]
+    fn can_validate_anchors_in_capital() {
+        let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
+        let body = r#"<body><h3 ID="method.collect">collect</h3></body>"#.to_string();
         let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }
@@ -299,29 +299,25 @@ mod tests {
     #[test]
     fn can_check_url_for_anchor() {
         let url = "https://doc.rust-lang.org/std/index.html#the-rust-standard-library";
-        let res = has_anchor(url);
-        assert_eq!(res, true);
+        assert!(has_anchor(url));
     }
 
     #[test]
     fn will_return_false_when_no_anchor() {
         let url = "https://doc.rust-lang.org/std/index.html";
-        let res = has_anchor(url);
-        assert_eq!(res, false);
+        assert!(!has_anchor(url));
     }
 
     #[test]
     fn will_return_false_when_has_router_url() {
         let url = "https://doc.rust-lang.org/#/std";
-        let res = has_anchor(url);
-        assert_eq!(res, false);
+        assert!(!has_anchor(url));
     }
 
     #[test]
     fn will_return_false_when_has_router_url_alt() {
         let url = "https://doc.rust-lang.org/#!/std";
-        let res = has_anchor(url);
-        assert_eq!(res, false);
+        assert!(!has_anchor(url));
     }
 
     #[test]
@@ -347,7 +343,7 @@ mod tests {
 
         // anchor check is ignored because the url matches the prefix
         let ignore = format!("{}{}", mockito::server_url(), "/ignore/i30hobj1cy#nonexistent");
-        assert!(check_url(&ignore, &config).is_valid());
+        assert!(is_valid(&check_url(&ignore, &config)));
 
         let _m2 = mock("GET", "/guvqcqwmth")
             .with_header("Content-Type", "text/html")
@@ -367,9 +363,9 @@ mod tests {
 
         // other anchors are checked
         let existent = format!("{}{}", mockito::server_url(), "/guvqcqwmth#existent");
-        assert!(check_url(&existent, &config).is_valid());
+        assert!(is_valid(&check_url(&existent, &config)));
 
         let nonexistent = format!("{}{}", mockito::server_url(), "/guvqcqwmth#nonexistent");
-        assert_eq!(check_url(&nonexistent, &config).is_valid(), false);
+        assert!(!is_valid(&check_url(&nonexistent, &config)));
     }
 }

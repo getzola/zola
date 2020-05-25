@@ -13,18 +13,18 @@ build_search_index = true
 
 default_language = "en"
 
-generate_rss = true
+generate_feed = true
 
 taxonomies = [
-    {name = "authors", rss = true},
+    {name = "authors", feed = true},
     {name = "auteurs", lang = "fr"},
     {name = "tags"},
     {name = "tags", lang = "fr"},
 ]
 
 languages = [
- {code = "fr", rss = true},
- {code = "it", rss = false, search = true },
+ {code = "fr", feed = true},
+ {code = "it", feed = false, search = true },
 ]
 
 [extra]

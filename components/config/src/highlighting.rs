@@ -9,11 +9,11 @@ use crate::config::Config;
 lazy_static! {
     pub static ref SYNTAX_SET: SyntaxSet = {
         let ss: SyntaxSet =
-            from_binary(include_bytes!("../../../sublime_syntaxes/newlines.packdump"));
+            from_binary(include_bytes!("../../../sublime/syntaxes/newlines.packdump"));
         ss
     };
     pub static ref THEME_SET: ThemeSet =
-        from_binary(include_bytes!("../../../sublime_themes/all.themedump"));
+        from_binary(include_bytes!("../../../sublime/themes/all.themedump"));
 }
 
 /// Returns the highlighter and whether it was found in the extra or not
