@@ -17,19 +17,27 @@ use imageproc;
 #[macro_use]
 mod macros;
 
-mod load_data;
+mod named_tera_fn;
+pub use self::named_tera_fn::{NamedTeraFn, WrappedTeraFn};
 
+mod load_data;
 pub use self::load_data::LoadData;
 
 #[derive(Debug)]
 pub struct Trans {
     config: Config,
 }
+
 impl Trans {
     pub fn new(config: Config) -> Self {
         Self { config }
     }
 }
+
+impl NamedTeraFn for Trans {
+    const NAME: &'static str = "trans";
+}
+
 impl TeraFn for Trans {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let key = required_arg!(String, args.get("key"), "`trans` requires a `key` argument.");
@@ -51,6 +59,7 @@ pub struct GetUrl {
     permalinks: HashMap<String, String>,
     content_path: PathBuf,
 }
+
 impl GetUrl {
     pub fn new(config: Config, permalinks: HashMap<String, String>, content_path: PathBuf) -> Self {
         Self { config, permalinks, content_path }
@@ -79,6 +88,10 @@ fn compute_file_sha256(path: &PathBuf) -> result::Result<String, io::Error> {
     let mut hasher = Sha256::new();
     io::copy(&mut file, &mut hasher)?;
     Ok(format!("{:x}", hasher.result()))
+}
+
+impl NamedTeraFn for GetUrl {
+    const NAME: &'static str = "get_url";
 }
 
 impl TeraFn for GetUrl {
@@ -135,6 +148,11 @@ impl TeraFn for GetUrl {
 pub struct ResizeImage {
     imageproc: Arc<Mutex<imageproc::Processor>>,
 }
+
+impl NamedTeraFn for ResizeImage {
+    const NAME: &'static str = "resize_image";
+}
+
 impl ResizeImage {
     pub fn new(imageproc: Arc<Mutex<imageproc::Processor>>) -> Self {
         Self { imageproc }
@@ -200,6 +218,10 @@ impl GetImageMeta {
     }
 }
 
+impl NamedTeraFn for GetImageMeta {
+    const NAME: &'static str = "get_image_metadata";
+}
+
 impl TeraFn for GetImageMeta {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let path = required_arg!(
@@ -225,6 +247,7 @@ pub struct GetTaxonomyUrl {
     taxonomies: HashMap<String, HashMap<String, String>>,
     default_lang: String,
 }
+
 impl GetTaxonomyUrl {
     pub fn new(default_lang: &str, all_taxonomies: &[Taxonomy]) -> Self {
         let mut taxonomies = HashMap::new();
@@ -238,6 +261,11 @@ impl GetTaxonomyUrl {
         Self { taxonomies, default_lang: default_lang.to_string() }
     }
 }
+
+impl NamedTeraFn for GetTaxonomyUrl {
+    const NAME: &'static str = "get_taxonomy_url";
+}
+
 impl TeraFn for GetTaxonomyUrl {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let kind = required_arg!(
@@ -278,11 +306,17 @@ pub struct GetPage {
     base_path: PathBuf,
     library: Arc<RwLock<Library>>,
 }
+
+impl NamedTeraFn for GetPage {
+    const NAME: &'static str = "get_page";
+}
+
 impl GetPage {
     pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
         Self { base_path: base_path.join("content"), library }
     }
 }
+
 impl TeraFn for GetPage {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let path = required_arg!(
@@ -304,11 +338,17 @@ pub struct GetSection {
     base_path: PathBuf,
     library: Arc<RwLock<Library>>,
 }
+
 impl GetSection {
     pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
         Self { base_path: base_path.join("content"), library }
     }
 }
+
+impl NamedTeraFn for GetSection {
+    const NAME: &'static str = "get_section";
+}
+
 impl TeraFn for GetSection {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let path = required_arg!(
@@ -343,6 +383,7 @@ pub struct GetTaxonomy {
     taxonomies: HashMap<String, Taxonomy>,
     default_lang: String,
 }
+
 impl GetTaxonomy {
     pub fn new(
         default_lang: &str,
@@ -356,6 +397,11 @@ impl GetTaxonomy {
         Self { taxonomies, library, default_lang: default_lang.to_string() }
     }
 }
+
+impl NamedTeraFn for GetTaxonomy {
+    const NAME: &'static str = "get_taxonomy";
+}
+
 impl TeraFn for GetTaxonomy {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let kind = required_arg!(

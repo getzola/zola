@@ -9,7 +9,7 @@ use glob::glob;
 use rayon::prelude::*;
 use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
 use serde_derive::Serialize;
-use tera::{Context, Tera};
+use tera::{Context, Tera, Function as TeraFn};
 
 use config::{get_config, Config, Taxonomy as TaxonomyConfig};
 use errors::{bail, Error, ErrorKind, Result};
@@ -19,6 +19,7 @@ use library::{
     TaxonomyItem,
 };
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
+use templates::global_fns::{NamedTeraFn, WrappedTeraFn};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
 use utils::templates::{render_template, rewrite_theme_paths};
@@ -529,46 +530,39 @@ impl Site {
         Ok(())
     }
 
-    /// Adds global fns that are to be available to shortcodes while
-    /// markdown
+    #[inline(always)]
+    fn register_named_tera_fn<F: NamedTeraFn + TeraFn + 'static>(&mut self, f: F) {
+        self.tera.register_function(F::NAME, WrappedTeraFn::new(f))
+    }
+
+    /// Adds global fns that are to be available to shortcodes for markdown
     pub fn register_early_global_fns(&mut self) {
-        self.tera.register_function(
-            "get_url",
+        macro_rules! register {
+            ($($e: expr,)*) => {
+                $(self.register_named_tera_fn($e);)*
+            }
+        };
+        register! {
             global_fns::GetUrl::new(self.config.clone(), self.permalinks.clone(), self.content_path.clone()),
-        );
-        self.tera.register_function(
-            "resize_image",
             global_fns::ResizeImage::new(self.imageproc.clone()),
-        );
-        self.tera.register_function(
-            "get_image_metadata",
             global_fns::GetImageMeta::new(self.content_path.clone()),
-        );
-        self.tera.register_function("load_data", global_fns::LoadData::new(self.base_path.clone()));
-        self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
-        self.tera.register_function(
-            "get_taxonomy_url",
+            global_fns::LoadData::new(self.base_path.clone()),
+            global_fns::Trans::new(self.config.clone()),
             global_fns::GetTaxonomyUrl::new(&self.config.default_language, &self.taxonomies),
-        );
+        }
     }
 
     pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_function(
-            "get_page",
+        macro_rules! register {
+            ($($e: expr,)*) => {
+                $(self.register_named_tera_fn($e);)*
+            }
+        };
+        register! {
             global_fns::GetPage::new(self.base_path.clone(), self.library.clone()),
-        );
-        self.tera.register_function(
-            "get_section",
             global_fns::GetSection::new(self.base_path.clone(), self.library.clone()),
-        );
-        self.tera.register_function(
-            "get_taxonomy",
-            global_fns::GetTaxonomy::new(
-                &self.config.default_language,
-                self.taxonomies.clone(),
-                self.library.clone(),
-            ),
-        );
+            global_fns::GetTaxonomy::new(&self.config.default_language, self.taxonomies.clone(), self.library.clone()),
+        }
     }
 
     /// Add a page to the site

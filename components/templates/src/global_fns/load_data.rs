@@ -1,3 +1,5 @@
+use super::NamedTeraFn;
+
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
@@ -176,6 +178,7 @@ pub struct LoadData {
     client: Arc<Mutex<Client>>,
     result_cache: Arc<Mutex<HashMap<u64, Value>>>,
 }
+
 impl LoadData {
     pub fn new(base_path: PathBuf) -> Self {
         let client = Arc::new(Mutex::new(
@@ -187,6 +190,10 @@ impl LoadData {
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
         Self { base_path, client, result_cache }
     }
+}
+
+impl NamedTeraFn for LoadData {
+    const NAME: &'static str = "load_data";
 }
 
 impl TeraFn for LoadData {
