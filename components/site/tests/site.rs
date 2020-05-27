@@ -370,7 +370,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/posts/\""
     ));
     assert!(file_contains!(public, "posts/index.html", "Num pagers: 5"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
@@ -484,7 +484,7 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(
         public,
         "page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/\""
     ));
     assert!(file_contains!(public, "page/1/index.html", "<title>Redirect</title>"));
     assert!(file_contains!(
@@ -561,7 +561,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "tags/a/page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/tags/a/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/tags/a/\""
     ));
     assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "tags/a/index.html", "Page size: 2"));
