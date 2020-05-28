@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
@@ -196,9 +195,6 @@ pub struct Config {
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
-
-    /// Set automatically when instantiating the config. Used for cachebusting
-    pub build_timestamp: Option<i64>,
 }
 
 impl Config {
@@ -221,8 +217,6 @@ impl Config {
         if config.languages.iter().any(|l| l.code == config.default_language) {
             bail!("Default language `{}` should not appear both in `config.default_language` and `config.languages`", config.default_language)
         }
-
-        config.build_timestamp = Some(Utc::now().timestamp());
 
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
@@ -404,7 +398,6 @@ impl Default for Config {
             link_checker: LinkChecker::default(),
             slugify: Slugify::default(),
             extra: HashMap::new(),
-            build_timestamp: Some(1),
         }
     }
 }

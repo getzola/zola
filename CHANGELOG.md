@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.12.0 (unreleased)
+
 ## 0.11.0 (2020-05-25)
 
 ### Breaking
@@ -23,7 +25,6 @@
 - Pass missing `lang` template parameter to taxonomy list template
 - Fix default index section not having its path set to '/'
 - Change cachebust strategy to use SHA256 instead of timestamp
-- Fix 
 
 ## 0.10.1 (2020-03-12)
 
