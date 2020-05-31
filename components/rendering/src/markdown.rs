@@ -5,6 +5,7 @@ use syntect::easy::HighlightLines;
 use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
 };
+use syntect::html::ClassedHTMLGenerator;
 
 use crate::context::RenderContext;
 use crate::table_of_contents::{make_table_of_contents, Heading};
@@ -174,6 +175,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut background = IncludeBackground::Yes;
     let mut highlighter: Option<(HighlightLines, bool)> = None;
+    let mut css_highlighter: Option<ClassedHTMLGenerator> = None;
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headings: Vec<Heading> = vec![];
@@ -192,6 +194,19 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 match event {
                     Event::Text(text) => {
                         // if we are in the middle of a code block
+                        if &context.config.highlight_theme == "css" {
+                            if let Some(ref mut css_highlighter) = css_highlighter {
+                                for line in text.lines() {
+                                    css_highlighter.parse_html_for_line(&line);
+                                }
+                                // swap out highlighter because of borrowing
+                                let sr_rs = &SYNTAX_SET.find_syntax_by_extension("rs").unwrap();
+                                let mut highlighter = ClassedHTMLGenerator::new(&sr_rs, &SYNTAX_SET);
+                                std::mem::swap(&mut highlighter, css_highlighter);
+                                let html = highlighter.finalize();
+                                return Event::Html(html.into());
+                            }
+                        }
                         if let Some((ref mut highlighter, in_extra)) = highlighter {
                             let highlighted = if in_extra {
                                 if let Some(ref extra) = context.config.extra_syntax_set {
@@ -204,7 +219,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             } else {
                                 highlighter.highlight(&text, &SYNTAX_SET)
                             };
-                            //let highlighted = &highlighter.highlight(&text, ss);
                             let html = styled_line_to_highlighted_html(&highlighted, background);
                             return Event::Html(html.into());
                         }
@@ -215,6 +229,23 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     Event::Start(Tag::CodeBlock(ref kind)) => {
                         if !context.config.highlight_code {
                             return Event::Html("<pre><code>".into());
+                        }
+                        if &context.config.highlight_theme == "css" {
+                            //match &SYNTAX_SET.find_syntax_by_extension(info) {
+                            match kind {
+                                CodeBlockKind::Indented => (),
+                                CodeBlockKind::Fenced(info) => {
+                                    match &SYNTAX_SET.find_syntax_by_extension(info) {
+                                        Some(syn_set) => css_highlighter = Some(ClassedHTMLGenerator::new(&syn_set, &SYNTAX_SET)),
+                                        None => {
+                                            // create fallback highligter
+                                            let syn_set = &SYNTAX_SET.find_syntax_by_extension("txt").unwrap();
+                                            css_highlighter = Some(ClassedHTMLGenerator::new(&syn_set, &SYNTAX_SET));
+                                        }
+                                    };
+                                }
+                            };
+                            return Event::Html("<pre class=\"code\"><code class=\"code\">".into());
                         }
 
                         let theme = &THEME_SET.themes[&context.config.highlight_theme];
@@ -237,6 +268,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     }
                     Event::End(Tag::CodeBlock(_)) => {
                         if !context.config.highlight_code {
+                            return Event::Html("</code></pre>\n".into());
+                        }
+                        if &context.config.highlight_theme == "css" {
+                            css_highlighter = None;
                             return Event::Html("</code></pre>\n".into());
                         }
                         // reset highlight and close the code block

@@ -2213,6 +2213,7 @@ dependencies = [
  "search",
  "serde",
  "serde_derive",
+ "syntect",
  "tempfile",
  "templates",
  "tera",
