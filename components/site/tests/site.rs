@@ -694,6 +694,15 @@ fn can_cachebust_static_files() {
 }
 
 #[test]
+fn can_get_hash_for_static_files() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(file_contains!(public, "index.html",
+        "src=\"https://replace-this-with-your-url.com/scripts/hello.js\""));
+    assert!(file_contains!(public, "index.html",
+        "integrity=\"sha384-01422f31eaa721a6c4ac8c6fa09a27dd9259e0dfcf3c7593d7810d912a9de5ca2f582df978537bcd10f76896db61fbb9\""));
+}
+
+#[test]
 fn check_site() {
     let (mut site, _tmp_dir, _public) = build_site("test_site");
 
