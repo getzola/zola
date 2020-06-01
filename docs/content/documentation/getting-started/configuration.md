@@ -12,7 +12,6 @@ If you are not familiar with TOML, have a look at [the TOML spec](https://github
 Only the `base_url` variable is mandatory; everything else is optional. All configuration variables
 used by Zola as well as their default values are listed below:
 
-
 ```toml
 # The base URL of the site; the only required configuration variable.
 base_url = "mywebsite.com"
@@ -32,7 +31,19 @@ highlight_code = false
 
 # The theme to use for code highlighting.
 # See below for list of allowed values.
+# This will put the colors of the theme directly in your html.
 highlight_theme = "base16-ocean-dark"
+# For using CSS class definitions in the higlighting, you can use the
+# special theme "css". This is especially useful for dark/light themes,
+# or letting the user decide the higlighting scheme.
+
+# If the site uses some of the predefined syntax highlighing schemes as
+# CSS, you can let Zola generate the CSS.
+generate_theme_css = [
+  { theme = "base16-ocean-dark", file = "syntax-theme-dark.css" },
+  { theme = "base16-ocean-light", file = "syntax-theme-light.css" },
+]
+
 
 # When set to "true", a feed is automatically generated.
 generate_feed = false
