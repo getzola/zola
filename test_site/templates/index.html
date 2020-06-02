@@ -7,7 +7,7 @@
       <meta name="description" content="{{ config.description }}">
       <meta name="author" content="{{ config.extra.author.name }}">
       <link href="https://fonts.googleapis.com/css?family=Fira+Mono|Fira+Sans|Merriweather" rel="stylesheet">
-      <link href="{{ config.base_url }}/site.css" rel="stylesheet">
+      <link href="{{ get_url(path="/site.css", cachebust=true) | safe }}" rel="stylesheet">
       <title>{{ config.title }}</title>
     </head>
 

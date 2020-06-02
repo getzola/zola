@@ -49,11 +49,11 @@ impl TeraFn for Trans {
 pub struct GetUrl {
     config: Config,
     permalinks: HashMap<String, String>,
-    content_path: PathBuf,
+    search_paths: Vec<PathBuf>,
 }
 impl GetUrl {
-    pub fn new(config: Config, permalinks: HashMap<String, String>, content_path: PathBuf) -> Self {
-        Self { config, permalinks, content_path }
+    pub fn new(config: Config, permalinks: HashMap<String, String>, search_paths: Vec<PathBuf>) -> Self {
+        Self { config, permalinks, search_paths }
     }
 }
 
@@ -74,11 +74,34 @@ fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<Stri
     Ok(splitted_path.join("."))
 }
 
-fn compute_file_sha256(path: &PathBuf) -> result::Result<String, io::Error> {
-    let mut file = fs::File::open(path)?;
+fn open_file(search_paths: &Vec<PathBuf>, url: &String) -> result::Result<fs::File, String> {
+    let cleaned_url = url.trim_start_matches("@/").trim_start_matches("/");
+    for base_path in search_paths {
+        match fs::File::open(base_path.join(cleaned_url)) {
+            Ok(f) => return Ok(f),
+            _ => continue
+        };
+    }
+    Err(format!("file {} not found; searched in {}", url,
+        search_paths.iter().fold(String::new(), |acc, arg| acc + " " + arg.to_str().unwrap())))
+}
+
+fn compute_file_sha256(mut file: fs::File) -> result::Result<String, String> {
     let mut hasher = Sha256::new();
-    io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.result()))
+    io::copy(&mut file, &mut hasher)
+        .and_then(|_| Ok(format!("{:x}", hasher.result())))
+        .map_err(|e| format!("{}", e))
+}
+
+fn get_cachebust_hash(search_paths: &Vec<PathBuf>, url: &String) -> Option<String> {
+    match open_file(search_paths, url).and_then(compute_file_sha256) {
+        Ok(hash) => Some(format!("?h={}", hash)),
+        Err(e) => {
+            // NOTE: there should be a better way to print warnings
+            eprintln!("WARN: `get_url`/`cachebust`: {}", e);
+            None
+        }
+    }
 }
 
 impl TeraFn for GetUrl {
@@ -120,11 +143,9 @@ impl TeraFn for GetUrl {
             }
 
             if cachebust {
-                let full_path = self.content_path.join(&path);
-                permalink = match compute_file_sha256(&full_path) {
-                    Ok(digest) => format!("{}?h={}", permalink, digest),
-                    Err(_) => return Err(format!("Could not read file `{}`. Expected location: {}", path, full_path.to_str().unwrap()).into()),
-                };
+                permalink = format!("{}{}", permalink,
+                    get_cachebust_hash(&self.search_paths, &path).unwrap_or_else(||
+                        format!("?t={}", self.config.build_timestamp.unwrap())))
             }
             Ok(to_value(permalink).unwrap())
         }
@@ -397,20 +418,20 @@ mod tests {
     use utils::slugs::SlugifyStrategy;
 
     struct TestContext {
-        content_path: PathBuf,
+        static_path: PathBuf,
     }
     impl TestContext {
         fn setup() -> Self {
-            let dir = temp_dir().join("test_global_fns");
+            let dir = temp_dir().join("static");
             create_directory(&dir).expect("Could not create test directory");
             create_file(&dir.join("app.css"), "// Hello world!")
                 .expect("Could not create test content (app.css)");
-            Self { content_path: dir }
+            Self { static_path: dir }
         }
     }
     impl Drop for TestContext {
         fn drop(&mut self) {
-            remove_dir_all(&self.content_path).expect("Could not free test directory");
+            remove_dir_all(&self.static_path).expect("Could not free test directory");
         }
     }
 
@@ -421,7 +442,7 @@ mod tests {
     #[test]
     fn can_add_cachebust_to_url() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
@@ -431,7 +452,7 @@ mod tests {
     #[test]
     fn can_add_trailing_slashes() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -441,7 +462,7 @@ mod tests {
     #[test]
     fn can_add_slashes_and_cachebust() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -452,7 +473,7 @@ mod tests {
     #[test]
     fn can_link_to_some_static_file() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
@@ -639,7 +660,7 @@ title = "A title"
     #[test]
     fn error_when_language_not_available() {
         let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config, HashMap::new(), TEST_CONTEXT.content_path.clone());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
@@ -662,7 +683,7 @@ title = "A title"
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks, TEST_CONTEXT.content_path.clone());
+        let static_fn = GetUrl::new(config, permalinks, vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -684,7 +705,7 @@ title = "A title"
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks, TEST_CONTEXT.content_path.clone());
+        let static_fn = GetUrl::new(config, permalinks, vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
