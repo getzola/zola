@@ -83,6 +83,12 @@ impl PageFrontMatter {
 
         f.date_to_datetime();
 
+        if let Some(ref date) = f.date {
+            if f.datetime.is_none() {
+                bail!("`date` could not be parsed: {}. Only plain dates (2020-01-01) and RFC3339 (2020-01-01T12:00:00Z) are supported.", date);
+            }
+        }
+
         Ok(f)
     }
 
