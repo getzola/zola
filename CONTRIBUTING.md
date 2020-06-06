@@ -56,11 +56,23 @@ $ cargo run --example generate_sublime synpack ../../sublime/syntaxes ../../subl
 
 ### Adding a theme
 A gallery containing lots of themes is located at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
-More themes can be easily added to Zola, just make a PR with the wanted theme added in the `sublime_themes` directory
-and run the following command from the root of the components/config:
+More themes can be easily added to Zola, just make a PR with the wanted theme added in the `sublime_themes` directory.
+
+If you want to test Zola with a new theme, it needs to be built into the syntect file `all.themedump`.
+
+First build the tool to generate the syntect file:
 
 ```bash
-$ cargo run --example generate_sublime themepack ../../sublime/themes ../../sublime/themes/all.themedump
+$ git clone https://github.com/getzola/zola.git && cd zola/components/config
+$ cargo build --example generate_sublime
+```
+
+copy your theme in `sublime/themes/`, then regenerate the syntect file:
+
+``` bash
+$ ./target/debug/examples/generate_sublime themepack sublime/themes/ sublime/themes/all.themedump
 ```
 
 You should see the list of themes being added.
+
+To test your new theme, rebuild Zola with `cargo build`.
