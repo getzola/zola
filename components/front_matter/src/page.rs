@@ -57,6 +57,18 @@ pub struct PageFrontMatter {
     pub extra: Map<String, Value>,
 }
 
+/// Parse a TOML datetime from a string.
+/// There are three alternatives: an offset datetime (plain RFC3339), a local datetime
+/// (RFC3339 with timezone omitted) and a local date (YYYY-MM-DD). This tries each in
+/// order.
+fn parse_datetime(d: &String) -> Option<NaiveDateTime> {
+    DateTime::parse_from_rfc3339(d)
+        .or(DateTime::parse_from_rfc3339(format!("{}Z", d).as_ref()))
+        .map(|s| s.naive_local())
+        .or(NaiveDate::parse_from_str(d, "%Y-%m-%d").map(|s| s.and_hms(0, 0, 0)))
+        .ok()
+}
+
 impl PageFrontMatter {
     pub fn parse(toml: &str) -> Result<PageFrontMatter> {
         let mut f: PageFrontMatter = match toml::from_str(toml) {
@@ -85,7 +97,7 @@ impl PageFrontMatter {
 
         if let Some(ref date) = f.date {
             if f.datetime.is_none() {
-                bail!("`date` could not be parsed: {}. Only plain dates (2020-01-01) and RFC3339 (2020-01-01T12:00:00Z) are supported.", date);
+                bail!("`date` could not be parsed: {}.", date);
             }
         }
 
@@ -95,21 +107,8 @@ impl PageFrontMatter {
     /// Converts the TOML datetime to a Chrono naive datetime
     /// Also grabs the year/month/day tuple that will be used in serialization
     pub fn date_to_datetime(&mut self) {
-        self.datetime = if let Some(ref d) = self.date {
-            if d.contains('T') {
-                DateTime::parse_from_rfc3339(&d).ok().map(|s| s.naive_local())
-            } else {
-                NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok().map(|s| s.and_hms(0, 0, 0))
-            }
-        } else {
-            None
-        };
-
-        self.datetime_tuple = if let Some(ref dt) = self.datetime {
-            Some((dt.year(), dt.month(), dt.day()))
-        } else {
-            None
-        };
+        self.datetime = self.date.as_ref().and_then(parse_datetime);
+        self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
     }
 
     pub fn order(&self) -> usize {
@@ -204,7 +203,7 @@ mod tests {
     date = 2016-10-10
     "#;
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.date.is_some());
+        assert!(res.datetime.is_some());
     }
 
     #[test]
@@ -215,7 +214,51 @@ mod tests {
     date = 2002-10-02T15:00:00Z
     "#;
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.date.is_some());
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_without_timezone() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02T15:00:00
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_with_space() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02 15:00:00+02:00
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_with_space_without_timezone() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02 15:00:00
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_with_microseconds() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02T15:00:00.123456Z
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
     }
 
     #[test]
