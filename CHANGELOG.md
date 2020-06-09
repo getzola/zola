@@ -2,6 +2,8 @@
 
 ## 0.12.0 (unreleased)
 
+- Add 2 syntax highlighting themes: `green` and `railsbase16-green-screen-dark`
+
 ## 0.11.0 (2020-05-25)
 
 ### Breaking
