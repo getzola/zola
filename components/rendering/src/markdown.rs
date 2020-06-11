@@ -231,7 +231,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             return Event::Html("<pre><code>".into());
                         }
                         if &context.config.highlight_theme == "css" {
-                            //match &SYNTAX_SET.find_syntax_by_extension(info) {
                             match kind {
                                 CodeBlockKind::Indented => (),
                                 CodeBlockKind::Fenced(info) => {

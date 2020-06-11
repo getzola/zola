@@ -753,8 +753,8 @@ impl Site {
             self.compile_sass(&self.base_path)?;
         }
 
-        if self.config.generate_theme_css.len() > 0 {
-            self.generate_themes()?;
+        if self.config.highlighting_themes_css.len() > 0 {
+            self.generate_highlighting_themes()?;
         }
 
         if self.config.build_search_index {
@@ -864,13 +864,11 @@ impl Site {
         Ok(())
     }
 
-    pub fn generate_themes(&self) -> Result<()> {
+    pub fn generate_highlighting_themes(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
-        for css_theme in &self.config.generate_theme_css {
-            println!("Generating CSS: {} for theme: {}", css_theme.file, css_theme.theme);
-
+        for css_theme in &self.config.highlighting_themes_css {
             let theme = &THEME_SET.themes[&css_theme.theme];
-            let css_file = File::create(Path::new(&self.output_path.join(&css_theme.file)))?;
+            let css_file = File::create(Path::new(&self.output_path.join(&css_theme.filename)))?;
             let mut css_writer = BufWriter::new(&css_file);
 
             let css = css_for_theme(theme);

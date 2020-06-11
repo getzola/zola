@@ -39,9 +39,9 @@ highlight_theme = "base16-ocean-dark"
 
 # If the site uses some of the predefined syntax highlighing schemes as
 # CSS, you can let Zola generate the CSS.
-generate_theme_css = [
-  { theme = "base16-ocean-dark", file = "syntax-theme-dark.css" },
-  { theme = "base16-ocean-light", file = "syntax-theme-light.css" },
+highlighting_themes_css = [
+  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
+  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
 ]
 
 

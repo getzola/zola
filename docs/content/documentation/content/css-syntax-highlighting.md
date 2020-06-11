@@ -60,9 +60,9 @@ you get CSS class definitions
 now you can generate and use CSS either manually or with Zola
 
 ```toml
-generate_theme_css = [
-  { theme = "base16-ocean-dark", file = "syntax-theme-dark.css" },
-  { theme = "base16-ocean-light", file = "syntax-theme-light.css" },
+highlighting_themes_css = [
+  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
+  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
 ]
 ```
 
