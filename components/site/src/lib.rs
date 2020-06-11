@@ -69,7 +69,7 @@ impl Site {
         config.load_extra_syntaxes(path)?;
 
         let tpl_glob =
-            format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
+            format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*");
         // Only parsing as we might be extending templates from themes and that would error
         // as we haven't loaded them yet
         let mut tera =
@@ -87,7 +87,7 @@ impl Site {
             let theme_tpl_glob = format!(
                 "{}/{}",
                 path.to_string_lossy().replace("\\", "/"),
-                format!("themes/{}/templates/**/*.*ml", theme)
+                format!("themes/{}/templates/**/*", theme)
             );
             let mut tera_theme = Tera::parse(&theme_tpl_glob)
                 .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
@@ -105,12 +105,6 @@ impl Site {
         }
         tera.extend(&ZOLA_TERA)?;
         tera.build_inheritance_chains()?;
-
-        // TODO: Tera doesn't use globset right now so we can load the robots.txt as part
-        // of the glob above, therefore we load it manually if it exists.
-        if path.join("templates").join("robots.txt").exists() {
-            tera.add_template_file(path.join("templates").join("robots.txt"), Some("robots.txt"))?;
-        }
 
         let content_path = path.join("content");
         let static_path = path.join("static");
@@ -719,11 +713,12 @@ impl Site {
         // Make sure the folder exists
         create_directory(&current_path)?;
 
-        // Finally, create a index.html file there with the page rendered
-        let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-        create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
+        // Finally, create a index.* file there with the page rendered
+        let output = page.render_page(&self.tera, &self.config, &self.library.read().unwrap())?;
+        let ext = page.meta.template.as_ref().and_then(|tpl| tpl.split('.').next_back()).unwrap_or("html");
+        create_file(&current_path.join("index.".to_owned() + ext), &self.inject_livereload(output))?;
 
-        // Copy any asset we found previously into the same directory as the index.html
+        // Copy any asset we found previously into the same directory as the index.*
         for asset in &page.assets {
             let asset_path = asset.as_path();
             copy(
@@ -1205,8 +1200,9 @@ impl Site {
             )?;
         } else {
             let output =
-                section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-            create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
+                section.render_page(&self.tera, &self.config, &self.library.read().unwrap())?;
+            let ext = section.meta.template.as_ref().and_then(|tpl| tpl.split('.').next_back()).unwrap_or("html");
+            create_file(&output_path.join(format!("index.{}", ext)), &self.inject_livereload(output))?;
         }
 
         Ok(())

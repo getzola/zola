@@ -57,6 +57,7 @@ impl<'a> TranslatedContent<'a> {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingPage<'a> {
     relative_path: &'a str,
+    plain_content: &'a str,
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
@@ -121,6 +122,7 @@ impl<'a> SerializingPage<'a> {
         SerializingPage {
             relative_path: &page.file.relative,
             ancestors,
+            plain_content: &page.plain_content,
             content: &page.content,
             permalink: &page.permalink,
             slug: &page.slug,
@@ -178,6 +180,7 @@ impl<'a> SerializingPage<'a> {
         SerializingPage {
             relative_path: &page.file.relative,
             ancestors,
+            plain_content: &page.plain_content,
             content: &page.content,
             permalink: &page.permalink,
             slug: &page.slug,
@@ -211,6 +214,7 @@ impl<'a> SerializingPage<'a> {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingSection<'a> {
     relative_path: &'a str,
+    plain_content: &'a str,
     content: &'a str,
     permalink: &'a str,
     ancestors: Vec<String>,
@@ -252,6 +256,7 @@ impl<'a> SerializingSection<'a> {
         SerializingSection {
             relative_path: &section.file.relative,
             ancestors,
+            plain_content: &section.plain_content,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,
@@ -289,6 +294,7 @@ impl<'a> SerializingSection<'a> {
         SerializingSection {
             relative_path: &section.file.relative,
             ancestors,
+            plain_content: &section.plain_content,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,

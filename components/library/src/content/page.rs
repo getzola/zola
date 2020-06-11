@@ -11,7 +11,7 @@ use crate::library::Library;
 use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
-use rendering::{render_content, Heading, RenderContext};
+use rendering::{render_plain_content, render_html_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
@@ -43,6 +43,8 @@ pub struct Page {
     pub assets: Vec<PathBuf>,
     /// All the non-md files we found next to the .md file as string for use in templates
     pub serialized_assets: Vec<String>,
+    /// Content with shortcodes rendered, without markdown->HTML conversion
+    pub plain_content: String,
     /// The HTML rendered of the page
     pub content: String,
     /// The slug of that page.
@@ -98,6 +100,7 @@ impl Page {
             raw_content: "".to_string(),
             assets: vec![],
             serialized_assets: vec![],
+            plain_content: "".to_string(),
             content: "".to_string(),
             slug: "".to_string(),
             path: "".to_string(),
@@ -268,8 +271,11 @@ impl Page {
 
         context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
-        let res = render_content(&self.raw_content, &context).map_err(|e| {
-            Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
+        self.plain_content = render_plain_content(&self.raw_content, &context).map_err(|e| {
+            Error::chain(format!("Failed to render shortcodes of {}", self.file.path.display()), e)
+        })?;
+        let res = render_html_content(&self.plain_content, &context).map_err(|e| {
+            Error::chain(format!("Failed to render markdown of {}", self.file.path.display()), e)
         })?;
 
         self.summary = res.summary_len.map(|l| res.body[0..l].to_owned());
@@ -282,7 +288,7 @@ impl Page {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
+    pub fn render_page(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
         let tpl_name = match self.meta.template {
             Some(ref l) => l,
             None => "page.html",
@@ -344,6 +350,7 @@ impl Default for Page {
             raw_content: "".to_string(),
             assets: vec![],
             serialized_assets: vec![],
+            plain_content: "".to_string(),
             content: "".to_string(),
             slug: "".to_string(),
             path: "".to_string(),

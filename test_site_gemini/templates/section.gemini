@@ -1,0 +1,7 @@
+{{ section.plain_content -}}
+
+# Posts
+
+{% for page in section.pages -%}
+=> {{ page.permalink | safe }} {{ page.date | date }} {{ page.title }}
+{% endfor -%}

@@ -7,7 +7,7 @@ use tera::{Context as TeraContext, Tera};
 use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_section_content, SectionFrontMatter};
-use rendering::{render_content, Heading, RenderContext};
+use rendering::{render_plain_content, render_html_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
 use utils::templates::render_template;
@@ -31,6 +31,8 @@ pub struct Section {
     pub permalink: String,
     /// The actual content of the page, in markdown
     pub raw_content: String,
+    /// Content with shortcodes rendered, without markdown->HTML conversion
+    pub plain_content: String,
     /// The HTML rendered of the page
     pub content: String,
     /// All the non-md files we found next to the .md file
@@ -84,6 +86,7 @@ impl Section {
             raw_content: "".to_string(),
             assets: vec![],
             serialized_assets: vec![],
+            plain_content: "".to_string(),
             content: "".to_string(),
             pages: vec![],
             ignored_pages: vec![],
@@ -199,8 +202,11 @@ impl Section {
 
         context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
 
-        let res = render_content(&self.raw_content, &context).map_err(|e| {
-            Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
+        self.plain_content = render_plain_content(&self.raw_content, &context).map_err(|e| {
+            Error::chain(format!("Failed to render shortcodes of {}", self.file.path.display()), e)
+        })?;
+        let res = render_html_content(&self.plain_content, &context).map_err(|e| {
+            Error::chain(format!("Failed to render markdown of {}", self.file.path.display()), e)
         })?;
         self.content = res.body;
         self.toc = res.toc;
@@ -211,7 +217,7 @@ impl Section {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
+    pub fn render_page(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
@@ -267,6 +273,7 @@ impl Default for Section {
             raw_content: "".to_string(),
             assets: vec![],
             serialized_assets: vec![],
+            plain_content: "".to_string(),
             content: "".to_string(),
             pages: vec![],
             ignored_pages: vec![],
