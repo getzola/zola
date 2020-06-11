@@ -3,6 +3,7 @@
 ## 0.12.0 (unreleased)
 
 - Add 2 syntax highlighting themes: `green` and `railsbase16-green-screen-dark`
+- Enable task lists in Markdown
 
 ## 0.11.0 (2020-05-25)
 
