@@ -1664,7 +1664,6 @@ dependencies = [
  "aho-corasick",
  "memchr",
  "regex-syntax",
- "regex-syntax 0.6.18",
  "thread_local",
 ]
 
