@@ -3,6 +3,7 @@ name = "config"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
+include = ["src/**/*"]
 
 [dependencies]
 toml = "0.5"

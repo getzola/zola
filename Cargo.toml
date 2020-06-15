@@ -10,8 +10,7 @@ homepage = "https://www.getzola.org"
 repository = "https://github.com/getzola/zola"
 keywords = ["static", "site", "generator", "blog"]
 
-include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md", "!test_site*/", "sublime/syntaxes/newlines.packdump", "sublime/themes/all.themedump"]
-exclude = ["test_site*/", "sublime", "docs", "components/site/benches/", "**/tests/*", "**/benches/*"]
+include = ["src/**/*", "LICENSE", "README.md"]
 
 [build-dependencies]
 clap = "2"
