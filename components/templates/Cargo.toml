@@ -21,6 +21,7 @@ utils = { path = "../utils" }
 library = { path = "../library" }
 config = { path = "../config" }
 imageproc = { path = "../imageproc" }
+svg_metadata = "0.4.1"
 
 [dependencies.reqwest]
 version = "0.10"
