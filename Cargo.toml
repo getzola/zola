@@ -9,7 +9,9 @@ description = "A fast static site generator with everything built-in"
 homepage = "https://www.getzola.org"
 repository = "https://github.com/getzola/zola"
 keywords = ["static", "site", "generator", "blog"]
-# build = "build.rs"
+
+include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md", "!test_site*/", "sublime/syntaxes/newlines.packdump", "sublime/themes/all.themedump"]
+exclude = ["test_site*/", "sublime", "docs", "components/site/benches/", "**/tests/*", "**/benches/*"]
 
 [build-dependencies]
 clap = "2"
