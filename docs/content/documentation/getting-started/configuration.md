@@ -170,7 +170,7 @@ Zola currently has the following highlight themes available:
 - [ir-white](https://tmtheme-editor.herokuapp.com/#!/editor/theme/IR_White)
 - [kronuz](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Kronuz)
 - [material-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Material%20Dark)
-- [material-light](https://github.com/morhetz/gruvbox)
+- [material-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Material%20Light)
 - [monokai](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Monokai)
 - [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
 - [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
