@@ -9,3 +9,8 @@
         {% endfor %}
     </div>
 {% endblock content %}
+
+{% block script %}
+    <script src="{{ get_url(path="scripts/hello.js") | safe }}"
+            integrity="sha384-{{ get_file_hash(path="scripts/hello.js") }}"></script>
+{% endblock script %}
