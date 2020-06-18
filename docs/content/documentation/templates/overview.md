@@ -190,6 +190,15 @@ Gets the whole taxonomy of a specific kind.
 {% set categories = get_taxonomy(kind="categories") %}
 ```
 
+The type of the output is:
+
+```ts
+kind: TaxonomyConfig;
+items: Array<TaxonomyTerm>;
+```
+
+See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
+
 ### `load_data`
 Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*.
 Any other file type will be loaded as plain text.
