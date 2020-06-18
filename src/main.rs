@@ -23,7 +23,8 @@ fn main() {
 
     match matches.subcommand() {
         ("init", Some(matches)) => {
-            match cmd::create_new_project(matches.value_of("name").unwrap()) {
+            let force = matches.is_present("force");
+            match cmd::create_new_project(matches.value_of("name").unwrap(), force) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("Failed to create the project", &e);
