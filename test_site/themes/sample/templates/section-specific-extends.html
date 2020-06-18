@@ -1,0 +1,9 @@
+{% extends "index.html" %}
+{% block content %}
+    {{ section.relative_path | safe }}
+    {% for sub in section.subsections %}
+        {% set subsection = get_section(path=sub) %}
+        {{subsection.title}}
+        Sub-pages: {{subsection.pages | length}}
+    {% endfor %}
+{% endblock content %}
