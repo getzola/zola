@@ -159,7 +159,7 @@ to newest (at the bottom).
 `reverse` has no effect on `page.later`/`page.earlier` or `page.heavier`/`page.lighter`.
 
 ## Sorting subsections
-Sorting sections is a bit less flexible: sections are always sorted by `weight`,
+Sorting sections is a bit less flexible: sections can only be sorted by `weight`,
 and do not have variables that point to the heavier/lighter sections.
 
 By default, the lightest (lowest `weight`) subsections will be at

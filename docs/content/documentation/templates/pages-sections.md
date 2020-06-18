@@ -80,7 +80,9 @@ path: String;
 components: Array<String>;
 permalink: String;
 extra: HashMap<String, Any>;
-// Pages directly in this section, sorted if asked
+// Pages directly in this section. By default, the pages are not sorted. Please set the "sorted_by"
+// variable in the _index.md file of the corresponding section to "date" or "weight" for sorting by
+// date and weight, respectively.
 pages: Array<Page>;
 // Direct subsections to this section, sorted by subsections weight
 // This only contains the path to use in the `get_section` Tera function to get
