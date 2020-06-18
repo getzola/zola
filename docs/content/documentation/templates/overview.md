@@ -165,7 +165,8 @@ Whenever hashing files, whether using `get_file_hash` or `get_url(..., cachebust
 
 
 ### `get_image_metadata`
-Gets metadata for an image.  Currently, the only supported keys are `width` and `height`.
+Gets metadata for an image. This supports common formats like JPEG, PNG, as well as SVG.  
+Currently, the only supported keys are `width` and `height`.
 
 ```jinja2
   {% set meta = get_image_metadata(path="...") %}

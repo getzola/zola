@@ -370,6 +370,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "doc-comment"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
+
+[[package]]
 name = "dtoa"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1757,6 +1763,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "roxmltree"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5001f134077069d87f77c8b9452b690df2445f7a43f1c7ca4a1af8dd505789d"
+dependencies = [
+ "xmlparser",
+]
+
+[[package]]
 name = "rust-stemmers"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2043,6 +2058,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "svg_metadata"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fe5b1fbd62339f055704951dcaf2e757c460b9f6abe17f6de0d2563da821c57"
+dependencies = [
+ "doc-comment",
+ "lazy_static",
+ "regex",
+ "roxmltree",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2117,6 +2144,7 @@ dependencies = [
  "reqwest",
  "serde_json",
  "sha2",
+ "svg_metadata",
  "tera",
  "toml",
  "url",
@@ -2667,6 +2695,12 @@ dependencies = [
  "markup5ever",
  "time",
 ]
+
+[[package]]
+name = "xmlparser"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccb4240203dadf40be2de9369e5c6dec1bf427528115b030baca3334c18362d7"
 
 [[package]]
 name = "yaml-rust"

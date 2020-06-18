@@ -2,9 +2,11 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::{fs, io, result};
+use std::ffi::OsStr; 
 
 use sha2::{Digest, Sha256, Sha384, Sha512};
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
+use svg_metadata as svg;
 
 use config::Config;
 use image;
@@ -279,12 +281,28 @@ impl TeraFn for GetImageMeta {
         if !src_path.exists() {
             return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
         }
-        let img = image::open(&src_path)
-            .map_err(|e| Error::chain(format!("Failed to process image: {}", path), e))?;
+        let (height, width) = image_dimensions(&src_path)?;
         let mut map = tera::Map::new();
-        map.insert(String::from("height"), Value::Number(tera::Number::from(img.height())));
-        map.insert(String::from("width"), Value::Number(tera::Number::from(img.width())));
+        map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
+        map.insert(String::from("width"), Value::Number(tera::Number::from(width)));
         Ok(Value::Object(map))
+    }
+}
+
+// Try to read the image dimensions for a given image
+fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
+    if let Some("svg") = path.extension().and_then(OsStr::to_str) {
+        let img = svg::Metadata::parse_file(&path)
+            .map_err(|e| Error::chain(format!("Failed to process SVG: {}", path.display()), e))?;
+        match (img.height(), img.width(), img.view_box()) {
+            (Some(h), Some(w), _) => Ok((h as u32, w as u32)),
+            (_, _, Some(view_box)) => Ok((view_box.height as u32, view_box.width as u32)),
+            _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into())
+        }
+    } else {
+        let img = image::open(&path)
+            .map_err(|e| Error::chain(format!("Failed to process image: {}", path.display()), e))?;
+        Ok((img.height(), img.width()))
     }
 }
 
