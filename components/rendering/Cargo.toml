@@ -3,10 +3,11 @@ name = "rendering"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
+include = ["src/**/*"]
 
 [dependencies]
 tera = { version = "1", features = ["preserve_order"] }
-syntect = "=3.2.0"
+syntect = "4.1"
 pulldown-cmark = "0.7"
 serde = "1"
 serde_derive = "1"

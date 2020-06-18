@@ -35,7 +35,6 @@ use hyper_staticfile::ResolveResult;
 use tokio::io::AsyncReadExt;
 
 use chrono::prelude::*;
-use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
@@ -45,8 +44,6 @@ use site::Site;
 use utils::fs::copy_file;
 
 use crate::console;
-use open;
-use rebuild;
 
 #[derive(Debug, PartialEq)]
 enum ChangeKind {
@@ -161,9 +158,9 @@ fn create_new_site(
     root_dir: &Path,
     interface: &str,
     port: u16,
-    output_dir: &str,
+    output_dir: &Path,
     base_url: &str,
-    config_file: &str,
+    config_file: &Path,
     include_drafts: bool,
 ) -> Result<(Site, String)> {
     let mut site = Site::new(root_dir, config_file)?;
@@ -194,9 +191,9 @@ pub fn serve(
     root_dir: &Path,
     interface: &str,
     port: u16,
-    output_dir: &str,
+    output_dir: &Path,
     base_url: &str,
-    config_file: &str,
+    config_file: &Path,
     watch_only: bool,
     open: bool,
     include_drafts: bool,

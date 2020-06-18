@@ -20,8 +20,8 @@ Register-ArgumentCompleter -Native -CommandName 'zola' -ScriptBlock {
 
     $completions = @(switch ($command) {
         'zola' {
-            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml')
-            [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml')
+            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml in the root of project')
+            [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Path to a config file other than config.toml in the root of project')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')

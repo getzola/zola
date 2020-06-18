@@ -18,7 +18,6 @@ use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
     TaxonomyItem,
 };
-use link_checker::check_url;
 use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
@@ -56,20 +55,17 @@ struct SerializedTaxonomyItem<'a> {
 
 impl<'a> SerializedTaxonomyItem<'a> {
     pub fn from_item(item: &'a TaxonomyItem) -> Self {
-        SerializedTaxonomyItem {
-            name: &item.name,
-            slug: &item.slug,
-            permalink: &item.permalink,
-        }
+        SerializedTaxonomyItem { name: &item.name, slug: &item.slug, permalink: &item.permalink }
     }
 }
 
 impl Site {
     /// Parse a site at the given path. Defaults to the current dir
     /// Passing in a path is used in tests and when --root argument is passed
-    pub fn new<P: AsRef<Path>>(path: P, config_file: &str) -> Result<Site> {
+    pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
-        let mut config = get_config(path, config_file);
+        let config_file = config_file.as_ref();
+        let mut config = get_config(config_file);
         config.load_extra_syntaxes(path)?;
 
         let tpl_glob =
@@ -411,8 +407,8 @@ impl Site {
                     {
                         return None;
                     }
-                    let res = check_url(&link, &self.config.link_checker);
-                    if res.is_valid() {
+                    let res = link_checker::check_url(&link, &self.config.link_checker);
+                    if link_checker::is_valid(&res) {
                         None
                     } else {
                         Some((page_path, link, res))
@@ -438,7 +434,7 @@ impl Site {
                     "Dead link in {} to {}: {}",
                     page_path.to_string_lossy(),
                     link,
-                    check_res.message()
+                    link_checker::message(&check_res)
                 )
             })
             .collect::<Vec<_>>()
@@ -478,6 +474,7 @@ impl Site {
                     index_section.permalink = self.config.make_permalink("");
                     index_section.file.path = self.content_path.join("_index.md");
                     index_section.file.relative = "_index.md".to_string();
+                    index_section.path = "/".to_string();
                 }
                 index_section.lang = index_section.file.find_language(&self.config)?;
                 library.insert_section(index_section);
@@ -533,7 +530,11 @@ impl Site {
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_function(
             "get_url",
-            global_fns::GetUrl::new(self.config.clone(), self.permalinks.clone()),
+            global_fns::GetUrl::new(
+                self.config.clone(),
+                self.permalinks.clone(),
+                vec![self.static_path.clone(), self.output_path.clone(), self.content_path.clone()],
+            ),
         );
         self.tera.register_function(
             "resize_image",
@@ -548,6 +549,14 @@ impl Site {
         self.tera.register_function(
             "get_taxonomy_url",
             global_fns::GetTaxonomyUrl::new(&self.config.default_language, &self.taxonomies),
+        );
+        self.tera.register_function(
+            "get_file_hash",
+            global_fns::GetFileHash::new(vec![
+                self.static_path.clone(),
+                self.output_path.clone(),
+                self.content_path.clone(),
+            ]),
         );
     }
 
@@ -643,10 +652,8 @@ impl Site {
     /// Inject live reload script tag if in live reload mode
     fn inject_livereload(&self, mut html: String) -> String {
         if let Some(port) = self.live_reload {
-            let script = format!(
-                r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#,
-                port,
-            );
+            let script =
+                format!(r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#, port,);
             if let Some(index) = html.rfind("</body>") {
                 html.insert_str(index, &script);
             } else {
@@ -772,12 +779,7 @@ impl Site {
             } else {
                 library.pages_values()
             };
-            self.render_feed(
-                pages,
-                None,
-                &self.config.default_language,
-                None,
-            )?;
+            self.render_feed(pages, None, &self.config.default_language, None)?;
         }
 
         for lang in &self.config.languages {
@@ -786,12 +788,7 @@ impl Site {
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(
-                pages,
-                Some(&PathBuf::from(lang.code.clone())),
-                &lang.code,
-                None,
-            )?;
+            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, None)?;
         }
 
         self.render_404()?;
@@ -1101,11 +1098,12 @@ impl Site {
 
         context.insert(
             "last_updated",
-            pages.iter()
+            pages
+                .iter()
                 .filter_map(|page| page.meta.updated.as_ref())
                 .chain(pages[0].meta.date.as_ref())
-                .max()  // I love lexicographically sorted date strings
-                .unwrap(),  // Guaranteed because of pages[0].meta.date
+                .max() // I love lexicographically sorted date strings
+                .unwrap(), // Guaranteed because of pages[0].meta.date
         );
         let library = self.library.read().unwrap();
         // limit to the last n elements if the limit is set; otherwise use all.
@@ -1122,12 +1120,8 @@ impl Site {
 
         let feed_filename = &self.config.feed_filename;
         let feed_url = if let Some(ref base) = base_path {
-            self.config.make_permalink(
-                &base
-                    .join(feed_filename)
-                    .to_string_lossy()
-                    .replace('\\', "/"),
-            )
+            self.config
+                .make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
         } else {
             self.config.make_permalink(feed_filename)
         };

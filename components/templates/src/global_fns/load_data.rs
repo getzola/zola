@@ -209,12 +209,9 @@ impl TeraFn for LoadData {
                     .header(header::ACCEPT, file_format.as_accept_header())
                     .send()
                     .and_then(|res| res.error_for_status())
-                    .map_err(|e| {
-                        format!(
-                            "Failed to request {}: {}",
-                            url,
-                            e.status().expect("response status")
-                        )
+                    .map_err(|e| match e.status() {
+                        Some(status) => format!("Failed to request {}: {}", url, status),
+                        None => format!("Could not get response status for url: {}", url),
                     })?;
                 response
                     .text()

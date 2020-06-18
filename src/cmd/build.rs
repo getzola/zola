@@ -7,9 +7,9 @@ use crate::console;
 
 pub fn build(
     root_dir: &Path,
-    config_file: &str,
+    config_file: &Path,
     base_url: Option<&str>,
-    output_dir: &str,
+    output_dir: &Path,
     include_drafts: bool,
 ) -> Result<()> {
     let mut site = Site::new(root_dir, config_file)?;

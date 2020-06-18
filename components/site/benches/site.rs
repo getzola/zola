@@ -11,7 +11,8 @@ fn setup_site(name: &str) -> Site {
     let mut path = env::current_dir().unwrap().to_path_buf();
     path.push("benches");
     path.push(name);
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
     site
 }
@@ -46,7 +47,8 @@ fn bench_render_feed(b: &mut test::Bencher) {
             None,
             &site.config.default_language,
             None,
-        ).unwrap();
+        )
+        .unwrap();
     });
 }
 

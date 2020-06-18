@@ -49,7 +49,7 @@ month: Number?;
 day: Number?;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
-// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The relative paths of the parent sections until the index one, for use with the `get_section` Tera function
 // The first item is the index section and the last one is the parent section
 // This is filled after rendering a page content so it will be empty in shortcodes
 ancestors: Array<String>;
@@ -93,7 +93,7 @@ word_count: Number;
 reading_time: Number;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
-// The relative paths of the parent sections until the index onef for use with the `get_section` Tera function
+// The relative paths of the parent sections until the index one, for use with the `get_section` Tera function
 // The first item is the index section and the last one is the parent section
 // This is filled after rendering a page content so it will be empty in shortcodes
 ancestors: Array<String>;

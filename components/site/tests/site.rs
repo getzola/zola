@@ -13,7 +13,8 @@ use site::Site;
 fn can_parse_site() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
     let library = site.library.read().unwrap();
 
@@ -369,7 +370,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/posts/\""
     ));
     assert!(file_contains!(public, "posts/index.html", "Num pagers: 5"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
@@ -483,7 +484,7 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(
         public,
         "page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/\""
     ));
     assert!(file_contains!(public, "page/1/index.html", "<title>Redirect</title>"));
     assert!(file_contains!(
@@ -560,7 +561,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "tags/a/page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/tags/a/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/tags/a/\""
     ));
     assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "tags/a/index.html", "Page size: 2"));
@@ -628,7 +629,8 @@ fn can_build_with_extra_syntaxes() {
 fn can_apply_page_templates() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
-    let mut site = Site::new(&path, "config.toml").unwrap();
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
 
     let template_path = path.join("content").join("applying_page_template");
@@ -682,6 +684,25 @@ fn can_build_site_custom_builtins_from_theme() {
 fn can_ignore_markdown_content() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(!file_exists!(public, "posts/ignored/index.html"));
+}
+
+#[test]
+fn can_cachebust_static_files() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(file_contains!(public, "index.html",
+        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d0fde18e82b04d7bca1881d10846c769b486640da3de9\" rel=\"stylesheet\">"));
+}
+
+#[test]
+fn can_get_hash_for_static_files() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "src=\"https://replace-this-with-your-url.com/scripts/hello.js\""
+    ));
+    assert!(file_contains!(public, "index.html",
+        "integrity=\"sha384-01422f31eaa721a6c4ac8c6fa09a27dd9259e0dfcf3c7593d7810d912a9de5ca2f582df978537bcd10f76896db61fbb9\""));
 }
 
 #[test]

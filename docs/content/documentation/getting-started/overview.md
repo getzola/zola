@@ -138,13 +138,15 @@ Let's now create some more templates. In the `templates` directory, create a `bl
 </h1>
 <ul>
   {% for page in section.pages %}
-  <li><a href="{{ page.permalink }}">{{ page.title }}</a></li>
+  <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
   {% endfor %}
 </ul>
 {% endblock content %}
 ```
 
-As done by `index.html`, `blog.html` extends `base.html`, but this time we want to list the blog posts. The *title* we set in the `_index.md` file above is available to us as `{{ section.title }}`. In the list below the title, we loop through all the pages in our section (`blog` directory) and output the page title and URL using `{{ page.title }}` and `{{ page.permalink }}`, respectively. If you go to <http://127.0.0.1:1111/blog/>, you will see the section page for `blog`. The list is empty because we don't have any blog posts. Let's fix that now.
+As done by `index.html`, `blog.html` extends `base.html`, but this time we want to list the blog posts. The *title* we set in the `_index.md` file above is available to us as `{{ section.title }}`. In the list below the title, we loop through all the pages in our section (`blog` directory) and output the page title and URL using `{{ page.title }}` and `{{ page.permalink | safe }}`, respectively. We use the `| safe` filter because the permalink doesn't need to be HTML escaped (escaping would cause `/` to render as `&#x2F;`).
+
+If you go to <http://127.0.0.1:1111/blog/>, you will see the section page for `blog`. The list is empty because we don't have any blog posts. Let's fix that now.
 
 ### Markdown Content
 

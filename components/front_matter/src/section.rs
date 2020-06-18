@@ -1,6 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
 use tera::{Map, Value};
-use toml;
 
 use super::{InsertAnchor, SortBy};
 use errors::{bail, Result};

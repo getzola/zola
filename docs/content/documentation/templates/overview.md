@@ -142,12 +142,31 @@ An example is:
 {{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
-In the case of non-internal links, you can also add a cachebust of the format `?t=1290192` at the end of a URL
+In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
 by passing `cachebust=true` to the `get_url` function.
 
 
+### 'get_file_hash`
+
+Gets the hash digest for a static file. Supported hashes are SHA-256, SHA-384 (default) and SHA-512. Requires `path`. The `sha_type` key is optional and must be one of 256, 384 or 512.
+
+```jinja2
+{{/* get_file_hash(path="js/app.js", sha_type=256) */}}
+```
+
+This can be used to implement subresource integrity. Do note that subresource integrity is typically used when using external scripts, which `get_file_hash` does not support.
+
+```jinja2
+<script src="{{/* get_url(path="js/app.js") */}}"
+        integrity="sha384-{{/* get_file_hash(path="js/app.js", sha_type=384) */}}"></script>
+```
+
+Whenever hashing files, whether using `get_file_hash` or `get_url(..., cachebust=true)`, the file is searched for in three places: `static/`, `content/` and the output path (so e.g. compiled SASS can be hashed, too.)
+
+
 ### `get_image_metadata`
-Gets metadata for an image.  Currently, the only supported keys are `width` and `height`.
+Gets metadata for an image. This supports common formats like JPEG, PNG, as well as SVG.  
+Currently, the only supported keys are `width` and `height`.
 
 ```jinja2
   {% set meta = get_image_metadata(path="...") %}

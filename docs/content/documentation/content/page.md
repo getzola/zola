@@ -69,7 +69,8 @@ If the path found starts with a datetime string (`YYYY-mm-dd` or [a RFC3339 date
 
 The output path extracted from the file path is then slugified or not, depending on the `slugify.paths` config, as explained previously.
 
-**Example:** The file `content/blog/2018-10-10-hello-world.md` will generated a page available at will be available at `[base_url]/hello-world`.
+**Example:**
+The file `content/blog/2018-10-10-hello-world.md` will yield a page at `[base_url]/blog/hello-world`.
 
 ## Front matter
 

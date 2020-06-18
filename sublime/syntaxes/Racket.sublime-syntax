@@ -1,0 +1,52 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Racket
+file_extensions:
+  - rkt
+scope: source.racket
+contexts:
+  main:
+    - match: '[^\\](\"[^\"]*\")'
+      captures:
+        1: string.quoted.double.source.racket
+    - match: '\((define)\s+([a-zA-Z0-9_\-?\+^:/!]+)\s*'
+      scope: meta.variable.source.racket
+      captures:
+        1: keyword.source.racket
+        2: entity.name.variable.source.racket
+    - match: '\((define)\s+\(([a-zA-Z0-9_\-?\+^:/!]+)\s*'
+      scope: meta.function.source.racket
+      captures:
+        1: keyword.source.racket
+        2: entity.name.function
+    - match: '\((struct)\s+([a-zA-Z0-9_\-?\+^]+)\s+'
+      scope: meta.struct.source.racket
+      captures:
+        1: keyword.source.racket
+        2: entity.name.type
+    - match: '[\s\(](if|lambda|cond|define|type-case|let|letrec|let!|\#lang|require|test|else|first|rest|define-type|define-type-alias|define-struct|not|local|error|lang|module|module*|module+|require|provide|quote|#%datum|#%expression|#%top|#%variable-reference|#%app|lambda|case-lambda|let|let*|letrec|let-values|let*-values|let-syntax|letrec-syntax|let-syntaxes|letrec-syntaxes|letrec-syntaxes+values|local|shared|if|cond|and|or|case|define|else|=>|define|define-values|define-syntax|define-syntaxes|define-for-syntax|define-require-syntax|define-provide-syntax|define-syntax-rule|define-record-type|begin|begin0|begin-for-syntax|when|unless|set!|set!-values|for|for/list|for/vector|for/hash|for/hasheq|for/hasheqv|for/and|for/or|for/lists|for/first|for/last|for/fold|for*|for*/list|for*/vector|for*/hash|for*/hasheq|for*/hasheqv|for*/and|for*/or|for*/lists|for*/first|for*/last|for*/fold|for/fold/derived|for*/fold/derived|define-sequence-syntax|:do-in|do|with-continuation-mark|quasiquote|unquote|unquote-splicing|quote-syntax|#%top-interaction|define-package|open-package|package-begin|define*|define*-values|define*-syntax|define*-syntaxes|open*-package|package?|package-exported-identifiers|package-original-identifiers|block|#%stratified-body|match|match*|match/values|define/match|match-lambda|match-lambda*|match-lambda**|match-let|match-let*|match-let-values|match-let*-values|match-letrec|match-define|match-define-values|with-handlers|with-handlers*|let/cc|let/ec|%|prompt|control|prompt-at|control-at|reset|shift|reset-at|shift-at|prompt0|reset0|control0|shift0|prompt0-at|reset0-at|control0-at|shift0-at|set|cupto|write|display|displayln|print|fprintf|printf|eprintf|format|print-pair-curly-braces|print-mpair-curly-braces|print-unreadable|print-graph|print-struct|print-box|print-vector-length|print-hash-table|print-boolean-long-form|print-reader-abbreviations|print-as-expression|print-syntax-width|current-write-relative-directory|port-write-handler|port-display-handler|port-print-handler|global-port-print-handler)[\s\)]'
+      scope: meta.keywords.source.racket
+      captures:
+        1: keyword.source.racket
+    - match: '[\s\(](true|false|empty|null)[\s\)]'
+      captures:
+        1: constant.language.source.racket
+    - match: '[\s\(\{\[](#t|#f|#true|#false)[\s\)\}\]]'
+      captures:
+        1: constant.language.source.racket
+    - match: '(#\\[a-zA-Z0-9_\-?\+\.\!\"]+)'
+      captures:
+        1: constant.language.source.racket
+    - match: '\b(0|([1-9][0-9_]*))\b'
+      scope: constant.numeric.integer.source.racket
+    - match: ;
+      push:
+        - meta_scope: comment.line.documentation.source.racket
+        - match: $\n
+          pop: true
+    - match: '#\|'
+      push:
+        - meta_scope: comment.block.source.racket
+        - match: '\|#'
+          pop: true

@@ -1,6 +1,6 @@
 [package]
 name = "zola"
-version = "0.10.2"
+version = "0.12.0"
 authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
 edition = "2018"
 license = "MIT"
@@ -9,7 +9,8 @@ description = "A fast static site generator with everything built-in"
 homepage = "https://www.getzola.org"
 repository = "https://github.com/getzola/zola"
 keywords = ["static", "site", "generator", "blog"]
-# build = "build.rs"
+
+include = ["src/**/*", "LICENSE", "README.md"]
 
 [build-dependencies]
 clap = "2"
@@ -19,7 +20,7 @@ name = "zola"
 
 [dependencies]
 atty = "0.2.11"
-clap = "2"
+clap = { version = "2", default-features = false }
 chrono = "0.4"
 lazy_static = "1.1.0"
 termcolor = "1.0.4"

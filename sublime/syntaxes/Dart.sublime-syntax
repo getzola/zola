@@ -39,22 +39,31 @@ contexts:
     - include: comments-doc-oldschool
     - include: comments-doc
     - include: comments-inline
+  comments-block:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.dart
+        - match: \*/
+          pop: true
+        - include: comments-block
   comments-doc:
     - match: ///
-      scope: comment.block.documentation.dart
+      push:
+        - meta_scope: comment.block.documentation.dart
+        - match: .*
+          pop: true
+        - include: dartdoc
   comments-doc-oldschool:
     - match: /\*\*
       push:
         - meta_scope: comment.block.documentation.dart
         - match: \*/
           pop: true
+        - include: comments-doc-oldschool
+        - include: comments-block
         - include: dartdoc
   comments-inline:
-    - match: /\*
-      push:
-        - meta_scope: comment.block.dart
-        - match: \*/
-          pop: true
+    - include: comments-block
     - match: ((//).*)$
       captures:
         1: comment.line.double-slash.dart
@@ -65,16 +74,16 @@ contexts:
       scope: variable.language.dart
     - match: '(?<!\$)\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)\b(?!\$)'
       scope: constant.numeric.dart
-    - match: "(?<![a-zA-Z0-9_$])[_$]*[A-Z][a-zA-Z0-9_$]*"
+    - match: '(?<![a-zA-Z0-9_$])([_$]*[A-Z][a-zA-Z0-9_$]*|bool\b|num\b|int\b|double\b|dynamic\b)'
       scope: support.class.dart
-    - match: '([_$]*[a-z][a-zA-Z0-9_$]*)(\(|\s+=>)'
+    - match: '([_$]*[a-z][a-zA-Z0-9_$]*)(<|\(|\s+=>)'
       captures:
         1: entity.name.function.dart
   dartdoc:
     - match: '(\[.*?\])'
       captures:
         0: variable.name.source.dart
-    - match: "    .*"
+    - match: '^ {4,}(?![ \*]).*'
       captures:
         0: variable.name.source.dart
     - match: "```.*?$"
@@ -105,7 +114,7 @@ contexts:
       scope: keyword.control.dart
     - match: (?<!\$)\b(new)\b(?!\$)
       scope: keyword.control.new.dart
-    - match: (?<!\$)\b(abstract|class|enum|extends|external|factory|implements|get|mixin|native|operator|set|typedef|with)\b(?!\$)
+    - match: (?<!\$)\b(abstract|class|enum|extends|external|factory|implements|get|mixin|native|operator|set|typedef|with|covariant)\b(?!\$)
       scope: keyword.declaration.dart
     - match: (?<!\$)\b(is\!?)\b(?!\$)
       scope: keyword.operator.dart
@@ -131,7 +140,7 @@ contexts:
       scope: keyword.operator.logical.dart
     - match: (?<!\$)\b(static|final|const)\b(?!\$)
       scope: storage.modifier.dart
-    - match: (?<!\$)\b(?:void|bool|num|int|double|dynamic|var)\b(?!\$)
+    - match: (?<!\$)\b(?:void|var)\b(?!\$)
       scope: storage.type.primitive.dart
   punctuation:
     - match: ","

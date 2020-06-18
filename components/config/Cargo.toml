@@ -3,6 +3,7 @@ name = "config"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
+include = ["src/**/*"]
 
 [dependencies]
 toml = "0.5"
@@ -11,7 +12,7 @@ serde_derive = "1"
 chrono = "0.4"
 globset = "0.4"
 lazy_static = "1"
-syntect = "=3.2.0"
+syntect = "4.1"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

@@ -1,16 +1,17 @@
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
+use std::{fs, io, result};
 
+use sha2::{Digest, Sha256, Sha384, Sha512};
+use svg_metadata as svg;
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 
 use config::Config;
-use image;
 use image::GenericImageView;
 use library::{Library, Taxonomy};
 use utils::site::resolve_internal_link;
-
-use imageproc;
 
 #[macro_use]
 mod macros;
@@ -47,26 +48,71 @@ impl TeraFn for Trans {
 pub struct GetUrl {
     config: Config,
     permalinks: HashMap<String, String>,
+    search_paths: Vec<PathBuf>,
 }
 impl GetUrl {
-    pub fn new(config: Config, permalinks: HashMap<String, String>) -> Self {
-        Self { config, permalinks }
+    pub fn new(
+        config: Config,
+        permalinks: HashMap<String, String>,
+        search_paths: Vec<PathBuf>,
+    ) -> Self {
+        Self { config, permalinks, search_paths }
     }
 }
 
 fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<String> {
-    if lang == &config.default_language {
+    if lang == config.default_language {
         return Ok(path);
     }
 
     if !config.languages.iter().any(|x| x.code == lang) {
-        return Err(format!("`{}` is not an authorized language (check config.languages).", lang).into());
+        return Err(
+            format!("`{}` is not an authorized language (check config.languages).", lang).into()
+        );
     }
 
-    let mut splitted_path: Vec<String> = path.split(".").map(String::from).collect();
+    let mut splitted_path: Vec<String> = path.split('.').map(String::from).collect();
     let ilast = splitted_path.len() - 1;
     splitted_path[ilast] = format!("{}.{}", lang, splitted_path[ilast]);
     Ok(splitted_path.join("."))
+}
+
+fn open_file(search_paths: &[PathBuf], url: &str) -> result::Result<fs::File, io::Error> {
+    let cleaned_url = url.trim_start_matches("@/").trim_start_matches('/');
+    for base_path in search_paths {
+        match fs::File::open(base_path.join(cleaned_url)) {
+            Ok(f) => return Ok(f),
+            Err(_) => continue,
+        };
+    }
+    Err(io::Error::from(io::ErrorKind::NotFound))
+}
+
+fn compute_file_sha256(mut file: fs::File) -> result::Result<String, io::Error> {
+    let mut hasher = Sha256::new();
+    io::copy(&mut file, &mut hasher)?;
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn compute_file_sha384(mut file: fs::File) -> result::Result<String, io::Error> {
+    let mut hasher = Sha384::new();
+    io::copy(&mut file, &mut hasher)?;
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn compute_file_sha512(mut file: fs::File) -> result::Result<String, io::Error> {
+    let mut hasher = Sha512::new();
+    io::copy(&mut file, &mut hasher)?;
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn file_not_found_err(search_paths: &[PathBuf], url: &str) -> Result<Value> {
+    Err(format!(
+        "file `{}` not found; searched in{}",
+        url,
+        search_paths.iter().fold(String::new(), |acc, arg| acc + " " + arg.to_str().unwrap())
+    )
+    .into())
 }
 
 impl TeraFn for GetUrl {
@@ -90,13 +136,14 @@ impl TeraFn for GetUrl {
         if path.starts_with("@/") {
             let path_with_lang = match make_path_with_lang(path, &lang, &self.config) {
                 Ok(x) => x,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             };
 
             match resolve_internal_link(&path_with_lang, &self.permalinks) {
                 Ok(resolved) => Ok(to_value(resolved.permalink).unwrap()),
                 Err(_) => {
-                    Err(format!("Could not resolve URL for link `{}` not found.", path_with_lang).into())
+                    Err(format!("Could not resolve URL for link `{}` not found.", path_with_lang)
+                        .into())
                 }
             }
         } else {
@@ -107,9 +154,56 @@ impl TeraFn for GetUrl {
             }
 
             if cachebust {
-                permalink = format!("{}?t={}", permalink, self.config.build_timestamp.unwrap());
+                match open_file(&self.search_paths, &path).and_then(compute_file_sha256) {
+                    Ok(hash) => {
+                        permalink = format!("{}?h={}", permalink, hash);
+                    }
+                    Err(_) => return file_not_found_err(&self.search_paths, &path),
+                };
             }
             Ok(to_value(permalink).unwrap())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct GetFileHash {
+    search_paths: Vec<PathBuf>,
+}
+impl GetFileHash {
+    pub fn new(search_paths: Vec<PathBuf>) -> Self {
+        Self { search_paths }
+    }
+}
+
+const DEFAULT_SHA_TYPE: u16 = 384;
+
+impl TeraFn for GetFileHash {
+    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
+        let path = required_arg!(
+            String,
+            args.get("path"),
+            "`get_file_hash` requires a `path` argument with a string value"
+        );
+        let sha_type = optional_arg!(
+            u16,
+            args.get("sha_type"),
+            "`get_file_hash`: `sha_type` must be 256, 384 or 512"
+        )
+        .unwrap_or(DEFAULT_SHA_TYPE);
+
+        let compute_hash_fn = match sha_type {
+            256 => compute_file_sha256,
+            384 => compute_file_sha384,
+            512 => compute_file_sha512,
+            _ => return Err("`get_file_hash`: `sha_type` must be 256, 384 or 512".into()),
+        };
+
+        let hash = open_file(&self.search_paths, &path).and_then(compute_hash_fn);
+
+        match hash {
+            Ok(digest) => Ok(to_value(digest).unwrap()),
+            Err(_) => file_not_found_err(&self.search_paths, &path),
         }
     }
 }
@@ -194,12 +288,28 @@ impl TeraFn for GetImageMeta {
         if !src_path.exists() {
             return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
         }
-        let img = image::open(&src_path)
-            .map_err(|e| Error::chain(format!("Failed to process image: {}", path), e))?;
+        let (height, width) = image_dimensions(&src_path)?;
         let mut map = tera::Map::new();
-        map.insert(String::from("height"), Value::Number(tera::Number::from(img.height())));
-        map.insert(String::from("width"), Value::Number(tera::Number::from(img.width())));
+        map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
+        map.insert(String::from("width"), Value::Number(tera::Number::from(width)));
         Ok(Value::Object(map))
+    }
+}
+
+// Try to read the image dimensions for a given image
+fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
+    if let Some("svg") = path.extension().and_then(OsStr::to_str) {
+        let img = svg::Metadata::parse_file(&path)
+            .map_err(|e| Error::chain(format!("Failed to process SVG: {}", path.display()), e))?;
+        match (img.height(), img.width(), img.view_box()) {
+            (Some(h), Some(w), _) => Ok((h as u32, w as u32)),
+            (_, _, Some(view_box)) => Ok((view_box.height as u32, view_box.width as u32)),
+            _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
+        }
+    } else {
+        let img = image::open(&path)
+            .map_err(|e| Error::chain(format!("Failed to process image: {}", path.display()), e))?;
+        Ok((img.height(), img.width()))
     }
 }
 
@@ -362,31 +472,59 @@ impl TeraFn for GetTaxonomy {
 
 #[cfg(test)]
 mod tests {
-    use super::{GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans};
+    use super::{GetFileHash, GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans};
 
     use std::collections::HashMap;
+    use std::env::temp_dir;
+    use std::fs::remove_dir_all;
+    use std::path::PathBuf;
     use std::sync::{Arc, RwLock};
+
+    use lazy_static::lazy_static;
 
     use tera::{to_value, Function, Value};
 
     use config::{Config, Taxonomy as TaxonomyConfig};
     use library::{Library, Taxonomy, TaxonomyItem};
+    use utils::fs::{create_directory, create_file};
     use utils::slugs::SlugifyStrategy;
+
+    struct TestContext {
+        static_path: PathBuf,
+    }
+    impl TestContext {
+        fn setup() -> Self {
+            let dir = temp_dir().join("static");
+            create_directory(&dir).expect("Could not create test directory");
+            create_file(&dir.join("app.css"), "// Hello world!")
+                .expect("Could not create test content (app.css)");
+            Self { static_path: dir }
+        }
+    }
+    impl Drop for TestContext {
+        fn drop(&mut self) {
+            remove_dir_all(&self.static_path).expect("Could not free test directory");
+        }
+    }
+
+    lazy_static! {
+        static ref TEST_CONTEXT: TestContext = TestContext::setup();
+    }
 
     #[test]
     fn can_add_cachebust_to_url() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css?t=1");
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css?h=572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
     }
 
     #[test]
     fn can_add_trailing_slashes() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -396,18 +534,18 @@ mod tests {
     #[test]
     fn can_add_slashes_and_cachebust() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css/?t=1");
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css/?h=572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
     }
 
     #[test]
     fn can_link_to_some_static_file() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
@@ -594,12 +732,15 @@ title = "A title"
     #[test]
     fn error_when_language_not_available() {
         let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config, HashMap::new());
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
         let err = static_fn.call(&args).unwrap_err();
-        assert_eq!("`it` is not an authorized language (check config.languages).", format!("{}", err));
+        assert_eq!(
+            "`it` is not an authorized language (check config.languages).",
+            format!("{}", err)
+        );
     }
 
     #[test]
@@ -608,17 +749,20 @@ title = "A title"
         let mut permalinks = HashMap::new();
         permalinks.insert(
             "a_section/a_page.md".to_string(),
-            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
         );
         permalinks.insert(
             "a_section/a_page.en.md".to_string(),
-            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks);
+        let static_fn = GetUrl::new(config, permalinks, vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/a_section/a_page/");
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/a_section/a_page/"
+        );
     }
 
     #[test]
@@ -627,16 +771,62 @@ title = "A title"
         let mut permalinks = HashMap::new();
         permalinks.insert(
             "a_section/a_page.md".to_string(),
-            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
         );
         permalinks.insert(
             "a_section/a_page.en.md".to_string(),
-            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string()
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks);
+        let static_fn = GetUrl::new(config, permalinks, vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/en/a_section/a_page/");
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/"
+        );
+    }
+
+    #[test]
+    fn can_get_file_hash_sha256() {
+        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("app.css").unwrap());
+        args.insert("sha_type".to_string(), to_value(256).unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840"
+        );
+    }
+
+    #[test]
+    fn can_get_file_hash_sha384() {
+        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("app.css").unwrap());
+        assert_eq!(static_fn.call(&args).unwrap(), "141c09bd28899773b772bbe064d8b718fa1d6f2852b7eafd5ed6689d26b74883b79e2e814cd69d5b52ab476aa284c414");
+    }
+
+    #[test]
+    fn can_get_file_hash_sha512() {
+        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("app.css").unwrap());
+        args.insert("sha_type".to_string(), to_value(512).unwrap());
+        assert_eq!(static_fn.call(&args).unwrap(), "379dfab35123b9159d9e4e92dc90e2be44cf3c2f7f09b2e2df80a1b219b461de3556c93e1a9ceb3008e999e2d6a54b4f1d65ee9be9be63fa45ec88931623372f");
+    }
+
+    #[test]
+    fn error_when_file_not_found_for_hash() {
+        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("doesnt-exist").unwrap());
+        assert_eq!(
+            format!(
+                "file `doesnt-exist` not found; searched in {}",
+                TEST_CONTEXT.static_path.to_str().unwrap()
+            ),
+            format!("{}", static_fn.call(&args).unwrap_err())
+        );
     }
 }
