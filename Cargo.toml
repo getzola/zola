@@ -20,7 +20,7 @@ name = "zola"
 
 [dependencies]
 atty = "0.2.11"
-clap = "2"
+clap = { version = "2", default-features = false }
 chrono = "0.4"
 lazy_static = "1.1.0"
 termcolor = "1.0.4"

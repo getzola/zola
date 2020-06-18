@@ -28,7 +28,7 @@ fn main() {
             builder.add_plain_text_syntax();
             match builder.add_from_folder(package_dir, true) {
                 Ok(_) => (),
-                Err(e) => println!("Loading error: {:?}", e)
+                Err(e) => println!("Loading error: {:?}", e),
             };
             let ss = builder.build();
             dump_to_file(&ss, packpath_newlines).unwrap();

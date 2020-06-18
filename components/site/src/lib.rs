@@ -534,8 +534,11 @@ impl Site {
     pub fn register_early_global_fns(&mut self) {
         self.tera.register_function(
             "get_url",
-            global_fns::GetUrl::new(self.config.clone(), self.permalinks.clone(),
-                vec![self.static_path.clone(), self.output_path.clone(), self.content_path.clone()]),
+            global_fns::GetUrl::new(
+                self.config.clone(),
+                self.permalinks.clone(),
+                vec![self.static_path.clone(), self.output_path.clone(), self.content_path.clone()],
+            ),
         );
         self.tera.register_function(
             "resize_image",
@@ -551,9 +554,14 @@ impl Site {
             "get_taxonomy_url",
             global_fns::GetTaxonomyUrl::new(&self.config.default_language, &self.taxonomies),
         );
-        self.tera.register_function("get_file_hash", global_fns::GetFileHash::new(
-            vec![self.static_path.clone(), self.output_path.clone(), self.content_path.clone()]
-        ));
+        self.tera.register_function(
+            "get_file_hash",
+            global_fns::GetFileHash::new(vec![
+                self.static_path.clone(),
+                self.output_path.clone(),
+                self.content_path.clone(),
+            ]),
+        );
     }
 
     pub fn register_tera_global_fns(&mut self) {

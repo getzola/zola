@@ -5,7 +5,6 @@ use std::error::Error as StdError;
 use std::io::Write;
 use std::time::Instant;
 
-use atty;
 use chrono::Duration;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 

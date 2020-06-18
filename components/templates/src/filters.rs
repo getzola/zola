@@ -19,6 +19,7 @@ pub fn markdown<S: BuildHasher>(
     opts.insert(cmark::Options::ENABLE_TABLES);
     opts.insert(cmark::Options::ENABLE_FOOTNOTES);
     opts.insert(cmark::Options::ENABLE_STRIKETHROUGH);
+    opts.insert(cmark::Options::ENABLE_TASKLISTS);
 
     let mut html = String::new();
     let parser = cmark::Parser::new_ext(&s, opts);

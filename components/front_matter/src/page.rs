@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use chrono::prelude::*;
 use serde_derive::Deserialize;
 use tera::{Map, Value};
-use toml;
 
 use errors::{bail, Result};
 use utils::de::{fix_toml_dates, from_toml_datetime};
@@ -57,15 +56,17 @@ pub struct PageFrontMatter {
     pub extra: Map<String, Value>,
 }
 
-/// Parse a TOML datetime from a string.
-/// There are three alternatives: an offset datetime (plain RFC3339), a local datetime
-/// (RFC3339 with timezone omitted) and a local date (YYYY-MM-DD). This tries each in
-/// order.
-fn parse_datetime(d: &String) -> Option<NaiveDateTime> {
+/// Parse a string for a datetime coming from one of the supported TOML format
+/// There are three alternatives:
+/// 1. an offset datetime (plain RFC3339)
+/// 2. a local datetime (RFC3339 with timezone omitted)
+/// 3. a local date (YYYY-MM-DD).
+/// This tries each in order.
+fn parse_datetime(d: &str) -> Option<NaiveDateTime> {
     DateTime::parse_from_rfc3339(d)
-        .or(DateTime::parse_from_rfc3339(format!("{}Z", d).as_ref()))
+        .or_else(|_| DateTime::parse_from_rfc3339(format!("{}Z", d).as_ref()))
         .map(|s| s.naive_local())
-        .or(NaiveDate::parse_from_str(d, "%Y-%m-%d").map(|s| s.and_hms(0, 0, 0)))
+        .or_else(|_| NaiveDate::parse_from_str(d, "%Y-%m-%d").map(|s| s.and_hms(0, 0, 0)))
         .ok()
 }
 
@@ -107,7 +108,7 @@ impl PageFrontMatter {
     /// Converts the TOML datetime to a Chrono naive datetime
     /// Also grabs the year/month/day tuple that will be used in serialization
     pub fn date_to_datetime(&mut self) {
-        self.datetime = self.date.as_ref().and_then(parse_datetime);
+        self.datetime = self.date.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
         self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
     }
 
@@ -317,6 +318,23 @@ mod tests {
         println!("{:?}", res);
         assert!(res.is_ok());
         assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-14-01").unwrap());
+    }
+
+    #[test]
+    fn can_parse_fully_nested_dates_in_extra() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+
+    [extra]
+    date_example = 2020-05-04
+    [[extra.questions]]
+    date = 2020-05-03
+    name = "Who is the prime minister of Uganda?""#;
+        let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap().extra["questions"][0]["date"], to_value("2020-05-03").unwrap());
     }
 
     #[test]

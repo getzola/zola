@@ -35,7 +35,6 @@ use hyper_staticfile::ResolveResult;
 use tokio::io::AsyncReadExt;
 
 use chrono::prelude::*;
-use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
@@ -45,8 +44,6 @@ use site::Site;
 use utils::fs::copy_file;
 
 use crate::console;
-use open;
-use rebuild;
 
 #[derive(Debug, PartialEq)]
 enum ChangeKind {

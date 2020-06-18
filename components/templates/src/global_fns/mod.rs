@@ -1,20 +1,17 @@
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::{fs, io, result};
-use std::ffi::OsStr; 
 
 use sha2::{Digest, Sha256, Sha384, Sha512};
-use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 use svg_metadata as svg;
+use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 
 use config::Config;
-use image;
 use image::GenericImageView;
 use library::{Library, Taxonomy};
 use utils::site::resolve_internal_link;
-
-use imageproc;
 
 #[macro_use]
 mod macros;
@@ -54,13 +51,17 @@ pub struct GetUrl {
     search_paths: Vec<PathBuf>,
 }
 impl GetUrl {
-    pub fn new(config: Config, permalinks: HashMap<String, String>, search_paths: Vec<PathBuf>) -> Self {
+    pub fn new(
+        config: Config,
+        permalinks: HashMap<String, String>,
+        search_paths: Vec<PathBuf>,
+    ) -> Self {
         Self { config, permalinks, search_paths }
     }
 }
 
 fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<String> {
-    if lang == &config.default_language {
+    if lang == config.default_language {
         return Ok(path);
     }
 
@@ -70,18 +71,18 @@ fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<Stri
         );
     }
 
-    let mut splitted_path: Vec<String> = path.split(".").map(String::from).collect();
+    let mut splitted_path: Vec<String> = path.split('.').map(String::from).collect();
     let ilast = splitted_path.len() - 1;
     splitted_path[ilast] = format!("{}.{}", lang, splitted_path[ilast]);
     Ok(splitted_path.join("."))
 }
 
-fn open_file(search_paths: &Vec<PathBuf>, url: &String) -> result::Result<fs::File, io::Error> {
-    let cleaned_url = url.trim_start_matches("@/").trim_start_matches("/");
+fn open_file(search_paths: &[PathBuf], url: &str) -> result::Result<fs::File, io::Error> {
+    let cleaned_url = url.trim_start_matches("@/").trim_start_matches('/');
     for base_path in search_paths {
         match fs::File::open(base_path.join(cleaned_url)) {
             Ok(f) => return Ok(f),
-            Err(_) => continue
+            Err(_) => continue,
         };
     }
     Err(io::Error::from(io::ErrorKind::NotFound))
@@ -90,23 +91,28 @@ fn open_file(search_paths: &Vec<PathBuf>, url: &String) -> result::Result<fs::Fi
 fn compute_file_sha256(mut file: fs::File) -> result::Result<String, io::Error> {
     let mut hasher = Sha256::new();
     io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.result()))
+    Ok(format!("{:x}", hasher.finalize()))
 }
+
 fn compute_file_sha384(mut file: fs::File) -> result::Result<String, io::Error> {
     let mut hasher = Sha384::new();
     io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.result()))
+    Ok(format!("{:x}", hasher.finalize()))
 }
+
 fn compute_file_sha512(mut file: fs::File) -> result::Result<String, io::Error> {
     let mut hasher = Sha512::new();
     io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.result()))
+    Ok(format!("{:x}", hasher.finalize()))
 }
 
-fn file_not_found_err(search_paths: &Vec<PathBuf>, url: &String) -> Result<Value> {
-     Err(format!("file `{}` not found; searched in{}", url,
-         search_paths.iter().fold(String::new(),
-            |acc, arg| acc + " " + arg.to_str().unwrap())).into())
+fn file_not_found_err(search_paths: &[PathBuf], url: &str) -> Result<Value> {
+    Err(format!(
+        "file `{}` not found; searched in{}",
+        url,
+        search_paths.iter().fold(String::new(), |acc, arg| acc + " " + arg.to_str().unwrap())
+    )
+    .into())
 }
 
 impl TeraFn for GetUrl {
@@ -151,8 +157,8 @@ impl TeraFn for GetUrl {
                 match open_file(&self.search_paths, &path).and_then(compute_file_sha256) {
                     Ok(hash) => {
                         permalink = format!("{}?h={}", permalink, hash);
-                    },
-                    Err(_) => return file_not_found_err(&self.search_paths, &path)
+                    }
+                    Err(_) => return file_not_found_err(&self.search_paths, &path),
                 };
             }
             Ok(to_value(permalink).unwrap())
@@ -183,20 +189,21 @@ impl TeraFn for GetFileHash {
             u16,
             args.get("sha_type"),
             "`get_file_hash`: `sha_type` must be 256, 384 or 512"
-        ).unwrap_or(DEFAULT_SHA_TYPE);
+        )
+        .unwrap_or(DEFAULT_SHA_TYPE);
 
         let compute_hash_fn = match sha_type {
             256 => compute_file_sha256,
             384 => compute_file_sha384,
             512 => compute_file_sha512,
-            _ => return Err("`get_file_hash`: `sha_type` must be 256, 384 or 512".into())
+            _ => return Err("`get_file_hash`: `sha_type` must be 256, 384 or 512".into()),
         };
 
         let hash = open_file(&self.search_paths, &path).and_then(compute_hash_fn);
 
         match hash {
             Ok(digest) => Ok(to_value(digest).unwrap()),
-            Err(_) => file_not_found_err(&self.search_paths, &path)
+            Err(_) => file_not_found_err(&self.search_paths, &path),
         }
     }
 }
@@ -297,7 +304,7 @@ fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
         match (img.height(), img.width(), img.view_box()) {
             (Some(h), Some(w), _) => Ok((h as u32, w as u32)),
             (_, _, Some(view_box)) => Ok((view_box.height as u32, view_box.width as u32)),
-            _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into())
+            _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
         }
     } else {
         let img = image::open(&path)
@@ -465,7 +472,7 @@ impl TeraFn for GetTaxonomy {
 
 #[cfg(test)]
 mod tests {
-    use super::{GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans, GetFileHash};
+    use super::{GetFileHash, GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans};
 
     use std::collections::HashMap;
     use std::env::temp_dir;
@@ -786,7 +793,10 @@ title = "A title"
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840"
+        );
     }
 
     #[test]
@@ -812,8 +822,10 @@ title = "A title"
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("doesnt-exist").unwrap());
         assert_eq!(
-            format!("file `doesnt-exist` not found; searched in {}",
-                    TEST_CONTEXT.static_path.to_str().unwrap()),
+            format!(
+                "file `doesnt-exist` not found; searched in {}",
+                TEST_CONTEXT.static_path.to_str().unwrap()
+            ),
             format!("{}", static_fn.call(&args).unwrap_err())
         );
     }

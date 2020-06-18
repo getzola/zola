@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
-use toml;
 use toml::Value as Toml;
 
 use crate::highlighting::THEME_SET;
