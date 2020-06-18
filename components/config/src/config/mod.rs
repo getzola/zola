@@ -1,3 +1,8 @@
+pub mod languages;
+pub mod taxonomies;
+pub mod link_checker;
+pub mod slugify;
+
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -10,7 +15,6 @@ use crate::highlighting::THEME_SET;
 use crate::theme::Theme;
 use errors::{bail, Error, Result};
 use utils::fs::read_file_with_error;
-use utils::slugs::SlugifyStrategy;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
@@ -22,103 +26,6 @@ pub enum Mode {
     Check,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Slugify {
-    pub paths: SlugifyStrategy,
-    pub taxonomies: SlugifyStrategy,
-    pub anchors: SlugifyStrategy,
-}
-
-impl Default for Slugify {
-    fn default() -> Self {
-        Slugify {
-            paths: SlugifyStrategy::On,
-            taxonomies: SlugifyStrategy::On,
-            anchors: SlugifyStrategy::On,
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Language {
-    /// The language code
-    pub code: String,
-    /// Whether to generate a feed for that language, defaults to `false`
-    pub feed: bool,
-    /// Whether to generate search index for that language, defaults to `false`
-    pub search: bool,
-}
-
-impl Default for Language {
-    fn default() -> Self {
-        Language { code: String::new(), feed: false, search: false }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Taxonomy {
-    /// The name used in the URL, usually the plural
-    pub name: String,
-    /// If this is set, the list of individual taxonomy term page will be paginated
-    /// by this much
-    pub paginate_by: Option<usize>,
-    pub paginate_path: Option<String>,
-    /// Whether to generate a feed only for each taxonomy term, defaults to false
-    pub feed: bool,
-    /// The language for that taxonomy, only used in multilingual sites.
-    /// Defaults to the config `default_language` if not set
-    pub lang: String,
-}
-
-impl Taxonomy {
-    pub fn is_paginated(&self) -> bool {
-        if let Some(paginate_by) = self.paginate_by {
-            paginate_by > 0
-        } else {
-            false
-        }
-    }
-
-    pub fn paginate_path(&self) -> &str {
-        if let Some(ref path) = self.paginate_path {
-            path
-        } else {
-            "page"
-        }
-    }
-}
-
-impl Default for Taxonomy {
-    fn default() -> Self {
-        Taxonomy {
-            name: String::new(),
-            paginate_by: None,
-            paginate_path: None,
-            feed: false,
-            lang: String::new(),
-        }
-    }
-}
-
-type TranslateTerm = HashMap<String, String>;
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct LinkChecker {
-    /// Skip link checking for these URL prefixes
-    pub skip_prefixes: Vec<String>,
-    /// Skip anchor checking for these URL prefixes
-    pub skip_anchor_prefixes: Vec<String>,
-}
-
-impl Default for LinkChecker {
-    fn default() -> LinkChecker {
-        LinkChecker { skip_prefixes: Vec::new(), skip_anchor_prefixes: Vec::new() }
-    }
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -136,7 +43,7 @@ pub struct Config {
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
     /// The list of supported languages outside of the default one
-    pub languages: Vec<Language>,
+    pub languages: Vec<languages::Language>,
 
     /// Languages list and translated strings
     ///
@@ -145,7 +52,7 @@ pub struct Config {
     ///
     /// The attribute is intentionally not public, use `get_translation()` method for translating
     /// key into different language.
-    translations: HashMap<String, TranslateTerm>,
+    translations: HashMap<String, languages::TranslateTerm>,
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
@@ -163,7 +70,7 @@ pub struct Config {
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
 
-    pub taxonomies: Vec<Taxonomy>,
+    pub taxonomies: Vec<taxonomies::Taxonomy>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
@@ -187,10 +94,10 @@ pub struct Config {
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_syntax_set: Option<SyntaxSet>,
 
-    pub link_checker: LinkChecker,
+    pub link_checker: link_checker::LinkChecker,
 
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
-    pub slugify: Slugify,
+    pub slugify: slugify::Slugify,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -394,8 +301,8 @@ impl Default for Config {
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
-            link_checker: LinkChecker::default(),
-            slugify: Slugify::default(),
+            link_checker: link_checker::LinkChecker::default(),
+            slugify: slugify::Slugify::default(),
             extra: HashMap::new(),
         }
     }
@@ -403,7 +310,8 @@ impl Default for Config {
 
 #[cfg(test)]
 mod tests {
-    use super::{Config, SlugifyStrategy, Theme};
+    use super::*;
+    use utils::slugs::SlugifyStrategy;
 
     #[test]
     fn can_import_valid_config() {
