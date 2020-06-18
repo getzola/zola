@@ -5,6 +5,8 @@
 - Add 2 syntax highlighting themes: `green` and `railsbase16-green-screen-dark`
 - Enable task lists in Markdown
 - Add support for SVG in `get_image_metadata`
+- Fix parsing of dates in arrays in `extra`
+- Add a `--force` argument to `zola init` to allow creating a Zola site in a non-empty directory
 
 ## 0.11.0 (2020-05-25)
 
