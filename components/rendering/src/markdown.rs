@@ -237,7 +237,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                                     match &SYNTAX_SET.find_syntax_by_extension(info) {
                                         Some(syn_set) => css_highlighter = Some(ClassedHTMLGenerator::new(&syn_set, &SYNTAX_SET)),
                                         None => {
-                                            // create fallback highligter
+                                            // create fallback highlighter
                                             let syn_set = &SYNTAX_SET.find_syntax_by_extension("txt").unwrap();
                                             css_highlighter = Some(ClassedHTMLGenerator::new(&syn_set, &SYNTAX_SET));
                                         }
