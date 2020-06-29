@@ -1,7 +1,8 @@
 pub mod languages;
-pub mod taxonomies;
 pub mod link_checker;
+pub mod search;
 pub mod slugify;
+pub mod taxonomies;
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -25,7 +26,6 @@ pub enum Mode {
     Serve,
     Check,
 }
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -98,6 +98,9 @@ pub struct Config {
 
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
     pub slugify: slugify::Slugify,
+
+    /// The search config, telling what to include in the search index
+    pub search: search::Search,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -303,6 +306,7 @@ impl Default for Config {
             extra_syntax_set: None,
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
+            search: search::Search::default(),
             extra: HashMap::new(),
         }
     }

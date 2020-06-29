@@ -2,7 +2,6 @@ use serde_derive::{Deserialize, Serialize};
 
 use utils::slugs::SlugifyStrategy;
 
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Slugify {

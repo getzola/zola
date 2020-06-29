@@ -810,7 +810,11 @@ impl Site {
             &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
             &format!(
                 "window.searchIndex = {};",
-                search::build_index(&self.config.default_language, &self.library.read().unwrap())?
+                search::build_index(
+                    &self.config.default_language,
+                    &self.library.read().unwrap(),
+                    &self.config
+                )?
             ),
         )?;
 
@@ -820,7 +824,11 @@ impl Site {
                     &self.output_path.join(&format!("search_index.{}.js", &language.code)),
                     &format!(
                         "window.searchIndex = {};",
-                        search::build_index(&language.code, &self.library.read().unwrap())?
+                        search::build_index(
+                            &language.code,
+                            &self.library.read().unwrap(),
+                            &self.config
+                        )?
                     ),
                 )?;
             }

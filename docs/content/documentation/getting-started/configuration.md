@@ -76,10 +76,6 @@ languages = []
 # When set to "true", the Sass files in the `sass` directory are compiled.
 compile_sass = false
 
-# When set to "true", a search index is built from the pages and section
-# content for `default_language`.
-build_search_index = false
-
 # A list of glob patterns specifying asset files to ignore when the content
 # directory is processed. Defaults to none, which means that all asset files are
 # copied over to the `public` directory.
@@ -120,6 +116,22 @@ skip_anchor_prefixes = [
 paths = "on"
 taxonomies = "on"
 anchors = "on"
+
+# When set to "true", a search index is built from the pages and section
+# content for `default_language`.
+build_search_index = false
+
+[search]
+# Whether to include the title of the page/section in the index
+include_title = true
+# Whether to include the description of the page/section in the index
+include_description = false
+# Whether to include the rendered content of the page/section in the index
+include_content = true
+# At which character to truncate the content to. Useful if you have a lot of pages and the index would
+# become too big to load on the site. Defaults to not being set.
+# truncate_content_length = 100
+
 
 # Optional translation object. Keys should be language codes.
 [translations]
