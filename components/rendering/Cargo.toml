@@ -6,11 +6,13 @@ edition = "2018"
 include = ["src/**/*"]
 
 [dependencies]
+katex = "0.2"
 tera = { version = "1", features = ["preserve_order"] }
 syntect = "4.1"
 pulldown-cmark = { version = "0.8", default-features = false }
 serde = "1"
 serde_derive = "1"
+pcre2 = "0.2.3"
 pest = "2"
 pest_derive = "2"
 regex = "1"
