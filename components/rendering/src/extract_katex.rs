@@ -67,7 +67,9 @@ mod tests {
     }
 
     fn changed(eg: &str) {
-        assert_ne!(eg, render_katex(eg));
+        let result = render_katex(eg);
+        assert!(result.len() > eg.len());
+        assert_ne!(eg, &result[..eg.len()]);
     }
 
     #[test]
@@ -141,6 +143,7 @@ $$"
     fn working_inline() {
         let eg = r"Consider $π = \frac{1}{2}τ$ for a moment.";
         let result = render_katex(eg);
+        assert!(result.len() > eg.len());
         assert_ne!(eg, result);
         assert_eq!(eg[..9], result[..9]);
         assert_eq!(eg[eg.len()-14..], result[result.len()-14..]);
@@ -151,10 +154,29 @@ $$"
         changed(
 r"$$\sum_{i = 0}^n i = \frac{1}{2}n(n+1)$$"
         );
+        // N.B. trailing whitespace is deliberate and should not disable math mode.
         changed(
 r"    $$ 
         \sum_{i = 0}^n i = \frac{1}{2}n(n+1) 
     $$"
         );
+    }
+
+    #[test]
+    fn multiple_formulae() {
+        let eg = r"Consider $π = \frac{1}{2}τ$, then
+
+            $$
+                4 \int_{-1}^1 \sqrt{1 - x^2} \mathop{dx} = τ
+            $$
+
+            and also consider $A = πr^2$ for a moment.";
+        let result = render_katex(eg);
+        assert!(result.len() > eg.len());
+        assert!(result.contains(", then"));
+        assert!(result.contains("and also consider "));
+        assert_ne!(eg, result);
+        assert_eq!(eg[..9], result[..9]);
+        assert_eq!(eg[eg.len()-14..], result[result.len()-14..]);
     }
 }
