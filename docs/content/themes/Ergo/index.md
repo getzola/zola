@@ -3,23 +3,25 @@
 title = "Ergo"
 description = "A simple blog Theme focused on writing, inspired by svbtle"
 template = "theme.html"
-date = 2018-09-03T02:13:01-04:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2019-07-12T23:49:55+02:00
-updated = 2018-09-03T02:13:01-04:00
-repository = "https://github.com/InsidiousMind/Ergo"
-homepage = "https://github.com/InsidiousMind/Ergo"
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
+repository = "https://github.com/InsidiousMind/Ergo.git"
+homepage = "https://github.com/insipx/Ergo"
 minimum_version = "0.4.1"
 license = "MIT"
 demo = "https://ergo.liquidthink.net"
 
 [extra.author]
 name = "Andrew Plaza"
-homepage = "https://code.liquidthink.net"
+homepage = "https://liquidthink.net"
 +++        
 
-[ergo](http://ergo.liquidthink.net)
+[ergo LIVE DEMO](http://ergo.liquidthink.net)
+
+
 
 ![Ergo Screenshot](https://i.imgur.com/l182IYg.jpg)
 
@@ -59,6 +61,9 @@ Change them however you like! Feel free to go into theme and edit the colors. Ho
 # and update your config.toml accordingly
 profile = 'profile.svg'
 
+# Description. This is needed for SEO/site metadata purposes
+description = "Simple blog theme focused on writing, inspired by svbtle"
+
 # website, should not be preceded with `http://`
 website = "code.liquidthink.net"
 
@@ -70,6 +75,12 @@ twitter = "liquid_think"
 email = "${MY_EMAIL}@cool_domain.com"
 # instagram
 instagram = "${your_insta}"
+# keybase
+keybase = "${your_keybase}"
+# linkedin
+linkedin = "${your_linkedin}"
+# reddit
+reddit = "${your_reddit}"
 # youtube
 youtube = "${your_youtube_channel_id}"
 # if any social networks are missing from this list that you want added, open an issue. I will add it for you ASAP
