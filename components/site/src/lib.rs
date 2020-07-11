@@ -882,7 +882,7 @@ impl Site {
             .expect("Invalid glob for sass")
             .filter_map(|e| e.ok())
             .filter(|entry| {
-                !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_')
+                !entry.as_path().components().any(|c| c.as_os_str().to_string_lossy().starts_with('_'))
             })
             .collect::<Vec<_>>();
 
