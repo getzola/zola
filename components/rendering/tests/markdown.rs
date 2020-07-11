@@ -805,45 +805,21 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 }
 
 #[test]
-fn allow_newlines_and_whitespace_in_shortcode() {
+fn can_emit_newlines_and_whitespace_with_shortcode() {
     let permalinks_ctx = HashMap::new();
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
 
     let shortcode = r#"
-<figure>
-     <blockquote>
+<blockquote>
      {{ body | markdown | safe }}
-     </blockquote>
+</blockquote>"#;
 
-     <figcaption>{{ caption }}</figcaption>
-</figure>"#;
+    let markdown_string = "{% quote() %}\n```\nHello\n    \n    Zola\n   \n  !\n```\n{% end %}";
 
-    let markdown_string = r#"{% figure(caption="Keats") %}
-```
-Hello
-    
-    Zola
-  
-  !
-```
-{% end %}"#;
+    let expected = "<blockquote>\n     <pre><code>Hello\n    \n    Zola\n   \n  !\n</code></pre>\n\n</blockquote>";
 
-    let expected = r#"<figure>
-     <blockquote>
-     <pre><code>Hello
-    
-    Zola
-  
-  !
-</code></pre>
-
-     </blockquote>
-
-     <figcaption>Keats</figcaption>
-</figure>"#;
-
-    tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
+    tera.add_raw_template(&format!("shortcodes/{}.html", "quote"), shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 

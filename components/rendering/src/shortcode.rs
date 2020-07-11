@@ -123,7 +123,7 @@ fn render_shortcode(
 
     // A blank line will cause the markdown parser to think we're out of HTML and start looking
     // at indentation, making the output a code block. To avoid this, newlines are replaced with
-    // "<!--\\n-->" at this stage, which will be undone after markdown rendering in lib.rs. Since
+    // "<!--\n-->" at this stage, which will be undone after markdown rendering in lib.rs. Since
     // that is an HTML comment, it shouldn't be rendered anyway. and not cause problems unless
     // someone wants to include that comment in their content.
     let res = res.replace('\n', "<!--\\n-->");
