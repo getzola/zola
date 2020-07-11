@@ -810,16 +810,15 @@ fn can_emit_newlines_and_whitespace_with_shortcode() {
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
 
-    let shortcode = r#"
-<blockquote>
-     {{ body | markdown | safe }}
-</blockquote>"#;
+    let shortcode = r#"<pre>
+{{ body }}
+</pre>"#;
 
-    let markdown_string = "{% quote() %}\n```\nHello\n    \n    Zola\n   \n  !\n```\n{% end %}";
+    let markdown_string = "{% preformatted() %}\nHello\n    \n    Zola\n   \n  !\n{% end %}";
 
-    let expected = "<blockquote>\n     <pre><code>Hello\n    \n    Zola\n   \n  !\n</code></pre>\n\n</blockquote>";
+    let expected = "<pre>\nHello\n    \n    Zola\n   \n  !\n</pre>";
 
-    tera.add_raw_template(&format!("shortcodes/{}.html", "quote"), shortcode).unwrap();
+    tera.add_raw_template(&format!("shortcodes/{}.html", "preformatted"), shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
