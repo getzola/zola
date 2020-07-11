@@ -788,13 +788,7 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 
     let markdown_string = r#"{{ figure(src="spherecluster.png", caption="Some spheres.") }}"#;
 
-    let expected = r#"<figure>
-     
-     <img src="/images/spherecluster.png" alt="Some spheres." />
-     
-
-     <figcaption>Some spheres.</figcaption>
-</figure>"#;
+    let expected = "<figure>\n     \n     <img src=\"/images/spherecluster.png\" alt=\"Some spheres.\" />\n     \n\n     <figcaption>Some spheres.</figcaption>\n</figure>";
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
     let config = Config::default();
