@@ -14,7 +14,9 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
     // Don't do shortcodes if there is nothing like a shortcode in the content
     if content.contains("{{") || content.contains("{%") {
         let rendered = render_shortcodes(content, context)?;
-        return markdown_to_html(&rendered, context);
+        let mut html = markdown_to_html(&rendered, context)?;
+        html.body = html.body.replace("<!--\\n-->", "\n");
+        return Ok(html);
     }
 
     markdown_to_html(&content, context)
