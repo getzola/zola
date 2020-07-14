@@ -344,11 +344,18 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
             }
 
-            // record heading to make table of contents
-            let permalink = format!("{}#{}", context.current_page_permalink, id);
-            let h =
-                Heading { level: heading_ref.level, id, permalink, title, children: Vec::new() };
-            headings.push(h);
+            if cfg!(not(feature = "html-toc")) {
+                // record heading to make table of contents
+                let permalink = format!("{}#{}", context.current_page_permalink, id);
+                let h = Heading {
+                    level: heading_ref.level,
+                    id,
+                    permalink,
+                    title,
+                    children: Vec::new(),
+                };
+                headings.push(h);
+            }
         }
 
         if context.insert_anchor != InsertAnchor::None {
@@ -361,6 +368,21 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     if let Some(e) = error {
         Err(e)
     } else {
+        let headings = if cfg!(feature = "html-toc") {
+            extract_headings_from_html(&html, context)
+                .map_err(|e| {
+                    log::warn!(
+                        "failed to create toc for {}: {}",
+                        context.current_page_permalink,
+                        e
+                    );
+                    e
+                })
+                .unwrap_or_default()
+        } else {
+            headings
+        };
+
         Ok(Rendered {
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
@@ -369,6 +391,50 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             external_links,
         })
     }
+}
+
+#[cfg(not(feature = "html-toc"))]
+fn extract_headings_from_html(_html: &str, _context: &RenderContext) -> Result<Vec<Heading>> {
+    Ok(vec![])
+}
+
+#[cfg(feature = "html-toc")]
+fn extract_headings_from_html(html: &str, context: &RenderContext) -> Result<Vec<Heading>> {
+    use scraper::{Html, Selector};
+    let fragment = Html::parse_fragment(html);
+    let selector = Selector::parse("h1, h2, h3, h4, h5, h6").expect("Invalid selector");
+
+    let res = fragment
+        .select(&selector)
+        .filter_map(|node| {
+            let el = node.value();
+            let id = el.id()?;
+            let permalink = format!("{}#{}", context.current_page_permalink, id);
+            let title = node.text().collect::<String>();
+            let title = if context.insert_anchor != InsertAnchor::None {
+                title.trim_start_matches("🔗").trim_end_matches("🔗").to_string()
+            } else {
+                title
+            };
+            let h = Heading {
+                level: match el.name() {
+                    "h1" => 1,
+                    "h2" => 2,
+                    "h3" => 3,
+                    "h4" => 4,
+                    "h5" => 5,
+                    "h6" => 6,
+                    _ => return None,
+                },
+                id: id.to_string(),
+                permalink,
+                title,
+                children: Vec::new(),
+            };
+            Some(h)
+        })
+        .collect();
+    Ok(res)
 }
 
 #[cfg(test)]

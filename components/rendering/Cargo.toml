@@ -15,13 +15,18 @@ pest = "2"
 pest_derive = "2"
 regex = "1"
 lazy_static = "1"
+log = "0.4.8"
 
 errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }
 utils = { path = "../utils" }
 config = { path = "../config" }
 link_checker = { path = "../link_checker" }
+scraper = { version = "0.12.0", optional = true }
 
 [dev-dependencies]
 templates = { path = "../templates" }
 
+[features]
+default = ["html-toc"]
+html-toc = ["scraper"]

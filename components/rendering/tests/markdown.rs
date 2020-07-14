@@ -538,7 +538,7 @@ fn can_ignore_tags_in_toc() {
     )
     .unwrap();
 
-    let toc = res.toc;
+    let toc = dbg!(res.toc);
 
     assert_eq!(toc[0].id, "heading-with-code");
     assert_eq!(toc[0].title, "heading with code");
