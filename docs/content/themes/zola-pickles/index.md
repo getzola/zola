@@ -3,14 +3,14 @@
 title = "pickles"
 description = "A modern, simple, clean blog theme for Zola."
 template = "theme.html"
-date = 2020-02-06T18:26:26-08:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2020-02-06T18:26:26-08:00
-updated = 2020-02-06T18:26:26-08:00
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
 repository = "https://github.com/lukehsiao/zola-pickles.git"
 homepage = "https://github.com/lukehsiao/zola-pickles"
-minimum_version = "0.4.0"
+minimum_version = "0.11.0"
 license = "MIT OR Apache-2.0"
 demo = ""
 
@@ -48,7 +48,9 @@ insert_anchor_links = "right"
 +++
 ```
 
-## Options
+## Reference guides
+
+## Configuration Options
 
 ```toml
 [extra]
@@ -63,7 +65,15 @@ analytics = ""
 
 # See below
 katex_enable = false
+
+# See below
+instantpage_enable = false
 ```
+
+A full example configuration is included in config.toml.
+
+Note how pickles also expects `title` and `description` to also be set in the
+Zola configuration.
 
 ### KaTeX math formula support
 
@@ -83,11 +93,23 @@ This them also includes a figure shortcode for convenience in captioning figures
 {%/* figure(link="https://www.example.com/", src="https://www.example.com/img.jpeg", alt="sample alt text") */%}
 Your caption here.
 {%/* end */%}
-
 ```
 
 ### Fontawesome
 
 This theme includes fontawesome, so that fontawesome icons can be directly used.
+
+### Instant.page
+
+The theme contains instant.page prefetching. This can be enabled by setting
+`instantpage_enable = true` in the `extra` section of `config.toml`.
+
+## Showing article summaries
+
+By default, the theme will use the first 280 characters of your post as a
+summary, if a proper [page
+summary](https://www.getzola.org/documentation/content/page/#summary) using
+`<!-- more -->` is not provided. For more sensible summaries, we recommend using
+the manual more indicator.
 
         
