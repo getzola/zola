@@ -3,11 +3,11 @@
 title = "dinkleberg"
 description = "The Rust BR theme for Gutenberg"
 template = "theme.html"
-date = 2018-05-31T23:02:50-03:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2019-04-06T11:27:43+02:00
-updated = 2018-05-31T23:02:50-03:00
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
 repository = "https://github.com/rust-br/dinkleberg.git"
 homepage = "https://github.com/rust-br/dinkleberg"
 minimum_version = "0.4.0"
@@ -46,6 +46,7 @@ label_next = "Próxima"
 label_previous = "Anterior"
 label_page = "Página"
 label_of = "de"
+label_minutes = "minutos"
 
 og_image="" # Image that will appear on social media
 og_alt_image="" # Alt for og_image

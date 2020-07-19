@@ -3,14 +3,14 @@
 title = "hyde"
 description = "A classic blog theme"
 template = "theme.html"
-date = 2017-10-24T15:01:52+02:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2019-04-06T11:27:43+02:00
-updated = 2017-10-24T15:01:52+02:00
-repository = "https://github.com/getzola/hyde"
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
+repository = "https://github.com/getzola/hyde.git"
 homepage = "https://github.com/getzola/hyde"
-minimum_version = "0.5.0"
+minimum_version = "0.11.0"
 license = "MIT"
 demo = "https://zola-hyde.netlify.com"
 

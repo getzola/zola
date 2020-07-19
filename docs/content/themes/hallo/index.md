@@ -3,11 +3,11 @@
 title = "hallo"
 description = "A single-page theme to introduce yourself."
 template = "theme.html"
-date = 2019-06-05T15:08:48+02:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2019-07-12T23:55:11+02:00
-updated = 2019-06-05T15:08:48+02:00
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
 repository = "https://github.com/flyingP0tat0/zola-hallo.git"
 homepage = "https://github.com/janbaudisch/zola-hallo"
 minimum_version = "0.4.0"

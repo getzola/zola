@@ -3,14 +3,14 @@
 title = "even"
 description = "A robust, elegant dark theme"
 template = "theme.html"
-date = 2018-01-25T18:44:44+01:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2019-07-12T23:49:55+02:00
-updated = 2018-01-25T18:44:44+01:00
-repository = "https://github.com/getzola/even"
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
+repository = "https://github.com/getzola/even.git"
 homepage = "https://github.com/getzola/even"
-minimum_version = "0.6.0"
+minimum_version = "0.11.0"
 license = "MIT"
 demo = "https://zola-even.netlify.com"
 
@@ -48,9 +48,9 @@ The theme requires tags and categories taxonomies to be enabled in your `config.
 
 ```toml
 taxonomies = [
-    # You can enable/disable feeds
-    {name = "categories", feed = true},
-    {name = "tags", feed = true},
+    # You can enable/disable RSS
+    {name = "categories", rss = true},
+    {name = "tags", rss = true},
 ]
 ```
 If you want to paginate taxonomies pages, you will need to overwrite the templates

@@ -3,11 +3,11 @@
 title = "Zulma"
 description = "A zola theme based off bulma.css"
 template = "theme.html"
-date = 2019-05-12T22:44:07+01:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2019-07-12T23:55:11+02:00
-updated = 2019-05-12T22:44:07+01:00
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
 repository = "https://github.com/Worble/Zulma"
 homepage = "https://github.com/Worble/Zulma"
 minimum_version = "0.6.0"
@@ -56,7 +56,7 @@ git clone https://github.com/Worble/Zulma
 and then enable it in your `config.toml`:
 
 ```toml
-theme = "zulma"
+theme = "Zulma"
 ```
 
 That's it! No more configuration should be required, however it might look a little basic. Head to the [Options](#options) section to see what you can set for more customizability.
@@ -73,13 +73,17 @@ All the source javascript files live in `javascript/src`. Following is a list of
 
 ### Building
 
-The javascript files are transpiled by babel, minified by webpack, sourcemaps are generated and then everything placed in `static/js`. The repo already contains the transpiled and minified files along with their corrosponding sourcemaps so you don't need to do anything to use these. If you would prefer to build it yourself, feel free to inspect the js files and then run the build process yourself (please ensure that you have [node, npm](https://nodejs.org/en/) and optionally [yarn](https://yarnpkg.com/lang/en/) installed):
+The JavaScript files are transpiled by babel, minified by webpack, sourcemaps are generated and then everything placed in `static/js`. The repo already contains the transpiled and minified files along with their corrosponding sourcemaps so you don't need to do anything to use these. If you would prefer to build it yourself, feel free to inspect the js files and then run the build process (please ensure that you have [node, npm](https://nodejs.org/en/) and optionally [yarn](https://yarnpkg.com/lang/en/) installed):
 
 ```bash
 cd javascript
 yarn
 yarn webpack
 ```
+
+### Github warnings
+
+You may get warnings about vulnerabilities from the JavaScript dependencies. These shouldn't be an issue since we only have dev-dependencies and none of the them reach the end-user, but if you don't want to run the buld process yourself, and to stop Github pestering you about security warnings, feel free to delete the top level `javascript` folder when committing.
 
 ## Options
 
@@ -100,8 +104,8 @@ Zulma has 3 taxonomies already set internally: `tags`, `cateogories` and `author
 ```toml
 taxonomies = [
     {name = "categories"},
-    {name = "tags", paginate_by = 5, feed = true},
-    {name = "authors", feed = true},
+    {name = "tags", paginate_by = 5, rss = true},
+    {name = "authors", rss = true},
 ]
 ```
 
@@ -231,7 +235,7 @@ zulma_allow_theme_selection = true
 
 ## Original
 
-This template is based on the [blog template](https://dansup.github.io/bulma-templates/templates/blog.html) over at [Free Bulma Templates](https://dansup.github.io/bulma-templates/). All themes were taken from [Bulmaswatch](https://jenil.github.io/bulmaswatch/). The code behind from originally adapted from the [after-dark](https://github.com/getzola/after-dark/blob/master/README.md) zola template.
+This template is based on the [blog template](https://bulmatemplates.github.io/bulma-templates/templates/blog.html) over at [Free Bulma Templates](https://bulmatemplates.github.io/bulma-templates/). All themes were taken from [Bulmaswatch](https://jenil.github.io/bulmaswatch/). The code behind from originally adapted from the [after-dark](https://github.com/getzola/after-dark/blob/master/README.md) zola template.
 
 ## Known Bugs
 

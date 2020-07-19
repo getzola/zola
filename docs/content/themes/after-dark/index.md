@@ -3,14 +3,14 @@
 title = "after-dark"
 description = "A robust, elegant dark theme"
 template = "theme.html"
-date = 2017-11-07T17:39:37+01:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2019-04-06T11:27:43+02:00
-updated = 2017-11-07T17:39:37+01:00
-repository = "https://github.com/getzola/after-dark"
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
+repository = "https://github.com/getzola/after-dark.git"
 homepage = "https://github.com/getzola/after-dark"
-minimum_version = "0.5.0"
+minimum_version = "0.11.0"
 license = "MIT"
 demo = "https://zola-after-dark.netlify.com"
 
@@ -55,9 +55,9 @@ The theme requires tags and categories taxonomies to be enabled in your `config.
 
 ```toml
 taxonomies = [
-    # You can enable/disable feeds
-    {name = "categories", feed = true},
-    {name = "tags", feed = true},
+    # You can enable/disable RSS
+    {name = "categories", rss = true},
+    {name = "tags", rss = true},
 ]
 ```
 If you want to paginate taxonomies pages, you will need to overwrite the templates

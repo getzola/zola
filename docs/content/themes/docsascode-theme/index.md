@@ -3,16 +3,16 @@
 title = "Docsascode_theme"
 description = "A modern simple Zola's theme related to docs as code methodology"
 template = "theme.html"
-date = 2020-03-05T23:16:20+03:00
+date = 2020-07-08T12:08:02+02:00
 
 [extra]
-created = 2020-03-05T23:16:20+03:00
-updated = 2020-03-05T23:16:20+03:00
+created = 2020-07-08T12:08:02+02:00
+updated = 2020-07-08T12:08:02+02:00
 repository = "https://github.com/codeandmedia/zola_docsascode_theme.git"
 homepage = "https://github.com/codeandmedia/zola_docsascode_theme"
 minimum_version = "0.10.0"
 license = "MIT"
-demo = "docsascode.codeandmedia.com"
+demo = "https://docsascode.codeandmedia.com"
 
 [extra.author]
 name = "Roman Soldatenkov"
@@ -23,10 +23,10 @@ homepage = "https://codeandmedia.com"
 
 I was inspired by [Linode's approach](https://www.linode.com/2020/01/17/docs-as-code-at-linode/) to creating and managing docs. They call it _docs as code methodology._  Thereby my aim was making simple and productive way to work with any sort of documents and articles through Markdown, Git and Docker/k8s optionally. 
 
-The repo contains a theme for [Zola](https://www.getzola.org/) (the best static site generator I've ever seen) and dockerfile for building Docker images with Nginx-alpine.  You can push to your Docker an [image with demo-content](https://hub.docker.com/r/codeandmedia/zola_docsascode_theme)
+The repo contains a theme for [Zola](https://www.getzola.org/) (the best static site generator I've ever seen) and dockerfile for building Docker images with Nginx-alpine.  You can pull to your Docker an [image with demo-content](https://hub.docker.com/r/codeandmedia/docsascode-theme)
 
 ```
-codeandmedia/zola_docsascode_theme:latest
+codeandmedia/docsascode-theme:latest
 ```
 
 ## Perks
