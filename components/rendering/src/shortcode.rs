@@ -114,6 +114,14 @@ fn render_shortcode(
     }
     tera_context.extend(context.tera_context.clone());
 
+    // Render Markdown Shortcodes without hacks
+    let template_name = format!("shortcodes/{}.md", name);
+    if context.tera.templates.contains_key(&template_name) {
+        return Ok(utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
+            .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?
+            .to_string());
+    }
+
     let template_name = format!("shortcodes/{}.html", name);
 
     let res = utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
