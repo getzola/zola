@@ -58,7 +58,7 @@ accessible everywhere
 - Check for path collisions when building the site
 - Fix bug in template extension with themes
 - Use Rustls instead of openssl
-- The continue reading HTML element is now a <span> instead of a <p>
+- The continue reading HTML element is now a `<span>` instead of a `<p>`
 - Update livereload.js
 - Add --root global argument
 
