@@ -114,15 +114,10 @@ fn render_shortcode(
     }
     tera_context.extend(context.tera_context.clone());
 
-    // Render Markdown Shortcodes without hacks
-    let template_name = format!("shortcodes/{}.md", name);
-    if context.tera.templates.contains_key(&template_name) {
-        return Ok(utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
-            .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?
-            .to_string());
+    let mut template_name = format!("shortcodes/{}.md", name);
+    if !context.tera.templates.contains_key(&template_name) {
+        template_name = format!("shortcodes/{}.html", name);
     }
-
-    let template_name = format!("shortcodes/{}.html", name);
 
     let res = utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
         .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
@@ -133,10 +128,13 @@ fn render_shortcode(
     // at indentation, making the output a code block. To avoid this, newlines are replaced with
     // "<!--\n-->" at this stage, which will be undone after markdown rendering in lib.rs. Since
     // that is an HTML comment, it shouldn't be rendered anyway. and not cause problems unless
-    // someone wants to include that comment in their content.
-    let res = res.replace('\n', "<!--\\n-->");
-
-    Ok(res.to_string())
+    // someone wants to include that comment in their content. This behaviour is unwanted in when
+    // rendering markdown shortcodes.
+    if template_name.ends_with(".html") {
+        Ok(res.replace('\n', "<!--\\n-->").to_string())
+    } else {
+        Ok(res.to_string())
+    }
 }
 
 pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
