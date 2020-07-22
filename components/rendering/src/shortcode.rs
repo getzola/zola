@@ -439,4 +439,12 @@ Some body {{ hello() }}{%/* end */%}"#,
         let res = render_shortcodes("\n{{ youtube() }}\n", &tera);
         assert_eq!(res, "\n  Hello, Zola.  \n");
     }
+
+    #[test]
+    fn shortcodes_that_emit_markdown() {
+        let mut tera = Tera::default();
+        tera.add_raw_template("shortcodes/youtube.md", "{% for i in [1,2,3] %}\n* {{ i }}\n{%- endfor %}").unwrap();
+        let res = render_shortcodes("{{ youtube() }}", &tera);
+        assert_eq!(res, "* 1\n* 2\n* 3");
+    }
 }
