@@ -904,3 +904,44 @@ fn stops_with_an_error_on_an_empty_link() {
     assert!(res.is_err());
     assert_eq!(res.unwrap_err().to_string(), expected);
 }
+
+#[test]
+fn can_passthrough_markdown_from_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"{% for line in body | split(pat="\n") %}
+> {{ line }}
+{%- endfor %}
+
+-- {{ author }}
+"#;
+    let markdown_string = r#"
+Hello
+
+{% quote(author="Vincent") %}
+# Passing through
+
+*to* **the** document
+{% end %}
+
+Bla bla"#;
+
+    let expected = r#"<p>Hello</p>
+<blockquote>
+<h1 id="passing-through">Passing through</h1>
+<p><em>to</em> <strong>the</strong> document</p>
+</blockquote>
+<p>-- Vincent</p>
+<p>Bla bla</p>
+"#;
+
+    tera.add_raw_template(&format!("shortcodes/{}.md", "quote"), shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    println!("{:?}", res);
+    assert_eq!(res.body, expected);
+}
