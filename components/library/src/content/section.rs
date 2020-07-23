@@ -252,6 +252,16 @@ impl Section {
     pub fn to_serialized_basic<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
         SerializingSection::from_section_basic(self, Some(library))
     }
+
+    pub fn paginate_by(&self) -> Option<usize> {
+        match self.meta.paginate_by {
+            None => None,
+            Some(x) => match x {
+                0 => None,
+                _ => Some(x)
+            }
+        }
+    }
 }
 
 /// Used to create a default index section if there is no _index.md in the root content directory
