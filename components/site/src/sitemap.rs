@@ -85,12 +85,13 @@ pub fn find_entries<'a>(
         })
         .collect::<Vec<_>>();
 
-    for section in library.sections_values().iter().filter(|s| s.meta.paginate_by.is_some()) {
-        let number_pagers =
-            (section.pages.len() as f64 / section.meta.paginate_by.unwrap() as f64).ceil() as isize;
-        for i in 1..=number_pagers {
-            let permalink = format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
-            sections.push(SitemapEntry::new(Cow::Owned(permalink), None))
+    for section in library.sections_values().iter() {
+        if let Some(paginate_by) = section.paginate_by() {
+            let number_pagers = (section.pages.len() as f64 / paginate_by as f64).ceil() as isize;
+            for i in 1..=number_pagers {
+                let permalink = format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
+                sections.push(SitemapEntry::new(Cow::Owned(permalink), None))
+            }
         }
     }
 

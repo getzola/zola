@@ -8,7 +8,9 @@
 - Fix parsing of dates in arrays in `extra`
 - Add a `--force` argument to `zola init` to allow creating a Zola site in a non-empty directory
 - Make themes more flexible: `include` can now be used
-- Make search index generation configurable
+- Make search index generation configurable, see docs for examples
+- Fix Sass trying to load folders starting with `_`, causing issues with frameworks
+- Update livereload.js version
 
 ## 0.11.0 (2020-05-25)
 
@@ -58,7 +60,7 @@ accessible everywhere
 - Check for path collisions when building the site
 - Fix bug in template extension with themes
 - Use Rustls instead of openssl
-- The continue reading HTML element is now a <span> instead of a <p>
+- The continue reading HTML element is now a `<span>` instead of a `<p>`
 - Update livereload.js
 - Add --root global argument
 
