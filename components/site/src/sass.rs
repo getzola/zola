@@ -18,7 +18,7 @@ pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
 
     let mut options = Options::default();
     options.output_style = OutputStyle::Compressed;
-    let mut compiled_paths = compile_sass_glob(&sass_path, output_path, "scss", &options.clone())?;
+    let mut compiled_paths = compile_sass_glob(&sass_path, output_path, "scss", &options)?;
 
     options.indented_syntax = true;
     compiled_paths.extend(compile_sass_glob(&sass_path, output_path, "sass", &options)?);

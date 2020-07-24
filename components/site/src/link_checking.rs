@@ -1,9 +1,7 @@
-
 use rayon::prelude::*;
 
-use errors::{Error, ErrorKind, Result};
 use crate::Site;
-
+use errors::{Error, ErrorKind, Result};
 
 /// Very similar to check_external_links but can't be merged as far as I can see since we always
 /// want to check the internal links but only the external in zola check :/
@@ -152,11 +150,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             .collect()
     });
 
-    println!(
-        "> Checked {} external link(s): {} error(s) found.",
-        all_links.len(),
-        errors.len()
-    );
+    println!("> Checked {} external link(s): {} error(s) found.", all_links.len(), errors.len());
 
     if errors.is_empty() {
         return Ok(());

@@ -1,6 +1,7 @@
+pub mod link_checking;
 pub mod sass;
 pub mod sitemap;
-pub mod link_checking;
+pub mod tpls;
 
 use std::collections::HashMap;
 use std::fs::{copy, remove_dir_all};
@@ -12,6 +13,8 @@ use rayon::prelude::*;
 use serde_derive::Serialize;
 use tera::{Context, Tera};
 
+use crate::link_checking::{check_external_links, check_internal_links_with_anchors};
+use crate::tpls::{load_tera, register_early_global_fns, register_tera_global_fns};
 use config::{get_config, Config, Taxonomy as TaxonomyConfig};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
@@ -19,11 +22,10 @@ use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
     TaxonomyItem,
 };
-use templates::{global_fns, render_redirect_template, ZOLA_TERA};
+use templates::render_redirect_template;
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
-use utils::templates::{render_template, rewrite_theme_paths};
-use crate::link_checking::{check_internal_links_with_anchors, check_external_links};
+use utils::templates::render_template;
 
 #[derive(Debug)]
 pub struct Site {
@@ -74,45 +76,12 @@ impl Site {
         let mut config = get_config(config_file);
         config.load_extra_syntaxes(path)?;
 
-        let tpl_glob =
-            format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
-        // Only parsing as we might be extending templates from themes and that would error
-        // as we haven't loaded them yet
-        let mut tera =
-            Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
-
-            // Test that the templates folder exist for that theme
-            let theme_path = path.join("themes").join(&theme);
-            if !theme_path.join("templates").exists() {
-                bail!("Theme `{}` is missing a templates folder", theme);
-            }
-
-            let theme_tpl_glob = format!(
-                "{}/{}",
-                path.to_string_lossy().replace("\\", "/"),
-                format!("themes/{}/templates/**/*.*ml", theme)
-            );
-            let mut tera_theme = Tera::parse(&theme_tpl_glob)
-                .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
-            rewrite_theme_paths(&mut tera_theme, &theme);
-            // TODO: we do that twice, make it dry?
-            if theme_path.join("templates").join("robots.txt").exists() {
-                tera_theme
-                    .add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
-            }
-            tera.extend(&tera_theme)?;
         }
-        tera.extend(&ZOLA_TERA)?;
-        tera.build_inheritance_chains()?;
 
-        // TODO: Tera doesn't use globset right now so we can load the robots.txt as part
-        // of the glob above, therefore we load it manually if it exists.
-        if path.join("templates").join("robots.txt").exists() {
-            tera.add_template_file(path.join("templates").join("robots.txt"), Some("robots.txt"))?;
-        }
+        let tera = load_tera(path, &config)?;
 
         let content_path = path.join("content");
         let static_path = path.join("static");
@@ -145,7 +114,7 @@ impl Site {
     }
 
     /// The index sections are ALWAYS at those paths
-    /// There are one index section for the basic language + 1 per language
+    /// There are one index section for the default language + 1 per language
     fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
         let mut res = vec![(self.content_path.join("_index.md"), None)];
         for language in &self.config.languages {
@@ -162,11 +131,6 @@ impl Site {
     /// both http and websocket server to the same port
     pub fn enable_live_reload(&mut self, port_to_avoid: u16) {
         self.live_reload = get_available_port(port_to_avoid);
-    }
-
-    /// Get the number of orphan (== without section) pages in the site
-    pub fn get_number_orphan_pages(&self) -> usize {
-        self.library.read().unwrap().get_all_orphan_pages().len()
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
@@ -359,58 +323,14 @@ impl Site {
         Ok(())
     }
 
-    /// Adds global fns that are to be available to shortcodes while
-    /// markdown
+    // TODO: remove me in favour of the direct call to the fn once rebuild has changed
     pub fn register_early_global_fns(&mut self) {
-        self.tera.register_function(
-            "get_url",
-            global_fns::GetUrl::new(
-                self.config.clone(),
-                self.permalinks.clone(),
-                vec![self.static_path.clone(), self.output_path.clone(), self.content_path.clone()],
-            ),
-        );
-        self.tera.register_function(
-            "resize_image",
-            global_fns::ResizeImage::new(self.imageproc.clone()),
-        );
-        self.tera.register_function(
-            "get_image_metadata",
-            global_fns::GetImageMeta::new(self.content_path.clone()),
-        );
-        self.tera.register_function("load_data", global_fns::LoadData::new(self.base_path.clone()));
-        self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
-        self.tera.register_function(
-            "get_taxonomy_url",
-            global_fns::GetTaxonomyUrl::new(&self.config.default_language, &self.taxonomies),
-        );
-        self.tera.register_function(
-            "get_file_hash",
-            global_fns::GetFileHash::new(vec![
-                self.static_path.clone(),
-                self.output_path.clone(),
-                self.content_path.clone(),
-            ]),
-        );
+        register_early_global_fns(self);
     }
 
+    // TODO: remove me in favour of the direct call to the fn once rebuild has changed
     pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_function(
-            "get_page",
-            global_fns::GetPage::new(self.base_path.clone(), self.library.clone()),
-        );
-        self.tera.register_function(
-            "get_section",
-            global_fns::GetSection::new(self.base_path.clone(), self.library.clone()),
-        );
-        self.tera.register_function(
-            "get_taxonomy",
-            global_fns::GetTaxonomy::new(
-                &self.config.default_language,
-                self.taxonomies.clone(),
-                self.library.clone(),
-            ),
-        );
+        register_tera_global_fns(self);
     }
 
     /// Add a page to the site
@@ -703,6 +623,8 @@ impl Site {
         )
     }
 
+    /// Renders all the aliases for each page/section: a magic HTML template that redirects to
+    /// the canonical one
     pub fn render_aliases(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let library = self.library.read().unwrap();
@@ -837,6 +759,7 @@ impl Site {
             sitemap_url.pop(); // Remove trailing slash
             sitemap_index.push(sitemap_url);
         }
+
         // Create main sitemap that reference numbered sitemaps
         let mut main_context = Context::new();
         main_context.insert("sitemaps", &sitemap_index);
@@ -993,6 +916,7 @@ impl Site {
         Ok(())
     }
 
+    // TODO: remove me when reload has changed
     /// Used only on reload
     pub fn render_index(&self) -> Result<()> {
         self.render_section(
@@ -1061,5 +985,3 @@ impl Site {
             .collect::<Result<()>>()
     }
 }
-
-impl Site {}

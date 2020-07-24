@@ -42,8 +42,8 @@ use ws::{Message, Sender, WebSocket};
 
 use errors::{Error as ZolaError, Result};
 use globset::GlobSet;
-use site::Site;
 use site::sass::compile_sass;
+use site::Site;
 use utils::fs::copy_file;
 
 use crate::console;
