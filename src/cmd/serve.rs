@@ -59,7 +59,7 @@ static INTERNAL_SERVER_ERROR_TEXT: &[u8] = b"Internal Server Error";
 static METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
 static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
-// This is dist/livereload.min.js from the LiveReload.js v3.1.0 release
+// This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
