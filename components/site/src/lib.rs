@@ -1,5 +1,6 @@
 pub mod sass;
 pub mod sitemap;
+pub mod link_checking;
 
 use std::collections::HashMap;
 use std::fs::{copy, remove_dir_all};
@@ -12,7 +13,7 @@ use serde_derive::Serialize;
 use tera::{Context, Tera};
 
 use config::{get_config, Config, Taxonomy as TaxonomyConfig};
-use errors::{bail, Error, ErrorKind, Result};
+use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
 use library::{
     find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
@@ -22,6 +23,7 @@ use templates::{global_fns, render_redirect_template, ZOLA_TERA};
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
 use utils::templates::{render_template, rewrite_theme_paths};
+use crate::link_checking::{check_internal_links_with_anchors, check_external_links};
 
 #[derive(Debug)]
 pub struct Site {
@@ -265,185 +267,13 @@ impl Site {
         self.register_tera_global_fns();
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
-        self.check_internal_links_with_anchors()?;
+        check_internal_links_with_anchors(&self)?;
 
         if self.config.is_in_check_mode() {
-            self.check_external_links()?;
+            check_external_links(&self)?;
         }
 
         Ok(())
-    }
-
-    /// Very similar to check_external_links but can't be merged as far as I can see since we always
-    /// want to check the internal links but only the external in zola check :/
-    pub fn check_internal_links_with_anchors(&self) -> Result<()> {
-        let library = self.library.write().expect("Get lock for check_internal_links_with_anchors");
-        let page_links = library
-            .pages()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let section_links = library
-            .sections()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
-
-        if self.config.is_in_check_mode() {
-            println!("Checking {} internal link(s) with an anchor.", all_links.len());
-        }
-
-        if all_links.is_empty() {
-            return Ok(());
-        }
-
-        let mut full_path = self.base_path.clone();
-        full_path.push("content");
-
-        let errors: Vec<_> = all_links
-            .iter()
-            .filter_map(|(page_path, (md_path, anchor))| {
-                // There are a few `expect` here since the presence of the .md file will
-                // already have been checked in the markdown rendering
-                let mut p = full_path.clone();
-                for part in md_path.split('/') {
-                    p.push(part);
-                }
-                if md_path.contains("_index.md") {
-                    let section = library
-                        .get_section(&p)
-                        .expect("Couldn't find section in check_internal_links_with_anchors");
-                    if section.has_anchor(&anchor) {
-                        None
-                    } else {
-                        Some((page_path, md_path, anchor))
-                    }
-                } else {
-                    let page = library
-                        .get_page(&p)
-                        .expect("Couldn't find section in check_internal_links_with_anchors");
-                    if page.has_anchor(&anchor) {
-                        None
-                    } else {
-                        Some((page_path, md_path, anchor))
-                    }
-                }
-            })
-            .collect();
-
-        if self.config.is_in_check_mode() {
-            println!(
-                "> Checked {} internal link(s) with an anchor: {} error(s) found.",
-                all_links.len(),
-                errors.len()
-            );
-        }
-
-        if errors.is_empty() {
-            return Ok(());
-        }
-
-        let msg = errors
-            .into_iter()
-            .map(|(page_path, md_path, anchor)| {
-                format!(
-                    "The anchor in the link `@/{}#{}` in {} does not exist.",
-                    md_path,
-                    anchor,
-                    page_path.to_string_lossy(),
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg), source: None })
-    }
-
-    pub fn check_external_links(&self) -> Result<()> {
-        let library = self.library.write().expect("Get lock for check_external_links");
-        let page_links = library
-            .pages()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.external_links.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let section_links = library
-            .sections()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.external_links.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
-        println!("Checking {} external link(s).", all_links.len());
-
-        if all_links.is_empty() {
-            return Ok(());
-        }
-
-        // create thread pool with lots of threads so we can fetch
-        // (almost) all pages simultaneously
-        let threads = std::cmp::min(all_links.len(), 32);
-        let pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(threads)
-            .build()
-            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string()), source: None })?;
-
-        let errors: Vec<_> = pool.install(|| {
-            all_links
-                .par_iter()
-                .filter_map(|(page_path, link)| {
-                    if self
-                        .config
-                        .link_checker
-                        .skip_prefixes
-                        .iter()
-                        .any(|prefix| link.starts_with(prefix))
-                    {
-                        return None;
-                    }
-                    let res = link_checker::check_url(&link, &self.config.link_checker);
-                    if link_checker::is_valid(&res) {
-                        None
-                    } else {
-                        Some((page_path, link, res))
-                    }
-                })
-                .collect()
-        });
-
-        println!(
-            "> Checked {} external link(s): {} error(s) found.",
-            all_links.len(),
-            errors.len()
-        );
-
-        if errors.is_empty() {
-            return Ok(());
-        }
-
-        let msg = errors
-            .into_iter()
-            .map(|(page_path, link, check_res)| {
-                format!(
-                    "Dead link in {} to {}: {}",
-                    page_path.to_string_lossy(),
-                    link,
-                    link_checker::message(&check_res)
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg), source: None })
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create
