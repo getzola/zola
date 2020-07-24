@@ -1,4 +1,4 @@
-// Contains an embedded version of livereload-js 3.2.1
+// Contains an embedded version of livereload-js 3.2.4
 //
 // Copyright (c) 2010-2012 Andrey Tarantsov
 //
@@ -21,6 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+use std::collections::HashMap;
 use std::env;
 use std::fs::{read_dir, remove_dir_all};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
@@ -32,6 +33,7 @@ use hyper::header;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::ResolveResult;
+use lazy_static::lazy_static;
 use tokio::io::AsyncReadExt;
 
 use chrono::prelude::*;
@@ -41,6 +43,7 @@ use ws::{Message, Sender, WebSocket};
 use errors::{Error as ZolaError, Result};
 use globset::GlobSet;
 use site::Site;
+use site::sass::compile_sass;
 use utils::fs::copy_file;
 
 use crate::console;
@@ -62,14 +65,27 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
+lazy_static! {
+    pub static ref SITE_DATA: HashMap<String, String> = {
+        let mut m = HashMap::new();
+        m.insert("/hello".to_string(), "ho".to_string());
+        m
+    };
+}
+
 async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
+    let path = req.uri().path();
     // livereload.js is served using the LIVE_RELOAD str, not a file
-    if req.uri().path() == "/livereload.js" {
+    if path == "/livereload.js" {
         if req.method() == Method::GET {
             return Ok(livereload_js());
         } else {
             return Ok(method_not_allowed());
         }
+    }
+
+    if let Some(content) = SITE_DATA.get(path) {
+        return Ok(in_memory_html(content));
     }
 
     let result = hyper_staticfile::resolve(&root, &req).await.unwrap();
@@ -90,6 +106,14 @@ fn livereload_js() -> Response<Body> {
         .status(StatusCode::OK)
         .body(LIVE_RELOAD.into())
         .expect("Could not build livereload.js response")
+}
+
+fn in_memory_html(content: &str) -> Response<Body> {
+    Response::builder()
+        .header(header::CONTENT_TYPE, "text/html")
+        .status(StatusCode::OK)
+        .body(content.to_owned().into())
+        .expect("Could not build HTML response")
 }
 
 fn internal_server_error() -> Response<Body> {
@@ -371,7 +395,7 @@ pub fn serve(
         console::info(&msg);
         rebuild_done_handling(
             &broadcaster,
-            site.compile_sass(&site.base_path),
+            compile_sass(&site.base_path, &site.output_path),
             &partial_path.to_string_lossy(),
         );
     };
