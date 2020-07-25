@@ -13,9 +13,6 @@ use glob::glob;
 use rayon::prelude::*;
 use tera::{Context, Tera};
 
-use crate::feed::render_feed;
-use crate::link_checking::{check_external_links, check_internal_links_with_anchors};
-use crate::tpls::{load_tera, register_early_global_fns, register_tera_global_fns};
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
@@ -62,7 +59,7 @@ impl Site {
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
         }
 
-        let tera = load_tera(path, &config)?;
+        let tera = tpls::load_tera(path, &config)?;
 
         let content_path = path.join("content");
         let static_path = path.join("static");
@@ -212,10 +209,10 @@ impl Site {
         self.register_tera_global_fns();
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
-        check_internal_links_with_anchors(&self)?;
+        link_checking::check_internal_links_with_anchors(&self)?;
 
         if self.config.is_in_check_mode() {
-            check_external_links(&self)?;
+            link_checking::check_external_links(&self)?;
         }
 
         Ok(())
@@ -306,12 +303,12 @@ impl Site {
 
     // TODO: remove me in favour of the direct call to the fn once rebuild has changed
     pub fn register_early_global_fns(&mut self) {
-        register_early_global_fns(self);
+        tpls::register_early_global_fns(self);
     }
 
     // TODO: remove me in favour of the direct call to the fn once rebuild has changed
     pub fn register_tera_global_fns(&mut self) {
-        register_tera_global_fns(self);
+        tpls::register_tera_global_fns(self);
     }
 
     /// Add a page to the site
@@ -714,12 +711,8 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let library = self.library.read().unwrap();
-        let all_sitemap_entries = {
-            let mut all_sitemap_entries =
-                sitemap::find_entries(&library, &self.taxonomies[..], &self.config);
-            all_sitemap_entries.sort();
-            all_sitemap_entries
-        };
+        let all_sitemap_entries =
+            { sitemap::find_entries(&library, &self.taxonomies[..], &self.config) };
         let sitemap_limit = 30000;
 
         if all_sitemap_entries.len() < sitemap_limit {
@@ -772,7 +765,8 @@ impl Site {
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let feed = match render_feed(self, all_pages, lang, base_path, additional_context_fn)? {
+        let feed = match feed::render_feed(self, all_pages, lang, base_path, additional_context_fn)?
+        {
             Some(v) => v,
             None => return Ok(()),
         };

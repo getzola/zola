@@ -140,5 +140,7 @@ pub fn find_entries<'a>(
         }
     }
 
-    all_sitemap_entries.into_iter().collect::<Vec<_>>()
+    let mut entries = all_sitemap_entries.into_iter().collect::<Vec<_>>();
+    entries.sort();
+    entries
 }
