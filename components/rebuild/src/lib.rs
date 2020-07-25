@@ -403,7 +403,7 @@ pub fn after_template_change(site: &mut Site, path: &Path) -> Result<()> {
                 site.library.read().unwrap().pages_values(),
                 None,
                 &site.config.default_language,
-                None,
+                |c| c,
             )
         }
         "split_sitemap_index.xml" => site.render_sitemap(),

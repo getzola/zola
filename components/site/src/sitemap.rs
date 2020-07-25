@@ -89,7 +89,8 @@ pub fn find_entries<'a>(
         if let Some(paginate_by) = section.paginate_by() {
             let number_pagers = (section.pages.len() as f64 / paginate_by as f64).ceil() as isize;
             for i in 1..=number_pagers {
-                let permalink = format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
+                let permalink =
+                    format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
                 sections.push(SitemapEntry::new(Cow::Owned(permalink), None))
             }
         }

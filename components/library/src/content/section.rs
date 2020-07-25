@@ -258,8 +258,8 @@ impl Section {
             None => None,
             Some(x) => match x {
                 0 => None,
-                _ => Some(x)
-            }
+                _ => Some(x),
+            },
         }
     }
 }

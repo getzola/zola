@@ -1,3 +1,4 @@
+pub mod feed;
 pub mod link_checking;
 pub mod sass;
 pub mod sitemap;
@@ -10,18 +11,15 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use glob::glob;
 use rayon::prelude::*;
-use serde_derive::Serialize;
 use tera::{Context, Tera};
 
+use crate::feed::render_feed;
 use crate::link_checking::{check_external_links, check_internal_links_with_anchors};
 use crate::tpls::{load_tera, register_early_global_fns, register_tera_global_fns};
-use config::{get_config, Config, Taxonomy as TaxonomyConfig};
+use config::{get_config, Config};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
-use library::{
-    find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
-    TaxonomyItem,
-};
+use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
 use templates::render_redirect_template;
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
@@ -48,23 +46,6 @@ pub struct Site {
     pub library: Arc<RwLock<Library>>,
     /// Whether to load draft pages
     include_drafts: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize)]
-struct SerializedFeedTaxonomyItem<'a> {
-    name: &'a str,
-    slug: &'a str,
-    permalink: &'a str,
-}
-
-impl<'a> SerializedFeedTaxonomyItem<'a> {
-    pub fn from_item(item: &'a TaxonomyItem) -> Self {
-        SerializedFeedTaxonomyItem {
-            name: &item.name,
-            slug: &item.slug,
-            permalink: &item.permalink,
-        }
-    }
 }
 
 impl Site {
@@ -533,7 +514,7 @@ impl Site {
             } else {
                 library.pages_values()
             };
-            self.render_feed(pages, None, &self.config.default_language, None)?;
+            self.render_feed(pages, None, &self.config.default_language, |c| c)?;
         }
 
         for lang in &self.config.languages {
@@ -542,7 +523,7 @@ impl Site {
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, None)?;
+            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, |c| c)?;
         }
 
         self.render_404()?;
@@ -714,7 +695,12 @@ impl Site {
                         } else {
                             &self.config.default_language
                         },
-                        Some((&taxonomy.kind, &item)),
+                        |mut context: Context| {
+                            context.insert("taxonomy", &taxonomy.kind);
+                            context
+                                .insert("term", &feed::SerializedFeedTaxonomyItem::from_item(item));
+                            context
+                        },
                     )
                 } else {
                     Ok(())
@@ -782,58 +768,15 @@ impl Site {
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
         lang: &str,
-        taxonomy_and_item: Option<(&TaxonomyConfig, &TaxonomyItem)>,
+        additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let mut context = Context::new();
-        let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
-
-        // Don't generate a feed if none of the pages has a date
-        if pages.is_empty() {
-            return Ok(());
-        }
-
-        pages.par_sort_unstable_by(sort_actual_pages_by_date);
-
-        context.insert(
-            "last_updated",
-            pages
-                .iter()
-                .filter_map(|page| page.meta.updated.as_ref())
-                .chain(pages[0].meta.date.as_ref())
-                .max() // I love lexicographically sorted date strings
-                .unwrap(), // Guaranteed because of pages[0].meta.date
-        );
-        let library = self.library.read().unwrap();
-        // limit to the last n elements if the limit is set; otherwise use all.
-        let num_entries = self.config.feed_limit.unwrap_or_else(|| pages.len());
-        let p = pages
-            .iter()
-            .take(num_entries)
-            .map(|x| x.to_serialized_basic(&library))
-            .collect::<Vec<_>>();
-
-        context.insert("pages", &p);
-        context.insert("config", &self.config);
-        context.insert("lang", lang);
-
-        let feed_filename = &self.config.feed_filename;
-        let feed_url = if let Some(ref base) = base_path {
-            self.config
-                .make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
-        } else {
-            self.config.make_permalink(feed_filename)
+        let feed = match render_feed(self, all_pages, lang, base_path, additional_context_fn)? {
+            Some(v) => v,
+            None => return Ok(()),
         };
-
-        context.insert("feed_url", &feed_url);
-
-        if let Some((taxonomy, item)) = taxonomy_and_item {
-            context.insert("taxonomy", taxonomy);
-            context.insert("term", &SerializedFeedTaxonomyItem::from_item(item));
-        }
-
-        let feed = &render_template(feed_filename, &self.tera, context, &self.config.theme)?;
+        let feed_filename = &self.config.feed_filename;
 
         if let Some(ref base) = base_path {
             let mut output_path = self.output_path.clone();
@@ -843,9 +786,9 @@ impl Site {
                     create_directory(&output_path)?;
                 }
             }
-            create_file(&output_path.join(feed_filename), feed)?;
+            create_file(&output_path.join(feed_filename), &feed)?;
         } else {
-            create_file(&self.output_path.join(feed_filename), feed)?;
+            create_file(&self.output_path.join(feed_filename), &feed)?;
         }
         Ok(())
     }
