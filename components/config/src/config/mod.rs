@@ -206,18 +206,30 @@ impl Config {
 
     /// Merges the extra data from the theme with the config extra data
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
-        // 3 pass merging
-        // 1. save config to preserve user
-        let original = self.extra.clone();
-        // 2. inject theme extra values
         for (key, val) in &theme.extra {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
-        }
+            if !self.extra.contains_key(key) {
+                // The key is not overriden in site config, insert it
+                self.extra.insert(key.to_string(), val.clone());
+                continue;
+            }
+            if !val.is_table() {
+				// The key is overriden in site config, and is not a mapping (table)
+				// so we discard it (don't merge)
+                continue;
+            }
+			// The key is a table, so we want to merge its child entries with config
+			// Safe unwraps because we have checks before
+			let theme_table = val.as_table().unwrap();
+			let config_table = self.extra.get_mut(key).unwrap()
+				.as_table_mut().expect(&format!("config.toml and theme.toml have incompatible types for entry theme.extra.{}", key));
 
-        // 3. overwrite with original config
-        for (key, val) in &original {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
-        }
+			for (child_key, child_val) in theme_table {
+				if !config_table.contains_key(child_key) {
+					// Theme setting is not overriden, insert it
+					config_table.insert(child_key.to_string(), child_val.clone());
+				}
+			}
+		}
 
         Ok(())
     }
@@ -416,18 +428,25 @@ base_url = "https://replace-this-with-your-url.com"
 
 [extra]
 hello = "world"
+[extra.sub]
+foo = "bar"
         "#;
         let mut config = Config::parse(config_str).unwrap();
         let theme_str = r#"
 [extra]
 hello = "foo"
 a_value = 10
+[extra.sub]
+foo = "default"
+truc = "default"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         assert!(config.add_theme_extra(&theme).is_ok());
         let extra = config.extra;
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
+        assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
+        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string())
     }
 
     const CONFIG_TRANSLATION: &str = r#"
@@ -585,4 +604,25 @@ languages = [
         let err = config.unwrap_err();
         assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
     }
+
+
+    #[test]
+    #[should_panic]
+    fn cannot_overwrite_theme_mapping_with_invalid_type() {
+        let config_str = r#"
+[extra]
+foo = "bar"
+        "#;
+        let mut config = Config::parse(config_str).unwrap();
+        let theme_str = r#"
+[extra]
+[extra.foo]
+bar = "baz"
+        "#;
+        let theme = Theme::parse(theme_str).unwrap();
+        // Should panic!
+        assert!(config.add_theme_extra(&theme).is_ok());
+    }
+
+
 }
