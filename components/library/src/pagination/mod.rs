@@ -96,7 +96,7 @@ impl<'a> Paginator<'a> {
             paginate_by,
             root: PaginationRoot::Taxonomy(taxonomy, item),
             permalink: item.permalink.clone(),
-            path: format!("{}/{}", taxonomy.kind.name, item.slug),
+            path: format!("/{}/{}/", taxonomy.kind.name, item.slug),
             paginate_path: taxonomy
                 .kind
                 .paginate_path
@@ -146,7 +146,7 @@ impl<'a> Paginator<'a> {
             let permalink = format!("{}{}", self.permalink, page_path);
 
             let pager_path = if self.is_index {
-                page_path
+                format!("/{}", page_path)
             } else if self.path.ends_with('/') {
                 format!("{}{}", self.path, page_path)
             } else {
@@ -252,10 +252,11 @@ mod tests {
         f.paginate_path = "page".to_string();
         let mut s = Section::new("content/_index.md", f, &PathBuf::new());
         if !is_index {
-            s.path = "posts/".to_string();
+            s.path = "/posts/".to_string();
             s.permalink = "https://vincent.is/posts/".to_string();
             s.file.components = vec!["posts".to_string()];
         } else {
+            s.path = "/".into();
             s.permalink = "https://vincent.is/".to_string();
         }
         s
@@ -285,12 +286,12 @@ mod tests {
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
         assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts/");
-        assert_eq!(paginator.pagers[0].path, "posts/");
+        assert_eq!(paginator.pagers[0].path, "/posts/");
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2/");
-        assert_eq!(paginator.pagers[1].path, "posts/page/2/");
+        assert_eq!(paginator.pagers[1].path, "/posts/page/2/");
     }
 
     #[test]
@@ -302,12 +303,12 @@ mod tests {
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
         assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/");
-        assert_eq!(paginator.pagers[0].path, "");
+        assert_eq!(paginator.pagers[0].path, "/");
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/page/2/");
-        assert_eq!(paginator.pagers[1].path, "page/2/");
+        assert_eq!(paginator.pagers[1].path, "/page/2/");
     }
 
     #[test]
@@ -355,12 +356,12 @@ mod tests {
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
         assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/tags/something/");
-        assert_eq!(paginator.pagers[0].path, "tags/something");
+        assert_eq!(paginator.pagers[0].path, "/tags/something/");
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
-        assert_eq!(paginator.pagers[1].path, "tags/something/page/2/");
+        assert_eq!(paginator.pagers[1].path, "/tags/something/page/2/");
     }
 
     // https://github.com/getzola/zola/issues/866
@@ -374,12 +375,12 @@ mod tests {
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
         assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts/");
-        assert_eq!(paginator.pagers[0].path, "posts/");
+        assert_eq!(paginator.pagers[0].path, "/posts/");
 
         assert_eq!(paginator.pagers[1].index, 2);
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/2/");
-        assert_eq!(paginator.pagers[1].path, "posts/2/");
+        assert_eq!(paginator.pagers[1].path, "/posts/2/");
 
         let context = paginator.build_paginator_context(&paginator.pagers[0]);
         assert_eq!(context["base_url"], to_value("https://vincent.is/posts/").unwrap());
