@@ -158,7 +158,7 @@ impl Section {
             section.assets = assets
                 .into_iter()
                 .filter(|path| match path.file_name() {
-                    None => true,
+                    None => false,
                     Some(file) => !globset.is_match(file),
                 })
                 .collect();
