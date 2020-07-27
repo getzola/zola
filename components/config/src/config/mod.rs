@@ -220,8 +220,10 @@ impl Config {
 			// The key is a table, so we want to merge its child entries with config
 			// Safe unwraps because we have checks before
 			let theme_table = val.as_table().unwrap();
-			let config_table = self.extra.get_mut(key).unwrap()
-				.as_table_mut().expect(&format!("config.toml and theme.toml have incompatible types for entry theme.extra.{}", key));
+			let config_table = match self.extra.get_mut(key).unwrap().as_table_mut() {
+                Some(t) => t,
+                None => return Err(Error::msg(&format!("config.toml and theme.toml have incompatible types for entry theme.extra.{}", key)))
+            };
 
 			for (child_key, child_val) in theme_table {
 				if !config_table.contains_key(child_key) {
@@ -607,9 +609,10 @@ languages = [
 
 
     #[test]
-    #[should_panic]
     fn cannot_overwrite_theme_mapping_with_invalid_type() {
         let config_str = r#"
+base_url = "http://localhost:1312"
+default_language = "fr"
 [extra]
 foo = "bar"
         "#;
@@ -621,7 +624,7 @@ bar = "baz"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         // Should panic!
-        assert!(config.add_theme_extra(&theme).is_ok());
+        assert_eq!(false, config.add_theme_extra(&theme).is_ok());
     }
 
 
