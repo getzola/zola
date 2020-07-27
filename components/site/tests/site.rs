@@ -19,7 +19,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages().len(), 21);
+    assert_eq!(library.pages().len(), 23);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -37,7 +37,7 @@ fn can_parse_site() {
     // And that the sections are correct
     let index_section = library.get_section(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 4);
-    assert_eq!(index_section.pages.len(), 1);
+    assert_eq!(index_section.pages.len(), 3);
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = library.get_section(&posts_path.join("_index.md")).unwrap();
@@ -502,12 +502,12 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "<a href=\"https://replace-this-with-your-url.com/\">Click here</a>"
     ));
-    assert!(file_contains!(public, "index.html", "Num pages: 1"));
+    assert!(file_contains!(public, "index.html", "Num pages: 2"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
     assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
-    assert_eq!(file_contains!(public, "index.html", "has_next"), false);
+    assert_eq!(file_contains!(public, "index.html", "has_next"), true);
 
     // sitemap contains the pager pages
     assert!(file_contains!(
@@ -518,6 +518,7 @@ fn can_build_site_with_pagination_for_index() {
 
     // current_path
     assert!(file_contains!(public, "index.html", &current_path("/")));
+    assert!(file_contains!(public, "page/2/index.html", &current_path("/page/2/")));
     assert!(file_contains!(public, "paginated/index.html", &current_path("/paginated/")));
 }
 
