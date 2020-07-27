@@ -505,7 +505,11 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(public, "index.html", "Num pages: 2"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
-    assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "Last: https://replace-this-with-your-url.com/page/2/"
+    ));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
     assert_eq!(file_contains!(public, "index.html", "has_next"), true);
 
