@@ -446,6 +446,16 @@ fn can_build_site_with_pagination_for_section() {
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/posts/page/4/</loc>"
     ));
+
+    // current_path
+    assert!(file_contains!(public, "posts/index.html", &current_path("/posts/")));
+    assert!(file_contains!(public, "posts/page/2/index.html", &current_path("/posts/page/2/")));
+    assert!(file_contains!(public, "posts/python/index.html", &current_path("/posts/python/")));
+    assert!(file_contains!(
+        public,
+        "posts/tutorials/index.html",
+        &current_path("/posts/tutorials/")
+    ));
 }
 
 #[test]
@@ -504,7 +514,11 @@ fn can_build_site_with_pagination_for_index() {
         public,
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/page/1/</loc>"
-    ))
+    ));
+
+    // current_path
+    assert!(file_contains!(public, "index.html", &current_path("/")));
+    assert!(file_contains!(public, "paginated/index.html", &current_path("/paginated/")));
 }
 
 #[test]
@@ -585,7 +599,12 @@ fn can_build_site_with_pagination_for_taxonomy() {
         public,
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/tags/a/page/6/</loc>"
-    ))
+    ));
+
+    // current_path
+    assert!(file_contains!(public, "tags/index.html", &current_path("/tags/")));
+    assert!(file_contains!(public, "tags/a/index.html", &current_path("/tags/a/")));
+    assert!(file_contains!(public, "tags/a/page/2/index.html", &current_path("/tags/a/page/2/")));
 }
 
 #[test]
@@ -717,4 +736,9 @@ fn check_site() {
 
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
+}
+
+// Follows test_site/themes/sample/templates/current_path.html
+fn current_path(path: &str) -> String {
+    format!("[current_path]({})", path)
 }
