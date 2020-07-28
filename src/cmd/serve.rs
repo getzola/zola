@@ -22,9 +22,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::collections::HashMap;
-use std::env;
 use std::fs::{read_dir, remove_dir_all};
-use std::path::{Path, PathBuf, MAIN_SEPARATOR};
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -241,35 +240,38 @@ pub fn serve(
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher
-        .watch("content/", RecursiveMode::Recursive)
+        .watch(root_dir.join("content/"), RecursiveMode::Recursive)
         .map_err(|e| ZolaError::chain("Can't watch the `content` folder. Does it exist?", e))?;
     watcher
-        .watch(config_file, RecursiveMode::Recursive)
+        .watch(root_dir.join(config_file), RecursiveMode::Recursive)
         .map_err(|e| ZolaError::chain("Can't watch the `config` file. Does it exist?", e))?;
 
-    if Path::new("static").exists() {
+    let mut dir = root_dir.join("static");
+    if dir.exists() {
         watching_static = true;
         watcher
-            .watch("static/", RecursiveMode::Recursive)
+            .watch(dir, RecursiveMode::Recursive)
             .map_err(|e| ZolaError::chain("Can't watch the `static` folder.", e))?;
     }
 
-    if Path::new("templates").exists() {
+    dir = root_dir.join("templates");
+    if dir.exists() {
         watching_templates = true;
         watcher
-            .watch("templates/", RecursiveMode::Recursive)
+            .watch(dir, RecursiveMode::Recursive)
             .map_err(|e| ZolaError::chain("Can't watch the `templates` folder.", e))?;
     }
 
-    if Path::new("themes").exists() {
+    dir = root_dir.join("themes");
+    if dir.exists() {
         watching_themes = true;
         watcher
-            .watch("themes/", RecursiveMode::Recursive)
+            .watch(dir, RecursiveMode::Recursive)
             .map_err(|e| ZolaError::chain("Can't watch the `themes` folder.", e))?;
     }
 
     // Sass support is optional so don't make it an error to no have a sass folder
-    let _ = watcher.watch("sass/", RecursiveMode::Recursive);
+    let _ = watcher.watch(root_dir.join("sass/"), RecursiveMode::Recursive);
 
     let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
     let output_path = Path::new(output_dir).to_path_buf();
@@ -339,7 +341,7 @@ pub fn serve(
         None
     };
 
-    let pwd = env::current_dir().unwrap();
+    let pwd = root_dir;
 
     let mut watchers = vec!["content", "config.toml"];
     if watching_static {
@@ -356,9 +358,8 @@ pub fn serve(
     }
 
     println!(
-        "Listening for changes in {}{}{{{}}}",
+        "Listening for changes in {}{{{}}}",
         pwd.display(),
-        MAIN_SEPARATOR,
         watchers.join(", ")
     );
 
