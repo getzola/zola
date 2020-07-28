@@ -3,7 +3,7 @@ title = "Table of Contents"
 weight = 60
 +++
 
-Each page/section will automatically generate a table of contents for itself based on the headers present.
+Each page/section will automatically generate a table of contents for itself based on the headers generated with markdown.
 
 It is available in the template through the `page.toc` or `section.toc` variable.
 You can view the [template variables](@/documentation/templates/pages-sections.md#table-of-contents)
