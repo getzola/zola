@@ -223,33 +223,29 @@ impl Page {
         let content = read_file(path)?;
         let mut page = Page::parse(path, &content, config, base_path)?;
 
-        if page.file.name == "index" {
-            let parent_dir = path.parent().unwrap();
-            let assets = find_related_assets(parent_dir);
+        let assets_dir = path.parent().unwrap();
+        let assets = find_related_assets(assets_dir);
 
-            if let Some(ref globset) = config.ignored_content_globset {
-                // `find_related_assets` only scans the immediate directory (it is not recursive) so our
-                // filtering only needs to work against the file_name component, not the full suffix. If
-                // `find_related_assets` was changed to also return files in subdirectories, we could
-                // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
-                // against the remaining path. Note that the current behaviour effectively means that
-                // the `ignored_content` setting in the config file is limited to single-file glob
-                // patterns (no "**" patterns).
-                page.assets = assets
-                    .into_iter()
-                    .filter(|path| match path.file_name() {
-                        None => true,
-                        Some(file) => !globset.is_match(file),
-                    })
-                    .collect();
-            } else {
-                page.assets = assets;
-            }
-
-            page.serialized_assets = page.serialize_assets(&base_path);
+        if let Some(ref globset) = config.ignored_content_globset {
+            // `find_related_assets` only scans the immediate directory (it is not recursive) so our
+            // filtering only needs to work against the file_name component, not the full suffix. If
+            // `find_related_assets` was changed to also return files in subdirectories, we could
+            // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
+            // against the remaining path. Note that the current behaviour effectively means that
+            // the `ignored_content` setting in the config file is limited to single-file glob
+            // patterns (no "**" patterns).
+            page.assets = assets
+                .into_iter()
+                .filter(|path| match path.file_name() {
+                    None => true,
+                    Some(file) => !globset.is_match(file),
+                })
+                .collect();
         } else {
-            page.assets = vec![];
+            page.assets = assets;
         }
+
+        page.serialized_assets = page.serialize_assets(&base_path);
 
         Ok(page)
     }
