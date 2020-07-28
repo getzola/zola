@@ -212,27 +212,8 @@ impl Config {
                 self.extra.insert(key.to_string(), val.clone());
                 continue;
             }
-            if !val.is_table() {
-				// The key is overriden in site config, and is not a mapping (table)
-				// so we discard it (don't merge)
-                continue;
-            }
-			// The key is a table, so we want to merge its child entries with config
-			// Safe unwraps because we have checks before
-			let theme_table = val.as_table().unwrap();
-			let config_table = match self.extra.get_mut(key).unwrap().as_table_mut() {
-                Some(t) => t,
-                None => return Err(Error::msg(&format!("config.toml and theme.toml have incompatible types for entry theme.extra.{}", key)))
-            };
-
-			for (child_key, child_val) in theme_table {
-				if !config_table.contains_key(child_key) {
-					// Theme setting is not overriden, insert it
-					config_table.insert(child_key.to_string(), child_val.clone());
-				}
-			}
-		}
-
+            merge(self.extra.get_mut(key).unwrap(), val)?;
+        }
         Ok(())
     }
 
@@ -291,6 +272,34 @@ impl Config {
                 ))
             })
             .map(|term| term.to_string())
+    }
+}
+
+// merge TOML data that can be a table, or anything else
+pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
+    match (from.is_table(), into.is_table()) {
+        (false, false) => {
+            // These are not tables so we have nothing to merge
+            Ok(())
+        },
+        (true, true) => {
+            // Recursively merge these tables
+            let into_table = into.as_table_mut().unwrap();
+            for (key, val) in from.as_table().unwrap() {
+                if !into_table.contains_key(key) {
+                    // An entry was missing in the first table, insert it
+                    into_table.insert(key.to_string(), val.clone());
+                    continue;
+                }
+                // Two entries to compare, recurse
+                merge(into_table.get_mut(key).unwrap(), val)?;
+            }
+            Ok(())
+        },
+        _ => {
+            // Trying to merge a table with something else
+            Err(Error::msg(&format!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from)))
+        }
     }
 }
 
@@ -432,6 +441,8 @@ base_url = "https://replace-this-with-your-url.com"
 hello = "world"
 [extra.sub]
 foo = "bar"
+[extra.sub.sub]
+foo = "bar"
         "#;
         let mut config = Config::parse(config_str).unwrap();
         let theme_str = r#"
@@ -441,6 +452,9 @@ a_value = 10
 [extra.sub]
 foo = "default"
 truc = "default"
+[extra.sub.sub]
+foo = "default"
+truc = "default"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         assert!(config.add_theme_extra(&theme).is_ok());
@@ -448,7 +462,9 @@ truc = "default"
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
         assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
-        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string())
+        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
+        assert_eq!(extra["sub"]["sub"]["foo"].as_str().unwrap(), "bar".to_string());
+        assert_eq!(extra["sub"]["sub"].get("truc").expect("Failed to merge subsubtable extra.sub.sub").as_str().unwrap(), "default".to_string());
     }
 
     const CONFIG_TRANSLATION: &str = r#"
@@ -623,7 +639,7 @@ foo = "bar"
 bar = "baz"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
-        // Should panic!
+        // We expect an error here
         assert_eq!(false, config.add_theme_extra(&theme).is_ok());
     }
 
