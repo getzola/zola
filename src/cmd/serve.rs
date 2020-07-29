@@ -233,45 +233,36 @@ pub fn serve(
     )?;
     console::report_elapsed_time(start);
 
+    // An array of (path, bool) where the path should be watched for changes, and the boolean value
+    // indicates whether this file/folder must exist for zola serve to operate
+    let watch_this = vec!(
+        ("config.toml", true),
+        ("content", true),
+        ("sass", false),
+        ("static", false),
+        ("templates", false),
+        ("themes", false)
+    );
+
     // Setup watchers
-    let mut watching_static = false;
-    let mut watching_templates = false;
-    let mut watching_themes = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
-    watcher
-        .watch(root_dir.join("content/"), RecursiveMode::Recursive)
-        .map_err(|e| ZolaError::chain("Can't watch the `content` folder. Does it exist?", e))?;
-    watcher
-        .watch(root_dir.join(config_file), RecursiveMode::Recursive)
-        .map_err(|e| ZolaError::chain("Can't watch the `config` file. Does it exist?", e))?;
 
-    let mut dir = root_dir.join("static");
-    if dir.exists() {
-        watching_static = true;
-        watcher
-            .watch(dir, RecursiveMode::Recursive)
-            .map_err(|e| ZolaError::chain("Can't watch the `static` folder.", e))?;
+    // We watch for changes on the filesystem for every entry in watch_this
+    // Will fail if either:
+    //   - the path is mandatory but does not exist (eg. config.toml)
+    //   - the path exists but has incorrect permissions
+    // watchers will contain the paths we're actually watching
+    let mut watchers = Vec::new();
+    for (entry, mandatory) in watch_this {
+        let watch_path = root_dir.join(entry);
+        if mandatory || watch_path.exists() {
+            watcher
+                .watch(root_dir.join(entry), RecursiveMode::Recursive)
+                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes. Do you have correct permissions?", entry), e))?;
+            watchers.push(entry.to_string());
+        }
     }
-
-    dir = root_dir.join("templates");
-    if dir.exists() {
-        watching_templates = true;
-        watcher
-            .watch(dir, RecursiveMode::Recursive)
-            .map_err(|e| ZolaError::chain("Can't watch the `templates` folder.", e))?;
-    }
-
-    dir = root_dir.join("themes");
-    if dir.exists() {
-        watching_themes = true;
-        watcher
-            .watch(dir, RecursiveMode::Recursive)
-            .map_err(|e| ZolaError::chain("Can't watch the `themes` folder.", e))?;
-    }
-
-    // Sass support is optional so don't make it an error to no have a sass folder
-    let _ = watcher.watch(root_dir.join("sass/"), RecursiveMode::Recursive);
 
     let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
     let output_path = Path::new(output_dir).to_path_buf();
@@ -341,25 +332,9 @@ pub fn serve(
         None
     };
 
-    let pwd = root_dir;
-
-    let mut watchers = vec!["content", "config.toml"];
-    if watching_static {
-        watchers.push("static");
-    }
-    if watching_templates {
-        watchers.push("templates");
-    }
-    if watching_themes {
-        watchers.push("themes");
-    }
-    if site.config.compile_sass {
-        watchers.push("sass");
-    }
-
     println!(
         "Listening for changes in {}{{{}}}",
-        pwd.display(),
+        root_dir.display(),
         watchers.join(", ")
     );
 
@@ -461,7 +436,7 @@ pub fn serve(
                         if path.is_file() && is_temp_file(&path) {
                             continue;
                         }
-                        let (change_kind, partial_path) = detect_change_kind(&pwd, &path);
+                        let (change_kind, partial_path) = detect_change_kind(&root_dir, &path);
 
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
@@ -523,7 +498,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&pwd, &path) {
+                        match detect_change_kind(&root_dir, &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
                                 // Force refresh
