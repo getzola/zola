@@ -342,11 +342,11 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     let is_md = path.extension().unwrap() == "md";
     let index = path.parent().unwrap().join("index.md");
 
-    let mut potential_indices = vec![path.parent().unwrap().join("index.md")];
+    /*let mut potential_indices = vec![path.parent().unwrap().join("index.md")];
     for language in &site.config.languages {
         potential_indices.push(path.parent().unwrap().join(format!("index.{}.md", language.code)));
     }
-    let colocated_index = potential_indices.contains(&path.to_path_buf());
+    let colocated_index = potential_indices.contains(&path.to_path_buf());*/
 
     // A few situations can happen:
     // 1. Change on .md files
@@ -361,17 +361,15 @@ pub fn after_content_change(site: &mut Site, path: &Path) -> Result<()> {
     //       2. Something? Update the page
     if is_md {
         // only delete if it was able to be added in the first place
+        // TODO: shouldn't we delete the element in any case, because it appears to have been added
+        // in the first place?
         if !index.exists() && !path.exists() {
             return delete_element(site, path, is_section);
         }
 
         // Added another .md in a assets directory
-        if index.exists() && path.exists() && !colocated_index {
-            bail!(
-                "Change on {:?} detected but only files named `index.md` with an optional language code are allowed",
-                path.display()
-            );
-        } else if index.exists() && !path.exists() {
+        // TODO: see TODO above
+        if index.exists() && !path.exists() {
             // deleted the wrong .md, do nothing
             return Ok(());
         }
