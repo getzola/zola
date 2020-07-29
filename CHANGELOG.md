@@ -2,6 +2,12 @@
 
 ## 0.12.0 (unreleased)
 
+### Breaking
+
+- All paths (except colocated assets) now have a leading `/`
+
+### Other
+
 - Add 2 syntax highlighting themes: `green` and `railsbase16-green-screen-dark`
 - Enable task lists in Markdown
 - Add support for SVG in `get_image_metadata`
@@ -11,6 +17,7 @@
 - Make search index generation configurable, see docs for examples
 - Fix Sass trying to load folders starting with `_`, causing issues with frameworks
 - Update livereload.js version
+- Add Markdown-outputting shortcodes
 
 ## 0.11.0 (2020-05-25)
 
