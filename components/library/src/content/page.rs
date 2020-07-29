@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use slotmap::DefaultKey;
 use tera::{Context as TeraContext, Tera};
+use unic_langid::LanguageIdentifier;
 
 use crate::library::Library;
 use config::Config;
@@ -75,7 +76,7 @@ pub struct Page {
     pub reading_time: Option<usize>,
     /// The language of that page. Equal to the default lang if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the {slug}.{lang}.md file scheme
-    pub lang: String,
+    pub lang: LanguageIdentifier,
     /// Contains all the translated version of that page
     pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
@@ -111,7 +112,7 @@ impl Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
-            lang: String::new(),
+            lang: LanguageIdentifier::default(),
             translations: Vec::new(),
             internal_links_with_anchors: Vec::new(),
             external_links: Vec::new(),
@@ -357,7 +358,7 @@ impl Default for Page {
             toc: vec![],
             word_count: None,
             reading_time: None,
-            lang: String::new(),
+            lang: LanguageIdentifier::default(),
             translations: Vec::new(),
             internal_links_with_anchors: Vec::new(),
             external_links: Vec::new(),
@@ -375,6 +376,7 @@ mod tests {
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
     use tera::Tera;
+    use unic_langid::langid;
 
     use super::Page;
     use config::{Config, Language};
@@ -770,7 +772,7 @@ Hello world
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.push(Language { code: langid!("fr"), feed: false, search: false });
         let content = r#"
 +++
 +++
@@ -779,7 +781,7 @@ Bonjour le monde"#
         let res = Page::parse(Path::new("hello.fr.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.lang, "fr".to_string());
+        assert_eq!(page.lang, langid!("fr"));
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
     }
@@ -787,7 +789,7 @@ Bonjour le monde"#
     #[test]
     fn can_specify_language_in_filename_with_date() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.push(Language { code: langid!("fr"), feed: false, search: false });
         let content = r#"
 +++
 +++
@@ -798,7 +800,7 @@ Bonjour le monde"#
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
-        assert_eq!(page.lang, "fr".to_string());
+        assert_eq!(page.lang, langid!("fr"));
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/fr/hello/");
     }
@@ -806,7 +808,7 @@ Bonjour le monde"#
     #[test]
     fn i18n_frontmatter_path_overrides_default_permalink() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.push(Language { code: langid!("fr"), feed: false, search: false });
         let content = r#"
 +++
 path = "bonjour"
@@ -816,7 +818,7 @@ Bonjour le monde"#
         let res = Page::parse(Path::new("hello.fr.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.lang, "fr".to_string());
+        assert_eq!(page.lang, langid!("fr"));
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/bonjour/");
     }

@@ -12,6 +12,7 @@ rayon = "1"
 serde = "1"
 serde_derive = "1"
 sass-rs = "0.2"
+unic-langid = { version = "0.9", features = ["serde", "macros"] }
 
 errors = { path = "../errors" }
 config = { path = "../config" }

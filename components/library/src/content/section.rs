@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 use slotmap::DefaultKey;
 use tera::{Context as TeraContext, Tera};
+use unic_langid::LanguageIdentifier;
 
 use config::Config;
 use errors::{Error, Result};
@@ -54,7 +55,7 @@ pub struct Section {
     pub reading_time: Option<usize>,
     /// The language of that section. Equal to the default lang if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the _index.{lang}.md file scheme
-    pub lang: String,
+    pub lang: LanguageIdentifier,
     /// Contains all the translated version of that section
     pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
@@ -91,7 +92,7 @@ impl Section {
             toc: vec![],
             word_count: None,
             reading_time: None,
-            lang: String::new(),
+            lang: LanguageIdentifier::default(),
             translations: Vec::new(),
             internal_links_with_anchors: Vec::new(),
             external_links: Vec::new(),
@@ -284,7 +285,7 @@ impl Default for Section {
             toc: vec![],
             reading_time: None,
             word_count: None,
-            lang: String::new(),
+            lang: LanguageIdentifier::default(),
             translations: Vec::new(),
             internal_links_with_anchors: Vec::new(),
             external_links: Vec::new(),
@@ -300,6 +301,7 @@ mod tests {
 
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
+    use unic_langid::langid;
 
     use super::Section;
     use config::{Config, Language};
@@ -360,7 +362,7 @@ mod tests {
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.push(Language { code: langid!("fr"), feed: false, search: false });
         let content = r#"
 +++
 +++
@@ -374,7 +376,7 @@ Bonjour le monde"#
         );
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.lang, langid!("fr"));
         assert_eq!(section.permalink, "http://a-website.com/fr/hello/nested/");
     }
 
@@ -382,7 +384,7 @@ Bonjour le monde"#
     #[test]
     fn can_make_links_to_translated_sections_without_double_trailing_slash() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.push(Language { code: langid!("fr"), feed: false, search: false });
         let content = r#"
 +++
 +++
@@ -392,14 +394,14 @@ Bonjour le monde"#
             Section::parse(Path::new("content/_index.fr.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.lang, langid!("fr"));
         assert_eq!(section.permalink, "http://a-website.com/fr/");
     }
 
     #[test]
     fn can_make_links_to_translated_subsections_with_trailing_slash() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.push(Language { code: langid!("fr"), feed: false, search: false });
         let content = r#"
 +++
 +++
@@ -413,7 +415,7 @@ Bonjour le monde"#
         );
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.lang, langid!("fr"));
         assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
     }
 }

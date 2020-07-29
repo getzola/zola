@@ -4,6 +4,7 @@ use std::path::Path;
 
 use serde_derive::Serialize;
 use tera::{Map, Value};
+use unic_langid::LanguageIdentifier;
 
 use crate::content::{Page, Section};
 use crate::library::Library;
@@ -11,7 +12,7 @@ use rendering::Heading;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TranslatedContent<'a> {
-    lang: &'a str,
+    lang: &'a LanguageIdentifier,
     permalink: &'a str,
     title: &'a Option<String>,
     /// The path to the markdown file; useful for retrieving the full page through
@@ -78,7 +79,7 @@ pub struct SerializingPage<'a> {
     reading_time: Option<usize>,
     assets: &'a [String],
     draft: bool,
-    lang: &'a str,
+    lang: &'a LanguageIdentifier,
     lighter: Option<Box<SerializingPage<'a>>>,
     heavier: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
@@ -222,7 +223,7 @@ pub struct SerializingSection<'a> {
     toc: &'a [Heading],
     word_count: Option<usize>,
     reading_time: Option<usize>,
-    lang: &'a str,
+    lang: &'a LanguageIdentifier,
     assets: &'a [String],
     pages: Vec<SerializingPage<'a>>,
     subsections: Vec<&'a str>,

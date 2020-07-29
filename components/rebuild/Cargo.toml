@@ -6,6 +6,8 @@ edition = "2018"
 include = ["src/lib.rs"]
 
 [dependencies]
+unic-langid = "0.9"
+
 errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }
 library = { path = "../library" }

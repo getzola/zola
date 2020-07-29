@@ -1,5 +1,7 @@
 use std::path::{Component, Path};
 
+use unic_langid::LanguageIdentifier;
+
 use errors::{bail, Result};
 use front_matter::{PageFrontMatter, SectionFrontMatter};
 use library::{Page, Section};
@@ -110,7 +112,7 @@ fn delete_element(site: &mut Site, path: &Path, is_section: bool) -> Result<()> 
         }
     }
 
-    // We might have delete the root _index.md so ensure we have at least the default one
+    // We might have delete the root_index.md so ensure we have at least the default one
     // before populating
     site.create_default_index_sections()?;
     site.populate_sections();
@@ -317,14 +319,27 @@ pub fn after_content_rename(site: &mut Site, old: &Path, new: &Path) -> Result<(
     Ok(())
 }
 
-fn is_section(path: &str, languages_codes: &[&str]) -> bool {
+fn is_section(path: &str, languages_codes: &[&LanguageIdentifier]) -> bool {
     if path == "_index.md" {
         return true;
     }
 
+    // `LanguageIdentifier` might not return the original languaga string verbatim, so we re-parse
+    // the filename and then check for equality
+    let parts: Vec<String> = path.splitn(2, '.').map(|s| s.to_string()).collect();
+
+    let file_lang: LanguageIdentifier = match parts[1].parse() {
+        Ok(lang) => lang,
+        Err(_) => return false,
+    };
+
     for language_code in languages_codes {
-        let lang_section_string = format!("_index.{}.md", language_code);
-        if path == lang_section_string {
+        // let lang_section_string = format!("_index.{}.md", language_code);
+        //if path == lang_section_string {
+        //    return true;
+        //}
+
+        if file_lang.matches(&language_code, true, false) {
             return true;
         }
     }

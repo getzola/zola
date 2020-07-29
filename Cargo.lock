@@ -261,6 +261,7 @@ dependencies = [
  "serde_derive",
  "syntect",
  "toml",
+ "unic-langid",
  "utils",
 ]
 
@@ -1156,6 +1157,7 @@ dependencies = [
  "tempfile",
  "tera",
  "toml",
+ "unic-langid",
  "utils",
 ]
 
@@ -1837,6 +1839,7 @@ dependencies = [
  "library",
  "site",
  "tempfile",
+ "unic-langid",
 ]
 
 [[package]]
@@ -2081,6 +2084,7 @@ dependencies = [
  "errors",
  "lazy_static",
  "library",
+ "unic-langid",
 ]
 
 [[package]]
@@ -2175,6 +2179,7 @@ dependencies = [
  "tempfile",
  "templates",
  "tera",
+ "unic-langid",
  "utils",
 ]
 
@@ -2389,6 +2394,7 @@ dependencies = [
  "svg_metadata",
  "tera",
  "toml",
+ "unic-langid",
  "url",
  "utils",
 ]
@@ -2641,6 +2647,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a4a8eeaf0494862c1404c95ec2f4c33a2acff5076f64314b465e3ddae1b934d"
 dependencies = [
+ "serde",
  "tinystr",
 ]
 

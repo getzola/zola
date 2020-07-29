@@ -233,6 +233,8 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
+    use unic_langid::langid;
+
     use crate::content::Page;
     use crate::library::Library;
     use config::{Config, Language, Taxonomy as TaxonomyConfig};
@@ -458,7 +460,7 @@ mod tests {
     #[test]
     fn can_make_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.languages.push(Language { feed: false, code: "fr".to_string(), search: false });
+        config.languages.push(Language { feed: false, code: langid!("fr"), search: false });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
@@ -474,12 +476,12 @@ mod tests {
             },
             TaxonomyConfig {
                 name: "auteurs".to_string(),
-                lang: "fr".to_string(),
+                lang: langid!("fr"),
                 ..TaxonomyConfig::default()
             },
             TaxonomyConfig {
                 name: "tags".to_string(),
-                lang: "fr".to_string(),
+                lang: langid!("fr"),
                 ..TaxonomyConfig::default()
             },
         ];
@@ -501,7 +503,7 @@ mod tests {
         library.insert_page(page2);
 
         let mut page3 = Page::default();
-        page3.lang = "fr".to_string();
+        page3.lang = langid!("fr");
         let mut taxo_page3 = HashMap::new();
         taxo_page3.insert("tags".to_string(), vec!["rust".to_string()]);
         taxo_page3.insert("auteurs".to_string(), vec!["Vincent Prouillet".to_string()]);
@@ -568,21 +570,17 @@ mod tests {
     fn can_make_utf8_taxonomies() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::Safe;
-        config.languages.push(Language {
-            feed: false,
-            code: "fr".to_string(),
-            ..Language::default()
-        });
+        config.languages.push(Language { feed: false, code: langid!("fr"), ..Language::default() });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![TaxonomyConfig {
             name: "catégories".to_string(),
-            lang: "fr".to_string(),
+            lang: langid!("fr"),
             ..TaxonomyConfig::default()
         }];
 
         let mut page = Page::default();
-        page.lang = "fr".to_string();
+        page.lang = langid!("fr");
         let mut taxo_page = HashMap::new();
         taxo_page.insert("catégories".to_string(), vec!["Écologie".to_string()]);
         page.meta.taxonomies = taxo_page;
@@ -601,11 +599,7 @@ mod tests {
     fn can_make_slugified_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        config.languages.push(Language {
-            feed: false,
-            code: "fr".to_string(),
-            ..Language::default()
-        });
+        config.languages.push(Language { feed: false, code: langid!("fr"), ..Language::default() });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
@@ -621,12 +615,12 @@ mod tests {
             },
             TaxonomyConfig {
                 name: "auteurs".to_string(),
-                lang: "fr".to_string(),
+                lang: langid!("fr"),
                 ..TaxonomyConfig::default()
             },
             TaxonomyConfig {
                 name: "tags".to_string(),
-                lang: "fr".to_string(),
+                lang: langid!("fr"),
                 ..TaxonomyConfig::default()
             },
         ];
@@ -648,7 +642,7 @@ mod tests {
         library.insert_page(page2);
 
         let mut page3 = Page::default();
-        page3.lang = "fr".to_string();
+        page3.lang = langid!("fr");
         let mut taxo_page3 = HashMap::new();
         taxo_page3.insert("tags".to_string(), vec!["rust".to_string()]);
         taxo_page3.insert("auteurs".to_string(), vec!["Vincent Prouillet".to_string()]);

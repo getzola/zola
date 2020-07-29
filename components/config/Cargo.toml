@@ -13,6 +13,7 @@ chrono = "0.4"
 globset = "0.4"
 lazy_static = "1"
 syntect = "4.1"
+unic-langid = { version = "0.9", features = ["serde","macros"] }
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

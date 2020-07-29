@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::{Arc, Mutex, RwLock};
 use std::{fs, io, result};
 
 use sha2::{Digest, Sha256, Sha384, Sha512};
 use svg_metadata as svg;
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
+use unic_langid::LanguageIdentifier;
 
 use config::Config;
 use image::GenericImageView;
@@ -32,8 +34,16 @@ impl Trans {
 impl TeraFn for Trans {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         let key = required_arg!(String, args.get("key"), "`trans` requires a `key` argument.");
-        let lang = optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.")
-            .unwrap_or_else(|| self.config.default_language.clone());
+        let lang =
+            match optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.") {
+                Some(lang) => LanguageIdentifier::from_str(&lang).map_err(|_| {
+                    Error::msg(format!(
+                        "`trans`: Failed to retreive term translation {}, invalid language {}",
+                        key, lang
+                    ))
+                })?,
+                None => self.config.default_language.clone(),
+            };
 
         let term = self
             .config
@@ -60,12 +70,12 @@ impl GetUrl {
     }
 }
 
-fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<String> {
-    if lang == config.default_language {
+fn make_path_with_lang(path: String, lang: &LanguageIdentifier, config: &Config) -> Result<String> {
+    if lang == &config.default_language {
         return Ok(path);
     }
 
-    if !config.languages.iter().any(|x| x.code == lang) {
+    if !config.languages.iter().any(|x| &x.code == lang) {
         return Err(
             format!("`{}` is not an authorized language (check config.languages).", lang).into()
         );
@@ -130,8 +140,12 @@ impl TeraFn for GetUrl {
             "`get_url` requires a `path` argument with a string value"
         );
 
-        let lang = optional_arg!(String, args.get("lang"), "`get_url`: `lang` must be a string.")
-            .unwrap_or_else(|| self.config.default_language.clone());
+        let lang =
+            match optional_arg!(String, args.get("lang"), "`get_url`: `lang` must be a string.") {
+                Some(lang) => LanguageIdentifier::from_str(&lang)
+                    .map_err(|_| Error::msg(format!("`get_url`: invalid language {}", lang)))?,
+                None => self.config.default_language.clone(),
+            };
 
         if path.starts_with("@/") {
             let path_with_lang = match make_path_with_lang(path, &lang, &self.config) {
@@ -316,10 +330,10 @@ fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
 #[derive(Debug)]
 pub struct GetTaxonomyUrl {
     taxonomies: HashMap<String, HashMap<String, String>>,
-    default_lang: String,
+    default_lang: LanguageIdentifier,
 }
 impl GetTaxonomyUrl {
-    pub fn new(default_lang: &str, all_taxonomies: &[Taxonomy]) -> Self {
+    pub fn new(default_lang: &LanguageIdentifier, all_taxonomies: &[Taxonomy]) -> Self {
         let mut taxonomies = HashMap::new();
         for taxo in all_taxonomies {
             let mut items = HashMap::new();
@@ -328,7 +342,7 @@ impl GetTaxonomyUrl {
             }
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), items);
         }
-        Self { taxonomies, default_lang: default_lang.to_string() }
+        Self { taxonomies, default_lang: default_lang.clone() }
     }
 }
 impl TeraFn for GetTaxonomyUrl {
@@ -343,15 +357,22 @@ impl TeraFn for GetTaxonomyUrl {
             args.get("name"),
             "`get_taxonomy_url` requires a `name` argument with a string value"
         );
-        let lang =
-            optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
-                .unwrap_or_else(|| self.default_lang.clone());
+        let lang = match optional_arg!(
+            String,
+            args.get("lang"),
+            "`get_taxonomy_url`: `lang` must be a string"
+        ) {
+            Some(lang) => LanguageIdentifier::from_str(&lang).map_err(|_| {
+                Error::msg(format!("`get_taxonomy_url` received an invalid language: {}", lang))
+            })?,
+            None => self.default_lang.clone(),
+        };
 
         let container = match self.taxonomies.get(&format!("{}-{}", kind, lang)) {
             Some(c) => c,
             None => {
                 return Err(format!(
-                    "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
+                    "`get_taxonomy_url`: received an unknown taxonomy as kind: {}",
                     kind
                 )
                 .into());
@@ -434,11 +455,11 @@ impl TeraFn for GetSection {
 pub struct GetTaxonomy {
     library: Arc<RwLock<Library>>,
     taxonomies: HashMap<String, Taxonomy>,
-    default_lang: String,
+    default_lang: LanguageIdentifier,
 }
 impl GetTaxonomy {
     pub fn new(
-        default_lang: &str,
+        default_lang: &LanguageIdentifier,
         all_taxonomies: Vec<Taxonomy>,
         library: Arc<RwLock<Library>>,
     ) -> Self {
@@ -446,7 +467,7 @@ impl GetTaxonomy {
         for taxo in all_taxonomies {
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), taxo);
         }
-        Self { taxonomies, library, default_lang: default_lang.to_string() }
+        Self { taxonomies, library, default_lang: default_lang.clone() }
     }
 }
 impl TeraFn for GetTaxonomy {
@@ -457,9 +478,16 @@ impl TeraFn for GetTaxonomy {
             "`get_taxonomy` requires a `kind` argument with a string value"
         );
 
-        let lang =
-            optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
-                .unwrap_or_else(|| self.default_lang.clone());
+        let lang = match optional_arg!(
+            String,
+            args.get("lang"),
+            "`get_taxonomy`: `lang` must be a string"
+        ) {
+            Some(lang) => LanguageIdentifier::from_str(&lang).map_err(|_| {
+                Error::msg(format!("`get_taxonomy_url` received an invalid language: {}", lang))
+            })?,
+            None => self.default_lang.clone(),
+        };
 
         match self.taxonomies.get(&format!("{}-{}", kind, lang)) {
             Some(t) => Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap()),
@@ -483,6 +511,7 @@ mod tests {
     use lazy_static::lazy_static;
 
     use tera::{to_value, Function, Value};
+    use unic_langid::langid;
 
     use config::{Config, Taxonomy as TaxonomyConfig};
     use library::{Library, Taxonomy, TaxonomyItem};
@@ -562,7 +591,7 @@ mod tests {
         };
         let taxo_config_fr = TaxonomyConfig {
             name: "tags".to_string(),
-            lang: "fr".to_string(),
+            lang: langid!("fr"),
             ..TaxonomyConfig::default()
         };
         let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
@@ -640,7 +669,7 @@ mod tests {
         };
         let taxo_config_fr = TaxonomyConfig {
             name: "tags".to_string(),
-            lang: "fr".to_string(),
+            lang: langid!("fr"),
             ..TaxonomyConfig::default()
         };
         let library = Library::new(0, 0, false);

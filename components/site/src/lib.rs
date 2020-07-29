@@ -12,6 +12,7 @@ use std::sync::{Arc, Mutex, RwLock};
 use glob::glob;
 use rayon::prelude::*;
 use tera::{Context, Tera};
+use unic_langid::LanguageIdentifier;
 
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
@@ -93,8 +94,10 @@ impl Site {
 
     /// The index sections are ALWAYS at those paths
     /// There are one index section for the default language + 1 per language
-    fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
+    fn index_section_paths(&self) -> Vec<(PathBuf, Option<LanguageIdentifier>)> {
         let mut res = vec![(self.content_path.join("_index.md"), None)];
+
+        // FIXME: investigage if `LanguageIdentifier` can be lossy
         for language in &self.config.languages {
             res.push((
                 self.content_path.join(format!("_index.{}.md", language.code)),
@@ -242,7 +245,7 @@ impl Site {
                 if let Some(ref l) = lang {
                     index_section.file.name = format!("_index.{}", l);
                     index_section.path = format!("{}/", l);
-                    index_section.permalink = self.config.make_permalink(l);
+                    index_section.permalink = self.config.make_permalink(format!("{}", l).as_ref());
                     let filename = format!("_index.{}.md", l);
                     index_section.file.path = self.content_path.join(&filename);
                     index_section.file.relative = filename;
@@ -351,9 +354,9 @@ impl Site {
     pub fn find_parent_section_insert_anchor(
         &self,
         parent_path: &PathBuf,
-        lang: &str,
+        lang: &LanguageIdentifier,
     ) -> InsertAnchor {
-        let parent = if lang != self.config.default_language {
+        let parent = if lang != &self.config.default_language {
             parent_path.join(format!("_index.{}.md", lang))
         } else {
             parent_path.join("_index.md")
@@ -366,11 +369,13 @@ impl Site {
 
     pub fn populate_fluent(&mut self) -> Result<()> {
         if std::fs::metadata(&self.config.fluent_dir).is_ok() {
-            let loader =
-                fluent_templates::ArcLoader::builder(&self.config.fluent_dir, self.config.default_language.parse().map_err(|e| format!("{}", e))?)
-                .shared_resources(Some(&*self.config.shared_fluent_resources))
-                .build()
-                .map_err(|e| e.to_string())?;
+            let loader = fluent_templates::ArcLoader::builder(
+                &self.config.fluent_dir,
+                self.config.default_language.clone(),
+            )
+            .shared_resources(Some(&*self.config.shared_fluent_resources))
+            .build()
+            .map_err(|e| e.to_string())?;
             self.tera.register_function("fluent", fluent_templates::FluentLoader::new(loader));
         }
 
@@ -534,7 +539,12 @@ impl Site {
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, |c| c)?;
+            self.render_feed(
+                pages,
+                Some(&PathBuf::from(format!("{}", lang.code))),
+                &lang.code,
+                |c| c,
+            )?;
         }
 
         self.render_404()?;
@@ -669,7 +679,7 @@ impl Site {
 
         ensure_directory_exists(&self.output_path)?;
         let output_path = if taxonomy.kind.lang != self.config.default_language {
-            let mid_path = self.output_path.join(&taxonomy.kind.lang);
+            let mid_path = self.output_path.join(format!("{}", taxonomy.kind.lang));
             create_directory(&mid_path)?;
             mid_path.join(&taxonomy.kind.name)
         } else {
@@ -701,7 +711,9 @@ impl Site {
                     self.render_feed(
                         item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
-                        if self.config.is_multilingual() && !taxonomy.kind.lang.is_empty() {
+                        if self.config.is_multilingual()
+                            && taxonomy.kind.lang.language.as_str() != "und"
+                        {
                             &taxonomy.kind.lang
                         } else {
                             &self.config.default_language
@@ -774,12 +786,12 @@ impl Site {
         &self,
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
-        lang: &str,
+        lang: &LanguageIdentifier,
         additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let feed = match feed::render_feed(self, all_pages, lang, base_path, additional_context_fn)?
+        let feed = match feed::render_feed(self, all_pages, &lang.to_string(), base_path, additional_context_fn)?
         {
             Some(v) => v,
             None => return Ok(()),
@@ -807,7 +819,7 @@ impl Site {
         let mut output_path = self.output_path.clone();
 
         if section.lang != self.config.default_language {
-            output_path.push(&section.lang);
+            output_path.push(format!("{}", &section.lang));
             if !output_path.exists() {
                 create_directory(&output_path)?;
             }

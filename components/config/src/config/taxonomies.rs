@@ -1,5 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
+use unic_langid::LanguageIdentifier;
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Taxonomy {
@@ -13,7 +15,7 @@ pub struct Taxonomy {
     pub feed: bool,
     /// The language for that taxonomy, only used in multilingual sites.
     /// Defaults to the config `default_language` if not set
-    pub lang: String,
+    pub lang: LanguageIdentifier,
 }
 
 impl Taxonomy {
@@ -41,7 +43,7 @@ impl Default for Taxonomy {
             paginate_by: None,
             paginate_path: None,
             feed: false,
-            lang: String::new(),
+            lang: LanguageIdentifier::default(),
         }
     }
 }
