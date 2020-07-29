@@ -57,6 +57,13 @@ enum ChangeKind {
     Config,
 }
 
+#[derive(Debug, PartialEq)]
+enum WatchMode {
+    Required,
+    Optional,
+    Condition(bool)
+}
+
 static INTERNAL_SERVER_ERROR_TEXT: &[u8] = b"Internal Server Error";
 static METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
 static NOT_FOUND_TEXT: &[u8] = b"Not Found";
@@ -233,15 +240,15 @@ pub fn serve(
     )?;
     console::report_elapsed_time(start);
 
-    // An array of (path, bool) where the path should be watched for changes, and the boolean value
+    // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate
     let watch_this = vec!(
-        ("config.toml", true),
-        ("content", true),
-        ("sass", false),
-        ("static", false),
-        ("templates", false),
-        ("themes", false)
+        ("config.toml", WatchMode::Required),
+        ("content", WatchMode::Required),
+        ("sass", WatchMode::Condition(site.config.compile_sass)),
+        ("static", WatchMode::Optional),
+        ("templates", WatchMode::Optional),
+        ("themes", WatchMode::Condition(site.config.theme.is_some()))
     );
 
     // Setup watchers
@@ -254,12 +261,17 @@ pub fn serve(
     //   - the path exists but has incorrect permissions
     // watchers will contain the paths we're actually watching
     let mut watchers = Vec::new();
-    for (entry, mandatory) in watch_this {
+    for (entry, mode) in watch_this {
         let watch_path = root_dir.join(entry);
-        if mandatory || watch_path.exists() {
+        let should_watch = match mode {
+            WatchMode::Required => true,
+            WatchMode::Optional => watch_path.exists(),
+            WatchMode::Condition(b) => b
+        };
+        if should_watch {
             watcher
                 .watch(root_dir.join(entry), RecursiveMode::Recursive)
-                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes. Do you have correct permissions?", entry), e))?;
+                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Do you have correct permissions?", entry, root_dir.display()), e))?;
             watchers.push(entry.to_string());
         }
     }
