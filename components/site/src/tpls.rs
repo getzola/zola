@@ -10,7 +10,7 @@ use utils::templates::rewrite_theme_paths;
 
 pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     let tpl_glob =
-        format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
+        format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.{*ml,md}");
 
     // Only parsing as we might be extending templates from themes and that would error
     // as we haven't loaded them yet
@@ -27,7 +27,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
         let theme_tpl_glob = format!(
             "{}/{}",
             path.to_string_lossy().replace("\\", "/"),
-            format!("themes/{}/templates/**/*.*ml", theme)
+            format!("themes/{}/templates/**/*.{{*ml,md}}", theme)
         );
         let mut tera_theme = Tera::parse(&theme_tpl_glob)
             .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
