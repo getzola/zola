@@ -150,7 +150,7 @@ impl Taxonomy {
             "current_url",
             &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)),
         );
-        context.insert("current_path", &format!("/{}/{}", self.kind.name, item.slug));
+        context.insert("current_path", &format!("/{}/{}/", self.kind.name, item.slug));
 
         render_template(&format!("{}/single.html", self.kind.name), tera, context, &config.theme)
             .map_err(|e| {
@@ -172,7 +172,7 @@ impl Taxonomy {
         context.insert("lang", &self.kind.lang);
         context.insert("taxonomy", &self.kind);
         context.insert("current_url", &config.make_permalink(&self.kind.name));
-        context.insert("current_path", &self.kind.name);
+        context.insert("current_path", &format!("/{}/", self.kind.name));
 
         render_template(&format!("{}/list.html", self.kind.name), tera, context, &config.theme)
             .map_err(|e| {
