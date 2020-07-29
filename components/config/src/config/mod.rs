@@ -206,19 +206,14 @@ impl Config {
 
     /// Merges the extra data from the theme with the config extra data
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
-        // 3 pass merging
-        // 1. save config to preserve user
-        let original = self.extra.clone();
-        // 2. inject theme extra values
         for (key, val) in &theme.extra {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
+            if !self.extra.contains_key(key) {
+                // The key is not overriden in site config, insert it
+                self.extra.insert(key.to_string(), val.clone());
+                continue;
+            }
+            merge(self.extra.get_mut(key).unwrap(), val)?;
         }
-
-        // 3. overwrite with original config
-        for (key, val) in &original {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
-        }
-
         Ok(())
     }
 
@@ -277,6 +272,34 @@ impl Config {
                 ))
             })
             .map(|term| term.to_string())
+    }
+}
+
+// merge TOML data that can be a table, or anything else
+pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
+    match (from.is_table(), into.is_table()) {
+        (false, false) => {
+            // These are not tables so we have nothing to merge
+            Ok(())
+        },
+        (true, true) => {
+            // Recursively merge these tables
+            let into_table = into.as_table_mut().unwrap();
+            for (key, val) in from.as_table().unwrap() {
+                if !into_table.contains_key(key) {
+                    // An entry was missing in the first table, insert it
+                    into_table.insert(key.to_string(), val.clone());
+                    continue;
+                }
+                // Two entries to compare, recurse
+                merge(into_table.get_mut(key).unwrap(), val)?;
+            }
+            Ok(())
+        },
+        _ => {
+            // Trying to merge a table with something else
+            Err(Error::msg(&format!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from)))
+        }
     }
 }
 
@@ -416,18 +439,32 @@ base_url = "https://replace-this-with-your-url.com"
 
 [extra]
 hello = "world"
+[extra.sub]
+foo = "bar"
+[extra.sub.sub]
+foo = "bar"
         "#;
         let mut config = Config::parse(config_str).unwrap();
         let theme_str = r#"
 [extra]
 hello = "foo"
 a_value = 10
+[extra.sub]
+foo = "default"
+truc = "default"
+[extra.sub.sub]
+foo = "default"
+truc = "default"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         assert!(config.add_theme_extra(&theme).is_ok());
         let extra = config.extra;
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
+        assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
+        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
+        assert_eq!(extra["sub"]["sub"]["foo"].as_str().unwrap(), "bar".to_string());
+        assert_eq!(extra["sub"]["sub"].get("truc").expect("Failed to merge subsubtable extra.sub.sub").as_str().unwrap(), "default".to_string());
     }
 
     const CONFIG_TRANSLATION: &str = r#"
@@ -585,4 +622,26 @@ languages = [
         let err = config.unwrap_err();
         assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
     }
+
+
+    #[test]
+    fn cannot_overwrite_theme_mapping_with_invalid_type() {
+        let config_str = r#"
+base_url = "http://localhost:1312"
+default_language = "fr"
+[extra]
+foo = "bar"
+        "#;
+        let mut config = Config::parse(config_str).unwrap();
+        let theme_str = r#"
+[extra]
+[extra.foo]
+bar = "baz"
+        "#;
+        let theme = Theme::parse(theme_str).unwrap();
+        // We expect an error here
+        assert_eq!(false, config.add_theme_extra(&theme).is_ok());
+    }
+
+
 }
