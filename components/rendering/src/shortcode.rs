@@ -242,7 +242,7 @@ mod tests {
     fn render_shortcodes(code: &str, tera: &Tera) -> String {
         let config = Config::default();
         let permalinks = HashMap::new();
-        let context = RenderContext::new(&tera, &config, "", &permalinks, InsertAnchor::None);
+        let context = RenderContext::new(&tera, &config, "", &permalinks, InsertAnchor::None, true);
         super::render_shortcodes(code, &context).unwrap()
     }
 
