@@ -23,7 +23,7 @@ pub struct Section {
     pub file: FileInfo,
     /// The front matter meta-data
     pub meta: SectionFrontMatter,
-    /// The URL path of the page
+    /// The URL path of the page, always starting with a slash
     pub path: String,
     /// The components for the path of that page
     pub components: Vec<String>,
@@ -111,16 +111,18 @@ impl Section {
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
+
         let path = section.file.components.join("/");
-        if section.lang != config.default_language {
-            if path.is_empty() {
-                section.path = format!("{}/", section.lang);
-            } else {
-                section.path = format!("{}/{}/", section.lang, path);
-            }
+        let lang_path = if section.lang != config.default_language {
+            format!("/{}", section.lang)
         } else {
-            section.path = format!("{}/", path);
-        }
+            "".into()
+        };
+        section.path = if path.is_empty() {
+            format!("{}/", lang_path)
+        } else {
+            format!("{}/{}/", lang_path, path)
+        };
 
         section.components = section
             .path
@@ -156,7 +158,7 @@ impl Section {
             section.assets = assets
                 .into_iter()
                 .filter(|path| match path.file_name() {
-                    None => true,
+                    None => false,
                     Some(file) => !globset.is_match(file),
                 })
                 .collect();

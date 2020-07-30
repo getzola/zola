@@ -48,7 +48,7 @@ pub struct Page {
     /// The slug of that page.
     /// First tries to find the slug in the meta and defaults to filename otherwise
     pub slug: String,
-    /// The URL path of the page
+    /// The URL path of the page, always starting with a slash
     pub path: String,
     /// The components of the path of the page
     pub components: Vec<String>,
@@ -182,8 +182,14 @@ impl Page {
             }
         };
 
-        if let Some(ref p) = page.meta.path {
-            page.path = p.trim().trim_start_matches('/').to_string();
+        page.path = if let Some(ref p) = page.meta.path {
+            let path = p.trim();
+
+            if path.starts_with('/') {
+                path.into()
+            } else {
+                format!("/{}", path)
+            }
         } else {
             let mut path = if page.file.components.is_empty() {
                 page.slug.clone()
@@ -195,8 +201,8 @@ impl Page {
                 path = format!("{}/{}", page.lang, path);
             }
 
-            page.path = path;
-        }
+            format!("/{}", path)
+        };
 
         if !page.path.ends_with('/') {
             page.path = format!("{}/", page.path);
@@ -416,7 +422,7 @@ Hello world"#;
             Page::parse(Path::new("content/posts/intro/start.md"), content, &conf, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "posts/intro/hello-world/");
+        assert_eq!(page.path, "/posts/intro/hello-world/");
         assert_eq!(page.components, vec!["posts", "intro", "hello-world"]);
         assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world/");
     }
@@ -432,7 +438,7 @@ Hello world"#;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
@@ -449,7 +455,7 @@ Hello world"#;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
@@ -466,7 +472,7 @@ Hello world"#;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "日本/");
+        assert_eq!(page.path, "/日本/");
         assert_eq!(page.components, vec!["日本"]);
         assert_eq!(page.permalink, config.make_permalink("日本"));
     }
@@ -487,7 +493,7 @@ Hello world"#;
         );
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
@@ -508,7 +514,7 @@ Hello world"#;
         );
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
 

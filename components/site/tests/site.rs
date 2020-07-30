@@ -19,12 +19,12 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages().len(), 21);
+    assert_eq!(library.pages().len(), 23);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
     let url_post = library.get_page(&posts_path.join("fixed-url.md")).unwrap();
-    assert_eq!(url_post.path, "a-fixed-url/");
+    assert_eq!(url_post.path, "/a-fixed-url/");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post =
@@ -37,7 +37,7 @@ fn can_parse_site() {
     // And that the sections are correct
     let index_section = library.get_section(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 4);
-    assert_eq!(index_section.pages.len(), 1);
+    assert_eq!(index_section.pages.len(), 3);
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = library.get_section(&posts_path.join("_index.md")).unwrap();
@@ -446,6 +446,16 @@ fn can_build_site_with_pagination_for_section() {
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/posts/page/4/</loc>"
     ));
+
+    // current_path
+    assert!(file_contains!(public, "posts/index.html", &current_path("/posts/")));
+    assert!(file_contains!(public, "posts/page/2/index.html", &current_path("/posts/page/2/")));
+    assert!(file_contains!(public, "posts/python/index.html", &current_path("/posts/python/")));
+    assert!(file_contains!(
+        public,
+        "posts/tutorials/index.html",
+        &current_path("/posts/tutorials/")
+    ));
 }
 
 #[test]
@@ -492,19 +502,28 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "<a href=\"https://replace-this-with-your-url.com/\">Click here</a>"
     ));
-    assert!(file_contains!(public, "index.html", "Num pages: 1"));
+    assert!(file_contains!(public, "index.html", "Num pages: 2"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
-    assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "Last: https://replace-this-with-your-url.com/page/2/"
+    ));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
-    assert_eq!(file_contains!(public, "index.html", "has_next"), false);
+    assert_eq!(file_contains!(public, "index.html", "has_next"), true);
 
     // sitemap contains the pager pages
     assert!(file_contains!(
         public,
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/page/1/</loc>"
-    ))
+    ));
+
+    // current_path
+    assert!(file_contains!(public, "index.html", &current_path("/")));
+    assert!(file_contains!(public, "page/2/index.html", &current_path("/page/2/")));
+    assert!(file_contains!(public, "paginated/index.html", &current_path("/paginated/")));
 }
 
 #[test]
@@ -585,7 +604,12 @@ fn can_build_site_with_pagination_for_taxonomy() {
         public,
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/tags/a/page/6/</loc>"
-    ))
+    ));
+
+    // current_path
+    assert!(file_contains!(public, "tags/index.html", &current_path("/tags/")));
+    assert!(file_contains!(public, "tags/a/index.html", &current_path("/tags/a/")));
+    assert!(file_contains!(public, "tags/a/page/2/index.html", &current_path("/tags/a/page/2/")));
 }
 
 #[test]
@@ -717,4 +741,9 @@ fn check_site() {
 
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
+}
+
+// Follows test_site/themes/sample/templates/current_path.html
+fn current_path(path: &str) -> String {
+    format!("[current_path]({})", path)
 }

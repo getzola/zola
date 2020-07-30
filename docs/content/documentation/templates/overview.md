@@ -16,7 +16,7 @@ you can place `{{ __tera_context }}` in the template to print the whole context.
 A few variables are available on all templates except feeds and the sitemap:
 
 - `config`: the [configuration](@/documentation/getting-started/configuration.md) without any modifications
-- `current_path`: the path (full URL without `base_url`) of the current page, never starting with a `/`
+- `current_path`: the path (full URL without `base_url`) of the current page, always starting with a `/`
 - `current_url`: the full URL for the current page
 - `lang`: the language for the current page
 
@@ -165,7 +165,7 @@ Whenever hashing files, whether using `get_file_hash` or `get_url(..., cachebust
 
 
 ### `get_image_metadata`
-Gets metadata for an image. This supports common formats like JPEG, PNG, as well as SVG.  
+Gets metadata for an image. This supports common formats like JPEG, PNG, as well as SVG.
 Currently, the only supported keys are `width` and `height`.
 
 ```jinja2
