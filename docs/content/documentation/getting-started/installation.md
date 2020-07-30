@@ -38,6 +38,13 @@ Zola is available in the official package repository.
 $ pkg install zola
 ```
 
+### OpenBSD
+Zola is available in the official package repository.
+
+```sh
+$ doas pkg_add zola
+```
+
 ### Snapcraft
 
 Zola is available on snapcraft:
