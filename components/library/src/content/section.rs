@@ -195,6 +195,7 @@ impl Section {
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links,
+            true
         );
 
         context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));

@@ -460,13 +460,16 @@ impl Site {
         create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
 
         // Copy any asset we found previously into the same directory as the index.html
-        for asset in &page.assets {
-            let asset_path = asset.as_path();
-            copy(
-                &asset_path,
-                &current_path
-                    .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
-            )?;
+        // Only if the page is index.md, so we don't copy the same assets multiple times
+        if page.file.name == "index" {
+            for asset in &page.assets {
+                let asset_path = asset.as_path();
+                copy(
+                    &asset_path,
+                    &current_path
+                        .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
+                )?;
+            }
         }
 
         Ok(())

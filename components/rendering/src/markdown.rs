@@ -123,7 +123,17 @@ fn fix_link(
             }
         }
     } else if is_colocated_asset_link(&link) {
-        format!("{}{}", context.current_page_permalink, link)
+        if context.is_index {
+            format!("{}{}", context.current_page_permalink, link)
+        } else {
+            // The last slash is the page folder, not parent folder
+            let parent_slash_index = context.current_page_permalink.get(0..context.current_page_permalink.len() - 1).unwrap().rfind('/').unwrap();
+            format!("{}/{}",
+                // Does not include the slash because the range excludes parent_slash_index 
+                context.current_page_permalink.get(0..parent_slash_index).unwrap(),
+                link
+            )
+        }
     } else {
         if is_external_link(link) {
             external_links.push(link.to_owned());

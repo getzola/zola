@@ -13,6 +13,7 @@ pub struct RenderContext<'a> {
     pub current_page_permalink: &'a str,
     pub permalinks: &'a HashMap<String, String>,
     pub insert_anchor: InsertAnchor,
+    pub is_index: bool
 }
 
 impl<'a> RenderContext<'a> {
@@ -22,6 +23,7 @@ impl<'a> RenderContext<'a> {
         current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
+        is_index: bool
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
         tera_context.insert("config", config);
@@ -32,6 +34,7 @@ impl<'a> RenderContext<'a> {
             permalinks,
             insert_anchor,
             config,
+            is_index
         }
     }
 }
