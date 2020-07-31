@@ -820,7 +820,7 @@ fn can_emit_newlines_and_whitespace_with_shortcode() {
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "preformatted"), shortcode).unwrap();
     let config = Config::default();
-    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None, true);
 
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
@@ -947,7 +947,7 @@ Bla bla"#;
 
     tera.add_raw_template(&format!("shortcodes/{}.md", "quote"), shortcode).unwrap();
     let config = Config::default();
-    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None, true);
 
     let res = render_content(markdown_string, &context).unwrap();
     println!("{:?}", res);
