@@ -98,7 +98,6 @@ def gen_skeleton(name, is_blog):
         shutil.rmtree(name)
 
     os.makedirs(os.path.join(name, "content"))
-    os.makedirs(os.path.join(name, "static"))
 
     with open(os.path.join(name, "config.toml"), "w") as f:
         if is_blog:
@@ -128,6 +127,7 @@ name = "Vincent Prouillet"
     # Re-use the test templates
     shutil.copytree("../../../test_site/templates", os.path.join(name, "templates"))
     shutil.copytree("../../../test_site/themes", os.path.join(name, "themes"))
+    shutil.copytree("../../../test_site/static", os.path.join(name, "static"))
 
 
 def gen_section(path, num_pages, is_blog):
