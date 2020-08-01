@@ -1,6 +1,6 @@
 +++
 title = "CLI usage"
-weight = 2
+weight = 6
 +++
 
 Zola only has 4 commands: `init`, `build`, `serve` and `check`.

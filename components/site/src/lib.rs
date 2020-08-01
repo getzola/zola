@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
 use glob::glob;
+use lazy_static::lazy_static;
 use rayon::prelude::*;
 use tera::{Context, Tera};
 
@@ -21,6 +22,20 @@ use templates::render_redirect_template;
 use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
 use utils::templates::render_template;
+
+lazy_static! {
+    /// The in-memory rendered map content
+    pub static ref SITE_CONTENT: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+}
+
+/// Where are we building the site
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum BuildMode {
+    /// On the filesystem -> `zola build`, The path is the `output_path`
+    Disk,
+    /// In memory for the content -> `zola serve`
+    Memory,
+}
 
 #[derive(Debug)]
 pub struct Site {
@@ -43,6 +58,7 @@ pub struct Site {
     pub library: Arc<RwLock<Library>>,
     /// Whether to load draft pages
     include_drafts: bool,
+    build_mode: BuildMode,
 }
 
 impl Site {
@@ -65,6 +81,7 @@ impl Site {
         let static_path = path.join("static");
         let imageproc =
             imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
+        let output_path = path.join("public");
 
         let site = Site {
             base_path: path.to_path_buf(),
@@ -72,7 +89,7 @@ impl Site {
             tera,
             imageproc: Arc::new(Mutex::new(imageproc)),
             live_reload: None,
-            output_path: path.join("public"),
+            output_path,
             content_path,
             static_path,
             taxonomies: Vec::new(),
@@ -80,9 +97,17 @@ impl Site {
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(RwLock::new(Library::new(0, 0, false))),
+            build_mode: BuildMode::Disk,
         };
 
         Ok(site)
+    }
+
+    /// Enable some `zola serve` related options
+    pub fn enable_serve_mode(&mut self) {
+        SITE_CONTENT.write().unwrap().clear();
+        self.config.enable_serve_mode();
+        self.build_mode = BuildMode::Memory;
     }
 
     /// Set the site to load the drafts.
@@ -173,7 +198,7 @@ impl Site {
         // way because of the borrow checker
         for section in sections {
             let s = section?;
-            self.add_section(s, false)?;
+            self.add_section(s)?;
         }
 
         self.create_default_index_sections()?;
@@ -189,7 +214,7 @@ impl Site {
                 p.file.path.clone(),
                 self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
             );
-            self.add_page(p, false)?;
+            self.add_page(p)?;
         }
 
         {
@@ -203,10 +228,10 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
-        self.register_early_global_fns();
+        tpls::register_early_global_fns(self);
         self.populate_sections();
         self.render_markdown()?;
-        self.register_tera_global_fns();
+        tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
         link_checking::check_internal_links_with_anchors(&self)?;
@@ -301,27 +326,10 @@ impl Site {
         Ok(())
     }
 
-    // TODO: remove me in favour of the direct call to the fn once rebuild has changed
-    pub fn register_early_global_fns(&mut self) {
-        tpls::register_early_global_fns(self);
-    }
-
-    // TODO: remove me in favour of the direct call to the fn once rebuild has changed
-    pub fn register_tera_global_fns(&mut self) {
-        tpls::register_tera_global_fns(self);
-    }
-
     /// Add a page to the site
-    /// The `render` parameter is used in the serve command, when rebuilding a page.
-    /// If `true`, it will also render the markdown for that page
     /// Returns the previous page struct if there was one at the same path
-    pub fn add_page(&mut self, mut page: Page, render: bool) -> Result<Option<Page>> {
+    pub fn add_page(&mut self, page: Page) -> Result<Option<Page>> {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
-        if render {
-            let insert_anchor =
-                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
-        }
         let mut library = self.library.write().expect("Get lock for add_page");
         let prev = library.remove_page(&page.file.path);
         library.insert_page(page);
@@ -330,14 +338,9 @@ impl Site {
     }
 
     /// Add a section to the site
-    /// The `render` parameter is used in the serve command, when rebuilding a page.
-    /// If `true`, it will also render the markdown for that page
     /// Returns the previous section struct if there was one at the same path
-    pub fn add_section(&mut self, mut section: Section, render: bool) -> Result<Option<Section>> {
+    pub fn add_section(&mut self, section: Section) -> Result<Option<Section>> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
-        if render {
-            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
-        }
         let mut library = self.library.write().expect("Get lock for add_section");
         let prev = library.remove_section(&section.file.path);
         library.insert_section(section);
@@ -437,31 +440,72 @@ impl Site {
         Ok(())
     }
 
-    /// Renders a single content page
-    pub fn render_page(&self, page: &Page) -> Result<()> {
+    /// Handles whether to write to disk or to memory
+    pub fn write_content(
+        &self,
+        components: &[&str],
+        filename: &str,
+        content: String,
+        create_dirs: bool,
+    ) -> Result<PathBuf> {
+        let write_dirs = self.build_mode == BuildMode::Disk || create_dirs;
         ensure_directory_exists(&self.output_path)?;
 
-        // Copy the nesting of the content directory if we have sections for that page
         let mut current_path = self.output_path.to_path_buf();
 
-        for component in page.path.split('/') {
+        for component in components {
             current_path.push(component);
 
-            if !current_path.exists() {
+            if !current_path.exists() && write_dirs {
                 create_directory(&current_path)?;
             }
         }
 
-        // Make sure the folder exists
-        create_directory(&current_path)?;
+        if write_dirs {
+            create_directory(&current_path)?;
+        }
 
-        // Finally, create a index.html file there with the page rendered
+        match self.build_mode {
+            BuildMode::Disk => {
+                let end_path = current_path.join(filename);
+                create_file(&end_path, &content)?;
+            }
+            BuildMode::Memory => {
+                let path = if filename != "index.html" {
+                    let p = current_path.join(filename);
+                    p.as_os_str().to_string_lossy().replace("public/", "/")
+                } else {
+                    // TODO" remove unwrap
+                    let p = current_path.strip_prefix("public").unwrap();
+                    p.as_os_str().to_string_lossy().into_owned()
+                }
+                .trim_end_matches('/')
+                .to_owned();
+                &SITE_CONTENT.write().unwrap().insert(path, content);
+            }
+        }
+
+        Ok(current_path)
+    }
+
+    // TODO: use copy_file to not automatically duplicate everything
+    fn copy_asset(&self, src: &Path, dest: &PathBuf) -> Result<()> {
+        // copy_file(src, dest, self.config.hard_link_static)
+        Ok(())
+    }
+
+    /// Renders a single content page
+    pub fn render_page(&self, page: &Page) -> Result<()> {
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-        create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
+        let content = self.inject_livereload(output);
+        let components: Vec<&str> = page.path.split('/').collect();
+        let current_path =
+            self.write_content(&components, "index.html", content, !page.assets.is_empty())?;
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
             let asset_path = asset.as_path();
+            // TODO: use copy_file to avoid copying willy nilly
             copy(
                 &asset_path,
                 &current_path
@@ -537,6 +581,8 @@ impl Site {
 
     pub fn build_search_index(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
+        // TODO: add those to the SITE_CONTENT map
+
         // index first
         create_file(
             &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
@@ -573,7 +619,6 @@ impl Site {
     }
 
     fn render_alias(&self, alias: &str, permalink: &str) -> Result<()> {
-        let mut output_path = self.output_path.to_path_buf();
         let mut split = alias.split('/').collect::<Vec<_>>();
 
         // If the alias ends with an html file name, use that instead of mapping
@@ -586,19 +631,9 @@ impl Site {
             }
             None => "index.html",
         };
-
-        for component in split {
-            output_path.push(&component);
-
-            if !output_path.exists() {
-                create_directory(&output_path)?;
-            }
-        }
-
-        create_file(
-            &output_path.join(page_name),
-            &render_redirect_template(&permalink, &self.tera)?,
-        )
+        let content = render_redirect_template(&permalink, &self.tera)?;
+        self.write_content(&split, page_name, content, false)?;
+        Ok(())
     }
 
     /// Renders all the aliases for each page/section: a magic HTML template that redirects to
@@ -625,7 +660,9 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
-        create_file(&self.output_path.join("404.html"), &self.inject_livereload(output))
+        let content = self.inject_livereload(output);
+        self.write_content(&[], "404.html", content, false)?;
+        Ok(())
     }
 
     /// Renders robots.txt
@@ -633,10 +670,9 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
-        create_file(
-            &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, context, &self.config.theme)?,
-        )
+        let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
+        self.write_content(&[], "robots.txt", content, false)?;
+        Ok(())
     }
 
     /// Renders all taxonomies
@@ -654,33 +690,37 @@ impl Site {
         }
 
         ensure_directory_exists(&self.output_path)?;
-        let output_path = if taxonomy.kind.lang != self.config.default_language {
-            let mid_path = self.output_path.join(&taxonomy.kind.lang);
-            create_directory(&mid_path)?;
-            mid_path.join(&taxonomy.kind.name)
-        } else {
-            self.output_path.join(&taxonomy.kind.name)
-        };
+
+        let mut components = Vec::new();
+        if taxonomy.kind.lang != self.config.default_language {
+            components.push(taxonomy.kind.lang.as_ref());
+        }
+
+        components.push(taxonomy.kind.name.as_ref());
+
         let list_output =
             taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
-        create_directory(&output_path)?;
-        create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
+        let content = self.inject_livereload(list_output);
+        self.write_content(&components, "index.html", content, false)?;
+
         let library = self.library.read().unwrap();
         taxonomy
             .items
             .par_iter()
             .map(|item| {
-                let path = output_path.join(&item.slug);
+                let mut comp = components.clone();
+                comp.push(&item.slug);
+
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
-                        &path,
+                        comp.clone(),
                         &Paginator::from_taxonomy(&taxonomy, item, &library),
                     )?;
                 } else {
                     let single_output =
                         taxonomy.render_term(item, &self.tera, &self.config, &library)?;
-                    create_directory(&path)?;
-                    create_file(&path.join("index.html"), &self.inject_livereload(single_output))?;
+                    let content = self.inject_livereload(single_output);
+                    self.write_content(&comp, "index.html", content, false)?;
                 }
 
                 if taxonomy.kind.feed {
@@ -719,8 +759,8 @@ impl Site {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
-            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            self.write_content(&[], "sitemap.xml", sitemap, false)?;
             return Ok(());
         }
 
@@ -731,10 +771,10 @@ impl Site {
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
-            create_file(&self.output_path.join(&file_name), sitemap)?;
-            let mut sitemap_url: String = self.config.make_permalink(&file_name);
+            self.write_content(&[], &file_name, sitemap, false)?;
+            let mut sitemap_url = self.config.make_permalink(&file_name);
             sitemap_url.pop(); // Remove trailing slash
             sitemap_index.push(sitemap_url);
         }
@@ -742,13 +782,13 @@ impl Site {
         // Create main sitemap that reference numbered sitemaps
         let mut main_context = Context::new();
         main_context.insert("sitemaps", &sitemap_index);
-        let sitemap = &render_template(
+        let sitemap = render_template(
             "split_sitemap_index.xml",
             &self.tera,
             main_context,
             &self.config.theme,
         )?;
-        create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+        self.write_content(&[], "sitemap.xml", sitemap, false)?;
 
         Ok(())
     }
@@ -773,16 +813,19 @@ impl Site {
         let feed_filename = &self.config.feed_filename;
 
         if let Some(ref base) = base_path {
-            let mut output_path = self.output_path.clone();
+            let mut components = Vec::new();
             for component in base.components() {
-                output_path.push(component);
-                if !output_path.exists() {
-                    create_directory(&output_path)?;
-                }
+                // TODO: avoid cloning the paths
+                components.push(component.as_os_str().to_string_lossy().as_ref().to_string());
             }
-            create_file(&output_path.join(feed_filename), &feed)?;
+            self.write_content(
+                &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
+                &feed_filename,
+                feed,
+                false,
+            )?;
         } else {
-            create_file(&self.output_path.join(feed_filename), &feed)?;
+            self.write_content(&[], &feed_filename, feed, false)?;
         }
         Ok(())
     }
@@ -791,18 +834,23 @@ impl Site {
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let mut output_path = self.output_path.clone();
+        let mut components: Vec<&str> = Vec::new();
+        let create_directories = self.build_mode == BuildMode::Disk || !section.assets.is_empty();
 
         if section.lang != self.config.default_language {
+            components.push(&section.lang);
             output_path.push(&section.lang);
-            if !output_path.exists() {
+
+            if !output_path.exists() && create_directories {
                 create_directory(&output_path)?;
             }
         }
 
         for component in &section.file.components {
+            components.push(component);
             output_path.push(component);
 
-            if !output_path.exists() {
+            if !output_path.exists() && create_directories {
                 create_directory(&output_path)?;
             }
         }
@@ -810,6 +858,7 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &section.assets {
             let asset_path = asset.as_path();
+            // TODO: use utils::fs::copy_file to only copy when necessary
             copy(
                 &asset_path,
                 &output_path.join(
@@ -832,39 +881,29 @@ impl Site {
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
             let permalink = self.config.make_permalink(redirect_to);
-            create_file(
-                &output_path.join("index.html"),
-                &render_redirect_template(&permalink, &self.tera)?,
+            self.write_content(
+                &components,
+                "index.html",
+                render_redirect_template(&permalink, &self.tera)?,
+                create_directories,
             )?;
+
             return Ok(());
         }
 
         if section.meta.is_paginated() {
             self.render_paginated(
-                &output_path,
+                components,
                 &Paginator::from_section(&section, &self.library.read().unwrap()),
             )?;
         } else {
             let output =
                 section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-            create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
+            let content = self.inject_livereload(output);
+            self.write_content(&components, "index.html", content, false)?;
         }
 
         Ok(())
-    }
-
-    // TODO: remove me when reload has changed
-    /// Used only on reload
-    pub fn render_index(&self) -> Result<()> {
-        self.render_section(
-            &self
-                .library
-                .read()
-                .unwrap()
-                .get_section(&self.content_path.join("_index.md"))
-                .expect("Failed to get index section"),
-            false,
-        )
     }
 
     /// Renders all sections
@@ -890,33 +929,43 @@ impl Site {
     }
 
     /// Renders a list of pages when the section/index is wanting pagination.
-    pub fn render_paginated(&self, output_path: &Path, paginator: &Paginator) -> Result<()> {
+    pub fn render_paginated<'a>(
+        &self,
+        components: Vec<&'a str>,
+        paginator: &'a Paginator,
+    ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let folder_path = output_path.join(&paginator.paginate_path);
-        create_directory(&folder_path)?;
+        let mut index_components = components.clone();
 
         paginator
             .pagers
             .par_iter()
             .map(|pager| {
-                let page_path = folder_path.join(&format!("{}", pager.index));
-                create_directory(&page_path)?;
+                let mut pager_components = index_components.clone();
+                pager_components.push(&paginator.paginate_path);
+                let pager_path = format!("{}", pager.index);
+                pager_components.push(&pager_path);
                 let output = paginator.render_pager(
                     pager,
                     &self.config,
                     &self.tera,
                     &self.library.read().unwrap(),
                 )?;
+                let content = self.inject_livereload(output);
+
                 if pager.index > 1 {
-                    create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
+                    self.write_content(&pager_components, "index.html", content, false)?;
                 } else {
-                    create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
-                    create_file(
-                        &page_path.join("index.html"),
-                        &render_redirect_template(&paginator.permalink, &self.tera)?,
+                    self.write_content(&index_components, "index.html", content, false)?;
+                    self.write_content(
+                        &pager_components,
+                        "index.html",
+                        render_redirect_template(&paginator.permalink, &self.tera)?,
+                        false,
                     )?;
                 }
+
                 Ok(())
             })
             .collect::<Result<()>>()
