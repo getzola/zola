@@ -41,6 +41,7 @@ errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
 rebuild = { path = "components/rebuild" }
+search = { path = "components/search" }
 
 [workspace]
 members = [

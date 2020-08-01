@@ -12,3 +12,8 @@ lazy_static = "1"
 errors = { path = "../errors" }
 library = { path = "../library" }
 config = { path = "../config" }
+
+[features]
+default = []
+indexing-zh = ["elasticlunr-rs/zh"]
+indexing-ja = ["elasticlunr-rs/ja"]
