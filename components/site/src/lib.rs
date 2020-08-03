@@ -5,7 +5,7 @@ pub mod sitemap;
 pub mod tpls;
 
 use std::collections::HashMap;
-use std::fs::{copy, remove_dir_all};
+use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -19,7 +19,9 @@ use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
 use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
 use templates::render_redirect_template;
-use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
+use utils::fs::{
+    copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
+};
 use utils::net::get_available_port;
 use utils::templates::render_template;
 
@@ -134,6 +136,11 @@ impl Site {
     /// both http and websocket server to the same port
     pub fn enable_live_reload(&mut self, port_to_avoid: u16) {
         self.live_reload = get_available_port(port_to_avoid);
+    }
+
+    /// Only used in `zola serve` to re-use the initial websocket port
+    pub fn enable_live_reload_with_port(&mut self, live_reload_port: u16) {
+        self.live_reload = Some(live_reload_port);
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
@@ -488,10 +495,8 @@ impl Site {
         Ok(current_path)
     }
 
-    // TODO: use copy_file to not automatically duplicate everything
     fn copy_asset(&self, src: &Path, dest: &PathBuf) -> Result<()> {
-        // copy_file(src, dest, self.config.hard_link_static)
-        Ok(())
+        copy_file_if_needed(src, dest, self.config.hard_link_static)
     }
 
     /// Renders a single content page
@@ -505,8 +510,7 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
             let asset_path = asset.as_path();
-            // TODO: use copy_file to avoid copying willy nilly
-            copy(
+            self.copy_asset(
                 &asset_path,
                 &current_path
                     .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
@@ -516,9 +520,12 @@ impl Site {
         Ok(())
     }
 
-    /// Deletes the `public` directory and builds the site
+    /// Deletes the `public` directory (only for `zola build`) and builds the site
     pub fn build(&self) -> Result<()> {
-        self.clean()?;
+        // Do not clean on `zola serve` otherwise we end up copying assets all the time
+        if self.build_mode == BuildMode::Disk {
+            self.clean()?;
+        }
 
         // Generate/move all assets before rendering any content
         if let Some(ref theme) = self.config.theme {
@@ -858,8 +865,7 @@ impl Site {
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &section.assets {
             let asset_path = asset.as_path();
-            // TODO: use utils::fs::copy_file to only copy when necessary
-            copy(
+            self.copy_asset(
                 &asset_path,
                 &output_path.join(
                     asset_path.file_name().expect("Failed to get asset filename for section"),
@@ -936,7 +942,7 @@ impl Site {
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let mut index_components = components.clone();
+        let index_components = components.clone();
 
         paginator
             .pagers

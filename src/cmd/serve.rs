@@ -70,7 +70,7 @@ const LIVE_RELOAD: &str = include_str!("livereload.js");
 async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
     let path = req.uri().path().trim_end_matches('/').trim_start_matches('/');
     // livereload.js is served using the LIVE_RELOAD str, not a file
-    if path == "/livereload.js" {
+    if path == "livereload.js" {
         if req.method() == Method::GET {
             return Ok(livereload_js());
         } else {
@@ -163,16 +163,17 @@ fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_p
 fn create_new_site(
     root_dir: &Path,
     interface: &str,
-    port: u16,
+    interface_port: u16,
     output_dir: &Path,
     base_url: &str,
     config_file: &Path,
     include_drafts: bool,
+    ws_port: Option<u16>,
 ) -> Result<(Site, String)> {
     let mut site = Site::new(root_dir, config_file)?;
 
-    let base_address = format!("{}:{}", base_url, port);
-    let address = format!("{}:{}", interface, port);
+    let base_address = format!("{}:{}", base_url, interface_port);
+    let address = format!("{}:{}", interface, interface_port);
     let base_url = if site.config.base_url.ends_with('/') {
         format!("http://{}/", base_address)
     } else {
@@ -186,7 +187,11 @@ fn create_new_site(
         site.include_drafts();
     }
     site.load()?;
-    site.enable_live_reload(port);
+    if let Some(p) = ws_port {
+        site.enable_live_reload_with_port(p);
+    } else {
+        site.enable_live_reload(interface_port);
+    }
     console::notify_site_size(&site);
     console::warn_about_ignored_pages(&site);
     site.build()?;
@@ -196,7 +201,7 @@ fn create_new_site(
 pub fn serve(
     root_dir: &Path,
     interface: &str,
-    port: u16,
+    interface_port: u16,
     output_dir: &Path,
     base_url: &str,
     config_file: &Path,
@@ -208,11 +213,12 @@ pub fn serve(
     let (mut site, address) = create_new_site(
         root_dir,
         interface,
-        port,
+        interface_port,
         output_dir,
         base_url,
         config_file,
         include_drafts,
+        None,
     )?;
     console::report_elapsed_time(start);
 
@@ -252,7 +258,8 @@ pub fn serve(
         }
     }
 
-    let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
+    let ws_port = site.live_reload;
+    let ws_address = format!("{}:{}", interface, ws_port.unwrap());
     let output_path = Path::new(output_dir).to_path_buf();
 
     // output path is going to need to be moved later on, so clone it for the
@@ -385,11 +392,12 @@ pub fn serve(
     let recreate_site = || match create_new_site(
         root_dir,
         interface,
-        port,
+        interface_port,
         output_dir,
         base_url,
         config_file,
         include_drafts,
+        ws_port,
     ) {
         Ok((s, _)) => {
             rebuild_done_handling(&broadcaster, Ok(()), "/x.js");
