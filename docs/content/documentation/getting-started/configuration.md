@@ -175,6 +175,7 @@ Zola currently has the following highlight themes available:
 - [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
 - [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
 - [one-dark](https://github.com/andresmichel/one-dark-theme)
+- [OneHalf](https://github.com/sonph/onehalf)
 - [solarized-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(dark))
 - [solarized-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(light))
 - [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
