@@ -143,6 +143,13 @@ impl Site {
         self.live_reload = Some(live_reload_port);
     }
 
+    /// Reloads the templates and rebuild the site without re-rendering the Markdown.
+    pub fn reload_templates(&mut self) -> Result<()> {
+        self.tera.full_reload()?;
+        // TODO: be smarter than that, no need to recompile sass for example
+        self.build()
+    }
+
     pub fn set_base_url(&mut self, base_url: String) {
         let mut imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (set_base_url)");
         imageproc.set_base_url(&base_url);

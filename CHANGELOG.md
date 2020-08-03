@@ -4,7 +4,9 @@
 
 ### Breaking
 
-- All paths (except colocated assets) now have a leading `/`
+- All paths like `current_path`, `page.path`, `section.path` (except colocated assets) now have a leading `/`
+- Search index generation for Chinese and Japanese has been disabled by default as it lead to a big increase in 
+binary size
 
 ### Other
 

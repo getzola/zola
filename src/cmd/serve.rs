@@ -356,6 +356,10 @@ pub fn serve(
         );
     };
 
+    let reload_templates = |site: &mut Site, path: &Path| {
+        rebuild_done_handling(&broadcaster, site.reload_templates(), &path.to_string_lossy());
+    };
+
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
         // Do nothing if the file/dir was deleted
         if !path.exists() {
@@ -441,8 +445,7 @@ pub fn serve(
                                     site = s;
                                 }
                             }
-                            (ChangeKind::Templates, _) => {
-                                // We rebuild everything, who knows what changed
+                            (ChangeKind::Templates, partial_path) => {
                                 let msg = if path.is_dir() {
                                     format!(
                                         "-> Directory in `templates` folder changed {}",
@@ -453,8 +456,15 @@ pub fn serve(
                                 };
                                 console::info(&msg);
 
-                                if let Some(s) = recreate_site() {
-                                    site = s;
+                                // A shortcode changed, we need to rebuild everything
+                                if partial_path.starts_with("/templates/shortcodes") {
+                                    if let Some(s) = recreate_site() {
+                                        site = s;
+                                    }
+                                } else {
+                                    println!("Reloading only template");
+                                    // A normal template changed, no need to re-render Markdown.
+                                    reload_templates(&mut site, &path)
                                 }
                             }
                             (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),

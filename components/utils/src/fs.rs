@@ -125,12 +125,10 @@ pub fn copy_file_if_needed(src: &Path, dest: &PathBuf, hard_link: bool) -> Resul
             let target_metadata = metadata(&dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                println!("Copying file");
                 copy(src, &dest)?;
                 set_file_mtime(&dest, src_mtime)?;
             }
         } else {
-            println!("Copying file");
             copy(src, &dest)?;
             set_file_mtime(&dest, src_mtime)?;
         }
