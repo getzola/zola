@@ -46,7 +46,7 @@ fn bench_render_feed(b: &mut test::Bencher) {
             site.library.read().unwrap().pages_values(),
             None,
             &site.config.default_language,
-            None,
+            |c| c,
         )
         .unwrap();
     });
