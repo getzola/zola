@@ -260,7 +260,7 @@ mod tests {
     }
 
     #[test]
-    fn can_validate_anchors() {
+    fn can_validate_anchors_with_double_quotes() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
         let res = check_page_for_anchor(url, body);
@@ -277,9 +277,9 @@ mod tests {
     }
 
     #[test]
-    fn can_validate_anchors_with_other_quotes() {
+    fn can_validate_anchors_with_single_quotes() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
-        let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
+        let body = "<body><h3 id='method.collect'>collect</h3></body>".to_string();
         let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }
