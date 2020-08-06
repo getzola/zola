@@ -101,11 +101,15 @@ fn has_anchor(url: &str) -> bool {
 fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks: [String; 8] = [
+    let checks = [
+        format!(" id={}", anchor),
+        format!(" ID={}", anchor),
         format!(" id='{}'", anchor),
         format!(" ID='{}'", anchor),
         format!(r#" id="{}""#, anchor),
         format!(r#" ID="{}""#, anchor),
+        format!(" name={}", anchor),
+        format!(" NAME={}", anchor),
         format!(" name='{}'", anchor),
         format!(" NAME='{}'", anchor),
         format!(r#" name="{}""#, anchor),
@@ -276,6 +280,14 @@ mod tests {
     fn can_validate_anchors_with_other_quotes() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
+        let res = check_page_for_anchor(url, body);
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn can_validate_anchors_without_quotes() {
+        let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
+        let body = "<body><h3 id=method.collect>collect</h3></body>".to_string();
         let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }
