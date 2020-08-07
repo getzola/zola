@@ -2817,6 +2817,7 @@ dependencies = [
  "notify",
  "open",
  "rebuild",
+ "search",
  "site",
  "termcolor",
  "tokio",
