@@ -212,7 +212,7 @@ impl Site {
         // way because of the borrow checker
         for section in sections {
             let s = section?;
-            self.add_section(s)?;
+            self.add_section(s, false)?;
         }
 
         self.create_default_index_sections()?;
@@ -228,7 +228,7 @@ impl Site {
                 p.file.path.clone(),
                 self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
             );
-            self.add_page(p)?;
+            self.add_page(p, false)?;
         }
 
         {
@@ -341,25 +341,57 @@ impl Site {
     }
 
     /// Add a page to the site
-    /// Returns the previous page struct if there was one at the same path
-    pub fn add_page(&mut self, page: Page) -> Result<Option<Page>> {
+    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    pub fn add_page(&mut self, mut page: Page, render_md: bool) -> Result<()> {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
+        if render_md {
+            let insert_anchor =
+                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
+            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
+        }
+
         let mut library = self.library.write().expect("Get lock for add_page");
-        let prev = library.remove_page(&page.file.path);
+        library.remove_page(&page.file.path);
         library.insert_page(page);
 
-        Ok(prev)
+        Ok(())
+    }
+
+    /// Adds a page to the site and render it
+    /// Only used in `zola serve --fast`
+    pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
+        let page = Page::from_file(path, &self.config, &self.base_path)?;
+        self.add_page(page, true)?;
+        self.populate_sections();
+        self.populate_taxonomies()?;
+        let library = self.library.read().unwrap();
+        let page = library.get_page(&path).unwrap();
+        self.render_page(&page)
     }
 
     /// Add a section to the site
-    /// Returns the previous section struct if there was one at the same path
-    pub fn add_section(&mut self, section: Section) -> Result<Option<Section>> {
+    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
+        if render_md {
+            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+        }
         let mut library = self.library.write().expect("Get lock for add_section");
-        let prev = library.remove_section(&section.file.path);
+        library.remove_section(&section.file.path);
         library.insert_section(section);
 
-        Ok(prev)
+        Ok(())
+    }
+
+    /// Adds a section to the site and render it
+    /// Only used in `zola serve --fast`
+    pub fn add_and_render_section(&mut self, path: &Path) -> Result<()> {
+        let section = Section::from_file(path, &self.config, &self.base_path)?;
+        self.add_section(section, true)?;
+        self.populate_sections();
+        let library = self.library.read().unwrap();
+        let section = library.get_section(&path).unwrap();
+        self.render_section(&section, true)
     }
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.

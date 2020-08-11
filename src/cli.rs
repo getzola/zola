@@ -90,6 +90,11 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("open")
                         .takes_value(false)
                         .help("Open site in the default browser"),
+                    Arg::with_name("fast")
+                        .short("f")
+                        .long("fast")
+                        .takes_value(false)
+                        .help("Only rebuild the minimum on change - useful when working on a specific page/section"),
                 ]),
             SubCommand::with_name("check")
                 .about("Try building the project without rendering it. Checks links")

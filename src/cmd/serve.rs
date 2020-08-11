@@ -43,6 +43,7 @@ use site::{Site, SITE_CONTENT};
 use utils::fs::copy_file;
 
 use crate::console;
+use std::ffi::OsStr;
 
 #[derive(Debug, PartialEq)]
 enum ChangeKind {
@@ -208,6 +209,7 @@ pub fn serve(
     watch_only: bool,
     open: bool,
     include_drafts: bool,
+    fast_rebuild: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(
@@ -416,6 +418,11 @@ pub fn serve(
     loop {
         match rx.recv() {
             Ok(event) => {
+                let can_do_fast_reload = match event {
+                    Remove(_) => false,
+                    _ => true,
+                };
+
                 match event {
                     // Intellij does weird things on edit, chmod is there to count those changes
                     // https://github.com/passcod/notify/issues/150#issuecomment-494912080
@@ -441,8 +448,43 @@ pub fn serve(
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
 
-                                if let Some(s) = recreate_site() {
-                                    site = s;
+                                if fast_rebuild {
+                                    if can_do_fast_reload {
+                                        let filename = path
+                                            .file_name()
+                                            .unwrap_or_else(|| OsStr::new(""))
+                                            .to_string_lossy();
+                                        let res = if filename == "_index.md" {
+                                            site.add_and_render_section(&path)
+                                        } else if filename.ends_with(".md") {
+                                            site.add_and_render_page(&path)
+                                        } else {
+                                            // an asset changed? a folder renamed?
+                                            // should we make it smarter so it doesn't reload the whole site?
+                                            Err("dummy".into())
+                                        };
+
+                                        if res.is_err() {
+                                            if let Some(s) = recreate_site() {
+                                                site = s;
+                                            }
+                                        } else {
+                                            rebuild_done_handling(
+                                                &broadcaster,
+                                                res,
+                                                &path.to_string_lossy(),
+                                            );
+                                        }
+                                    } else {
+                                        // Should we be smarter than that? Is it worth it?
+                                        if let Some(s) = recreate_site() {
+                                            site = s;
+                                        }
+                                    }
+                                } else {
+                                    if let Some(s) = recreate_site() {
+                                        site = s;
+                                    }
                                 }
                             }
                             (ChangeKind::Templates, partial_path) => {
