@@ -60,6 +60,9 @@ pub struct SectionFrontMatter {
     /// redirect to this
     #[serde(skip_serializing)]
     pub aliases: Vec<String>,
+    /// Whether to generate a feed for the current section
+    #[serde(skip_serializing)]
+    pub generate_feed: bool,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,
 }
@@ -105,6 +108,7 @@ impl Default for SectionFrontMatter {
             transparent: false,
             page_template: None,
             aliases: Vec::new(),
+            generate_feed: false,
             extra: Map::new(),
         }
     }

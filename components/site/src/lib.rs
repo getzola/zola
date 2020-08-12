@@ -807,6 +807,31 @@ impl Site {
             }
         }
 
+        if section.meta.generate_feed {
+            let library = &self.library.read().unwrap();
+            let base_path = if section.lang == self.config.default_language {
+                String::new()
+            } else {
+                format!("{}/", &section.lang)
+            };
+            let pages = section
+                .pages
+                .iter()
+                .map(|k| library.get_page_by_key(*k))
+                .collect();
+            self.render_feed(
+                pages,
+                Some(&PathBuf::from(section.file.components.iter().fold(
+                            base_path, |acc, component| acc + &component + "/"
+                ))),
+                &section.lang,
+                |mut context: Context| {
+                    context.insert("section", &section.to_serialized(library));
+                    context
+                },
+            )?;
+        }
+
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &section.assets {
             let asset_path = asset.as_path();

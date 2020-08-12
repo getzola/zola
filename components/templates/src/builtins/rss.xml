@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>{{ config.title }}</title>
-        <link>{{ config.base_url | escape_xml | safe }}</link>
+      <title>{{ config.title }}
+        {%- if term %} - {{ term.name }}
+        {%- elif section.title %} - {{ section.title }}
+        {%- endif -%}
+      </title>
+        <link>{%- if section -%}
+            {{ section.permalink | escape_xml | safe }}
+          {%- else -%}
+            {{ config.base_url | escape_xml | safe }}
+          {%- endif -%}
+        </link>
         <description>{{ config.description }}</description>
         <generator>Zola</generator>
         <language>{{ config.default_language }}</language>
