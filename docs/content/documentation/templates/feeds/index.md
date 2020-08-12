@@ -32,3 +32,27 @@ Feeds for taxonomy terms get two more variables, using types from the
 
 - `taxonomy`: of type `TaxonomyConfig`
 - `term`: of type `TaxonomyTerm`, but without `term.pages` (use `pages` instead)
+
+Enable feed autodiscovery allows feed readers and browsers to notify user about a RSS or Atom feed available on your web site. So it is easier for user to subscribe.
+As an example this is how it looks like using [Firefox](https://en.wikipedia.org/wiki/Mozilla_Firefox) [Livemarks](https://addons.mozilla.org/en-US/firefox/addon/livemarks/?src=search) addon.
+
+![RSS feed autodiscovery example.](rss_feed.png)
+
+You can enable posts autodiscovery modifying your blog `base.html` template adding the following code in between the `<head>` tags.
+```html
+{% block rss %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ get_url(path="rss.xml", trailing_slash=false) }}">
+{% endblock %}
+```
+You can as well use an Atom feed using `type="application/atom+xml"` and `path="atom.xml"`.
+
+All pages on your site will refer to your post feed.
+
+In order to enable the tag feeds as well, you can overload the `block rss` using the following code in your `tags/single.html` template.
+```html
+{% block rss %}
+  {% set rss_path = "tags/" ~ term.name ~ "/rss.xml" %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ get_url(path=rss_path, trailing_slash=false) }}">
+{% endblock rss %}
+```
+Each tag page will refer to it's dedicated feed.
