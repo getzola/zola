@@ -4,15 +4,17 @@ weight = 40
 +++
 
 The default configuration is sufficient to get Zola running locally but not more than that.
-It follows the philosophy of paying for only what you need; almost everything is turned off by default.
+It follows the philosophy of paying for only what you need, almost everything is turned off by default.
 
 To change the configuration, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
-Only the `base_url` variable is mandatory; everything else is optional. All configuration variables
-used by Zola as well as their default values are listed below:
+**Only the `base_url` variable is mandatory**. Everything else is optional. All configuration variables
+used by Zola as well as their default values are listed below.
 
+⚠️ The `config.toml` file below as been divided into sections for readability, but all sections if required must be in the same file.
 
+### Main (unnamed) section
 ```toml
 # The base URL of the site; the only required configuration variable.
 base_url = "mywebsite.com"
@@ -90,18 +92,9 @@ ignored_content = []
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
-# Optional translation object. The key if present should be a language code.
-# Example:
-#     default_language = "fr"
-#
-#     [translations]
-#     [translations.fr]
-#     title = "Un titre"
-#
-#     [translations.en]
-#     title = "A title"
-
-
+```
+### Link checker section
+```toml
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes
@@ -114,6 +107,9 @@ skip_anchor_prefixes = [
     "https://caniuse.com/",
 ]
 
+```
+### Slugify section
+```toml
 # Various slugification strategies, see below for details
 # Defauls to everything being a slug
 [slugify]
@@ -121,11 +117,32 @@ paths = "on"
 taxonomies = "on"
 anchors = "on"
 
-# Optional translation object. Keys should be language codes.
+```
+### Translations section
+```toml
+# Optional translation object. The key if present should be a language code.
+# Example:
+#     default_language = "fr"
+#
+#     [translations]
+#     [translations.fr]
+#     title = "Un titre"
+#
+#     [translations.en]
+#     title = "A title"
+
 [translations]
 
+```
+### Extra section
+```toml
 # You can put any kind of data here. The data
-# will be accessible in all templates.
+# will be accessible in all templates
+# Example:
+#     [extra]
+#     author = "Famous author"
+#
+# author value will be available using {{ config.extra.author }} in templates
 [extra]
 ```
 
