@@ -17,7 +17,7 @@ following fields:
 name = "my theme name"
 description = "A classic blog theme"
 license = "MIT"
-homepage = "https://github.com/Keats/zola-hyde"
+homepage = "https://github.com/getzola/hyde"
 # The minimum version of Zola required
 min_version = "0.4.0"
 # An optional live demo URL
