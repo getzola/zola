@@ -9,12 +9,18 @@ It follows the philosophy of paying for only what you need, almost everything is
 To change the configuration, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
+⚠️ If you add keys to your `config.toml`, you must pay attention to which toml section it belongs to.
+
+Here are the current `config.toml` sections:
+1. main (unnamed)
+2. link_checker
+3. slugify
+4. translations
+5. extra
+
 **Only the `base_url` variable is mandatory**. Everything else is optional. All configuration variables
-used by Zola as well as their default values are listed below.
+used by Zola as well as their default values are listed below:
 
-⚠️ The `config.toml` file below as been divided into sections for readability, but all sections if required must be in the same file.
-
-### Main (unnamed) section
 ```toml
 # The base URL of the site; the only required configuration variable.
 base_url = "mywebsite.com"
@@ -92,9 +98,6 @@ ignored_content = []
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
-```
-### Link checker section
-```toml
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes
@@ -107,9 +110,6 @@ skip_anchor_prefixes = [
     "https://caniuse.com/",
 ]
 
-```
-### Slugify section
-```toml
 # Various slugification strategies, see below for details
 # Defauls to everything being a slug
 [slugify]
@@ -117,9 +117,6 @@ paths = "on"
 taxonomies = "on"
 anchors = "on"
 
-```
-### Translations section
-```toml
 # Optional translation object. The key if present should be a language code.
 # Example:
 #     default_language = "fr"
@@ -130,12 +127,11 @@ anchors = "on"
 #
 #     [translations.en]
 #     title = "A title"
-
+#
+# translated title value will be available using {{ config.get_translation("fr", "title") }} in templates
+#
 [translations]
 
-```
-### Extra section
-```toml
 # You can put any kind of data here. The data
 # will be accessible in all templates
 # Example:
@@ -143,6 +139,7 @@ anchors = "on"
 #     author = "Famous author"
 #
 # author value will be available using {{ config.extra.author }} in templates
+#
 [extra]
 ```
 
