@@ -128,8 +128,6 @@ anchors = "on"
 #     [translations.en]
 #     title = "A title"
 #
-# translated title value will be available using {{ config.get_translation("fr", "title") }} in templates
-#
 [translations]
 
 # You can put any kind of data here. The data
