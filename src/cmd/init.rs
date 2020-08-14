@@ -1,5 +1,6 @@
 use std::fs::{canonicalize, create_dir};
 use std::path::Path;
+use std::path::PathBuf;
 
 use errors::{bail, Result};
 use utils::fs::create_file;
@@ -24,6 +25,8 @@ build_search_index = %SEARCH%
 [extra]
 # Put all your custom variables here
 "#;
+
+const LOCAL_UNC: &str = "\\\\?\\";
 
 // Given a path, return true if it is a directory and it doesn't have any
 // non-hidden files, otherwise return false (path is assumed to exist)
@@ -54,6 +57,15 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
     }
 
     Ok(false)
+}
+
+// Remove the unc part of a windows path
+fn strip_unc(path: &PathBuf) -> String {
+    let path_to_refine = path.to_str().unwrap();
+    match path_to_refine.strip_prefix(LOCAL_UNC) {
+        Some(path_stripped) => path_stripped.to_string(),
+        None => path_to_refine.to_string(),
+    }
 }
 
 pub fn create_new_project(name: &str, force: bool) -> Result<()> {
@@ -90,7 +102,10 @@ pub fn create_new_project(name: &str, force: bool) -> Result<()> {
     populate(&path, compile_sass, &config)?;
 
     println!();
-    console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));
+    console::success(&format!(
+        "Done! Your site was created in {}",
+        strip_unc(&canonicalize(path).unwrap())
+    ));
     println!();
     console::info(
         "Get started by moving into the directory and using the built-in server: `zola serve`",
@@ -120,6 +135,7 @@ mod tests {
     use super::*;
     use std::env::temp_dir;
     use std::fs::{create_dir, remove_dir, remove_dir_all};
+    use std::path::Path;
 
     #[test]
     fn init_empty_directory() {
@@ -222,6 +238,29 @@ mod tests {
         populate(&dir, false, "").expect("Could not populate zola directories");
 
         assert_eq!(false, dir.join("sass").exists());
+
+        remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn strip_unc_test() {
+        let mut dir = temp_dir();
+        dir.push("new_project");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        if cfg!(target_os = "windows") {
+            assert_eq!(
+                strip_unc(&canonicalize(Path::new(&dir)).unwrap()),
+                "C:\\Users\\VssAdministrator\\AppData\\Local\\Temp\\new_project"
+            )
+        } else {
+            assert_eq!(
+                strip_unc(&canonicalize(Path::new(&dir)).unwrap()),
+                canonicalize(Path::new(&dir)).unwrap().to_str().unwrap().to_string()
+            );
+        }
 
         remove_dir_all(&dir).unwrap();
     }
