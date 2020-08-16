@@ -443,7 +443,11 @@ Some body {{ hello() }}{%/* end */%}"#,
     #[test]
     fn shortcodes_that_emit_markdown() {
         let mut tera = Tera::default();
-        tera.add_raw_template("shortcodes/youtube.md", "{% for i in [1,2,3] %}\n* {{ i }}\n{%- endfor %}").unwrap();
+        tera.add_raw_template(
+            "shortcodes/youtube.md",
+            "{% for i in [1,2,3] %}\n* {{ i }}\n{%- endfor %}",
+        )
+        .unwrap();
         let res = render_shortcodes("{{ youtube() }}", &tera);
         assert_eq!(res, "* 1\n* 2\n* 3");
     }

@@ -281,7 +281,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
         (false, false) => {
             // These are not tables so we have nothing to merge
             Ok(())
-        },
+        }
         (true, true) => {
             // Recursively merge these tables
             let into_table = into.as_table_mut().unwrap();
@@ -295,7 +295,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
                 merge(into_table.get_mut(key).unwrap(), val)?;
             }
             Ok(())
-        },
+        }
         _ => {
             // Trying to merge a table with something else
             Err(Error::msg(&format!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from)))
@@ -464,7 +464,14 @@ truc = "default"
         assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
         assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
         assert_eq!(extra["sub"]["sub"]["foo"].as_str().unwrap(), "bar".to_string());
-        assert_eq!(extra["sub"]["sub"].get("truc").expect("Failed to merge subsubtable extra.sub.sub").as_str().unwrap(), "default".to_string());
+        assert_eq!(
+            extra["sub"]["sub"]
+                .get("truc")
+                .expect("Failed to merge subsubtable extra.sub.sub")
+                .as_str()
+                .unwrap(),
+            "default".to_string()
+        );
     }
 
     const CONFIG_TRANSLATION: &str = r#"
@@ -623,7 +630,6 @@ languages = [
         assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
     }
 
-
     #[test]
     fn cannot_overwrite_theme_mapping_with_invalid_type() {
         let config_str = r#"
@@ -642,6 +648,4 @@ bar = "baz"
         // We expect an error here
         assert_eq!(false, config.add_theme_extra(&theme).is_ok());
     }
-
-
 }
