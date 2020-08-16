@@ -4,14 +4,22 @@ weight = 40
 +++
 
 The default configuration is sufficient to get Zola running locally but not more than that.
-It follows the philosophy of paying for only what you need; almost everything is turned off by default.
+It follows the philosophy of paying for only what you need, almost everything is turned off by default.
 
 To change the configuration, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
-Only the `base_url` variable is mandatory; everything else is optional. All configuration variables
-used by Zola as well as their default values are listed below:
+⚠️ If you add keys to your `config.toml`, you must pay attention to which toml section it belongs to.
 
+Here are the current `config.toml` sections:
+1. main (unnamed)
+2. link_checker
+3. slugify
+4. translations
+5. extra
+
+**Only the `base_url` variable is mandatory**. Everything else is optional. All configuration variables
+used by Zola as well as their default values are listed below:
 
 ```toml
 # The base URL of the site; the only required configuration variable.
@@ -90,18 +98,6 @@ ignored_content = []
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
-# Optional translation object. The key if present should be a language code.
-# Example:
-#     default_language = "fr"
-#
-#     [translations]
-#     [translations.fr]
-#     title = "Un titre"
-#
-#     [translations.en]
-#     title = "A title"
-
-
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes
@@ -121,11 +117,27 @@ paths = "on"
 taxonomies = "on"
 anchors = "on"
 
-# Optional translation object. Keys should be language codes.
+# Optional translation object. The key if present should be a language code.
+# Example:
+#     default_language = "fr"
+#
+#     [translations]
+#     [translations.fr]
+#     title = "Un titre"
+#
+#     [translations.en]
+#     title = "A title"
+#
 [translations]
 
 # You can put any kind of data here. The data
-# will be accessible in all templates.
+# will be accessible in all templates
+# Example:
+#     [extra]
+#     author = "Famous author"
+#
+# author value will be available using {{ config.extra.author }} in templates
+#
 [extra]
 ```
 
