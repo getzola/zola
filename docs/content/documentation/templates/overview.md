@@ -37,7 +37,7 @@ The page and section variables are described in more detail in the next section.
 
 ## Built-in templates
 Zola comes with four built-in templates: `atom.xml` and `rss.xml` (described in
-[Feeds](@/documentation/templates/feeds.md)), `sitemap.xml` (described in [Sitemap](@/documentation/templates/sitemap.md)),
+[Feeds](@/documentation/templates/feeds/index.md)), `sitemap.xml` (described in [Sitemap](@/documentation/templates/sitemap.md)),
 and `robots.txt` (described in [Robots.txt](@/documentation/templates/robots.md)).
 Additionally, themes can add their own templates, which will be applied if not
 overridden.  You can override built-in or theme templates by creating a template with

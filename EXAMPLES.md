@@ -27,10 +27,11 @@
 | [Sylvain Kerkour](https://kerkour.fr)                              | https://gitlab.com/z0mbie42/kerkour.fr                   |
 | [CodeShow by Bruno Rocha](https://codeshow.com.br)                 | https://github.com/codeshow/site                         |
 | [trevordmiller.com](https://trevordmiller.com)                     | https://github.com/trevordmiller/trevordmiller.github.io |
-| [fundon.me](https://fundon.me/)                                    | https://github.com/fundon/fundon.github.io |
+| [fundon.me](https://fundon.me/)                                    | https://github.com/fundon/fundon.github.io               |
 | [rust-gamedev.github.io](https://rust-gamedev.github.io)           | https://github.com/rust-gamedev/rust-gamedev.github.io   |
 | [arewegameyet.rs](http://arewegameyet.rs)                          | https://github.com/rust-gamedev/arewegameyet             |
 | [klau.si](https://klau.si)                                         | https://github.com/klausi/klau.si                        |
 | [peterlyons.com](https://peterlyons.com)                           | https://github.com/focusaurus/peterlyons.com-zola        |
-| [blog.turbo.fish](https://blog.turbo.fish)                         | https://git.sr.ht/~jplatte/blog.turbo.fish             |
-| [guerinpe.com](https://guerinpe.com)                               | https://github.com/Grelot/blog |
+| [blog.turbo.fish](https://blog.turbo.fish)                         | https://git.sr.ht/~jplatte/blog.turbo.fish               |
+| [guerinpe.com](https://guerinpe.com)                               | https://github.com/Grelot/blog                           |
+| [uggla.fr](https://uggla.fr)                                       | https://uggla.fr                                         |

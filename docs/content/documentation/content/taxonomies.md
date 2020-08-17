@@ -16,6 +16,10 @@ For example the default would be page/1.
 - `feed`: if set to `true`, a feed (atom by default) will be generated for each term.
 - `lang`: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for
 
+Insert into the configuration file (config.toml):
+
+⚠️ Place the taxonomies key in the main section and not in the `[extra]` section
+
 **Example 1:** (one language)
 
 ```toml
