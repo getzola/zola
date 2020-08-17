@@ -54,7 +54,10 @@ pub fn check_url(url: &str, config: &LinkChecker) -> Result {
             let body = {
                 let mut buf: Vec<u8> = vec![];
                 response.copy_to(&mut buf).unwrap();
-                String::from_utf8(buf).unwrap()
+                match String::from_utf8(buf) {
+                    Ok(s) => s,
+                    Err(_) => return Err("The page didn't return valid UTF-8".to_string())
+                }
             };
 
             match check_page_for_anchor(url, body) {
