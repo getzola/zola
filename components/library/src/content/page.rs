@@ -136,7 +136,7 @@ impl Page {
 
         page.lang = page.file.find_language(config)?;
 
-        page.raw_content = content;
+        page.raw_content = content.to_string();
         let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
         page.word_count = Some(word_count);
         page.reading_time = Some(reading_time);

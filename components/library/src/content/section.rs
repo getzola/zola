@@ -107,7 +107,7 @@ impl Section {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta, base_path);
         section.lang = section.file.find_language(config)?;
-        section.raw_content = content;
+        section.raw_content = content.to_string();
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
