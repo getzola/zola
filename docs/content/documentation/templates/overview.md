@@ -158,11 +158,13 @@ Gets metadata for an image.  Currently, the only supported keys are `width` and 
 Gets the permalink for the taxonomy item found.
 
 ```jinja2
-{% set url = get_taxonomy_url(kind="categories", name=page.taxonomies.category) %}
+{% set url = get_taxonomy_url(kind="categories", name=page.taxonomies.category, lang=page.lang) %}
 ```
 
 `name` will almost always come from a variable but in case you want to do it manually,
 the value should be the same as the one in the front matter, not the slugified version.
+
+`lang` (optional) default to `config.default_language` in config.toml
 
 ### `get_taxonomy`
 Gets the whole taxonomy of a specific kind.
