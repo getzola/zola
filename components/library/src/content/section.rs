@@ -17,7 +17,8 @@ use crate::content::has_anchor;
 use crate::content::ser::SerializingSection;
 use crate::library::Library;
 
-#[derive(Clone, Debug, PartialEq)]
+// Default is used to create a default index section if there is no _index.md in the root content directory
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Section {
     /// All info about the actual file
     pub file: FileInfo,
@@ -74,28 +75,7 @@ impl Section {
     ) -> Section {
         let file_path = file_path.as_ref();
 
-        Section {
-            file: FileInfo::new_section(file_path, base_path),
-            meta,
-            ancestors: vec![],
-            path: "".to_string(),
-            components: vec![],
-            permalink: "".to_string(),
-            raw_content: "".to_string(),
-            assets: vec![],
-            serialized_assets: vec![],
-            content: "".to_string(),
-            pages: vec![],
-            ignored_pages: vec![],
-            subsections: vec![],
-            toc: vec![],
-            word_count: None,
-            reading_time: None,
-            lang: String::new(),
-            translations: Vec::new(),
-            internal_links_with_anchors: Vec::new(),
-            external_links: Vec::new(),
-        }
+        Section { file: FileInfo::new_section(file_path, base_path), meta, ..Self::default() }
     }
 
     pub fn parse(
@@ -262,34 +242,6 @@ impl Section {
                 0 => None,
                 _ => Some(x),
             },
-        }
-    }
-}
-
-/// Used to create a default index section if there is no _index.md in the root content directory
-impl Default for Section {
-    fn default() -> Section {
-        Section {
-            file: FileInfo::default(),
-            meta: SectionFrontMatter::default(),
-            ancestors: vec![],
-            path: "".to_string(),
-            components: vec![],
-            permalink: "".to_string(),
-            raw_content: "".to_string(),
-            assets: vec![],
-            serialized_assets: vec![],
-            content: "".to_string(),
-            pages: vec![],
-            ignored_pages: vec![],
-            subsections: vec![],
-            toc: vec![],
-            reading_time: None,
-            word_count: None,
-            lang: String::new(),
-            translations: Vec::new(),
-            internal_links_with_anchors: Vec::new(),
-            external_links: Vec::new(),
         }
     }
 }
