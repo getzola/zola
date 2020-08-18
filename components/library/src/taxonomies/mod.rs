@@ -71,10 +71,11 @@ impl TaxonomyItem {
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
         let slug = slugify_paths(name, config.slugify.taxonomies);
+        let tax_slug = slugify_paths(&taxonomy.name.to_string(), config.slugify.taxonomies);
         let permalink = if taxonomy.lang != config.default_language {
-            config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxonomy.name, slug))
+            config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, tax_slug, slug))
         } else {
-            config.make_permalink(&format!("/{}/{}", taxonomy.name, slug))
+            config.make_permalink(&format!("/{}/{}", tax_slug, slug))
         };
 
         // We still append pages without dates at the end
@@ -121,7 +122,7 @@ impl Taxonomy {
         for (name, pages) in items {
             sorted_items.push(TaxonomyItem::new(&name, &kind, config, pages, library));
         }
-        sorted_items.sort_by(|a, b| a.name.cmp(&b.name));
+        sorted_items.sort_by(|a, b| a.slug.cmp(&b.slug));
 
         Taxonomy { kind, items: sorted_items }
     }
@@ -189,7 +190,10 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
     let taxonomies_def = {
         let mut m = HashMap::new();
         for t in &config.taxonomies {
-            m.insert(format!("{}-{}", t.name, t.lang), t);
+             m.insert(
+                format!("{}-{}", slugify_paths(&t.name, config.slugify.taxonomies), t.lang),
+                t,
+            );
         }
         m
     };
@@ -197,7 +201,8 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
     let mut all_taxonomies = HashMap::new();
     for (key, page) in library.pages() {
         for (name, val) in &page.meta.taxonomies {
-            let taxo_key = format!("{}-{}", name, page.lang);
+            let taxo_key =
+                format!("{}-{}", slugify_paths(name, config.slugify.taxonomies), page.lang);
             if taxonomies_def.contains_key(&taxo_key) {
                 all_taxonomies.entry(taxo_key.clone()).or_insert_with(HashMap::new);
 
@@ -205,7 +210,7 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
                     all_taxonomies
                         .get_mut(&taxo_key)
                         .unwrap()
-                        .entry(v.to_string())
+                        .entry(slugify_paths(v, config.slugify.taxonomies).to_string())
                         .or_insert_with(|| vec![])
                         .push(key);
                 }
@@ -319,12 +324,12 @@ mod tests {
         assert_eq!(tags.items[2].permalink, "http://a-website.com/tags/rust/");
         assert_eq!(tags.items[2].pages.len(), 2);
 
-        assert_eq!(categories.items[0].name, "Other");
+        assert_eq!(categories.items[0].name, "other");
         assert_eq!(categories.items[0].slug, "other");
         assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/other/");
         assert_eq!(categories.items[0].pages.len(), 1);
 
-        assert_eq!(categories.items[1].name, "Programming tutorials");
+        assert_eq!(categories.items[1].name, "programming-tutorials");
         assert_eq!(categories.items[1].slug, "programming-tutorials");
         assert_eq!(
             categories.items[1].permalink,
@@ -414,12 +419,12 @@ mod tests {
         assert_eq!(tags.items[2].permalink, "http://a-website.com/tags/rust/");
         assert_eq!(tags.items[2].pages.len(), 2);
 
-        assert_eq!(categories.items[0].name, "Other");
+        assert_eq!(categories.items[0].name, "other");
         assert_eq!(categories.items[0].slug, "other");
         assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/other/");
         assert_eq!(categories.items[0].pages.len(), 1);
 
-        assert_eq!(categories.items[1].name, "Programming tutorials");
+        assert_eq!(categories.items[1].name, "programming-tutorials");
         assert_eq!(categories.items[1].slug, "programming-tutorials");
         assert_eq!(
             categories.items[1].permalink,
@@ -542,7 +547,7 @@ mod tests {
         assert_eq!(tags.items[1].permalink, "http://a-website.com/tags/rust/");
         assert_eq!(tags.items[1].pages.len(), 2);
 
-        assert_eq!(authors.items[0].name, "Vincent Prouillet");
+        assert_eq!(authors.items[0].name, "vincent-prouillet");
         assert_eq!(authors.items[0].slug, "vincent-prouillet");
         assert_eq!(
             authors.items[0].permalink,
@@ -550,12 +555,12 @@ mod tests {
         );
         assert_eq!(authors.items[0].pages.len(), 1);
 
-        assert_eq!(categories.items[0].name, "Other");
+        assert_eq!(categories.items[0].name, "other");
         assert_eq!(categories.items[0].slug, "other");
         assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/other/");
         assert_eq!(categories.items[0].pages.len(), 1);
 
-        assert_eq!(categories.items[1].name, "Programming tutorials");
+        assert_eq!(categories.items[1].name, "programming-tutorials");
         assert_eq!(categories.items[1].slug, "programming-tutorials");
         assert_eq!(
             categories.items[1].permalink,
@@ -689,7 +694,7 @@ mod tests {
         assert_eq!(tags.items[1].permalink, "http://a-website.com/tags/rust/");
         assert_eq!(tags.items[1].pages.len(), 2);
 
-        assert_eq!(authors.items[0].name, "Vincent Prouillet");
+        assert_eq!(authors.items[0].name, "vincent-prouillet");
         assert_eq!(authors.items[0].slug, "vincent-prouillet");
         assert_eq!(
             authors.items[0].permalink,
@@ -697,17 +702,83 @@ mod tests {
         );
         assert_eq!(authors.items[0].pages.len(), 1);
 
-        assert_eq!(categories.items[0].name, "Other");
+        assert_eq!(categories.items[0].name, "other");
         assert_eq!(categories.items[0].slug, "other");
         assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/other/");
         assert_eq!(categories.items[0].pages.len(), 1);
 
-        assert_eq!(categories.items[1].name, "Programming tutorials");
+        assert_eq!(categories.items[1].name, "programming-tutorials");
         assert_eq!(categories.items[1].slug, "programming-tutorials");
         assert_eq!(
             categories.items[1].permalink,
             "http://a-website.com/categories/programming-tutorials/"
         );
         assert_eq!(categories.items[1].pages.len(), 1);
+    }
+        #[test]
+    fn taxonomies_are_groupted_by_slug() {
+        let mut config = Config::default();
+        let mut library = Library::new(2, 0, false);
+
+        config.taxonomies = vec![
+            TaxonomyConfig {
+                name: "test-taxonomy".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+            TaxonomyConfig {
+                name: "test taxonomy".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+            TaxonomyConfig {
+                name: "test-taxonomy ".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+            TaxonomyConfig {
+                name: "Test-Taxonomy ".to_string(),
+                lang: config.default_language.clone(),
+                ..TaxonomyConfig::default()
+            },
+        ];
+
+        let mut page1 = Page::default();
+        let mut taxo_page1 = HashMap::new();
+        taxo_page1
+            .insert("test-taxonomy".to_string(), vec!["term1".to_string(), "term2".to_string()]);
+        page1.meta.taxonomies = taxo_page1;
+        page1.lang = config.default_language.clone();
+        library.insert_page(page1);
+
+        let mut page2 = Page::default();
+        let mut taxo_page2 = HashMap::new();
+        taxo_page2
+            .insert("test taxonomy".to_string(), vec!["term2".to_string(), "term3".to_string()]);
+        page2.meta.taxonomies = taxo_page2;
+        page2.lang = config.default_language.clone();
+        library.insert_page(page2);
+
+        let mut page3 = Page::default();
+        let mut taxo_page3 = HashMap::new();
+        taxo_page3.insert("test-taxonomy ".to_string(), vec!["term4".to_string()]);
+        page3.meta.taxonomies = taxo_page3;
+        page3.lang = config.default_language.clone();
+        library.insert_page(page3);
+
+        let mut page4 = Page::default();
+        let mut taxo_page4 = HashMap::new();
+        taxo_page4.insert("Test-Taxonomy ".to_string(), vec!["term8".to_string()]);
+        page4.meta.taxonomies = taxo_page4;
+        page4.lang = config.default_language.clone();
+        library.insert_page(page4);
+
+        // taxonomies get merged correctly
+        let taxonomies = find_taxonomies(&config, &library).unwrap();
+        assert_eq!(taxonomies.len(), 1);
+
+        // merged taxonomies contains all of the terms
+        let term = taxonomies.iter().next().unwrap();
+        assert_eq!(term.items.len(), 5);
     }
 }
