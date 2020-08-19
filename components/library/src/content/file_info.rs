@@ -27,7 +27,7 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
 }
 
 /// Struct that contains all the information about the actual file
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct FileInfo {
     /// The full path to the .md file
     pub path: PathBuf,
@@ -140,22 +140,6 @@ impl FileInfo {
         let lang = parts.swap_remove(0);
 
         Ok(lang)
-    }
-}
-
-#[doc(hidden)]
-impl Default for FileInfo {
-    fn default() -> FileInfo {
-        FileInfo {
-            path: PathBuf::new(),
-            parent: PathBuf::new(),
-            grand_parent: None,
-            filename: String::new(),
-            name: String::new(),
-            components: vec![],
-            relative: String::new(),
-            canonical: PathBuf::new(),
-        }
     }
 }
 
