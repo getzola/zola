@@ -41,6 +41,24 @@ stages:
           - script: cargo test --all
             displayName: Cargo test
 
+          - script: |
+              cd docs && ../target/debug/zola build
+            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+            displayName: Check documentation build
+          - script: |
+              cd docs && ..\target\debug\zola build
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+            displayName: Check documentation build windows
+
+          - script: |
+              cd docs && ../target/debug/zola check
+            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+            displayName: Check documentation links
+          - script: |
+              cd docs && ..\target\debug\zola check
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+            displayName: Check documentation links windows
+
 
   - stage: Release
     dependsOn: Tests
