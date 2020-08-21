@@ -2188,6 +2188,7 @@ dependencies = [
  "library",
  "link_checker",
  "minify-html",
+ "num_cpus",
  "rayon",
  "sass-rs",
  "search",
