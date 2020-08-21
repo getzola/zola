@@ -613,7 +613,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
 }
 
 #[test]
-fn can_build_feed() {
+fn can_build_feeds() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
     assert!(&public.exists());
@@ -622,6 +622,14 @@ fn can_build_feed() {
     assert!(file_contains!(public, "atom.xml", "Extra Syntax"));
     // Next is posts/simple.md
     assert!(file_contains!(public, "atom.xml", "Simple article with shortcodes"));
+
+    // Test section feeds
+    assert!(file_exists!(public, "posts/tutorials/programming/atom.xml"));
+    // It contains both sections articles
+    assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Python tutorial"));
+    assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Rust"));
+    // It doesn't contain articles from other sections
+    assert!(!file_contains!(public, "posts/tutorials/programming/atom.xml", "Extra Syntax"));
 }
 
 #[test]
