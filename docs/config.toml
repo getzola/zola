@@ -8,5 +8,16 @@ insert_anchor_links = true
 highlight_theme = "kronuz"
 build_search_index = true
 
+[link_checker]
+# Skip link checking for external URLs that start with these prefixes
+skip_prefixes = [
+    "http://127.0.0.1",
+]
+
+# Skip anchor checking for external URLs that start with these prefixes
+# skip_anchor_prefixes = [
+#     "https://caniuse.com/",
+# ]
+
 [extra]
 author = "Vincent Prouillet"

@@ -37,6 +37,6 @@ folder, but can still be used as `@import` dependencies. For more information, s
 [Sass Basics](https://sass-lang.com/guide).
 
 Files with the `scss` extension use "Sassy CSS" syntax,
-while files with the `sass` extension use the "indented" syntax: <https://sass-lang.com/documentation/syntax>.
+while files with the `sass` extension use the "indented" syntax: [https://sass-lang.com/documentation/syntax](https://sass-lang.com/documentation/syntax).
 Zola will return an error if `scss` and `sass` files with the same
 base name exist in the same folder to avoid confusion -- see the example above.
