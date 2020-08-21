@@ -21,11 +21,11 @@ homepage = "https://svavs.github.io/"
 
 # Codinfox-Zola
 
-This is a [Zola](https://www.getzola.com) theme inspired to [Codinfox-Lanyon](https://codinfox.github.com/), a Lanyon based theme for [Jekyll](http://jekyllrb.com). See a live demo [here](https://codinfox-zola.vercel.app/).
+This is a [Zola](https://www.getzola.org) theme inspired to [Codinfox-Lanyon](https://codinfox.github.com/), a Lanyon based theme for [Jekyll](http://jekyllrb.com). See a live demo [here](https://codinfox-zola.vercel.app/).
 
 This theme places content first by tucking away navigation in a hidden drawer.
 
-* Built for [Zola](https://www.getzola.com)
+* Built for [Zola](https://www.getzola.org)
 * Developed on GitHub and hosted for free on [GitHub Pages](https://pages.github.com)
 * Coded with [Spacemacs](https://www.spacemacs.org)
 
