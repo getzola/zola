@@ -1,6 +1,6 @@
 +++
 title = "CLI usage"
-weight = 2
+weight = 15
 +++
 
 Zola only has 4 commands: `init`, `build`, `serve` and `check`.
@@ -105,7 +105,7 @@ $ zola --config config.staging.toml serve
 
 By default, drafts are not loaded. If you wish to include them, pass the `--drafts` flag.
 
-### check
+## check
 
 The check subcommand will try to build all pages just like the build command would, but without writing any of the
 results to disk. Additionally, it will also check all external links in Markdown files by trying to fetch

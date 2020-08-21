@@ -1,6 +1,6 @@
  +++
 title = "GitLab Pages"
-weight = 30
+weight = 40
 +++
 
 We are going to use the GitLab CI runner to automatically publish the site (this CI runner is already included in your repository if you use GitLab.com).

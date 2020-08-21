@@ -29,7 +29,7 @@ lazy_static! {
     ).unwrap();
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Page {
     /// All info about the actual file
     pub file: FileInfo,
@@ -91,31 +91,7 @@ impl Page {
     pub fn new<P: AsRef<Path>>(file_path: P, meta: PageFrontMatter, base_path: &PathBuf) -> Page {
         let file_path = file_path.as_ref();
 
-        Page {
-            file: FileInfo::new_page(file_path, base_path),
-            meta,
-            ancestors: vec![],
-            raw_content: "".to_string(),
-            assets: vec![],
-            serialized_assets: vec![],
-            content: "".to_string(),
-            slug: "".to_string(),
-            path: "".to_string(),
-            components: vec![],
-            permalink: "".to_string(),
-            summary: None,
-            earlier: None,
-            later: None,
-            lighter: None,
-            heavier: None,
-            toc: vec![],
-            word_count: None,
-            reading_time: None,
-            lang: String::new(),
-            translations: Vec::new(),
-            internal_links_with_anchors: Vec::new(),
-            external_links: Vec::new(),
-        }
+        Page { file: FileInfo::new_page(file_path, base_path), meta, ..Self::default() }
     }
 
     pub fn is_draft(&self) -> bool {
@@ -136,7 +112,7 @@ impl Page {
 
         page.lang = page.file.find_language(config)?;
 
-        page.raw_content = content;
+        page.raw_content = content.to_string();
         let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
         page.word_count = Some(word_count);
         page.reading_time = Some(reading_time);
@@ -338,36 +314,6 @@ impl Page {
 
     pub fn to_serialized_basic<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
         SerializingPage::from_page_basic(self, Some(library))
-    }
-}
-
-impl Default for Page {
-    fn default() -> Page {
-        Page {
-            file: FileInfo::default(),
-            meta: PageFrontMatter::default(),
-            ancestors: vec![],
-            raw_content: "".to_string(),
-            assets: vec![],
-            serialized_assets: vec![],
-            content: "".to_string(),
-            slug: "".to_string(),
-            path: "".to_string(),
-            components: vec![],
-            permalink: "".to_string(),
-            summary: None,
-            earlier: None,
-            later: None,
-            lighter: None,
-            heavier: None,
-            toc: vec![],
-            word_count: None,
-            reading_time: None,
-            lang: String::new(),
-            translations: Vec::new(),
-            internal_links_with_anchors: Vec::new(),
-            external_links: Vec::new(),
-        }
     }
 }
 

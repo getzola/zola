@@ -22,7 +22,7 @@ name = "zola"
 atty = "0.2.11"
 clap = { version = "2", default-features = false }
 chrono = "0.4"
-lazy_static = "1.1.0"
+lazy_static = "1.1"
 termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "2"
@@ -40,15 +40,12 @@ site = { path = "components/site" }
 errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
-rebuild = { path = "components/rebuild" }
-search = { path = "components/search" }
 
 [workspace]
 members = [
     "components/config",
     "components/errors",
     "components/front_matter",
-    "components/rebuild",
     "components/rendering",
     "components/site",
     "components/templates",

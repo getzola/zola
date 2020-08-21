@@ -16,6 +16,10 @@ For example the default would be page/1.
 - `feed`: if set to `true`, a feed (atom by default) will be generated for each term.
 - `lang`: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for
 
+Insert into the configuration file (config.toml):
+
+⚠️ Place the taxonomies key in the main section and not in the `[extra]` section
+
 **Example 1:** (one language)
 
 ```toml
@@ -60,4 +64,4 @@ The taxonomy pages are then available at the following paths:
 $BASE_URL/$NAME/ (taxonomy)
 $BASE_URL/$NAME/$SLUG (taxonomy entry)
 ```
-
+Note that taxonomies are case insensitive so terms that have the same slug will get merged, e.g. sections and pages containing the tag "example" will be shown in the same taxonomy page as ones containing "Example" 

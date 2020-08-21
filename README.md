@@ -32,7 +32,7 @@ in the `docs/content` folder of the repository and the community can use [its fo
 | Data files                      | ![yes] | ![yes] | ![yes] | ![no]   |
 | LiveReload                      | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Netlify support                 | ![yes] | ![no]  | ![yes] | ![no]   |
-| ZEIT Now support                | ![yes] | ![no]  | ![yes] | ![yes]  |
+| Vercel support                  | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Breadcrumbs                     | ![yes] | ![no]  | ![no]  | ![yes]  |
 | Custom output formats           | ![no]  | ![no]  | ![yes] | ![no]   |
 

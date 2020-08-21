@@ -16,10 +16,10 @@ $ brew install zola
 
 ### Arch Linux
 
-Use your favourite AUR helper to install the `zola-bin` package.
+Zola is available in the official Arch Linux repositories.
 
 ```bash
-$ yay -S zola-bin
+$ pacman -S zola
 ```
 
 ### Fedora
@@ -36,6 +36,13 @@ Zola is available in the official package repository.
 
 ```sh
 $ pkg install zola
+```
+
+### OpenBSD
+Zola is available in the official package repository.
+
+```sh
+$ doas pkg_add zola
 ```
 
 ### Snapcraft

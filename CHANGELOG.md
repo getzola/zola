@@ -4,7 +4,9 @@
 
 ### Breaking
 
-- All paths (except colocated assets) now have a leading `/`
+- All paths like `current_path`, `page.path`, `section.path` (except colocated assets) now have a leading `/`
+- Search index generation for Chinese and Japanese has been disabled by default as it lead to a big increase in 
+binary size
 
 ### Other
 
@@ -33,7 +35,7 @@
 
 - The feed template variable `last_build_date` is renamed to `last_updated` to more accurately reflect its semantics
 - The sitemap template’s `SitemapEntry` type’s `date` field has been renamed to `updated` to reflect that it will use the `updated` front-matter field if available, rather than `date`
-- Code is now wrapped in `<pre><code>` instead of just `<pre>
+- Code blocks are now wrapped in `<pre><code>` instead of just `<pre>`
 
 ### Other
 - Add `updated` front-matter field for pages, which sitemap templates will use for the `SitemapEntry.date` field instead of the `date` front-matter field, and which the default Atom feed template will use
