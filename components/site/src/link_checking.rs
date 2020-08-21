@@ -121,7 +121,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
 
     // create thread pool with lots of threads so we can fetch
     // (almost) all pages simultaneously
-    let threads = std::cmp::min(all_links.len(), 32);
+    let threads = std::cmp::min(all_links.len(), 8);
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(threads)
         .build()
