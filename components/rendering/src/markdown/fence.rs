@@ -22,6 +22,7 @@ impl Range {
     }
 }
 
+#[derive(Debug)]
 pub struct FenceSettings<'a> {
     pub language: Option<&'a str>,
     pub line_numbers: bool,
@@ -48,6 +49,7 @@ impl<'a> FenceSettings<'a> {
     }
 }
 
+#[derive(Debug)]
 enum FenceToken<'a> {
     Language(&'a str),
     EnableLineNumbers,
@@ -68,7 +70,7 @@ impl<'a> FenceIter<'a> {
             let tok = self.split.next()?.trim();
 
             let mut tok_split = tok.split('=');
-            match tok_split.next().unwrap_or("") {
+            match tok_split.next().unwrap_or("").trim() {
                 "" => continue,
                 "linenos" => return Some(FenceToken::EnableLineNumbers),
                 "hl_lines" => {
