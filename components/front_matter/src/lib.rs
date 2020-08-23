@@ -71,7 +71,10 @@ pub fn split_section_content<'c>(
 
 /// Split a file between the front matter and its content
 /// Returns a parsed `PageFrontMatter` and the rest of the content
-pub fn split_page_content<'c>(file_path: &Path, content: &'c str) -> Result<(PageFrontMatter, &'c str)> {
+pub fn split_page_content<'c>(
+    file_path: &Path,
+    content: &'c str,
+) -> Result<(PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
         Error::chain(

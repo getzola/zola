@@ -1,4 +1,4 @@
 {% for author in terms %}
-    {{ author.name| replace(from="-", to=" ") |  title }} {{ author.slug }} {{ author.pages | length }}
+    {{ author.name }} {{ author.slug }} {{ author.pages | length }}
 {% endfor %}
 {{lang}}

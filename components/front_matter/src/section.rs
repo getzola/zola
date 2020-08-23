@@ -28,6 +28,9 @@ pub struct SectionFrontMatter {
     /// How many pages to be displayed per paginated page. No pagination will happen if this isn't set
     #[serde(skip_serializing)]
     pub paginate_by: Option<usize>,
+    /// Whether to reverse the order of the pages before segmenting into pagers
+    #[serde(skip_serializing)]
+    pub paginate_reversed: bool,
     /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
     #[serde(skip_serializing)]
     pub paginate_path: String,
@@ -100,6 +103,7 @@ impl Default for SectionFrontMatter {
             weight: 0,
             template: None,
             paginate_by: None,
+            paginate_reversed: false,
             paginate_path: DEFAULT_PAGINATE_PATH.to_string(),
             render: true,
             redirect_to: None,
