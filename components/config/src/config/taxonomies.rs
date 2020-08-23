@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Taxonomy {
     /// The name used in the URL, usually the plural
@@ -30,18 +30,6 @@ impl Taxonomy {
             path
         } else {
             "page"
-        }
-    }
-}
-
-impl Default for Taxonomy {
-    fn default() -> Self {
-        Taxonomy {
-            name: String::new(),
-            paginate_by: None,
-            paginate_path: None,
-            feed: false,
-            lang: String::new(),
         }
     }
 }
