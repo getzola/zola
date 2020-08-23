@@ -1,3 +1,3 @@
 {% for term in terms %}
-    {{ term.name| replace(from="-", to=" ") |  title }}  {{ term.slug }} {{ term.pages | length }}
+    {{ term.name}}  {{ term.slug }} {{ term.pages | length }}
 {% endfor %}
