@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use glob::glob;
 use lazy_static::lazy_static;
-use minify_html::{Cfg, Error as MinifyError, truncate};
+use minify_html::{truncate, Cfg};
 use rayon::prelude::*;
 use tera::{Context, Tera};
 
@@ -446,6 +446,26 @@ impl Site {
         html
     }
 
+    /// Minifies html content
+    fn minify(&self, mut html: String) -> Result<String> {
+        if self.config.minify_html {
+            let cfg = &Cfg { minify_js: false };
+            let mut input_bytes = html.as_bytes().to_vec();
+            match truncate(&mut input_bytes, cfg) {
+                Ok(_len) => {
+                    html = std::str::from_utf8(&mut input_bytes)
+                        .expect("Unable to truncate html file.")
+                        .to_string();
+                }
+                Err(minify_error) => {
+                    bail!("Failed to truncate html at character {}:", minify_error.position);
+                }
+            }
+        }
+
+        Ok(html)
+    }
+
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
@@ -541,28 +561,16 @@ impl Site {
 
     /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
-        let mut output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-
-        if self.config.minify {
-            let cfg = &Cfg {
-                minify_js: false,
-            };
-            let mut output_bytes = output.as_bytes().to_vec();
-            match truncate(&mut output_bytes, cfg) {
-                Ok(_len) => {
-                    output = std::str::from_utf8(&mut output_bytes).expect("Unable to truncate html file.").to_string();
-                },
-                Err(MinifyError{error_type, position})=> {
-                    eprintln!("Failed to truncate html at character {}:", position);
-                    eprintln!("{}", error_type.message())
-                }
-            }
-
-        }
+        let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
+        let minified_content = self.minify(content).expect("Couldn't minify html file");
         let components: Vec<&str> = page.path.split('/').collect();
-        let current_path =
-            self.write_content(&components, "index.html", content, !page.assets.is_empty())?;
+        let current_path = self.write_content(
+            &components,
+            "index.html",
+            minified_content,
+            !page.assets.is_empty(),
+        )?;
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
@@ -725,7 +733,8 @@ impl Site {
         context.insert("config", &self.config);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
-        self.write_content(&[], "404.html", content, false)?;
+        let minified_content = self.minify(content).expect("Couldn't minify html file");
+        self.write_content(&[], "404.html", minified_content, false)?;
         Ok(())
     }
 
@@ -765,7 +774,8 @@ impl Site {
         let list_output =
             taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(list_output);
-        self.write_content(&components, "index.html", content, false)?;
+        let minified_content = self.minify(content).expect("Couldn't minify html file");
+        self.write_content(&components, "index.html", minified_content, false)?;
 
         let library = self.library.read().unwrap();
         taxonomy
@@ -784,7 +794,8 @@ impl Site {
                     let single_output =
                         taxonomy.render_term(item, &self.tera, &self.config, &library)?;
                     let content = self.inject_livereload(single_output);
-                    self.write_content(&comp, "index.html", content, false)?;
+                    let minified_content = self.minify(content).expect("Couldn't minify html file");
+                    self.write_content(&comp, "index.html", minified_content, false)?;
                 }
 
                 if taxonomy.kind.feed {
@@ -963,7 +974,8 @@ impl Site {
             let output =
                 section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
             let content = self.inject_livereload(output);
-            self.write_content(&components, "index.html", content, false)?;
+            let minified_content = self.minify(content).expect("Couldn't minify html file");
+            self.write_content(&components, "index.html", minified_content, false)?;
         }
 
         Ok(())
@@ -1016,11 +1028,12 @@ impl Site {
                     &self.library.read().unwrap(),
                 )?;
                 let content = self.inject_livereload(output);
+                let minified_content = self.minify(content).expect("Couldn't minify html file");
 
                 if pager.index > 1 {
-                    self.write_content(&pager_components, "index.html", content, false)?;
+                    self.write_content(&pager_components, "index.html", minified_content, false)?;
                 } else {
-                    self.write_content(&index_components, "index.html", content, false)?;
+                    self.write_content(&index_components, "index.html", minified_content, false)?;
                     self.write_content(
                         &pager_components,
                         "index.html",
