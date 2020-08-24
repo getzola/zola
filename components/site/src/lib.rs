@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use glob::glob;
 use lazy_static::lazy_static;
+use minify_html::{Cfg, Error as MinifyError, truncate};
 use rayon::prelude::*;
 use tera::{Context, Tera};
 
@@ -540,7 +541,24 @@ impl Site {
 
     /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
-        let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+        let mut output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+
+        if self.config.minify {
+            let cfg = &Cfg {
+                minify_js: false,
+            };
+            let mut output_bytes = output.as_bytes().to_vec();
+            match truncate(&mut output_bytes, cfg) {
+                Ok(_len) => {
+                    output = std::str::from_utf8(&mut output_bytes).expect("Unable to truncate html file.").to_string();
+                },
+                Err(MinifyError{error_type, position})=> {
+                    eprintln!("Failed to truncate html at character {}:", position);
+                    eprintln!("{}", error_type.message())
+                }
+            }
+
+        }
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
         let current_path =
