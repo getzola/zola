@@ -86,7 +86,7 @@ languages = []
 compile_sass = false
 
 # When set to "true", the HTML output files will be minified
-minify = false
+minify_html = false
 
 # A list of glob patterns specifying asset files to ignore when the content
 # directory is processed. Defaults to none, which means that all asset files are
