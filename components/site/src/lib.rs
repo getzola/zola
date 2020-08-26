@@ -447,23 +447,18 @@ impl Site {
     }
 
     /// Minifies html content
-    fn minify(&self, mut html: String) -> Result<String> {
-        if self.config.minify_html {
-            let cfg = &Cfg { minify_js: false };
-            let mut input_bytes = html.as_bytes().to_vec();
-            match truncate(&mut input_bytes, cfg) {
-                Ok(_len) => {
-                    html = std::str::from_utf8(&mut input_bytes)
-                        .expect("Unable to truncate html file.")
-                        .to_string();
-                }
-                Err(minify_error) => {
-                    bail!("Failed to truncate html at character {}:", minify_error.position);
-                }
+    fn minify(&self, html: String) -> Result<String> {
+        let cfg = &Cfg { minify_js: false };
+        let mut input_bytes = html.as_bytes().to_vec();
+        match truncate(&mut input_bytes, cfg) {
+            Ok(_len) => match std::str::from_utf8(&mut input_bytes) {
+                Ok(result) => Ok(result.to_string()),
+                Err(err) => bail!("Failed to convert bytes to string : {}", err),
+            },
+            Err(minify_error) => {
+                bail!("Failed to truncate html at character {}:", minify_error.position);
             }
         }
-
-        Ok(html)
     }
 
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
@@ -532,10 +527,19 @@ impl Site {
             create_directory(&current_path)?;
         }
 
+        let final_content = if !filename.ends_with("html") || !self.config.minify_html {
+            content
+        } else {
+            match self.minify(content) {
+                Ok(minified_content) => minified_content,
+                Err(error) => bail!(error),
+            }
+        };
+
         match self.build_mode {
             BuildMode::Disk => {
                 let end_path = current_path.join(filename);
-                create_file(&end_path, &content)?;
+                create_file(&end_path, &final_content)?;
             }
             BuildMode::Memory => {
                 let path = if filename != "index.html" {
@@ -548,7 +552,7 @@ impl Site {
                 }
                 .trim_end_matches('/')
                 .to_owned();
-                &SITE_CONTENT.write().unwrap().insert(path, content);
+                &SITE_CONTENT.write().unwrap().insert(path, final_content);
             }
         }
 
