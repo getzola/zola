@@ -903,11 +903,6 @@ impl Site {
 
         if section.meta.generate_feed {
             let library = &self.library.read().unwrap();
-            let base_path = if section.lang == self.config.default_language {
-                String::new()
-            } else {
-                format!("{}/", &section.lang)
-            };
             let pages = section
                 .pages
                 .iter()
@@ -915,9 +910,7 @@ impl Site {
                 .collect();
             self.render_feed(
                 pages,
-                Some(&PathBuf::from(section.file.components.iter().fold(
-                            base_path, |acc, component| acc + &component + "/"
-                ))),
+                Some(&PathBuf::from(&section.path[1..])),
                 &section.lang,
                 |mut context: Context| {
                     context.insert("section", &section.to_serialized(library));
