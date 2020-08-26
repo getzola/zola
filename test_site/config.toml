@@ -2,6 +2,7 @@ title = "My site"
 base_url = "https://replace-this-with-your-url.com"
 highlight_code = true
 compile_sass = true
+minify_html = true
 generate_feed = true
 theme = "sample"
 slugify_paths = true

@@ -705,6 +705,16 @@ fn can_build_site_custom_builtins_from_theme() {
 }
 
 #[test]
+fn can_build_site_with_html_minified() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+
+    assert!(&public.exists());
+
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_contains!(public, "index.html", "<!DOCTYPE html><html lang=en><head><meta charset=UTF-8>"));
+}
+
+#[test]
 fn can_ignore_markdown_content() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(!file_exists!(public, "posts/ignored/index.html"));
