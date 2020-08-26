@@ -567,12 +567,11 @@ impl Site {
     pub fn render_page(&self, page: &Page) -> Result<()> {
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
-        let minified_content = self.minify(content).expect("Couldn't minify html file");
         let components: Vec<&str> = page.path.split('/').collect();
         let current_path = self.write_content(
             &components,
             "index.html",
-            minified_content,
+            content,
             !page.assets.is_empty(),
         )?;
 
@@ -737,8 +736,7 @@ impl Site {
         context.insert("config", &self.config);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
-        let minified_content = self.minify(content).expect("Couldn't minify html file");
-        self.write_content(&[], "404.html", minified_content, false)?;
+        self.write_content(&[], "404.html", content, false)?;
         Ok(())
     }
 
@@ -778,8 +776,7 @@ impl Site {
         let list_output =
             taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(list_output);
-        let minified_content = self.minify(content).expect("Couldn't minify html file");
-        self.write_content(&components, "index.html", minified_content, false)?;
+        self.write_content(&components, "index.html", content, false)?;
 
         let library = self.library.read().unwrap();
         taxonomy
@@ -798,8 +795,7 @@ impl Site {
                     let single_output =
                         taxonomy.render_term(item, &self.tera, &self.config, &library)?;
                     let content = self.inject_livereload(single_output);
-                    let minified_content = self.minify(content).expect("Couldn't minify html file");
-                    self.write_content(&comp, "index.html", minified_content, false)?;
+                    self.write_content(&comp, "index.html", content, false)?;
                 }
 
                 if taxonomy.kind.feed {
@@ -978,8 +974,7 @@ impl Site {
             let output =
                 section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
             let content = self.inject_livereload(output);
-            let minified_content = self.minify(content).expect("Couldn't minify html file");
-            self.write_content(&components, "index.html", minified_content, false)?;
+            self.write_content(&components, "index.html", content, false)?;
         }
 
         Ok(())
@@ -1032,12 +1027,11 @@ impl Site {
                     &self.library.read().unwrap(),
                 )?;
                 let content = self.inject_livereload(output);
-                let minified_content = self.minify(content).expect("Couldn't minify html file");
 
                 if pager.index > 1 {
-                    self.write_content(&pager_components, "index.html", minified_content, false)?;
+                    self.write_content(&pager_components, "index.html", content, false)?;
                 } else {
-                    self.write_content(&index_components, "index.html", minified_content, false)?;
+                    self.write_content(&index_components, "index.html", content, false)?;
                     self.write_content(
                         &pager_components,
                         "index.html",
