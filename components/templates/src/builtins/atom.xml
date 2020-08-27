@@ -2,13 +2,20 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
 	<title>{{ config.title }}
 		{%- if term %} - {{ term.name }}
+    {%- elif section.title %} - {{ section.title }}
 		{%- endif -%}
 	</title>
 	{%- if config.description %}
 	<subtitle>{{ config.description }}</subtitle>
 	{%- endif %}
 	<link href="{{ feed_url | safe }}" rel="self" type="application/atom+xml"/>
-	<link href="{{ config.base_url | safe }}"/>
+  <link href="
+      {%- if section -%}
+        {{ section.permalink | escape_xml | safe }}
+      {%- else -%}
+        {{ config.base_url | escape_xml | safe }}
+      {%- endif -%}
+    "/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
 	<updated>{{ last_updated | date(format="%+") }}</updated>
 	<id>{{ feed_url | safe }}</id>

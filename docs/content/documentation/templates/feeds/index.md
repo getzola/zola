@@ -33,6 +33,13 @@ Feeds for taxonomy terms get two more variables, using types from the
 - `taxonomy`: of type `TaxonomyConfig`
 - `term`: of type `TaxonomyTerm`, but without `term.pages` (use `pages` instead)
 
+You can also enable separate feeds for each section by setting the
+`generate_feed` variable to true in the respective section's front matter.
+Section feeds will use the same template as indicated in the `config.toml` file.
+Section feeds, in addition to the five feed template variables, get the
+`section` variable from the [section
+template](@/documentation/templates/pages-sections.md).
+
 Enable feed autodiscovery allows feed readers and browsers to notify user about a RSS or Atom feed available on your web site. So it is easier for user to subscribe.
 As an example this is how it looks like using [Firefox](https://en.wikipedia.org/wiki/Mozilla_Firefox) [Livemarks](https://addons.mozilla.org/en-US/firefox/addon/livemarks/?src=search) addon.
 
