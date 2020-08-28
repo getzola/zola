@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use glob::glob;
 use lazy_static::lazy_static;
+use minify_html::{truncate, Cfg};
 use rayon::prelude::*;
 use tera::{Context, Tera};
 
@@ -445,6 +446,21 @@ impl Site {
         html
     }
 
+    /// Minifies html content
+    fn minify(&self, html: String) -> Result<String> {
+        let cfg = &Cfg { minify_js: false };
+        let mut input_bytes = html.as_bytes().to_vec();
+        match truncate(&mut input_bytes, cfg) {
+            Ok(_len) => match std::str::from_utf8(&mut input_bytes) {
+                Ok(result) => Ok(result.to_string()),
+                Err(err) => bail!("Failed to convert bytes to string : {}", err),
+            },
+            Err(minify_error) => {
+                bail!("Failed to truncate html at character {}:", minify_error.position);
+            }
+        }
+    }
+
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
@@ -511,10 +527,19 @@ impl Site {
             create_directory(&current_path)?;
         }
 
+        let final_content = if !filename.ends_with("html") || !self.config.minify_html {
+            content
+        } else {
+            match self.minify(content) {
+                Ok(minified_content) => minified_content,
+                Err(error) => bail!(error),
+            }
+        };
+
         match self.build_mode {
             BuildMode::Disk => {
                 let end_path = current_path.join(filename);
-                create_file(&end_path, &content)?;
+                create_file(&end_path, &final_content)?;
             }
             BuildMode::Memory => {
                 let path = if filename != "index.html" {
@@ -527,7 +552,7 @@ impl Site {
                 }
                 .trim_end_matches('/')
                 .to_owned();
-                &SITE_CONTENT.write().unwrap().insert(path, content);
+                &SITE_CONTENT.write().unwrap().insert(path, final_content);
             }
         }
 
@@ -543,8 +568,12 @@ impl Site {
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
-        let current_path =
-            self.write_content(&components, "index.html", content, !page.assets.is_empty())?;
+        let current_path = self.write_content(
+            &components,
+            "index.html",
+            content,
+            !page.assets.is_empty(),
+        )?;
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {

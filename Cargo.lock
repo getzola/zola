@@ -1321,6 +1321,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "minify-html"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b917ef1eb405ca3b1a489608f36392f0718ff4740bbc6f7d89edd4ec4c869fb7"
+dependencies = [
+ "aho-corasick",
+ "lazy_static",
+ "memchr",
+]
+
+[[package]]
 name = "miniz_oxide"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2177,6 +2188,7 @@ dependencies = [
  "lazy_static",
  "library",
  "link_checker",
+ "minify-html",
  "rayon",
  "sass-rs",
  "search",
