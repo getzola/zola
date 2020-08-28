@@ -1,6 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 use unic_langid::LanguageIdentifier;
 
+/// A way of grouping pages
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Taxonomy {

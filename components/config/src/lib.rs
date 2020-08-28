@@ -1,10 +1,12 @@
 mod config;
 pub mod highlighting;
 mod theme;
+
 pub use crate::config::{
     languages::LocaleOptions, link_checker::LinkChecker, search::Search, slugify::Slugify,
     taxonomies::Taxonomy, Config, LocalizedConfig,
 };
+pub use crate::theme::Theme;
 
 use std::path::Path;
 

@@ -16,7 +16,7 @@ pub struct LocaleOptions {
     /// multilingual sites might already be using language names that do not conform to the
     /// canonical [BCP 47] syntax, and this lets us keep links to them working currently.
     ///
-    /// If empty or not set, the `language_code` will be used.
+    /// If empty or not set, the language code will be used.
     ///
     /// [BCP 47]: https://tools.ietf.org/html/bcp47
     pub language_alias: String,
@@ -73,7 +73,7 @@ pub struct LocaleOptions {
 impl LocaleOptions {
     /// Sets the default values when set for the default language.
     ///
-    /// This had to be done here, because serde does not yet support #[serde(default)] for newtype
+    /// This had to be done here, because serde does not yet support `#[serde(default)]` for newtype
     /// structs.
     pub fn default_for_default_lang() -> Self {
         LocaleOptions {

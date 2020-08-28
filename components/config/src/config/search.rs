@@ -1,5 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
+/// Controls how search indexes are built
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Search {

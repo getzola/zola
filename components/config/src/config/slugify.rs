@@ -2,6 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use utils::slugs::SlugifyStrategy;
 
+/// Controls how URLs are slugified
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Slugify {

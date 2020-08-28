@@ -35,6 +35,8 @@ pub enum Mode {
 ///
 /// It's a newtype struct wrapping [Config], where `0.default_language_options` contains the
 /// settings for `0.lang`.
+///
+/// [Config]: struct.Config.html
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct LocalizedConfig(pub Config);
@@ -43,6 +45,8 @@ pub struct LocalizedConfig(pub Config);
 ///
 /// It will be processed into a [LocalizedConfig] to create a transparent and backwards-compatible
 /// localization for templates.
+///
+/// [LocalizedConfig]: struct.LocalizedConfig.html
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -55,7 +59,11 @@ pub struct Config {
     /// The language that this config applies to
     ///
     /// This is done to make [LocalizedConfig] self-contained. For [Config], this is always equal
-    /// to `default_language`.
+    /// to [default_language].
+    ///
+    /// [Config]: struct.Config.html
+    /// [LocalizedConfig]: struct.LocalizedConfig.html
+    /// [default_language]: #structfield.default_language
     #[serde(skip_deserializing)]
     pub lang: LanguageIdentifier,
 
@@ -63,6 +71,9 @@ pub struct Config {
     ///
     /// MUST be a valid language, specified using the [BCP 47] syntax. To retain backwards
     /// compatibility with other language naming systems, the [language_alias] option was added.
+    ///
+    /// [BCP 47]: https://tools.ietf.org/html/bcp47
+    /// [language_alias]: struct.LocaleOptions.html#structfield.language_alias
     pub default_language: LanguageIdentifier,
     /// Site-wide defaults for langauge-specific settings
     ///
@@ -82,6 +93,8 @@ pub struct Config {
     /// are.
     ///
     /// Having an entry for the default language is treated as an error.
+    ///
+    /// [LocaleOptions]: struct.LocaleOptions.html
     pub languages: HashMap<LanguageIdentifier, languages::LocaleOptions>,
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
@@ -304,6 +317,8 @@ impl Config {
     /// Should be called after merging with theme.
     ///
     /// How each field is handled during merging is described in [LocaleOptions]'s documentation.
+    ///
+    /// [LocaleOptions]: struct.LocaleOptions.html
     pub fn merge_languages_with_default(&mut self) -> Result<()> {
         let def_o = &self.default_language_options;
         for (_, opt) in self.languages.iter_mut() {
