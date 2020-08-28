@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde_derive::Serialize;
 use slotmap::DefaultKey;
 use tera::{to_value, Context, Tera, Value};
+use unic_langid::LanguageIdentifier;
 
 use config::Config;
 use errors::{Error, Result};
@@ -63,6 +64,7 @@ pub struct Paginator<'a> {
     template: String,
     /// Whether this is the index section, we need it for the template name
     is_index: bool,
+    pub lang: LanguageIdentifier,
 }
 
 impl<'a> Paginator<'a> {
@@ -82,6 +84,7 @@ impl<'a> Paginator<'a> {
             paginate_path: section.meta.paginate_path.clone(),
             is_index: section.is_index(),
             template: section.get_template_name().to_string(),
+            lang: section.lang.clone(),
         };
 
         paginator.fill_pagers(library);
@@ -95,6 +98,8 @@ impl<'a> Paginator<'a> {
         item: &'a TaxonomyItem,
         library: &'a Library,
     ) -> Paginator<'a> {
+        assert!(!taxonomy.kind.name.is_empty());
+        assert!(!item.slug.is_empty());
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
         let mut paginator = Paginator {
             all_pages: Cow::Borrowed(&item.pages),
@@ -111,6 +116,7 @@ impl<'a> Paginator<'a> {
                 .unwrap_or_else(|| "page".to_string()),
             is_index: false,
             template: format!("{}/single.html", taxonomy.kind.name),
+            lang: taxonomy.kind.lang.clone(),
         };
 
         // taxonomy paginators have no sorting so we won't have to reverse
@@ -155,6 +161,7 @@ impl<'a> Paginator<'a> {
             } else {
                 format!("{}/{}/", self.paginate_path, index + 1)
             };
+            assert!(!self.permalink.is_empty());
             let permalink = format!("{}{}", self.permalink, page_path);
 
             let pager_path = if self.is_index {
@@ -229,11 +236,13 @@ impl<'a> Paginator<'a> {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
                 context.insert("lang", &s.lang);
+                context.insert("language_alias", &s.language_alias);
             }
             PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
                 context.insert("term", &item.serialize(library));
                 context.insert("lang", &t.kind.lang);
+                context.insert("language_alias", &t.kind.language_alias);
             }
         };
         context.insert("current_url", &pager.permalink);

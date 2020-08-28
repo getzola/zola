@@ -13,6 +13,9 @@ errors = { path = "../errors" }
 library = { path = "../library" }
 config = { path = "../config" }
 
+[dev-dependencies]
+unic-langid = { version = "0.9", features = ["serde", "macros"] }
+
 [features]
 default = []
 indexing-zh = ["elasticlunr-rs/zh"]

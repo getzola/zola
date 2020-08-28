@@ -1,12 +1,15 @@
 use std::collections::HashMap;
 
 use tera::Tera;
+use unic_langid::{langid, LanguageIdentifier};
 
 use config::Config;
 use front_matter::InsertAnchor;
 use rendering::{render_content, RenderContext};
 use templates::ZOLA_TERA;
 use utils::slugs::SlugifyStrategy;
+
+const EN: &LanguageIdentifier = &langid!("en");
 
 macro_rules! colored_html_line {
     ( @no $s:expr ) => {{
@@ -40,20 +43,28 @@ fn hl_lines_simple() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=2
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @no "foo",
-        @hl "bar",
-        @no "bar\nbaz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @no "foo",
+            @hl "bar",
+            @no "bar\nbaz",
+        )
+    );
 }
 
 #[test]
@@ -62,20 +73,28 @@ fn hl_lines_in_middle() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=2-3
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @no "foo",
-        @hl "bar\nbar",
-        @no "baz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @no "foo",
+            @hl "bar\nbar",
+            @no "baz",
+        )
+    );
 }
 
 #[test]
@@ -84,18 +103,26 @@ fn hl_lines_all() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=1-4
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @hl "foo\nbar\nbar\nbaz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @hl "foo\nbar\nbar\nbaz",
+        )
+    );
 }
 
 #[test]
@@ -104,19 +131,27 @@ fn hl_lines_start_from_one() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=1-3
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @hl "foo\nbar\nbar",
-        @no "baz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @hl "foo\nbar\nbar",
+            @no "baz",
+        )
+    );
 }
 
 #[test]
@@ -125,19 +160,27 @@ fn hl_lines_start_from_zero() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=0-3
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @hl "foo\nbar\nbar",
-        @no "baz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @hl "foo\nbar\nbar",
+            @no "baz",
+        )
+    );
 }
 
 #[test]
@@ -146,19 +189,27 @@ fn hl_lines_end() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=3-4
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @no "foo\nbar",
-        @hl "bar\nbaz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @no "foo\nbar",
+            @hl "bar\nbaz",
+        )
+    );
 }
 
 #[test]
@@ -167,19 +218,27 @@ fn hl_lines_end_out_of_bounds() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=3-4294967295
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @no "foo\nbar",
-        @hl "bar\nbaz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @no "foo\nbar",
+            @hl "bar\nbaz",
+        )
+    );
 }
 
 #[test]
@@ -188,19 +247,27 @@ fn hl_lines_overlap() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=2-3 1-2
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @hl "foo\nbar\nbar",
-        @no "baz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @hl "foo\nbar\nbar",
+            @no "baz",
+        )
+    );
 }
 #[test]
 fn hl_lines_multiple() {
@@ -208,19 +275,27 @@ fn hl_lines_multiple() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=2-3,hl_lines=1-2
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @hl "foo\nbar\nbar",
-        @no "baz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @hl "foo\nbar\nbar",
+            @no "baz",
+        )
+    );
 }
 
 #[test]
@@ -229,19 +304,27 @@ fn hl_lines_extra_spaces() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```     hl_lines     =       2 - 3      1    -       2
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @hl "foo\nbar\nbar",
-        @no "baz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @hl "foo\nbar\nbar",
+            @no "baz",
+        )
+    );
 }
 
 #[test]
@@ -250,20 +333,28 @@ fn hl_lines_int_and_range() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=1 3-4
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @hl "foo",
-        @no "bar",
-        @hl "bar\nbaz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @hl "foo",
+            @no "bar",
+            @hl "bar\nbaz",
+        )
+    );
 }
 
 #[test]
@@ -272,22 +363,29 @@ fn hl_lines_single_line_range() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=2-2
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @no "foo",
-        @hl "bar",
-        @no "bar\nbaz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @no "foo",
+            @hl "bar",
+            @no "bar\nbaz",
+        )
+    );
 }
-
 
 #[test]
 fn hl_lines_reverse_range() {
@@ -295,18 +393,26 @@ fn hl_lines_reverse_range() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    let res = render_content(r#"
+    let context =
+        RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None, EN);
+    let res = render_content(
+        r#"
 ```hl_lines=3-2
 foo
 bar
 bar
 baz
 ```
-    "#, &context).unwrap();
-    assert_eq!(res.body, colored_html!(
-        @no "foo",
-        @hl "bar\nbar",
-        @no "baz",
-    ));
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @no "foo",
+            @hl "bar\nbar",
+            @no "baz",
+        )
+    );
 }

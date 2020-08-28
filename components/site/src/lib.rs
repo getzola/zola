@@ -14,6 +14,7 @@ use lazy_static::lazy_static;
 use minify_html::{with_friendly_error, Cfg};
 use rayon::prelude::*;
 use tera::{Context, Tera};
+use unic_langid::LanguageIdentifier;
 
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
@@ -40,13 +41,16 @@ pub enum BuildMode {
     Memory,
 }
 
+/// Maximum number of URLs in a single sitemap.xml file
+const SITEMAP_LIMIT: usize = 30_000;
+
 #[derive(Debug)]
 pub struct Site {
     /// The base path of the zola site
     pub base_path: PathBuf,
     /// The parsed config for the site
     pub config: Config,
-    pub tera: Tera,
+    pub localized_tera: HashMap<LanguageIdentifier, Tera>,
     imageproc: Arc<Mutex<imageproc::Processor>>,
     // the live reload port to be used if there is one
     pub live_reload: Option<u16>,
@@ -77,8 +81,15 @@ impl Site {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
         }
+        // Fall back on values not set for translations to the default language's value.
+        config.merge_languages_with_default()?;
 
         let tera = tpls::load_tera(path, &config)?;
+        let mut localized_tera: HashMap<LanguageIdentifier, Tera> = HashMap::new();
+        localized_tera.insert(config.default_language.clone(), tera.clone());
+        for lang in config.languages_codes() {
+            localized_tera.insert(lang.clone(), tera.clone());
+        }
 
         let content_path = path.join("content");
         let static_path = path.join("static");
@@ -89,7 +100,7 @@ impl Site {
         let site = Site {
             base_path: path.to_path_buf(),
             config,
-            tera,
+            localized_tera,
             imageproc: Arc::new(Mutex::new(imageproc)),
             live_reload: None,
             output_path,
@@ -121,12 +132,12 @@ impl Site {
 
     /// The index sections are ALWAYS at those paths
     /// There are one index section for the default language + 1 per language
-    fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
+    fn index_section_paths(&self) -> Vec<(PathBuf, Option<LanguageIdentifier>)> {
         let mut res = vec![(self.content_path.join("_index.md"), None)];
-        for language in &self.config.languages {
+        for (language, options) in &self.config.languages {
             res.push((
-                self.content_path.join(format!("_index.{}.md", language.code)),
-                Some(language.code.clone()),
+                self.content_path.join(format!("_index.{}.md", options.language_alias)),
+                Some(language.clone()),
             ));
         }
         res
@@ -139,6 +150,14 @@ impl Site {
         self.live_reload = get_available_port(port_to_avoid);
     }
 
+    /// Reload `localized_tera` for all languages
+    pub fn reload_tera(&mut self) -> Result<()> {
+        for (_, tera) in self.localized_tera.iter_mut() {
+            tera.full_reload()?;
+        }
+        Ok(())
+    }
+
     /// Only used in `zola serve` to re-use the initial websocket port
     pub fn enable_live_reload_with_port(&mut self, live_reload_port: u16) {
         self.live_reload = Some(live_reload_port);
@@ -146,7 +165,7 @@ impl Site {
 
     /// Reloads the templates and rebuild the site without re-rendering the Markdown.
     pub fn reload_templates(&mut self) -> Result<()> {
-        self.tera.full_reload()?;
+        self.reload_tera()?;
         // TODO: be smarter than that, no need to recompile sass for example
         self.build()
     }
@@ -263,7 +282,19 @@ impl Site {
     pub fn create_default_index_sections(&mut self) -> Result<()> {
         for (index_path, lang) in self.index_section_paths() {
             if let Some(ref index_section) = self.library.read().unwrap().get_section(&index_path) {
-                if self.config.build_search_index && !index_section.meta.in_search_index {
+                let build_search_index = match lang {
+                    Some(ref l) => {
+                        self.config
+                            .languages
+                            .get(l)
+                            .expect("language present in config")
+                            .build_search_index
+                    }
+                    None => self.config.default_language_options.build_search_index,
+                }
+                .expect("build_search_index set");
+
+                if build_search_index && !index_section.meta.in_search_index {
                     bail!(
                     "You have enabled search in the config but disabled it in the index section: \
                     either turn off the search in the config or remote `in_search_index = true` from the \
@@ -279,20 +310,28 @@ impl Site {
                 index_section.file.filename =
                     index_path.file_name().unwrap().to_string_lossy().to_string();
                 if let Some(ref l) = lang {
-                    index_section.file.name = format!("_index.{}", l);
-                    index_section.path = format!("{}/", l);
-                    index_section.permalink = self.config.make_permalink(l);
-                    let filename = format!("_index.{}.md", l);
+                    let alias =
+                        self.config.get_language_alias(l).expect("language present in config");
+                    assert!(!alias.is_empty());
+                    index_section.file.name = format!("_index.{}", alias);
+                    index_section.path = format!("{}/", alias);
+                    index_section.permalink = self.config.make_permalink(alias);
+                    let filename = format!("_index.{}.md", alias);
                     index_section.file.path = self.content_path.join(&filename);
                     index_section.file.relative = filename;
+                    index_section.lang = l.clone();
+                    index_section.language_alias = String::from(alias);
                 } else {
                     index_section.file.name = "_index".to_string();
                     index_section.permalink = self.config.make_permalink("");
                     index_section.file.path = self.content_path.join("_index.md");
                     index_section.file.relative = "_index.md".to_string();
                     index_section.path = "/".to_string();
+                    index_section.lang = self.config.default_language.clone();
+                    assert!(!self.config.default_language_options.language_alias.is_empty());
+                    index_section.language_alias =
+                        self.config.default_language_options.language_alias.clone();
                 }
-                index_section.lang = index_section.file.find_language(&self.config)?;
                 library.insert_section(index_section);
             }
         }
@@ -306,7 +345,6 @@ impl Site {
         // Another silly thing needed to not borrow &self in parallel and
         // make the borrow checker happy
         let permalinks = &self.permalinks;
-        let tera = &self.tera;
         let config = &self.config;
 
         // This is needed in the first place because of silly borrow checker
@@ -326,6 +364,7 @@ impl Site {
             .par_iter_mut()
             .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
+                let tera = self.localized_tera.get(&page.lang).expect("`lang` in `localized_tera`");
                 page.render_markdown(permalinks, tera, config, insert_anchor)
             })
             .collect::<Result<()>>()?;
@@ -335,7 +374,11 @@ impl Site {
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
-            .map(|section| section.render_markdown(permalinks, tera, config))
+            .map(|section| {
+                let tera =
+                    self.localized_tera.get(&section.lang).expect("`lang` in `localized_tera`");
+                section.render_markdown(permalinks, tera, config)
+            })
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -348,7 +391,8 @@ impl Site {
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
+            let tera = self.localized_tera.get(&page.lang).expect("`lang` in `localized_tera`");
+            page.render_markdown(&self.permalinks, tera, &self.config, insert_anchor)?;
         }
 
         let mut library = self.library.write().expect("Get lock for add_page");
@@ -375,7 +419,8 @@ impl Site {
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render_md {
-            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+            let tera = self.localized_tera.get(&section.lang).expect("`lang` in `localized_tera`");
+            section.render_markdown(&self.permalinks, tera, &self.config)?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");
         library.remove_section(&section.file.path);
@@ -400,10 +445,13 @@ impl Site {
     pub fn find_parent_section_insert_anchor(
         &self,
         parent_path: &PathBuf,
-        lang: &str,
+        lang: &LanguageIdentifier,
     ) -> InsertAnchor {
-        let parent = if lang != self.config.default_language {
-            parent_path.join(format!("_index.{}.md", lang))
+        let parent = if lang != &self.config.default_language {
+            parent_path.join(format!(
+                "_index.{}.md",
+                self.config.get_language_alias(lang).expect("language present in config")
+            ))
         } else {
             parent_path.join("_index.md")
         };
@@ -422,10 +470,6 @@ impl Site {
 
     /// Find all the tags and categories if it's asked in the config
     pub fn populate_taxonomies(&mut self) -> Result<()> {
-        if self.config.taxonomies.is_empty() {
-            return Ok(());
-        }
-
         self.taxonomies = find_taxonomies(&self.config, &self.library.read().unwrap())?;
 
         Ok(())
@@ -456,7 +500,12 @@ impl Site {
                 Err(err) => bail!("Failed to convert bytes to string : {}", err),
             },
             Err(minify_error) => {
-                bail!("Failed to truncate html at character {}: {} \n {}", minify_error.position, minify_error.message, minify_error.code_context);
+                bail!(
+                    "Failed to truncate html at character {}: {} \n {}",
+                    minify_error.position,
+                    minify_error.message,
+                    minify_error.code_context
+                );
             }
         }
     }
@@ -565,15 +614,12 @@ impl Site {
 
     /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
-        let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+        let tera = self.localized_tera.get(&page.lang).expect("`lang` in `localized_tera`");
+        let output = page.render_html(tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
-        let current_path = self.write_content(
-            &components,
-            "index.html",
-            content,
-            !page.assets.is_empty(),
-        )?;
+        let current_path =
+            self.write_content(&components, "index.html", content, !page.assets.is_empty())?;
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
@@ -607,41 +653,14 @@ impl Site {
             sass::compile_sass(&self.base_path, &self.output_path)?;
         }
 
-        if self.config.build_search_index {
-            self.build_search_index()?;
-        }
+        self.build_search_index()?;
 
         // Render aliases first to allow overwriting
         self.render_aliases()?;
         self.render_sections()?;
         self.render_orphan_pages()?;
         self.render_sitemap()?;
-
-        let library = self.library.read().unwrap();
-        if self.config.generate_feed {
-            let is_multilingual = self.config.is_multilingual();
-            let pages = if is_multilingual {
-                library
-                    .pages_values()
-                    .iter()
-                    .filter(|p| p.lang == self.config.default_language)
-                    .cloned()
-                    .collect()
-            } else {
-                library.pages_values()
-            };
-            self.render_feed(pages, None, &self.config.default_language, |c| c)?;
-        }
-
-        for lang in &self.config.languages {
-            if !lang.feed {
-                continue;
-            }
-            let pages =
-                library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, |c| c)?;
-        }
-
+        self.render_feeds()?;
         self.render_404()?;
         self.render_robots()?;
         self.render_taxonomies()?;
@@ -659,28 +678,35 @@ impl Site {
         // TODO: add those to the SITE_CONTENT map
 
         // index first
-        create_file(
-            &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
-            &format!(
-                "window.searchIndex = {};",
-                search::build_index(
-                    &self.config.default_language,
-                    &self.library.read().unwrap(),
-                    &self.config
-                )?
-            ),
-        )?;
+        if self.config.default_language_options.build_search_index.expect("build_search_index set")
+        {
+            create_file(
+                &self.output_path.join(&format!(
+                    "search_index.{}.js",
+                    self.config.default_language_options.language_alias
+                )),
+                &format!(
+                    "window.searchIndex = {};",
+                    search::build_index(
+                        &self.library.read().unwrap(),
+                        &self.config.get_localized(&self.config.default_language).unwrap()
+                    )?
+                ),
+            )?;
+        }
 
-        for language in &self.config.languages {
-            if language.code != self.config.default_language && language.search {
+        for (language, opts) in &self.config.languages {
+            if language != &self.config.default_language
+                && opts.build_search_index.expect("build_search_index set")
+            {
+                assert!(!opts.language_alias.is_empty());
                 create_file(
-                    &self.output_path.join(&format!("search_index.{}.js", &language.code)),
+                    &self.output_path.join(&format!("search_index.{}.js", opts.language_alias)),
                     &format!(
                         "window.searchIndex = {};",
                         search::build_index(
-                            &language.code,
                             &self.library.read().unwrap(),
-                            &self.config
+                            &self.config.get_localized(language).unwrap()
                         )?
                     ),
                 )?;
@@ -706,7 +732,8 @@ impl Site {
             }
             None => "index.html",
         };
-        let content = render_redirect_template(&permalink, &self.tera)?;
+        let tera = self.localized_tera.get(&self.config.default_language).unwrap();
+        let content = render_redirect_template(&permalink, tera)?;
         self.write_content(&split, page_name, content, false)?;
         Ok(())
     }
@@ -734,7 +761,8 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
-        let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
+        let tera = self.localized_tera.get(&self.config.default_language).unwrap();
+        let output = render_template("404.html", tera, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
         self.write_content(&[], "404.html", content, false)?;
         Ok(())
@@ -745,7 +773,8 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
-        let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
+        let tera = self.localized_tera.get(&self.config.default_language).unwrap();
+        let content = render_template("robots.txt", tera, context, &self.config.theme)?;
         self.write_content(&[], "robots.txt", content, false)?;
         Ok(())
     }
@@ -768,13 +797,14 @@ impl Site {
 
         let mut components = Vec::new();
         if taxonomy.kind.lang != self.config.default_language {
-            components.push(taxonomy.kind.lang.as_ref());
+            components.push(taxonomy.kind.language_alias.as_str());
         }
+        components.push(taxonomy.kind.name.as_str());
 
-        components.push(taxonomy.kind.name.as_ref());
-
+        let tera =
+            self.localized_tera.get(&taxonomy.kind.lang).expect("`lang` in `localized_tera`");
         let list_output =
-            taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
+            taxonomy.render_all_terms(tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(list_output);
         self.write_content(&components, "index.html", content, false)?;
 
@@ -792,8 +822,7 @@ impl Site {
                         &Paginator::from_taxonomy(&taxonomy, item, &library),
                     )?;
                 } else {
-                    let single_output =
-                        taxonomy.render_term(item, &self.tera, &self.config, &library)?;
+                    let single_output = taxonomy.render_term(item, tera, &self.config, &library)?;
                     let content = self.inject_livereload(single_output);
                     self.write_content(&comp, "index.html", content, false)?;
                 }
@@ -802,11 +831,7 @@ impl Site {
                     self.render_feed(
                         item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
-                        if self.config.is_multilingual() && !taxonomy.kind.lang.is_empty() {
-                            &taxonomy.kind.lang
-                        } else {
-                            &self.config.default_language
-                        },
+                        &taxonomy.kind.lang,
                         |mut context: Context| {
                             context.insert("taxonomy", &taxonomy.kind);
                             context
@@ -828,25 +853,26 @@ impl Site {
         let library = self.library.read().unwrap();
         let all_sitemap_entries =
             { sitemap::find_entries(&library, &self.taxonomies[..], &self.config) };
-        let sitemap_limit = 30000;
 
-        if all_sitemap_entries.len() < sitemap_limit {
+        let tera = self.localized_tera.get(&self.config.default_language).unwrap();
+
+        if all_sitemap_entries.len() < SITEMAP_LIMIT {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", tera, context, &self.config.theme)?;
             self.write_content(&[], "sitemap.xml", sitemap, false)?;
             return Ok(());
         }
 
-        // Create multiple sitemaps (max 30000 urls each)
+        // Create multiple sitemaps (max SITEMAP_LIMIT urls each)
         let mut sitemap_index = Vec::new();
         for (i, chunk) in
-            all_sitemap_entries.iter().collect::<Vec<_>>().chunks(sitemap_limit).enumerate()
+            all_sitemap_entries.iter().collect::<Vec<_>>().chunks(SITEMAP_LIMIT).enumerate()
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", tera, context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
             self.write_content(&[], &file_name, sitemap, false)?;
             let mut sitemap_url = self.config.make_permalink(&file_name);
@@ -857,25 +883,57 @@ impl Site {
         // Create main sitemap that reference numbered sitemaps
         let mut main_context = Context::new();
         main_context.insert("sitemaps", &sitemap_index);
-        let sitemap = render_template(
-            "split_sitemap_index.xml",
-            &self.tera,
-            main_context,
-            &self.config.theme,
-        )?;
+        let sitemap =
+            render_template("split_sitemap_index.xml", tera, main_context, &self.config.theme)?;
         self.write_content(&[], "sitemap.xml", sitemap, false)?;
 
         Ok(())
     }
 
-    /// Renders a feed for the given path and at the given path
+    /// Render all feeds
+    pub fn render_feeds(&self) -> Result<()> {
+        let library = self.library.read().unwrap();
+        if self.config.default_language_options.generate_feed.expect("generate_feed is set") {
+            let is_multilingual = self.config.is_multilingual();
+            let pages = if is_multilingual {
+                library
+                    .pages_values()
+                    .iter()
+                    .filter(|p| p.lang == self.config.default_language)
+                    .cloned()
+                    .collect()
+            } else {
+                library.pages_values()
+            };
+            self.render_feed(pages, None, &self.config.default_language, |c| c)?;
+        }
+
+        for (lang, opts) in &self.config.languages {
+            if opts.generate_feed.expect("generate_feed is set") {
+                let pages =
+                    library.pages_values().iter().filter(|p| &p.lang == lang).cloned().collect();
+                self.render_feed(
+                    pages,
+                    Some(&PathBuf::from(
+                        self.config.get_language_alias(lang).expect("language is present"),
+                    )),
+                    &lang,
+                    |c| c,
+                )?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Renders a single feed for the given path and at the given path
     /// If both arguments are `None`, it will render only the feed for the whole
     /// site at the root folder.
     pub fn render_feed(
         &self,
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
-        lang: &str,
+        lang: &LanguageIdentifier,
         additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
@@ -912,9 +970,11 @@ impl Site {
         let mut components: Vec<&str> = Vec::new();
         let create_directories = self.build_mode == BuildMode::Disk || !section.assets.is_empty();
 
+        let tera = self.localized_tera.get(&section.lang).expect("`lang` in `localized_tera`");
+
         if section.lang != self.config.default_language {
-            components.push(&section.lang);
-            output_path.push(&section.lang);
+            components.push(&section.language_alias);
+            output_path.push(&section.language_alias);
 
             if !output_path.exists() && create_directories {
                 create_directory(&output_path)?;
@@ -932,11 +992,7 @@ impl Site {
 
         if section.meta.generate_feed {
             let library = &self.library.read().unwrap();
-            let pages = section
-                .pages
-                .iter()
-                .map(|k| library.get_page_by_key(*k))
-                .collect();
+            let pages = section.pages.iter().map(|k| library.get_page_by_key(*k)).collect();
             self.render_feed(
                 pages,
                 Some(&PathBuf::from(&section.path[1..])),
@@ -976,7 +1032,7 @@ impl Site {
             self.write_content(
                 &components,
                 "index.html",
-                render_redirect_template(&permalink, &self.tera)?,
+                render_redirect_template(&permalink, tera)?,
                 create_directories,
             )?;
 
@@ -989,8 +1045,7 @@ impl Site {
                 &Paginator::from_section(&section, &self.library.read().unwrap()),
             )?;
         } else {
-            let output =
-                section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+            let output = section.render_html(tera, &self.config, &self.library.read().unwrap())?;
             let content = self.inject_livereload(output);
             self.write_content(&components, "index.html", content, false)?;
         }
@@ -1029,7 +1084,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let index_components = components.clone();
-
+        let tera = self.localized_tera.get(&paginator.lang).expect("`lang` in `localized_tera`");
         paginator
             .pagers
             .par_iter()
@@ -1041,7 +1096,7 @@ impl Site {
                 let output = paginator.render_pager(
                     pager,
                     &self.config,
-                    &self.tera,
+                    tera,
                     &self.library.read().unwrap(),
                 )?;
                 let content = self.inject_livereload(output);
@@ -1053,7 +1108,7 @@ impl Site {
                     self.write_content(
                         &pager_components,
                         "index.html",
-                        render_redirect_template(&paginator.permalink, &self.tera)?,
+                        render_redirect_template(&paginator.permalink, tera)?,
                         false,
                     )?;
                 }

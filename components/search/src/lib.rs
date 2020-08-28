@@ -3,8 +3,8 @@ use std::collections::{HashMap, HashSet};
 use elasticlunr::{Index, Language};
 use lazy_static::lazy_static;
 
-use config::Config;
-use errors::{bail, Result};
+use config::LocalizedConfig;
+use errors::Result;
 use library::{Library, Section};
 
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
@@ -26,17 +26,19 @@ lazy_static! {
     };
 }
 
-fn build_fields(config: &Config) -> Vec<String> {
+fn build_fields(config: &LocalizedConfig) -> Vec<String> {
     let mut fields = vec![];
-    if config.search.include_title {
+    let search = config.0.default_language_options.search.clone().expect("search set");
+
+    if search.include_title {
         fields.push("title".to_owned());
     }
 
-    if config.search.include_description {
+    if search.include_description {
         fields.push("description".to_owned());
     }
 
-    if config.search.include_content {
+    if search.include_content {
         fields.push("body".to_owned());
     }
 
@@ -44,24 +46,25 @@ fn build_fields(config: &Config) -> Vec<String> {
 }
 
 fn fill_index(
-    config: &Config,
+    config: &LocalizedConfig,
     title: &Option<String>,
     description: &Option<String>,
     content: &str,
 ) -> Vec<String> {
     let mut row = vec![];
+    let search = config.0.default_language_options.search.clone().unwrap();
 
-    if config.search.include_title {
+    if search.include_title {
         row.push(title.clone().unwrap_or_default());
     }
 
-    if config.search.include_description {
+    if search.include_description {
         row.push(description.clone().unwrap_or_default());
     }
 
-    if config.search.include_content {
+    if search.include_content {
         let body = AMMONIA.clean(&content).to_string();
-        if let Some(truncate_len) = config.search.truncate_content_length {
+        if let Some(truncate_len) = search.truncate_content_length {
             // Not great for unicode
             // TODO: fix it like the truncate in Tera
             match body.char_indices().nth(truncate_len) {
@@ -80,18 +83,15 @@ fn fill_index(
 /// the language given
 /// Errors if the language given is not available in Elasticlunr
 /// TODO: is making `in_search_index` apply to subsections of a `false` section useful?
-pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<String> {
-    let language = match Language::from_code(lang) {
-        Some(l) => l,
-        None => {
-            bail!("Tried to build search index for language {} which is not supported", lang);
-        }
-    };
+pub fn build_index(library: &Library, config: &LocalizedConfig) -> Result<String> {
+    let language = Language::from_code(config.0.lang.language.as_str()).ok_or_else(|| {
+        format!("Tried to build search index for language {} which is not supported", config.0.lang)
+    })?;
 
     let mut index = Index::with_language(language, &build_fields(&config));
 
     for section in library.sections_values() {
-        if section.lang == lang {
+        if section.lang == config.0.lang {
             add_section_to_index(&mut index, section, library, config);
         }
     }
@@ -99,7 +99,12 @@ pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<Str
     Ok(index.to_json())
 }
 
-fn add_section_to_index(index: &mut Index, section: &Section, library: &Library, config: &Config) {
+fn add_section_to_index(
+    index: &mut Index,
+    section: &Section,
+    library: &Library,
+    config: &LocalizedConfig,
+) {
     if !section.meta.in_search_index {
         return;
     }
@@ -129,31 +134,39 @@ fn add_section_to_index(index: &mut Index, section: &Section, library: &Library,
 mod tests {
     use super::*;
 
-    use config::Config;
+    use unic_langid::langid;
+
+    use config::{Config, Search};
 
     #[test]
     fn can_build_fields() {
-        let mut config = Config::default();
+        let mut config = Config::default().get_localized(&langid!("en")).unwrap();
         let fields = build_fields(&config);
         assert_eq!(fields, vec!["title", "body"]);
 
-        config.search.include_content = false;
-        config.search.include_description = true;
+        config.0.default_language_options.search =
+            Some(Search { include_content: false, include_description: true, ..Search::default() });
         let fields = build_fields(&config);
         assert_eq!(fields, vec!["title", "description"]);
 
-        config.search.include_content = true;
+        config.0.default_language_options.search =
+            Some(Search { include_content: true, include_description: true, ..Search::default() });
         let fields = build_fields(&config);
         assert_eq!(fields, vec!["title", "description", "body"]);
 
-        config.search.include_title = false;
+        config.0.default_language_options.search = Some(Search {
+            include_title: false,
+            include_content: true,
+            include_description: true,
+            ..Search::default()
+        });
         let fields = build_fields(&config);
         assert_eq!(fields, vec!["description", "body"]);
     }
 
     #[test]
     fn can_fill_index_default() {
-        let config = Config::default();
+        let config = Config::default().get_localized(&langid!("en")).unwrap();
         let title = Some("A title".to_string());
         let description = Some("A description".to_string());
         let content = "Some content".to_string();
@@ -166,8 +179,9 @@ mod tests {
 
     #[test]
     fn can_fill_index_description() {
-        let mut config = Config::default();
-        config.search.include_description = true;
+        let mut config = Config::default().get_localized(&langid!("en")).unwrap();
+        config.0.default_language_options.search =
+            Some(Search { include_description: true, ..Search::default() });
         let title = Some("A title".to_string());
         let description = Some("A description".to_string());
         let content = "Some content".to_string();
@@ -181,8 +195,9 @@ mod tests {
 
     #[test]
     fn can_fill_index_truncated_content() {
-        let mut config = Config::default();
-        config.search.truncate_content_length = Some(5);
+        let mut config = Config::default().get_localized(&langid!("en")).unwrap();
+        config.0.default_language_options.search =
+            Some(Search { truncate_content_length: Some(5), ..Search::default() });
         let title = Some("A title".to_string());
         let description = Some("A description".to_string());
         let content = "Some content".to_string();

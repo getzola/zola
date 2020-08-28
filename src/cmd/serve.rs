@@ -87,7 +87,7 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
     match result {
         ResolveResult::MethodNotMatched => return Ok(method_not_allowed()),
         ResolveResult::NotFound | ResolveResult::UriNotMatched => {
-            let content_404 = SITE_CONTENT.read().unwrap().get("404.html").map(|x| x.clone());
+            let content_404 = SITE_CONTENT.read().unwrap().get("404.html").cloned();
             return Ok(not_found(content_404));
         }
         _ => (),

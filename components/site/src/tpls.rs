@@ -50,56 +50,63 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) {
-    site.tera.register_function(
-        "get_url",
-        global_fns::GetUrl::new(
-            site.config.clone(),
-            site.permalinks.clone(),
-            vec![site.static_path.clone(), site.output_path.clone(), site.content_path.clone()],
-        ),
-    );
-    site.tera
-        .register_function("resize_image", global_fns::ResizeImage::new(site.imageproc.clone()));
-    site.tera.register_function(
-        "get_image_metadata",
-        global_fns::GetImageMeta::new(site.content_path.clone()),
-    );
-    site.tera.register_function("load_data", global_fns::LoadData::new(site.base_path.clone()));
-    site.tera.register_function("trans", global_fns::Trans::new(site.config.clone()));
-    site.tera.register_function(
-        "get_taxonomy_url",
-        global_fns::GetTaxonomyUrl::new(
-            &site.config.default_language,
-            &site.taxonomies,
-            site.config.slugify.taxonomies,
-        ),
-    );
-    site.tera.register_function(
-        "get_file_hash",
-        global_fns::GetFileHash::new(vec![
-            site.static_path.clone(),
-            site.output_path.clone(),
-            site.content_path.clone(),
-        ]),
-    );
+    for (lang, tera) in site.localized_tera.iter_mut() {
+        tera.register_function(
+            "resize_image",
+            global_fns::ResizeImage::new(site.imageproc.clone()),
+        );
+        tera.register_function(
+            "get_image_metadata",
+            global_fns::GetImageMeta::new(site.content_path.clone()),
+        );
+        tera.register_function("load_data", global_fns::LoadData::new(site.base_path.clone()));
+        tera.register_function(
+            "get_file_hash",
+            global_fns::GetFileHash::new(vec![
+                site.static_path.clone(),
+                site.output_path.clone(),
+                site.content_path.clone(),
+            ]),
+        );
+        let cfg = site.config.get_localized(lang).expect("`lang` in config");
+        tera.register_function(
+            "get_url",
+            global_fns::GetUrl::new(
+                cfg.clone(),
+                site.permalinks.clone(),
+                vec![site.static_path.clone(), site.output_path.clone(), site.content_path.clone()],
+            ),
+        );
+        tera.register_function("trans", global_fns::Trans::new(cfg));
+        tera.register_function(
+            "get_taxonomy_url",
+            global_fns::GetTaxonomyUrl::new(
+                lang.clone(),
+                &site.taxonomies,
+                site.config.slugify.taxonomies,
+            ),
+        );
+    }
 }
 
 /// Functions filled once we have parsed all the pages/sections only, so not available in shortcodes
 pub fn register_tera_global_fns(site: &mut Site) {
-    site.tera.register_function(
-        "get_page",
-        global_fns::GetPage::new(site.base_path.clone(), site.library.clone()),
-    );
-    site.tera.register_function(
-        "get_section",
-        global_fns::GetSection::new(site.base_path.clone(), site.library.clone()),
-    );
-    site.tera.register_function(
-        "get_taxonomy",
-        global_fns::GetTaxonomy::new(
-            &site.config.default_language,
-            site.taxonomies.clone(),
-            site.library.clone(),
-        ),
-    );
+    for (lang, tera) in site.localized_tera.iter_mut() {
+        tera.register_function(
+            "get_page",
+            global_fns::GetPage::new(site.base_path.clone(), site.library.clone()),
+        );
+        tera.register_function(
+            "get_section",
+            global_fns::GetSection::new(site.base_path.clone(), site.library.clone()),
+        );
+        tera.register_function(
+            "get_taxonomy",
+            global_fns::GetTaxonomy::new(
+                lang.clone(),
+                site.taxonomies.clone(),
+                site.library.clone(),
+            ),
+        );
+    }
 }

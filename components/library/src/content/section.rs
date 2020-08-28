@@ -3,9 +3,10 @@ use std::path::{Path, PathBuf};
 
 use slotmap::DefaultKey;
 use tera::{Context as TeraContext, Tera};
+use unic_langid::LanguageIdentifier;
 
 use config::Config;
-use errors::{Error, Result};
+use errors::{bail, Error, Result};
 use front_matter::{split_section_content, SectionFrontMatter};
 use rendering::{render_content, Heading, RenderContext};
 use utils::fs::{find_related_assets, read_file};
@@ -54,8 +55,11 @@ pub struct Section {
     /// See `get_reading_analytics` on how it is calculated
     pub reading_time: Option<usize>,
     /// The language of that section. Equal to the default lang if the user doesn't setup `languages` in config.
-    /// Corresponds to the lang in the _index.{lang}.md file scheme
-    pub lang: String,
+    pub lang: LanguageIdentifier,
+    /// How `lang` is to be displayed in filenames/URLs
+    /// Corresponds to the lang in the _index.{lang}.md file scheme, and set to `lang.to_string()`
+    /// if not set.
+    pub language_alias: String,
     /// Contains all the translated version of that section
     pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
@@ -86,7 +90,39 @@ impl Section {
     ) -> Result<Section> {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta, base_path);
-        section.lang = section.file.find_language(config)?;
+
+        if let Some(ref l) = section.file.maybe_lang {
+            if !config.is_multilingual() {
+                // TODO: add test
+                bail!(
+                    "Section `{}` has a language set, but `languages` in config.toml is empty. Note that file names must not contain dots.",
+                    file_path.display()
+                );
+            } else if l.is_empty() {
+                // TODO: add test
+                bail!("Section `{}` has an empty language. Did you mistakenly put 2 dots before the extension?", file_path.display());
+            } else if l == &config.default_language_options.language_alias {
+                bail!("Sections in the default language should not set it in their title (caused by `{}`).", file_path.display());
+            } else {
+                section.language_alias = l.clone();
+                // When writing tests for this, please make sure that `language_alias` has been manually
+                // set for each element in `config.languages`
+                section.lang = config
+                    .get_language_identifier(&l)
+                    .ok_or_else(||
+                        format!("File `{}` has a language of `{}` which isn't present in config.toml. Not that if a `language_alias` was specified, you must use that.\nHint: Possible values are {:?}.", file_path.display(), l, config.language_aliases())
+                        )?;
+            }
+        } else {
+            section.lang = config.default_language.clone();
+            section.language_alias = config.default_language_options.language_alias.clone();
+        }
+
+        // Catch programming errors
+        // `lang` and `language_alias` must be non-empty
+        assert_ne!(section.lang, LanguageIdentifier::default());
+        assert!(!section.language_alias.is_empty());
+
         section.raw_content = content.to_string();
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
@@ -94,13 +130,14 @@ impl Section {
 
         let path = section.file.components.join("/");
         let lang_path = if section.lang != config.default_language {
-            format!("/{}", section.lang)
+            format!("/{}", section.language_alias)
         } else {
             "".into()
         };
         section.path = if path.is_empty() {
             format!("{}/", lang_path)
         } else {
+            assert!(!path.is_empty());
             format!("{}/{}/", lang_path, path)
         };
 
@@ -177,6 +214,7 @@ impl Section {
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links,
+            &self.lang,
         );
 
         context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
@@ -197,11 +235,12 @@ impl Section {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
-        context.insert("config", config);
+        context.insert("config", &config.get_localized(&self.lang).expect("`lang` in config"));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
         context.insert("section", &self.to_serialized(library));
         context.insert("lang", &self.lang);
+        context.insert("language_alias", &self.language_alias);
 
         render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render section '{}'", self.file.path.display()), e)
@@ -254,9 +293,10 @@ mod tests {
 
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
+    use unic_langid::langid;
 
     use super::Section;
-    use config::{Config, Language};
+    use config::{Config, LocaleOptions};
 
     #[test]
     fn section_with_assets_gets_right_info() {
@@ -314,7 +354,10 @@ mod tests {
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        let mut fr = LocaleOptions::default();
+        fr.language_alias = "fr".to_string();
+        config.languages.insert(langid!("fr"), fr);
+
         let content = r#"
 +++
 +++
@@ -328,7 +371,8 @@ Bonjour le monde"#
         );
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.lang, langid!("fr"));
+        assert_eq!(section.language_alias, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/hello/nested/");
     }
 
@@ -336,7 +380,10 @@ Bonjour le monde"#
     #[test]
     fn can_make_links_to_translated_sections_without_double_trailing_slash() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        let mut fr = LocaleOptions::default();
+        fr.language_alias = "fr".to_string();
+        config.languages.insert(langid!("fr"), fr);
+
         let content = r#"
 +++
 +++
@@ -346,14 +393,18 @@ Bonjour le monde"#
             Section::parse(Path::new("content/_index.fr.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.lang, langid!("fr"));
+        assert_eq!(section.language_alias, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/");
     }
 
     #[test]
     fn can_make_links_to_translated_subsections_with_trailing_slash() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        let mut fr = LocaleOptions::default();
+        fr.language_alias = "fr".to_string();
+        config.languages.insert(langid!("fr"), fr);
+
         let content = r#"
 +++
 +++
@@ -367,7 +418,8 @@ Bonjour le monde"#
         );
         assert!(res.is_ok());
         let section = res.unwrap();
-        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.lang, langid!("fr"));
+        assert_eq!(section.language_alias, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
     }
 }

@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use rayon::prelude::*;
 use serde_derive::Serialize;
 use tera::Context;
+use unic_langid::LanguageIdentifier;
 
 use crate::Site;
 use errors::Result;
@@ -29,7 +30,7 @@ impl<'a> SerializedFeedTaxonomyItem<'a> {
 pub fn render_feed(
     site: &Site,
     all_pages: Vec<&Page>,
-    lang: &str,
+    lang: &LanguageIdentifier,
     base_path: Option<&PathBuf>,
     additional_context_fn: impl Fn(Context) -> Context,
 ) -> Result<Option<String>> {
@@ -54,13 +55,24 @@ pub fn render_feed(
     );
     let library = site.library.read().unwrap();
     // limit to the last n elements if the limit is set; otherwise use all.
-    let num_entries = site.config.feed_limit.unwrap_or_else(|| pages.len());
+    let num_entries = if lang == &site.config.default_language {
+        site.config.default_language_options.feed_limit
+    } else {
+        site.config.languages.get(lang).expect("language is present").feed_limit
+    }
+    .expect("feed_limit is set")
+    .unwrap_or_else(|| pages.len());
+
     let p =
         pages.iter().take(num_entries).map(|x| x.to_serialized_basic(&library)).collect::<Vec<_>>();
 
     context.insert("pages", &p);
-    context.insert("config", &site.config);
+    context.insert("config", &site.config.get_localized(lang).expect("language is present"));
     context.insert("lang", lang);
+    context.insert(
+        "language_alias",
+        &site.config.get_language_alias(lang).expect("language_alias is present"),
+    );
 
     let feed_filename = &site.config.feed_filename;
     let feed_url = if let Some(ref base) = base_path {
@@ -73,7 +85,8 @@ pub fn render_feed(
 
     context = additional_context_fn(context);
 
-    let feed = render_template(feed_filename, &site.tera, context, &site.config.theme)?;
+    let tera = site.localized_tera.get(lang).expect("`lang` in `localized_tera`");
+    let feed = render_template(feed_filename, tera, context, &site.config.theme)?;
 
     Ok(Some(feed))
 }

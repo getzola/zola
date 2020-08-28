@@ -13,6 +13,7 @@ serde = "1"
 serde_derive = "1"
 regex = "1"
 lazy_static = "1"
+unic-langid = { version = "0.9", features = ["serde", "macros"] }
 
 front_matter = { path = "../front_matter" }
 config = { path = "../config" }

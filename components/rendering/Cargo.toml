@@ -15,6 +15,7 @@ pest = "2"
 pest_derive = "2"
 regex = "1"
 lazy_static = "1"
+unic-langid = { version = "0.9", features = ["serde", "macros"] }
 
 errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }

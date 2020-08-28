@@ -4,6 +4,7 @@ use std::path::Path;
 
 use serde_derive::Serialize;
 use tera::{Map, Value};
+use unic_langid::LanguageIdentifier;
 
 use crate::content::{Page, Section};
 use crate::library::Library;
@@ -11,7 +12,8 @@ use rendering::Heading;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TranslatedContent<'a> {
-    lang: &'a str,
+    lang: &'a LanguageIdentifier,
+    language_alias: &'a str,
     permalink: &'a str,
     title: &'a Option<String>,
     /// The path to the markdown file; useful for retrieving the full page through
@@ -28,6 +30,7 @@ impl<'a> TranslatedContent<'a> {
             let other = library.get_section_by_key(*key);
             translations.push(TranslatedContent {
                 lang: &other.lang,
+                language_alias: &other.language_alias,
                 permalink: &other.permalink,
                 title: &other.meta.title,
                 path: &other.file.path,
@@ -44,6 +47,7 @@ impl<'a> TranslatedContent<'a> {
             let other = library.get_page_by_key(*key);
             translations.push(TranslatedContent {
                 lang: &other.lang,
+                language_alias: &other.language_alias,
                 permalink: &other.permalink,
                 title: &other.meta.title,
                 path: &other.file.path,
@@ -78,7 +82,8 @@ pub struct SerializingPage<'a> {
     reading_time: Option<usize>,
     assets: &'a [String],
     draft: bool,
-    lang: &'a str,
+    lang: &'a LanguageIdentifier,
+    language_alias: &'a str,
     lighter: Option<Box<SerializingPage<'a>>>,
     heavier: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
@@ -142,6 +147,7 @@ impl<'a> SerializingPage<'a> {
             assets: &page.serialized_assets,
             draft: page.is_draft(),
             lang: &page.lang,
+            language_alias: &page.language_alias,
             lighter,
             heavier,
             earlier,
@@ -204,6 +210,7 @@ impl<'a> SerializingPage<'a> {
             assets: &page.serialized_assets,
             draft: page.is_draft(),
             lang: &page.lang,
+            language_alias: &page.language_alias,
             lighter: None,
             heavier: None,
             earlier: None,
@@ -227,7 +234,8 @@ pub struct SerializingSection<'a> {
     toc: &'a [Heading],
     word_count: Option<usize>,
     reading_time: Option<usize>,
-    lang: &'a str,
+    lang: &'a LanguageIdentifier,
+    language_alias: &'a str,
     assets: &'a [String],
     pages: Vec<SerializingPage<'a>>,
     subsections: Vec<&'a str>,
@@ -269,6 +277,7 @@ impl<'a> SerializingSection<'a> {
             reading_time: section.reading_time,
             assets: &section.serialized_assets,
             lang: &section.lang,
+            language_alias: &section.language_alias,
             pages,
             subsections,
             translations,
@@ -306,6 +315,7 @@ impl<'a> SerializingSection<'a> {
             reading_time: section.reading_time,
             assets: &section.serialized_assets,
             lang: &section.lang,
+            language_alias: &section.language_alias,
             pages: vec![],
             subsections,
             translations,

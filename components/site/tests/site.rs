@@ -529,12 +529,13 @@ fn can_build_site_with_pagination_for_index() {
 #[test]
 fn can_build_site_with_pagination_for_taxonomy() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
-        site.config.taxonomies.push(Taxonomy {
+        site.config.default_language_options.taxonomies.push(Taxonomy {
             name: "tags".to_string(),
             paginate_by: Some(2),
             paginate_path: None,
             feed: true,
             lang: site.config.default_language.clone(),
+            language_alias: site.config.default_language_options.language_alias.clone(),
         });
         site.load().unwrap();
         {
@@ -635,7 +636,7 @@ fn can_build_feeds() {
 #[test]
 fn can_build_search_index() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
-        site.config.build_search_index = true;
+        site.config.default_language_options.build_search_index = Some(true);
         (site, true)
     });
 

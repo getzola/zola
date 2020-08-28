@@ -11,6 +11,7 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 use toml::Value as Toml;
+use unic_langid::{langid, LanguageIdentifier};
 
 use crate::highlighting::THEME_SET;
 use crate::theme::Theme;
@@ -27,6 +28,21 @@ pub enum Mode {
     Check,
 }
 
+/// Configuration with language-specific options set for a given language and translations merged
+/// with the default values.
+///
+/// Instead of [Config], this should be exposed to rendering contexts.
+///
+/// It's a newtype struct wrapping [Config], where `0.default_language_options` contains the
+/// settings for `0.lang`.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct LocalizedConfig(pub Config);
+
+/// Contains the deserialized `config.toml`.
+///
+/// It will be processed into a [LocalizedConfig] to create a transparent and backwards-compatible
+/// localization for templates.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -35,24 +51,38 @@ pub struct Config {
 
     /// Theme to use
     pub theme: Option<String>,
-    /// Title of the site. Defaults to None
-    pub title: Option<String>,
-    /// Description of the site
-    pub description: Option<String>,
 
-    /// The language used in the site. Defaults to "en"
-    pub default_language: String,
-    /// The list of supported languages outside of the default one
-    pub languages: Vec<languages::Language>,
+    /// The language that this config applies to
+    ///
+    /// This is done to make [LocalizedConfig] self-contained. For [Config], this is always equal
+    /// to `default_language`.
+    #[serde(skip_deserializing)]
+    pub lang: LanguageIdentifier,
 
-    /// Languages list and translated strings
+    /// The primary/default language of the site
     ///
-    /// The `String` key of `HashMap` is a language name, the value should be toml crate `Table`
-    /// with String key representing term and value another `String` representing its translation.
+    /// MUST be a valid language, specified using the [BCP 47] syntax. To retain backwards
+    /// compatibility with other language naming systems, the [language_alias] option was added.
+    pub default_language: LanguageIdentifier,
+    /// Site-wide defaults for langauge-specific settings
     ///
-    /// The attribute is intentionally not public, use `get_translation()` method for translating
-    /// key into different language.
-    translations: HashMap<String, languages::TranslateTerm>,
+    /// This is flattened when serializing/deserializing, i.e. its fields will appear as if they
+    /// were at the top level alongside base_url. These values are used for the default language,
+    /// and other languages will fall back to these values if they are not overridden in
+    /// `languages`
+    #[serde(flatten, default = "languages::LocaleOptions::default_for_default_language")]
+    pub default_language_options: languages::LocaleOptions,
+
+    /// Language-specific options for translations of this site
+    ///
+    /// The key of the TOML table (represented as a HashMap in Rust) is a valid language code, and
+    /// its values can be used for overriding some of the site-wide settings.
+    ///
+    /// See [LocaleOptions] for what options can be specified here and what their default values
+    /// are.
+    ///
+    /// Having an entry for the default language is treated as an error.
+    pub languages: HashMap<LanguageIdentifier, languages::LocaleOptions>,
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
@@ -60,24 +90,18 @@ pub struct Config {
     /// Defaults to "base16-ocean-dark"
     pub highlight_theme: String,
 
-    /// Whether to generate a feed. Defaults to false.
-    pub generate_feed: bool,
-    /// The number of articles to include in the feed. Defaults to including all items.
-    pub feed_limit: Option<usize>,
     /// The filename to use for feeds. Used to find the template, too.
     /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
     pub feed_filename: String,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
 
-    pub taxonomies: Vec<taxonomies::Taxonomy>,
-
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
     /// Whether to minify the html output
     pub minify_html: bool,
     /// Whether to build the search index for the content
-    pub build_search_index: bool,
+
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
     /// Had to remove the PartialEq derive because GlobSet does not implement it. No impact
     /// because it's unused anyway (who wants to sort Configs?).
@@ -100,16 +124,10 @@ pub struct Config {
 
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
     pub slugify: slugify::Slugify,
-
-    /// The search config, telling what to include in the search index
-    pub search: search::Search,
-
-    /// All user params set in [extra] in the config
-    pub extra: HashMap<String, Toml>,
 }
 
 impl Config {
-    /// Parses a string containing TOML to our Config struct
+    /// Parses a string containing TOML to our Config struct and does sanity checking
     /// Any extra parameter will end up in the extra field
     pub fn parse(content: &str) -> Result<Config> {
         let mut config: Config = match toml::from_str(content) {
@@ -125,8 +143,26 @@ impl Config {
             bail!("Highlight theme {} not available", config.highlight_theme)
         }
 
-        if config.languages.iter().any(|l| l.code == config.default_language) {
-            bail!("Default language `{}` should not appear both in `config.default_language` and `config.languages`", config.default_language)
+        config.lang = config.default_language.clone();
+
+        // Find duplicate language aliases/names by first extracting them to a vector while also
+        // setting aliases.
+        let mut language_names: Vec<String> = Vec::new();
+
+        if config.default_language_options.language_alias.is_empty() {
+            config.default_language_options.language_alias = config.default_language.to_string();
+        }
+        language_names.push(config.default_language_options.language_alias.clone());
+        for (identifier, options) in config.languages.iter_mut() {
+            if options.language_alias == "" {
+                options.language_alias = identifier.to_string();
+            }
+            language_names.push(options.language_alias.clone());
+        }
+        // https://stackoverflow.com/a/46766782
+        // TODO: actually print which identifier/alias is causing a problem
+        if (1..language_names.len()).any(|i| language_names[i..].contains(&language_names[i - 1])) {
+            bail!("A language code or alias should not appear twice in config.toml");
         }
 
         if !config.ignored_content.is_empty() {
@@ -147,11 +183,29 @@ impl Config {
                 Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
         }
 
-        for taxonomy in config.taxonomies.iter_mut() {
-            if taxonomy.lang.is_empty() {
-                taxonomy.lang = config.default_language.clone();
+        for taxonomy in config.default_language_options.taxonomies.iter_mut() {
+            taxonomy.lang = config.default_language.clone();
+            taxonomy.language_alias = config.default_language_options.language_alias.clone();
+        }
+        for (identifier, options) in config.languages.iter_mut() {
+            for taxonomy in options.taxonomies.iter_mut() {
+                taxonomy.lang = identifier.clone();
+                taxonomy.language_alias = options.language_alias.clone();
             }
         }
+
+        // FIXME: until serde lets us set a different default for the flattened
+        // `self.default_language_options`, we set fields with None value to their default vaues
+        // here.
+        let fallback = languages::LocaleOptions::default_for_default_lang();
+        config.default_language_options.generate_feed =
+            config.default_language_options.generate_feed.or(fallback.generate_feed);
+        config.default_language_options.feed_limit =
+            config.default_language_options.feed_limit.or(fallback.feed_limit);
+        config.default_language_options.build_search_index =
+            config.default_language_options.build_search_index.or(fallback.build_search_index);
+        config.default_language_options.search =
+            config.default_language_options.search.or(fallback.search);
 
         // TODO: re-enable once it's a bit more tested
         config.minify_html = false;
@@ -210,14 +264,30 @@ impl Config {
     }
 
     /// Merges the extra data from the theme with the config extra data
+    ///
+    /// TODO: language negotiation (variants and stuff)
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
-        for (key, val) in &theme.extra {
-            if !self.extra.contains_key(key) {
-                // The key is not overriden in site config, insert it
-                self.extra.insert(key.to_string(), val.clone());
-                continue;
+        if let Some(t_identifier) = theme.default_language.clone() {
+            // merge for theme.default_language
+            if t_identifier == self.default_language {
+                merge(
+                    &mut self.default_language_options.extra,
+                    &theme.default_language_options.extra,
+                )?;
+            } else if let Some(options) = self.languages.get_mut(&t_identifier) {
+                merge(&mut options.extra, &theme.default_language_options.extra)?;
             }
-            merge(self.extra.get_mut(key).unwrap(), val)?;
+        } else {
+            merge(&mut self.default_language_options.extra, &theme.default_language_options.extra)?;
+        }
+
+        // merge other languages in theme.toml
+        for (t_identifier, t_options) in theme.languages.iter() {
+            if t_identifier == &self.default_language {
+                merge(&mut self.default_language_options.extra, &t_options.extra)?;
+            } else if let Some(c_options) = self.languages.get_mut(t_identifier) {
+                merge(&mut c_options.extra, &t_options.extra)?;
+            }
         }
         Ok(())
     }
@@ -229,14 +299,58 @@ impl Config {
         self.add_theme_extra(&theme)
     }
 
+    /// Add fallback values for missing fields in language options
+    ///
+    /// Should be called after merging with theme.
+    ///
+    /// How each field is handled during merging is described in [LocaleOptions]'s documentation.
+    pub fn merge_languages_with_default(&mut self) -> Result<()> {
+        let def_o = &self.default_language_options;
+        for (_, opt) in self.languages.iter_mut() {
+            opt.generate_feed = opt.generate_feed.or(def_o.generate_feed);
+            opt.feed_limit = opt.feed_limit.or(def_o.feed_limit);
+            opt.build_search_index = opt.build_search_index.or(def_o.build_search_index);
+            opt.search = opt.search.clone().or_else(|| def_o.search.clone());
+            merge(&mut opt.extra, &def_o.extra)?;
+        }
+        Ok(())
+    }
+
     /// Is this site using i18n?
     pub fn is_multilingual(&self) -> bool {
         !self.languages.is_empty()
     }
 
+    /// Return the language identifier of an additional language by its alias
+    pub fn get_language_identifier<S: AsRef<str>>(&self, name: S) -> Option<LanguageIdentifier> {
+        self.languages.iter().find_map(|(i, o)| {
+            if o.language_alias == name.as_ref() {
+                Some(i.clone())
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Return the alias of a language by its identifier
+    pub fn get_language_alias<L: AsRef<LanguageIdentifier>>(&self, lang: L) -> Option<&str> {
+        if lang.as_ref() == &self.lang {
+            Some(self.default_language_options.language_alias.as_str())
+        } else if let Some(o) = self.languages.get(lang.as_ref()) {
+            Some(o.language_alias.as_str())
+        } else {
+            None
+        }
+    }
+
     /// Returns the codes of all additional languages
-    pub fn languages_codes(&self) -> Vec<&str> {
-        self.languages.iter().map(|l| l.code.as_ref()).collect()
+    pub fn languages_codes(&self) -> Vec<&LanguageIdentifier> {
+        self.languages.keys().collect()
+    }
+
+    /// Returns the aliases of all additional languages
+    pub fn language_aliases(&self) -> Vec<&str> {
+        self.languages.iter().map(|(_, o)| &*o.language_alias).collect()
     }
 
     pub fn is_in_build_mode(&self) -> bool {
@@ -262,26 +376,39 @@ impl Config {
         self.highlight_code = false;
     }
 
-    pub fn get_translation<S: AsRef<str>>(&self, lang: S, key: S) -> Result<String> {
-        let terms = self.translations.get(lang.as_ref()).ok_or_else(|| {
-            Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
-        })?;
-
-        terms
-            .get(key.as_ref())
-            .ok_or_else(|| {
-                Error::msg(format!(
-                    "Translation key '{}' for language '{}' is missing",
-                    key.as_ref(),
-                    lang.as_ref()
-                ))
-            })
-            .map(|term| term.to_string())
+    pub fn get_localized(&self, lang: &LanguageIdentifier) -> Result<LocalizedConfig> {
+        if lang == &self.default_language {
+            Ok(LocalizedConfig(self.clone()))
+        } else if self.languages.contains_key(lang) {
+            let mut languages = self.languages.clone();
+            let (_, default_language_options) = languages.remove_entry(&lang).unwrap();
+            languages.insert(self.default_language.clone(), self.default_language_options.clone());
+            Ok(LocalizedConfig(Config {
+                lang: lang.clone(),
+                default_language_options,
+                languages,
+                ..self.clone()
+            }))
+        } else {
+            bail!("`{}` was not found in `config.languages`", lang);
+        }
     }
 }
 
-// merge TOML data that can be a table, or anything else
-pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
+/// Merge HashMaps of Toml values
+pub fn merge(into: &mut HashMap<String, Toml>, from: &HashMap<String, Toml>) -> Result<()> {
+    for (key, val) in from {
+        if let Some(into_val) = into.get_mut(key) {
+            merge_table(into_val, val)?;
+        } else {
+            into.insert(key.to_string(), val.clone());
+        }
+    }
+    Ok(())
+}
+
+/// Merge TOML data that can be a table, or anything else
+pub fn merge_table(into: &mut Toml, from: &Toml) -> Result<()> {
     match (from.is_table(), into.is_table()) {
         (false, false) => {
             // These are not tables so we have nothing to merge
@@ -290,14 +417,12 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
         (true, true) => {
             // Recursively merge these tables
             let into_table = into.as_table_mut().unwrap();
-            for (key, val) in from.as_table().unwrap() {
-                if !into_table.contains_key(key) {
-                    // An entry was missing in the first table, insert it
-                    into_table.insert(key.to_string(), val.clone());
-                    continue;
+            for (key, from_val) in from.as_table().unwrap() {
+                if let Some(into_val) = into_table.get_mut(key) {
+                    merge_table(into_val, from_val)?;
+                } else {
+                    into_table.insert(key.to_string(), from_val.clone());
                 }
-                // Two entries to compare, recurse
-                merge(into_table.get_mut(key).unwrap(), val)?;
             }
             Ok(())
         }
@@ -312,32 +437,68 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             base_url: DEFAULT_BASE_URL.to_string(),
-            title: None,
-            description: None,
             theme: None,
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
-            default_language: "en".to_string(),
-            languages: Vec::new(),
-            generate_feed: false,
-            feed_limit: None,
+            lang: langid!("en"),
+            default_language: langid!("en"),
+            default_language_options: languages::LocaleOptions {
+                language_alias: "en".to_string(),
+                ..languages::LocaleOptions::default_for_default_lang()
+            },
+            languages: HashMap::new(),
             feed_filename: "atom.xml".to_string(),
             hard_link_static: false,
-            taxonomies: Vec::new(),
             compile_sass: false,
             minify_html: false,
             mode: Mode::Build,
-            build_search_index: false,
             ignored_content: Vec::new(),
             ignored_content_globset: None,
-            translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
-            search: search::Search::default(),
-            extra: HashMap::new(),
         }
+    }
+}
+
+impl LocalizedConfig {
+    /// Get an `[extra]` field for a specific language
+    ///
+    /// Only for backwards compatibility, since the config.extra values automatically get
+    /// translated when LocalizedConfig is created.
+    // #[deprecated]
+    pub fn get_translation<S: AsRef<str>>(
+        &self,
+        lang: LanguageIdentifier,
+        key: S,
+    ) -> Result<&Toml> {
+        let terms = if self.0.lang == lang {
+            &self.0.default_language_options.extra
+        } else {
+            &self
+                .0
+                .languages
+                .get(lang.as_ref())
+                .ok_or_else(|| {
+                    Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
+                })?
+                .extra
+        };
+
+        terms.get(key.as_ref()).ok_or_else(|| {
+            Error::msg(format!(
+                "Translation key '{}' for language '{}' is missing",
+                key.as_ref(),
+                lang.as_ref()
+            ))
+        })
+    }
+}
+
+impl Default for LocalizedConfig {
+    fn default() -> Self {
+        LocalizedConfig(Config::default())
     }
 }
 
@@ -354,7 +515,7 @@ base_url = "https://replace-this-with-your-url.com"
         "#;
 
         let config = Config::parse(config).unwrap();
-        assert_eq!(config.title.unwrap(), "My site".to_string());
+        assert_eq!(config.default_language_options.title.unwrap(), "My site".to_string());
     }
 
     #[test]
@@ -391,7 +552,10 @@ hello = "world"
 
         let config = Config::parse(config);
         assert!(config.is_ok());
-        assert_eq!(config.unwrap().extra.get("hello").unwrap().as_str().unwrap(), "world");
+        assert_eq!(
+            config.unwrap().default_language_options.extra.get("hello").unwrap().as_str().unwrap(),
+            "world"
+        );
     }
 
     #[test]
@@ -464,7 +628,7 @@ truc = "default"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         assert!(config.add_theme_extra(&theme).is_ok());
-        let extra = config.extra;
+        let extra = config.default_language_options.extra;
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
         assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
@@ -480,39 +644,180 @@ truc = "default"
         );
     }
 
-    const CONFIG_TRANSLATION: &str = r#"
+    const CONFIG_MULTILINGUAL: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 
-[translations]
-[translations.fr]
+[extra]
 title = "Un titre"
+foo = "bar"
 
-[translations.en]
+[languages.en.extra]
 title = "A title"
         "#;
 
     #[test]
-    fn can_use_present_translation() {
-        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
-        assert_eq!(config.get_translation("fr", "title").unwrap(), "Un titre");
-        assert_eq!(config.get_translation("en", "title").unwrap(), "A title");
+    fn can_use_present_translation_legacy() {
+        let config =
+            Config::parse(CONFIG_MULTILINGUAL).unwrap().get_localized(&langid!("fr")).unwrap();
+        assert_eq!(
+            config.get_translation(langid!("fr"), "title").unwrap().as_str().unwrap(),
+            "Un titre"
+        );
+        assert_eq!(
+            config.get_translation(langid!("en"), "title").unwrap().as_str().unwrap(),
+            "A title"
+        );
     }
 
     #[test]
-    fn error_on_absent_translation_lang() {
-        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
-        let error = config.get_translation("absent", "key").unwrap_err();
+    fn error_on_absent_translation_lang_legacy() {
+        let config =
+            Config::parse(CONFIG_MULTILINGUAL).unwrap().get_localized(&langid!("fr")).unwrap();
+        let error = config.get_translation(langid!("absent"), "key").unwrap_err();
 
         assert_eq!("Translation for language 'absent' is missing", format!("{}", error));
     }
 
     #[test]
-    fn error_on_absent_translation_key() {
-        let config = Config::parse(CONFIG_TRANSLATION).unwrap();
-        let error = config.get_translation("en", "absent").unwrap_err();
+    fn error_on_absent_translation_key_legacy() {
+        let config =
+            Config::parse(CONFIG_MULTILINGUAL).unwrap().get_localized(&langid!("fr")).unwrap();
+        let error = config.get_translation(langid!("en"), "qux").unwrap_err();
 
-        assert_eq!("Translation key 'absent' for language 'en' is missing", format!("{}", error));
+        assert_eq!("Translation key 'qux' for language 'en' is missing", format!("{}", error));
+    }
+
+    #[test]
+    fn can_fall_back_to_default_language() {
+        let mut config = Config::parse(CONFIG_MULTILINGUAL).unwrap();
+        let res = config.merge_languages_with_default();
+        assert!(res.is_ok());
+        let config = config.get_localized(&langid!("en")).unwrap();
+        assert_eq!(config.get_translation(langid!("en"), "foo").unwrap().as_str().unwrap(), "bar");
+    }
+
+    const THEME_MULTILINGUAL: &str = r#"
+default_language = "en"
+
+[extra]
+foo = "baz"
+bar = "qux"
+
+[languages.fr.extra]
+baz = "qux"
+
+[languages.de.extra]
+title = "Ein Titel"
+        "#;
+
+    #[test]
+    fn can_merge_multilingual_config_and_multilingual_theme() {
+        let mut config = Config::parse(CONFIG_MULTILINGUAL).unwrap();
+        let theme = Theme::parse(THEME_MULTILINGUAL).unwrap();
+        let res = config.add_theme_extra(&theme);
+        let en = config.languages.get(&langid!("en")).unwrap();
+
+        assert!(
+            res.is_ok(),
+            "Should merge a valid config.toml and theme.toml given there are no type collisions"
+        );
+        assert_eq!(
+            "bar",
+            config.default_language_options.extra.get("foo").unwrap().as_str().unwrap()
+        );
+        assert!(config.default_language_options.extra.get("bar").is_none());
+        assert_eq!(
+            "qux",
+            config.default_language_options.extra.get("baz").unwrap().as_str().unwrap()
+        );
+        assert_eq!("baz", en.extra.get("foo").unwrap().as_str().unwrap());
+        assert_eq!("qux", en.extra.get("bar").unwrap().as_str().unwrap());
+        assert!(config.languages.get(&langid!("en")).unwrap().extra.get("baz").is_none());
+        assert!(
+            config.languages.get(&langid!("de")).is_none(),
+            "A theme should not add new languages to config.languages"
+        );
+
+        // Check if language fallback is done properly
+        let res = config.merge_languages_with_default();
+        assert!(res.is_ok(), "Can merge languages with default");
+        let lc = config.get_localized(&langid!("en")).unwrap();
+        assert_eq!(langid!("en"), lc.0.lang);
+        assert_eq!(
+            "baz",
+            lc.0.default_language_options.extra.get("foo").unwrap().as_str().unwrap()
+        );
+        assert_eq!(
+            "qux",
+            lc.0.default_language_options.extra.get("bar").unwrap().as_str().unwrap()
+        );
+        assert_eq!(
+            "qux",
+            lc.0.default_language_options.extra.get("baz").unwrap().as_str().unwrap()
+        );
+
+        assert!(lc.0.languages.contains_key(&langid!("fr")));
+    }
+
+    #[test]
+    fn can_merge_multilingual_config_and_unlocalized_theme() {
+        let theme_str = r#"
+[extra]
+foo = "baz"
+bar = "qux"
+    "#;
+        let mut config = Config::parse(CONFIG_MULTILINGUAL).unwrap();
+        let theme = Theme::parse(theme_str).unwrap();
+        let res = config.add_theme_extra(&theme);
+
+        // An unlocalized theme's (without a default_language field) language should not be treated
+        // as `en`, but rather as `default_language`.
+        assert!(
+            res.is_ok(),
+            "Should merge a valid config.toml and theme.toml given there are no type collisions"
+        );
+        assert_eq!(
+            "bar",
+            config.default_language_options.extra.get("foo").unwrap().as_str().unwrap()
+        );
+        assert_eq!(
+            "qux",
+            config.default_language_options.extra.get("bar").unwrap().as_str().unwrap(),
+            "Monolingual theme should merge with default_language_option"
+        );
+        assert!(
+            config.languages.get(&langid!("en")).unwrap().extra.get("foo").is_none(),
+            "Monolingual theme should only merge with default_language_options"
+        );
+    }
+
+    #[test]
+    fn can_merge_unlocalized_config_and_multilingual_theme() {
+        let config_str = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+
+[extra]
+foo = "bar"
+    "#;
+        let mut config = Config::parse(config_str).unwrap();
+        let theme = Theme::parse(THEME_MULTILINGUAL).unwrap();
+        let res = config.add_theme_extra(&theme);
+
+        assert!(res.is_ok(), "Should merge an unlocalized config with a multilingual theme");
+        assert_eq!(
+            "bar",
+            config.default_language_options.extra.get("foo").unwrap().as_str().unwrap()
+        );
+        assert_eq!(
+            "qux",
+            config.default_language_options.extra.get("bar").unwrap().as_str().unwrap()
+        );
+        assert!(
+            config.default_language_options.extra.get("baz").is_none(),
+            "Unlocalized `config.extra` should only be merged with `theme.extra`"
+        );
     }
 
     #[test]
@@ -622,18 +927,36 @@ anchors = "off"
     }
 
     #[test]
-    fn error_on_language_set_twice() {
+    fn error_on_language_code_set_twice() {
         let config_str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
-languages = [
-    { code = "fr" },
-    { code = "en" },
-]
+
+languages = { fr = {}, en = {} }
         "#;
         let config = Config::parse(config_str);
         let err = config.unwrap_err();
-        assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
+        assert_eq!(
+            "A language code or alias should not appear twice in config.toml",
+            format!("{}", err)
+        );
+    }
+
+    #[test]
+    fn error_on_language_alias_set_twice() {
+        let config_str = r#"
+base_url = "https://remplace-par-ton-url.fr"
+default_language = "fr-FR"
+language_alias = "fr"
+
+languages = { fr-CA = { language_alias = "fr" } }
+        "#;
+        let config = Config::parse(config_str);
+        let err = config.unwrap_err();
+        assert_eq!(
+            "A language code or alias should not appear twice in config.toml",
+            format!("{}", err)
+        );
     }
 
     #[test]

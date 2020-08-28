@@ -131,7 +131,7 @@ fn render_shortcode(
     // someone wants to include that comment in their content. This behaviour is unwanted in when
     // rendering markdown shortcodes.
     if template_name.ends_with(".html") {
-        Ok(res.replace('\n', "<!--\\n-->").to_string())
+        Ok(res.replace('\n', "<!--\\n-->"))
     } else {
         Ok(res.to_string())
     }
@@ -231,6 +231,7 @@ mod tests {
     use config::Config;
     use front_matter::InsertAnchor;
     use tera::Tera;
+    use unic_langid::langid;
 
     macro_rules! assert_lex_rule {
         ($rule: expr, $input: expr) => {
@@ -249,7 +250,8 @@ mod tests {
     fn render_shortcodes(code: &str, tera: &Tera) -> String {
         let config = Config::default();
         let permalinks = HashMap::new();
-        let context = RenderContext::new(&tera, &config, "", &permalinks, InsertAnchor::None);
+        let en = langid!("en");
+        let context = RenderContext::new(&tera, &config, "", &permalinks, InsertAnchor::None, &en);
         super::render_shortcodes(code, &context).unwrap()
     }
 

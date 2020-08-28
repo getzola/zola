@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use tera::{Context, Tera};
+use unic_langid::LanguageIdentifier;
+
 use config::Config;
 use front_matter::InsertAnchor;
-use tera::{Context, Tera};
 
 /// All the information from the zola site that is needed to render HTML from markdown
 #[derive(Debug)]
@@ -13,6 +15,7 @@ pub struct RenderContext<'a> {
     pub current_page_permalink: &'a str,
     pub permalinks: &'a HashMap<String, String>,
     pub insert_anchor: InsertAnchor,
+    pub lang: &'a LanguageIdentifier,
 }
 
 impl<'a> RenderContext<'a> {
@@ -22,9 +25,10 @@ impl<'a> RenderContext<'a> {
         current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
+        lang: &'a LanguageIdentifier,
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
-        tera_context.insert("config", config);
+        tera_context.insert("config", &config.get_localized(lang).expect("`lang` in config"));
         RenderContext {
             tera,
             tera_context,
@@ -32,6 +36,7 @@ impl<'a> RenderContext<'a> {
             permalinks,
             insert_anchor,
             config,
+            lang,
         }
     }
 }

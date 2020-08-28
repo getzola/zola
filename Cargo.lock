@@ -270,6 +270,7 @@ dependencies = [
  "serde_derive",
  "syntect",
  "toml",
+ "unic-langid",
  "utils",
 ]
 
@@ -1118,6 +1119,7 @@ dependencies = [
  "tempfile",
  "tera",
  "toml",
+ "unic-langid",
  "utils",
 ]
 
@@ -1927,6 +1929,7 @@ dependencies = [
  "syntect",
  "templates",
  "tera",
+ "unic-langid",
  "utils",
 ]
 
@@ -2088,6 +2091,7 @@ dependencies = [
  "errors",
  "lazy_static",
  "library",
+ "unic-langid",
 ]
 
 [[package]]
@@ -2186,6 +2190,7 @@ dependencies = [
  "tempfile",
  "templates",
  "tera",
+ "unic-langid",
  "utils",
 ]
 
@@ -2362,6 +2367,7 @@ dependencies = [
  "svg_metadata",
  "tera",
  "toml",
+ "unic-langid",
  "url",
  "utils",
 ]
@@ -2447,6 +2453,12 @@ dependencies = [
  "wasi 0.10.0+wasi-snapshot-preview1",
  "winapi 0.3.9",
 ]
+
+[[package]]
+name = "tinystr"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29738eedb4388d9ea620eeab9384884fc3f06f586a2eddb56bedc5885126c7c1"
 
 [[package]]
 name = "tinyvec"
@@ -2583,6 +2595,50 @@ name = "unic-common"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80d7ff825a6a654ee85a63e80f92f054f904f21e7d12da4e22f9834a4aaa35bc"
+
+[[package]]
+name = "unic-langid"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73328fcd730a030bdb19ddf23e192187a6b01cd98be6d3140622a89129459ce5"
+dependencies = [
+ "unic-langid-impl",
+ "unic-langid-macros",
+]
+
+[[package]]
+name = "unic-langid-impl"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a4a8eeaf0494862c1404c95ec2f4c33a2acff5076f64314b465e3ddae1b934d"
+dependencies = [
+ "serde",
+ "tinystr",
+]
+
+[[package]]
+name = "unic-langid-macros"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18f980d6d87e8805f2836d64b4138cc95aa7986fa63b1f51f67d5fbff64dd6e5"
+dependencies = [
+ "proc-macro-hack",
+ "tinystr",
+ "unic-langid-impl",
+ "unic-langid-macros-impl",
+]
+
+[[package]]
+name = "unic-langid-macros-impl"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29396ffd97e27574c3e01368b1a64267d3064969e4848e2e130ff668be9daa9f"
+dependencies = [
+ "proc-macro-hack",
+ "quote",
+ "syn",
+ "unic-langid-impl",
+]
 
 [[package]]
 name = "unic-segment"
