@@ -50,14 +50,16 @@ stages:
             condition: eq( variables['Agent.OS'], 'Windows_NT' )
             displayName: Check documentation build windows
 
-          - script: |
-              cd docs && ../target/debug/zola check
-            condition: ne( variables['Agent.OS'], 'Windows_NT' )
-            displayName: Check documentation links
-          - script: |
-              cd docs && ..\target\debug\zola check
-            condition: eq( variables['Agent.OS'], 'Windows_NT' )
-            displayName: Check documentation links windows
+          # Comment out the following lines to allow documentation links checking
+          # This is currently not enable because of link_checker lack of stability
+          # - script: |
+          #     cd docs && ../target/debug/zola check
+          #   condition: ne( variables['Agent.OS'], 'Windows_NT' )
+          #   displayName: Check documentation links
+          # - script: |
+          #     cd docs && ..\target\debug\zola check
+          #   condition: eq( variables['Agent.OS'], 'Windows_NT' )
+          #   displayName: Check documentation links windows
 
 
   - stage: Release
