@@ -588,7 +588,6 @@ base_url = "example.com"
 
 [link_checker]
 nb_threads_per_cpu = 6
-]
         "#;
 
         let config = Config::parse(config_str).unwrap();
