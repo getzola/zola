@@ -285,7 +285,7 @@ mod tests {
         }
         create_dir(&dir).expect("Could not create test directory");
         assert_eq!(
-            &canonicalize(Path::new(&dir)).unwrap(),
+            canonicalize(Path::new(&dir)).unwrap().to_str().unwrap(),
             "\\\\?\\C:\\Users\\VssAdministrator\\AppData\\Local\\Temp\\new_project"
         );
 
