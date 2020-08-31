@@ -581,6 +581,21 @@ skip_anchor_prefixes = [
     }
 
     #[test]
+    fn link_checker_nb_threads_per_cpu() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[link_checker]
+nb_threads_per_cpu = 6
+]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.link_checker.nb_threads_per_cpu, 6);
+    }
+
+    #[test]
     fn link_checker_skip_prefixes() {
         let config_str = r#"
 title = "My site"

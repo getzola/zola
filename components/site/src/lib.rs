@@ -252,7 +252,10 @@ impl Site {
         link_checking::check_internal_links_with_anchors(&self)?;
 
         if self.config.is_in_check_mode() {
-            link_checking::check_external_links(&self)?;
+            link_checking::check_external_links(
+                &self,
+                self.config.link_checker.nb_threads_per_cpu,
+            )?;
         }
 
         Ok(())
