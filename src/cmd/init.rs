@@ -1,5 +1,6 @@
 use std::fs::{canonicalize, create_dir};
 use std::path::Path;
+use std::path::PathBuf;
 
 use errors::{bail, Result};
 use utils::fs::create_file;
@@ -24,6 +25,15 @@ build_search_index = %SEARCH%
 [extra]
 # Put all your custom variables here
 "#;
+
+// canonicalize(path) function on windows system returns a path with UNC.
+// Example: \\?\C:\Users\VssAdministrator\AppData\Local\Temp\new_project
+// More details on Universal Naming Convention (UNC):
+// https://en.wikipedia.org/wiki/Path_(computing)#Uniform_Naming_Convention
+// So the following const will be used to remove the network part of the UNC to display users a more common
+// path on windows systems.
+// This is a workaround until this issue https://github.com/rust-lang/rust/issues/42869 was fixed.
+const LOCAL_UNC: &str = "\\\\?\\";
 
 // Given a path, return true if it is a directory and it doesn't have any
 // non-hidden files, otherwise return false (path is assumed to exist)
@@ -54,6 +64,15 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
     }
 
     Ok(false)
+}
+
+// Remove the unc part of a windows path
+fn strip_unc(path: &PathBuf) -> String {
+    let path_to_refine = path.to_str().unwrap();
+    match path_to_refine.strip_prefix(LOCAL_UNC) {
+        Some(path_stripped) => path_stripped.to_string(),
+        None => path_to_refine.to_string(),
+    }
 }
 
 pub fn create_new_project(name: &str, force: bool) -> Result<()> {
@@ -90,7 +109,10 @@ pub fn create_new_project(name: &str, force: bool) -> Result<()> {
     populate(&path, compile_sass, &config)?;
 
     println!();
-    console::success(&format!("Done! Your site was created in {:?}", canonicalize(path).unwrap()));
+    console::success(&format!(
+        "Done! Your site was created in {}",
+        strip_unc(&canonicalize(path).unwrap())
+    ));
     println!();
     console::info(
         "Get started by moving into the directory and using the built-in server: `zola serve`",
@@ -120,6 +142,7 @@ mod tests {
     use super::*;
     use std::env::temp_dir;
     use std::fs::{create_dir, remove_dir, remove_dir_all};
+    use std::path::Path;
 
     #[test]
     fn init_empty_directory() {
@@ -222,6 +245,49 @@ mod tests {
         populate(&dir, false, "").expect("Could not populate zola directories");
 
         assert_eq!(false, dir.join("sass").exists());
+
+        remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn strip_unc_test() {
+        let mut dir = temp_dir();
+        dir.push("new_project");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        if cfg!(target_os = "windows") {
+            assert_eq!(
+                strip_unc(&canonicalize(Path::new(&dir)).unwrap()),
+                "C:\\Users\\VssAdministrator\\AppData\\Local\\Temp\\new_project"
+            )
+        } else {
+            assert_eq!(
+                strip_unc(&canonicalize(Path::new(&dir)).unwrap()),
+                canonicalize(Path::new(&dir)).unwrap().to_str().unwrap().to_string()
+            );
+        }
+
+        remove_dir_all(&dir).unwrap();
+    }
+
+    // If the following test fails it means that the canonicalize function is fixed and strip_unc
+    // function/workaround is not anymore required.
+    // See issue https://github.com/rust-lang/rust/issues/42869 as a reference.
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn strip_unc_required_test() {
+        let mut dir = temp_dir();
+        dir.push("new_project");
+        if dir.exists() {
+            remove_dir_all(&dir).expect("Could not free test directory");
+        }
+        create_dir(&dir).expect("Could not create test directory");
+        assert_eq!(
+            canonicalize(Path::new(&dir)).unwrap().to_str().unwrap(),
+            "\\\\?\\C:\\Users\\VssAdministrator\\AppData\\Local\\Temp\\new_project"
+        );
 
         remove_dir_all(&dir).unwrap();
     }
