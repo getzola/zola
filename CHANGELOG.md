@@ -20,7 +20,6 @@ binary size
 - Fix Sass trying to load folders starting with `_`, causing issues with frameworks
 - Update livereload.js version
 - Add Markdown-outputting shortcodes
-- Add `minify_html` option to `config.toml` to minify HTML automatically
 
 ## 0.11.0 (2020-05-25)
 
