@@ -150,6 +150,11 @@ impl<'a> SerializingPage<'a> {
         }
     }
 
+    /// currently only used in testing
+    pub fn get_title(&'a self) -> &'a Option<String> {
+        &self.title
+    }
+
     /// Same as from_page but does not fill sibling pages
     pub fn from_page_basic(page: &'a Page, library: Option<&'a Library>) -> Self {
         let mut year = None;

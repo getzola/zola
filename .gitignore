@@ -27,3 +27,4 @@ stage
 shell.nix
 # vim temporary files
 **/.*.sw*
+.swp

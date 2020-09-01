@@ -156,6 +156,7 @@ This will be sort all pages by their `weight` field, from lightest weight
 page gets `page.lighter` and `page.heavier` variables that contain the
 pages with lighter and heavier weights, respectively.
 
+### Reversed sorting
 When iterating through pages, you may wish to use the Tera `reverse` filter,
 which reverses the order of the pages.  For example, after using the `reverse` filter,
 pages sorted by weight will be sorted from lightest (at the top) to heaviest
@@ -163,6 +164,8 @@ pages sorted by weight will be sorted from lightest (at the top) to heaviest
 to newest (at the bottom).
 
 `reverse` has no effect on `page.later`/`page.earlier` or `page.heavier`/`page.lighter`.
+
+If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter. 
 
 ## Sorting subsections
 Sorting sections is a bit less flexible: sections can only be sorted by `weight`,

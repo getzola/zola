@@ -37,8 +37,6 @@ pub struct PageFrontMatter {
     /// Can't be an empty string if present
     pub path: Option<String>,
     pub taxonomies: HashMap<String, Vec<String>>,
-    /// Integer to use to order content. Lowest is at the bottom, highest first
-    pub order: Option<usize>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
     /// All aliases for that page. Zola will create HTML templates that will
@@ -112,10 +110,6 @@ impl PageFrontMatter {
         self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
     }
 
-    pub fn order(&self) -> usize {
-        self.order.unwrap()
-    }
-
     pub fn weight(&self) -> usize {
         self.weight.unwrap()
     }
@@ -134,7 +128,6 @@ impl Default for PageFrontMatter {
             slug: None,
             path: None,
             taxonomies: HashMap::new(),
-            order: None,
             weight: None,
             aliases: Vec::new(),
             in_search_index: true,

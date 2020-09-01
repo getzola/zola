@@ -132,7 +132,6 @@ include_content = true
 # become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
 
-
 # Optional translation object. Keys should be language codes.
 # Optional translation object. The key if present should be a language code.
 # Example:
