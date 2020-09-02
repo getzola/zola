@@ -36,8 +36,7 @@ impl<'a> FenceSettings<'a> {
             highlight_lines: Vec::new(),
         };
 
-        let mut fence_iter = FenceIter::new(fence_info);
-        while let Some(token) = fence_iter.next() {
+        for token in FenceIter::new(fence_info) {
             match token {
                 FenceToken::Language(lang) => me.language = Some(lang),
                 FenceToken::EnableLineNumbers => me.line_numbers = true,
@@ -65,6 +64,11 @@ impl<'a> FenceIter<'a> {
             split: fence_info.split(','),
         }
     }
+}
+
+impl<'a> Iterator for FenceIter<'a> {
+    type Item = FenceToken<'a>;
+
     fn next(&mut self) -> Option<FenceToken<'a>> {
         loop {
             let tok = self.split.next()?.trim();
