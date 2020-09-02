@@ -12,6 +12,7 @@ use config::Config;
 use image::GenericImageView;
 use library::{Library, Taxonomy};
 use utils::site::resolve_internal_link;
+use utils::slugs::{slugify_paths, SlugifyStrategy};
 
 #[macro_use]
 mod macros;
@@ -317,18 +318,20 @@ fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
 pub struct GetTaxonomyUrl {
     taxonomies: HashMap<String, HashMap<String, String>>,
     default_lang: String,
+    slugify: SlugifyStrategy,
 }
+
 impl GetTaxonomyUrl {
-    pub fn new(default_lang: &str, all_taxonomies: &[Taxonomy]) -> Self {
+    pub fn new(default_lang: &str, all_taxonomies: &[Taxonomy], slugify: SlugifyStrategy) -> Self {
         let mut taxonomies = HashMap::new();
         for taxo in all_taxonomies {
             let mut items = HashMap::new();
             for item in &taxo.items {
-                items.insert(item.name.clone(), item.permalink.clone());
+                items.insert(slugify_paths(&item.name.clone(), slugify), item.permalink.clone());
             }
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), items);
         }
-        Self { taxonomies, default_lang: default_lang.to_string() }
+        Self { taxonomies, default_lang: default_lang.to_string(), slugify: slugify }
     }
 }
 impl TeraFn for GetTaxonomyUrl {
@@ -358,7 +361,7 @@ impl TeraFn for GetTaxonomyUrl {
             }
         };
 
-        if let Some(permalink) = container.get(&name) {
+        if let Some(permalink) = container.get(&slugify_paths(&name, self.slugify)) {
             return Ok(to_value(permalink).unwrap());
         }
 
@@ -650,7 +653,9 @@ mod tests {
         let tags_fr = Taxonomy { kind: taxo_config_fr, items: vec![tag_fr] };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
-        let static_fn = GetTaxonomyUrl::new(&config.default_language, &taxonomies);
+        let static_fn =
+            GetTaxonomyUrl::new(&config.default_language, &taxonomies, config.slugify.taxonomies);
+
         // can find it correctly
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
@@ -659,6 +664,16 @@ mod tests {
             static_fn.call(&args).unwrap(),
             to_value("http://a-website.com/tags/programming/").unwrap()
         );
+
+        // can find it correctly with inconsistent capitalisation
+        let mut args = HashMap::new();
+        args.insert("kind".to_string(), to_value("tags").unwrap());
+        args.insert("name".to_string(), to_value("programming").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            to_value("http://a-website.com/tags/programming/").unwrap()
+        );
+
         // works with other languages
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
