@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use glob::glob;
 use lazy_static::lazy_static;
-use minify_html::{truncate, Cfg};
+use minify_html::{with_friendly_error, Cfg};
 use rayon::prelude::*;
 use tera::{Context, Tera};
 
@@ -450,13 +450,13 @@ impl Site {
     fn minify(&self, html: String) -> Result<String> {
         let cfg = &Cfg { minify_js: false };
         let mut input_bytes = html.as_bytes().to_vec();
-        match truncate(&mut input_bytes, cfg) {
+        match with_friendly_error(&mut input_bytes, cfg) {
             Ok(_len) => match std::str::from_utf8(&mut input_bytes) {
                 Ok(result) => Ok(result.to_string()),
                 Err(err) => bail!("Failed to convert bytes to string : {}", err),
             },
             Err(minify_error) => {
-                bail!("Failed to truncate html at character {}:", minify_error.position);
+                bail!("Failed to truncate html at character {}: {} \n {}", minify_error.position, minify_error.message, minify_error.code_context);
             }
         }
     }
