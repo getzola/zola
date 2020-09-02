@@ -68,7 +68,11 @@ pub fn register_early_global_fns(site: &mut Site) {
     site.tera.register_function("trans", global_fns::Trans::new(site.config.clone()));
     site.tera.register_function(
         "get_taxonomy_url",
-        global_fns::GetTaxonomyUrl::new(&site.config.default_language, &site.taxonomies),
+        global_fns::GetTaxonomyUrl::new(
+            &site.config.default_language,
+            &site.taxonomies,
+            site.config.slugify.taxonomies,
+        ),
     );
     site.tera.register_function(
         "get_file_hash",
