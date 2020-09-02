@@ -7,7 +7,7 @@ use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
 use std::cmp::min;
 use std::collections::HashSet;
 
-use super::fence::FenceSettings;
+use super::fence::{FenceSettings, Range};
 
 pub struct CodeBlock<'config> {
     highlighter: HighlightLines<'static>,
@@ -97,12 +97,6 @@ impl<'config> CodeBlock<'config> {
         }
         lines
     }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct Range {
-    pub from: usize,
-    pub to: usize,
 }
 
 /// This is an index of a character in a `&[(Style, &'b str)]`. The `vec_idx` is the

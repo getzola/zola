@@ -1,4 +1,8 @@
-use super::codeblock::Range;
+#[derive(Copy, Clone, Debug)]
+pub struct Range {
+    pub from: usize,
+    pub to: usize,
+}
 
 impl Range {
     fn parse(s: &str) -> Option<Range> {
