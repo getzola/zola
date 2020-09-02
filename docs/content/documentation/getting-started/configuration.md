@@ -110,13 +110,6 @@ skip_anchor_prefixes = [
     "https://caniuse.com/",
 ]
 
-# Number of threads per cpu the link_checker will use to check links.
-# Example : if your system is 2 cpus and nb_threads_per_cpu = 6 you will
-# get 6 * 2 = 12 threads to check links. So 12 links will be checked in parallel
-# nb_threads_per_cpu default to 4.
-nb_threads_per_cpu = 8
-
-
 # Various slugification strategies, see below for details
 # Defauls to everything being a slug
 [slugify]
