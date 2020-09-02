@@ -7,15 +7,10 @@ pub struct LinkChecker {
     pub skip_prefixes: Vec<String>,
     /// Skip anchor checking for these URL prefixes
     pub skip_anchor_prefixes: Vec<String>,
-    pub nb_threads_per_cpu: usize,
 }
 
 impl Default for LinkChecker {
     fn default() -> LinkChecker {
-        LinkChecker {
-            skip_prefixes: Vec::new(),
-            skip_anchor_prefixes: Vec::new(),
-            nb_threads_per_cpu: 4,
-        }
+        LinkChecker { skip_prefixes: Vec::new(), skip_anchor_prefixes: Vec::new() }
     }
 }

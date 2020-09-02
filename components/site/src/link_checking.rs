@@ -3,6 +3,8 @@ use rayon::prelude::*;
 use crate::Site;
 use errors::{Error, ErrorKind, Result};
 
+const THREAD_PER_CPU: usize = 4;
+
 /// Very similar to check_external_links but can't be merged as far as I can see since we always
 /// want to check the internal links but only the external in zola check :/
 pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
@@ -94,7 +96,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     Err(Error { kind: ErrorKind::Msg(msg), source: None })
 }
 
-pub fn check_external_links(site: &Site, nb_threads_per_cpu: usize) -> Result<()> {
+pub fn check_external_links(site: &Site) -> Result<()> {
     let library = site.library.write().expect("Get lock for check_external_links");
     let page_links = library
         .pages()
@@ -121,11 +123,11 @@ pub fn check_external_links(site: &Site, nb_threads_per_cpu: usize) -> Result<()
 
     // create thread pool with threads depending on the number of cpus (8 threads per cpu)
     // so we can fetch (almost) all pages simultaneously on large config
-    let threads = std::cmp::min(all_links.len(), num_cpus::get() * nb_threads_per_cpu);
+    let threads = std::cmp::min(all_links.len(), num_cpus::get() * THREAD_PER_CPU);
     println!(
         "Number of cpus: {}, using {} threads",
         num_cpus::get(),
-        num_cpus::get() * nb_threads_per_cpu
+        num_cpus::get() * THREAD_PER_CPU
     );
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(threads)
