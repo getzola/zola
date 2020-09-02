@@ -15,7 +15,9 @@ pub struct CodeBlock<'config> {
     background: IncludeBackground,
     theme: &'static Theme,
 
+    /// List of ranges of lines to highlight.
     highlight_lines: Vec<Range>,
+    /// The number of lines in the code block being processed.
     num_lines: usize,
 }
 
@@ -103,20 +105,28 @@ pub struct Range {
     pub to: usize,
 }
 
+/// This is an index of a character in a `&[(Style, &'b str)]`. The `vec_idx` is the
+/// index in the slice, and `str_idx` is the byte index of the character in the
+/// corresponding string slice.
+///
+/// The `Ord` impl on this type sorts lexiographically on `vec_idx`, and then `str_idx`.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct StyledIdx {
     vec_idx: usize,
     str_idx: usize,
 }
 
-fn get_str_if_vec_is(idx: Option<&StyledIdx>, vec_idx: usize) -> Option<usize> {
+/// This is a utility used by `perform_split`. If the `vec_idx` in the `StyledIdx` is
+/// equal to the provided value, return the `str_idx`, otherwise return `None`.
+fn get_str_idx_if_vec_idx_is(idx: Option<&StyledIdx>, vec_idx: usize) -> Option<usize> {
     match idx {
         Some(idx) if idx.vec_idx == vec_idx => Some(idx.str_idx),
         _ => None,
     }
 }
 
-// This function assumes that the line boundaries is sorted.
+/// This function assumes that `line_boundaries` is sorted according to the `Ord` impl on
+/// the `StyledIdx` type.
 fn perform_split<'b>(
     split: &[(Style, &'b str)],
     line_boundaries: Vec<StyledIdx>
@@ -128,22 +138,38 @@ fn perform_split<'b>(
     for (split_idx, item) in split.iter().enumerate() {
         let mut last_split = 0;
 
-        // For each split in this item, append the left half of that split.
-        while let Some(str_idx) = get_str_if_vec_is(idxs_iter.peek(), split_idx) {
+        // Since `line_boundaries` is sorted, we know that any remaining indexes in
+        // `idxs_iter` have `vec_idx >= split_idx`, and that if there are any with
+        // `vec_idx == split_idx`, they will be first.
+        //
+        // Using the `get_str_idx_if_vec_idx_is` utility, this loop will keep consuming
+        // indexes from `idxs_iter` as long as `vec_idx == split_idx` holds. Once
+        // `vec_idx` becomes larger than `split_idx`, the loop will finish without
+        // consuming that index.
+        //
+        // If `idxs_iter` is empty, or there are no indexes with `vec_idx == split_idx`,
+        // the loop does nothing.
+        while let Some(str_idx) = get_str_idx_if_vec_idx_is(idxs_iter.peek(), split_idx) {
             // Consume the value we just peeked.
             idxs_iter.next();
 
-            // We want to include the newline together with its own line.
+            // This consumes the index to split at. We add one to include the newline
+            // together with its own line, rather than as the first character in the next
+            // line.
             let split_at = min(str_idx + 1, item.1.len());
 
+            // This will fail if `line_boundaries` is not sorted.
             debug_assert!(split_at >= last_split);
+
+            // Skip splitting if the string slice would be empty.
             if last_split != split_at {
                 result.push((item.0, &item.1[last_split..split_at]));
                 last_split = split_at;
             }
         }
 
-        // Now append the remainder.
+        // Now append the remainder. If the current item was not split, this will
+        // append the entire item.
         if last_split != item.1.len() {
             result.push((item.0, &item.1[last_split..]));
         }
