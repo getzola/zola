@@ -338,11 +338,7 @@ mod tests {
     #[test]
     fn skip_anchor_prefixes() {
         let ignore_url = format!("{}{}", mockito::server_url(), "/ignore/");
-        let config = LinkChecker {
-            skip_prefixes: vec![],
-            skip_anchor_prefixes: vec![ignore_url],
-            nb_threads_per_cpu: 4,
-        };
+        let config = LinkChecker { skip_prefixes: vec![], skip_anchor_prefixes: vec![ignore_url] };
 
         let _m1 = mock("GET", "/ignore/i30hobj1cy")
             .with_header("Content-Type", "text/html")
