@@ -8,8 +8,11 @@ impl Range {
     fn parse(s: &str) -> Option<Range> {
         match s.find('-') {
             Some(dash) => {
-                let from = s[..dash].parse().ok()?;
-                let to = s[dash+1..].parse().ok()?;
+                let mut from = s[..dash].parse().ok()?;
+                let mut to = s[dash+1..].parse().ok()?;
+                if to < from {
+                    std::mem::swap(&mut from, &mut to);
+                }
                 Some(Range {
                     from,
                     to,
