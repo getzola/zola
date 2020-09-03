@@ -8,7 +8,7 @@ edition = "2018"
 tera = "1"
 base64 = "0.12"
 lazy_static = "1"
-pulldown-cmark = "0.7"
+pulldown-cmark = { version = "0.8", default-features = false }
 toml = "0.5"
 csv = "1"
 image = "0.23"
