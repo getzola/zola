@@ -69,10 +69,7 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
 // Remove the unc part of a windows path
 fn strip_unc(path: &PathBuf) -> String {
     let path_to_refine = path.to_str().unwrap();
-    match path_to_refine.strip_prefix(LOCAL_UNC) {
-        Some(path_stripped) => path_stripped.to_string(),
-        None => path_to_refine.to_string(),
-    }
+    path_to_refine.trim_start_matches(LOCAL_UNC).to_string()
 }
 
 pub fn create_new_project(name: &str, force: bool) -> Result<()> {
