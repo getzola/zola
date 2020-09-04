@@ -20,6 +20,7 @@ binary size
 - Fix Sass trying to load folders starting with `_`, causing issues with frameworks
 - Update livereload.js version
 - Add Markdown-outputting shortcodes
+- Taxonomies with the same name but different casing are now merged, eg Author and author
 
 ## 0.11.0 (2020-05-25)
 
