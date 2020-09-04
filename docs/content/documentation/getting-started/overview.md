@@ -45,7 +45,7 @@ You will be asked a few questions.
 └── themes
 ```
 
-Let's start the zola development server with:
+Let's start the Zola development server with:
 
 ```bash
 $ zola serve
@@ -161,7 +161,7 @@ date = 2019-11-27
 This is my first blog post.
 ```
 
-The *title* and *date* will be avaiable to us in the `blog-page.html` template as `{{ page.title }}` and `{{ page.date }}`, respectively. All text below the closing `+++` will be available to us as `{{ page.content }}`.
+The *title* and *date* will be available to us in the `blog-page.html` template as `{{ page.title }}` and `{{ page.date }}`, respectively. All text below the closing `+++` will be available to us as `{{ page.content }}`.
 
 We now need to make the `blog-page.html` template. In the `templates` directory, create this file with the contents:
 
