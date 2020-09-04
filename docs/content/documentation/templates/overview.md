@@ -118,7 +118,7 @@ link like the ones used in Markdown, starting from the root `content` directory.
 {% set url = get_url(path="@/blog/_index.md") %}
 ```
 
-It accepts an optionnal parameter `lang` in order to compute a *language-aware URL* in multilingual websites. Assuming `config.base_url` is `"http://example.com"`, the following snippet will:
+It accepts an optional parameter `lang` in order to compute a *language-aware URL* in multilingual websites. Assuming `config.base_url` is `"http://example.com"`, the following snippet will:
 
 - return `"http://example.com/blog/"` if `config.default_language` is `"en"`
 - return `"http://example.com/en/blog/"` if `config.default_language` is **not** `"en"` and `"en"` appears in `config.languages`
@@ -260,4 +260,4 @@ Gets the translation of the given `key`, for the `default_language` or the `lang
 
 ### `resize_image`
 Resizes an image file.
-Pease refer to [_Content / Image Processing_](@/documentation/content/image-processing/index.md) for complete documentation.
+Please refer to [_Content / Image Processing_](@/documentation/content/image-processing/index.md) for complete documentation.

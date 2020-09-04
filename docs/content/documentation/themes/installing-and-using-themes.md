@@ -31,7 +31,7 @@ in the configuration file is `simple-blog`.
 
 ## Customizing a theme
 
-Any file from the theme can be overriden by creating a file with the same path and name in your `templates` or `static`
+Any file from the theme can be overridden by creating a file with the same path and name in your `templates` or `static`
 directory. Here are a few examples of that, assuming that the theme name is `simple-blog`:
 
 ```plain
@@ -51,7 +51,7 @@ Some custom data
 {% endblock %}
 ```
 
-Most themes will also provide some variables that are meant to be overriden. This happens in the `extra` section
+Most themes will also provide some variables that are meant to be overridden. This happens in the `extra` section
 of the [configuration file](@/documentation/getting-started/configuration.md).
 Let's say a theme uses a `show_twitter` variable and sets it to `false` by default. If you want to set it to `true`,
 you can update your `config.toml` like so:

@@ -9,7 +9,7 @@ It follows the philosophy of paying for only what you need, almost everything is
 To change the configuration, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
-⚠️ If you add keys to your `config.toml`, you must pay attention to which toml section it belongs to.
+⚠️ If you add keys to your `config.toml`, you must pay attention to which TOML section it belongs to.
 
 Here are the current `config.toml` sections:
 1. main (unnamed)
@@ -46,8 +46,8 @@ highlight_theme = "base16-ocean-dark"
 generate_feed = false
 
 # The filename to use for the feed. Used as the template filename, too.
-# Defaults to "atom.xml", which has a builtin template that renders an Atom 1.0 feed.
-# There is also a builtin template "rss.xml" that renders an RSS 2.0 feed.
+# Defaults to "atom.xml", which has a built-in template that renders an Atom 1.0 feed.
+# There is also a built-in template "rss.xml" that renders an RSS 2.0 feed.
 # feed_filename = "atom.xml"
 
 # The number of articles to include in the feed. All items are included if
@@ -57,7 +57,7 @@ generate_feed = false
 # When set to "true", files in the `static` directory are hard-linked. Useful for large
 # static files. Note that for this to work, both `static` and the
 # output directory need to be on the same filesystem. Note that the theme's `static`
-# files are always copied, regardles of this setting.
+# files are always copied, regardless of this setting.
 # hard_link_static = false
 
 # The taxonomies to be rendered for the site and their configuration.
@@ -111,7 +111,7 @@ skip_anchor_prefixes = [
 ]
 
 # Various slugification strategies, see below for details
-# Defauls to everything being a slug
+# Defaults to everything being a slug
 [slugify]
 paths = "on"
 taxonomies = "on"

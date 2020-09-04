@@ -14,7 +14,7 @@ For example, assuming that the username is `john`, you have to create a project 
 Under your group `websites`, you created a project called `websites.gitlab.io`. Your project’s URL will be `https://gitlab.com/websites/websites.gitlab.io`. Once you enable GitLab Pages for your project, your website will be published under `https://websites.gitlab.io`.
 
 
-This guide assumes that your zola project is located in the root of your repository.
+This guide assumes that your Zola project is located in the root of your repository.
 
 ## Ensuring that the CI runner can access your theme
 
@@ -32,7 +32,7 @@ $ git submodule add https://github.com/getzola/hyde.git themes/hyde
 
 ## Setting up the GitLab CI/CD Runner
 
-The second step is to tell the GitLab continous integration runner how to create the GitLab page.
+The second step is to tell the GitLab continuous integration runner how to create the GitLab page.
 
 To do this, create a file called `.gitlab-ci.yml` in the root directory of your repository.
 

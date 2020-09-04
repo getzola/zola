@@ -73,7 +73,7 @@ You can also specify different addresses for the interface and base_url using `-
 Use the `--open` flag to automatically open the locally hosted instance in your
 web browser.
 
-In the event you don't want Zola to run a local webserver, you can use the `--watch-only` flag.
+In the event you don't want Zola to run a local web server, you can use the `--watch-only` flag.
 
 Before starting, Zola will delete the `public` directory to start from a clean slate.
 
