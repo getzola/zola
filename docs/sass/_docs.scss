@@ -47,18 +47,11 @@
     h1, h2, h3, h4, h5, h6 {
       .zola-anchor {
         font-size: 1.25rem;
-        visibility: hidden;
         margin-left: -2rem;
         margin-right: 0.75rem;
         text-decoration: none;
         border-bottom-color: transparent;
         cursor: pointer;
-      }
-
-      &:hover {
-        .zola-anchor {
-          visibility: visible;
-        }
       }
     }
 

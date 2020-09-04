@@ -1,4 +1,4 @@
-// Contains an embedded version of livereload-js 3.2.1
+// Contains an embedded version of livereload-js 3.2.4
 //
 // Copyright (c) 2010-2012 Andrey Tarantsov
 //
@@ -21,9 +21,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use std::env;
 use std::fs::{read_dir, remove_dir_all};
-use std::path::{Path, PathBuf, MAIN_SEPARATOR};
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -32,21 +31,19 @@ use hyper::header;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::ResolveResult;
-use tokio::io::AsyncReadExt;
 
 use chrono::prelude::*;
-use ctrlc;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{Error as ZolaError, Result};
 use globset::GlobSet;
-use site::Site;
+use site::sass::compile_sass;
+use site::{Site, SITE_CONTENT};
 use utils::fs::copy_file;
 
 use crate::console;
-use open;
-use rebuild;
+use std::ffi::OsStr;
 
 #[derive(Debug, PartialEq)]
 enum ChangeKind {
@@ -58,16 +55,23 @@ enum ChangeKind {
     Config,
 }
 
-static INTERNAL_SERVER_ERROR_TEXT: &[u8] = b"Internal Server Error";
+#[derive(Debug, PartialEq)]
+enum WatchMode {
+    Required,
+    Optional,
+    Condition(bool),
+}
+
 static METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
 static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
-// This is dist/livereload.min.js from the LiveReload.js v3.1.0 release
+// This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
+    let path = req.uri().path().trim_end_matches('/').trim_start_matches('/');
     // livereload.js is served using the LIVE_RELOAD str, not a file
-    if req.uri().path() == "/livereload.js" {
+    if path == "livereload.js" {
         if req.method() == Method::GET {
             return Ok(livereload_js());
         } else {
@@ -75,11 +79,16 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
         }
     }
 
+    if let Some(content) = SITE_CONTENT.read().unwrap().get(path) {
+        return Ok(in_memory_html(content));
+    }
+
     let result = hyper_staticfile::resolve(&root, &req).await.unwrap();
     match result {
         ResolveResult::MethodNotMatched => return Ok(method_not_allowed()),
         ResolveResult::NotFound | ResolveResult::UriNotMatched => {
-            return Ok(not_found(Path::new(&root.join("404.html"))).await)
+            let content_404 = SITE_CONTENT.read().unwrap().get("404.html").map(|x| x.clone());
+            return Ok(not_found(content_404));
         }
         _ => (),
     };
@@ -95,12 +104,12 @@ fn livereload_js() -> Response<Body> {
         .expect("Could not build livereload.js response")
 }
 
-fn internal_server_error() -> Response<Body> {
+fn in_memory_html(content: &str) -> Response<Body> {
     Response::builder()
-        .header(header::CONTENT_TYPE, "text/plain")
-        .status(StatusCode::INTERNAL_SERVER_ERROR)
-        .body(INTERNAL_SERVER_ERROR_TEXT.into())
-        .expect("Could not build Internal Server Error response")
+        .header(header::CONTENT_TYPE, "text/html")
+        .status(StatusCode::OK)
+        .body(content.to_owned().into())
+        .expect("Could not build HTML response")
 }
 
 fn method_not_allowed() -> Response<Body> {
@@ -111,21 +120,16 @@ fn method_not_allowed() -> Response<Body> {
         .expect("Could not build Method Not Allowed response")
 }
 
-async fn not_found(page_path: &Path) -> Response<Body> {
-    if let Ok(mut file) = tokio::fs::File::open(page_path).await {
-        let mut buf = Vec::new();
-        if file.read_to_end(&mut buf).await.is_ok() {
-            return Response::builder()
-                .header(header::CONTENT_TYPE, "text/html")
-                .status(StatusCode::NOT_FOUND)
-                .body(buf.into())
-                .expect("Could not build Not Found response");
-        }
-
-        return internal_server_error();
+fn not_found(content: Option<String>) -> Response<Body> {
+    if let Some(body) = content {
+        return Response::builder()
+            .header(header::CONTENT_TYPE, "text/html")
+            .status(StatusCode::NOT_FOUND)
+            .body(body.into())
+            .expect("Could not build Not Found response");
     }
 
-    // Use a plain text response when page_path isn't available
+    // Use a plain text response when we can't find the body of the 404
     Response::builder()
         .header(header::CONTENT_TYPE, "text/plain")
         .status(StatusCode::NOT_FOUND)
@@ -160,30 +164,35 @@ fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_p
 fn create_new_site(
     root_dir: &Path,
     interface: &str,
-    port: u16,
+    interface_port: u16,
     output_dir: &Path,
     base_url: &str,
     config_file: &Path,
     include_drafts: bool,
+    ws_port: Option<u16>,
 ) -> Result<(Site, String)> {
     let mut site = Site::new(root_dir, config_file)?;
 
-    let base_address = format!("{}:{}", base_url, port);
-    let address = format!("{}:{}", interface, port);
+    let base_address = format!("{}:{}", base_url, interface_port);
+    let address = format!("{}:{}", interface, interface_port);
     let base_url = if site.config.base_url.ends_with('/') {
         format!("http://{}/", base_address)
     } else {
         format!("http://{}", base_address)
     };
 
-    site.config.enable_serve_mode();
+    site.enable_serve_mode();
     site.set_base_url(base_url);
     site.set_output_path(output_dir);
     if include_drafts {
         site.include_drafts();
     }
     site.load()?;
-    site.enable_live_reload(port);
+    if let Some(p) = ws_port {
+        site.enable_live_reload_with_port(p);
+    } else {
+        site.enable_live_reload(interface_port);
+    }
     console::notify_site_size(&site);
     console::warn_about_ignored_pages(&site);
     site.build()?;
@@ -193,64 +202,66 @@ fn create_new_site(
 pub fn serve(
     root_dir: &Path,
     interface: &str,
-    port: u16,
+    interface_port: u16,
     output_dir: &Path,
     base_url: &str,
     config_file: &Path,
     watch_only: bool,
     open: bool,
     include_drafts: bool,
+    fast_rebuild: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(
         root_dir,
         interface,
-        port,
+        interface_port,
         output_dir,
         base_url,
         config_file,
         include_drafts,
+        None,
     )?;
     console::report_elapsed_time(start);
 
+    // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
+    // indicates whether this file/folder must exist for zola serve to operate
+    let watch_this = vec![
+        ("config.toml", WatchMode::Required),
+        ("content", WatchMode::Required),
+        ("sass", WatchMode::Condition(site.config.compile_sass)),
+        ("static", WatchMode::Optional),
+        ("templates", WatchMode::Optional),
+        ("themes", WatchMode::Condition(site.config.theme.is_some())),
+    ];
+
     // Setup watchers
-    let mut watching_static = false;
-    let mut watching_templates = false;
-    let mut watching_themes = false;
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
-    watcher
-        .watch("content/", RecursiveMode::Recursive)
-        .map_err(|e| ZolaError::chain("Can't watch the `content` folder. Does it exist?", e))?;
-    watcher
-        .watch(config_file, RecursiveMode::Recursive)
-        .map_err(|e| ZolaError::chain("Can't watch the `config` file. Does it exist?", e))?;
 
-    if Path::new("static").exists() {
-        watching_static = true;
-        watcher
-            .watch("static/", RecursiveMode::Recursive)
-            .map_err(|e| ZolaError::chain("Can't watch the `static` folder.", e))?;
+    // We watch for changes on the filesystem for every entry in watch_this
+    // Will fail if either:
+    //   - the path is mandatory but does not exist (eg. config.toml)
+    //   - the path exists but has incorrect permissions
+    // watchers will contain the paths we're actually watching
+    let mut watchers = Vec::new();
+    for (entry, mode) in watch_this {
+        let watch_path = root_dir.join(entry);
+        let should_watch = match mode {
+            WatchMode::Required => true,
+            WatchMode::Optional => watch_path.exists(),
+            WatchMode::Condition(b) => b,
+        };
+        if should_watch {
+            watcher
+                .watch(root_dir.join(entry), RecursiveMode::Recursive)
+                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Do you have correct permissions?", entry, root_dir.display()), e))?;
+            watchers.push(entry.to_string());
+        }
     }
 
-    if Path::new("templates").exists() {
-        watching_templates = true;
-        watcher
-            .watch("templates/", RecursiveMode::Recursive)
-            .map_err(|e| ZolaError::chain("Can't watch the `templates` folder.", e))?;
-    }
-
-    if Path::new("themes").exists() {
-        watching_themes = true;
-        watcher
-            .watch("themes/", RecursiveMode::Recursive)
-            .map_err(|e| ZolaError::chain("Can't watch the `themes` folder.", e))?;
-    }
-
-    // Sass support is optional so don't make it an error to no have a sass folder
-    let _ = watcher.watch("sass/", RecursiveMode::Recursive);
-
-    let ws_address = format!("{}:{}", interface, site.live_reload.unwrap());
+    let ws_port = site.live_reload;
+    let ws_address = format!("{}:{}", interface, ws_port.unwrap());
     let output_path = Path::new(output_dir).to_path_buf();
 
     // output path is going to need to be moved later on, so clone it for the
@@ -318,28 +329,7 @@ pub fn serve(
         None
     };
 
-    let pwd = env::current_dir().unwrap();
-
-    let mut watchers = vec!["content", "config.toml"];
-    if watching_static {
-        watchers.push("static");
-    }
-    if watching_templates {
-        watchers.push("templates");
-    }
-    if watching_themes {
-        watchers.push("themes");
-    }
-    if site.config.compile_sass {
-        watchers.push("sass");
-    }
-
-    println!(
-        "Listening for changes in {}{}{{{}}}",
-        pwd.display(),
-        MAIN_SEPARATOR,
-        watchers.join(", ")
-    );
+    println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(", "));
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
@@ -354,17 +344,6 @@ pub fn serve(
 
     use notify::DebouncedEvent::*;
 
-    let reload_templates = |site: &mut Site, path: &Path| {
-        let msg = if path.is_dir() {
-            format!("-> Directory in `templates` folder changed {}", path.display())
-        } else {
-            format!("-> Template changed {}", path.display())
-        };
-        console::info(&msg);
-        // Force refresh
-        rebuild_done_handling(&broadcaster, rebuild::after_template_change(site, &path), "/x.js");
-    };
-
     let reload_sass = |site: &Site, path: &Path, partial_path: &Path| {
         let msg = if path.is_dir() {
             format!("-> Directory in `sass` folder changed {}", path.display())
@@ -374,9 +353,13 @@ pub fn serve(
         console::info(&msg);
         rebuild_done_handling(
             &broadcaster,
-            site.compile_sass(&site.base_path),
+            compile_sass(&site.base_path, &site.output_path),
             &partial_path.to_string_lossy(),
         );
+    };
+
+    let reload_templates = |site: &mut Site, path: &Path| {
+        rebuild_done_handling(&broadcaster, site.reload_templates(), &path.to_string_lossy());
     };
 
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
@@ -415,11 +398,12 @@ pub fn serve(
     let recreate_site = || match create_new_site(
         root_dir,
         interface,
-        port,
+        interface_port,
         output_dir,
         base_url,
         config_file,
         include_drafts,
+        ws_port,
     ) {
         Ok((s, _)) => {
             rebuild_done_handling(&broadcaster, Ok(()), "/x.js");
@@ -434,13 +418,21 @@ pub fn serve(
     loop {
         match rx.recv() {
             Ok(event) => {
+                let can_do_fast_reload = match event {
+                    Remove(_) => false,
+                    _ => true,
+                };
+
                 match event {
-                    Rename(old_path, path) => {
-                        if path.is_file() && is_temp_file(&path) {
+                    // Intellij does weird things on edit, chmod is there to count those changes
+                    // https://github.com/passcod/notify/issues/150#issuecomment-494912080
+                    Rename(_, path) | Create(path) | Write(path) | Remove(path) | Chmod(path) => {
+                        if is_ignored_file(&site.config.ignored_content_globset, &path) {
                             continue;
                         }
-                        let (change_kind, partial_path) = detect_change_kind(&pwd, &path);
-
+                        if is_temp_file(&path) || path.is_dir() {
+                            continue;
+                        }
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
                             continue;
@@ -452,79 +444,82 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-
-                        match change_kind {
-                            ChangeKind::Content => {
-                                console::info(&format!("-> Content renamed {}", path.display()));
-                                // Force refresh
-                                rebuild_done_handling(
-                                    &broadcaster,
-                                    rebuild::after_content_rename(&mut site, &old_path, &path),
-                                    "/x.js",
-                                );
-                            }
-                            ChangeKind::Templates => reload_templates(&mut site, &path),
-                            ChangeKind::StaticFiles => copy_static(&site, &path, &partial_path),
-                            ChangeKind::Sass => reload_sass(&site, &path, &partial_path),
-                            ChangeKind::Themes => {
-                                console::info(
-                                    "-> Themes changed. The whole site will be reloaded.",
-                                );
-
-                                if let Some(s) = recreate_site() {
-                                    site = s;
-                                }
-                            }
-                            ChangeKind::Config => {
-                                console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
-
-                                if let Some(s) = recreate_site() {
-                                    site = s;
-                                }
-                            }
-                        }
-                        console::report_elapsed_time(start);
-                    }
-                    // Intellij does weird things on edit, chmod is there to count those changes
-                    // https://github.com/passcod/notify/issues/150#issuecomment-494912080
-                    Create(path) | Write(path) | Remove(path) | Chmod(path) => {
-                        if is_ignored_file(&site.config.ignored_content_globset, &path) {
-                            continue;
-                        }
-                        if is_temp_file(&path) || path.is_dir() {
-                            continue;
-                        }
-
-                        println!(
-                            "Change detected @ {}",
-                            Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
-                        );
-
-                        let start = Instant::now();
-                        match detect_change_kind(&pwd, &path) {
+                        match detect_change_kind(&root_dir, &path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
-                                // Force refresh
-                                rebuild_done_handling(
-                                    &broadcaster,
-                                    rebuild::after_content_change(&mut site, &path),
-                                    "/x.js",
-                                );
+
+                                if fast_rebuild {
+                                    if can_do_fast_reload {
+                                        let filename = path
+                                            .file_name()
+                                            .unwrap_or_else(|| OsStr::new(""))
+                                            .to_string_lossy();
+                                        let res = if filename == "_index.md" {
+                                            site.add_and_render_section(&path)
+                                        } else if filename.ends_with(".md") {
+                                            site.add_and_render_page(&path)
+                                        } else {
+                                            // an asset changed? a folder renamed?
+                                            // should we make it smarter so it doesn't reload the whole site?
+                                            Err("dummy".into())
+                                        };
+
+                                        if res.is_err() {
+                                            if let Some(s) = recreate_site() {
+                                                site = s;
+                                            }
+                                        } else {
+                                            rebuild_done_handling(
+                                                &broadcaster,
+                                                res,
+                                                &path.to_string_lossy(),
+                                            );
+                                        }
+                                    } else {
+                                        // Should we be smarter than that? Is it worth it?
+                                        if let Some(s) = recreate_site() {
+                                            site = s;
+                                        }
+                                    }
+                                } else {
+                                    if let Some(s) = recreate_site() {
+                                        site = s;
+                                    }
+                                }
                             }
-                            (ChangeKind::Templates, _) => reload_templates(&mut site, &path),
+                            (ChangeKind::Templates, partial_path) => {
+                                let msg = if path.is_dir() {
+                                    format!(
+                                        "-> Directory in `templates` folder changed {}",
+                                        path.display()
+                                    )
+                                } else {
+                                    format!("-> Template changed {}", path.display())
+                                };
+                                console::info(&msg);
+
+                                // A shortcode changed, we need to rebuild everything
+                                if partial_path.starts_with("/templates/shortcodes") {
+                                    if let Some(s) = recreate_site() {
+                                        site = s;
+                                    }
+                                } else {
+                                    println!("Reloading only template");
+                                    // A normal template changed, no need to re-render Markdown.
+                                    reload_templates(&mut site, &path)
+                                }
+                            }
                             (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
                             (ChangeKind::Sass, p) => reload_sass(&site, &path, &p),
                             (ChangeKind::Themes, _) => {
-                                console::info(
-                                    "-> Themes changed. The whole site will be reloaded.",
-                                );
+                                console::info("-> Themes changed.");
 
                                 if let Some(s) = recreate_site() {
                                     site = s;
                                 }
                             }
                             (ChangeKind::Config, _) => {
-                                console::info("-> Config changed. The whole site will be reloaded. The browser needs to be refreshed to make the changes visible.");
+                                console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
 
                                 if let Some(s) = recreate_site() {
                                     site = s;

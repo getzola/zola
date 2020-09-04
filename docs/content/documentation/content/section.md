@@ -93,6 +93,12 @@ transparent = false
 # current one. This takes an array of paths, not URLs.
 aliases = []
 
+# If set to "true", a feed file will be generated for this section at the
+# section's root path. This is independent of the site-wide variable of the same
+# name. The section feed will only include posts from that respective feed, and
+# not from any other sections, including sub-sections under that section.
+generate_feed = false
+
 # Your own data.
 [extra]
 ```
@@ -150,6 +156,7 @@ This will be sort all pages by their `weight` field, from lightest weight
 page gets `page.lighter` and `page.heavier` variables that contain the
 pages with lighter and heavier weights, respectively.
 
+### Reversed sorting
 When iterating through pages, you may wish to use the Tera `reverse` filter,
 which reverses the order of the pages.  For example, after using the `reverse` filter,
 pages sorted by weight will be sorted from lightest (at the top) to heaviest
@@ -158,8 +165,10 @@ to newest (at the bottom).
 
 `reverse` has no effect on `page.later`/`page.earlier` or `page.heavier`/`page.lighter`.
 
+If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter. 
+
 ## Sorting subsections
-Sorting sections is a bit less flexible: sections are always sorted by `weight`,
+Sorting sections is a bit less flexible: sections can only be sorted by `weight`,
 and do not have variables that point to the heavier/lighter sections.
 
 By default, the lightest (lowest `weight`) subsections will be at

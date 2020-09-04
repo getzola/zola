@@ -17,7 +17,6 @@ const _GRAMMAR: &str = include_str!("content.pest");
 pub struct ContentParser;
 
 lazy_static! {
-    static ref MULTIPLE_NEWLINE_RE: Regex = Regex::new(r"\n\s*\n").unwrap();
     static ref OUTER_NEWLINE_RE: Regex = Regex::new(r"^\s*\n|\n\s*$").unwrap();
 }
 
@@ -115,19 +114,27 @@ fn render_shortcode(
     }
     tera_context.extend(context.tera_context.clone());
 
-    let template_name = format!("shortcodes/{}.html", name);
+    let mut template_name = format!("shortcodes/{}.md", name);
+    if !context.tera.templates.contains_key(&template_name) {
+        template_name = format!("shortcodes/{}.html", name);
+    }
 
     let res = utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
         .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
 
-    // Small hack to avoid having multiple blank lines because of Tera tags for example
-    // A blank like will cause the markdown parser to think we're out of HTML and start looking
-    // at indentation, making the output a code block.
-    let res = MULTIPLE_NEWLINE_RE.replace_all(&res, "\n");
-
     let res = OUTER_NEWLINE_RE.replace_all(&res, "");
 
-    Ok(res.to_string())
+    // A blank line will cause the markdown parser to think we're out of HTML and start looking
+    // at indentation, making the output a code block. To avoid this, newlines are replaced with
+    // "<!--\n-->" at this stage, which will be undone after markdown rendering in lib.rs. Since
+    // that is an HTML comment, it shouldn't be rendered anyway. and not cause problems unless
+    // someone wants to include that comment in their content. This behaviour is unwanted in when
+    // rendering markdown shortcodes.
+    if template_name.ends_with(".html") {
+        Ok(res.replace('\n', "<!--\\n-->").to_string())
+    } else {
+        Ok(res.to_string())
+    }
 }
 
 pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
@@ -413,8 +420,8 @@ Some body {{ hello() }}{%/* end */%}"#,
     fn shortcodes_with_body_do_not_eat_newlines() {
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "{{body | safe}}").unwrap();
-        let res = render_shortcodes("Body\n {% youtube() %}\nHello \n World{% end %}", &tera);
-        assert_eq!(res, "Body\n Hello \n World");
+        let res = render_shortcodes("Body\n {% youtube() %}\nHello \n \n\n World{% end %}", &tera);
+        assert_eq!(res, "Body\n Hello <!--\\n--> <!--\\n--><!--\\n--> World");
     }
 
     #[test]
@@ -431,5 +438,17 @@ Some body {{ hello() }}{%/* end */%}"#,
         tera.add_raw_template("shortcodes/youtube.html", "  \n  Hello, Zola.  \n  ").unwrap();
         let res = render_shortcodes("\n{{ youtube() }}\n", &tera);
         assert_eq!(res, "\n  Hello, Zola.  \n");
+    }
+
+    #[test]
+    fn shortcodes_that_emit_markdown() {
+        let mut tera = Tera::default();
+        tera.add_raw_template(
+            "shortcodes/youtube.md",
+            "{% for i in [1,2,3] %}\n* {{ i }}\n{%- endfor %}",
+        )
+        .unwrap();
+        let res = render_shortcodes("{{ youtube() }}", &tera);
+        assert_eq!(res, "* 1\n* 2\n* 3");
     }
 }

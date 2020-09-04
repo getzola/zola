@@ -24,11 +24,15 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommands(vec![
             SubCommand::with_name("init")
                 .about("Create a new Zola project")
-                .arg(
+                .args(&[
                     Arg::with_name("name")
                         .default_value(".")
-                        .help("Name of the project. Will create a new directory with that name in the current directory")
-                ),
+                        .help("Name of the project. Will create a new directory with that name in the current directory"),
+                    Arg::with_name("force")
+                        .short("f")
+                        .takes_value(false)
+                        .help("Force creation of project even if directory is non-empty")
+                ]),
             SubCommand::with_name("build")
                 .about("Deletes the output directory if there is one and builds the site")
                 .args(&[
@@ -86,6 +90,11 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("open")
                         .takes_value(false)
                         .help("Open site in the default browser"),
+                    Arg::with_name("fast")
+                        .short("f")
+                        .long("fast")
+                        .takes_value(false)
+                        .help("Only rebuild the minimum on change - useful when working on a specific page/section"),
                 ]),
             SubCommand::with_name("check")
                 .about("Try building the project without rendering it. Checks links")

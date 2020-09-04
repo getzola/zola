@@ -17,21 +17,18 @@ pub enum ErrorKind {
 pub struct Error {
     /// Kind of error
     pub kind: ErrorKind,
-    pub source: Option<Box<dyn StdError>>,
+    pub source: Option<Box<dyn StdError + Send + Sync>>,
 }
-unsafe impl Sync for Error {}
-unsafe impl Send for Error {}
 
 impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        let mut source = self.source.as_ref().map(|c| &**c);
-        if source.is_none() {
-            if let ErrorKind::Tera(ref err) = self.kind {
-                source = err.source();
-            }
+        match self.source {
+            Some(ref err) => Some(&**err),
+            None => match self.kind {
+                ErrorKind::Tera(ref err) => err.source(),
+                _ => None,
+            },
         }
-
-        source
     }
 }
 
@@ -55,7 +52,7 @@ impl Error {
     }
 
     /// Creates generic error with a cause
-    pub fn chain(value: impl ToString, source: impl Into<Box<dyn StdError>>) -> Self {
+    pub fn chain(value: impl ToString, source: impl Into<Box<dyn StdError + Send + Sync>>) -> Self {
         Self { kind: ErrorKind::Msg(value.to_string()), source: Some(source.into()) }
     }
 

@@ -14,7 +14,9 @@ fn main() {
 
     let root_dir = match matches.value_of("root").unwrap() {
         "." => env::current_dir().unwrap(),
-        path => PathBuf::from(path),
+        path => PathBuf::from(path)
+            .canonicalize()
+            .expect(&format!("Cannot find root directory: {}", path)),
     };
     let config_file = match matches.value_of("config") {
         Some(path) => PathBuf::from(path),
@@ -23,7 +25,8 @@ fn main() {
 
     match matches.subcommand() {
         ("init", Some(matches)) => {
-            match cmd::create_new_project(matches.value_of("name").unwrap()) {
+            let force = matches.is_present("force");
+            match cmd::create_new_project(matches.value_of("name").unwrap(), force) {
                 Ok(()) => (),
                 Err(e) => {
                     console::unravel_errors("Failed to create the project", &e);
@@ -61,6 +64,7 @@ fn main() {
             let watch_only = matches.is_present("watch_only");
             let open = matches.is_present("open");
             let include_drafts = matches.is_present("drafts");
+            let fast = matches.is_present("fast");
 
             // Default one
             if port != 1111 && !watch_only && !port_is_available(port) {
@@ -89,6 +93,7 @@ fn main() {
                 watch_only,
                 open,
                 include_drafts,
+                fast,
             ) {
                 Ok(()) => (),
                 Err(e) => {

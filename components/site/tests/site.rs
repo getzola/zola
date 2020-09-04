@@ -19,12 +19,12 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages().len(), 21);
+    assert_eq!(library.pages().len(), 32);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
     let url_post = library.get_page(&posts_path.join("fixed-url.md")).unwrap();
-    assert_eq!(url_post.path, "a-fixed-url/");
+    assert_eq!(url_post.path, "/a-fixed-url/");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post =
@@ -32,12 +32,12 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(library.sections().len(), 11);
+    assert_eq!(library.sections().len(), 12);
 
     // And that the sections are correct
     let index_section = library.get_section(&path.join("content").join("_index.md")).unwrap();
-    assert_eq!(index_section.subsections.len(), 4);
-    assert_eq!(index_section.pages.len(), 1);
+    assert_eq!(index_section.subsections.len(), 5);
+    assert_eq!(index_section.pages.len(), 3);
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = library.get_section(&posts_path.join("_index.md")).unwrap();
@@ -370,7 +370,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/posts/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/posts/\""
     ));
     assert!(file_contains!(public, "posts/index.html", "Num pagers: 5"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
@@ -446,6 +446,16 @@ fn can_build_site_with_pagination_for_section() {
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/posts/page/4/</loc>"
     ));
+
+    // current_path
+    assert!(file_contains!(public, "posts/index.html", &current_path("/posts/")));
+    assert!(file_contains!(public, "posts/page/2/index.html", &current_path("/posts/page/2/")));
+    assert!(file_contains!(public, "posts/python/index.html", &current_path("/posts/python/")));
+    assert!(file_contains!(
+        public,
+        "posts/tutorials/index.html",
+        &current_path("/posts/tutorials/")
+    ));
 }
 
 #[test]
@@ -484,7 +494,7 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(
         public,
         "page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/\""
     ));
     assert!(file_contains!(public, "page/1/index.html", "<title>Redirect</title>"));
     assert!(file_contains!(
@@ -492,19 +502,28 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "<a href=\"https://replace-this-with-your-url.com/\">Click here</a>"
     ));
-    assert!(file_contains!(public, "index.html", "Num pages: 1"));
+    assert!(file_contains!(public, "index.html", "Num pages: 2"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
-    assert!(file_contains!(public, "index.html", "Last: https://replace-this-with-your-url.com/"));
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "Last: https://replace-this-with-your-url.com/page/2/"
+    ));
     assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
-    assert_eq!(file_contains!(public, "index.html", "has_next"), false);
+    assert_eq!(file_contains!(public, "index.html", "has_next"), true);
 
     // sitemap contains the pager pages
     assert!(file_contains!(
         public,
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/page/1/</loc>"
-    ))
+    ));
+
+    // current_path
+    assert!(file_contains!(public, "index.html", &current_path("/")));
+    assert!(file_contains!(public, "page/2/index.html", &current_path("/page/2/")));
+    assert!(file_contains!(public, "paginated/index.html", &current_path("/paginated/")));
 }
 
 #[test]
@@ -561,9 +580,9 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "tags/a/page/1/index.html",
-        "http-equiv=\"refresh\" content=\"0;url=https://replace-this-with-your-url.com/tags/a/\""
+        "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/tags/a/\""
     ));
-    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 6"));
+    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 8"));
     assert!(file_contains!(public, "tags/a/index.html", "Page size: 2"));
     assert!(file_contains!(public, "tags/a/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
@@ -576,7 +595,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "tags/a/index.html",
-        "Last: https://replace-this-with-your-url.com/tags/a/page/6/"
+        "Last: https://replace-this-with-your-url.com/tags/a/page/8/"
     ));
     assert_eq!(file_contains!(public, "tags/a/index.html", "has_prev"), false);
 
@@ -584,12 +603,17 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "sitemap.xml",
-        "<loc>https://replace-this-with-your-url.com/tags/a/page/6/</loc>"
-    ))
+        "<loc>https://replace-this-with-your-url.com/tags/a/page/8/</loc>"
+    ));
+
+    // current_path
+    assert!(file_contains!(public, "tags/index.html", &current_path("/tags/")));
+    assert!(file_contains!(public, "tags/a/index.html", &current_path("/tags/a/")));
+    assert!(file_contains!(public, "tags/a/page/2/index.html", &current_path("/tags/a/page/2/")));
 }
 
 #[test]
-fn can_build_feed() {
+fn can_build_feeds() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
     assert!(&public.exists());
@@ -598,6 +622,14 @@ fn can_build_feed() {
     assert!(file_contains!(public, "atom.xml", "Extra Syntax"));
     // Next is posts/simple.md
     assert!(file_contains!(public, "atom.xml", "Simple article with shortcodes"));
+
+    // Test section feeds
+    assert!(file_exists!(public, "posts/tutorials/programming/atom.xml"));
+    // It contains both sections articles
+    assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Python tutorial"));
+    assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Rust"));
+    // It doesn't contain articles from other sections
+    assert!(!file_contains!(public, "posts/tutorials/programming/atom.xml", "Extra Syntax"));
 }
 
 #[test]
@@ -681,9 +713,44 @@ fn can_build_site_custom_builtins_from_theme() {
 }
 
 #[test]
+fn can_build_site_with_html_minified() {
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.config.minify_html = true;
+        (site, true)
+    });
+
+    assert!(&public.exists());
+    assert!(file_exists!(public, "index.html"));
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "<!DOCTYPE html><html lang=en><head><meta charset=UTF-8>"
+    ));
+}
+
+#[test]
 fn can_ignore_markdown_content() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(!file_exists!(public, "posts/ignored/index.html"));
+}
+
+#[test]
+fn can_cachebust_static_files() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(file_contains!(public, "index.html",
+        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d0fde18e82b04d7bca1881d10846c769b486640da3de9\" rel=\"stylesheet\">"));
+}
+
+#[test]
+fn can_get_hash_for_static_files() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "src=\"https://replace-this-with-your-url.com/scripts/hello.js\""
+    ));
+    assert!(file_contains!(public, "index.html",
+        "integrity=\"sha384-01422f31eaa721a6c4ac8c6fa09a27dd9259e0dfcf3c7593d7810d912a9de5ca2f582df978537bcd10f76896db61fbb9\""));
 }
 
 #[test]
@@ -698,4 +765,9 @@ fn check_site() {
 
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
+}
+
+// Follows test_site/themes/sample/templates/current_path.html
+fn current_path(path: &str) -> String {
+    format!("[current_path]({})", path)
 }

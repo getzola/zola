@@ -1,7 +1,7 @@
 use serde_derive::Serialize;
 
 /// Populated while receiving events from the markdown parser
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize)]
 pub struct Heading {
     pub level: u32,
     pub id: String,
@@ -12,19 +12,7 @@ pub struct Heading {
 
 impl Heading {
     pub fn new(level: u32) -> Heading {
-        Heading {
-            level,
-            id: String::new(),
-            permalink: String::new(),
-            title: String::new(),
-            children: Vec::new(),
-        }
-    }
-}
-
-impl Default for Heading {
-    fn default() -> Self {
-        Heading::new(0)
+        Heading { level, ..Self::default() }
     }
 }
 

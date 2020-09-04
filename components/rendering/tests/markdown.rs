@@ -788,12 +788,31 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 
     let markdown_string = r#"{{ figure(src="spherecluster.png", caption="Some spheres.") }}"#;
 
-    let expected = r#"<figure>
-     <img src="/images/spherecluster.png" alt="Some spheres." />
-     <figcaption>Some spheres.</figcaption>
-</figure>"#;
+    let expected = "<figure>\n     \n     <img src=\"/images/spherecluster.png\" alt=\"Some spheres.\" />\n     \n\n     <figcaption>Some spheres.</figcaption>\n</figure>";
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, expected);
+}
+
+#[test]
+fn can_emit_newlines_and_whitespace_with_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"<pre>
+{{ body }}
+</pre>"#;
+
+    let markdown_string = "{% preformatted() %}\nHello\n    \n    Zola\n   \n  !\n{% end %}";
+
+    let expected = "<pre>\nHello\n    \n    Zola\n   \n  !\n</pre>";
+
+    tera.add_raw_template(&format!("shortcodes/{}.html", "preformatted"), shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
@@ -884,4 +903,45 @@ fn stops_with_an_error_on_an_empty_link() {
 
     assert!(res.is_err());
     assert_eq!(res.unwrap_err().to_string(), expected);
+}
+
+#[test]
+fn can_passthrough_markdown_from_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"{% for line in body | split(pat="\n") %}
+> {{ line }}
+{%- endfor %}
+
+-- {{ author }}
+"#;
+    let markdown_string = r#"
+Hello
+
+{% quote(author="Vincent") %}
+# Passing through
+
+*to* **the** document
+{% end %}
+
+Bla bla"#;
+
+    let expected = r#"<p>Hello</p>
+<blockquote>
+<h1 id="passing-through">Passing through</h1>
+<p><em>to</em> <strong>the</strong> document</p>
+</blockquote>
+<p>-- Vincent</p>
+<p>Bla bla</p>
+"#;
+
+    tera.add_raw_template(&format!("shortcodes/{}.md", "quote"), shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    println!("{:?}", res);
+    assert_eq!(res.body, expected);
 }

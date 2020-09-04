@@ -1,18 +1,21 @@
+pub mod languages;
+pub mod link_checker;
+pub mod search;
+pub mod slugify;
+pub mod taxonomies;
+
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use chrono::Utc;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
-use toml;
 use toml::Value as Toml;
 
 use crate::highlighting::THEME_SET;
 use crate::theme::Theme;
 use errors::{bail, Error, Result};
 use utils::fs::read_file_with_error;
-use utils::slugs::SlugifyStrategy;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
@@ -22,104 +25,6 @@ pub enum Mode {
     Build,
     Serve,
     Check,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Slugify {
-    pub paths: SlugifyStrategy,
-    pub taxonomies: SlugifyStrategy,
-    pub anchors: SlugifyStrategy,
-}
-
-impl Default for Slugify {
-    fn default() -> Self {
-        Slugify {
-            paths: SlugifyStrategy::On,
-            taxonomies: SlugifyStrategy::On,
-            anchors: SlugifyStrategy::On,
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Language {
-    /// The language code
-    pub code: String,
-    /// Whether to generate a feed for that language, defaults to `false`
-    pub feed: bool,
-    /// Whether to generate search index for that language, defaults to `false`
-    pub search: bool,
-}
-
-impl Default for Language {
-    fn default() -> Self {
-        Language { code: String::new(), feed: false, search: false }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Taxonomy {
-    /// The name used in the URL, usually the plural
-    pub name: String,
-    /// If this is set, the list of individual taxonomy term page will be paginated
-    /// by this much
-    pub paginate_by: Option<usize>,
-    pub paginate_path: Option<String>,
-    /// Whether to generate a feed only for each taxonomy term, defaults to false
-    pub feed: bool,
-    /// The language for that taxonomy, only used in multilingual sites.
-    /// Defaults to the config `default_language` if not set
-    pub lang: String,
-}
-
-impl Taxonomy {
-    pub fn is_paginated(&self) -> bool {
-        if let Some(paginate_by) = self.paginate_by {
-            paginate_by > 0
-        } else {
-            false
-        }
-    }
-
-    pub fn paginate_path(&self) -> &str {
-        if let Some(ref path) = self.paginate_path {
-            path
-        } else {
-            "page"
-        }
-    }
-}
-
-impl Default for Taxonomy {
-    fn default() -> Self {
-        Taxonomy {
-            name: String::new(),
-            paginate_by: None,
-            paginate_path: None,
-            feed: false,
-            lang: String::new(),
-        }
-    }
-}
-
-type TranslateTerm = HashMap<String, String>;
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct LinkChecker {
-    /// Skip link checking for these URL prefixes
-    pub skip_prefixes: Vec<String>,
-    /// Skip anchor checking for these URL prefixes
-    pub skip_anchor_prefixes: Vec<String>,
-}
-
-impl Default for LinkChecker {
-    fn default() -> LinkChecker {
-        LinkChecker { skip_prefixes: Vec::new(), skip_anchor_prefixes: Vec::new() }
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -138,7 +43,7 @@ pub struct Config {
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
     /// The list of supported languages outside of the default one
-    pub languages: Vec<Language>,
+    pub languages: Vec<languages::Language>,
 
     /// Languages list and translated strings
     ///
@@ -147,7 +52,7 @@ pub struct Config {
     ///
     /// The attribute is intentionally not public, use `get_translation()` method for translating
     /// key into different language.
-    translations: HashMap<String, TranslateTerm>,
+    translations: HashMap<String, languages::TranslateTerm>,
 
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
@@ -165,10 +70,12 @@ pub struct Config {
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
 
-    pub taxonomies: Vec<Taxonomy>,
+    pub taxonomies: Vec<taxonomies::Taxonomy>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
+    /// Whether to minify the html output
+    pub minify_html: bool,
     /// Whether to build the search index for the content
     pub build_search_index: bool,
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
@@ -189,16 +96,16 @@ pub struct Config {
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_syntax_set: Option<SyntaxSet>,
 
-    pub link_checker: LinkChecker,
+    pub link_checker: link_checker::LinkChecker,
 
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
-    pub slugify: Slugify,
+    pub slugify: slugify::Slugify,
+
+    /// The search config, telling what to include in the search index
+    pub search: search::Search,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
-
-    /// Set automatically when instantiating the config. Used for cachebusting
-    pub build_timestamp: Option<i64>,
 }
 
 impl Config {
@@ -221,8 +128,6 @@ impl Config {
         if config.languages.iter().any(|l| l.code == config.default_language) {
             bail!("Default language `{}` should not appear both in `config.default_language` and `config.languages`", config.default_language)
         }
-
-        config.build_timestamp = Some(Utc::now().timestamp());
 
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
@@ -247,6 +152,9 @@ impl Config {
                 taxonomy.lang = config.default_language.clone();
             }
         }
+
+        // TODO: re-enable once it's a bit more tested
+        config.minify_html = false;
 
         Ok(config)
     }
@@ -303,19 +211,14 @@ impl Config {
 
     /// Merges the extra data from the theme with the config extra data
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
-        // 3 pass merging
-        // 1. save config to preserve user
-        let original = self.extra.clone();
-        // 2. inject theme extra values
         for (key, val) in &theme.extra {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
+            if !self.extra.contains_key(key) {
+                // The key is not overriden in site config, insert it
+                self.extra.insert(key.to_string(), val.clone());
+                continue;
+            }
+            merge(self.extra.get_mut(key).unwrap(), val)?;
         }
-
-        // 3. overwrite with original config
-        for (key, val) in &original {
-            self.extra.entry(key.to_string()).or_insert_with(|| val.clone());
-        }
-
         Ok(())
     }
 
@@ -377,6 +280,34 @@ impl Config {
     }
 }
 
+// merge TOML data that can be a table, or anything else
+pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
+    match (from.is_table(), into.is_table()) {
+        (false, false) => {
+            // These are not tables so we have nothing to merge
+            Ok(())
+        }
+        (true, true) => {
+            // Recursively merge these tables
+            let into_table = into.as_table_mut().unwrap();
+            for (key, val) in from.as_table().unwrap() {
+                if !into_table.contains_key(key) {
+                    // An entry was missing in the first table, insert it
+                    into_table.insert(key.to_string(), val.clone());
+                    continue;
+                }
+                // Two entries to compare, recurse
+                merge(into_table.get_mut(key).unwrap(), val)?;
+            }
+            Ok(())
+        }
+        _ => {
+            // Trying to merge a table with something else
+            Err(Error::msg(&format!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from)))
+        }
+    }
+}
+
 impl Default for Config {
     fn default() -> Config {
         Config {
@@ -394,6 +325,7 @@ impl Default for Config {
             hard_link_static: false,
             taxonomies: Vec::new(),
             compile_sass: false,
+            minify_html: false,
             mode: Mode::Build,
             build_search_index: false,
             ignored_content: Vec::new(),
@@ -401,17 +333,18 @@ impl Default for Config {
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
-            link_checker: LinkChecker::default(),
-            slugify: Slugify::default(),
+            link_checker: link_checker::LinkChecker::default(),
+            slugify: slugify::Slugify::default(),
+            search: search::Search::default(),
             extra: HashMap::new(),
-            build_timestamp: Some(1),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Config, SlugifyStrategy, Theme};
+    use super::*;
+    use utils::slugs::SlugifyStrategy;
 
     #[test]
     fn can_import_valid_config() {
@@ -512,18 +445,39 @@ base_url = "https://replace-this-with-your-url.com"
 
 [extra]
 hello = "world"
+[extra.sub]
+foo = "bar"
+[extra.sub.sub]
+foo = "bar"
         "#;
         let mut config = Config::parse(config_str).unwrap();
         let theme_str = r#"
 [extra]
 hello = "foo"
 a_value = 10
+[extra.sub]
+foo = "default"
+truc = "default"
+[extra.sub.sub]
+foo = "default"
+truc = "default"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         assert!(config.add_theme_extra(&theme).is_ok());
         let extra = config.extra;
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
+        assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
+        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
+        assert_eq!(extra["sub"]["sub"]["foo"].as_str().unwrap(), "bar".to_string());
+        assert_eq!(
+            extra["sub"]["sub"]
+                .get("truc")
+                .expect("Failed to merge subsubtable extra.sub.sub")
+                .as_str()
+                .unwrap(),
+            "default".to_string()
+        );
     }
 
     const CONFIG_TRANSLATION: &str = r#"
@@ -680,5 +634,24 @@ languages = [
         let config = Config::parse(config_str);
         let err = config.unwrap_err();
         assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
+    }
+
+    #[test]
+    fn cannot_overwrite_theme_mapping_with_invalid_type() {
+        let config_str = r#"
+base_url = "http://localhost:1312"
+default_language = "fr"
+[extra]
+foo = "bar"
+        "#;
+        let mut config = Config::parse(config_str).unwrap();
+        let theme_str = r#"
+[extra]
+[extra.foo]
+bar = "baz"
+        "#;
+        let theme = Theme::parse(theme_str).unwrap();
+        // We expect an error here
+        assert_eq!(false, config.add_theme_extra(&theme).is_ok());
     }
 }

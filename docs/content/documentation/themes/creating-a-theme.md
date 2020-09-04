@@ -51,11 +51,6 @@ theme, with live reload working as expected.
 Make sure to commit every directory (including `content`) in order for other people
 to be able to build the theme from your repository.
 
-### Caveat
-
-Please note that [include paths](https://tera.netlify.com/docs#include) can only be used in normal templates.
-Theme templates should use [macros](https://tera.netlify.com/docs#macros) instead.
-
 ## Submitting a theme to the gallery
 
 If you want your theme to be featured in the [themes](@/themes/_index.md) section

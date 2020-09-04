@@ -1,27 +1,44 @@
+pub mod feed;
+pub mod link_checking;
+pub mod sass;
 pub mod sitemap;
+pub mod tpls;
 
 use std::collections::HashMap;
-use std::fs::{copy, create_dir_all, remove_dir_all};
+use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
 use glob::glob;
+use lazy_static::lazy_static;
+use minify_html::{truncate, Cfg};
 use rayon::prelude::*;
-use sass_rs::{compile_file, Options as SassOptions, OutputStyle};
-use serde_derive::Serialize;
 use tera::{Context, Tera};
 
-use config::{get_config, Config, Taxonomy as TaxonomyConfig};
-use errors::{bail, Error, ErrorKind, Result};
+use config::{get_config, Config};
+use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
-use library::{
-    find_taxonomies, sort_actual_pages_by_date, Library, Page, Paginator, Section, Taxonomy,
-    TaxonomyItem,
+use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
+use templates::render_redirect_template;
+use utils::fs::{
+    copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
 };
-use templates::{global_fns, render_redirect_template, ZOLA_TERA};
-use utils::fs::{copy_directory, create_directory, create_file, ensure_directory_exists};
 use utils::net::get_available_port;
-use utils::templates::{render_template, rewrite_theme_paths};
+use utils::templates::render_template;
+
+lazy_static! {
+    /// The in-memory rendered map content
+    pub static ref SITE_CONTENT: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+}
+
+/// Where are we building the site
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum BuildMode {
+    /// On the filesystem -> `zola build`, The path is the `output_path`
+    Disk,
+    /// In memory for the content -> `zola serve`
+    Memory,
+}
 
 #[derive(Debug)]
 pub struct Site {
@@ -44,19 +61,7 @@ pub struct Site {
     pub library: Arc<RwLock<Library>>,
     /// Whether to load draft pages
     include_drafts: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize)]
-struct SerializedTaxonomyItem<'a> {
-    name: &'a str,
-    slug: &'a str,
-    permalink: &'a str,
-}
-
-impl<'a> SerializedTaxonomyItem<'a> {
-    pub fn from_item(item: &'a TaxonomyItem) -> Self {
-        SerializedTaxonomyItem { name: &item.name, slug: &item.slug, permalink: &item.permalink }
-    }
+    build_mode: BuildMode,
 }
 
 impl Site {
@@ -68,54 +73,18 @@ impl Site {
         let mut config = get_config(config_file);
         config.load_extra_syntaxes(path)?;
 
-        let tpl_glob =
-            format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.*ml");
-        // Only parsing as we might be extending templates from themes and that would error
-        // as we haven't loaded them yet
-        let mut tera =
-            Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
-
-            // Test that the templates folder exist for that theme
-            let theme_path = path.join("themes").join(&theme);
-            if !theme_path.join("templates").exists() {
-                bail!("Theme `{}` is missing a templates folder", theme);
-            }
-
-            let theme_tpl_glob = format!(
-                "{}/{}",
-                path.to_string_lossy().replace("\\", "/"),
-                format!("themes/{}/templates/**/*.*ml", theme)
-            );
-            let mut tera_theme = Tera::parse(&theme_tpl_glob)
-                .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
-            rewrite_theme_paths(
-                &mut tera_theme,
-                tera.templates.values().map(|v| v.name.as_ref()).collect(),
-                &theme,
-            );
-            // TODO: we do that twice, make it dry?
-            if theme_path.join("templates").join("robots.txt").exists() {
-                tera_theme
-                    .add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
-            }
-            tera.extend(&tera_theme)?;
         }
-        tera.extend(&ZOLA_TERA)?;
-        tera.build_inheritance_chains()?;
 
-        // TODO: Tera doesn't use globset right now so we can load the robots.txt as part
-        // of the glob above, therefore we load it manually if it exists.
-        if path.join("templates").join("robots.txt").exists() {
-            tera.add_template_file(path.join("templates").join("robots.txt"), Some("robots.txt"))?;
-        }
+        let tera = tpls::load_tera(path, &config)?;
 
         let content_path = path.join("content");
         let static_path = path.join("static");
         let imageproc =
             imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
+        let output_path = path.join("public");
 
         let site = Site {
             base_path: path.to_path_buf(),
@@ -123,7 +92,7 @@ impl Site {
             tera,
             imageproc: Arc::new(Mutex::new(imageproc)),
             live_reload: None,
-            output_path: path.join("public"),
+            output_path,
             content_path,
             static_path,
             taxonomies: Vec::new(),
@@ -131,9 +100,17 @@ impl Site {
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(RwLock::new(Library::new(0, 0, false))),
+            build_mode: BuildMode::Disk,
         };
 
         Ok(site)
+    }
+
+    /// Enable some `zola serve` related options
+    pub fn enable_serve_mode(&mut self) {
+        SITE_CONTENT.write().unwrap().clear();
+        self.config.enable_serve_mode();
+        self.build_mode = BuildMode::Memory;
     }
 
     /// Set the site to load the drafts.
@@ -143,7 +120,7 @@ impl Site {
     }
 
     /// The index sections are ALWAYS at those paths
-    /// There are one index section for the basic language + 1 per language
+    /// There are one index section for the default language + 1 per language
     fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
         let mut res = vec![(self.content_path.join("_index.md"), None)];
         for language in &self.config.languages {
@@ -162,9 +139,16 @@ impl Site {
         self.live_reload = get_available_port(port_to_avoid);
     }
 
-    /// Get the number of orphan (== without section) pages in the site
-    pub fn get_number_orphan_pages(&self) -> usize {
-        self.library.read().unwrap().get_all_orphan_pages().len()
+    /// Only used in `zola serve` to re-use the initial websocket port
+    pub fn enable_live_reload_with_port(&mut self, live_reload_port: u16) {
+        self.live_reload = Some(live_reload_port);
+    }
+
+    /// Reloads the templates and rebuild the site without re-rendering the Markdown.
+    pub fn reload_templates(&mut self) -> Result<()> {
+        self.tera.full_reload()?;
+        // TODO: be smarter than that, no need to recompile sass for example
+        self.build()
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
@@ -259,191 +243,19 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
-        self.register_early_global_fns();
+        tpls::register_early_global_fns(self);
         self.populate_sections();
         self.render_markdown()?;
-        self.register_tera_global_fns();
+        tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
-        self.check_internal_links_with_anchors()?;
+        link_checking::check_internal_links_with_anchors(&self)?;
 
         if self.config.is_in_check_mode() {
-            self.check_external_links()?;
+            link_checking::check_external_links(&self)?;
         }
 
         Ok(())
-    }
-
-    /// Very similar to check_external_links but can't be merged as far as I can see since we always
-    /// want to check the internal links but only the external in zola check :/
-    pub fn check_internal_links_with_anchors(&self) -> Result<()> {
-        let library = self.library.write().expect("Get lock for check_internal_links_with_anchors");
-        let page_links = library
-            .pages()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let section_links = library
-            .sections()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.internal_links_with_anchors.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
-
-        if self.config.is_in_check_mode() {
-            println!("Checking {} internal link(s) with an anchor.", all_links.len());
-        }
-
-        if all_links.is_empty() {
-            return Ok(());
-        }
-
-        let mut full_path = self.base_path.clone();
-        full_path.push("content");
-
-        let errors: Vec<_> = all_links
-            .iter()
-            .filter_map(|(page_path, (md_path, anchor))| {
-                // There are a few `expect` here since the presence of the .md file will
-                // already have been checked in the markdown rendering
-                let mut p = full_path.clone();
-                for part in md_path.split('/') {
-                    p.push(part);
-                }
-                if md_path.contains("_index.md") {
-                    let section = library
-                        .get_section(&p)
-                        .expect("Couldn't find section in check_internal_links_with_anchors");
-                    if section.has_anchor(&anchor) {
-                        None
-                    } else {
-                        Some((page_path, md_path, anchor))
-                    }
-                } else {
-                    let page = library
-                        .get_page(&p)
-                        .expect("Couldn't find section in check_internal_links_with_anchors");
-                    if page.has_anchor(&anchor) {
-                        None
-                    } else {
-                        Some((page_path, md_path, anchor))
-                    }
-                }
-            })
-            .collect();
-
-        if self.config.is_in_check_mode() {
-            println!(
-                "> Checked {} internal link(s) with an anchor: {} error(s) found.",
-                all_links.len(),
-                errors.len()
-            );
-        }
-
-        if errors.is_empty() {
-            return Ok(());
-        }
-
-        let msg = errors
-            .into_iter()
-            .map(|(page_path, md_path, anchor)| {
-                format!(
-                    "The anchor in the link `@/{}#{}` in {} does not exist.",
-                    md_path,
-                    anchor,
-                    page_path.to_string_lossy(),
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg), source: None })
-    }
-
-    pub fn check_external_links(&self) -> Result<()> {
-        let library = self.library.write().expect("Get lock for check_external_links");
-        let page_links = library
-            .pages()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.external_links.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let section_links = library
-            .sections()
-            .values()
-            .map(|p| {
-                let path = &p.file.path;
-                p.external_links.iter().map(move |l| (path.clone(), l))
-            })
-            .flatten();
-        let all_links = page_links.chain(section_links).collect::<Vec<_>>();
-        println!("Checking {} external link(s).", all_links.len());
-
-        if all_links.is_empty() {
-            return Ok(());
-        }
-
-        // create thread pool with lots of threads so we can fetch
-        // (almost) all pages simultaneously
-        let threads = std::cmp::min(all_links.len(), 32);
-        let pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(threads)
-            .build()
-            .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string()), source: None })?;
-
-        let errors: Vec<_> = pool.install(|| {
-            all_links
-                .par_iter()
-                .filter_map(|(page_path, link)| {
-                    if self
-                        .config
-                        .link_checker
-                        .skip_prefixes
-                        .iter()
-                        .any(|prefix| link.starts_with(prefix))
-                    {
-                        return None;
-                    }
-                    let res = link_checker::check_url(&link, &self.config.link_checker);
-                    if link_checker::is_valid(&res) {
-                        None
-                    } else {
-                        Some((page_path, link, res))
-                    }
-                })
-                .collect()
-        });
-
-        println!(
-            "> Checked {} external link(s): {} error(s) found.",
-            all_links.len(),
-            errors.len()
-        );
-
-        if errors.is_empty() {
-            return Ok(());
-        }
-
-        let msg = errors
-            .into_iter()
-            .map(|(page_path, link, check_res)| {
-                format!(
-                    "Dead link in {} to {}: {}",
-                    page_path.to_string_lossy(),
-                    link,
-                    link_checker::message(&check_res)
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-        Err(Error { kind: ErrorKind::Msg(msg), source: None })
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create
@@ -529,80 +341,58 @@ impl Site {
         Ok(())
     }
 
-    /// Adds global fns that are to be available to shortcodes while
-    /// markdown
-    pub fn register_early_global_fns(&mut self) {
-        self.tera.register_function(
-            "get_url",
-            global_fns::GetUrl::new(self.config.clone(), self.permalinks.clone(), self.content_path.clone()),
-        );
-        self.tera.register_function(
-            "resize_image",
-            global_fns::ResizeImage::new(self.imageproc.clone()),
-        );
-        self.tera.register_function(
-            "get_image_metadata",
-            global_fns::GetImageMeta::new(self.content_path.clone()),
-        );
-        self.tera.register_function("load_data", global_fns::LoadData::new(self.base_path.clone()));
-        self.tera.register_function("trans", global_fns::Trans::new(self.config.clone()));
-        self.tera.register_function(
-            "get_taxonomy_url",
-            global_fns::GetTaxonomyUrl::new(&self.config.default_language, &self.taxonomies),
-        );
-    }
-
-    pub fn register_tera_global_fns(&mut self) {
-        self.tera.register_function(
-            "get_page",
-            global_fns::GetPage::new(self.base_path.clone(), self.library.clone()),
-        );
-        self.tera.register_function(
-            "get_section",
-            global_fns::GetSection::new(self.base_path.clone(), self.library.clone()),
-        );
-        self.tera.register_function(
-            "get_taxonomy",
-            global_fns::GetTaxonomy::new(
-                &self.config.default_language,
-                self.taxonomies.clone(),
-                self.library.clone(),
-            ),
-        );
-    }
-
     /// Add a page to the site
-    /// The `render` parameter is used in the serve command, when rebuilding a page.
-    /// If `true`, it will also render the markdown for that page
-    /// Returns the previous page struct if there was one at the same path
-    pub fn add_page(&mut self, mut page: Page, render: bool) -> Result<Option<Page>> {
+    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    pub fn add_page(&mut self, mut page: Page, render_md: bool) -> Result<()> {
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
-        if render {
+        if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
             page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
+
         let mut library = self.library.write().expect("Get lock for add_page");
-        let prev = library.remove_page(&page.file.path);
+        library.remove_page(&page.file.path);
         library.insert_page(page);
 
-        Ok(prev)
+        Ok(())
+    }
+
+    /// Adds a page to the site and render it
+    /// Only used in `zola serve --fast`
+    pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
+        let page = Page::from_file(path, &self.config, &self.base_path)?;
+        self.add_page(page, true)?;
+        self.populate_sections();
+        self.populate_taxonomies()?;
+        let library = self.library.read().unwrap();
+        let page = library.get_page(&path).unwrap();
+        self.render_page(&page)
     }
 
     /// Add a section to the site
-    /// The `render` parameter is used in the serve command, when rebuilding a page.
-    /// If `true`, it will also render the markdown for that page
-    /// Returns the previous section struct if there was one at the same path
-    pub fn add_section(&mut self, mut section: Section, render: bool) -> Result<Option<Section>> {
+    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
-        if render {
+        if render_md {
             section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");
-        let prev = library.remove_section(&section.file.path);
+        library.remove_section(&section.file.path);
         library.insert_section(section);
 
-        Ok(prev)
+        Ok(())
+    }
+
+    /// Adds a section to the site and render it
+    /// Only used in `zola serve --fast`
+    pub fn add_and_render_section(&mut self, path: &Path) -> Result<()> {
+        let section = Section::from_file(path, &self.config, &self.base_path)?;
+        self.add_section(section, true)?;
+        self.populate_sections();
+        let library = self.library.read().unwrap();
+        let section = library.get_section(&path).unwrap();
+        self.render_section(&section, true)
     }
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
@@ -656,6 +446,21 @@ impl Site {
         html
     }
 
+    /// Minifies html content
+    fn minify(&self, html: String) -> Result<String> {
+        let cfg = &Cfg { minify_js: false };
+        let mut input_bytes = html.as_bytes().to_vec();
+        match truncate(&mut input_bytes, cfg) {
+            Ok(_len) => match std::str::from_utf8(&mut input_bytes) {
+                Ok(result) => Ok(result.to_string()),
+                Err(err) => bail!("Failed to convert bytes to string : {}", err),
+            },
+            Err(minify_error) => {
+                bail!("Failed to truncate html at character {}:", minify_error.position);
+            }
+        }
+    }
+
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
@@ -697,32 +502,83 @@ impl Site {
         Ok(())
     }
 
-    /// Renders a single content page
-    pub fn render_page(&self, page: &Page) -> Result<()> {
+    /// Handles whether to write to disk or to memory
+    pub fn write_content(
+        &self,
+        components: &[&str],
+        filename: &str,
+        content: String,
+        create_dirs: bool,
+    ) -> Result<PathBuf> {
+        let write_dirs = self.build_mode == BuildMode::Disk || create_dirs;
         ensure_directory_exists(&self.output_path)?;
 
-        // Copy the nesting of the content directory if we have sections for that page
         let mut current_path = self.output_path.to_path_buf();
 
-        for component in page.path.split('/') {
+        for component in components {
             current_path.push(component);
 
-            if !current_path.exists() {
+            if !current_path.exists() && write_dirs {
                 create_directory(&current_path)?;
             }
         }
 
-        // Make sure the folder exists
-        create_directory(&current_path)?;
+        if write_dirs {
+            create_directory(&current_path)?;
+        }
 
-        // Finally, create a index.html file there with the page rendered
+        let final_content = if !filename.ends_with("html") || !self.config.minify_html {
+            content
+        } else {
+            match self.minify(content) {
+                Ok(minified_content) => minified_content,
+                Err(error) => bail!(error),
+            }
+        };
+
+        match self.build_mode {
+            BuildMode::Disk => {
+                let end_path = current_path.join(filename);
+                create_file(&end_path, &final_content)?;
+            }
+            BuildMode::Memory => {
+                let path = if filename != "index.html" {
+                    let p = current_path.join(filename);
+                    p.as_os_str().to_string_lossy().replace("public/", "/")
+                } else {
+                    // TODO" remove unwrap
+                    let p = current_path.strip_prefix("public").unwrap();
+                    p.as_os_str().to_string_lossy().into_owned()
+                }
+                .trim_end_matches('/')
+                .to_owned();
+                &SITE_CONTENT.write().unwrap().insert(path, final_content);
+            }
+        }
+
+        Ok(current_path)
+    }
+
+    fn copy_asset(&self, src: &Path, dest: &PathBuf) -> Result<()> {
+        copy_file_if_needed(src, dest, self.config.hard_link_static)
+    }
+
+    /// Renders a single content page
+    pub fn render_page(&self, page: &Page) -> Result<()> {
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-        create_file(&current_path.join("index.html"), &self.inject_livereload(output))?;
+        let content = self.inject_livereload(output);
+        let components: Vec<&str> = page.path.split('/').collect();
+        let current_path = self.write_content(
+            &components,
+            "index.html",
+            content,
+            !page.assets.is_empty(),
+        )?;
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
             let asset_path = asset.as_path();
-            copy(
+            self.copy_asset(
                 &asset_path,
                 &current_path
                     .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
@@ -732,20 +588,23 @@ impl Site {
         Ok(())
     }
 
-    /// Deletes the `public` directory and builds the site
+    /// Deletes the `public` directory (only for `zola build`) and builds the site
     pub fn build(&self) -> Result<()> {
-        self.clean()?;
+        // Do not clean on `zola serve` otherwise we end up copying assets all the time
+        if self.build_mode == BuildMode::Disk {
+            self.clean()?;
+        }
 
         // Generate/move all assets before rendering any content
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
             if theme_path.join("sass").exists() {
-                self.compile_sass(&theme_path)?;
+                sass::compile_sass(&theme_path, &self.output_path)?;
             }
         }
 
         if self.config.compile_sass {
-            self.compile_sass(&self.base_path)?;
+            sass::compile_sass(&self.base_path, &self.output_path)?;
         }
 
         if self.config.build_search_index {
@@ -771,7 +630,7 @@ impl Site {
             } else {
                 library.pages_values()
             };
-            self.render_feed(pages, None, &self.config.default_language, None)?;
+            self.render_feed(pages, None, &self.config.default_language, |c| c)?;
         }
 
         for lang in &self.config.languages {
@@ -780,7 +639,7 @@ impl Site {
             }
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, None)?;
+            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, |c| c)?;
         }
 
         self.render_404()?;
@@ -797,12 +656,18 @@ impl Site {
 
     pub fn build_search_index(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
+        // TODO: add those to the SITE_CONTENT map
+
         // index first
         create_file(
             &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
             &format!(
                 "window.searchIndex = {};",
-                search::build_index(&self.config.default_language, &self.library.read().unwrap())?
+                search::build_index(
+                    &self.config.default_language,
+                    &self.library.read().unwrap(),
+                    &self.config
+                )?
             ),
         )?;
 
@@ -812,7 +677,11 @@ impl Site {
                     &self.output_path.join(&format!("search_index.{}.js", &language.code)),
                     &format!(
                         "window.searchIndex = {};",
-                        search::build_index(&language.code, &self.library.read().unwrap())?
+                        search::build_index(
+                            &language.code,
+                            &self.library.read().unwrap(),
+                            &self.config
+                        )?
                     ),
                 )?;
             }
@@ -824,73 +693,7 @@ impl Site {
         Ok(())
     }
 
-    pub fn compile_sass(&self, base_path: &Path) -> Result<()> {
-        ensure_directory_exists(&self.output_path)?;
-
-        let sass_path = {
-            let mut sass_path = PathBuf::from(base_path);
-            sass_path.push("sass");
-            sass_path
-        };
-
-        let mut options = SassOptions::default();
-        options.output_style = OutputStyle::Compressed;
-        let mut compiled_paths = self.compile_sass_glob(&sass_path, "scss", &options.clone())?;
-
-        options.indented_syntax = true;
-        compiled_paths.extend(self.compile_sass_glob(&sass_path, "sass", &options)?);
-
-        compiled_paths.sort();
-        for window in compiled_paths.windows(2) {
-            if window[0].1 == window[1].1 {
-                bail!(
-                    "SASS path conflict: \"{}\" and \"{}\" both compile to \"{}\"",
-                    window[0].0.display(),
-                    window[1].0.display(),
-                    window[0].1.display(),
-                );
-            }
-        }
-
-        Ok(())
-    }
-
-    fn compile_sass_glob(
-        &self,
-        sass_path: &Path,
-        extension: &str,
-        options: &SassOptions,
-    ) -> Result<Vec<(PathBuf, PathBuf)>> {
-        let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
-        let files = glob(&glob_string)
-            .expect("Invalid glob for sass")
-            .filter_map(|e| e.ok())
-            .filter(|entry| {
-                !entry.as_path().file_name().unwrap().to_string_lossy().starts_with('_')
-            })
-            .collect::<Vec<_>>();
-
-        let mut compiled_paths = Vec::new();
-        for file in files {
-            let css = compile_file(&file, options.clone())?;
-
-            let path_inside_sass = file.strip_prefix(&sass_path).unwrap();
-            let parent_inside_sass = path_inside_sass.parent();
-            let css_output_path = self.output_path.join(path_inside_sass).with_extension("css");
-
-            if parent_inside_sass.is_some() {
-                create_dir_all(&css_output_path.parent().unwrap())?;
-            }
-
-            create_file(&css_output_path, &css)?;
-            compiled_paths.push((path_inside_sass.to_owned(), css_output_path));
-        }
-
-        Ok(compiled_paths)
-    }
-
     fn render_alias(&self, alias: &str, permalink: &str) -> Result<()> {
-        let mut output_path = self.output_path.to_path_buf();
         let mut split = alias.split('/').collect::<Vec<_>>();
 
         // If the alias ends with an html file name, use that instead of mapping
@@ -903,21 +706,13 @@ impl Site {
             }
             None => "index.html",
         };
-
-        for component in split {
-            output_path.push(&component);
-
-            if !output_path.exists() {
-                create_directory(&output_path)?;
-            }
-        }
-
-        create_file(
-            &output_path.join(page_name),
-            &render_redirect_template(&permalink, &self.tera)?,
-        )
+        let content = render_redirect_template(&permalink, &self.tera)?;
+        self.write_content(&split, page_name, content, false)?;
+        Ok(())
     }
 
+    /// Renders all the aliases for each page/section: a magic HTML template that redirects to
+    /// the canonical one
     pub fn render_aliases(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let library = self.library.read().unwrap();
@@ -940,7 +735,9 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
-        create_file(&self.output_path.join("404.html"), &self.inject_livereload(output))
+        let content = self.inject_livereload(output);
+        self.write_content(&[], "404.html", content, false)?;
+        Ok(())
     }
 
     /// Renders robots.txt
@@ -948,10 +745,9 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
-        create_file(
-            &self.output_path.join("robots.txt"),
-            &render_template("robots.txt", &self.tera, context, &self.config.theme)?,
-        )
+        let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
+        self.write_content(&[], "robots.txt", content, false)?;
+        Ok(())
     }
 
     /// Renders all taxonomies
@@ -969,33 +765,37 @@ impl Site {
         }
 
         ensure_directory_exists(&self.output_path)?;
-        let output_path = if taxonomy.kind.lang != self.config.default_language {
-            let mid_path = self.output_path.join(&taxonomy.kind.lang);
-            create_directory(&mid_path)?;
-            mid_path.join(&taxonomy.kind.name)
-        } else {
-            self.output_path.join(&taxonomy.kind.name)
-        };
+
+        let mut components = Vec::new();
+        if taxonomy.kind.lang != self.config.default_language {
+            components.push(taxonomy.kind.lang.as_ref());
+        }
+
+        components.push(taxonomy.kind.name.as_ref());
+
         let list_output =
             taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
-        create_directory(&output_path)?;
-        create_file(&output_path.join("index.html"), &self.inject_livereload(list_output))?;
+        let content = self.inject_livereload(list_output);
+        self.write_content(&components, "index.html", content, false)?;
+
         let library = self.library.read().unwrap();
         taxonomy
             .items
             .par_iter()
             .map(|item| {
-                let path = output_path.join(&item.slug);
+                let mut comp = components.clone();
+                comp.push(&item.slug);
+
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
-                        &path,
+                        comp.clone(),
                         &Paginator::from_taxonomy(&taxonomy, item, &library),
                     )?;
                 } else {
                     let single_output =
                         taxonomy.render_term(item, &self.tera, &self.config, &library)?;
-                    create_directory(&path)?;
-                    create_file(&path.join("index.html"), &self.inject_livereload(single_output))?;
+                    let content = self.inject_livereload(single_output);
+                    self.write_content(&comp, "index.html", content, false)?;
                 }
 
                 if taxonomy.kind.feed {
@@ -1007,7 +807,12 @@ impl Site {
                         } else {
                             &self.config.default_language
                         },
-                        Some((&taxonomy.kind, &item)),
+                        |mut context: Context| {
+                            context.insert("taxonomy", &taxonomy.kind);
+                            context
+                                .insert("term", &feed::SerializedFeedTaxonomyItem::from_item(item));
+                            context
+                        },
                     )
                 } else {
                     Ok(())
@@ -1021,20 +826,16 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let library = self.library.read().unwrap();
-        let all_sitemap_entries = {
-            let mut all_sitemap_entries =
-                sitemap::find_entries(&library, &self.taxonomies[..], &self.config);
-            all_sitemap_entries.sort();
-            all_sitemap_entries
-        };
+        let all_sitemap_entries =
+            { sitemap::find_entries(&library, &self.taxonomies[..], &self.config) };
         let sitemap_limit = 30000;
 
         if all_sitemap_entries.len() < sitemap_limit {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
-            create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            self.write_content(&[], "sitemap.xml", sitemap, false)?;
             return Ok(());
         }
 
@@ -1045,23 +846,24 @@ impl Site {
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = &render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
-            create_file(&self.output_path.join(&file_name), sitemap)?;
-            let mut sitemap_url: String = self.config.make_permalink(&file_name);
+            self.write_content(&[], &file_name, sitemap, false)?;
+            let mut sitemap_url = self.config.make_permalink(&file_name);
             sitemap_url.pop(); // Remove trailing slash
             sitemap_index.push(sitemap_url);
         }
+
         // Create main sitemap that reference numbered sitemaps
         let mut main_context = Context::new();
         main_context.insert("sitemaps", &sitemap_index);
-        let sitemap = &render_template(
+        let sitemap = render_template(
             "split_sitemap_index.xml",
             &self.tera,
             main_context,
             &self.config.theme,
         )?;
-        create_file(&self.output_path.join("sitemap.xml"), sitemap)?;
+        self.write_content(&[], "sitemap.xml", sitemap, false)?;
 
         Ok(())
     }
@@ -1074,70 +876,31 @@ impl Site {
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
         lang: &str,
-        taxonomy_and_item: Option<(&TaxonomyConfig, &TaxonomyItem)>,
+        additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let mut context = Context::new();
-        let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
-
-        // Don't generate a feed if none of the pages has a date
-        if pages.is_empty() {
-            return Ok(());
-        }
-
-        pages.par_sort_unstable_by(sort_actual_pages_by_date);
-
-        context.insert(
-            "last_updated",
-            pages
-                .iter()
-                .filter_map(|page| page.meta.updated.as_ref())
-                .chain(pages[0].meta.date.as_ref())
-                .max() // I love lexicographically sorted date strings
-                .unwrap(), // Guaranteed because of pages[0].meta.date
-        );
-        let library = self.library.read().unwrap();
-        // limit to the last n elements if the limit is set; otherwise use all.
-        let num_entries = self.config.feed_limit.unwrap_or_else(|| pages.len());
-        let p = pages
-            .iter()
-            .take(num_entries)
-            .map(|x| x.to_serialized_basic(&library))
-            .collect::<Vec<_>>();
-
-        context.insert("pages", &p);
-        context.insert("config", &self.config);
-        context.insert("lang", lang);
-
-        let feed_filename = &self.config.feed_filename;
-        let feed_url = if let Some(ref base) = base_path {
-            self.config
-                .make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
-        } else {
-            self.config.make_permalink(feed_filename)
+        let feed = match feed::render_feed(self, all_pages, lang, base_path, additional_context_fn)?
+        {
+            Some(v) => v,
+            None => return Ok(()),
         };
-
-        context.insert("feed_url", &feed_url);
-
-        if let Some((taxonomy, item)) = taxonomy_and_item {
-            context.insert("taxonomy", taxonomy);
-            context.insert("term", &SerializedTaxonomyItem::from_item(item));
-        }
-
-        let feed = &render_template(feed_filename, &self.tera, context, &self.config.theme)?;
+        let feed_filename = &self.config.feed_filename;
 
         if let Some(ref base) = base_path {
-            let mut output_path = self.output_path.clone();
+            let mut components = Vec::new();
             for component in base.components() {
-                output_path.push(component);
-                if !output_path.exists() {
-                    create_directory(&output_path)?;
-                }
+                // TODO: avoid cloning the paths
+                components.push(component.as_os_str().to_string_lossy().as_ref().to_string());
             }
-            create_file(&output_path.join(feed_filename), feed)?;
+            self.write_content(
+                &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
+                &feed_filename,
+                feed,
+                false,
+            )?;
         } else {
-            create_file(&self.output_path.join(feed_filename), feed)?;
+            self.write_content(&[], &feed_filename, feed, false)?;
         }
         Ok(())
     }
@@ -1146,26 +909,49 @@ impl Site {
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let mut output_path = self.output_path.clone();
+        let mut components: Vec<&str> = Vec::new();
+        let create_directories = self.build_mode == BuildMode::Disk || !section.assets.is_empty();
 
         if section.lang != self.config.default_language {
+            components.push(&section.lang);
             output_path.push(&section.lang);
-            if !output_path.exists() {
+
+            if !output_path.exists() && create_directories {
                 create_directory(&output_path)?;
             }
         }
 
         for component in &section.file.components {
+            components.push(component);
             output_path.push(component);
 
-            if !output_path.exists() {
+            if !output_path.exists() && create_directories {
                 create_directory(&output_path)?;
             }
+        }
+
+        if section.meta.generate_feed {
+            let library = &self.library.read().unwrap();
+            let pages = section
+                .pages
+                .iter()
+                .map(|k| library.get_page_by_key(*k))
+                .collect();
+            self.render_feed(
+                pages,
+                Some(&PathBuf::from(&section.path[1..])),
+                &section.lang,
+                |mut context: Context| {
+                    context.insert("section", &section.to_serialized(library));
+                    context
+                },
+            )?;
         }
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &section.assets {
             let asset_path = asset.as_path();
-            copy(
+            self.copy_asset(
                 &asset_path,
                 &output_path.join(
                     asset_path.file_name().expect("Failed to get asset filename for section"),
@@ -1187,38 +973,29 @@ impl Site {
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
             let permalink = self.config.make_permalink(redirect_to);
-            create_file(
-                &output_path.join("index.html"),
-                &render_redirect_template(&permalink, &self.tera)?,
+            self.write_content(
+                &components,
+                "index.html",
+                render_redirect_template(&permalink, &self.tera)?,
+                create_directories,
             )?;
+
             return Ok(());
         }
 
         if section.meta.is_paginated() {
             self.render_paginated(
-                &output_path,
+                components,
                 &Paginator::from_section(&section, &self.library.read().unwrap()),
             )?;
         } else {
             let output =
                 section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-            create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
+            let content = self.inject_livereload(output);
+            self.write_content(&components, "index.html", content, false)?;
         }
 
         Ok(())
-    }
-
-    /// Used only on reload
-    pub fn render_index(&self) -> Result<()> {
-        self.render_section(
-            &self
-                .library
-                .read()
-                .unwrap()
-                .get_section(&self.content_path.join("_index.md"))
-                .expect("Failed to get index section"),
-            false,
-        )
     }
 
     /// Renders all sections
@@ -1244,33 +1021,43 @@ impl Site {
     }
 
     /// Renders a list of pages when the section/index is wanting pagination.
-    pub fn render_paginated(&self, output_path: &Path, paginator: &Paginator) -> Result<()> {
+    pub fn render_paginated<'a>(
+        &self,
+        components: Vec<&'a str>,
+        paginator: &'a Paginator,
+    ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let folder_path = output_path.join(&paginator.paginate_path);
-        create_directory(&folder_path)?;
+        let index_components = components.clone();
 
         paginator
             .pagers
             .par_iter()
             .map(|pager| {
-                let page_path = folder_path.join(&format!("{}", pager.index));
-                create_directory(&page_path)?;
+                let mut pager_components = index_components.clone();
+                pager_components.push(&paginator.paginate_path);
+                let pager_path = format!("{}", pager.index);
+                pager_components.push(&pager_path);
                 let output = paginator.render_pager(
                     pager,
                     &self.config,
                     &self.tera,
                     &self.library.read().unwrap(),
                 )?;
+                let content = self.inject_livereload(output);
+
                 if pager.index > 1 {
-                    create_file(&page_path.join("index.html"), &self.inject_livereload(output))?;
+                    self.write_content(&pager_components, "index.html", content, false)?;
                 } else {
-                    create_file(&output_path.join("index.html"), &self.inject_livereload(output))?;
-                    create_file(
-                        &page_path.join("index.html"),
-                        &render_redirect_template(&paginator.permalink, &self.tera)?,
+                    self.write_content(&index_components, "index.html", content, false)?;
+                    self.write_content(
+                        &pager_components,
+                        "index.html",
+                        render_redirect_template(&paginator.permalink, &self.tera)?,
+                        false,
                     )?;
                 }
+
                 Ok(())
             })
             .collect::<Result<()>>()

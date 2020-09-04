@@ -29,7 +29,7 @@ lazy_static! {
     ).unwrap();
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Page {
     /// All info about the actual file
     pub file: FileInfo,
@@ -48,7 +48,7 @@ pub struct Page {
     /// The slug of that page.
     /// First tries to find the slug in the meta and defaults to filename otherwise
     pub slug: String,
-    /// The URL path of the page
+    /// The URL path of the page, always starting with a slash
     pub path: String,
     /// The components of the path of the page
     pub components: Vec<String>,
@@ -91,31 +91,7 @@ impl Page {
     pub fn new<P: AsRef<Path>>(file_path: P, meta: PageFrontMatter, base_path: &PathBuf) -> Page {
         let file_path = file_path.as_ref();
 
-        Page {
-            file: FileInfo::new_page(file_path, base_path),
-            meta,
-            ancestors: vec![],
-            raw_content: "".to_string(),
-            assets: vec![],
-            serialized_assets: vec![],
-            content: "".to_string(),
-            slug: "".to_string(),
-            path: "".to_string(),
-            components: vec![],
-            permalink: "".to_string(),
-            summary: None,
-            earlier: None,
-            later: None,
-            lighter: None,
-            heavier: None,
-            toc: vec![],
-            word_count: None,
-            reading_time: None,
-            lang: String::new(),
-            translations: Vec::new(),
-            internal_links_with_anchors: Vec::new(),
-            external_links: Vec::new(),
-        }
+        Page { file: FileInfo::new_page(file_path, base_path), meta, ..Self::default() }
     }
 
     pub fn is_draft(&self) -> bool {
@@ -136,7 +112,7 @@ impl Page {
 
         page.lang = page.file.find_language(config)?;
 
-        page.raw_content = content;
+        page.raw_content = content.to_string();
         let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
         page.word_count = Some(word_count);
         page.reading_time = Some(reading_time);
@@ -182,8 +158,14 @@ impl Page {
             }
         };
 
-        if let Some(ref p) = page.meta.path {
-            page.path = p.trim().trim_start_matches('/').to_string();
+        page.path = if let Some(ref p) = page.meta.path {
+            let path = p.trim();
+
+            if path.starts_with('/') {
+                path.into()
+            } else {
+                format!("/{}", path)
+            }
         } else {
             let mut path = if page.file.components.is_empty() {
                 page.slug.clone()
@@ -195,8 +177,8 @@ impl Page {
                 path = format!("{}/{}", page.lang, path);
             }
 
-            page.path = path;
-        }
+            format!("/{}", path)
+        };
 
         if !page.path.ends_with('/') {
             page.path = format!("{}/", page.path);
@@ -238,7 +220,7 @@ impl Page {
                 page.assets = assets
                     .into_iter()
                     .filter(|path| match path.file_name() {
-                        None => true,
+                        None => false,
                         Some(file) => !globset.is_match(file),
                     })
                     .collect();
@@ -335,36 +317,6 @@ impl Page {
     }
 }
 
-impl Default for Page {
-    fn default() -> Page {
-        Page {
-            file: FileInfo::default(),
-            meta: PageFrontMatter::default(),
-            ancestors: vec![],
-            raw_content: "".to_string(),
-            assets: vec![],
-            serialized_assets: vec![],
-            content: "".to_string(),
-            slug: "".to_string(),
-            path: "".to_string(),
-            components: vec![],
-            permalink: "".to_string(),
-            summary: None,
-            earlier: None,
-            later: None,
-            lighter: None,
-            heavier: None,
-            toc: vec![],
-            word_count: None,
-            reading_time: None,
-            lang: String::new(),
-            translations: Vec::new(),
-            internal_links_with_anchors: Vec::new(),
-            external_links: Vec::new(),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -420,7 +372,7 @@ Hello world"#;
             Page::parse(Path::new("content/posts/intro/start.md"), content, &conf, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "posts/intro/hello-world/");
+        assert_eq!(page.path, "/posts/intro/hello-world/");
         assert_eq!(page.components, vec!["posts", "intro", "hello-world"]);
         assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world/");
     }
@@ -436,7 +388,7 @@ Hello world"#;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
@@ -453,7 +405,7 @@ Hello world"#;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
@@ -470,7 +422,7 @@ Hello world"#;
         let res = Page::parse(Path::new("start.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "日本/");
+        assert_eq!(page.path, "/日本/");
         assert_eq!(page.components, vec!["日本"]);
         assert_eq!(page.permalink, config.make_permalink("日本"));
     }
@@ -491,7 +443,7 @@ Hello world"#;
         );
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.components, vec!["hello-world"]);
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
@@ -512,7 +464,7 @@ Hello world"#;
         );
         assert!(res.is_ok());
         let page = res.unwrap();
-        assert_eq!(page.path, "hello-world/");
+        assert_eq!(page.path, "/hello-world/");
         assert_eq!(page.permalink, config.make_permalink("hello-world"));
     }
 

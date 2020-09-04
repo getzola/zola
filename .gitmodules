@@ -61,3 +61,9 @@
 [submodule "sublime/syntaxes/vue-syntax-highlight"]
 	path = sublime/syntaxes/vue-syntax-highlight
 	url = https://github.com/vuejs/vue-syntax-highlight.git
+[submodule "sublime/syntaxes/sublime-glsl"]
+	path = sublime/syntaxes/sublime-glsl
+	url = https://github.com/euler0/sublime-glsl.git
+[submodule "sublime/syntaxes/GDScript-sublime"]
+	path = sublime/syntaxes/GDScript-sublime
+	url = https://github.com/beefsack/GDScript-sublime.git

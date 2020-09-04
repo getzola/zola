@@ -3,6 +3,7 @@ name = "utils"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
+include = ["src/**/*"]
 
 [dependencies]
 tera = "1"
@@ -13,7 +14,7 @@ serde = "1"
 serde_derive = "1"
 slug = "0.1"
 percent-encoding = "2"
-filetime = "0.2.8"
+filetime = "0.2.12"
 
 errors = { path = "../errors" }
 

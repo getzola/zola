@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use chrono::prelude::*;
 use serde_derive::Deserialize;
 use tera::{Map, Value};
-use toml;
 
 use errors::{bail, Result};
 use utils::de::{fix_toml_dates, from_toml_datetime};
@@ -38,8 +37,6 @@ pub struct PageFrontMatter {
     /// Can't be an empty string if present
     pub path: Option<String>,
     pub taxonomies: HashMap<String, Vec<String>>,
-    /// Integer to use to order content. Lowest is at the bottom, highest first
-    pub order: Option<usize>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
     /// All aliases for that page. Zola will create HTML templates that will
@@ -55,6 +52,20 @@ pub struct PageFrontMatter {
     pub in_search_index: bool,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,
+}
+
+/// Parse a string for a datetime coming from one of the supported TOML format
+/// There are three alternatives:
+/// 1. an offset datetime (plain RFC3339)
+/// 2. a local datetime (RFC3339 with timezone omitted)
+/// 3. a local date (YYYY-MM-DD).
+/// This tries each in order.
+fn parse_datetime(d: &str) -> Option<NaiveDateTime> {
+    DateTime::parse_from_rfc3339(d)
+        .or_else(|_| DateTime::parse_from_rfc3339(format!("{}Z", d).as_ref()))
+        .map(|s| s.naive_local())
+        .or_else(|_| NaiveDate::parse_from_str(d, "%Y-%m-%d").map(|s| s.and_hms(0, 0, 0)))
+        .ok()
 }
 
 impl PageFrontMatter {
@@ -83,31 +94,20 @@ impl PageFrontMatter {
 
         f.date_to_datetime();
 
+        if let Some(ref date) = f.date {
+            if f.datetime.is_none() {
+                bail!("`date` could not be parsed: {}.", date);
+            }
+        }
+
         Ok(f)
     }
 
     /// Converts the TOML datetime to a Chrono naive datetime
     /// Also grabs the year/month/day tuple that will be used in serialization
     pub fn date_to_datetime(&mut self) {
-        self.datetime = if let Some(ref d) = self.date {
-            if d.contains('T') {
-                DateTime::parse_from_rfc3339(&d).ok().map(|s| s.naive_local())
-            } else {
-                NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok().map(|s| s.and_hms(0, 0, 0))
-            }
-        } else {
-            None
-        };
-
-        self.datetime_tuple = if let Some(ref dt) = self.datetime {
-            Some((dt.year(), dt.month(), dt.day()))
-        } else {
-            None
-        };
-    }
-
-    pub fn order(&self) -> usize {
-        self.order.unwrap()
+        self.datetime = self.date.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
+        self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
     }
 
     pub fn weight(&self) -> usize {
@@ -128,7 +128,6 @@ impl Default for PageFrontMatter {
             slug: None,
             path: None,
             taxonomies: HashMap::new(),
-            order: None,
             weight: None,
             aliases: Vec::new(),
             in_search_index: true,
@@ -198,7 +197,7 @@ mod tests {
     date = 2016-10-10
     "#;
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.date.is_some());
+        assert!(res.datetime.is_some());
     }
 
     #[test]
@@ -209,7 +208,51 @@ mod tests {
     date = 2002-10-02T15:00:00Z
     "#;
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.date.is_some());
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_without_timezone() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02T15:00:00
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_with_space() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02 15:00:00+02:00
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_with_space_without_timezone() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02 15:00:00
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
+    }
+
+    #[test]
+    fn can_parse_date_rfc3339_with_microseconds() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+    date = 2002-10-02T15:00:00.123456Z
+    "#;
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.datetime.is_some());
     }
 
     #[test]
@@ -268,6 +311,23 @@ mod tests {
         println!("{:?}", res);
         assert!(res.is_ok());
         assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-14-01").unwrap());
+    }
+
+    #[test]
+    fn can_parse_fully_nested_dates_in_extra() {
+        let content = r#"
+    title = "Hello"
+    description = "hey there"
+
+    [extra]
+    date_example = 2020-05-04
+    [[extra.questions]]
+    date = 2020-05-03
+    name = "Who is the prime minister of Uganda?""#;
+        let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap().extra["questions"][0]["date"], to_value("2020-05-03").unwrap());
     }
 
     #[test]

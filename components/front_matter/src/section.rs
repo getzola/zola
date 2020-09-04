@@ -1,6 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
 use tera::{Map, Value};
-use toml;
 
 use super::{InsertAnchor, SortBy};
 use errors::{bail, Result};
@@ -29,6 +28,9 @@ pub struct SectionFrontMatter {
     /// How many pages to be displayed per paginated page. No pagination will happen if this isn't set
     #[serde(skip_serializing)]
     pub paginate_by: Option<usize>,
+    /// Whether to reverse the order of the pages before segmenting into pagers
+    #[serde(skip_serializing)]
+    pub paginate_reversed: bool,
     /// Path to be used by pagination: the page number will be appended after it. Defaults to `page`.
     #[serde(skip_serializing)]
     pub paginate_path: String,
@@ -61,6 +63,9 @@ pub struct SectionFrontMatter {
     /// redirect to this
     #[serde(skip_serializing)]
     pub aliases: Vec<String>,
+    /// Whether to generate a feed for the current section
+    #[serde(skip_serializing)]
+    pub generate_feed: bool,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,
 }
@@ -98,6 +103,7 @@ impl Default for SectionFrontMatter {
             weight: 0,
             template: None,
             paginate_by: None,
+            paginate_reversed: false,
             paginate_path: DEFAULT_PAGINATE_PATH.to_string(),
             render: true,
             redirect_to: None,
@@ -106,6 +112,7 @@ impl Default for SectionFrontMatter {
             transparent: false,
             page_template: None,
             aliases: Vec::new(),
+            generate_feed: false,
             extra: Map::new(),
         }
     }

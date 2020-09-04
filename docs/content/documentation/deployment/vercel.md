@@ -27,7 +27,7 @@ specifying the `ZOLA_VERSION` we want to use to deploy the site.
   {
   "build": {
     "env": {
-      "ZOLA_VERSION": "0.11.0"
+      "ZOLA_VERSION": "0.12.0"
     }
   }
 }

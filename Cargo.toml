@@ -1,6 +1,6 @@
 [package]
 name = "zola"
-version = "0.11.0"
+version = "0.12.0"
 authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
 edition = "2018"
 license = "MIT"
@@ -9,7 +9,8 @@ description = "A fast static site generator with everything built-in"
 homepage = "https://www.getzola.org"
 repository = "https://github.com/getzola/zola"
 keywords = ["static", "site", "generator", "blog"]
-# build = "build.rs"
+
+include = ["src/**/*", "LICENSE", "README.md"]
 
 [build-dependencies]
 clap = "2"
@@ -19,9 +20,9 @@ name = "zola"
 
 [dependencies]
 atty = "0.2.11"
-clap = "2"
+clap = { version = "2", default-features = false }
 chrono = "0.4"
-lazy_static = "1.1.0"
+lazy_static = "1.1"
 termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "2"
@@ -39,14 +40,12 @@ site = { path = "components/site" }
 errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
-rebuild = { path = "components/rebuild" }
 
 [workspace]
 members = [
     "components/config",
     "components/errors",
     "components/front_matter",
-    "components/rebuild",
     "components/rendering",
     "components/site",
     "components/templates",

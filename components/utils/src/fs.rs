@@ -96,10 +96,6 @@ pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
 
 /// Copy a file but takes into account where to start the copy as
 /// there might be folders we need to create on the way.
-/// No copy occurs if all of the following conditions are satisfied:
-/// 1. A file with the same name already exists in the dest path.
-/// 2. Its modification timestamp is identical to that of the src file.
-/// 3. Its filesize is identical to that of the src file.
 pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: bool) -> Result<()> {
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
@@ -108,21 +104,33 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: boo
         create_dir_all(parent_directory)?;
     }
 
+    copy_file_if_needed(src, &target_path, hard_link)
+}
+
+/// No copy occurs if all of the following conditions are satisfied:
+/// 1. A file with the same name already exists in the dest path.
+/// 2. Its modification timestamp is identical to that of the src file.
+/// 3. Its filesize is identical to that of the src file.
+pub fn copy_file_if_needed(src: &Path, dest: &PathBuf, hard_link: bool) -> Result<()> {
+    if let Some(parent_directory) = dest.parent() {
+        create_dir_all(parent_directory)?;
+    }
+
     if hard_link {
-        std::fs::hard_link(src, target_path)?
+        std::fs::hard_link(src, dest)?
     } else {
         let src_metadata = metadata(src)?;
         let src_mtime = FileTime::from_last_modification_time(&src_metadata);
-        if Path::new(&target_path).is_file() {
-            let target_metadata = metadata(&target_path)?;
+        if Path::new(&dest).is_file() {
+            let target_metadata = metadata(&dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                copy(src, &target_path)?;
-                set_file_mtime(&target_path, src_mtime)?;
+                copy(src, &dest)?;
+                set_file_mtime(&dest, src_mtime)?;
             }
         } else {
-            copy(src, &target_path)?;
-            set_file_mtime(&target_path, src_mtime)?;
+            copy(src, &dest)?;
+            set_file_mtime(&dest, src_mtime)?;
         }
     }
     Ok(())

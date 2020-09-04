@@ -1,6 +1,5 @@
 use serde::{Deserialize, Deserializer};
 use tera::{Map, Value};
-use toml;
 
 /// Used as an attribute when we want to convert from TOML to a string date
 pub fn from_toml_datetime<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
@@ -42,6 +41,16 @@ pub fn fix_toml_dates(table: Map<String, Value>) -> Value {
         match value {
             Value::Object(o) => {
                 new.insert(key, convert_toml_date(o));
+            }
+            Value::Array(arr) => {
+                let mut new_arr = Vec::with_capacity(arr.len());
+                for v in arr {
+                    match v {
+                        Value::Object(o) => new_arr.push(fix_toml_dates(o)),
+                        _ => new_arr.push(v),
+                    };
+                }
+                new.insert(key, Value::Array(new_arr));
             }
             _ => {
                 new.insert(key, value);

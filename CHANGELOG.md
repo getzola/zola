@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.12.0 (2020-09-04)
+
+### Breaking
+
+- All paths like `current_path`, `page.path`, `section.path` (except colocated assets) now have a leading `/`
+- Search index generation for Chinese and Japanese has been disabled by default as it leads to a big increase in 
+binary size
+
+### Other
+
+- Add 2 syntax highlighting themes: `green` and `railsbase16-green-screen-dark`
+- Enable task lists in Markdown
+- Add support for SVG in `get_image_metadata`
+- Fix parsing of dates in arrays in `extra`
+- Add a `--force` argument to `zola init` to allow creating a Zola site in a non-empty directory
+- Make themes more flexible: `include` can now be used
+- Make search index generation configurable, see docs for examples
+- Fix Sass trying to load folders starting with `_`, causing issues with frameworks
+- Update livereload.js version
+- Add Markdown-outputting shortcodes
+- Taxonomies with the same name but different casing are now merged, eg Author and author
+
 ## 0.11.0 (2020-05-25)
 
 ### Breaking
@@ -8,6 +30,7 @@
   - Config value `rss_limit` is renamed to `feed_limit`
   - Config value `languages.*.rss` is renamed to `languages.*.feed`
   - Config value `generate_rss` is renamed to `generate_feed`
+  - Taxonomy value `rss` is renamed to `feed`
 
   Users with existing feeds should either set `feed_filename = "rss.xml"` in config.toml to keep things the same, or set up a 3xx redirect from rss.xml to atom.xml so that existing feed consumers aren’t broken.
 
@@ -23,7 +46,6 @@
 - Pass missing `lang` template parameter to taxonomy list template
 - Fix default index section not having its path set to '/'
 - Change cachebust strategy to use SHA256 instead of timestamp
-- Fix 
 
 ## 0.10.1 (2020-03-12)
 
@@ -48,7 +70,7 @@ accessible everywhere
 - Check for path collisions when building the site
 - Fix bug in template extension with themes
 - Use Rustls instead of openssl
-- The continue reading HTML element is now a <span> instead of a <p>
+- The continue reading HTML element is now a `<span>` instead of a `<p>`
 - Update livereload.js
 - Add --root global argument
 

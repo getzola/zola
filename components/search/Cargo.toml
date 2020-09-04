@@ -5,9 +5,15 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-elasticlunr-rs = "2"
+elasticlunr-rs = {version = "2", default-features = false, features = ["da", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
 ammonia = "3"
 lazy_static = "1"
 
 errors = { path = "../errors" }
 library = { path = "../library" }
+config = { path = "../config" }
+
+[features]
+default = []
+indexing-zh = ["elasticlunr-rs/zh"]
+indexing-ja = ["elasticlunr-rs/ja"]

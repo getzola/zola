@@ -11,6 +11,12 @@ pub enum SlugifyStrategy {
     Off,
 }
 
+impl Default for SlugifyStrategy {
+    fn default() -> Self {
+        SlugifyStrategy::On
+    }
+}
+
 fn strip_chars(s: &str, chars: &str) -> String {
     let mut sanitized_string = s.to_string();
     sanitized_string.retain(|c| !chars.contains(c));

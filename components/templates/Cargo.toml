@@ -8,12 +8,12 @@ edition = "2018"
 tera = "1"
 base64 = "0.12"
 lazy_static = "1"
-pulldown-cmark = "0.7"
+pulldown-cmark = { version = "0.8", default-features = false }
 toml = "0.5"
 csv = "1"
 image = "0.23"
 serde_json = "1.0"
-sha2 = "0.8"
+sha2 = "0.9"
 url = "2"
 
 errors = { path = "../errors" }
@@ -21,6 +21,7 @@ utils = { path = "../utils" }
 library = { path = "../library" }
 config = { path = "../config" }
 imageproc = { path = "../imageproc" }
+svg_metadata = "0.4.1"
 
 [dependencies.reqwest]
 version = "0.10"
@@ -28,4 +29,4 @@ default-features = false
 features = ["blocking", "rustls-tls"]
 
 [dev-dependencies]
-mockito = "0.25"
+mockito = "0.27"

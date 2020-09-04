@@ -54,7 +54,10 @@ pub fn check_url(url: &str, config: &LinkChecker) -> Result {
             let body = {
                 let mut buf: Vec<u8> = vec![];
                 response.copy_to(&mut buf).unwrap();
-                String::from_utf8(buf).unwrap()
+                match String::from_utf8(buf) {
+                    Ok(s) => s,
+                    Err(_) => return Err("The page didn't return valid UTF-8".to_string()),
+                }
             };
 
             match check_page_for_anchor(url, body) {
@@ -101,11 +104,15 @@ fn has_anchor(url: &str) -> bool {
 fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks: [String; 8] = [
+    let checks = [
+        format!(" id={}", anchor),
+        format!(" ID={}", anchor),
         format!(" id='{}'", anchor),
         format!(" ID='{}'", anchor),
         format!(r#" id="{}""#, anchor),
         format!(r#" ID="{}""#, anchor),
+        format!(" name={}", anchor),
+        format!(" NAME={}", anchor),
         format!(" name='{}'", anchor),
         format!(" NAME='{}'", anchor),
         format!(r#" name="{}""#, anchor),
@@ -256,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn can_validate_anchors() {
+    fn can_validate_anchors_with_double_quotes() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
         let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
         let res = check_page_for_anchor(url, body);
@@ -273,9 +280,17 @@ mod tests {
     }
 
     #[test]
-    fn can_validate_anchors_with_other_quotes() {
+    fn can_validate_anchors_with_single_quotes() {
         let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
-        let body = r#"<body><h3 id="method.collect">collect</h3></body>"#.to_string();
+        let body = "<body><h3 id='method.collect'>collect</h3></body>".to_string();
+        let res = check_page_for_anchor(url, body);
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn can_validate_anchors_without_quotes() {
+        let url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect";
+        let body = "<body><h3 id=method.collect>collect</h3></body>".to_string();
         let res = check_page_for_anchor(url, body);
         assert!(res.is_ok());
     }

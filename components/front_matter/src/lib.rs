@@ -13,7 +13,7 @@ pub use section::SectionFrontMatter;
 
 lazy_static! {
     static ref PAGE_RE: Regex =
-        Regex::new(r"^[[:space:]]*\+\+\+\r?\n((?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
+        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
@@ -37,7 +37,7 @@ pub enum InsertAnchor {
 
 /// Split a file between the front matter and its content
 /// Will return an error if the front matter wasn't found
-fn split_content(file_path: &Path, content: &str) -> Result<(String, String)> {
+fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(&'c str, &'c str)> {
     if !PAGE_RE.is_match(content) {
         bail!(
             "Couldn't find front matter in `{}`. Did you forget to add `+++`?",
@@ -50,15 +50,15 @@ fn split_content(file_path: &Path, content: &str) -> Result<(String, String)> {
     // caps[0] is the full match
     // caps[1] => front matter
     // caps[2] => content
-    Ok((caps[1].to_string(), caps[2].to_string()))
+    Ok((caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str()))
 }
 
 /// Split a file between the front matter and its content.
 /// Returns a parsed `SectionFrontMatter` and the rest of the content
-pub fn split_section_content(
+pub fn split_section_content<'c>(
     file_path: &Path,
-    content: &str,
-) -> Result<(SectionFrontMatter, String)> {
+    content: &'c str,
+) -> Result<(SectionFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = SectionFrontMatter::parse(&front_matter).map_err(|e| {
         Error::chain(
@@ -71,7 +71,10 @@ pub fn split_section_content(
 
 /// Split a file between the front matter and its content
 /// Returns a parsed `PageFrontMatter` and the rest of the content
-pub fn split_page_content(file_path: &Path, content: &str) -> Result<(PageFrontMatter, String)> {
+pub fn split_page_content<'c>(
+    file_path: &Path,
+    content: &'c str,
+) -> Result<(PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
         Error::chain(

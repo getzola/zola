@@ -20,6 +20,12 @@ languages = [
 If you want to use per-language taxonomies, ensure you set the `lang` field in their
 configuration.
 
+Note: By default, Chinese and Japanese search indexing is not included. You can include
+the support by building `zola` using `cargo build --features search/indexing-ja search/indexing-zh`.
+Please also note that, enabling Chinese indexing will increase the binary size by approximately
+5 MB while enabling Japanese indexing will increase the binary size by approximately 70 MB 
+due to the incredibly large dictionaries.
+
 ## Content
 Once the languages have been added, you can start to translate your content. Zola
 uses the filename to detect the language:
