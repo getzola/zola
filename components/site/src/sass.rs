@@ -49,7 +49,12 @@ fn compile_sass_glob(
         .expect("Invalid glob for sass")
         .filter_map(|e| e.ok())
         .filter(|entry| {
-            !entry.as_path().components().any(|c| c.as_os_str().to_string_lossy().starts_with('_'))
+            !entry
+                .as_path()
+                .iter()
+                .last()
+                .map(|c| c.to_string_lossy().starts_with('_'))
+                .unwrap_or(false)
         })
         .collect::<Vec<_>>();
 
