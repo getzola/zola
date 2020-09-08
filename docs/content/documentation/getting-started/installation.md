@@ -30,6 +30,13 @@ Zola has been available in the official repositories since Fedora 29.
 $ sudo dnf install zola
 ```
 
+### Void Linux
+Zola is available in the official Void Linux repositories.
+
+```sh
+$ sudo xbps-install zola
+```
+
 ### FreeBSD
 
 Zola is available in the official package repository.
