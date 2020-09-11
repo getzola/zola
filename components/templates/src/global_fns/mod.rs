@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::{fs, io, result};
 
+use fluent_templates::{ArcLoader, FluentLoader};
 use sha2::{Digest, Sha256, Sha384, Sha512};
 use svg_metadata as svg;
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
@@ -513,6 +514,56 @@ impl TeraFn for GetTaxonomy {
             )
             .into()),
         }
+    }
+}
+
+pub struct Fluent {
+    loader: FluentLoader<ArcLoader>,
+}
+impl Fluent {
+    pub fn new(loader: ArcLoader, lang: LanguageIdentifier) -> Self {
+        Self { loader: FluentLoader::new(loader).with_default_lang(lang) }
+    }
+}
+impl TeraFn for Fluent {
+    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
+        self.loader.call(args)
+    }
+}
+
+/// Creates an ArchLoader if the `locales` directory exists for either the site or its theme.
+///
+/// Otherwise, returns None. If there were any problems, an Err is returned.
+///
+/// Values in files called `core.ftl` will be loaded for all languages. Currently, Fluent files
+/// from themes won't be loaded if a `locales` directory exists for the site. This is expected to
+/// be fixed soon.
+pub fn construct_arc_loader(
+    default_lang: LanguageIdentifier,
+    base_path: PathBuf,
+    theme_dir: Option<String>,
+) -> std::result::Result<Option<ArcLoader>, Box<dyn std::error::Error>> {
+    // This objectively awesome and functional bit of code was made by @doct0rhu:mozilla.org on the
+    // #rust:matrix.org room
+    let site_locales = Some(base_path.join("locales")).filter(|path| path.exists());
+    let theme_locales =
+        theme_dir.map(|t| base_path.join(t).join("locales")).filter(|path| path.exists());
+
+    let shared_resources = vec![&site_locales, &theme_locales];
+    let shared_resources = shared_resources
+        .iter()
+        .filter_map(|x| x.as_ref())
+        .map(|locales| locales.join("core.ftl"))
+        .filter(|path| path.exists())
+        .collect::<Vec<_>>();
+
+    if let Some(locales) = site_locales.or(theme_locales) {
+        ArcLoader::builder(&locales, default_lang)
+            .shared_resources(Some(&shared_resources))
+            .build()
+            .map(Some)
+    } else {
+        Ok(None)
     }
 }
 

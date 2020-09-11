@@ -49,8 +49,17 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 }
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
-pub fn register_early_global_fns(site: &mut Site) {
+pub fn register_early_global_fns(site: &mut Site) -> Result<()> {
     for (lang, tera) in site.localized_tera.iter_mut() {
+        // Split off in the hope that eventually it could be cheaply copied without re-parsing the
+        // `.ftl` files, and saving allocation due to the `Arc`s. FIXME
+        let loader = global_fns::construct_arc_loader(
+            site.config.default_language.clone(),
+            site.base_path.clone(),
+            site.config.theme.clone(),
+        )
+        .map_err(|e| Error::from(e.to_string()))?;
+
         tera.register_function(
             "resize_image",
             global_fns::ResizeImage::new(site.imageproc.clone()),
@@ -86,7 +95,12 @@ pub fn register_early_global_fns(site: &mut Site) {
                 site.config.slugify.taxonomies,
             ),
         );
+        if let Some(l) = loader {
+            tera.register_function("fluent", global_fns::Fluent::new(l, lang.clone()));
+        }
     }
+
+    Ok(())
 }
 
 /// Functions filled once we have parsed all the pages/sections only, so not available in shortcodes
