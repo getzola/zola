@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Generates test sites for use in benchmark.
 Tested with python3 and probably does not work on Windows.
@@ -100,7 +102,6 @@ def gen_skeleton(name, is_blog):
     os.makedirs(os.path.join(name, "content"))
 
     with open(os.path.join(name, "config.toml"), "w") as f:
-        if is_blog:
             f.write("""
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
@@ -110,15 +111,6 @@ taxonomies = [
  {name = "tags", feed = true}, 
  {name = "categories"}
 ]
-
-[extra.author]
-name = "Vincent Prouillet"
-""")
-        else:
-            f.write("""
-title = "My site"
-base_url = "https://replace-this-with-your-url.com"
-theme = "sample"
 
 [extra.author]
 name = "Vincent Prouillet"
