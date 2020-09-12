@@ -8,7 +8,7 @@ use site::Site;
 
 #[bench]
 fn bench_loading_small_blog(b: &mut test::Bencher) {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-blog");
     let config_file = path.join("config.toml");
@@ -19,7 +19,7 @@ fn bench_loading_small_blog(b: &mut test::Bencher) {
 
 #[bench]
 fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-blog");
     let config_file = path.join("config.toml");
@@ -100,7 +100,7 @@ fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
 
 #[bench]
 fn bench_loading_small_kb(b: &mut test::Bencher) {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-kb");
     let config_file = path.join("config.toml");
@@ -111,7 +111,7 @@ fn bench_loading_small_kb(b: &mut test::Bencher) {
 
 #[bench]
 fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-kb");
     let config_file = path.join("config.toml");

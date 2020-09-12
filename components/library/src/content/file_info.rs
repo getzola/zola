@@ -34,7 +34,7 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
     components
 }
 
-/// Return a (name, maybe_lang) tuple if name has a possible language in it
+/// Return a `(name, maybe_lang)` tuple if name has a possible language in it
 pub fn get_language<S: AsRef<str>>(name: S) -> (String, Option<String>) {
     // Go with the assumption that no one is using '.' in filenames (regardless of whether the site
     // is multilingual)
@@ -42,11 +42,11 @@ pub fn get_language<S: AsRef<str>>(name: S) -> (String, Option<String>) {
         return (name.as_ref().to_string(), None);
     }
 
-    let parts: Vec<String> = name.as_ref().splitn(2, '.').map(|s| s.to_string()).collect();
+    let parts: Vec<String> = name.as_ref().splitn(2, '.').map(ToString::to_string).collect();
     (parts[0].clone(), Some(parts[1].clone()))
 }
 
-/// Return a (name, date) tuple if name has a date in it
+/// Return a `(name, date)` tuple if name has a date in it
 ///
 /// This only makes sense for pages, not sections.
 pub fn get_date<S: AsRef<str>>(name: S) -> (String, Option<String>) {
@@ -106,10 +106,10 @@ impl FileInfo {
         let mut components =
             find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         assert!(!name.is_empty());
-        let relative = if !components.is_empty() {
-            format!("{}/{}.md", components.join("/"), name)
-        } else {
+        let relative = if components.is_empty() {
             format!("{}.md", name)
+        } else {
+            format!("{}/{}.md", components.join("/"), name)
         };
         let (name, maybe_lang) = get_language(name);
         let (name, mut date) = get_date(&name);
@@ -150,12 +150,12 @@ impl FileInfo {
         let components =
             find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         assert!(!name.is_empty());
-        let relative = if !components.is_empty() {
-            format!("{}/{}.md", components.join("/"), name)
-        } else {
+        let relative = if components.is_empty() {
             format!("{}.md", name)
+        } else {
+            format!("{}/{}.md", components.join("/"), name)
         };
-        let grand_parent = parent.parent().map(|p| p.to_path_buf());
+        let grand_parent = parent.parent().map(Path::to_path_buf);
 
         let (name, maybe_lang) = get_language(name);
 

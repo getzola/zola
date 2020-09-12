@@ -152,7 +152,7 @@ impl Site {
 
     /// Reload `localized_tera` for all languages
     pub fn reload_tera(&mut self) -> Result<()> {
-        for (_, tera) in self.localized_tera.iter_mut() {
+        for tera in self.localized_tera.values_mut() {
             tera.full_reload()?;
         }
         Ok(())
@@ -601,7 +601,7 @@ impl Site {
                 }
                 .trim_end_matches('/')
                 .to_owned();
-                &SITE_CONTENT.write().unwrap().insert(path, final_content);
+                SITE_CONTENT.write().unwrap().insert(path, final_content);
             }
         }
 
@@ -762,7 +762,7 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config);
         let tera = self.localized_tera.get(&self.config.default_language).unwrap();
-        let output = render_template("404.html", tera, context, &self.config.theme)?;
+        let output = render_template("404.html", tera, &context, &self.config.theme)?;
         let content = self.inject_livereload(output);
         self.write_content(&[], "404.html", content, false)?;
         Ok(())
@@ -774,7 +774,7 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config);
         let tera = self.localized_tera.get(&self.config.default_language).unwrap();
-        let content = render_template("robots.txt", tera, context, &self.config.theme)?;
+        let content = render_template("robots.txt", tera, &context, &self.config.theme)?;
         self.write_content(&[], "robots.txt", content, false)?;
         Ok(())
     }
@@ -818,7 +818,7 @@ impl Site {
 
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
-                        comp.clone(),
+                        &comp,
                         &Paginator::from_taxonomy(&taxonomy, item, &library),
                     )?;
                 } else {
@@ -860,7 +860,7 @@ impl Site {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = render_template("sitemap.xml", tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", tera, &context, &self.config.theme)?;
             self.write_content(&[], "sitemap.xml", sitemap, false)?;
             return Ok(());
         }
@@ -872,7 +872,7 @@ impl Site {
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = render_template("sitemap.xml", tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", tera, &context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
             self.write_content(&[], &file_name, sitemap, false)?;
             let mut sitemap_url = self.config.make_permalink(&file_name);
@@ -884,7 +884,7 @@ impl Site {
         let mut main_context = Context::new();
         main_context.insert("sitemaps", &sitemap_index);
         let sitemap =
-            render_template("split_sitemap_index.xml", tera, main_context, &self.config.theme)?;
+            render_template("split_sitemap_index.xml", tera, &main_context, &self.config.theme)?;
         self.write_content(&[], "sitemap.xml", sitemap, false)?;
 
         Ok(())
@@ -1041,7 +1041,7 @@ impl Site {
 
         if section.meta.is_paginated() {
             self.render_paginated(
-                components,
+                &components,
                 &Paginator::from_section(&section, &self.library.read().unwrap()),
             )?;
         } else {
@@ -1078,18 +1078,17 @@ impl Site {
     /// Renders a list of pages when the section/index is wanting pagination.
     pub fn render_paginated<'a>(
         &self,
-        components: Vec<&'a str>,
+        components: &[&'a str],
         paginator: &'a Paginator,
     ) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
 
-        let index_components = components.clone();
         let tera = self.localized_tera.get(&paginator.lang).expect("`lang` in `localized_tera`");
         paginator
             .pagers
             .par_iter()
             .map(|pager| {
-                let mut pager_components = index_components.clone();
+                let mut pager_components = components.to_vec();
                 pager_components.push(&paginator.paginate_path);
                 let pager_path = format!("{}", pager.index);
                 pager_components.push(&pager_path);
@@ -1104,7 +1103,7 @@ impl Site {
                 if pager.index > 1 {
                     self.write_content(&pager_components, "index.html", content, false)?;
                 } else {
-                    self.write_content(&index_components, "index.html", content, false)?;
+                    self.write_content(&components, "index.html", content, false)?;
                     self.write_content(
                         &pager_components,
                         "index.html",

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::ffi::OsStr;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 use std::{fs, io, result};
 
@@ -51,7 +51,7 @@ impl TeraFn for Trans {
 
         let term = self
             .config
-            .get_translation(lang, key)
+            .get_translation(&lang, &key)
             .map_err(|e| Error::chain("Failed to retreive term translation", e))?;
 
         Ok(to_value(term).unwrap())
@@ -437,8 +437,8 @@ pub struct GetSection {
     library: Arc<RwLock<Library>>,
 }
 impl GetSection {
-    pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
-        Self { base_path: base_path.join("content"), library }
+    pub fn new<P: AsRef<Path>>(base_path: P, library: Arc<RwLock<Library>>) -> Self {
+        Self { base_path: base_path.as_ref().join("content"), library }
     }
 }
 impl TeraFn for GetSection {
@@ -531,7 +531,7 @@ impl TeraFn for Fluent {
     }
 }
 
-/// Creates an ArchLoader if the `locales` directory exists for either the site or its theme.
+/// Creates an ArcLoader if the `locales` directory exists for either the site or its theme.
 ///
 /// Otherwise, returns None. If there were any problems, an Err is returned.
 ///
@@ -665,18 +665,13 @@ mod tests {
             ..TaxonomyConfig::default()
         };
         let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
-        let tag = TaxonomyItem::new(
-            "Programming",
-            &taxo_config,
-            &config,
-            vec![],
-            &library.read().unwrap(),
-        );
+        let tag =
+            TaxonomyItem::new("Programming", &taxo_config, &config, &[], &library.read().unwrap());
         let tag_fr = TaxonomyItem::new(
             "Programmation",
             &taxo_config_fr,
             &config,
-            vec![],
+            &[],
             &library.read().unwrap(),
         );
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
@@ -745,8 +740,8 @@ mod tests {
             ..TaxonomyConfig::default()
         };
         let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new("Programming", &taxo_config, &config, vec![], &library);
-        let tag_fr = TaxonomyItem::new("Programmation", &taxo_config_fr, &config, vec![], &library);
+        let tag = TaxonomyItem::new("Programming", &taxo_config, &config, &[], &library);
+        let tag_fr = TaxonomyItem::new("Programmation", &taxo_config_fr, &config, &[], &library);
         let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
         let tags_fr = Taxonomy { kind: taxo_config_fr, items: vec![tag_fr] };
 

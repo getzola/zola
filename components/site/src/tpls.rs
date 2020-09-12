@@ -50,7 +50,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) -> Result<()> {
-    for (lang, tera) in site.localized_tera.iter_mut() {
+    for (lang, tera) in &mut site.localized_tera {
         // Split off in the hope that eventually it could be cheaply copied without re-parsing the
         // `.ftl` files, and saving allocation due to the `Arc`s. FIXME
         let loader = global_fns::construct_arc_loader(
@@ -105,7 +105,7 @@ pub fn register_early_global_fns(site: &mut Site) -> Result<()> {
 
 /// Functions filled once we have parsed all the pages/sections only, so not available in shortcodes
 pub fn register_tera_global_fns(site: &mut Site) {
-    for (lang, tera) in site.localized_tera.iter_mut() {
+    for (lang, tera) in &mut site.localized_tera {
         tera.register_function(
             "get_page",
             global_fns::GetPage::new(site.base_path.clone(), site.library.clone()),

@@ -85,7 +85,7 @@ pub fn find_entries<'a>(
         })
         .collect::<Vec<_>>();
 
-    for section in library.sections_values().iter() {
+    for section in library.sections_values() {
         if let Some(paginate_by) = section.paginate_by() {
             let number_pagers = (section.pages.len() as f64 / paginate_by as f64).ceil() as isize;
             for i in 1..=number_pagers {

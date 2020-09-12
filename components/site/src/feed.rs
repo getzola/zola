@@ -86,7 +86,7 @@ pub fn render_feed(
     context = additional_context_fn(context);
 
     let tera = site.localized_tera.get(lang).expect("`lang` in `localized_tera`");
-    let feed = render_template(feed_filename, tera, context, &site.config.theme)?;
+    let feed = render_template(feed_filename, tera, &context, &site.config.theme)?;
 
     Ok(Some(feed))
 }

@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use serde_derive::{Deserialize, Serialize};
 use unic_langid::LanguageIdentifier;
 
-use crate::config::languages::*;
+use crate::config::languages::LocaleOptions;
 use errors::Result;
 use utils::fs::read_file_with_error;
 

@@ -135,7 +135,7 @@ impl<'a> Paginator<'a> {
         }
 
         for key in self.all_pages.to_mut().iter_mut() {
-            let page = library.get_page_by_key(key.clone());
+            let page = library.get_page_by_key(*key);
             current_page.push(page.to_serialized_basic(library));
 
             if current_page.len() == self.paginate_by {
@@ -249,7 +249,7 @@ impl<'a> Paginator<'a> {
         context.insert("current_path", &pager.path);
         context.insert("paginator", &self.build_paginator_context(pager));
 
-        render_template(&self.template, tera, context, &config.theme)
+        render_template(&self.template, tera, &context, &config.theme)
             .map_err(|e| Error::chain(format!("Failed to render pager {}", pager.index), e))
     }
 }

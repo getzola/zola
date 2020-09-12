@@ -330,7 +330,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 let anchor_link = utils::templates::render_template(
                     &ANCHOR_LINK_TEMPLATE,
                     context.tera,
-                    c,
+                    &c,
                     &None,
                 )
                 .map_err(|e| Error::chain("Failed to render anchor link template", e))?;

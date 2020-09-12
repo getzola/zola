@@ -54,7 +54,7 @@ impl TaxonomyItem {
         name: &str,
         taxonomy: &TaxonomyConfig,
         config: &Config,
-        keys: Vec<DefaultKey>,
+        keys: &[DefaultKey],
         library: &Library,
     ) -> Self {
         // Taxonomy are almost always used for blogs so we filter by dates
@@ -135,7 +135,7 @@ impl Taxonomy {
     ) -> Taxonomy {
         let mut sorted_items = vec![];
         for (name, pages) in items {
-            sorted_items.push(TaxonomyItem::new(&name, &kind, config, pages, library));
+            sorted_items.push(TaxonomyItem::new(&name, &kind, config, &pages, library));
         }
         //sorted_items.sort_by(|a, b| a.name.cmp(&b.name));
         sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
@@ -186,7 +186,7 @@ impl Taxonomy {
         );
         context.insert("current_path", &format!("/{}/{}/", self.kind.name, item.slug));
 
-        render_template(&format!("{}/single.html", self.kind.name), tera, context, &config.theme)
+        render_template(&format!("{}/single.html", self.kind.name), tera, &context, &config.theme)
             .map_err(|e| {
                 Error::chain(format!("Failed to render single term {} page.", self.kind.name), e)
             })
@@ -210,7 +210,7 @@ impl Taxonomy {
         assert!(!self.kind.name.is_empty());
         context.insert("current_path", &format!("/{}/", self.kind.name));
 
-        render_template(&format!("{}/list.html", self.kind.name), tera, context, &config.theme)
+        render_template(&format!("{}/list.html", self.kind.name), tera, &context, &config.theme)
             .map_err(|e| {
                 Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e)
             })

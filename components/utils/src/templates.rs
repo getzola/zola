@@ -22,7 +22,7 @@ macro_rules! render_default_tpl {
 pub fn render_template(
     name: &str,
     tera: &Tera,
-    context: Context,
+    context: &Context,
     theme: &Option<String>,
 ) -> Result<String> {
     // check if it is in the templates

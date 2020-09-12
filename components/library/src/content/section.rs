@@ -111,7 +111,7 @@ impl Section {
                     .get_language_identifier(&l)
                     .ok_or_else(||
                         format!("File `{}` has a language of `{}` which isn't present in config.toml. Not that if a `language_alias` was specified, you must use that.\nHint: Possible values are {:?}.", file_path.display(), l, config.language_aliases())
-                        )?;
+                        )?.clone();
             }
         } else {
             section.lang = config.default_language.clone();
@@ -242,7 +242,7 @@ impl Section {
         context.insert("lang", &self.lang);
         context.insert("language_alias", &self.language_alias);
 
-        render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
+        render_template(tpl_name, tera, &context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render section '{}'", self.file.path.display()), e)
         })
     }

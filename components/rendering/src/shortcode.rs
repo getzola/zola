@@ -119,8 +119,9 @@ fn render_shortcode(
         template_name = format!("shortcodes/{}.html", name);
     }
 
-    let res = utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
-        .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
+    let res =
+        utils::templates::render_template(&template_name, &context.tera, &tera_context, &None)
+            .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
 
     let res = OUTER_NEWLINE_RE.replace_all(&res, "");
 

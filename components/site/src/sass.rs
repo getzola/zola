@@ -91,7 +91,7 @@ fn test_get_non_partial_scss() {
 
     let result = get_non_partial_scss(&path, "scss");
 
-    assert!(result.len() != 0);
+    assert!(!result.is_empty());
     assert!(result.iter().filter_map(|path| path.file_name()).any(|file| file == "scss.scss"))
 }
 #[test]
@@ -106,6 +106,6 @@ fn test_get_non_partial_scss_underscores() {
 
     let result = get_non_partial_scss(&path, "scss");
 
-    assert!(result.len() != 0);
+    assert!(!result.is_empty());
     assert!(result.iter().filter_map(|path| path.file_name()).any(|file| file == "scss.scss"))
 }
