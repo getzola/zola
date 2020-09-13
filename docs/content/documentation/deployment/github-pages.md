@@ -6,11 +6,7 @@ weight = 30
 By default, GitHub Pages uses Jekyll (a ruby based static site generator),
 but you can also publish any generated files provided you have an `index.html` file in the root of a branch called
 `gh-pages` or `master`. In addition you can publish from a `docs` directory in your repository. That branch name can
-also be manually changed in the settings of a repository. **However**, this only applies to publishing in a custom domain,
-i.e., if you want to publish to a GitHub-provided web service under the `github.io` domain, you can **only** use the
-`master` branch of your repository, as explained
-[here](https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages),
-so we will focus on the method that will work regardless of the domain.
+also be manually changed in the settings of a repository.
 
 We can use any continuous integration (CI) server to build and deploy our site. For example:
 
@@ -44,7 +40,7 @@ jobs:
     - uses: actions/checkout@master
     # Build & deploy
     - name: shalzz/zola-deploy-action
-      uses: shalzz/zola-deploy-action@master
+      uses: shalzz/zola-deploy-action@v0.12.0
       env:
         # Target branch
         PAGES_BRANCH: gh-pages
