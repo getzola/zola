@@ -547,7 +547,7 @@ impl Site {
                     p.as_os_str().to_string_lossy().replace("public/", "/")
                 } else {
                     // TODO" remove unwrap
-                    let p = current_path.strip_prefix("public").unwrap();
+                    let p = current_path.strip_prefix(&self.output_path).unwrap();
                     p.as_os_str().to_string_lossy().into_owned()
                 }
                 .trim_end_matches('/')
