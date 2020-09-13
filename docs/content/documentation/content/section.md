@@ -14,6 +14,9 @@ not have any content or metadata.  If you would like to add content or metadata,
 `_index.md` file at the root of the `content` directory and edit it just as you would edit any other
 `_index.md` file; your `index.html` template will then have access to that content and metadata.
 
+Just like with pages, you can set a language via the filename (e.g. `_index.en.md`). Dates, however,
+aren't applicable to sections.
+
 Any non-Markdown file in a section directory is added to the `assets` collection of the section, as explained in the
 [content overview](@/documentation/content/overview.md#asset-colocation). These files are then available in the
 Markdown file using relative links.

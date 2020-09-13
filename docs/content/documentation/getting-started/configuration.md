@@ -16,8 +16,8 @@ Here are the current `config.toml` sections:
 2. link_checker
 3. slugify
 4. search
-5. translations
-6. extra
+5. extra
+6. languages
 
 **Only the `base_url` variable is mandatory**. Everything else is optional. All configuration variables
 used by Zola as well as their default values are listed below:
@@ -27,11 +27,18 @@ used by Zola as well as their default values are listed below:
 base_url = "mywebsite.com"
 
 # The site title and description; used in feeds by default.
+# Can be set for each language separately.
 title = ""
 description = ""
 
 # The default language; used in feeds.
+# Must be a valid language identifier, similarly to HTML's lang attribute.
 default_language = "en"
+# A "friendly" name for the language. Useful for setting a shorter name or
+# keeping old links that did not use valid language codes working.
+# URLs for translations will use this name. Can be set for each language.
+# See "Multilingual sites" for more information.
+language_alias = ""
 
 # The site theme to use.
 theme = ""
@@ -44,6 +51,7 @@ highlight_code = false
 highlight_theme = "base16-ocean-dark"
 
 # When set to "true", a feed is automatically generated.
+# Can be set for each language separately.
 generate_feed = false
 
 # The filename to use for the feed. Used as the template filename, too.
@@ -53,6 +61,7 @@ generate_feed = false
 
 # The number of articles to include in the feed. All items are included if
 # this limit is not set (the default).
+# Can be set for each language separately.
 # feed_limit = 20
 
 # When set to "true", files in the `static` directory are hard-linked. Useful for large
@@ -62,25 +71,15 @@ generate_feed = false
 # hard_link_static = false
 
 # The taxonomies to be rendered for the site and their configuration.
+# Set for each language separately.
 # Example:
 #     taxonomies = [
 #       {name = "tags", feed = true}, # each tag will have its own feed
-#       {name = "tags", lang = "fr"}, # you can have taxonomies with the same name in multiple languages
 #       {name = "categories", paginate_by = 5},  # 5 items per page for a term
 #       {name = "authors"}, # Basic definition: no feed or pagination
 #     ]
 #
 taxonomies = []
-
-# The additional languages for the site.
-# Example:
-#     languages = [
-#       {code = "fr", feed = true}, # there will be a feed for French content
-#       {code = "fr", search = true}, # there will be a Search Index for French content
-#       {code = "it"}, # there won't be a feed for Italian content
-#     ]
-#
-languages = []
 
 # When set to "true", the Sass files in the `sass` directory in the site root are compiled.
 # Sass files in theme directories are always compiled.
@@ -116,43 +115,78 @@ taxonomies = "on"
 anchors = "on"
 
 # When set to "true", a search index is built from the pages and section
-# content for `default_language`.
+# content. Can be set for each language separately.
 build_search_index = false
 
+# Configures how search indexes will be generated if `build_search_index` is set
+# Can be set for each language separately.
 [search]
-# Whether to include the title of the page/section in the index
+# Whether to include the title of the page/section
 include_title = true
-# Whether to include the description of the page/section in the index
+# Whether to include the description of the page/section
 include_description = false
-# Whether to include the rendered content of the page/section in the index
+# Whether to include the rendered content of the page/section
 include_content = true
-# At which character to truncate the content to. Useful if you have a lot of pages and the index would
-# become too big to load on the site. Defaults to not being set.
+# At which character to truncate the content to. Useful if you have a lot of pages and
+# the index would become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
 
-# Optional translation object. Keys should be language codes.
-# Optional translation object. The key if present should be a language code.
-# Example:
-#     default_language = "fr"
+# You can put any kind of data here. The data will be accessible in all templates.
 #
-#     [translations]
-#     [translations.fr]
-#     title = "Un titre"
+# Can be set for each language separately. If a key is not present for a specific
+# language, the value from the default language will be used.
 #
-#     [translations.en]
-#     title = "A title"
-#
-[translations]
-
-# You can put any kind of data here. The data
-# will be accessible in all templates
 # Example:
 #     [extra]
 #     author = "Famous author"
+#     # other types are allowed, too
+#     pi = 3.14
+#     release_date = "<add in the future>"
+#
+#     # nested tables are allowed, too
+#     [extra.social]
+#         github = "Keats"
 #
 # author value will be available using {{ config.extra.author }} in templates
-#
+# github will be available using {{ config.extra.social.github }} in templates
 [extra]
+
+# Settings that can be set for each language separately.
+#
+# See the description of variables above to see what can be set here, and how they fall back
+# when not set for a specific language.
+#
+# It is a table of tables, where the keys are language codes. See "Multilingual sites" for
+# more information.
+#
+# Below is a non-exhaustive example:
+#     [languages]
+#         [languages."de-AT"]
+#         language_alias = "german"
+#
+#         title = "Eine mehrsprachige Seite"
+#         description = ""
+#
+#         taxonomies = [
+#             {name = "kategorie", feed = "false" }
+#         ]
+#
+#         generate_feed = true
+#         feed_limit = 20
+#
+#         build_search_index = false
+#         [languages."de-AT".search]
+#             truncate_content_length - 100
+#
+#         [languages."de-AT".extra]
+#             author = "beruehmter Autor"
+#
+#         [languages.fr]
+#
+# Templates can access these values for translated pages just as if these were set for
+# the default language. Themes and templates do not have to take extra measures for
+# working with translated content.
+[languages]
 ```
 
 ## Syntax highlighting
@@ -204,11 +238,13 @@ If you want a theme not listed above, please open an issue or a pull request on 
 
 ## Slugification strategies
 
-By default, Zola will turn every path, taxonomies and anchors to a slug, an ASCII representation with no special characters.
-You can however change that strategy for each kind of item, if you want UTF-8 characters in your URLs for example. There are 3 strategies:
+By default, Zola will turn every path, taxonomy and anchor to a slug, an ASCII representation with no special characters.
+You can however change that strategy for each kind of item; for example, to have UTF-8 characters in your URLs.
+There are 3 strategies:
 
-- `on`: the default one, everything is turned into a slug
-- `safe`: characters that cannot exist in files on Windows (`<>:"/\|?*`) or Unix (`/`) are removed, everything else stays
+- `on`: the default one, everything is turned into a [slug](https://en.wikipedia.org/wiki/Clean_URL#Slug)
+- `safe`: characters that cannot exist in filenames on some systems are removed. These are: `<`, `>`, `:`, `/`, `|`, `?`,
+  `*`, `#`, <code>\\</code>, `(`, `)`, `[`, `]`, newlines, and tabulations. Any leading spaces and dots (`.`) are removed.
 - `off`: nothing is changed, your site might not build on some OS and/or break various URL parsers
 
 Since there are no filename issues with anchors, the `safe` and `off` strategies are identical in their case: the only change

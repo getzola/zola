@@ -39,6 +39,7 @@ You will be asked a few questions.
 ```bash
 ├── config.toml
 ├── content
+├── locales
 ├── sass
 ├── static
 ├── templates

@@ -113,6 +113,6 @@ To add an image to the `https://mywebsite.com/blog/configuration` page, you have
  static directory rather than in the content directory. The choice depends on your organizational needs.
  *  Or you could save the image to some arbitrary directory within the static directory. For example,
  you could save all images to `static/images`.  Using this approach, you can no longer use relative links. Instead,
- you must use an absolute link to `images/[filename]` to access your
+ you must use an absolute link to `images/{filename}` to access your
  image. This might be preferable for small sites or for sites that associate images with
  multiple pages (e.g., logo images that appear on every page).
