@@ -91,7 +91,7 @@ impl Section {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta, base_path);
 
-        if let Some(ref l) = section.file.maybe_lang {
+        if let Some(ref l) = section.file.lang {
             if !config.is_multilingual() {
                 // TODO: add test
                 bail!(

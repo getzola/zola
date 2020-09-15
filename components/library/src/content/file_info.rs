@@ -34,33 +34,35 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
     components
 }
 
-/// Return a `(name, maybe_lang)` tuple if name has a possible language in it
-pub fn get_language<S: AsRef<str>>(name: S) -> (String, Option<String>) {
+/// Return a `(name, lang)` tuple if name has a possible language in it
+pub fn get_language(name: &str) -> (&str, Option<&str>) {
     // Go with the assumption that no one is using '.' in filenames (regardless of whether the site
     // is multilingual)
-    if !name.as_ref().contains('.') {
-        return (name.as_ref().to_string(), None);
+    if !name.contains('.') {
+        return (name, None);
     }
 
-    let parts: Vec<String> = name.as_ref().splitn(2, '.').map(ToString::to_string).collect();
-    (parts[0].clone(), Some(parts[1].clone()))
+    // Language identifiers do not contain dots, so we take the smallest possible match
+    // The last item contains the `rest` i.e. largest match, so we split in reverse
+    let parts = name.rsplitn(2, '.').collect::<Vec<_>>();
+    (parts[1], Some(parts[0])) // not an error
 }
 
 /// Return a `(name, date)` tuple if name has a date in it
 ///
 /// This only makes sense for pages, not sections.
-pub fn get_date<S: AsRef<str>>(name: S) -> (String, Option<String>) {
-    if let Some(ref caps) = RFC3339_DATE.captures(name.as_ref()) {
+pub fn get_date(name: &str) -> (&str, Option<&str>) {
+    if let Some(ref caps) = RFC3339_DATE.captures(name) {
         return (
-            caps.name("name").unwrap().as_str().to_string(),
-            Some(caps.name("datetime").unwrap().as_str().to_string()),
+            caps.name("name").unwrap().as_str(),
+            Some(caps.name("datetime").unwrap().as_str()),
         );
     }
-    (name.as_ref().to_string(), None)
+    (name, None)
 }
 
 /// Strip `{date}{_,-}` prefix and `.{lang}` suffix from name
-pub fn clear_filename<S: AsRef<str>>(name: S) -> String {
+pub fn strip_filename_info(name: &str) -> &str {
     let (name, _) = get_language(name);
     let (name, _) = get_date(name);
     name
@@ -91,8 +93,8 @@ pub struct FileInfo {
     /// various languages.
     pub canonical: PathBuf,
     /// The `lang` part of the {name}.{lang}.md naming scheme. There is no guarantee that this
-    /// language is enabled for the site.
-    pub maybe_lang: Option<String>,
+    /// language is valid and enabled for the site.
+    pub lang: Option<String>,
     /// The `date` part of the {date}{_,-}{name}.md naming scheme. Guranteed to be a RFC3339
     /// date in valid form
     pub date: Option<String>,
@@ -102,7 +104,7 @@ impl FileInfo {
     pub fn new_page(path: &Path, base_path: &PathBuf) -> FileInfo {
         let file_path = path.to_path_buf();
         let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
-        let name = path.file_stem().unwrap().to_string_lossy().to_string();
+        let name = path.file_stem().unwrap().to_string_lossy();
         let mut components =
             find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         assert!(!name.is_empty());
@@ -111,16 +113,18 @@ impl FileInfo {
         } else {
             format!("{}/{}.md", components.join("/"), name)
         };
-        let (name, maybe_lang) = get_language(name);
-        let (name, mut date) = get_date(&name);
-        let canonical = parent.join(&name);
+        let (name, lang) = get_language(&name);
+        let (name, date) = get_date(name);
+        let mut date = date.map(str::to_string);
+
+        let canonical = parent.join(name);
 
         // If we have a folder with an asset, don't consider it as a component
         // By this point, any language and date, as well as extension has been stripped from name,
         // so checking it is easy.
         if !components.is_empty() && name == "index" {
             if date.is_none() {
-                date = get_date(parent.file_name().unwrap().to_str().unwrap()).1;
+                date = get_date(parent.file_name().unwrap().to_str().unwrap()).1.map(str::to_string);
             }
 
             components.pop();
@@ -135,10 +139,10 @@ impl FileInfo {
             grand_parent: None,
             canonical,
             parent,
-            name,
+            name: name.to_string(),
             components,
             relative,
-            maybe_lang,
+            lang: lang.map(str::to_string),
             date,
         }
     }
@@ -146,7 +150,7 @@ impl FileInfo {
     pub fn new_section(path: &Path, base_path: &PathBuf) -> FileInfo {
         let file_path = path.to_path_buf();
         let parent = path.parent().expect("Get parent of section").to_path_buf();
-        let name = path.file_stem().unwrap().to_string_lossy().to_string();
+        let name = path.file_stem().unwrap().to_string_lossy();
         let components =
             find_content_components(&file_path.strip_prefix(base_path).unwrap_or(&file_path));
         assert!(!name.is_empty());
@@ -157,7 +161,7 @@ impl FileInfo {
         };
         let grand_parent = parent.parent().map(Path::to_path_buf);
 
-        let (name, maybe_lang) = get_language(name);
+        let (name, lang) = get_language(&name);
 
         FileInfo {
             filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
@@ -165,10 +169,10 @@ impl FileInfo {
             canonical: parent.join(&name),
             parent,
             grand_parent,
-            name,
+            name: name.to_string(),
             components,
             relative,
-            maybe_lang,
+            lang: lang.map(str::to_string),
             date: None,
         }
     }
@@ -211,7 +215,7 @@ mod tests {
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
         );
-        assert_eq!(file.maybe_lang.unwrap(), "fr");
+        assert_eq!(file.lang.unwrap(), "fr");
         assert_eq!(file.name, "python");
     }
 
@@ -222,7 +226,7 @@ mod tests {
             &PathBuf::new(),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
-        assert_eq!(file.maybe_lang.unwrap(), "fr");
+        assert_eq!(file.lang.unwrap(), "fr");
         assert_eq!(file.name, "index");
     }
 
@@ -232,7 +236,7 @@ mod tests {
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
             &PathBuf::new(),
         );
-        assert!(file.maybe_lang.is_none());
+        assert!(file.lang.is_none());
         assert_eq!(file.name, "index");
     }
 
@@ -243,7 +247,7 @@ mod tests {
             &PathBuf::from("/home/vincent/code/content/site"),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
-        assert!(file.maybe_lang.is_none());
+        assert!(file.lang.is_none());
         assert_eq!(file.name, "index");
     }
 
@@ -253,7 +257,7 @@ mod tests {
             &Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
             &PathBuf::new(),
         );
-        assert_eq!(file.maybe_lang.unwrap(), "fr");
+        assert_eq!(file.lang.unwrap(), "fr");
         assert_eq!(file.name, "_index");
     }
 
@@ -283,7 +287,7 @@ mod tests {
     fn can_get_lang_and_short_date_in_page() {
         let file = FileInfo::new_page(&Path::new("2018-10-08-hello.fr.md"), &PathBuf::new());
         assert_eq!(file.name, "hello");
-        assert_eq!(file.maybe_lang, Some("fr".to_string()));
+        assert_eq!(file.lang, Some("fr".to_string()));
         assert_eq!(file.date, Some("2018-10-08".to_string()));
     }
 
@@ -292,7 +296,7 @@ mod tests {
         let file =
             FileInfo::new_page(&Path::new("2018-10-02T15:00:00Z-hello.fr.md"), &PathBuf::new());
         assert_eq!(file.name, "hello");
-        assert_eq!(file.maybe_lang, Some("fr".to_string()));
+        assert_eq!(file.lang, Some("fr".to_string()));
         assert_eq!(file.date, Some("2018-10-02T15:00:00Z".to_string()));
     }
 
@@ -316,7 +320,7 @@ mod tests {
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),
         );
-        assert_eq!(file.maybe_lang.unwrap(), "fr");
+        assert_eq!(file.lang.unwrap(), "fr");
         assert_eq!(
             file.canonical,
             Path::new("/home/vincent/code/site/content/posts/tutorials/python/index")

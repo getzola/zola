@@ -104,7 +104,7 @@ impl Page {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta, base_path);
 
-        if let Some(ref l) = page.file.maybe_lang {
+        if let Some(ref l) = page.file.lang {
             if !config.is_multilingual() {
                 // TODO: add test
                 bail!(
@@ -155,7 +155,7 @@ impl Page {
             } else if page.file.name == "index" {
                 if let Some(parent) = page.file.path.parent() {
                     slugify_paths(
-                        &super::file_info::clear_filename(
+                        &super::file_info::strip_filename_info(
                             parent.file_name().unwrap().to_str().unwrap(),
                         ),
                         config.slugify.paths,
