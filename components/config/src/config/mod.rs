@@ -4,7 +4,7 @@ pub mod search;
 pub mod slugify;
 pub mod taxonomies;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
@@ -156,27 +156,27 @@ impl Config {
             bail!("Highlight theme {} not available", config.highlight_theme)
         }
 
+
         config.lang = config.default_language.clone();
-
-        // Find duplicate language aliases/names by first extracting them to a vector while also
-        // setting aliases.
-        let mut language_names: Vec<String> = Vec::new();
-
         if config.default_language_options.language_alias.is_empty() {
             config.default_language_options.language_alias = config.default_language.to_string();
         }
-        language_names.push(config.default_language_options.language_alias.clone());
         for (identifier, options) in &mut config.languages {
-            if options.language_alias == "" {
+            if options.language_alias.is_empty() {
                 options.language_alias = identifier.to_string();
             }
-            language_names.push(options.language_alias.clone());
         }
-        // https://stackoverflow.com/a/46766782
-        // TODO: actually print which identifier/alias is causing a problem
-        if (1..language_names.len()).any(|i| language_names[i..].contains(&language_names[i - 1])) {
-            bail!("A language code or alias should not appear twice in config.toml");
+
+
+        let mut language_names = HashSet::with_capacity(config.languages.len() + 1);
+        let _ = language_names.insert(&config.default_language_options.language_alias);
+        for options in config.languages.values() {
+            let duplicate = !language_names.insert(&options.language_alias);
+            if duplicate {
+                bail!("Multiple languages cannot have the same name: {}", options.language_alias)
+            }
         }
+
 
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
@@ -946,7 +946,7 @@ languages = { fr = {}, en = {} }
         let config = Config::parse(config_str);
         let err = config.unwrap_err();
         assert_eq!(
-            "A language code or alias should not appear twice in config.toml",
+            "Multiple languages cannot have the same name: fr",
             format!("{}", err)
         );
     }
@@ -963,7 +963,23 @@ languages = { fr-CA = { language_alias = "fr" } }
         let config = Config::parse(config_str);
         let err = config.unwrap_err();
         assert_eq!(
-            "A language code or alias should not appear twice in config.toml",
+            "Multiple languages cannot have the same name: fr",
+            format!("{}", err)
+        );
+    }
+
+    #[test]
+    fn error_on_identical_language_alias_and_code() {
+        let config_str = r#"
+base_url = "https://remplace-par-ton-url.fr"
+default_language = "fr"
+
+languages = { fr-CA = { language_alias = "fr" } }
+        "#;
+        let config = Config::parse(config_str);
+        let err = config.unwrap_err();
+        assert_eq!(
+            "Multiple languages cannot have the same name: fr",
             format!("{}", err)
         );
     }
