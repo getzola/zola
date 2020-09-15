@@ -255,7 +255,7 @@ pub fn serve(
         if should_watch {
             watcher
                 .watch(root_dir.join(entry), RecursiveMode::Recursive)
-                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Do you have correct permissions?", entry, root_dir.display()), e))?;
+                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()), e))?;
             watchers.push(entry.to_string());
         }
     }
