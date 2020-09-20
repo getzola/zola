@@ -14,6 +14,7 @@ serde = "1"
 serde_derive = "1"
 sass-rs = "0.2"
 lazy_static = "1.1"
+relative-path = "1"
 
 errors = { path = "../errors" }
 config = { path = "../config" }

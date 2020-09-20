@@ -38,6 +38,7 @@ use ws::{Message, Sender, WebSocket};
 
 use errors::{Error as ZolaError, Result};
 use globset::GlobSet;
+use relative_path::{RelativePath, RelativePathBuf};
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
 use utils::fs::copy_file;
@@ -69,7 +70,12 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
-    let path = req.uri().path().trim_end_matches('/').trim_start_matches('/');
+    let mut path = RelativePathBuf::new();
+
+    for c in req.uri().path().split('/') {
+        path.push(c);
+    }
+
     // livereload.js is served using the LIVE_RELOAD str, not a file
     if path == "livereload.js" {
         if req.method() == Method::GET {
@@ -79,7 +85,7 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
         }
     }
 
-    if let Some(content) = SITE_CONTENT.read().unwrap().get(path) {
+    if let Some(content) = SITE_CONTENT.read().unwrap().get(&path) {
         return Ok(in_memory_html(content));
     }
 
@@ -87,7 +93,8 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
     match result {
         ResolveResult::MethodNotMatched => return Ok(method_not_allowed()),
         ResolveResult::NotFound | ResolveResult::UriNotMatched => {
-            let content_404 = SITE_CONTENT.read().unwrap().get("404.html").map(|x| x.clone());
+            let not_found_path = RelativePath::new("404.html");
+            let content_404 = SITE_CONTENT.read().unwrap().get(not_found_path).map(|x| x.clone());
             return Ok(not_found(content_404));
         }
         _ => (),

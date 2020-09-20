@@ -35,6 +35,7 @@ ws = "0.9"
 ctrlc = "3"
 open = "1.2"
 globset = "0.4"
+relative-path = "1"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
