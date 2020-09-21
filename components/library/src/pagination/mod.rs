@@ -103,7 +103,7 @@ impl<'a> Paginator<'a> {
             paginate_reversed: false,
             root: PaginationRoot::Taxonomy(taxonomy, item),
             permalink: item.permalink.clone(),
-            path: format!("/{}/{}/", taxonomy.kind.name, item.slug),
+            path: format!("/{}/{}/", taxonomy.slug, item.slug),
             paginate_path: taxonomy
                 .kind
                 .paginate_path
@@ -129,7 +129,7 @@ impl<'a> Paginator<'a> {
         }
 
         for key in self.all_pages.to_mut().iter_mut() {
-            let page = library.get_page_by_key(key.clone());
+            let page = library.get_page_by_key(*key);
             current_page.push(page.to_serialized_basic(library));
 
             if current_page.len() == self.paginate_by {
@@ -416,7 +416,11 @@ mod tests {
             permalink: "https://vincent.is/tags/something/".to_string(),
             pages: library.pages().keys().collect(),
         };
-        let taxonomy = Taxonomy { kind: taxonomy_def, items: vec![taxonomy_item.clone()] };
+        let taxonomy = Taxonomy {
+            kind: taxonomy_def,
+            slug: "tags".to_string(),
+            items: vec![taxonomy_item.clone()],
+        };
         let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
@@ -429,6 +433,39 @@ mod tests {
         assert_eq!(paginator.pagers[1].pages.len(), 2);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
         assert_eq!(paginator.pagers[1].path, "/tags/something/page/2/");
+    }
+
+    #[test]
+    fn test_can_create_paginator_for_slugified_taxonomy() {
+        let (_, library) = create_library(false, 3, false);
+        let taxonomy_def = TaxonomyConfig {
+            name: "some tags".to_string(),
+            paginate_by: Some(2),
+            ..TaxonomyConfig::default()
+        };
+        let taxonomy_item = TaxonomyItem {
+            name: "Something".to_string(),
+            slug: "something".to_string(),
+            permalink: "https://vincent.is/some-tags/something/".to_string(),
+            pages: library.pages().keys().collect(),
+        };
+        let taxonomy = Taxonomy {
+            kind: taxonomy_def,
+            slug: "some-tags".to_string(),
+            items: vec![taxonomy_item.clone()],
+        };
+        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
+        assert_eq!(paginator.pagers.len(), 2);
+
+        assert_eq!(paginator.pagers[0].index, 1);
+        assert_eq!(paginator.pagers[0].pages.len(), 2);
+        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/some-tags/something/");
+        assert_eq!(paginator.pagers[0].path, "/some-tags/something/");
+
+        assert_eq!(paginator.pagers[1].index, 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/some-tags/something/page/2/");
+        assert_eq!(paginator.pagers[1].path, "/some-tags/something/page/2/");
     }
 
     // https://github.com/getzola/zola/issues/866

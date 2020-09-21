@@ -1,0 +1,10 @@
+Category: {{ term.name }}
+
+
+{% for page in term.pages %}
+    <article>
+        <h3 class="post__title"><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
+    </article>
+{% endfor %}
+
+Current path: {{ current_path }}

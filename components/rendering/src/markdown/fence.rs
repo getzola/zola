@@ -9,22 +9,16 @@ impl Range {
         match s.find('-') {
             Some(dash) => {
                 let mut from = s[..dash].parse().ok()?;
-                let mut to = s[dash+1..].parse().ok()?;
+                let mut to = s[dash + 1..].parse().ok()?;
                 if to < from {
                     std::mem::swap(&mut from, &mut to);
                 }
-                Some(Range {
-                    from,
-                    to,
-                })
-            },
+                Some(Range { from, to })
+            }
             None => {
                 let val = s.parse().ok()?;
-                Some(Range {
-                    from: val,
-                    to: val,
-                })
-            },
+                Some(Range { from: val, to: val })
+            }
         }
     }
 }
@@ -37,11 +31,7 @@ pub struct FenceSettings<'a> {
 }
 impl<'a> FenceSettings<'a> {
     pub fn new(fence_info: &'a str) -> Self {
-        let mut me = Self {
-            language: None,
-            line_numbers: false,
-            highlight_lines: Vec::new(),
-        };
+        let mut me = Self { language: None, line_numbers: false, highlight_lines: Vec::new() };
 
         for token in FenceIter::new(fence_info) {
             match token {
@@ -67,9 +57,7 @@ struct FenceIter<'a> {
 }
 impl<'a> FenceIter<'a> {
     fn new(fence_info: &'a str) -> Self {
-        Self {
-            split: fence_info.split(','),
-        }
+        Self { split: fence_info.split(',') }
     }
 }
 
@@ -92,10 +80,10 @@ impl<'a> Iterator for FenceIter<'a> {
                         }
                     }
                     return Some(FenceToken::HighlightLines(ranges));
-                },
+                }
                 lang => {
                     return Some(FenceToken::Language(lang));
-                },
+                }
             }
         }
     }

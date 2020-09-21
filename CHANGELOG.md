@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.13.0 (unreleased)
+## 0.12.1 (unreleased)
 
+- Add line
+- Fix the new `zola serve` being broken on Windows
+- Fix slugified taxonomies not being rendered at the right path
 
 ## 0.12.0 (2020-09-04)
 

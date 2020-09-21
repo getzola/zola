@@ -1,11 +1,11 @@
-use syntect::html::{IncludeBackground, styled_line_to_highlighted_html};
-use syntect::easy::HighlightLines;
-use syntect::parsing::SyntaxSet;
-use syntect::highlighting::{Color, Theme, Style};
-use config::Config;
 use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
+use config::Config;
 use std::cmp::min;
 use std::collections::HashSet;
+use syntect::easy::HighlightLines;
+use syntect::highlighting::{Color, Style, Theme};
+use syntect::html::{styled_line_to_highlighted_html, IncludeBackground};
+use syntect::parsing::SyntaxSet;
 
 use super::fence::{FenceSettings, Range};
 
@@ -22,11 +22,7 @@ pub struct CodeBlock<'config> {
 }
 
 impl<'config> CodeBlock<'config> {
-    pub fn new(
-        fence_info: &str,
-        config: &'config Config,
-        background: IncludeBackground,
-    ) -> Self {
+    pub fn new(fence_info: &str, config: &'config Config, background: IncludeBackground) -> Self {
         let fence_info = FenceSettings::new(fence_info);
         let theme = &THEME_SET.themes[&config.highlight_theme];
         let (highlighter, in_extra) = get_highlighter(fence_info.language, config);
@@ -45,10 +41,8 @@ impl<'config> CodeBlock<'config> {
     }
 
     pub fn highlight(&mut self, text: &str) -> String {
-        let highlighted = self.highlighter.highlight(
-            text,
-            self.extra_syntax_set.unwrap_or(&SYNTAX_SET),
-        );
+        let highlighted =
+            self.highlighter.highlight(text, self.extra_syntax_set.unwrap_or(&SYNTAX_SET));
         let line_boundaries = self.find_line_boundaries(&highlighted);
 
         // First we make sure that `highlighted` is split at every line
@@ -61,9 +55,8 @@ impl<'config> CodeBlock<'config> {
         // we don't use it later.
         let mut highlighted = perform_split(&highlighted, line_boundaries);
 
-        let hl_background = self.theme.settings.line_highlight
-                .unwrap_or(Color { r: 255, g: 255, b: 0, a: 0 });
-
+        let hl_background =
+            self.theme.settings.line_highlight.unwrap_or(Color { r: 255, g: 255, b: 0, a: 0 });
 
         let hl_lines = self.get_highlighted_lines();
         color_highlighted_lines(&mut highlighted, &hl_lines, hl_background);
@@ -76,10 +69,7 @@ impl<'config> CodeBlock<'config> {
         for (vec_idx, (_style, s)) in styled.iter().enumerate() {
             for (str_idx, character) in s.char_indices() {
                 if character == '\n' {
-                    boundaries.push(StyledIdx {
-                        vec_idx,
-                        str_idx,
-                    });
+                    boundaries.push(StyledIdx { vec_idx, str_idx });
                 }
             }
         }
@@ -90,7 +80,7 @@ impl<'config> CodeBlock<'config> {
     fn get_highlighted_lines(&self) -> HashSet<usize> {
         let mut lines = HashSet::new();
         for range in &self.highlight_lines {
-            for line in range.from ..= min(range.to, self.num_lines) {
+            for line in range.from..=min(range.to, self.num_lines) {
                 // Ranges are one-indexed
                 lines.insert(line.saturating_sub(1));
             }
@@ -123,7 +113,7 @@ fn get_str_idx_if_vec_idx_is(idx: Option<&StyledIdx>, vec_idx: usize) -> Option<
 /// the `StyledIdx` type.
 fn perform_split<'b>(
     split: &[(Style, &'b str)],
-    line_boundaries: Vec<StyledIdx>
+    line_boundaries: Vec<StyledIdx>,
 ) -> Vec<(Style, &'b str)> {
     let mut result = Vec::new();
 
@@ -172,11 +162,7 @@ fn perform_split<'b>(
     result
 }
 
-fn color_highlighted_lines(
-    data: &mut [(Style, &str)],
-    lines: &HashSet<usize>,
-    background: Color,
-) {
+fn color_highlighted_lines(data: &mut [(Style, &str)], lines: &HashSet<usize>, background: Color) {
     if lines.is_empty() {
         return;
     }

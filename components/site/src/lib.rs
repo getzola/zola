@@ -452,12 +452,17 @@ impl Site {
         let cfg = &Cfg { minify_js: false };
         let mut input_bytes = html.as_bytes().to_vec();
         match with_friendly_error(&mut input_bytes, cfg) {
-            Ok(_len) => match std::str::from_utf8(&mut input_bytes) {
+            Ok(_len) => match std::str::from_utf8(&input_bytes) {
                 Ok(result) => Ok(result.to_string()),
                 Err(err) => bail!("Failed to convert bytes to string : {}", err),
             },
             Err(minify_error) => {
-                bail!("Failed to truncate html at character {}: {} \n {}", minify_error.position, minify_error.message, minify_error.code_context);
+                bail!(
+                    "Failed to truncate html at character {}: {} \n {}",
+                    minify_error.position,
+                    minify_error.message,
+                    minify_error.code_context
+                );
             }
         }
     }
@@ -548,7 +553,7 @@ impl Site {
                 let site_path =
                     if filename != "index.html" { site_path.join(filename) } else { site_path };
 
-                &SITE_CONTENT.write().unwrap().insert(site_path, final_content);
+                SITE_CONTENT.write().unwrap().insert(site_path, final_content);
             }
         }
 
@@ -763,7 +768,7 @@ impl Site {
             components.push(taxonomy.kind.lang.as_ref());
         }
 
-        components.push(taxonomy.kind.name.as_ref());
+        components.push(taxonomy.slug.as_ref());
 
         let list_output =
             taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
@@ -793,7 +798,7 @@ impl Site {
                 if taxonomy.kind.feed {
                     self.render_feed(
                         item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
-                        Some(&PathBuf::from(format!("{}/{}", taxonomy.kind.name, item.slug))),
+                        Some(&PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))),
                         if self.config.is_multilingual() && !taxonomy.kind.lang.is_empty() {
                             &taxonomy.kind.lang
                         } else {
