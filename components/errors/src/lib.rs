@@ -9,7 +9,7 @@ pub enum ErrorKind {
     Io(::std::io::Error),
     Toml(toml::de::Error),
     Image(image::ImageError),
-    Syntect(syntect::LoadingError)
+    Syntect(syntect::LoadingError),
 }
 
 /// The Error type
@@ -40,7 +40,7 @@ impl fmt::Display for Error {
             ErrorKind::Io(ref e) => write!(f, "{}", e),
             ErrorKind::Toml(ref e) => write!(f, "{}", e),
             ErrorKind::Image(ref e) => write!(f, "{}", e),
-            ErrorKind::Syntect(ref e) => write!(f, "{}", e)
+            ErrorKind::Syntect(ref e) => write!(f, "{}", e),
         }
     }
 }
