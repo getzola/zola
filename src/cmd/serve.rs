@@ -300,7 +300,7 @@ pub fn serve(
                 server.await.expect("Could not start web server");
             });
         });
-
+        
         // The websocket for livereload
         let ws_server = WebSocket::new(|output: Sender| {
             move |msg: Message| {
@@ -319,10 +319,17 @@ pub fn serve(
             }
         })
         .unwrap();
+
         let broadcaster = ws_server.broadcaster();
+
+        let ws_server = ws_server.bind(&*ws_address).map_err(|_|{
+            format!("Address {} is already in use.", &ws_address)
+        })?;
+
         thread::spawn(move || {
-            ws_server.listen(&*ws_address).unwrap();
+            ws_server.run().unwrap();
         });
+
         Some(broadcaster)
     } else {
         println!("Watching in watch only mode, no web server will be started");
@@ -416,6 +423,7 @@ pub fn serve(
     };
 
     loop {
+        
         match rx.recv() {
             Ok(event) => {
                 let can_do_fast_reload = match event {
