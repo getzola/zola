@@ -19,6 +19,7 @@ use config::{get_config, Config};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
 use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
+use relative_path::RelativePathBuf;
 use templates::render_redirect_template;
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
@@ -28,7 +29,7 @@ use utils::templates::render_template;
 
 lazy_static! {
     /// The in-memory rendered map content
-    pub static ref SITE_CONTENT: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_CONTENT: Arc<RwLock<HashMap<RelativePathBuf, String>>> = Arc::new(RwLock::new(HashMap::new()));
 }
 
 /// Where are we building the site
@@ -513,10 +514,12 @@ impl Site {
         let write_dirs = self.build_mode == BuildMode::Disk || create_dirs;
         ensure_directory_exists(&self.output_path)?;
 
+        let mut site_path = RelativePathBuf::new();
         let mut current_path = self.output_path.to_path_buf();
 
         for component in components {
             current_path.push(component);
+            site_path.push(component);
 
             if !current_path.exists() && write_dirs {
                 create_directory(&current_path)?;
@@ -542,17 +545,10 @@ impl Site {
                 create_file(&end_path, &final_content)?;
             }
             BuildMode::Memory => {
-                let path = if filename != "index.html" {
-                    let p = current_path.join(filename);
-                    p.as_os_str().to_string_lossy().replace("public/", "/")
-                } else {
-                    // TODO" remove unwrap
-                    let p = current_path.strip_prefix(&self.output_path).unwrap();
-                    p.as_os_str().to_string_lossy().into_owned()
-                }
-                .trim_end_matches('/')
-                .to_owned();
-                &SITE_CONTENT.write().unwrap().insert(path, final_content);
+                let site_path =
+                    if filename != "index.html" { site_path.join(filename) } else { site_path };
+
+                &SITE_CONTENT.write().unwrap().insert(site_path, final_content);
             }
         }
 
@@ -568,12 +564,8 @@ impl Site {
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
-        let current_path = self.write_content(
-            &components,
-            "index.html",
-            content,
-            !page.assets.is_empty(),
-        )?;
+        let current_path =
+            self.write_content(&components, "index.html", content, !page.assets.is_empty())?;
 
         // Copy any asset we found previously into the same directory as the index.html
         for asset in &page.assets {
@@ -932,11 +924,7 @@ impl Site {
 
         if section.meta.generate_feed {
             let library = &self.library.read().unwrap();
-            let pages = section
-                .pages
-                .iter()
-                .map(|k| library.get_page_by_key(*k))
-                .collect();
+            let pages = section.pages.iter().map(|k| library.get_page_by_key(*k)).collect();
             self.render_feed(
                 pages,
                 Some(&PathBuf::from(&section.path[1..])),
