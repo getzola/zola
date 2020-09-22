@@ -5,6 +5,7 @@
 - Add line highlighting in code blocks
 - Fix the new `zola serve` being broken on Windows
 - Fix slugified taxonomies not being rendered at the right path
+- Fix issues with shortcodes with newlines
 
 ## 0.12.0 (2020-09-04)
 

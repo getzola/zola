@@ -182,6 +182,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     let mut opts = Options::empty();
     let mut has_summary = false;
+    let mut in_html_block = false;
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_FOOTNOTES);
     opts.insert(Options::ENABLE_STRIKETHROUGH);
@@ -266,9 +267,27 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
                         Event::Start(Tag::Link(link_type, fixed_link.into(), title))
                     }
-                    Event::Html(ref markup) if markup.contains("<!-- more -->") => {
-                        has_summary = true;
-                        Event::Html(CONTINUE_READING.into())
+                    Event::Html(ref markup) => {
+                        if markup.contains("<!-- more -->") {
+                            has_summary = true;
+                            Event::Html(CONTINUE_READING.into())
+                        } else {
+                            if in_html_block && markup.contains("</pre>") {
+                                in_html_block = false;
+                                Event::Html(markup.replacen("</pre>", "", 1).into())
+                            } else if markup.contains("pre data-shortcode") {
+                                in_html_block = true;
+                                let m = markup.replacen("<pre data-shortcode>", "", 1);
+                                if m.contains("</pre>") {
+                                    in_html_block = false;
+                                    Event::Html(m.replacen("</pre>", "", 1).into())
+                                } else {
+                                    Event::Html(m.into())
+                                }
+                            } else {
+                                event
+                            }
+                        }
                     }
                     _ => event,
                 }
