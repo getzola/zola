@@ -131,7 +131,7 @@ fn render_shortcode(
     // someone wants to include that comment in their content. This behaviour is unwanted in when
     // rendering markdown shortcodes.
     if template_name.ends_with(".html") {
-        Ok(res.replace('\n', "<!--\\n-->").to_string())
+        Ok(format!("<pre data-shortcode>{}</pre>", res))
     } else {
         Ok(res.to_string())
     }
@@ -404,7 +404,7 @@ Some body {{ hello() }}{%/* end */%}"#,
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "Hello {{id}}").unwrap();
         let res = render_shortcodes("Inline {{ youtube(id=1) }}.", &tera);
-        assert_eq!(res, "Inline Hello 1.");
+        assert_eq!(res, "Inline <pre data-shortcode>Hello 1</pre>.");
     }
 
     #[test]
@@ -412,7 +412,7 @@ Some body {{ hello() }}{%/* end */%}"#,
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "{{body}}").unwrap();
         let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera);
-        assert_eq!(res, "Body\n Hey!");
+        assert_eq!(res, "Body\n <pre data-shortcode>Hey!</pre>");
     }
 
     // https://github.com/Keats/gutenberg/issues/462
@@ -421,7 +421,7 @@ Some body {{ hello() }}{%/* end */%}"#,
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "{{body | safe}}").unwrap();
         let res = render_shortcodes("Body\n {% youtube() %}\nHello \n \n\n World{% end %}", &tera);
-        assert_eq!(res, "Body\n Hello <!--\\n--> <!--\\n--><!--\\n--> World");
+        assert_eq!(res, "Body\n <pre data-shortcode>Hello \n \n\n World</pre>");
     }
 
     #[test]
@@ -429,7 +429,7 @@ Some body {{ hello() }}{%/* end */%}"#,
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "  \n  {{body}}  \n  ").unwrap();
         let res = render_shortcodes("\n{% youtube() %}  \n  content  \n  {% end %}\n", &tera);
-        assert_eq!(res, "\n  content  \n");
+        assert_eq!(res, "\n<pre data-shortcode>  content  </pre>\n");
     }
 
     #[test]
@@ -437,7 +437,7 @@ Some body {{ hello() }}{%/* end */%}"#,
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/youtube.html", "  \n  Hello, Zola.  \n  ").unwrap();
         let res = render_shortcodes("\n{{ youtube() }}\n", &tera);
-        assert_eq!(res, "\n  Hello, Zola.  \n");
+        assert_eq!(res, "\n<pre data-shortcode>  Hello, Zola.  </pre>\n");
     }
 
     #[test]
