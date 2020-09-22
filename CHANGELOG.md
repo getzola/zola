@@ -2,7 +2,7 @@
 
 ## 0.12.1 (unreleased)
 
-- Add line
+- Add line highlighting in code blocks
 - Fix the new `zola serve` being broken on Windows
 - Fix slugified taxonomies not being rendered at the right path
 

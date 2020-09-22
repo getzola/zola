@@ -182,6 +182,12 @@ fn create_new_site(
 
     let base_address = format!("{}:{}", base_url, interface_port);
     let address = format!("{}:{}", interface, interface_port);
+
+    // Stop right there if we can't bind to the address
+    if Server::try_bind(&address.parse().unwrap()).is_err() {
+        return Err(format!("Cannot start server on address {}.", address))?;
+    }
+
     let base_url = if site.config.base_url.ends_with('/') {
         format!("http://{}/", base_address)
     } else {
@@ -331,7 +337,7 @@ pub fn serve(
 
         let ws_server = ws_server
             .bind(&*ws_address)
-            .map_err(|_| format!("Address {} is already in use.", &ws_address))?;
+            .map_err(|_| format!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
 
         thread::spawn(move || {
             ws_server.run().unwrap();
