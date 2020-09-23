@@ -937,7 +937,7 @@ Bla bla"#;
 <p>Bla bla</p>
 "#;
 
-    tera.add_raw_template(&format!("shortcodes/{}.md", "quote"), shortcode).unwrap();
+    tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
@@ -997,6 +997,39 @@ fn can_render_commented_out_shortcodes_fine() {
     let expected = "<!--<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>-->";
 
     tera.add_raw_template("shortcodes/resize_image.html", shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, expected);
+}
+
+
+// https://zola.discourse.group/t/zola-12-issue-with-continue-reading/590/7
+#[test]
+fn can_render_read_more_after_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"<p>Quote: {{body}}</p>"#;
+    let markdown_string = r#"
+# Title
+
+Some text
+{{ quote(body="Nothing is impossible. The word itself says - I'm Possible" author="Audrey Hepburn")}}
+<!-- more -->
+
+Again more text"#;
+
+    let expected = r#"<h1 id="title">Title</h1>
+<p>Some text</p>
+<p>Quote: Nothing is impossible. The word itself says - I'm Possible</p>
+<span id="continue-reading"></span>
+<p>Again more text</p>
+"#;
+
+    tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
