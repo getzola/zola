@@ -202,7 +202,7 @@ items: Array<TaxonomyTerm>;
 See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
 
 ### `load_data`
-Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*.
+Loads data from a file or URL. Supported file types include *toml*, *json*, *csv* and *bibtex*.
 Any other file type will be loaded as plain text.
 
 The `path` argument specifies the path to the data file relative to your base directory, where your `config.toml` is.
@@ -213,7 +213,7 @@ As a security precaution, if this file is outside the main site directory, your 
 ```
 
 The optional `format` argument allows you to specify and override which data type is contained
-within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`
+within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`, `bibtex`
 or `plain`. If the `format` argument isn't specified, then the path extension is used.
 
 ```jinja2
@@ -249,6 +249,15 @@ template:
         ["2", "Printing"]
     ],
 }
+```
+
+The `bibtex` format loads data into a structure matching the format used by the
+[nom-bibtex crate](https://crates.io/crates/nom-bibtex). The following example prints the author
+and title of the first bibliography item:
+
+```jinja2
+{% set tags = data.bibliographies[0].tags %}
+{{ tags.author }}, {{ tags.title }}
 ```
 
 #### Remote content
