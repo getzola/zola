@@ -26,6 +26,7 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
+use std::net::{SocketAddrV4, TcpListener};
 
 use hyper::header;
 use hyper::service::{make_service_fn, service_fn};
@@ -184,7 +185,8 @@ fn create_new_site(
     let address = format!("{}:{}", interface, interface_port);
 
     // Stop right there if we can't bind to the address
-    if Server::try_bind(&address.parse().unwrap()).is_err() {
+    let bind_address: SocketAddrV4 = address.parse().unwrap();
+    if (TcpListener::bind(&bind_address)).is_err() {
         return Err(format!("Cannot start server on address {}.", address))?;
     }
 
