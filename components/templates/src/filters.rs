@@ -18,6 +18,10 @@ pub fn markdown<S: BuildHasher>(
         Some(val) => try_get_value!("markdown", "inline", bool, val),
         None => false,
     };
+    let highlight = match args.get("highlight") {
+        Some(val) => try_get_value!("markdown", "highlight", bool, val),
+        None => false,
+    };
     let highlight_theme = match args.get("highlight_theme") {
         Some(val) => try_get_value!("markdown", "highlight_theme", String, val),
         None => "base16-ocean-dark".to_string(),
@@ -26,7 +30,7 @@ pub fn markdown<S: BuildHasher>(
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = true;
+    config.highlight_code = highlight;
     config.highlight_theme = highlight_theme;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     // Use the zola rendering module instead of build in one.
@@ -75,8 +79,9 @@ mod tests {
 
     #[test]
     fn markdown_filter_highlight() {
-        let result =
-            markdown(&to_value(&"```\n$ gutenberg server\n$ ping\n```").unwrap(), &HashMap::new());
+        let mut args = HashMap::new();
+        args.insert("highlight".to_string(), to_value(true).unwrap());
+        let result = markdown(&to_value(&"```\n$ gutenberg server\n$ ping\n```").unwrap(), &args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<pre style=\"background-color:#2b303b;\">\n<code><span style=\"color:#c0c5ce;\">$ gutenberg server\n$ ping\n</span></code></pre>").unwrap());
     }
@@ -97,6 +102,7 @@ mod tests {
     fn markdown_filter_inline_highlight_theme() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
+        args.insert("highlight".to_string(), to_value(true).unwrap());
         args.insert("highlight_theme".to_string(), to_value("gruvbox-light".to_string()).unwrap());
         let result = markdown(&to_value(&"```\n$ gutenberg server\n$ ping\n```").unwrap(), &args);
         assert!(result.is_ok());
