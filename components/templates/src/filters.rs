@@ -2,8 +2,12 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 
 use base64::{decode, encode};
-use pulldown_cmark as cmark;
+use tera::Tera;
 use tera::{to_value, try_get_value, Result as TeraResult, Value};
+
+use config::Config;
+use front_matter::InsertAnchor;
+use rendering::{render_content, RenderContext};
 
 pub fn markdown<S: BuildHasher>(
     value: &Value,
@@ -15,22 +19,18 @@ pub fn markdown<S: BuildHasher>(
         None => false,
     };
 
-    let mut opts = cmark::Options::empty();
-    opts.insert(cmark::Options::ENABLE_TABLES);
-    opts.insert(cmark::Options::ENABLE_FOOTNOTES);
-    opts.insert(cmark::Options::ENABLE_STRIKETHROUGH);
-    opts.insert(cmark::Options::ENABLE_TASKLISTS);
-
-    let mut html = String::new();
-    let parser = cmark::Parser::new_ext(&s, opts);
-    cmark::html::push_html(&mut html, parser);
-
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.highlight_code = true;
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    // Use the rendering module instead of build in one.
+    let res = render_content(&s, &context).unwrap();
+    let html: String;
     if inline {
-        html = html
-            .trim_start_matches("<p>")
-            // pulldown_cmark finishes a paragraph with `</p>\n`
-            .trim_end_matches("</p>\n")
-            .to_string();
+        html = res.body.trim_start_matches("<p>").trim_end_matches("</p>\n").to_string();
+    } else {
+        html = res.body
     }
 
     Ok(to_value(&html).unwrap())
@@ -65,6 +65,14 @@ mod tests {
         let result = markdown(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1>Hey</h1>\n").unwrap());
+    }
+
+    #[test]
+    fn markdown_filter_highlight() {
+        let result =
+            markdown(&to_value(&"```\n$ gutenberg server\n$ ping\n```").unwrap(), &HashMap::new());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"<pre style=\"background-color:#2b303b;\">\n<code><span style=\"color:#c0c5ce;\">$ gutenberg server\n$ ping\n</span></code></pre>").unwrap());
     }
 
     #[test]

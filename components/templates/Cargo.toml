@@ -23,6 +23,10 @@ config = { path = "../config" }
 imageproc = { path = "../imageproc" }
 svg_metadata = "0.4.1"
 
+front_matter = { path = "../front_matter" }
+rendering = { path = "../rendering" }
+
+
 [dependencies.reqwest]
 version = "0.10"
 default-features = false
