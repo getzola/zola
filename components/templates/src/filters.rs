@@ -18,13 +18,18 @@ pub fn markdown<S: BuildHasher>(
         Some(val) => try_get_value!("markdown", "inline", bool, val),
         None => false,
     };
+    let highlight_theme = match args.get("highlight_theme") {
+        Some(val) => try_get_value!("markdown", "highlight_theme", String, val),
+        None => "base16-ocean-dark".to_string(),
+    };
 
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.highlight_code = true;
+    config.highlight_theme = highlight_theme;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
-    // Use the rendering module instead of build in one.
+    // Use the zola rendering module instead of build in one.
     let res = render_content(&s, &context).unwrap();
     let html: String;
     if inline {
@@ -64,7 +69,8 @@ mod tests {
     fn markdown_filter() {
         let result = markdown(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value(&"<h1>Hey</h1>\n").unwrap());
+        // zola render adds an id to the h1 tag
+        assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
     }
 
     #[test]
@@ -85,6 +91,16 @@ mod tests {
         );
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
+    }
+
+    #[test]
+    fn markdown_filter_inline_highlight_theme() {
+        let mut args = HashMap::new();
+        args.insert("inline".to_string(), to_value(true).unwrap());
+        args.insert("highlight_theme".to_string(), to_value("gruvbox-light".to_string()).unwrap());
+        let result = markdown(&to_value(&"```\n$ gutenberg server\n$ ping\n```").unwrap(), &args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"<pre style=\"background-color:#fcf0ca;\">\n<code><span style=\"color:#282828aa;\">$ gutenberg server\n$ ping\n</span></code></pre>").unwrap());
     }
 
     // https://github.com/Keats/gutenberg/issues/417
