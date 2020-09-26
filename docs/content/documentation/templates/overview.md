@@ -74,6 +74,14 @@ pass `true` to the inline argument:
 {{ some_text | markdown(inline=true) }}
 ```
 
+By default, the filter will not do any code highlighting. To enable this feature you need to pass the highlight and highlight_theme arguments.
+
+Default highlight theme is base16-ocean-dark, the list of highlight themes can be found at the end of the [configuration documentation](@/documentation/getting-started/configuration.md).
+
+```jinja2
+{{ some_text | markdown(highlight=true, highlight_theme="gruvbox-light") }}
+```
+
 You do not need to use this filter with `page.content` or `section.content`, the content is already rendered.
 
 ### base64_encode
