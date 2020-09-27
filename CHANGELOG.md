@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.13.0 (unreleased)
+
 ## 0.12.1 (2020-09-27)
 
 - Add line highlighting in code blocks
