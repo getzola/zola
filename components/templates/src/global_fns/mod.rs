@@ -572,6 +572,7 @@ mod tests {
         let tag = TaxonomyItem::new(
             "Programming",
             &taxo_config,
+            "tags",
             &config,
             vec![],
             &library.read().unwrap(),
@@ -579,12 +580,14 @@ mod tests {
         let tag_fr = TaxonomyItem::new(
             "Programmation",
             &taxo_config_fr,
+            "tags",
             &config,
             vec![],
             &library.read().unwrap(),
         );
-        let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
-        let tags_fr = Taxonomy { kind: taxo_config_fr, items: vec![tag_fr] };
+        let tags = Taxonomy { kind: taxo_config, slug: "tags".to_string(), items: vec![tag] };
+        let tags_fr =
+            Taxonomy { kind: taxo_config_fr, slug: "tags".to_string(), items: vec![tag_fr] };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
         let static_fn =
@@ -647,10 +650,12 @@ mod tests {
             ..TaxonomyConfig::default()
         };
         let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new("Programming", &taxo_config, &config, vec![], &library);
-        let tag_fr = TaxonomyItem::new("Programmation", &taxo_config_fr, &config, vec![], &library);
-        let tags = Taxonomy { kind: taxo_config, items: vec![tag] };
-        let tags_fr = Taxonomy { kind: taxo_config_fr, items: vec![tag_fr] };
+        let tag = TaxonomyItem::new("Programming", &taxo_config, "tags", &config, vec![], &library);
+        let tag_fr =
+            TaxonomyItem::new("Programmation", &taxo_config_fr, "tags", &config, vec![], &library);
+        let tags = Taxonomy { kind: taxo_config, slug: "tags".to_string(), items: vec![tag] };
+        let tags_fr =
+            Taxonomy { kind: taxo_config_fr, slug: "tags".to_string(), items: vec![tag_fr] };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
         let static_fn =

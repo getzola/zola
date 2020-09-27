@@ -26,6 +26,7 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
+use std::net::{SocketAddrV4, TcpListener};
 
 use hyper::header;
 use hyper::service::{make_service_fn, service_fn};
@@ -38,6 +39,7 @@ use ws::{Message, Sender, WebSocket};
 
 use errors::{Error as ZolaError, Result};
 use globset::GlobSet;
+use relative_path::{RelativePath, RelativePathBuf};
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
 use utils::fs::copy_file;
@@ -69,7 +71,12 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
-    let path = req.uri().path().trim_end_matches('/').trim_start_matches('/');
+    let mut path = RelativePathBuf::new();
+
+    for c in req.uri().path().split('/') {
+        path.push(c);
+    }
+
     // livereload.js is served using the LIVE_RELOAD str, not a file
     if path == "livereload.js" {
         if req.method() == Method::GET {
@@ -79,7 +86,7 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
         }
     }
 
-    if let Some(content) = SITE_CONTENT.read().unwrap().get(path) {
+    if let Some(content) = SITE_CONTENT.read().unwrap().get(&path) {
         return Ok(in_memory_html(content));
     }
 
@@ -87,7 +94,8 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
     match result {
         ResolveResult::MethodNotMatched => return Ok(method_not_allowed()),
         ResolveResult::NotFound | ResolveResult::UriNotMatched => {
-            let content_404 = SITE_CONTENT.read().unwrap().get("404.html").map(|x| x.clone());
+            let not_found_path = RelativePath::new("404.html");
+            let content_404 = SITE_CONTENT.read().unwrap().get(not_found_path).cloned();
             return Ok(not_found(content_404));
         }
         _ => (),
@@ -175,6 +183,13 @@ fn create_new_site(
 
     let base_address = format!("{}:{}", base_url, interface_port);
     let address = format!("{}:{}", interface, interface_port);
+
+    // Stop right there if we can't bind to the address
+    let bind_address: SocketAddrV4 = address.parse().unwrap();
+    if (TcpListener::bind(&bind_address)).is_err() {
+        return Err(format!("Cannot start server on address {}.", address))?;
+    }
+
     let base_url = if site.config.base_url.ends_with('/') {
         format!("http://{}/", base_address)
     } else {
@@ -255,7 +270,7 @@ pub fn serve(
         if should_watch {
             watcher
                 .watch(root_dir.join(entry), RecursiveMode::Recursive)
-                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Do you have correct permissions?", entry, root_dir.display()), e))?;
+                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()), e))?;
             watchers.push(entry.to_string());
         }
     }
@@ -319,10 +334,17 @@ pub fn serve(
             }
         })
         .unwrap();
+
         let broadcaster = ws_server.broadcaster();
+
+        let ws_server = ws_server
+            .bind(&*ws_address)
+            .map_err(|_| format!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
+
         thread::spawn(move || {
-            ws_server.listen(&*ws_address).unwrap();
+            ws_server.run().unwrap();
         });
+
         Some(broadcaster)
     } else {
         println!("Watching in watch only mode, no web server will be started");

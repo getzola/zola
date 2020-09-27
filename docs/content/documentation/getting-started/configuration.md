@@ -82,7 +82,8 @@ taxonomies = []
 #
 languages = []
 
-# When set to "true", the Sass files in the `sass` directory are compiled.
+# When set to "true", the Sass files in the `sass` directory in the site root are compiled.
+# Sass files in theme directories are always compiled.
 compile_sass = false
 
 # A list of glob patterns specifying asset files to ignore when the content

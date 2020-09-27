@@ -17,11 +17,11 @@ lazy_static! {
 }
 
 /// Returns the highlighter and whether it was found in the extra or not
-pub fn get_highlighter<'a>(info: &str, config: &Config) -> (HighlightLines<'a>, bool) {
+pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLines<'static>, bool) {
     let theme = &THEME_SET.themes[&config.highlight_theme];
     let mut in_extra = false;
 
-    if let Some(ref lang) = info.split(' ').next() {
+    if let Some(ref lang) = language {
         let syntax = SYNTAX_SET
             .find_syntax_by_token(lang)
             .or_else(|| {

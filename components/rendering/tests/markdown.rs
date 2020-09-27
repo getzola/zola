@@ -142,7 +142,7 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
         let res =
             render_content(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context)
                 .unwrap();
-        println!("{:?}", res);
+
         assert!(res.body.contains("<blockquote>hey - Bob</blockquote>"));
     }
 }
@@ -166,12 +166,12 @@ Here is another paragraph.
 <p>Here is another paragraph.</p>
 ";
 
-    tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
+    tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
     let res = render_content(markdown_string, &context).unwrap();
-    println!("{:?}", res);
+
     assert_eq!(res.body, expected);
 }
 
@@ -199,12 +199,12 @@ Here is another paragraph.
 <p>Here is another paragraph.</p>
 ";
 
-    tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
+    tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
     let res = render_content(markdown_string, &context).unwrap();
-    println!("{:?}", res);
+
     assert_eq!(res.body, expected);
 }
 
@@ -790,7 +790,7 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 
     let expected = "<figure>\n     \n     <img src=\"/images/spherecluster.png\" alt=\"Some spheres.\" />\n     \n\n     <figcaption>Some spheres.</figcaption>\n</figure>";
 
-    tera.add_raw_template(&format!("shortcodes/{}.html", "figure"), shortcode).unwrap();
+    tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
@@ -937,11 +937,102 @@ Bla bla"#;
 <p>Bla bla</p>
 "#;
 
-    tera.add_raw_template(&format!("shortcodes/{}.md", "quote"), shortcode).unwrap();
+    tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
     let config = Config::default();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
     let res = render_content(markdown_string, &context).unwrap();
-    println!("{:?}", res);
+
+    assert_eq!(res.body, expected);
+}
+
+// https://github.com/getzola/zola/issues/1172
+#[test]
+fn can_render_shortcode_body_with_no_invalid_escaping() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"
+<a class="resize-image" href="/tlera-corp-gnat/gnat-with-picoblade-cable.jpg">
+    <img
+        src="https://placekitten.com/200/300"
+        alt="{{ alt }}">
+    </img>
+    <p>(click for full size)</p>
+</a>
+"#;
+
+    let markdown_string = r#"{{ resize_image(path="tlera-corp-gnat/gnat-with-picoblade-cable.jpg", width=600, alt="Some alt") }}"#;
+
+    let expected = "<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>";
+
+    tera.add_raw_template("shortcodes/resize_image.html", shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, expected);
+}
+
+// https://github.com/getzola/zola/issues/1172
+#[test]
+fn can_render_commented_out_shortcodes_fine() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"
+<a class="resize-image" href="/tlera-corp-gnat/gnat-with-picoblade-cable.jpg">
+    <img
+        src="https://placekitten.com/200/300"
+        alt="{{ alt }}">
+    </img>
+    <p>(click for full size)</p>
+</a>
+"#;
+
+    let markdown_string = r#"<!--{{ resize_image(path="tlera-corp-gnat/gnat-with-picoblade-cable.jpg", width=600, alt="Some alt") }}-->"#;
+
+    let expected = "<!--<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>-->";
+
+    tera.add_raw_template("shortcodes/resize_image.html", shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, expected);
+}
+
+
+// https://zola.discourse.group/t/zola-12-issue-with-continue-reading/590/7
+#[test]
+fn can_render_read_more_after_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode = r#"<p>Quote: {{body}}</p>"#;
+    let markdown_string = r#"
+# Title
+
+Some text
+{{ quote(body="Nothing is impossible. The word itself says - I'm Possible" author="Audrey Hepburn")}}
+<!-- more -->
+
+Again more text"#;
+
+    let expected = r#"<h1 id="title">Title</h1>
+<p>Some text</p>
+<p>Quote: Nothing is impossible. The word itself says - I'm Possible</p>
+<span id="continue-reading"></span>
+<p>Again more text</p>
+"#;
+
+    tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
 }

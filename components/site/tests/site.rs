@@ -154,6 +154,10 @@ fn can_build_site_without_live_reload() {
     assert_eq!(file_exists!(public, "categories/index.html"), true);
     assert_eq!(file_exists!(public, "categories/a-category/index.html"), true);
     assert_eq!(file_exists!(public, "categories/a-category/atom.xml"), true);
+    // and podcast_authors (https://github.com/getzola/zola/issues/1177)
+    assert_eq!(file_exists!(public, "podcast-authors/index.html"), true);
+    assert_eq!(file_exists!(public, "podcast-authors/some-person/index.html"), true);
+    assert_eq!(file_exists!(public, "podcast-authors/some-person/atom.xml"), true);
     // But no tags
     assert_eq!(file_exists!(public, "tags/index.html"), false);
 
