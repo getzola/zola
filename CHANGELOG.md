@@ -1,11 +1,11 @@
 # Changelog
 
-## 0.12.1 (unreleased)
+## 0.12.1 (2020-09-27)
 
 - Add line highlighting in code blocks
 - Fix the new `zola serve` being broken on Windows
 - Fix slugified taxonomies not being rendered at the right path
-- Fix issues with shortcodes with newlines
+- Fix issues with shortcodes with newlines and read more
 
 ## 0.12.0 (2020-09-04)
 
