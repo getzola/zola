@@ -3,7 +3,6 @@ title = "Overview"
 weight = 10
 +++
 
-
 Zola uses the directory structure to determine the site structure.
 Each child directory in the `content` directory represents a [section](@/documentation/content/section.md)
 that contains [pages](@/documentation/content/page.md) (your `.md` files).
