@@ -184,12 +184,6 @@ fn create_new_site(
     let base_address = format!("{}:{}", base_url, interface_port);
     let address = format!("{}:{}", interface, interface_port);
 
-    // Stop right there if we can't bind to the address
-    let bind_address: SocketAddrV4 = address.parse().unwrap();
-    if (TcpListener::bind(&bind_address)).is_err() {
-        return Err(format!("Cannot start server on address {}.", address))?;
-    }
-
     let base_url = if site.config.base_url.ends_with('/') {
         format!("http://{}/", base_address)
     } else {
@@ -238,6 +232,12 @@ pub fn serve(
         None,
     )?;
     console::report_elapsed_time(start);
+
+    // Stop right there if we can't bind to the address
+    let bind_address: SocketAddrV4 = address.parse().unwrap();
+    if (TcpListener::bind(&bind_address)).is_err() {
+        return Err(format!("Cannot start server on address {}.", address))?;
+    }
 
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate

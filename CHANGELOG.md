@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.2 (2020-09-28)
+
+- Fix `zola serve` being broken on reload
+
 ## 0.12.1 (2020-09-27)
 
 - Add line highlighting in code blocks
