@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.13.0 (unreleased)
+
 ## 0.12.2 (2020-09-28)
 
 - Fix `zola serve` being broken on reload
