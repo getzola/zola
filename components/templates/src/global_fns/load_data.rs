@@ -288,7 +288,7 @@ fn load_bibtex(bibtex_data: String) -> Result<Value> {
 
             let mut tags = Map::new();
             for (key, val) in b.tags() {
-                tags.insert(key.to_string(), Value::String(val.to_string()));
+                tags.insert(key.to_lowercase().to_string(), Value::String(val.to_string()));
             }
             m.insert(String::from("tags"), Value::Object(tags));
             Value::Object(m)
