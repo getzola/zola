@@ -85,7 +85,7 @@ impl Site {
         let static_path = path.join("static");
         let imageproc =
             imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
-        let output_path = path.join("public");
+        let output_path = path.join(config.output_dir.clone());
 
         let site = Site {
             base_path: path.to_path_buf(),
