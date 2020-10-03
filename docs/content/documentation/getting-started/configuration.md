@@ -96,6 +96,9 @@ ignored_content = []
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
+# You can override the default output directory `public` by setting an another value.
+# output_dir = "docs"
+
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes
