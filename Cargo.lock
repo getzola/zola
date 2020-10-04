@@ -733,6 +733,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "gh-emoji"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a17a050b7eb420553344e1cf1db648e8b584c79e98b74e6e6d119eeedd9ddcbc"
+dependencies = [
+ "phf",
+ "regex",
+]
+
+[[package]]
 name = "gif"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1937,6 +1947,7 @@ dependencies = [
  "config",
  "errors",
  "front_matter",
+ "gh-emoji",
  "lazy_static",
  "link_checker",
  "pest",
