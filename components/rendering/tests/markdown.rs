@@ -1036,3 +1036,28 @@ Again more text"#;
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
 }
+
+#[test]
+fn can_render_emoji_alias() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.emoji_rendering = true;
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("Hello, World! :smile:", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p>Hello, World! 😄</p>\n"
+    );
+}
+
+#[test]
+fn emoji_aliases_are_ignored_when_disabled_in_config() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("Hello, World! :smile:", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p>Hello, World! :smile:</p>\n"
+    );
+}
