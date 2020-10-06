@@ -203,7 +203,19 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
+                        let mut language = None;
+                        match kind {
+                            CodeBlockKind::Fenced(fence_info) => {
+                                let fence_info = fence::FenceSettings::new(fence_info);
+                                language = fence_info.language;
+                            },
+                            _ => {}
+                        };
                         if !context.config.highlight_code {
+                            if let Some(lang) = language {
+                                let html = format!(r#"<pre><code class="language-{}">"#, lang);
+                                return Event::Html(html.into());
+                            }
                             return Event::Html("<pre><code>".into());
                         }
 
@@ -227,7 +239,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         };
                         let snippet = start_highlighted_html_snippet(theme);
                         let mut html = snippet.0;
-                        html.push_str("<code>");
+                        if let Some(lang) = language {
+                            html.push_str(r#"<code class="language-"#);
+                            html.push_str(lang);
+                            html.push_str(r#"">"#);
+                        } else {
+                            html.push_str("<code>");
+                        }
                         Event::Html(html.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
