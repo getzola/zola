@@ -96,6 +96,8 @@ pub struct Config {
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_syntax_set: Option<SyntaxSet>,
 
+    pub output_dir: String,
+
     pub link_checker: link_checker::LinkChecker,
 
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
@@ -333,6 +335,7 @@ impl Default for Config {
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
+            output_dir: "public".to_string(),
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),
@@ -653,5 +656,28 @@ bar = "baz"
         let theme = Theme::parse(theme_str).unwrap();
         // We expect an error here
         assert_eq!(false, config.add_theme_extra(&theme).is_ok());
+    }
+
+    #[test]
+    fn default_output_dir() {
+        let config = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+        "#;
+
+        let config = Config::parse(config).unwrap();
+        assert_eq!(config.output_dir, "public".to_string());
+    }
+
+    #[test]
+    fn can_add_output_dir() {
+        let config = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+output_dir = "docs"
+        "#;
+
+        let config = Config::parse(config).unwrap();
+        assert_eq!(config.output_dir, "docs".to_string());
     }
 }
