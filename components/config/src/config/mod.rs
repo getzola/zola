@@ -153,9 +153,6 @@ impl Config {
             }
         }
 
-        // TODO: re-enable once it's a bit more tested
-        config.minify_html = false;
-
         Ok(config)
     }
 
