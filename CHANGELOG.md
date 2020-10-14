@@ -2,6 +2,7 @@
 
 ## 0.13.0 (unreleased)
 
+- Enable HTML minification
 
 ## 0.12.0 (2020-09-04)
 
