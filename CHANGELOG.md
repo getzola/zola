@@ -2,6 +2,7 @@
 
 ## 0.13.0 (unreleased)
 
+- Enable HTML minification
 - Support `output_dir in `config.toml`
 
 ## 0.12.2 (2020-09-28)
