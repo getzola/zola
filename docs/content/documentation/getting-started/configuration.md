@@ -86,6 +86,9 @@ languages = []
 # Sass files in theme directories are always compiled.
 compile_sass = false
 
+# When set to "true", the generated HTML files are minified.
+minify_html = false
+
 # A list of glob patterns specifying asset files to ignore when the content
 # directory is processed. Defaults to none, which means that all asset files are
 # copied over to the `public` directory.
