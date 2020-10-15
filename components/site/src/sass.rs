@@ -44,14 +44,7 @@ fn compile_sass_glob(
     extension: &str,
     options: &Options,
 ) -> Result<Vec<(PathBuf, PathBuf)>> {
-    let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
-    let files = glob(&glob_string)
-        .expect("Invalid glob for sass")
-        .filter_map(|e| e.ok())
-        .filter(|entry| {
-            !entry.as_path().components().any(|c| c.as_os_str().to_string_lossy().starts_with('_'))
-        })
-        .collect::<Vec<_>>();
+    let files = get_non_partial_scss(sass_path, extension);
 
     let mut compiled_paths = Vec::new();
     for file in files {
@@ -70,4 +63,49 @@ fn compile_sass_glob(
     }
 
     Ok(compiled_paths)
+}
+
+fn get_non_partial_scss(sass_path: &Path, extension: &str) -> Vec<PathBuf> {
+    let glob_string = format!("{}/**/*.{}", sass_path.display(), extension);
+    glob(&glob_string)
+        .expect("Invalid glob for sass")
+        .filter_map(|e| e.ok())
+        .filter(|entry| {
+            !entry
+                .as_path()
+                .iter()
+                .last()
+                .map(|c| c.to_string_lossy().starts_with('_'))
+                .unwrap_or(true)
+        })
+        .collect::<Vec<_>>()
+}
+
+#[test]
+fn test_get_non_partial_scss() {
+    use std::env;
+
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    path.push("sass");
+
+    let result = get_non_partial_scss(&path, "scss");
+
+    assert!(result.len() != 0);
+    assert!(result.iter().filter_map(|path| path.file_name()).any(|file| file == "scss.scss"))
+}
+#[test]
+fn test_get_non_partial_scss_underscores() {
+    use std::env;
+
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    path.push("_dir_with_underscores");
+    path.push("..");
+    path.push("sass");
+
+    let result = get_non_partial_scss(&path, "scss");
+
+    assert!(result.len() != 0);
+    assert!(result.iter().filter_map(|path| path.file_name()).any(|file| file == "scss.scss"))
 }

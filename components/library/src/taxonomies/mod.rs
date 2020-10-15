@@ -53,6 +53,7 @@ impl TaxonomyItem {
     pub fn new(
         name: &str,
         taxonomy: &TaxonomyConfig,
+        taxo_slug: &str,
         config: &Config,
         keys: Vec<DefaultKey>,
         library: &Library,
@@ -72,7 +73,6 @@ impl TaxonomyItem {
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
         let item_slug = slugify_paths(name, config.slugify.taxonomies);
-        let taxo_slug = slugify_paths(&taxonomy.name, config.slugify.taxonomies);
         let permalink = if taxonomy.lang != config.default_language {
             config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxo_slug, item_slug))
         } else {
@@ -118,6 +118,7 @@ impl<'a> SerializedTaxonomy<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Taxonomy {
     pub kind: TaxonomyConfig,
+    pub slug: String,
     // this vec is sorted by the count of item
     pub items: Vec<TaxonomyItem>,
 }
@@ -130,8 +131,9 @@ impl Taxonomy {
         library: &Library,
     ) -> Taxonomy {
         let mut sorted_items = vec![];
+        let slug = slugify_paths(&kind.name, config.slugify.taxonomies);
         for (name, pages) in items {
-            sorted_items.push(TaxonomyItem::new(&name, &kind, config, pages, library));
+            sorted_items.push(TaxonomyItem::new(&name, &kind, &slug, config, pages, library));
         }
         //sorted_items.sort_by(|a, b| a.name.cmp(&b.name));
         sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
@@ -150,7 +152,7 @@ impl Taxonomy {
                 false
             }
         });
-        Taxonomy { kind, items: sorted_items }
+        Taxonomy { kind, slug, items: sorted_items }
     }
 
     pub fn len(&self) -> usize {

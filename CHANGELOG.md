@@ -3,6 +3,18 @@
 ## 0.13.0 (unreleased)
 
 - Enable HTML minification
+- Support `output_dir in `config.toml`
+
+## 0.12.2 (2020-09-28)
+
+- Fix `zola serve` being broken on reload
+
+## 0.12.1 (2020-09-27)
+
+- Add line highlighting in code blocks
+- Fix the new `zola serve` being broken on Windows
+- Fix slugified taxonomies not being rendered at the right path
+- Fix issues with shortcodes with newlines and read more
 
 ## 0.12.0 (2020-09-04)
 

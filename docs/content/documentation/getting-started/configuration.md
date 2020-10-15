@@ -82,7 +82,8 @@ taxonomies = []
 #
 languages = []
 
-# When set to "true", the Sass files in the `sass` directory are compiled.
+# When set to "true", the Sass files in the `sass` directory in the site root are compiled.
+# Sass files in theme directories are always compiled.
 compile_sass = false
 
 # When set to "true", the generated HTML files are minified.
@@ -97,6 +98,9 @@ ignored_content = []
 
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
+
+# You can override the default output directory `public` by setting an another value.
+# output_dir = "docs"
 
 # Configuration of the link checker.
 [link_checker]

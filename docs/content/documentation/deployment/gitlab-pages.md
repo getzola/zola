@@ -1,4 +1,4 @@
- +++
++++
 title = "GitLab Pages"
 weight = 40
 +++
@@ -37,20 +37,19 @@ The second step is to tell the GitLab continuous integration runner how to creat
 To do this, create a file called `.gitlab-ci.yml` in the root directory of your repository.
 
 ```yaml
+image: alpine:latest
 variables:
   # This variable will ensure that the CI runner pulls in your theme from the submodule
   GIT_SUBMODULE_STRATEGY: recursive  
   # Specify the zola version you want to use here
-  ZOLA_VERSION: "v0.9.0"
+  ZOLA_VERSION: "v0.12.0"
 
 pages:
   script:
-    # Download the zola executable and store it in zola.tar.gz
-    - curl -L https://github.com/getzola/zola/releases/download/$ZOLA_VERSION/zola-$ZOLA_VERSION-x86_64-unknown-linux-gnu.tar.gz > zola.tar.gz
-    # Unpack the zola executable
-    - tar -xzf zola.tar.gz
+    # Install the zola package from the alpine testing repositories
+    - apk add --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ zola
     # Execute zola build
-    - ./zola build
+    - zola build
     
   artifacts:
     paths:
@@ -58,8 +57,8 @@ pages:
       - public
       
   # This config will only publish changes that are pushed on the master branch
-  only:
-  - master
+  only: 
+    - master
 ```
 
 Push this new file and ... Tada! You're done! If you navigate to `settings > pages`, you should be able to see

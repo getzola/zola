@@ -4,15 +4,20 @@ highlight_code = true
 compile_sass = true
 generate_feed = true
 theme = "sample"
-slugify_paths = true
 
 taxonomies = [
     {name = "categories", feed = true},
+    {name = "podcast_authors", feed = true},
 ]
 
 extra_syntaxes = ["syntaxes"]
 
 ignored_content = ["*/ignored.md"]
+
+[slugify]
+paths = "on"
+taxonomies = "on"
+anchors = "on"
 
 [link_checker]
 skip_prefixes = [
