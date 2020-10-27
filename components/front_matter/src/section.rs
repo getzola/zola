@@ -22,6 +22,8 @@ pub struct SectionFrontMatter {
     /// Higher values means it will be at the end. Defaults to `0`
     #[serde(skip_serializing)]
     pub weight: usize,
+    /// whether the section is a draft
+    pub draft: bool,
     /// Optional template, if we want to specify which template to render for that section
     #[serde(skip_serializing)]
     pub template: Option<String>,
@@ -114,6 +116,7 @@ impl Default for SectionFrontMatter {
             aliases: Vec::new(),
             generate_feed: false,
             extra: Map::new(),
+            draft: false,
         }
     }
 }

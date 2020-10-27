@@ -2205,10 +2205,12 @@ dependencies = [
  "search",
  "serde",
  "serde_derive",
+ "slotmap",
  "tempfile",
  "templates",
  "tera",
  "utils",
+ "walkdir",
 ]
 
 [[package]]

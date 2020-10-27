@@ -4,16 +4,17 @@ pub mod sass;
 pub mod sitemap;
 pub mod tpls;
 
+use slotmap::DefaultKey;
 use std::collections::HashMap;
 use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use glob::glob;
 use lazy_static::lazy_static;
 use minify_html::{with_friendly_error, Cfg};
 use rayon::prelude::*;
 use tera::{Context, Tera};
+use walkdir::{DirEntry, WalkDir};
 
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
@@ -166,72 +167,107 @@ impl Site {
     /// out of them
     pub fn load(&mut self) -> Result<()> {
         let base_path = self.base_path.to_string_lossy().replace("\\", "/");
-        let content_glob = format!("{}/{}", base_path, "content/**/*.md");
 
-        let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
-            .expect("Invalid glob")
-            .filter_map(|e| e.ok())
-            .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
-            .partition(|entry| {
-                entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index.")
-            });
-
-        self.library = Arc::new(RwLock::new(Library::new(
-            page_entries.len(),
-            section_entries.len(),
-            self.config.is_multilingual(),
-        )));
-
-        let sections = {
-            let config = &self.config;
-
-            section_entries
-                .into_par_iter()
-                .map(|entry| {
-                    let path = entry.as_path();
-                    Section::from_file(path, config, &self.base_path)
-                })
-                .collect::<Vec<_>>()
-        };
-
-        let pages = {
-            let config = &self.config;
-
-            page_entries
-                .into_par_iter()
-                .filter(|entry| match &config.ignored_content_globset {
-                    Some(gs) => !gs.is_match(entry.as_path()),
-                    None => true,
-                })
-                .map(|entry| {
-                    let path = entry.as_path();
-                    Page::from_file(path, config, &self.base_path)
-                })
-                .collect::<Vec<_>>()
-        };
-
-        // Kinda duplicated code for add_section/add_page but necessary to do it that
-        // way because of the borrow checker
-        for section in sections {
-            let s = section?;
-            self.add_section(s, false)?;
-        }
-
-        self.create_default_index_sections()?;
-
+        self.library = Arc::new(RwLock::new(Library::new(0, 0, self.config.is_multilingual())));
         let mut pages_insert_anchors = HashMap::new();
-        for page in pages {
-            let p = page?;
-            // Should draft pages be ignored?
-            if p.meta.draft && !self.include_drafts {
+
+        // not the most elegant loop, but this is necessary to use skip_current_dir
+        // which we can only decide to use after we've deserialised the section
+        // so it's kinda necessecary
+        let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
+        loop {
+            let entry: DirEntry = match dir_walker.next() {
+                None => break,
+                Some(Err(_)) => continue,
+                Some(Ok(entry)) => entry,
+            };
+            let path = entry.path();
+            let file_name = match path.file_name() {
+                None => continue,
+                Some(name) => name.to_str().unwrap(),
+            };
+
+            // ignore excluded content
+            match &self.config.ignored_content_globset {
+                Some(gs) => {
+                    if gs.is_match(path) {
+                        continue;
+                    }
+                }
+
+                None => (),
+            }
+
+            // we process a section when we encounter the dir
+            // so we can process it before any of the pages
+            // therefore we should skip the actual file to avoid duplication
+            if file_name.starts_with("_index.") {
                 continue;
             }
-            pages_insert_anchors.insert(
-                p.file.path.clone(),
-                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
-            );
-            self.add_page(p, false)?;
+
+            // skip hidden files and non md files
+            if !path.is_dir() && (!file_name.ends_with(".md") || file_name.starts_with(".")) {
+                continue;
+            }
+
+            // is it a section or not?
+            if path.is_dir() {
+                // if we are processing a section we have to collect
+                // index files for all languages and process them simultaniously
+                // before any of the pages
+                let index_files = WalkDir::new(&path)
+                    .max_depth(1)
+                    .into_iter()
+                    .filter_map(|e| match e {
+                        Err(_) => None,
+                        Ok(f) => {
+                            let path_str = f.path().file_name().unwrap().to_str().unwrap();
+                            if f.path().is_file()
+                                && path_str.starts_with("_index.")
+                                && path_str.ends_with(".md")
+                            {
+                                Some(f)
+                            } else {
+                                None
+                            }
+                        }
+                    })
+                    .collect::<Vec<DirEntry>>();
+
+                for index_file in index_files {
+                    let section = match Section::from_file(
+                        index_file.path(),
+                        &self.config,
+                        &self.base_path,
+                    ) {
+                        Err(_) => continue,
+                        Ok(sec) => sec,
+                    };
+
+                    // if the section is drafted we can skip the enitre dir
+                    if section.meta.draft && !self.include_drafts {
+                        dir_walker.skip_current_dir();
+                        continue;
+                    }
+
+                    self.add_section(section, false)?;
+                }
+            } else {
+                let page = Page::from_file(path, &self.config, &self.base_path)
+                    .expect("error deserialising page");
+
+                // should we skip drafts?
+                if page.meta.draft && !self.include_drafts {
+                    continue;
+                }
+                pages_insert_anchors.insert(
+                    page.file.path.clone(),
+                    self.find_parent_section_insert_anchor(&page.file.parent.clone(), &page.lang),
+                );
+                self.add_page(page, false)?;
+            }
         }
+        self.create_default_index_sections()?;
 
         {
             let library = self.library.read().unwrap();
