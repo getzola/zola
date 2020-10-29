@@ -26,6 +26,80 @@ build_search_index = %SEARCH%
 # Put all your custom variables here
 "#;
 
+const DEFAULT_INDEX: &str = r#"
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>{% block htmltitle %}{{ config.title }}{% endblock htmltitle %}</title>
+  </head>
+  {% block body%}
+    <body>
+        {% if config.title %}
+        <h1> {{config.title}}</h1>
+    {% else %}
+        <h1> A nameless website </h1>
+    {% endif %}
+      {% block main %}
+        <main>
+          {% block content %}
+            {% if section.pages %}
+              {% for page in section.pages %}
+                <h2><a href="{{page.permalink}}">{{page.title}}</a></h2>
+                {{page.content | safe}}
+              {% endfor %}
+            {% else %}
+              And this is where I show my content, IF I HAD ANY!!
+            {% endif %}
+          {% endblock content %}
+        </main>
+      {% endblock main %}
+
+      {% block footer %}
+        <div id="footer">
+          Made with <a href="https://www.getzola.org/">Zola</a>
+		</div>
+      {% endblock footer %}
+
+    </body>
+  {% endblock body %}
+</html>
+"#;
+
+const DEFAULT_404: &str = r#"
+{% extends "index.html" %}
+{% block title %}
+    <h1> 404 </h1>
+{% endblock title%}
+{% block content %}
+    Could not find requested page
+{% endblock content %}
+"#;
+
+const DEFAULT_PAGE: &str = r#"
+{% extends "index.html" %}
+{% if page.title %}
+{% block title %}
+    <h1> {{page.title}} </h1>
+{% endblock title%}
+{% endif %}
+
+{% block content %}
+    {{page.content | safe}}
+{% endblock content %}
+"#;
+
+const DEFAULT_THEME_CONFIG: &str = r#"
+name = "Default"
+description = "The default barebones theme"
+license = "MIT"
+min_version = "0.11.0"
+
+[author]
+name = "Sam Vente"
+homepage = "https://sam-vente.com"
+"#;
 // canonicalize(path) function on windows system returns a path with UNC.
 // Example: \\?\C:\Users\VssAdministrator\AppData\Local\Temp\new_project
 // More details on Universal Naming Convention (UNC):
@@ -130,6 +204,21 @@ fn populate(path: &Path, compile_sass: bool, config: &str) -> Result<()> {
     if compile_sass {
         create_dir(path.join("sass"))?;
     }
+
+    setup_default_theme(&path.join("themes"))?;
+    Ok(())
+}
+
+fn setup_default_theme(path: &Path) -> Result<()> {
+
+    let theme_path = path.join("default");
+    create_dir(&theme_path)?;
+    create_dir(&theme_path.join("/templates"))?;
+
+    create_file(&theme_path.join("theme.toml"), &DEFAULT_THEME_CONFIG)?;
+    create_file(&path.join("templates/index.html"), &DEFAULT_PAGE)?;
+    create_file(&path.join("templates/404.html"), &DEFAULT_404)?;
+    create_file(&path.join("templates/page.html"), &DEFAULT_INDEX)?;
 
     Ok(())
 }

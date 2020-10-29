@@ -73,6 +73,9 @@ impl Site {
         let config_file = config_file.as_ref();
         let mut config = get_config(config_file);
         config.load_extra_syntaxes(path)?;
+        if config.theme.is_none() {
+            config.theme = Some("default".to_string());
+        }
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
