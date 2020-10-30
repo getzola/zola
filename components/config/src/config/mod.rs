@@ -106,6 +106,9 @@ pub struct Config {
     /// The search config, telling what to include in the search index
     pub search: search::Search,
 
+    /// Whether to render emoji aliases (e.g.: :smile: => 😄) in the markdown files
+    pub emoji_rendering: bool,
+
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
 }
@@ -337,6 +340,7 @@ impl Default for Config {
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),
             extra: HashMap::new(),
+            emoji_rendering: false,
         }
     }
 }

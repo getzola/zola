@@ -61,6 +61,10 @@ generate_feed = false
 # files are always copied, regardless of this setting.
 # hard_link_static = false
 
+# When set to "true", emoji aliases translated to their corresponding
+# Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
+# emoji_rendering = false
+
 # The taxonomies to be rendered for the site and their configuration.
 # Example:
 #     taxonomies = [
