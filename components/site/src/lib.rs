@@ -4,7 +4,6 @@ pub mod sass;
 pub mod sitemap;
 pub mod tpls;
 
-use slotmap::DefaultKey;
 use std::collections::HashMap;
 use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
