@@ -23,38 +23,38 @@ Imagine that you want to make a website to display information about various mov
 Then at build time Zola can create pages for each taxonomy listing all of the known terms as well as pages for each term in a taxonomy, listing all of the pieces of content associated with that term. 
 
 Imagine again we have the following movies: 
-```yaml
-- Shape of water:                   <--- Value
-  - Director:                         <--- Taxonomy
+```
+- Shape of water                   <--- Value
+  - Director                         <--- Taxonomy
     - Guillermo Del Toro                 <--- Term
-  - Genres:                            <--- Taxonomy
+  - Genres                            <--- Taxonomy
     - Thriller                           <--- Term
     - Drama                              <--- Term
-  - Awards:                           <--- Taxonomy
+  - Awards                           <--- Taxonomy
     - Golden globe                         <--- Term
     - Academy award                        <--- Term
     - BAFTA                                <--- Term
-  - Release year:                      <--- Taxonomy
+  - Release year                      <--- Taxonomy
     - 2017                                <--- Term
     
 - The Room:                         <--- Value
-  - Director:                           <--- Taxonomy
+  - Director                           <--- Taxonomy
     - Tommy Wiseau                         <--- Term
-  - Genres:                              <--- Taxonomy
+  - Genres                              <--- Taxonomy
     - Romance                              <--- Term
     - Drama                                <--- Term
-  - Release Year:                       <--- Taxonomy
+  - Release Year                       <--- Taxonomy
     - 2003                                 <--- Term
 
-- Bright:                           <--- Value
-  - Director:                           <--- Taxonomy
+- Bright                           <--- Value
+  - Director                           <--- Taxonomy
     - David Ayer                           <--- Term
-  - Genres:                              <--- Taxonomy
+  - Genres                              <--- Taxonomy
     - Fantasy                              <--- Term
     - Action                               <--- Term
-  - Awards:                             <--- Taxonomy
+  - Awards                             <--- Taxonomy
     - California on Location Awards        <--- Term
-  - Release Year:                       <--- Taxonomy
+  - Release Year                       <--- Taxonomy
     - 2017                                 <--- Term
 ```
 
