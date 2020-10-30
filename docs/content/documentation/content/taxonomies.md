@@ -3,13 +3,13 @@ title = "Taxonomies"
 weight = 90
 +++
 
-Zola has built-in support for taxonomies. Taxonomies are a way for users to group content according to user-defined catagories.
+Zola has built-in support for taxonomies. Taxonomies are a way for users to group content according to user-defined categories.
 
 ## Definitions
 
-- Taxonomy: A catagorisation that can be used to group content 
+- Taxonomy: A category that can be used to group content 
 - Term: A specific group within a taxonomy 
-- Value: A peice of content that can be associated with a term
+- Value: A piece of content that can be associated with a term
 
 ## Example: a movie website
 
@@ -20,45 +20,45 @@ Imagine that you want to make a website to display information about various mov
 - Awards
 - Release year
 
-Then at build time Zola can create pages for each taxonomy listing all of the known terms, and pages for each term in a taxonomy, listing all of the peices of content assoicated with that term. 
+Then at build time Zola can create pages for each taxonomy listing all of the known terms as well as pages for each term in a taxonomy, listing all of the pieces of content associated with that term. 
 
 Imagine again we have the following movies: 
 ```yaml
 - Shape of water:                   <--- Value
-  - Director:                         <--- Taxnomomy
+  - Director:                         <--- Taxonomy
     - Guillermo Del Toro                 <--- Term
-  - Genres:                            <--- Taxnomomy
+  - Genres:                            <--- Taxonomy
     - Thriller                           <--- Term
     - Drama                              <--- Term
-  - Awards:                           <--- Taxnomomy
+  - Awards:                           <--- Taxonomy
     - Golden globe                         <--- Term
     - Academy award                        <--- Term
     - BAFTA                                <--- Term
-  - Release year:                      <--- Taxnomomy
+  - Release year:                      <--- Taxonomy
     - 2017                                <--- Term
     
 - The Room:                         <--- Value
-  - Director:                           <--- Taxnomomy
+  - Director:                           <--- Taxonomy
     - Tommy Wiseau                         <--- Term
-  - Genres:                              <--- Taxnomomy
+  - Genres:                              <--- Taxonomy
     - Romance                              <--- Term
     - Drama                                <--- Term
-  - Release Year:                       <--- Taxnomomy
+  - Release Year:                       <--- Taxonomy
     - 2003                                 <--- Term
 
 - Bright:                           <--- Value
-  - Director:                           <--- Taxnomomy
+  - Director:                           <--- Taxonomy
     - David Ayer                           <--- Term
-  - Genres:                              <--- Taxnomomy
+  - Genres:                              <--- Taxonomy
     - Fantasy                              <--- Term
     - Action                               <--- Term
-  - Awards:                             <--- Taxnomomy
+  - Awards:                             <--- Taxonomy
     - California on Location Awards        <--- Term
-  - Release Year:                       <--- Taxnomomy
+  - Release Year:                       <--- Taxonomy
     - 2017                                 <--- Term
 ```
 
-In this example the page for `Release year` would include links to pages for both 2003 and 2017, where the page for 2017 would list both the shape of water and Bright.
+In this example the page for `Release year` would include links to pages for both 2003 and 2017, where the page for 2017 would list both Shape of Water and Bright.
 
 ## Configuration
 
