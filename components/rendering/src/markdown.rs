@@ -168,6 +168,10 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
 }
 
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
+    lazy_static! {
+        static ref EMOJI_REPLACER: gh_emoji::Replacer = gh_emoji::Replacer::new();
+    }
+
     // the rendered html
     let mut html = String::with_capacity(content.len());
     // Set while parsing
@@ -198,8 +202,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             let html = code_block.highlight(&text);
                             Event::Html(html.into())
                         } else {
-                            // Business as usual
-                            Event::Text(text)
+                            if context.config.emoji_rendering {
+                                let processed_text = EMOJI_REPLACER.replace_all(&text);
+                                Event::Text(processed_text.to_string().into())
+                            } else {
+                                // Business as usual
+                                Event::Text(text)
+                            }
                         }
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
