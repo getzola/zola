@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use std::fs::{read_dir, remove_dir_all};
+use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::thread;
@@ -354,12 +354,7 @@ pub fn serve(
     println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(", "));
 
     println!("Press Ctrl+C to stop\n");
-    // Delete the output folder on ctrl+C
     ctrlc::set_handler(move || {
-        match remove_dir_all(&output_path) {
-            Ok(()) => (),
-            Err(e) => println!("Errored while deleting output folder: {}", e),
-        }
         ::std::process::exit(0);
     })
     .expect("Error setting Ctrl-C handler");
