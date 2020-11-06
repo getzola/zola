@@ -3,7 +3,7 @@
 ## 0.13.0 (unreleased)
 
 - Enable HTML minification
-- Support `output_dir in `config.toml`
+- Support `output_dir` in `config.toml`
 - Allow sections to be drafted
 
 ## 0.12.2 (2020-09-28)
