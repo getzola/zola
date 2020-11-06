@@ -3,7 +3,62 @@ title = "Taxonomies"
 weight = 90
 +++
 
-Zola has built-in support for taxonomies.
+Zola has built-in support for taxonomies. Taxonomies are a way for users to group content according to user-defined categories.
+
+## Definitions
+
+- Taxonomy: A category that can be used to group content 
+- Term: A specific group within a taxonomy 
+- Value: A piece of content that can be associated with a term
+
+## Example: a movie website
+
+Imagine that you want to make a website to display information about various movies. In that case you could use the following taxonomies:
+
+- Director
+- Genres
+- Awards
+- Release year
+
+Then at build time Zola can create pages for each taxonomy listing all of the known terms as well as pages for each term in a taxonomy, listing all of the pieces of content associated with that term. 
+
+Imagine again we have the following movies: 
+```
+- Shape of water                   <--- Value
+  - Director                         <--- Taxonomy
+    - Guillermo Del Toro                 <--- Term
+  - Genres                            <--- Taxonomy
+    - Thriller                           <--- Term
+    - Drama                              <--- Term
+  - Awards                           <--- Taxonomy
+    - Golden globe                         <--- Term
+    - Academy award                        <--- Term
+    - BAFTA                                <--- Term
+  - Release year                      <--- Taxonomy
+    - 2017                                <--- Term
+    
+- The Room:                         <--- Value
+  - Director                           <--- Taxonomy
+    - Tommy Wiseau                         <--- Term
+  - Genres                              <--- Taxonomy
+    - Romance                              <--- Term
+    - Drama                                <--- Term
+  - Release Year                       <--- Taxonomy
+    - 2003                                 <--- Term
+
+- Bright                           <--- Value
+  - Director                           <--- Taxonomy
+    - David Ayer                           <--- Term
+  - Genres                              <--- Taxonomy
+    - Fantasy                              <--- Term
+    - Action                               <--- Term
+  - Awards                             <--- Taxonomy
+    - California on Location Awards        <--- Term
+  - Release Year                       <--- Taxonomy
+    - 2017                                 <--- Term
+```
+
+In this example the page for `Release year` would include links to pages for both 2003 and 2017, where the page for 2017 would list both Shape of Water and Bright.
 
 ## Configuration
 
@@ -23,16 +78,30 @@ Insert into the configuration file (config.toml):
 **Example 1:** (one language)
 
 ```toml
-taxonomies = [ name = "categories", rss = true ]
+taxonomies = [
+    { name = "director", feed = true},
+    { name = "genres", feed = true},
+    { name = "awards", feed = true},
+    { name = "release-year", feed = true},
+]
 ```
 
 **Example 2:** (multilingual site)
 
 ```toml
 taxonomies = [
-    {name = "tags", lang = "fr"},
-    {name = "tags", lang = "eo"},
-    {name = "tags", lang = "en"},
+    {name = "director", feed = true, lang = "fr"},
+    {name = "director", feed = true, lang = "eo"},
+    {name = "director", feed = true, lang = "en"},
+    {name = "genres", feed = true, lang = "fr"},
+    {name = "genres", feed = true, lang = "eo"},
+    {name = "genres", feed = true, lang = "en"},
+    {name = "awards", feed = true, lang = "fr"},
+    {name = "awards", feed = true, lang = "eo"},
+    {name = "awards", feed = true, lang = "en"},
+    {name = "release-year", feed = true, lang = "fr"},
+    {name = "release-year", feed = true, lang = "eo"},
+    {name = "release-year", feed = true, lang = "en"},
 ]
 ```
 
@@ -44,11 +113,13 @@ Once the configuration is done, you can then set taxonomies in your content and 
 
 ```toml
 +++
-title = "Writing a static-site generator in Rust"
-date = 2019-08-15
+title = "Shape of water"
+date = 2019-08-15 # date of the post, not the movie
 [taxonomies]
-tags = ["rust", "web"]
-categories = ["programming"]
+director=["Guillermo Del Toro"]
+genres=["Thriller","Drama"]
+awards=["Golden Globe", "Academy award", "BAFTA"]
+release-year = ["2017"]
 +++
 ```
 
