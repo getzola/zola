@@ -129,6 +129,11 @@ impl FileInfo {
         // We can document that
         let mut parts: Vec<String> = self.name.splitn(2, '.').map(|s| s.to_string()).collect();
 
+        // If language code is same as default language, go for default
+        if config.default_language == parts[1].as_str() {
+            return Ok(config.default_language.clone());
+        }
+
         // The language code is not present in the config: typo or the user forgot to add it to the
         // config
         if !config.languages_codes().contains(&parts[1].as_ref()) {
