@@ -195,6 +195,19 @@ mod tests {
     }
 
     #[test]
+    fn can_find_valid_language_with_default_locale() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.en.md"),
+            &PathBuf::new(),
+        );
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), config.default_language);
+    }
+
+    #[test]
     fn can_find_valid_language_in_page_with_assets() {
         let mut config = Config::default();
         config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
