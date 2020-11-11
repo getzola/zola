@@ -129,6 +129,11 @@ impl FileInfo {
         // We can document that
         let mut parts: Vec<String> = self.name.splitn(2, '.').map(|s| s.to_string()).collect();
 
+        // If language code is same as default language, go for default
+        if config.default_language == parts[1].as_str() {
+            return Ok(config.default_language.clone());
+        }
+
         // The language code is not present in the config: typo or the user forgot to add it to the
         // config
         if !config.languages_codes().contains(&parts[1].as_ref()) {
@@ -187,6 +192,19 @@ mod tests {
         let res = file.find_language(&config);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");
+    }
+
+    #[test]
+    fn can_find_valid_language_with_default_locale() {
+        let mut config = Config::default();
+        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        let mut file = FileInfo::new_page(
+            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.en.md"),
+            &PathBuf::new(),
+        );
+        let res = file.find_language(&config);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), config.default_language);
     }
 
     #[test]
