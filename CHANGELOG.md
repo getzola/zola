@@ -5,6 +5,10 @@
 - Enable HTML minification
 - Support `output_dir` in `config.toml`
 - Allow sections to be drafted
+- Allow specifying default language in filenames
+- Render emoji in Markdown content if the option is enabled
+- Enable YouTube privacy mode for the YouTube shortcode
+- Add language as class to the `<code>` block
 
 ## 0.12.2 (2020-09-28)
 

@@ -16,4 +16,4 @@ default-features = false
 features = ["blocking", "rustls-tls"]
 
 [dev-dependencies]
-mockito = "0.27"
+mockito = "0.28"
