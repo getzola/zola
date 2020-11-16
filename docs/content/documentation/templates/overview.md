@@ -252,12 +252,55 @@ template:
 ```
 
 The `bibtex` format loads data into a structure matching the format used by the
-[nom-bibtex crate](https://crates.io/crates/nom-bibtex). The following example prints the author
-and title of the first bibliography item:
+[nom-bibtex crate](https://crates.io/crates/nom-bibtex). The following is an example of data
+in bibtex format:
 
+```
+@preamble{"A bibtex preamble" # " this is."}
+
+@Comment{
+    Here is a comment.
+}
+
+Another comment!
+
+@string(name = "Vincent Prouillet")
+@string(github = "https://github.com/getzola/zola")
+
+@misc {my_citation_key,
+    author= name,
+    title = "Zola",
+    note = "github: " # github
+}                                                    }
+```
+
+The following is the json-equivalent format of the produced bibtex data structure:
+```json
+{
+    "preambles": ["A bibtex preamble this is."],
+    "comments": ["Here is a comment.", "Another comment!"],
+    "variables": {
+        "name": "Vincent Prouillet",
+        "github": "https://github.com/getzola/zola"
+    },
+    "bibliographies": [
+        {
+            "entry_type": "misc",
+            "citation_key": "my_citation_key",
+            "tags": {
+                "author": "Vincent Prouillet",
+                "title": "Zola",
+                "note": "github: https://github.com/getzola/zola"
+            }
+        }
+    ]
+}
+```
+
+Finally, the bibtex data can be accessed from the template as follows:
 ```jinja2
 {% set tags = data.bibliographies[0].tags %}
-{{ tags.author }}, {{ tags.title }}
+This was generated using {{ tags.title }}, authored by {{ tags.author }}.
 ```
 
 #### Remote content
