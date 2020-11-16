@@ -36,6 +36,13 @@ default_language = "en"
 # The site theme to use.
 theme = ""
 
+# If the site uses some of the predefined syntax highlighing schemes as
+# CSS, you can let Zola generate the CSS.
+highlighting_themes_css = [
+  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
+  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
+]
+
 # When set to "true", a feed is automatically generated.
 generate_feed = false
 
@@ -101,8 +108,12 @@ extra_syntaxes = []
 highlight_code = false
 
 # The theme to use for code highlighting.
+# This will put the colors of the theme directly in your html.
 # See below for list of allowed values.
 highlight_theme = "base16-ocean-dark"
+# For using CSS class definitions in the higlighting, you can use the
+# special theme "css". This is especially useful for dark/light themes,
+# or letting the user decide the higlighting scheme.
 
 # When set to "true", emoji aliases translated to their corresponding
 # Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
