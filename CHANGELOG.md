@@ -6,12 +6,13 @@
 - Support `output_dir` in `config.toml`
 - Allow sections to be drafted
 - Allow specifying default language in filenames
-- Render emoji in Markdown content if the option is enabled
+- Render emoji in Markdown content if the `render_emoji` option is enabled
 - Enable YouTube privacy mode for the YouTube shortcode
 - Add language as class to the `<code>` block
 - Add bibtex to `load_data`
 - Add a `[markdown]` section to `config.toml` to configure rendering
 - Add `highlight_code` and `highlight_theme` to a `[markdown]` section in `config.toml`
+- Add `external_links_target_blank`, `external_links_no_follow` and `external_links_no_referrer`
 
 ## 0.12.2 (2020-09-28)
 
