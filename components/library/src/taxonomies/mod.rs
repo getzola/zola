@@ -237,7 +237,7 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
                         .get_mut(&taxo_key)
                         .unwrap()
                         .entry(term.to_string())
-                        .or_insert_with(|| vec![])
+                        .or_insert_with(Vec::new)
                         .push(key);
                 }
             } else {
