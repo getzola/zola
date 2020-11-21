@@ -238,7 +238,7 @@ pub fn serve(
     // Stop right there if we can't bind to the address
     let bind_address: SocketAddrV4 = address.parse().unwrap();
     if (TcpListener::bind(&bind_address)).is_err() {
-        return Err(format!("Cannot start server on address {}.", address))?;
+        return Err(format!("Cannot start server on address {}.", address).into());
     }
 
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
@@ -442,10 +442,7 @@ pub fn serve(
     loop {
         match rx.recv() {
             Ok(event) => {
-                let can_do_fast_reload = match event {
-                    Remove(_) => false,
-                    _ => true,
-                };
+                let can_do_fast_reload = !matches!(event, Remove(_));
 
                 match event {
                     // Intellij does weird things on edit, chmod is there to count those changes
@@ -505,10 +502,8 @@ pub fn serve(
                                             site = s;
                                         }
                                     }
-                                } else {
-                                    if let Some(s) = recreate_site() {
-                                        site = s;
-                                    }
+                                } else if let Some(s) = recreate_site() {
+                                    site = s;
                                 }
                             }
                             (ChangeKind::Templates, partial_path) => {

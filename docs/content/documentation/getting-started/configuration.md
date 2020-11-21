@@ -36,13 +36,6 @@ default_language = "en"
 # The site theme to use.
 theme = ""
 
-# When set to "true", all code blocks are highlighted.
-highlight_code = false
-
-# The theme to use for code highlighting.
-# See below for list of allowed values.
-highlight_theme = "base16-ocean-dark"
-
 # When set to "true", a feed is automatically generated.
 generate_feed = false
 
@@ -60,10 +53,6 @@ generate_feed = false
 # output directory need to be on the same filesystem. Note that the theme's `static`
 # files are always copied, regardless of this setting.
 # hard_link_static = false
-
-# When set to "true", emoji aliases translated to their corresponding
-# Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
-# emoji_rendering = false
 
 # The taxonomies to be rendered for the site and their configuration.
 # Example:
@@ -105,6 +94,18 @@ extra_syntaxes = []
 
 # You can override the default output directory `public` by setting an another value.
 # output_dir = "docs"
+
+[markdown]
+# When set to "true", all code blocks are highlighted.
+highlight_code = false
+
+# The theme to use for code highlighting.
+# See below for list of allowed values.
+highlight_theme = "base16-ocean-dark"
+
+# When set to "true", emoji aliases translated to their corresponding
+# Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
+render_emoji = false
 
 # Configuration of the link checker.
 [link_checker]
