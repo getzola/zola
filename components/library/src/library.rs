@@ -112,7 +112,7 @@ impl Library {
                 subsections
                     // Using the original filename to work for multi-lingual sections
                     .entry(grand_parent.join(&section.file.filename))
-                    .or_insert_with(|| vec![])
+                    .or_insert_with(Vec::new)
                     .push(section.file.path.clone());
             }
 
@@ -157,7 +157,7 @@ impl Library {
                     parent_is_transparent = section.meta.transparent;
                 }
                 page.ancestors =
-                    ancestors.get(&parent_section_path).cloned().unwrap_or_else(|| vec![]);
+                    ancestors.get(&parent_section_path).cloned().unwrap_or_else(Vec::new);
                 // Don't forget to push the actual parent
                 page.ancestors.push(*section_key);
 
@@ -201,8 +201,7 @@ impl Library {
                 children.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
                 section.subsections = children;
             }
-            section.ancestors =
-                ancestors.get(&section.file.path).cloned().unwrap_or_else(|| vec![]);
+            section.ancestors = ancestors.get(&section.file.path).cloned().unwrap_or_else(Vec::new);
         }
     }
 

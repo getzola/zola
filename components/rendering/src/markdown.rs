@@ -210,14 +210,14 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
-                        let mut language = None;
-                        match kind {
+                        let language = match kind {
                             CodeBlockKind::Fenced(fence_info) => {
                                 let fence_info = fence::FenceSettings::new(fence_info);
-                                language = fence_info.language;
+                                fence_info.language
                             }
-                            _ => {}
+                            _ => None,
                         };
+
                         if !context.config.highlight_code() {
                             if let Some(lang) = language {
                                 let html = format!(r#"<pre><code class="language-{}">"#, lang);
@@ -296,22 +296,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         if markup.contains("<!-- more -->") {
                             has_summary = true;
                             Event::Html(CONTINUE_READING.into())
-                        } else {
-                            if in_html_block && markup.contains("</pre>") {
+                        } else if in_html_block && markup.contains("</pre>") {
+                            in_html_block = false;
+                            Event::Html(markup.replacen("</pre>", "", 1).into())
+                        } else if markup.contains("pre data-shortcode") {
+                            in_html_block = true;
+                            let m = markup.replacen("<pre data-shortcode>", "", 1);
+                            if m.contains("</pre>") {
                                 in_html_block = false;
-                                Event::Html(markup.replacen("</pre>", "", 1).into())
-                            } else if markup.contains("pre data-shortcode") {
-                                in_html_block = true;
-                                let m = markup.replacen("<pre data-shortcode>", "", 1);
-                                if m.contains("</pre>") {
-                                    in_html_block = false;
-                                    Event::Html(m.replacen("</pre>", "", 1).into())
-                                } else {
-                                    Event::Html(m.into())
-                                }
+                                Event::Html(m.replacen("</pre>", "", 1).into())
                             } else {
-                                event
+                                Event::Html(m.into())
                             }
+                        } else {
+                            event
                         }
                     }
                     _ => event,
