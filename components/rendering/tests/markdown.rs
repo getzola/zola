@@ -23,7 +23,7 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = false;
+    config.markdown.highlight_code = false;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n```", &context).unwrap();
     assert_eq!(res.body, "<pre><code>$ gutenberg server\n</code></pre>\n");
@@ -34,7 +34,7 @@ fn can_highlight_code_block_no_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = true;
+    config.markdown.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
@@ -48,7 +48,7 @@ fn can_highlight_code_block_with_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = true;
+    config.markdown.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("```python\nlist.append(1)\n```", &context).unwrap();
     assert_eq!(
@@ -62,7 +62,7 @@ fn can_higlight_code_block_with_unknown_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = true;
+    config.markdown.highlight_code = true;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("```yolo\nlist.append(1)\n```", &context).unwrap();
     // defaults to plain text
@@ -87,7 +87,9 @@ Hello
     )
     .unwrap();
     assert!(res.body.contains("<p>Hello</p>\n<div >"));
-    assert!(res.body.contains(r#"<iframe src="https://www.youtube-nocookie.com/embed/ub36ffWAqgQ""#));
+    assert!(res
+        .body
+        .contains(r#"<iframe src="https://www.youtube-nocookie.com/embed/ub36ffWAqgQ""#));
 }
 
 #[test]
@@ -232,10 +234,12 @@ Hello
     )
     .unwrap();
     assert!(res.body.contains("<p>Hello</p>\n<div >"));
-    assert!(res.body.contains(r#"<iframe src="https://www.youtube-nocookie.com/embed/ub36ffWAqgQ""#));
     assert!(res
         .body
-        .contains(r#"<iframe src="https://www.youtube-nocookie.com/embed/ub36ffWAqgQ?autoplay=1""#));
+        .contains(r#"<iframe src="https://www.youtube-nocookie.com/embed/ub36ffWAqgQ""#));
+    assert!(res.body.contains(
+        r#"<iframe src="https://www.youtube-nocookie.com/embed/ub36ffWAqgQ?autoplay=1""#
+    ));
     assert!(res.body.contains(r#"<iframe src="https://www.streamable.com/e/c0ic""#));
     assert!(res.body.contains(r#"//player.vimeo.com/video/210073083""#));
 }
@@ -244,7 +248,7 @@ Hello
 fn doesnt_render_ignored_shortcodes() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = false;
+    config.markdown.highlight_code = false;
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content(r#"```{{/* youtube(id="w7Ft2ymGmfc") */}}```"#, &context).unwrap();
     assert_eq!(res.body, "<p><code>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</code></p>\n");
@@ -1004,7 +1008,6 @@ fn can_render_commented_out_shortcodes_fine() {
     assert_eq!(res.body, expected);
 }
 
-
 // https://zola.discourse.group/t/zola-12-issue-with-continue-reading/590/7
 #[test]
 fn can_render_read_more_after_shortcode() {
@@ -1041,13 +1044,10 @@ Again more text"#;
 fn can_render_emoji_alias() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.emoji_rendering = true;
+    config.markdown.render_emoji = true;
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("Hello, World! :smile:", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p>Hello, World! 😄</p>\n"
-    );
+    assert_eq!(res.body, "<p>Hello, World! 😄</p>\n");
 }
 
 #[test]
@@ -1056,8 +1056,5 @@ fn emoji_aliases_are_ignored_when_disabled_in_config() {
     let config = Config::default();
     let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("Hello, World! :smile:", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p>Hello, World! :smile:</p>\n"
-    );
+    assert_eq!(res.body, "<p>Hello, World! :smile:</p>\n");
 }

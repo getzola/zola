@@ -1,5 +1,6 @@
 pub mod languages;
 pub mod link_checker;
+pub mod markup;
 pub mod search;
 pub mod slugify;
 pub mod taxonomies;
@@ -106,8 +107,8 @@ pub struct Config {
     /// The search config, telling what to include in the search index
     pub search: search::Search,
 
-    /// Whether to render emoji aliases (e.g.: :smile: => 😄) in the markdown files
-    pub emoji_rendering: bool,
+    /// The config for the Markdown rendering: syntax highlighting and everything
+    pub markdown: markup::Markdown,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -158,6 +159,10 @@ impl Config {
             }
         }
 
+        if config.highlight_code {
+            println!("`highlight_code` has been moved to a [markdown] section. Top level `highlight_code` and `highlight_theme` will stop working in 0.14.");
+        }
+
         Ok(config)
     }
 
@@ -170,6 +175,30 @@ impl Config {
             &format!("No `{:?}` file found. Are you in the right directory?", file_name),
         )?;
         Config::parse(&content)
+    }
+
+    /// Temporary, while we have the settings in 2 places
+    /// TODO: remove me in 0.14
+    pub fn highlight_code(&self) -> bool {
+        if !self.highlight_code && !self.markdown.highlight_code {
+            return false;
+        }
+
+        if self.highlight_code {
+            true
+        } else {
+            self.markdown.highlight_code
+        }
+    }
+
+    /// Temporary, while we have the settings in 2 places
+    /// TODO: remove me in 0.14
+    pub fn highlight_theme(&self) -> &str {
+        if self.highlight_theme != markup::DEFAULT_HIGHLIGHT_THEME {
+            &self.highlight_theme
+        } else {
+            &self.markdown.highlight_theme
+        }
     }
 
     /// Attempt to load any extra syntax found in the extra syntaxes of the config
@@ -339,8 +368,8 @@ impl Default for Config {
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),
+            markdown: markup::Markdown::default(),
             extra: HashMap::new(),
-            emoji_rendering: false,
         }
     }
 }

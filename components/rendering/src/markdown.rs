@@ -201,14 +201,12 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         if let Some(ref mut code_block) = highlighter {
                             let html = code_block.highlight(&text);
                             Event::Html(html.into())
+                        } else if context.config.markdown.render_emoji {
+                            let processed_text = EMOJI_REPLACER.replace_all(&text);
+                            Event::Text(processed_text.to_string().into())
                         } else {
-                            if context.config.emoji_rendering {
-                                let processed_text = EMOJI_REPLACER.replace_all(&text);
-                                Event::Text(processed_text.to_string().into())
-                            } else {
-                                // Business as usual
-                                Event::Text(text)
-                            }
+                            // Business as usual
+                            Event::Text(text)
                         }
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
@@ -217,10 +215,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             CodeBlockKind::Fenced(fence_info) => {
                                 let fence_info = fence::FenceSettings::new(fence_info);
                                 language = fence_info.language;
-                            },
+                            }
                             _ => {}
                         };
-                        if !context.config.highlight_code {
+                        if !context.config.highlight_code() {
                             if let Some(lang) = language {
                                 let html = format!(r#"<pre><code class="language-{}">"#, lang);
                                 return Event::Html(html.into());
@@ -228,7 +226,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             return Event::Html("<pre><code>".into());
                         }
 
-                        let theme = &THEME_SET.themes[&context.config.highlight_theme];
+                        let theme = &THEME_SET.themes[context.config.highlight_theme()];
                         match kind {
                             CodeBlockKind::Indented => (),
                             CodeBlockKind::Fenced(fence_info) => {
@@ -258,7 +256,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Html(html.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
-                        if !context.config.highlight_code {
+                        if !context.config.highlight_code() {
                             return Event::Html("</code></pre>\n".into());
                         }
                         // reset highlight and close the code block

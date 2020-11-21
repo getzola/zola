@@ -261,25 +261,22 @@ fn load_bibtex(bibtex_data: String) -> Result<Value> {
     let bibtex_model = nom_bibtex::Bibtex::parse(&bibtex_data).map_err(|e| format!("{:?}", e))?;
     let mut bibtex_map = Map::new();
 
-    let preambles_array = bibtex_model.preambles()
-        .iter()
-        .map(|v| Value::String(v.to_string()))
-        .collect();
+    let preambles_array =
+        bibtex_model.preambles().iter().map(|v| Value::String(v.to_string())).collect();
     bibtex_map.insert(String::from("preambles"), Value::Array(preambles_array));
 
-    let comments_array = bibtex_model.comments()
-        .iter()
-        .map(|v| Value::String(v.to_string()))
-        .collect();
+    let comments_array =
+        bibtex_model.comments().iter().map(|v| Value::String(v.to_string())).collect();
     bibtex_map.insert(String::from("comments"), Value::Array(comments_array));
 
     let mut variables_map = Map::new();
-    for (key,val) in bibtex_model.variables() {
+    for (key, val) in bibtex_model.variables() {
         variables_map.insert(key.to_string(), Value::String(val.to_string()));
     }
     bibtex_map.insert(String::from("variables"), Value::Object(variables_map));
 
-    let bibliographies_array = bibtex_model.bibliographies()
+    let bibliographies_array = bibtex_model
+        .bibliographies()
         .iter()
         .map(|b| {
             let mut m = Map::new();
@@ -299,7 +296,6 @@ fn load_bibtex(bibtex_data: String) -> Result<Value> {
     let bibtex_value: Value = Value::Object(bibtex_map);
     to_value(bibtex_value).map_err(|err| err.into())
 }
-
 
 /// Parse a CSV string and convert it to a Tera Value
 ///

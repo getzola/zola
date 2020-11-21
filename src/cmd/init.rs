@@ -15,12 +15,13 @@ base_url = "%BASE_URL%"
 # Whether to automatically compile all Sass files in the sass directory
 compile_sass = %COMPILE_SASS%
 
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = %SEARCH%
+
+[markdown]
 # Whether to do syntax highlighting
 # Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
 highlight_code = %HIGHLIGHT%
-
-# Whether to build a search index to be used later on by a JavaScript library
-build_search_index = %SEARCH%
 
 [extra]
 # Put all your custom variables here
