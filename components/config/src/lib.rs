@@ -2,7 +2,8 @@ mod config;
 pub mod highlighting;
 mod theme;
 pub use crate::config::{
-    languages::Language, link_checker::LinkChecker, slugify::Slugify, taxonomies::Taxonomy, Config, theme_css::ThemeCss
+    languages::Language, link_checker::LinkChecker, slugify::Slugify, taxonomies::Taxonomy,
+    theme_css::ThemeCss, Config,
 };
 
 use std::path::Path;

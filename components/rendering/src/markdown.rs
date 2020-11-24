@@ -14,8 +14,8 @@ use self::cmark::{Event, LinkType, Options, Parser, Tag};
 
 mod codeblock;
 mod fence;
-use fence::FenceSettings;
 use self::codeblock::CodeBlock;
+use fence::FenceSettings;
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -210,12 +210,14 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         // Parse the fence info even if we're not highlighting code so that the language is selected in the same way as when we are highlighting.
                         let fence_info = match kind {
                             cmark::CodeBlockKind::Fenced(fence_info) => fence_info,
-                            _ => ""
+                            _ => "",
                         };
                         let fence = FenceSettings::new(fence_info);
                         if !context.config.highlight_code() {
                             if let Some(lang) = fence.language {
-                                Event::Html(format!(r#"<pre><code class="language-{}">"#, lang).into())
+                                Event::Html(
+                                    format!(r#"<pre><code class="language-{}">"#, lang).into(),
+                                )
                             } else {
                                 // TODO: Should we just pass the event along and let cmark deal with it?
                                 Event::Html("<pre><code>".into())

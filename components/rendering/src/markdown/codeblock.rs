@@ -4,7 +4,9 @@ use std::cmp::min;
 use std::collections::HashSet;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Color, Style, Theme};
-use syntect::html::{styled_line_to_highlighted_html, IncludeBackground, start_highlighted_html_snippet};
+use syntect::html::{
+    start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
+};
 use syntect::parsing::SyntaxSet;
 
 use super::fence::{FenceSettings, Range};
@@ -15,7 +17,7 @@ enum CodeBlockImplementation<'config> {
         syntax_set: &'config SyntaxSet,
         hl_background: Color,
         include_background: IncludeBackground,
-        theme: &'config Theme
+        theme: &'config Theme,
     },
     Classed {
         // TODO
@@ -57,7 +59,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                 syntax_set,
                 hl_background: get_hl_background(theme),
                 include_background: get_include_background(theme),
-                theme
+                theme,
             }
         } else {
             CodeBlockImplementation::Classed {}
@@ -66,16 +68,12 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         let mut ret = Self { line_numbers, highlight_lines, inner };
         let begin = ret.begin(language);
 
-
-
         (ret, begin)
     }
 
     fn begin(&mut self, language: Option<&str>) -> String {
         match &mut self.inner {
-            CodeBlockImplementation::Inline {
-                theme, ..
-            } => {
+            CodeBlockImplementation::Inline { theme, .. } => {
                 let snippet = start_highlighted_html_snippet(theme);
                 let mut html = snippet.0;
                 if let Some(lang) = language {
@@ -88,13 +86,15 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                     html.push_str("<code>");
                 }
                 html
-            },
+            }
             // TODO: Classed
-            _ => "<pre><code>".into()
+            _ => "<pre><code>".into(),
         }
     }
 
-    pub fn finish(self) -> String { "</code></pre>".into() }
+    pub fn finish(self) -> String {
+        "</code></pre>".into()
+    }
 
     pub fn highlight(&mut self, text: &str) -> String {
         match &mut self.inner {

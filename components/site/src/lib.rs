@@ -1,9 +1,9 @@
 pub mod feed;
+pub mod highlight_css;
 pub mod link_checking;
 pub mod sass;
 pub mod sitemap;
 pub mod tpls;
-pub mod highlight_css;
 
 use std::collections::HashMap;
 use std::fs::remove_dir_all;
@@ -653,7 +653,10 @@ impl Site {
         }
 
         if self.config.highlighting_themes_css.len() > 0 {
-            highlight_css::generate_highlighting_themes(&self.output_path, &self.config.highlighting_themes_css)?;
+            highlight_css::generate_highlighting_themes(
+                &self.output_path,
+                &self.config.highlighting_themes_css,
+            )?;
         }
 
         if self.config.build_search_index {

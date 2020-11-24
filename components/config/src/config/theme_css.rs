@@ -11,10 +11,6 @@ pub struct ThemeCss {
 
 impl Default for ThemeCss {
     fn default() -> ThemeCss {
-        ThemeCss {
-            theme: String::new(),
-            filename: String::new(),
-        }
+        ThemeCss { theme: String::new(), filename: String::new() }
     }
 }
-
