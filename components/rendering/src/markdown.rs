@@ -1,11 +1,9 @@
 use lazy_static::lazy_static;
 use pulldown_cmark as cmark;
 use regex::Regex;
-use syntect::html::{start_highlighted_html_snippet, IncludeBackground};
 
 use crate::context::RenderContext;
 use crate::table_of_contents::{make_table_of_contents, Heading};
-use config::highlighting::THEME_SET;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use utils::site::resolve_internal_link;
@@ -16,6 +14,7 @@ use self::cmark::{Event, LinkType, Options, Parser, Tag};
 
 mod codeblock;
 mod fence;
+use fence::FenceSettings;
 use self::codeblock::CodeBlock;
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
@@ -171,7 +170,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     // Set while parsing
     let mut error = None;
 
-    let mut highlighter: Option<CodeBlock> = None;
+    let mut code_block: Option<CodeBlock> = None;
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headings: Vec<Heading> = vec![];
@@ -196,7 +195,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 match event {
                     Event::Text(text) => {
                         // if we are in the middle of a highlighted code block
-                        if let Some(ref mut code_block) = highlighter {
+                        if let Some(ref mut code_block) = code_block {
                             let html = code_block.highlight(&text);
                             Event::Html(html.into())
                         } else if context.config.markdown.render_emoji {
@@ -208,62 +207,32 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
-                        let language = match kind {
-                            cmark::CodeBlockKind::Fenced(fence_info) => {
-                                let fence_info = fence::FenceSettings::new(fence_info);
-                                fence_info.language
-                            }
-                            _ => None,
+                        // Parse the fence info even if we're not highlighting code so that the language is selected in the same way as when we are highlighting.
+                        let fence_info = match kind {
+                            cmark::CodeBlockKind::Fenced(fence_info) => fence_info,
+                            _ => ""
                         };
-
+                        let fence = FenceSettings::new(fence_info);
                         if !context.config.highlight_code() {
-                            if let Some(lang) = language {
-                                let html = format!(
-                                    r#"<pre><code class="language-{}" data-lang="{}">"#,
-                                    lang, lang
-                                );
-                                return Event::Html(html.into());
+                            if let Some(lang) = fence.language {
+                                Event::Html(format!(r#"<pre><code class="language-{}">"#, lang).into())
+                            } else {
+                                // TODO: Should we just pass the event along and let cmark deal with it?
+                                Event::Html("<pre><code>".into())
                             }
-                            return Event::Html("<pre><code>".into());
-                        }
-
-                        let theme = &THEME_SET.themes[context.config.highlight_theme()];
-                        match kind {
-                            cmark::CodeBlockKind::Indented => (),
-                            cmark::CodeBlockKind::Fenced(fence_info) => {
-                                // This selects the background color the same way that
-                                // start_coloured_html_snippet does
-                                let color = theme
-                                    .settings
-                                    .background
-                                    .unwrap_or(::syntect::highlighting::Color::WHITE);
-
-                                highlighter = Some(CodeBlock::new(
-                                    fence_info,
-                                    &context.config,
-                                    IncludeBackground::IfDifferent(color),
-                                ));
-                            }
-                        };
-                        let snippet = start_highlighted_html_snippet(theme);
-                        let mut html = snippet.0;
-                        if let Some(lang) = language {
-                            html.push_str(&format!(
-                                r#"<code class="language-{}" data-lang="{}">"#,
-                                lang, lang
-                            ));
                         } else {
-                            html.push_str("<code>");
+                            let (block, begin) = CodeBlock::new(fence, &context.config);
+                            code_block = Some(block);
+
+                            Event::Html(begin.into())
                         }
-                        Event::Html(html.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
-                        if !context.config.highlight_code() {
-                            return Event::Html("</code></pre>\n".into());
-                        }
-                        // reset highlight and close the code block
-                        highlighter = None;
-                        Event::Html("</code></pre>".into())
+                        Event::Html(if let Some(block) = code_block.take() {
+                            block.finish().into()
+                        } else {
+                            "</code></pre>\n".into()
+                        })
                     }
                     Event::Start(Tag::Image(link_type, src, title)) => {
                         if is_colocated_asset_link(&src) {

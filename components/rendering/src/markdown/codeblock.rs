@@ -1,92 +1,156 @@
-use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
+use config::highlighting::{resolve_syntax_and_theme, SyntaxAndTheme};
 use config::Config;
 use std::cmp::min;
 use std::collections::HashSet;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Color, Style, Theme};
-use syntect::html::{styled_line_to_highlighted_html, IncludeBackground};
+use syntect::html::{styled_line_to_highlighted_html, IncludeBackground, start_highlighted_html_snippet};
 use syntect::parsing::SyntaxSet;
 
 use super::fence::{FenceSettings, Range};
 
+enum CodeBlockImplementation<'config> {
+    Inline {
+        highlighter: HighlightLines<'config>,
+        syntax_set: &'config SyntaxSet,
+        hl_background: Color,
+        include_background: IncludeBackground,
+        theme: &'config Theme
+    },
+    Classed {
+        // TODO
+    },
+}
 pub struct CodeBlock<'config> {
-    highlighter: HighlightLines<'static>,
-    extra_syntax_set: Option<&'config SyntaxSet>,
-    background: IncludeBackground,
-    theme: &'static Theme,
-
-    /// List of ranges of lines to highlight.
+    #[allow(unused)]
+    line_numbers: Option<usize>,
     highlight_lines: Vec<Range>,
-    /// The number of lines in the code block being processed.
-    num_lines: usize,
+    inner: CodeBlockImplementation<'config>,
 }
 
-impl<'config> CodeBlock<'config> {
-    pub fn new(fence_info: &str, config: &'config Config, background: IncludeBackground) -> Self {
-        let fence_info = FenceSettings::new(fence_info);
-        let theme = &THEME_SET.themes[&config.highlight_theme];
-        let (highlighter, in_extra) = get_highlighter(fence_info.language, config);
-        Self {
-            highlighter,
-            extra_syntax_set: match in_extra {
-                true => config.markdown.extra_syntax_set.as_ref(),
-                false => None,
-            },
-            background,
-            theme,
+fn get_hl_background(theme: &Theme) -> Color {
+    theme.settings.line_highlight.unwrap_or(Color { r: 255, g: 255, b: 0, a: 0 })
+}
 
-            highlight_lines: fence_info.highlight_lines,
-            num_lines: 0,
+fn get_include_background(theme: &Theme) -> IncludeBackground {
+    IncludeBackground::IfDifferent(
+        theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE),
+    )
+}
+
+impl<'config, 'fence_info> CodeBlock<'config> {
+    pub fn new(fence: FenceSettings<'fence_info>, config: &'config Config) -> (Self, String) {
+        let FenceSettings { language, line_numbers, highlight_lines } = fence;
+        let line_numbers = if line_numbers {
+            // TODO: Update fence to enable setting custom number start.
+            Some(0)
+        } else {
+            None
+        };
+
+        let SyntaxAndTheme { syntax, syntax_set, theme } =
+            resolve_syntax_and_theme(language, config);
+
+        let inner = if let Some(theme) = theme {
+            CodeBlockImplementation::Inline {
+                highlighter: HighlightLines::new(syntax, theme),
+                syntax_set,
+                hl_background: get_hl_background(theme),
+                include_background: get_include_background(theme),
+                theme
+            }
+        } else {
+            CodeBlockImplementation::Classed {}
+        };
+
+        let mut ret = Self { line_numbers, highlight_lines, inner };
+        let begin = ret.begin(language);
+
+
+
+        (ret, begin)
+    }
+
+    fn begin(&mut self, language: Option<&str>) -> String {
+        match &mut self.inner {
+            CodeBlockImplementation::Inline {
+                theme, ..
+            } => {
+                let snippet = start_highlighted_html_snippet(theme);
+                let mut html = snippet.0;
+                if let Some(lang) = language {
+                    html.push_str("<code class=\"language-");
+                    html.push_str(lang);
+                    html.push_str("\" data-lang=\"");
+                    html.push_str(lang);
+                    html.push_str(r#"">"#);
+                } else {
+                    html.push_str("<code>");
+                }
+                html
+            },
+            // TODO: Classed
+            _ => "<pre><code>".into()
         }
     }
+
+    pub fn finish(self) -> String { "</code></pre>".into() }
 
     pub fn highlight(&mut self, text: &str) -> String {
-        let highlighted =
-            self.highlighter.highlight(text, self.extra_syntax_set.unwrap_or(&SYNTAX_SET));
-        let line_boundaries = self.find_line_boundaries(&highlighted);
+        match &mut self.inner {
+            CodeBlockImplementation::Inline {
+                highlighter,
+                syntax_set,
+                hl_background,
+                include_background,
+                ..
+            } => {
+                let highlighted = highlighter.highlight(text, syntax_set);
+                let (line_boundaries, num_lines) = find_line_boundaries(&highlighted);
 
-        // First we make sure that `highlighted` is split at every line
-        // boundary. The `styled_line_to_highlighted_html` function will
-        // merge split items with identical styles, so this is not a
-        // problem.
-        //
-        // Note that this invalidates the values in `line_boundaries`.
-        // The `perform_split` function takes it by value to ensure that
-        // we don't use it later.
-        let mut highlighted = perform_split(&highlighted, line_boundaries);
+                // First we make sure that `highlighted` is split at every line
+                // boundary. The `styled_line_to_highlighted_html` function will
+                // merge split items with identical styles, so this is not a
+                // problem.
+                //
+                // Note that this invalidates the values in `line_boundaries`.
+                // The `perform_split` function takes it by value to ensure that
+                // we don't use it later.
+                let mut highlighted = perform_split(&highlighted, line_boundaries);
 
-        let hl_background =
-            self.theme.settings.line_highlight.unwrap_or(Color { r: 255, g: 255, b: 0, a: 0 });
+                let hl_lines = get_highlighted_lines(&self.highlight_lines, num_lines);
+                color_highlighted_lines(&mut highlighted, &hl_lines, *hl_background);
 
-        let hl_lines = self.get_highlighted_lines();
-        color_highlighted_lines(&mut highlighted, &hl_lines, hl_background);
-
-        styled_line_to_highlighted_html(&highlighted, self.background)
+                styled_line_to_highlighted_html(&highlighted, *include_background)
+            }
+            CodeBlockImplementation::Classed {} => String::from(""),
+        }
     }
+}
 
-    fn find_line_boundaries(&mut self, styled: &[(Style, &str)]) -> Vec<StyledIdx> {
-        let mut boundaries = Vec::new();
-        for (vec_idx, (_style, s)) in styled.iter().enumerate() {
-            for (str_idx, character) in s.char_indices() {
-                if character == '\n' {
-                    boundaries.push(StyledIdx { vec_idx, str_idx });
-                }
+fn find_line_boundaries(styled: &[(Style, &str)]) -> (Vec<StyledIdx>, usize) {
+    let mut boundaries = Vec::new();
+    for (vec_idx, (_style, s)) in styled.iter().enumerate() {
+        for (str_idx, character) in s.char_indices() {
+            if character == '\n' {
+                boundaries.push(StyledIdx { vec_idx, str_idx });
             }
         }
-        self.num_lines = boundaries.len() + 1;
-        boundaries
     }
+    let num_lines = boundaries.len() + 1;
 
-    fn get_highlighted_lines(&self) -> HashSet<usize> {
-        let mut lines = HashSet::new();
-        for range in &self.highlight_lines {
-            for line in range.from..=min(range.to, self.num_lines) {
-                // Ranges are one-indexed
-                lines.insert(line.saturating_sub(1));
-            }
+    (boundaries, num_lines)
+}
+
+fn get_highlighted_lines(highlight_lines: &[Range], num_lines: usize) -> HashSet<usize> {
+    let mut lines = HashSet::new();
+    for range in highlight_lines {
+        for line in range.from..=min(range.to, num_lines) {
+            // Ranges are one-indexed
+            lines.insert(line.saturating_sub(1));
         }
-        lines
     }
+    lines
 }
 
 /// This is an index of a character in a `&[(Style, &'b str)]`. The `vec_idx` is the
