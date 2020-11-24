@@ -1,5 +1,6 @@
 use config::highlighting::{resolve_syntax_and_theme, SyntaxAndTheme};
 use config::Config;
+use html_escape::encode_text_to_string;
 use std::cmp::min;
 use std::collections::HashSet;
 use syntect::easy::HighlightLines;
@@ -7,23 +8,31 @@ use syntect::highlighting::{Color, Style, Theme};
 use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
 };
-use syntect::parsing::SyntaxSet;
+use syntect::parsing::{BasicScopeStackOp, ParseState, ScopeStack, SyntaxSet, SCOPE_REPO};
+use syntect::util::LinesWithEndings;
 
 use super::fence::{FenceSettings, Range};
 
 enum CodeBlockImplementation<'config> {
     Inline {
         highlighter: HighlightLines<'config>,
-        syntax_set: &'config SyntaxSet,
         hl_background: Color,
         include_background: IncludeBackground,
         theme: &'config Theme,
     },
     Classed {
-        // TODO
+        parser: ParseState,
+        scope_stack: ScopeStack,
+        // Open spans doesn't need to be a vec yet, but when line numbers are implemented, classed highlighting will close and then reopen any spans.
+        open_spans: Vec<String>,
+        // TODO handle if the text doesn't end on a newline
+        #[allow(unused)]
+        remainder: String,
     },
 }
+use CodeBlockImplementation::{Classed, Inline};
 pub struct CodeBlock<'config> {
+    syntax_set: &'config SyntaxSet,
     #[allow(unused)]
     line_numbers: Option<usize>,
     highlight_lines: Vec<Range>,
@@ -54,58 +63,59 @@ impl<'config, 'fence_info> CodeBlock<'config> {
             resolve_syntax_and_theme(language, config);
 
         let inner = if let Some(theme) = theme {
-            CodeBlockImplementation::Inline {
+            Inline {
                 highlighter: HighlightLines::new(syntax, theme),
-                syntax_set,
                 hl_background: get_hl_background(theme),
                 include_background: get_include_background(theme),
                 theme,
             }
         } else {
-            CodeBlockImplementation::Classed {}
+            Classed {
+                parser: ParseState::new(syntax),
+                scope_stack: ScopeStack::new(),
+                open_spans: Vec::new(),
+                remainder: String::new(),
+            }
         };
 
-        let mut ret = Self { line_numbers, highlight_lines, inner };
+        let mut ret = Self { syntax_set, line_numbers, highlight_lines, inner };
         let begin = ret.begin(language);
 
         (ret, begin)
     }
 
     fn begin(&mut self, language: Option<&str>) -> String {
-        match &mut self.inner {
-            CodeBlockImplementation::Inline { theme, .. } => {
-                let snippet = start_highlighted_html_snippet(theme);
-                let mut html = snippet.0;
-                if let Some(lang) = language {
-                    html.push_str("<code class=\"language-");
-                    html.push_str(lang);
-                    html.push_str("\" data-lang=\"");
-                    html.push_str(lang);
-                    html.push_str(r#"">"#);
-                } else {
-                    html.push_str("<code>");
-                }
-                html
+        let mut html = match &mut self.inner {
+            Inline { theme, .. } => start_highlighted_html_snippet(theme).0,
+            Classed { .. } => {
+                // When Syntect outputs CSS for a theme, it places the default color and background onto `.code`
+                r#"<pre class="code">"#.into()
             }
-            // TODO: Classed
-            _ => "<pre><code>".into(),
+        };
+        if let Some(lang) = language {
+            html.push_str("<code class=\"language-");
+            html.push_str(lang);
+            html.push_str("\" data-lang=\"");
+            html.push_str(lang);
+            html.push_str(r#"">"#);
+        } else {
+            html.push_str("<code>");
         }
+        html
     }
 
     pub fn finish(self) -> String {
-        "</code></pre>".into()
+        let html = match self.inner {
+            Inline { .. } => String::new(),
+            Classed { open_spans, .. } => (0..(open_spans.len())).map(|_| "</span>").collect(),
+        };
+        return html + "</code></pre>";
     }
 
     pub fn highlight(&mut self, text: &str) -> String {
         match &mut self.inner {
-            CodeBlockImplementation::Inline {
-                highlighter,
-                syntax_set,
-                hl_background,
-                include_background,
-                ..
-            } => {
-                let highlighted = highlighter.highlight(text, syntax_set);
+            Inline { highlighter, hl_background, include_background, .. } => {
+                let highlighted = highlighter.highlight(text, self.syntax_set);
                 let (line_boundaries, num_lines) = find_line_boundaries(&highlighted);
 
                 // First we make sure that `highlighted` is split at every line
@@ -123,7 +133,49 @@ impl<'config, 'fence_info> CodeBlock<'config> {
 
                 styled_line_to_highlighted_html(&highlighted, *include_background)
             }
-            CodeBlockImplementation::Classed {} => String::from(""),
+            Classed { parser, scope_stack, open_spans, .. } => {
+                // This essentially does the same thing as ClassedHtmlGenerator, except:
+                // 1. It outputs each line one at a time
+                //   * This will be helpful for line numbers
+                // 2. It shares a scope_stack across lines which solves the JSON syntax crash
+                // TODO: Support highlighting lines
+                // TODO: Handle if text doesn't end in a newline?
+                let repo =
+                    SCOPE_REPO.lock().expect("A thread must have poisened the scope repo mutex.");
+                let mut html = String::new();
+                // TODO: Use something other than split_inclusive because it requires a nightly feature:
+                for line in LinesWithEndings::from(text) {
+                    let tokens = parser.parse_line(line, self.syntax_set);
+                    let mut prev_i = 0usize;
+                    tokens.iter().for_each(|(i, op)| {
+                        encode_text_to_string(&line[prev_i..*i], &mut html);
+                        prev_i = *i;
+                        // TODO: Handle empty text and empty spans.
+                        scope_stack.apply_with_hook(op, |basic_op, _| match basic_op {
+                            BasicScopeStackOp::Pop => {
+                                html += "</span>";
+                                open_spans.pop();
+                            }
+                            BasicScopeStackOp::Push(scope) => {
+                                let mut new_span = String::from(r#"<span class=""#);
+                                for i in 0..(scope.len()) {
+                                    let atom = scope.atom_at(i as usize);
+                                    let atom_s = repo.atom_str(atom);
+                                    if i != 0 {
+                                        new_span.push_str(" ");
+                                    }
+                                    new_span.push_str(atom_s);
+                                }
+                                new_span.push_str("\">");
+                                html += &new_span;
+                                open_spans.push(new_span);
+                            }
+                        });
+                    });
+                    encode_text_to_string(&line[prev_i..], &mut html);
+                }
+                html
+            }
         }
     }
 }

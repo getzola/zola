@@ -16,6 +16,7 @@ pest_derive = "2"
 regex = "1"
 lazy_static = "1"
 gh-emoji = "1.0"
+html-escape = "0.2.6"
 
 errors = { path = "../errors" }
 front_matter = { path = "../front_matter" }
