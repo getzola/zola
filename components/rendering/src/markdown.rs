@@ -288,7 +288,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         {
                             let mut escaped = String::new();
                             // write_str can fail but here there are no reasons it should (afaik?)
-                            cmark::escape::escape_href(&mut escaped, &link).expect("Could not write to buffer");
+                            cmark::escape::escape_href(&mut escaped, &link)
+                                .expect("Could not write to buffer");
                             Event::Html(
                                 context
                                     .config
