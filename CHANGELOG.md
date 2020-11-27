@@ -13,6 +13,8 @@
 - Add a `[markdown]` section to `config.toml` to configure rendering
 - Add `highlight_code` and `highlight_theme` to a `[markdown]` section in `config.toml`
 - Add `external_links_target_blank`, `external_links_no_follow` and `external_links_no_referrer`
+- Add a `smart_punctuation` option in the `[markdown]` section in `config.toml` to turn elements like dots and dashes 
+into their typographic forms
 
 ## 0.12.2 (2020-09-28)
 

@@ -118,6 +118,10 @@ external_links_no_follow = false
 # Whether to set rel="noreferrer" for all external links
 external_links_no_referrer = false
 
+# Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
+# For example, `...` into `…`, `"quote"` into `“curly”` etc
+smart_punctuation = false
+
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes

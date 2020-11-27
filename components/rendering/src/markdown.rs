@@ -186,6 +186,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     opts.insert(Options::ENABLE_TASKLISTS);
 
+    if context.config.markdown.smart_punctuation {
+        opts.insert(Options::ENABLE_SMART_PUNCTUATION);
+    }
+
     {
         let mut events = Parser::new_ext(content, opts)
             .map(|event| {

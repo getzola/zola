@@ -1116,3 +1116,13 @@ fn can_set_all_options_for_external_link() {
     let res = render_content("<https://google.com>", &context).unwrap();
     assert_eq!(res.body, "<p><a rel=\"noopener nofollow noreferrer\" target=\"_blank\" href=\"https://google.com\">https://google.com</a></p>\n");
 }
+
+#[test]
+fn can_use_smart_punctuation() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.markdown.smart_punctuation = true;
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"This -- is "it"..."#, &context).unwrap();
+    assert_eq!(res.body, "<p>This – is “it”…</p>\n");
+}
