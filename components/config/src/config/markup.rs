@@ -19,6 +19,8 @@ pub struct Markdown {
     pub external_links_no_follow: bool,
     /// Whether to set rel="noreferrer" for all external links
     pub external_links_no_referrer: bool,
+    /// Whether smart punctuation is enabled (changing quotes, dashes, dots etc in their typographic form)
+    pub smart_punctuation: bool,
 }
 
 impl Markdown {
@@ -63,6 +65,7 @@ impl Default for Markdown {
             external_links_target_blank: false,
             external_links_no_follow: false,
             external_links_no_referrer: false,
+            smart_punctuation: false,
         }
     }
 }
