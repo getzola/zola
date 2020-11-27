@@ -201,26 +201,24 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         if let Some(ref mut code_block) = highlighter {
                             let html = code_block.highlight(&text);
                             Event::Html(html.into())
+                        } else if context.config.markdown.render_emoji {
+                            let processed_text = EMOJI_REPLACER.replace_all(&text);
+                            Event::Text(processed_text.to_string().into())
                         } else {
-                            if context.config.emoji_rendering {
-                                let processed_text = EMOJI_REPLACER.replace_all(&text);
-                                Event::Text(processed_text.to_string().into())
-                            } else {
-                                // Business as usual
-                                Event::Text(text)
-                            }
+                            // Business as usual
+                            Event::Text(text)
                         }
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
-                        let mut language = None;
-                        match kind {
+                        let language = match kind {
                             CodeBlockKind::Fenced(fence_info) => {
                                 let fence_info = fence::FenceSettings::new(fence_info);
-                                language = fence_info.language;
-                            },
-                            _ => {}
+                                fence_info.language
+                            }
+                            _ => None,
                         };
-                        if !context.config.highlight_code {
+
+                        if !context.config.highlight_code() {
                             if let Some(lang) = language {
                                 let html = format!(r#"<pre><code class="language-{}">"#, lang);
                                 return Event::Html(html.into());
@@ -228,7 +226,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             return Event::Html("<pre><code>".into());
                         }
 
-                        let theme = &THEME_SET.themes[&context.config.highlight_theme];
+                        let theme = &THEME_SET.themes[context.config.highlight_theme()];
                         match kind {
                             CodeBlockKind::Indented => (),
                             CodeBlockKind::Fenced(fence_info) => {
@@ -258,7 +256,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Html(html.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
-                        if !context.config.highlight_code {
+                        if !context.config.highlight_code() {
                             return Event::Html("</code></pre>\n".into());
                         }
                         // reset highlight and close the code block
@@ -298,22 +296,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         if markup.contains("<!-- more -->") {
                             has_summary = true;
                             Event::Html(CONTINUE_READING.into())
-                        } else {
-                            if in_html_block && markup.contains("</pre>") {
+                        } else if in_html_block && markup.contains("</pre>") {
+                            in_html_block = false;
+                            Event::Html(markup.replacen("</pre>", "", 1).into())
+                        } else if markup.contains("pre data-shortcode") {
+                            in_html_block = true;
+                            let m = markup.replacen("<pre data-shortcode>", "", 1);
+                            if m.contains("</pre>") {
                                 in_html_block = false;
-                                Event::Html(markup.replacen("</pre>", "", 1).into())
-                            } else if markup.contains("pre data-shortcode") {
-                                in_html_block = true;
-                                let m = markup.replacen("<pre data-shortcode>", "", 1);
-                                if m.contains("</pre>") {
-                                    in_html_block = false;
-                                    Event::Html(m.replacen("</pre>", "", 1).into())
-                                } else {
-                                    Event::Html(m.into())
-                                }
+                                Event::Html(m.replacen("</pre>", "", 1).into())
                             } else {
-                                event
+                                Event::Html(m.into())
                             }
+                        } else {
+                            event
                         }
                     }
                     _ => event,

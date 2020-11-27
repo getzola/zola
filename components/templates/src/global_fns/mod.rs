@@ -331,7 +331,7 @@ impl GetTaxonomyUrl {
             }
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), items);
         }
-        Self { taxonomies, default_lang: default_lang.to_string(), slugify: slugify }
+        Self { taxonomies, default_lang: default_lang.to_string(), slugify }
     }
 }
 impl TeraFn for GetTaxonomyUrl {

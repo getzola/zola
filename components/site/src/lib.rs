@@ -205,7 +205,7 @@ impl Site {
             }
 
             // skip hidden files and non md files
-            if !path.is_dir() && (!file_name.ends_with(".md") || file_name.starts_with(".")) {
+            if !path.is_dir() && (!file_name.ends_with(".md") || file_name.starts_with('.')) {
                 continue;
             }
 

@@ -96,7 +96,7 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = false;
+    config.markdown.highlight_code = false;
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
@@ -106,7 +106,7 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     let tera = Tera::default();
     let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
     let mut config = Config::default();
-    config.highlight_code = false;
+    config.markdown.highlight_code = false;
     let permalinks_ctx = HashMap::new();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
@@ -129,8 +129,8 @@ fn bench_render_content_no_shortcode_with_emoji(b: &mut test::Bencher) {
     let tera = Tera::default();
     let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
     let mut config = Config::default();
-    config.highlight_code = false;
-    config.emoji_rendering = true;
+    config.markdown.highlight_code = false;
+    config.markdown.render_emoji = true;
     let permalinks_ctx = HashMap::new();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
