@@ -140,22 +140,14 @@ fn render_shortcode(
     }
 }
 
-struct InvocationTracker(HashMap<String, u32>);
-
-impl InvocationTracker {
-    fn new() -> Self {
-        InvocationTracker(HashMap::new())
-    }
-    fn get(&mut self, name: &str) -> u32 {
-        let invocation_number = self.0.entry(String::from(name)).or_insert(0);
-        *invocation_number += 1;
-        *invocation_number
-    }
-}
-
 pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
     let mut res = String::with_capacity(content.len());
-    let mut invocation_counts = InvocationTracker::new();
+    let mut invocation_map: HashMap<String, u32> = HashMap::new();
+    let mut get_invocation_count = |name: &str| {
+        let invocation_number = invocation_map.entry(String::from(name)).or_insert(0);
+        *invocation_number += 1;
+        *invocation_number
+    };
 
     let mut pairs = match ContentParser::parse(Rule::page, content) {
         Ok(p) => p,
@@ -205,7 +197,7 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                     &name,
                     &args,
                     context,
-                    invocation_counts.get(&name),
+                    get_invocation_count(&name),
                     None,
                 )?);
             }
@@ -219,7 +211,7 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                     &name,
                     &args,
                     context,
-                    invocation_counts.get(&name),
+                    get_invocation_count(&name),
                     Some(body),
                 )?);
             }
