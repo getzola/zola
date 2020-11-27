@@ -29,7 +29,7 @@ url = "2"
 # Below is for the serve cmd
 hyper = { version = "0.13", default-features = false, features = ["runtime"] }
 hyper-staticfile = "0.5"
-tokio = { version = "0.2", default-features = false, features = [] }
+tokio = { version = "0.3.4", default-features = false, features = ["rt"] }
 notify = "4"
 ws = "0.9"
 ctrlc = "3"

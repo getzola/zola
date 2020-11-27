@@ -286,9 +286,8 @@ pub fn serve(
         thread::spawn(move || {
             let addr = address.parse().unwrap();
 
-            let mut rt = tokio::runtime::Builder::new()
+            let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
-                .basic_scheduler()
                 .build()
                 .expect("Could not build tokio runtime");
 
