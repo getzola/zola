@@ -13,7 +13,6 @@ use utils::slugs::slugify_anchors;
 use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
-use pulldown_cmark::CodeBlockKind;
 
 mod codeblock;
 mod fence;
@@ -99,11 +98,6 @@ fn fix_link(
 ) -> Result<String> {
     if link_type == LinkType::Email {
         return Ok(link.to_string());
-    }
-
-    // TODO: remove me in a few versions when people have upgraded
-    if link.starts_with("./") && link.contains(".md") {
-        println!("It looks like the link `{}` is using the previous syntax for internal links: start with @/ instead", link);
     }
 
     // A few situations here:
@@ -211,7 +205,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
                         let language = match kind {
-                            CodeBlockKind::Fenced(fence_info) => {
+                            cmark::CodeBlockKind::Fenced(fence_info) => {
                                 let fence_info = fence::FenceSettings::new(fence_info);
                                 fence_info.language
                             }
@@ -228,8 +222,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
                         let theme = &THEME_SET.themes[context.config.highlight_theme()];
                         match kind {
-                            CodeBlockKind::Indented => (),
-                            CodeBlockKind::Fenced(fence_info) => {
+                            cmark::CodeBlockKind::Indented => (),
+                            cmark::CodeBlockKind::Fenced(fence_info) => {
                                 // This selects the background color the same way that
                                 // start_coloured_html_snippet does
                                 let color = theme
@@ -289,8 +283,23 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                                 return Event::Html("".into());
                             }
                         };
-
-                        Event::Start(Tag::Link(link_type, fixed_link.into(), title))
+                        if is_external_link(&link)
+                            && context.config.markdown.has_external_link_tweaks()
+                        {
+                            let mut escaped = String::new();
+                            // write_str can fail but here there are no reasons it should (afaik?)
+                            cmark::escape::escape_href(&mut escaped, &link)
+                                .expect("Could not write to buffer");
+                            Event::Html(
+                                context
+                                    .config
+                                    .markdown
+                                    .construct_external_link_tag(&escaped, &title)
+                                    .into(),
+                            )
+                        } else {
+                            Event::Start(Tag::Link(link_type, fixed_link.into(), title))
+                        }
                     }
                     Event::Html(ref markup) => {
                         if markup.contains("<!-- more -->") {
