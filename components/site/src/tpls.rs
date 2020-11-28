@@ -5,7 +5,7 @@ use tera::Tera;
 use crate::Site;
 use config::Config;
 use errors::{bail, Error, Result};
-use templates::{global_fns, ZOLA_TERA};
+use templates::{filters, global_fns, ZOLA_TERA};
 use utils::templates::rewrite_theme_paths;
 
 pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
@@ -50,6 +50,8 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) {
+    site.tera.register_filter("markdown", filters::MarkdownFilter::new(site.config.clone()));
+
     site.tera.register_function(
         "get_url",
         global_fns::GetUrl::new(
