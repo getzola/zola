@@ -35,3 +35,4 @@
 | [blog.turbo.fish](https://blog.turbo.fish)                         | https://git.sr.ht/~jplatte/blog.turbo.fish               |
 | [guerinpe.com](https://guerinpe.com)                               | https://github.com/Grelot/blog                           |
 | [uggla.fr](https://uggla.fr)                                       | https://uggla.fr                                         |
+| [NorthCon e.V.](https://verein.northcon.de/)                       |                                                          |
