@@ -45,7 +45,7 @@ fn get_hl_background(theme: &Theme) -> Color {
 
 fn get_include_background(theme: &Theme) -> IncludeBackground {
     IncludeBackground::IfDifferent(
-        theme.settings.background.unwrap_or(::syntect::highlighting::Color::WHITE),
+        theme.settings.background.unwrap_or(Color::WHITE),
     )
 }
 
@@ -143,7 +143,6 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                 let repo =
                     SCOPE_REPO.lock().expect("A thread must have poisened the scope repo mutex.");
                 let mut html = String::new();
-                // TODO: Use something other than split_inclusive because it requires a nightly feature:
                 for line in LinesWithEndings::from(text) {
                     let tokens = parser.parse_line(line, self.syntax_set);
                     let mut prev_i = 0usize;
