@@ -9,7 +9,6 @@ use syntect::html::{
     start_highlighted_html_snippet, styled_line_to_highlighted_html, IncludeBackground,
 };
 use syntect::parsing::{BasicScopeStackOp, ParseState, ScopeStack, SyntaxSet, SCOPE_REPO};
-use syntect::util::LinesWithEndings;
 
 use super::fence::{FenceSettings, Range};
 
@@ -23,10 +22,8 @@ enum CodeBlockImplementation<'config> {
     Classed {
         parser: ParseState,
         scope_stack: ScopeStack,
-        // Open spans doesn't need to be a vec yet, but when line numbers are implemented, classed highlighting will close and then reopen any spans.
         open_spans: Vec<String>,
-        // TODO handle if the text doesn't end on a newline
-        #[allow(unused)]
+        mark_open: bool,
         remainder: String,
     },
 }
@@ -34,8 +31,9 @@ use CodeBlockImplementation::{Classed, Inline};
 pub struct CodeBlock<'config> {
     syntax_set: &'config SyntaxSet,
     #[allow(unused)]
-    line_numbers: Option<usize>,
+    line_numbers: bool,
     highlight_lines: Vec<Range>,
+    current_line: usize,
     inner: CodeBlockImplementation<'config>,
 }
 
@@ -44,9 +42,7 @@ fn get_hl_background(theme: &Theme) -> Color {
 }
 
 fn get_include_background(theme: &Theme) -> IncludeBackground {
-    IncludeBackground::IfDifferent(
-        theme.settings.background.unwrap_or(Color::WHITE),
-    )
+    IncludeBackground::IfDifferent(theme.settings.background.unwrap_or(Color::WHITE))
 }
 
 impl<'config, 'fence_info> CodeBlock<'config> {
@@ -58,6 +54,8 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         } else {
             None
         };
+        let current_line = line_numbers.unwrap_or(1);
+        let line_numbers = line_numbers.is_some();
 
         let SyntaxAndTheme { syntax, syntax_set, theme } =
             resolve_syntax_and_theme(language, config);
@@ -74,11 +72,12 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                 parser: ParseState::new(syntax),
                 scope_stack: ScopeStack::new(),
                 open_spans: Vec::new(),
+                mark_open: false,
                 remainder: String::new(),
             }
         };
 
-        let mut ret = Self { syntax_set, line_numbers, highlight_lines, inner };
+        let mut ret = Self { syntax_set, line_numbers, current_line, highlight_lines, inner };
         let begin = ret.begin(language);
 
         (ret, begin)
@@ -107,7 +106,15 @@ impl<'config, 'fence_info> CodeBlock<'config> {
     pub fn finish(self) -> String {
         let html = match self.inner {
             Inline { .. } => String::new(),
-            Classed { open_spans, .. } => (0..(open_spans.len())).map(|_| "</span>").collect(),
+            Classed { open_spans, mark_open, mut remainder, .. } => {
+                // Close Spans
+                remainder.extend((0..(open_spans.len())).map(|_| "</span>"));
+                if mark_open {
+                    // Close Mark
+                    remainder.push_str("</mark>");
+                }
+                remainder
+            }
         };
         return html + "</code></pre>";
     }
@@ -133,18 +140,55 @@ impl<'config, 'fence_info> CodeBlock<'config> {
 
                 styled_line_to_highlighted_html(&highlighted, *include_background)
             }
-            Classed { parser, scope_stack, open_spans, .. } => {
-                // This essentially does the same thing as ClassedHtmlGenerator, except:
-                // 1. It outputs each line one at a time
-                //   * This will be helpful for line numbers
-                // 2. It shares a scope_stack across lines which solves the JSON syntax crash
-                // TODO: Support highlighting lines
-                // TODO: Handle if text doesn't end in a newline?
+            Classed { parser, scope_stack, open_spans, mark_open, remainder, .. } => {
+                // We essentially do the same thing as ClassedHtmlGenerator, except:
+                // 1. We output each line one at a time which is used for hl_lines and would be used for line numbers
+                // 2. We share a scope_stack across lines which solves the JSON syntax crash
+
                 let repo =
                     SCOPE_REPO.lock().expect("A thread must have poisened the scope repo mutex.");
                 let mut html = String::new();
-                for line in LinesWithEndings::from(text) {
-                    let tokens = parser.parse_line(line, self.syntax_set);
+
+                remainder.push_str(text);
+                while let Some(mut ind) = remainder.find('\n') {
+                    loop {
+                        // Should always just run once because '\n' is one byte, but...
+                        ind += 1;
+                        if remainder.is_char_boundary(ind) {
+                            break;
+                        }
+                    }
+                    let mut line = remainder.split_off(ind);
+                    std::mem::swap(&mut line, remainder);
+
+                    if line.is_empty() {
+                        continue;
+                    }
+                    // Handle highlighted lines by closing all the open spans, inserting a <mark> tag, and then reopening them.  We'll need to do the same thing at the end of highlighted lines to close </mark>.
+                    fn insert_at_root(html: &mut String, to_insert: &str, spans: &[String]) {
+                        html.extend((0..spans.len()).map(|_| "</span>"));
+                        html.push_str(to_insert);
+                        html.extend(spans.iter().map(|x| x.as_str()));
+                    }
+                    let mut is_highlighted = false;
+                    for range in self.highlight_lines.iter() {
+                        // TODO: Don't check every range every line
+                        if (range.from..=range.to).contains(&self.current_line) {
+                            is_highlighted = true;
+                            break;
+                        }
+                    }
+                    if is_highlighted != *mark_open {
+                        if is_highlighted {
+                            insert_at_root(&mut html, "<mark>", &open_spans);
+                            *mark_open = true;
+                        } else {
+                            insert_at_root(&mut html, "</mark>", &open_spans);
+                            *mark_open = false;
+                        }
+                    }
+
+                    let tokens = parser.parse_line(line.as_str(), self.syntax_set);
                     let mut prev_i = 0usize;
                     tokens.iter().for_each(|(i, op)| {
                         encode_text_to_string(&line[prev_i..*i], &mut html);
@@ -172,6 +216,8 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                         });
                     });
                     encode_text_to_string(&line[prev_i..], &mut html);
+
+                    self.current_line += 1;
                 }
                 html
             }
