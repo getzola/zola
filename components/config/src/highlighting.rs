@@ -23,7 +23,7 @@ pub struct SyntaxAndTheme<'config> {
     pub theme: Option<&'config Theme>,
 }
 
-/// Returns the highlighter and whether it was found in the extra or not
+/// Returns the syntax (from either the builtin or extra sets), and theme (if not css)
 pub fn resolve_syntax_and_theme<'config>(
     language: Option<&'_ str>,
     config: &'config Config,
