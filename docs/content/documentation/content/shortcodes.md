@@ -136,11 +136,11 @@ anything else until the closing tag.
 
 ### Invocation Count
 
-Every shortcode context is passed in a variable named `invocation` that tracks how many times a particular shortcode has
+Every shortcode context is passed in a variable named `nth` that tracks how many times a particular shortcode has
 been invoked in a Markdown file. Given a shortcode `true_statement.html` template:
 
 ```jinja2
-<p id="number{{ invocation }}">{{ value }} is equal to {{ invocation }}.</p>
+<p id="number{{ nth }}">{{ value }} is equal to {{ nth }}.</p>
 ```
 
 It could be used in our Markdown as follows:

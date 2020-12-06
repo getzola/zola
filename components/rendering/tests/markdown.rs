@@ -1065,8 +1065,8 @@ fn invocation_count_increments_in_shortcode() {
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
 
-    let shortcode_template_a = r#"<p>a: {{ invocation }}</p>"#;
-    let shortcode_template_b = r#"<p>b: {{ invocation }}</p>"#;
+    let shortcode_template_a = r#"<p>a: {{ nth }}</p>"#;
+    let shortcode_template_b = r#"<p>b: {{ nth }}</p>"#;
 
     let markdown_string = r#"{{ a() }}
 {{ b() }}

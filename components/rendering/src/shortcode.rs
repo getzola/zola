@@ -114,7 +114,7 @@ fn render_shortcode(
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
         tera_context.insert("body", b.trim_end());
     }
-    tera_context.insert("invocation", &invocation_count);
+    tera_context.insert("nth", &invocation_count);
     tera_context.extend(context.tera_context.clone());
 
     let mut template_name = format!("shortcodes/{}.md", name);
