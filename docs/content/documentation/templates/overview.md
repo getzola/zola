@@ -109,7 +109,7 @@ If you only need the metadata of the section, you can pass `metadata_only=true` 
 {% set section = get_section(path="blog/_index.md", metadata_only=true) %}
 ```
 
-### ` get_url`
+### `get_url`
 Gets the permalink for the given path.
 If the path starts with `@/`, it will be treated as an internal
 link like the ones used in Markdown, starting from the root `content` directory.
@@ -146,7 +146,7 @@ In the case of non-internal links, you can also add a cachebust of the format `?
 by passing `cachebust=true` to the `get_url` function.
 
 
-### 'get_file_hash`
+### `get_file_hash`
 
 Gets the hash digest for a static file. Supported hashes are SHA-256, SHA-384 (default) and SHA-512. Requires `path`. The `sha_type` key is optional and must be one of 256, 384 or 512.
 

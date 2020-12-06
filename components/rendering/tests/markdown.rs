@@ -1088,3 +1088,71 @@ fn invocation_count_increments_in_shortcode() {
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
 }
+
+#[test]
+fn basic_external_links_unchanged() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default();
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("<https://google.com>", &context).unwrap();
+    assert_eq!(res.body, "<p><a href=\"https://google.com\">https://google.com</a></p>\n");
+}
+
+#[test]
+fn can_set_target_blank_for_external_link() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.markdown.external_links_target_blank = true;
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("<https://google.com>", &context).unwrap();
+    assert_eq!(res.body, "<p><a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a></p>\n");
+}
+
+#[test]
+fn can_set_nofollow_for_external_link() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.markdown.external_links_no_follow = true;
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    // Testing href escaping while we're there
+    let res = render_content("<https://google.com/éllo>", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p><a rel=\"nofollow\" href=\"https://google.com/%C3%A9llo\">https://google.com/éllo</a></p>\n"
+    );
+}
+
+#[test]
+fn can_set_noreferrer_for_external_link() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.markdown.external_links_no_referrer = true;
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("<https://google.com>", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<p><a rel=\"noreferrer\" href=\"https://google.com\">https://google.com</a></p>\n"
+    );
+}
+
+#[test]
+fn can_set_all_options_for_external_link() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.markdown.external_links_target_blank = true;
+    config.markdown.external_links_no_follow = true;
+    config.markdown.external_links_no_referrer = true;
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content("<https://google.com>", &context).unwrap();
+    assert_eq!(res.body, "<p><a rel=\"noopener nofollow noreferrer\" target=\"_blank\" href=\"https://google.com\">https://google.com</a></p>\n");
+}
+
+#[test]
+fn can_use_smart_punctuation() {
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.markdown.smart_punctuation = true;
+    let context = RenderContext::new(&ZOLA_TERA, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(r#"This -- is "it"..."#, &context).unwrap();
+    assert_eq!(res.body, "<p>This – is “it”…</p>\n");
+}

@@ -95,6 +95,7 @@ extra_syntaxes = []
 # You can override the default output directory `public` by setting an another value.
 # output_dir = "docs"
 
+# Configuration of the Markdown rendering
 [markdown]
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
@@ -106,6 +107,20 @@ highlight_theme = "base16-ocean-dark"
 # When set to "true", emoji aliases translated to their corresponding
 # Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
 render_emoji = false
+
+# Whether external links are to be opened in a new tab
+# If this is true, a `rel="noopener"` will always automatically be added for security reasons
+external_links_target_blank = false
+
+# Whether to set rel="nofollow" for all external links
+external_links_no_follow = false
+
+# Whether to set rel="noreferrer" for all external links
+external_links_no_referrer = false
+
+# Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
+# For example, `...` into `…`, `"quote"` into `“curly”` etc
+smart_punctuation = false
 
 # Configuration of the link checker.
 [link_checker]

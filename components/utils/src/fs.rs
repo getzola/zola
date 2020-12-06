@@ -20,8 +20,8 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
-    let mut file =
-        File::create(&path).map_err(|e| Error::chain(format!("Failed to create {:?}", path), e))?;
+    let mut file = File::create(&path)
+        .map_err(|e| Error::chain(format!("Failed to create file {}", path.display()), e))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }
@@ -62,7 +62,7 @@ pub fn read_file(path: &Path) -> Result<String> {
 
 /// Return the content of a file, with error handling added.
 /// The default error message is overwritten by the message given.
-/// That means it is allocation 2 strings, oh well
+/// That means it is allocating 2 strings, oh well
 pub fn read_file_with_error(path: &Path, message: &str) -> Result<String> {
     let res = read_file(&path);
     if res.is_ok() {
@@ -101,7 +101,9 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: boo
     let target_path = dest.join(relative_path);
 
     if let Some(parent_directory) = target_path.parent() {
-        create_dir_all(parent_directory)?;
+        create_dir_all(parent_directory).map_err(|e| {
+            Error::chain(format!("Was not able to create folder {}", parent_directory.display()), e)
+        })?;
     }
 
     copy_file_if_needed(src, &target_path, hard_link)
@@ -113,7 +115,9 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: boo
 /// 3. Its filesize is identical to that of the src file.
 pub fn copy_file_if_needed(src: &Path, dest: &PathBuf, hard_link: bool) -> Result<()> {
     if let Some(parent_directory) = dest.parent() {
-        create_dir_all(parent_directory)?;
+        create_dir_all(parent_directory).map_err(|e| {
+            Error::chain(format!("Was not able to create folder {}", parent_directory.display()), e)
+        })?;
     }
 
     if hard_link {
@@ -125,11 +129,25 @@ pub fn copy_file_if_needed(src: &Path, dest: &PathBuf, hard_link: bool) -> Resul
             let target_metadata = metadata(&dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                copy(src, &dest)?;
+                copy(src, &dest).map_err(|e| {
+                    Error::chain(
+                        format!(
+                            "Was not able to copy file {} to {}",
+                            src.display(),
+                            dest.display()
+                        ),
+                        e,
+                    )
+                })?;
                 set_file_mtime(&dest, src_mtime)?;
             }
         } else {
-            copy(src, &dest)?;
+            copy(src, &dest).map_err(|e| {
+                Error::chain(
+                    format!("Was not able to copy file {} to {}", src.display(), dest.display()),
+                    e,
+                )
+            })?;
             set_file_mtime(&dest, src_mtime)?;
         }
     }
@@ -146,7 +164,16 @@ pub fn copy_directory(src: &PathBuf, dest: &PathBuf, hard_link: bool) -> Result<
                 create_directory(&target_path)?;
             }
         } else {
-            copy_file(entry.path(), dest, src, hard_link)?;
+            copy_file(entry.path(), dest, src, hard_link).map_err(|e| {
+                Error::chain(
+                    format!(
+                        "Was not able to copy file {} to {}",
+                        entry.path().display(),
+                        dest.display()
+                    ),
+                    e,
+                )
+            })?;
         }
     }
     Ok(())

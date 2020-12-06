@@ -168,7 +168,7 @@ fn get_output_format_from_args(
     };
 
     // Always default to Plain if we don't know what it is
-    OutputFormat::from_str(from_extension).or_else(|_| Ok(OutputFormat::Plain))
+    OutputFormat::from_str(from_extension).or(Ok(OutputFormat::Plain))
 }
 
 /// A Tera function to load data from a file or from a URL
