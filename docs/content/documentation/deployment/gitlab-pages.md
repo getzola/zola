@@ -46,8 +46,8 @@ variables:
 
 pages:
   script:
-    # Install the zola package from the alpine testing repositories
-    - apk add --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ zola
+    # Install the zola package from the alpine community repositories
+    - apk add --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ zola
     # Execute zola build
     - zola build
     
