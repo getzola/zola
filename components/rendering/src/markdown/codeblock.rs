@@ -1,7 +1,7 @@
 use config::highlighting::{resolve_syntax_and_theme, SyntaxAndTheme};
 use config::Config;
-use html_escape::encode_text_to_string;
-use syntect::highlighting::{Color, Theme, HighlightState, Highlighter, HighlightIterator};
+use tera::escape_html;
+use syntect::highlighting::{Style, Color, Theme, HighlightState, Highlighter, HighlightIterator};
 use syntect::html::{
     start_highlighted_html_snippet, append_highlighted_html_for_styled_line, IncludeBackground,
 };
@@ -16,9 +16,12 @@ enum CodeBlockImplementation<'config> {
         hl_background: Color,
         include_background: IncludeBackground,
         theme: &'config Theme,
+        prev_style: Option<Style>
     },
     Classed {
         scope_stack: ScopeStack,
+        open_spans: Vec<String>,
+        need_reopen: bool
     },
 }
 
@@ -44,24 +47,60 @@ impl<'config> CodeBlockImplementation<'config> {
             Classed { .. } => html.push_str("<mark>")
         }
     }
-    fn handle_line(&mut self, line: String, tokens: Vec<(usize, ScopeStackOp)>, open_spans: &mut Vec<String>, html: &mut String) {
+    fn close(&self, html: &mut String) {
         match self {
-            Inline { highlight_state, highlighter, include_background, .. } => {
+            Inline {prev_style, .. } => {
+                if prev_style.is_some() {
+                    html.push_str("</span>");
+                }
+            },
+            Classed { open_spans, .. } => {
+                html.extend((0..(open_spans.len())).map(|_| "</span>"));
+            }
+        }
+    }
+    
+    fn close_to_root(&mut self, html: &mut String) {
+        // Close open spans:
+        match self {
+            Inline { prev_style, .. } => {
+                if prev_style.take().is_some() {
+                    html.push_str("</span>");
+                }
+            },
+            Classed { open_spans, need_reopen, .. } => {
+                html.extend((0..open_spans.len()).map(|_| "</span>"));
+                *need_reopen = true;
+            }
+        }
+    }
+    fn handle_line(&mut self, line: String, tokens: Vec<(usize, ScopeStackOp)>, html: &mut String) {
+        match self {
+            Inline { 
+                highlight_state,
+                highlighter,
+                include_background,
+                // prev_style,
+                ..
+            } => {
                 let highlighted: Vec<_> = HighlightIterator::new(highlight_state, &tokens, &line, highlighter).collect();
 
+                // TODO: Use prev_style like append_highlighted_html does to reuse spans across lines again.
                 append_highlighted_html_for_styled_line(&highlighted, *include_background, html);
             }
-            Classed { scope_stack } => {
+            Classed { scope_stack, open_spans, need_reopen } => {
                 let repo =
                     SCOPE_REPO.lock().expect("A thread must have poisened the scope repo mutex.");
                 let mut prev_i = 0usize;
                 tokens.iter().for_each(|(i, op)| {
-                    encode_text_to_string(&line[prev_i..*i], html);
+                    html.push_str(&escape_html(&line[prev_i..*i]));
                     prev_i = *i;
                     // TODO: Handle empty text and empty spans.
                     scope_stack.apply_with_hook(op, |basic_op, _| match basic_op {
                         BasicScopeStackOp::Pop => {
-                            html.push_str("</span>");
+                            if !*need_reopen {
+                                html.push_str("</span>");
+                            }
                             open_spans.pop();
                         }
                         BasicScopeStackOp::Push(scope) => {
@@ -75,12 +114,16 @@ impl<'config> CodeBlockImplementation<'config> {
                                 new_span.push_str(atom_s);
                             }
                             new_span.push_str("\">");
+                            if *need_reopen {
+                                html.extend(open_spans.iter().map(String::as_str));
+                                *need_reopen = false;
+                            }
                             html.push_str(&new_span);
                             open_spans.push(new_span);
                         }
                     });
                 });
-                encode_text_to_string(&line[prev_i..], html);
+                html.push_str(&escape_html(&line[prev_i..]));
             }
         }
     }
@@ -89,13 +132,12 @@ use CodeBlockImplementation::{Classed, Inline};
 
 pub struct CodeBlock<'config> {
     syntax_set: &'config SyntaxSet,
-    #[allow(unused)]
     line_numbers: bool,
+    is_first_line: bool,
     highlight_lines: Vec<Range>,
     current_line: usize,
     mark_open: bool,
     remainder: String,
-    open_spans: Vec<String>,
     parser: ParseState,
     inner: CodeBlockImplementation<'config>,
 }
@@ -130,11 +172,14 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                 highlighter,
                 hl_background: get_hl_background(theme),
                 include_background: get_include_background(theme),
+                prev_style: None,
                 theme,
             }
         } else {
             Classed {
                 scope_stack: ScopeStack::new(),
+                open_spans: Vec::new(),
+                need_reopen: false,
             }
         };
         
@@ -142,9 +187,9 @@ impl<'config, 'fence_info> CodeBlock<'config> {
             parser: ParseState::new(syntax),
             mark_open: false,
             remainder: String::new(),
-            open_spans: Vec::new(),
             syntax_set,
             line_numbers,
+            is_first_line: true,
             current_line,
             highlight_lines,
             inner,
@@ -155,6 +200,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
     }
 
     fn begin(&mut self, language: Option<&str>) -> String {
+        // Open the <pre> tag
         let mut html = match &mut self.inner {
             Inline { theme, .. } => start_highlighted_html_snippet(theme).0,
             Classed { .. } => {
@@ -162,6 +208,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                 r#"<pre class="code">"#.into()
             }
         };
+        // Open the <code> tag
         if let Some(lang) = language {
             html.push_str("<code class=\"language-");
             html.push_str(lang);
@@ -171,21 +218,32 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         } else {
             html.push_str("<code>");
         }
+        // Open the table if line numbers are on
+        if self.line_numbers {
+            html.push_str("<table>");
+        }
         html
     }
 
     pub fn finish(self) -> String {
         let CodeBlock {
             mark_open,
-            mut remainder,
-            open_spans,
+            remainder,
+            inner,
+            line_numbers,
             ..
         } = self;
-        
-        remainder.extend((0..(open_spans.len())).map(|_| "</span>"));
+        // Output the remaining text (TODO: Also highlight the remainder before output)
+        let mut remainder = escape_html(&remainder);
+        // Close any open spans
+        inner.close(&mut remainder);
+        // Close <mark>
         if mark_open {
-            // Close <mark>
             remainder.push_str("</mark>");
+        }
+        // Close <td><tr><table> if line numbers
+        if line_numbers {
+            remainder.push_str("</td></tr></table>");
         }
         remainder.push_str("</code></pre>");
         remainder
@@ -193,25 +251,11 @@ impl<'config, 'fence_info> CodeBlock<'config> {
 
     fn get_line(&mut self) -> Option<String> {
         self.remainder.find('\n').map(|mut ind| {
-            loop {
-                // Should always just run once because '\n' is one byte, but...
-                ind += 1;
-                if self.remainder.is_char_boundary(ind) {
-                    break;
-                }
-            }
+            ind += '\n'.len_utf8(); // Include the newline in what we return.
             let mut line = self.remainder.split_off(ind);
             std::mem::swap(&mut line, &mut self.remainder);
             line
         })
-    }
-    fn insert_at_root<T: FnOnce(&mut String)>(&self, html: &mut String, handler: T) {
-        // Close open spans:
-        html.extend((0..self.open_spans.len()).map(|_| "</span>"));
-        // Make the modification at root
-        handler(html);
-        // Reopen the spans
-        html.extend(self.open_spans.iter().map(|x| x.as_str()));
     }
     fn is_line_highlighted(&self) -> bool {
         let mut is_highlighted = false;
@@ -229,21 +273,33 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         self.remainder.push_str(text);
         let mut html = String::new();
         while let Some(line) = self.get_line() {
-            // Handle highlighted lines by closing all the open spans, inserting a <mark> tag, and then reopening them.  We'll need to do the same thing at the end of highlighted lines to close </mark>.
             let is_highlighted = self.is_line_highlighted();
-            if is_highlighted != self.mark_open {
+            if self.line_numbers || is_highlighted != self.mark_open {
+                self.inner.close_to_root(&mut html);
+                if self.line_numbers {
+                    if !self.is_first_line {
+                        html.push_str("</tr>");
+                    } else {
+                        self.is_first_line = false;
+                    }
+                    html.push_str("<tr><td>");
+                    html.push_str(&self.current_line.to_string());
+                    html.push_str("</td><td>");
+                }
+
+                // Handle hl_lines
                 if is_highlighted {
-                    self.insert_at_root(&mut html, |html| self.inner.open_mark(html));
+                    self.inner.open_mark(&mut html);
                     self.mark_open = true;
                 } else {
-                    self.insert_at_root(&mut html, |html| html.push_str("</mark>"));
+                    html.push_str("</mark>");
                     self.mark_open = false;
                 }
             }
 
             // Parse the line:
             let tokens = self.parser.parse_line(line.as_str(), self.syntax_set);
-            self.inner.handle_line(line, tokens, &mut self.open_spans, &mut html);
+            self.inner.handle_line(line, tokens, &mut html);
             
             self.current_line += 1;
         }
