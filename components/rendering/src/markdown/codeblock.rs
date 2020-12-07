@@ -124,7 +124,7 @@ impl<'config> CodeBlockImplementation<'config> {
                         }
                         html.push_str("color:");
                         css_color(html, &style.foreground);
-                        html.push_str(";\">{}");
+                        html.push_str(";\">");
                         html.push_str(&escape_html(text));
                     }
                 }
@@ -181,11 +181,11 @@ use CodeBlockImplementation::{Classed, Inline};
 pub struct CodeBlock<'config> {
     syntax_set: &'config SyntaxSet,
     line_numbers: bool,
-    is_first_line: bool,
     highlight_lines: Vec<Range>,
     current_line: usize,
     mark_open: bool,
     remainder: String,
+    save: String,
     parser: ParseState,
     inner: CodeBlockImplementation<'config>,
 }
@@ -232,12 +232,13 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         };
         
         let mut ret = Self {
+            save: String::from("</td><td>"),
             parser: ParseState::new(syntax),
             mark_open: false,
             remainder: String::new(),
             syntax_set,
             line_numbers,
-            is_first_line: true,
+            // is_first_line: true,
             current_line,
             highlight_lines,
             inner,
@@ -268,7 +269,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         }
         // Open the table if line numbers are on
         if self.line_numbers {
-            html.push_str("<table>");
+            html.push_str("<table><tr><td>");
         }
         html
     }
@@ -279,22 +280,26 @@ impl<'config, 'fence_info> CodeBlock<'config> {
             remainder,
             inner,
             line_numbers,
+            mut save,
             ..
         } = self;
         // Output the remaining text (TODO: Also highlight the remainder before output)
-        let mut remainder = escape_html(&remainder);
+        if self.mark_open {
+            save.insert_str(0, "</mark>");
+        }
+        save.push_str(&escape_html(&remainder));
         // Close any open spans
-        inner.close(&mut remainder);
+        inner.close(&mut save);
         // Close <mark>
         if mark_open {
-            remainder.push_str("</mark>");
+            save.push_str("</mark>");
         }
         // Close <td><tr><table> if line numbers
         if line_numbers {
-            remainder.push_str("</td></tr></table>");
+            save.push_str("</td></tr></table>");
         }
-        remainder.push_str("</code></pre>");
-        remainder
+        save.push_str("</code></pre>");
+        save
     }
 
     fn get_line(&mut self) -> Option<String> {
@@ -322,32 +327,38 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         let mut html = String::new();
         while let Some(line) = self.get_line() {
             let is_highlighted = self.is_line_highlighted();
-            if self.line_numbers || is_highlighted != self.mark_open {
-                self.inner.close_to_root(&mut html);
-                if self.line_numbers {
-                    if !self.is_first_line {
-                        html.push_str("</tr>");
-                    } else {
-                        self.is_first_line = false;
-                    }
-                    html.push_str("<tr><td>");
-                    html.push_str(&self.current_line.to_string());
-                    html.push_str("</td><td>");
+            
+            // Where to store the highlighted output.  Without line numbers we'll just output it, but if we're using line numbers than we'll save the output while we output line numbers, and then when we finish we'll output the saved highlighted code.
+            let output_location = if self.line_numbers {
+                if is_highlighted && !self.mark_open {
+                    self.inner.open_mark(&mut html);
                 }
-
+                if self.mark_open && !is_highlighted {
+                    html.push_str("</mark>");
+                }
+                html.push_str(&self.current_line.to_string());
+                html.push('\n');
+                &mut self.save
+            } else {
+                &mut html
+            };
+            
+            if is_highlighted != self.mark_open {
+                self.inner.close_to_root(output_location);
+                
                 // Handle hl_lines
                 if is_highlighted {
-                    self.inner.open_mark(&mut html);
+                    self.inner.open_mark(output_location);
                     self.mark_open = true;
                 } else {
-                    html.push_str("</mark>");
+                    output_location.push_str("</mark>");
                     self.mark_open = false;
                 }
             }
 
             // Parse the line:
             let tokens = self.parser.parse_line(line.as_str(), self.syntax_set);
-            self.inner.handle_line(line, tokens, &mut html);
+            self.inner.handle_line(line, tokens, output_location);
             
             self.current_line += 1;
         }
