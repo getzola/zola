@@ -1,9 +1,9 @@
 use config::highlighting::{resolve_syntax_and_theme, SyntaxAndTheme};
 use config::Config;
 use tera::escape_html;
-use syntect::highlighting::{Style, Color, Theme, HighlightState, Highlighter, HighlightIterator};
+use syntect::highlighting::{Style, FontStyle, Color, Theme, HighlightState, Highlighter, HighlightIterator};
 use syntect::html::{
-    start_highlighted_html_snippet, append_highlighted_html_for_styled_line, IncludeBackground,
+    start_highlighted_html_snippet, IncludeBackground,
 };
 use syntect::parsing::{BasicScopeStackOp, ParseState, ScopeStack, ScopeStackOp, SyntaxSet, SCOPE_REPO};
 
@@ -80,13 +80,54 @@ impl<'config> CodeBlockImplementation<'config> {
                 highlight_state,
                 highlighter,
                 include_background,
-                // prev_style,
+                prev_style,
                 ..
             } => {
-                let highlighted: Vec<_> = HighlightIterator::new(highlight_state, &tokens, &line, highlighter).collect();
-
-                // TODO: Use prev_style like append_highlighted_html does to reuse spans across lines again.
-                append_highlighted_html_for_styled_line(&highlighted, *include_background, html);
+                for (ref style, text) in HighlightIterator::new(
+                    highlight_state,
+                    &tokens,
+                    &line,
+                    highlighter
+                ) {
+                    let unify_style = if let Some(ps) = prev_style {
+                        style == ps ||
+                            (style.background == ps.background && text.trim().is_empty())
+                    } else {
+                        false
+                    };
+                    if unify_style {
+                        html.push_str(&escape_html(text));
+                    } else {
+                        if prev_style.is_some() {
+                            html.push_str("</span>");
+                        }
+                        *prev_style = Some(*style);
+                        html.push_str("<span style=\"");
+                        let include_bg = match include_background {
+                            IncludeBackground::Yes => true,
+                            IncludeBackground::No => false,
+                            IncludeBackground::IfDifferent(c) => (style.background != *c),
+                        };
+                        if include_bg {
+                            html.push_str("background-color:");
+                            css_color(html, &style.background);
+                            html.push(';');
+                        }
+                        if style.font_style.contains(FontStyle::UNDERLINE) {
+                            html.push_str("text-decoration:underline;");
+                        }
+                        if style.font_style.contains(FontStyle::BOLD) {
+                            html.push_str("font-weight:bold;");
+                        }
+                        if style.font_style.contains(FontStyle::ITALIC) {
+                            html.push_str("font-style:italic;");
+                        }
+                        html.push_str("color:");
+                        css_color(html, &style.foreground);
+                        html.push_str(";\">{}");
+                        html.push_str(&escape_html(text));
+                    }
+                }
             }
             Classed { scope_stack, open_spans, need_reopen } => {
                 let repo =
@@ -123,7 +164,14 @@ impl<'config> CodeBlockImplementation<'config> {
                         }
                     });
                 });
-                html.push_str(&escape_html(&line[prev_i..]));
+                let remainder = &line[prev_i..];
+                if !remainder.is_empty() {
+                    if *need_reopen {
+                        html.extend(open_spans.iter().map(String::as_str));
+                        *need_reopen = false;
+                    }
+                    html.push_str(&escape_html(remainder));
+                }
             }
         }
     }
@@ -155,7 +203,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         let FenceSettings { language, line_numbers, highlight_lines } = fence;
         let line_numbers = if line_numbers {
             // TODO: Update fence to enable setting custom number start.
-            Some(0)
+            Some(1)
         } else {
             None
         };
