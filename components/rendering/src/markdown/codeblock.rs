@@ -3,7 +3,7 @@ use config::Config;
 use syntect::highlighting::{
     Color, FontStyle, HighlightIterator, HighlightState, Highlighter, Style, Theme,
 };
-use syntect::html::{start_highlighted_html_snippet, IncludeBackground};
+use syntect::html::{IncludeBackground};
 use syntect::parsing::{
     BasicScopeStackOp, ParseState, ScopeStack, ScopeStackOp, SyntaxSet, SCOPE_REPO,
 };
@@ -17,7 +17,7 @@ enum CodeBlockImplementation<'config> {
         highlight_state: HighlightState,
         hl_background: Color,
         include_background: IncludeBackground,
-        theme: &'config Theme,
+        default_style: Style,
         prev_style: Option<Style>,
     },
     Classed {
@@ -27,8 +27,41 @@ enum CodeBlockImplementation<'config> {
     },
 }
 
+fn output_style(html: &mut String, style: &Style, bg: &IncludeBackground) {
+    let include_bg = match bg {
+        IncludeBackground::Yes => true,
+        IncludeBackground::No => false,
+        IncludeBackground::IfDifferent(c) => (style.background != *c),
+    };
+    if include_bg {
+        html.push_str("background-color:");
+        css_color(html, &style.background);
+        html.push(';');
+    }
+    if style.font_style.contains(FontStyle::UNDERLINE) {
+        html.push_str("text-decoration:underline;");
+    }
+    if style.font_style.contains(FontStyle::BOLD) {
+        html.push_str("font-weight:bold;");
+    }
+    if style.font_style.contains(FontStyle::ITALIC) {
+        html.push_str("font-style:italic;");
+    }
+    html.push_str("color:");
+    css_color(html, &style.foreground);
+    html.push(';');
+}
+
+fn get_default_style(theme: &Theme) -> Style {
+    Style {
+        foreground: theme.settings.foreground.unwrap_or(Color::BLACK),
+        background: theme.settings.background.unwrap_or(Color::WHITE),
+        font_style: FontStyle::empty()
+    }
+}
+
 fn css_color(html: &mut String, color: &Color) {
-    // TODO: Could also output hex codes using something like Syntect's write_css_color
+    // TODO: hex codes or rgb()?
     // html.push_str("rgb(");
     // html.push_str(&color.r.to_string());
     // html.push(' ');
@@ -70,48 +103,30 @@ impl<'config> CodeBlockImplementation<'config> {
     }
     fn handle_line(&mut self, line: String, tokens: Vec<(usize, ScopeStackOp)>, html: &mut String) {
         match self {
-            Inline { highlight_state, highlighter, include_background, prev_style, .. } => {
+            Inline { highlight_state, highlighter, include_background, prev_style, default_style, .. } => {
                 for (style, text) in
                     HighlightIterator::new(highlight_state, &tokens, &line, highlighter)
                 {
-                    let unify_style = if let Some(ps) = prev_style {
-                        style == *ps
-                            || (style.background == ps.background && text.trim().is_empty())
-                    } else {
-                        false
-                    };
-                    if unify_style {
-                        html.push_str(&escape_html(text));
-                    } else {
-                        if prev_style.is_some() {
+                    let can_unify = prev_style.clone().map(|ps| {
+                        ps == style || (
+                            text.trim().is_empty() && ps.background == style.background
+                        )
+                    }).unwrap_or(false);
+                    if style == *default_style {
+                        // If this style is the same as the default, then just escape to root and don't use a span.
+                        if prev_style.take().is_some() {
+                            html.push_str("</span>");
+                        }
+                    } else if !can_unify {
+                        // Set our current style as the prev_style and output a </span> if there was a previous prev_style
+                        if prev_style.replace(style).is_some() {
                             html.push_str("</span>");
                         }
                         html.push_str("<span style=\"");
-                        let include_bg = match include_background {
-                            IncludeBackground::Yes => true,
-                            IncludeBackground::No => false,
-                            IncludeBackground::IfDifferent(c) => (style.background != *c),
-                        };
-                        if include_bg {
-                            html.push_str("background-color:");
-                            css_color(html, &style.background);
-                            html.push(';');
-                        }
-                        if style.font_style.contains(FontStyle::UNDERLINE) {
-                            html.push_str("text-decoration:underline;");
-                        }
-                        if style.font_style.contains(FontStyle::BOLD) {
-                            html.push_str("font-weight:bold;");
-                        }
-                        if style.font_style.contains(FontStyle::ITALIC) {
-                            html.push_str("font-style:italic;");
-                        }
-                        html.push_str("color:");
-                        css_color(html, &style.foreground);
-                        html.push_str(";\">");
-                        html.push_str(&escape_html(text));
-                        *prev_style = Some(style);
+                        output_style(html, &style, include_background);
+                        html.push_str("\">");
                     }
+                    html.push_str(&escape_html(text));
                 }
             }
             Classed { scope_stack, open_spans, need_reopen } => {
@@ -208,7 +223,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                 hl_background: get_hl_background(theme),
                 include_background: get_include_background(theme),
                 prev_style: None,
-                theme,
+                default_style: get_default_style(theme),
             }
         } else {
             Classed { scope_stack: ScopeStack::new(), open_spans: Vec::new(), need_reopen: false }
@@ -238,14 +253,20 @@ impl<'config, 'fence_info> CodeBlock<'config> {
 
     fn begin(&mut self, language: Option<&str>) -> String {
         // Open the <pre> tag
-        let mut html = match &mut self.inner {
-            // TODO: This is the only use of the .theme property.  It would be nice if it wasn't needed.
-            Inline { theme, .. } => start_highlighted_html_snippet(theme).0,
+        let mut html = String::from("<pre");
+        match &mut self.inner {
+            Inline { default_style, .. } => {
+                // Output the default style which will be used for line numbers and stuff.
+                html.push_str(" style=\"");
+                output_style(&mut html, default_style, &IncludeBackground::Yes);
+                html.push('"');
+            },
             Classed { .. } => {
                 // When Syntect outputs CSS for a theme, it places the default color and background onto `.code`
-                r#"<pre class="code">"#.into()
+                html.push_str(r#" class="code""#);
             }
         };
+        html.push('>');
         // Open the <code> tag
         if let Some(lang) = language {
             html.push_str("<code class=\"language-");
@@ -367,16 +388,13 @@ mod linenos_tests {
         highlighted
     }
     fn output_inline_plaintext(linenumbers: &str, code: &str) -> String {
-        // NOTE: There's a newline after the <pre> in inline (from start_highlighted_html) that isn't there in classed
-        format!("<pre style=\"background-color:#2b303b;\">\n\
+        format!("<pre style=\"background-color:#2b303b;color:#c0c5ce;\">\
                 <code>\
                     <table>\
                         <tr>\
                             <td>{}</td>\
                             <td>\
-                                <span style=\"color:#c0c5ce;\">\
-                                    {}\
-                                </span>\
+                                {}\
                             </td>\
                         </tr>\
                     </table>\
@@ -422,7 +440,7 @@ baz
 ";
         assert_eq!(
             highlight(&Config::default(), "linenos, linenostart=3, hl_lines=5", text),
-            "<pre style=\"background-color:#2b303b;\">\n\
+            "<pre style=\"background-color:#2b303b;color:#c0c5ce;\">\
                 <code>\
                     <table>\
                         <tr>\
@@ -432,17 +450,11 @@ baz
                                 6\n\
                             </td>\
                             <td>\
-                                <span style=\"color:#c0c5ce;\">\
                                 foo\nbar\n\
-                                </span>\
                                 <mark style=\"background-color:#65737e30;\">\
-                                    <span style=\"color:#c0c5ce;\">\
-                                        bar\n\
-                                    </span>\
+                                    bar\n\
                                 </mark>\
-                                <span style=\"color:#c0c5ce;\">\
-                                    baz\n\
-                                </span>\
+                                baz\n\
                             </td>\
                         </tr>\
                     </table>\

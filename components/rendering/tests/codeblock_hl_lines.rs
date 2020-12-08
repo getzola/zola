@@ -8,22 +8,25 @@ use rendering::{render_content, RenderContext};
 
 macro_rules! colored_html_line {
     ( @no $s:expr ) => {{
-        let mut result = "<span style=\"color:#c0c5ce;\">".to_string();
-        result.push_str($s);
-        result.push_str("\n</span>");
+        // let mut result = "<span style=\"color:#c0c5ce;\">".to_string();
+        // result.push_str($s);
+        // result.push_str("\n</span>");
+        // result
+        let mut result = String::from($s);
+        result.push('\n');
         result
     }};
     ( @hl $s:expr ) => {{
-        let mut result = "<mark style=\"background-color:#65737e30;\"><span style=\"color:#c0c5ce;\">".to_string();
+        let mut result = "<mark style=\"background-color:#65737e30;\">".to_string();
         result.push_str($s);
-        result.push_str("\n</span></mark>");
+        result.push_str("\n</mark>");
         result
     }};
 }
 
 macro_rules! colored_html {
     ( $(@$kind:tt $s:expr),* $(,)* ) => {{
-        let mut result = "<pre style=\"background-color:#2b303b;\">\n<code>".to_string();
+        let mut result = "<pre style=\"background-color:#2b303b;color:#c0c5ce;\"><code>".to_string();
         $(
             result.push_str(colored_html_line!(@$kind $s).as_str());
         )*
