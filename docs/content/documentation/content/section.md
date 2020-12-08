@@ -33,6 +33,9 @@ to your templates through the `section.content` variable.
 
 Although none of the front matter variables are mandatory, the opening and closing `+++` are required.
 
+Note that even though the use of TOML is encouraged, YAML front matter is also supported to ease porting
+legacy content. In this case the embedded metadata must be enclosed by triple minuses (`---`).
+
 Here is an example `_index.md` with all the available variables. The values provided below are the
 default values.
 
