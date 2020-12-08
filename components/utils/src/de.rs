@@ -1,12 +1,32 @@
 use serde::{Deserialize, Deserializer};
+use serde_derive::Deserialize;
 use tera::{Map, Value};
 
 /// Used as an attribute when we want to convert from TOML to a string date
+/// If a TOML datetime isn't present, it will accept a string and push it through
+/// TOML's date time parser to ensure only valid dates are accepted.
+/// Inspired by this proposal: https://github.com/alexcrichton/toml-rs/issues/269
 pub fn from_toml_datetime<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    toml::value::Datetime::deserialize(deserializer).map(|s| Some(s.to_string()))
+    use serde::de::Error;
+    use std::str::FromStr;
+
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum MaybeDatetime {
+        Datetime(toml::value::Datetime),
+        String(String),
+    }
+
+    match MaybeDatetime::deserialize(deserializer)? {
+        MaybeDatetime::Datetime(d) => Ok(Some(d.to_string())),
+        MaybeDatetime::String(s) => match toml::value::Datetime::from_str(&s) {
+            Ok(d) => Ok(Some(d.to_string())),
+            Err(e) => Err(D::Error::custom(e)),
+        },
+    }
 }
 
 /// Returns key/value for a converted date from TOML.
