@@ -14,9 +14,9 @@ macro_rules! colored_html_line {
         result
     }};
     ( @hl $s:expr ) => {{
-        let mut result = "<span style=\"background-color:#65737e30;color:#c0c5ce;\">".to_string();
+        let mut result = "<mark style=\"background-color:#65737e30;\"><span style=\"color:#c0c5ce;\">".to_string();
         result.push_str($s);
-        result.push_str("\n</span>");
+        result.push_str("\n</span></mark>");
         result
     }};
 }
@@ -395,6 +395,39 @@ baz
             @no "foo",
             @hl "bar\nbar",
             @no "baz",
+        )
+    );
+}
+
+#[test]
+fn hl_lines_linenostart_5() {
+    let tera_ctx = Tera::default();
+    let permalinks_ctx = HashMap::new();
+    let mut config = Config::default();
+    config.markdown.highlight_code = true;
+    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let res = render_content(
+        r#"
+```hl_lines=3-2 10-11, linenostart=5
+foo
+bar
+bar
+baz
+moo
+mar
+mar
+maz
+```
+    "#,
+        &context,
+    )
+    .unwrap();
+    assert_eq!(
+        res.body,
+        colored_html!(
+            @no "foo\nbar\nbar\nbaz\nmoo",
+            @hl "mar\nmar",
+            @no "maz",
         )
     );
 }

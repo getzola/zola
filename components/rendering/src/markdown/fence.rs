@@ -27,17 +27,24 @@ impl Range {
 pub struct FenceSettings<'a> {
     pub language: Option<&'a str>,
     pub line_numbers: bool,
+    pub line_number_start: usize,
     pub highlight_lines: Vec<Range>,
 }
 impl<'a> FenceSettings<'a> {
     pub fn new(fence_info: &'a str) -> Self {
-        let mut me = Self { language: None, line_numbers: false, highlight_lines: Vec::new() };
+        let mut me = Self {
+            language: None,
+            line_numbers: false,
+            line_number_start: 1,
+            highlight_lines: Vec::new(),
+        };
 
         for token in FenceIter::new(fence_info) {
             match token {
                 FenceToken::Language(lang) => me.language = Some(lang),
                 FenceToken::EnableLineNumbers => me.line_numbers = true,
                 FenceToken::HighlightLines(lines) => me.highlight_lines.extend(lines),
+                FenceToken::InitialLineNumber(l) => me.line_number_start = l,
             }
         }
 
@@ -49,6 +56,7 @@ impl<'a> FenceSettings<'a> {
 enum FenceToken<'a> {
     Language(&'a str),
     EnableLineNumbers,
+    InitialLineNumber(usize),
     HighlightLines(Vec<Range>),
 }
 
@@ -71,6 +79,11 @@ impl<'a> Iterator for FenceIter<'a> {
             let mut tok_split = tok.split('=');
             match tok_split.next().unwrap_or("").trim() {
                 "" => continue,
+                "linenostart" => {
+                    if let Some(l) = tok_split.next().and_then(|s| s.parse().ok()) {
+                        return Some(FenceToken::InitialLineNumber(l));
+                    }
+                }
                 "linenos" => return Some(FenceToken::EnableLineNumbers),
                 "hl_lines" => {
                     let mut ranges = Vec::new();

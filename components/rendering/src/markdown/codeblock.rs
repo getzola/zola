@@ -29,13 +29,17 @@ enum CodeBlockImplementation<'config> {
 
 fn css_color(html: &mut String, color: &Color) {
     // TODO: Could also output hex codes using something like Syntect's write_css_color
-    html.push_str("rgb(");
-    html.push_str(&color.r.to_string());
-    html.push(' ');
-    html.push_str(&color.g.to_string());
-    html.push(' ');
-    html.push_str(&color.b.to_string());
-    html.push(')');
+    // html.push_str("rgb(");
+    // html.push_str(&color.r.to_string());
+    // html.push(' ');
+    // html.push_str(&color.g.to_string());
+    // html.push(' ');
+    // html.push_str(&color.b.to_string());
+    // html.push(')');
+    html.push_str(format!("#{:02x}{:02x}{:02x}", color.r, color.g, color.b).as_str());
+    if color.a != 0xFF {
+        html.push_str(format!("{:02x}", color.a).as_str());
+    }
 }
 
 impl<'config> CodeBlockImplementation<'config> {
@@ -43,7 +47,7 @@ impl<'config> CodeBlockImplementation<'config> {
         match self {
             Inline { hl_background, .. } => {
                 // TODO: Should the mark have a background color applied? (pro) Having the background color is more automatic.  (con) Harder to override.
-                html.push_str("<mark style=\"background-color: ");
+                html.push_str("<mark style=\"background-color:");
                 css_color(html, hl_background);
                 html.push_str(";\">");
             }
@@ -186,15 +190,12 @@ fn get_include_background(theme: &Theme) -> IncludeBackground {
 
 impl<'config, 'fence_info> CodeBlock<'config> {
     pub fn new(fence: FenceSettings<'fence_info>, config: &'config Config) -> (Self, String) {
-        let FenceSettings { language, line_numbers, highlight_lines } = fence;
-        let line_numbers = if line_numbers {
-            // TODO: Update fence to enable setting custom number start.
-            Some(1)
-        } else {
-            None
-        };
-        let current_line = line_numbers.unwrap_or(1);
-        let line_numbers = line_numbers.is_some();
+        let FenceSettings {
+            language,
+            line_numbers,
+            line_number_start: current_line,
+            highlight_lines,
+        } = fence;
 
         let SyntaxAndTheme { syntax, syntax_set, theme } =
             resolve_syntax_and_theme(language, config);
@@ -351,5 +352,102 @@ impl<'config, 'fence_info> CodeBlock<'config> {
             self.current_line += 1;
         }
         html
+    }
+}
+
+#[cfg(test)]
+mod linenos_tests {
+    use super::*;
+
+    fn highlight(config: &Config, fence_info: &str, text: &str) -> String {
+        let fence = FenceSettings::new(fence_info);
+        let (mut block, mut highlighted) = CodeBlock::new(fence, config);
+        highlighted.push_str(&block.highlight(text));
+        highlighted.push_str(&block.finish());
+        highlighted
+    }
+    fn output_inline_plaintext(linenumbers: &str, code: &str) -> String {
+        // NOTE: There's a newline after the <pre> in inline (from start_highlighted_html) that isn't there in classed
+        format!("<pre style=\"background-color:#2b303b;\">\n\
+                <code>\
+                    <table>\
+                        <tr>\
+                            <td>{}</td>\
+                            <td>\
+                                <span style=\"color:#c0c5ce;\">\
+                                    {}\
+                                </span>\
+                            </td>\
+                        </tr>\
+                    </table>\
+                </code>\
+            </pre>", linenumbers, code)
+    }
+
+    #[test]
+    fn simple() {
+        let text = "\
+foo
+bar
+bar
+baz
+";
+        assert_eq!(
+            highlight(&Config::default(), "linenos", text),
+            output_inline_plaintext("1\n2\n3\n4\n", "foo\nbar\nbar\nbaz\n")
+        );
+    }
+
+    #[test]
+    fn non_one_start() {
+        let text = "\
+foo
+bar
+bar
+baz
+";
+        assert_eq!(
+            highlight(&Config::default(), "linenos, linenostart=3", text),
+            output_inline_plaintext("3\n4\n5\n6\n", "foo\nbar\nbar\nbaz\n")
+        );
+    }
+
+    #[test]
+    fn highlighted_line() {
+        let text = "\
+foo
+bar
+bar
+baz
+";
+        assert_eq!(
+            highlight(&Config::default(), "linenos, linenostart=3, hl_lines=5", text),
+            "<pre style=\"background-color:#2b303b;\">\n\
+                <code>\
+                    <table>\
+                        <tr>\
+                            <td>\
+                                3\n4\n\
+                                <mark style=\"background-color:#65737e30;\">5\n</mark>\
+                                6\n\
+                            </td>\
+                            <td>\
+                                <span style=\"color:#c0c5ce;\">\
+                                foo\nbar\n\
+                                </span>\
+                                <mark style=\"background-color:#65737e30;\">\
+                                    <span style=\"color:#c0c5ce;\">\
+                                        bar\n\
+                                    </span>\
+                                </mark>\
+                                <span style=\"color:#c0c5ce;\">\
+                                    baz\n\
+                                </span>\
+                            </td>\
+                        </tr>\
+                    </table>\
+                </code>\
+            </pre>"
+        );
     }
 }
