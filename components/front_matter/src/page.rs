@@ -143,22 +143,22 @@ mod tests {
     use tera::to_value;
     use test_case::test_case;
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"  "#)); "toml")]
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"  "#)); "yaml")]
+    #[test_case(&RawFrontMatter::Toml(r#"  "#); "toml")]
+    #[test_case(&RawFrontMatter::Toml(r#"  "#); "yaml")]
     fn can_have_empty_front_matter(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_valid_front_matter(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_ok());
@@ -167,207 +167,207 @@ description: hey there
         assert_eq!(res.description.unwrap(), "hey there".to_string())
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"title = |\n"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"title: |\n"#)); "yaml")]
+    #[test_case(&RawFrontMatter::Toml(r#"title = |\n"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"title: |\n"#); "yaml")]
     fn errors_with_invalid_front_matter(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 slug = ""
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 slug: ""
-"#)); "yaml")]
+"#); "yaml")]
     fn errors_on_present_but_empty_slug(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 path = ""
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 path: ""
-"#)); "yaml")]
+"#); "yaml")]
     fn errors_on_present_but_empty_path(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2016-10-10
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2016-10-10
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_date_yyyy_mm_dd(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2002-10-02T15:00:00Z
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2002-10-02T15:00:00Z
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_date_rfc3339(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2002-10-02T15:00:00
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2002-10-02T15:00:00
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_date_rfc3339_without_timezone(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2002-10-02 15:00:00+02:00
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2002-10-02 15:00:00+02:00
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_date_rfc3339_with_space(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2002-10-02 15:00:00
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2002-10-02 15:00:00
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_date_rfc3339_with_space_without_timezone(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2002-10-02T15:00:00.123456Z
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2002-10-02T15:00:00.123456Z
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_date_rfc3339_with_microseconds(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2002/10/12
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2002/10/12
-"#)); "yaml")]
+"#); "yaml")]
     fn cannot_parse_random_date_format(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = 2002-14-01
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: 2002-14-01
-"#)); "yaml")]
+"#); "yaml")]
     fn cannot_parse_invalid_date_format(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = "2016-10-10"
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: "2016-10-10"
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_valid_date_as_string(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.date.is_some());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 date = "2002-14-01"
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 date: "2002-14-01"
-"#)); "yaml")]
+"#); "yaml")]
     fn cannot_parse_invalid_date_as_string(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         assert!(res.is_err());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 
 [extra]
 some-date = 2002-14-01
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 
 extra:
     some-date: 2002-14-01
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_dates_in_extra(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
@@ -375,21 +375,21 @@ extra:
         assert_eq!(res.unwrap().extra["some-date"], to_value("2002-14-01").unwrap());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 
 [extra.something]
 some-date = 2002-14-01
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 
 extra:
     something:
         some-date: 2002-14-01
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_nested_dates_in_extra(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
@@ -397,7 +397,7 @@ extra:
         assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-14-01").unwrap());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello"
 description = "hey there"
 
@@ -406,8 +406,8 @@ date_example = 2020-05-04
 [[extra.questions]]
 date = 2020-05-03
 name = "Who is the prime minister of Uganda?"
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 
@@ -416,7 +416,7 @@ extra:
     questions:
         - date: 2020-05-03
           name: "Who is the prime minister of Uganda?"
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_fully_nested_dates_in_extra(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
@@ -424,14 +424,14 @@ extra:
         assert_eq!(res.unwrap().extra["questions"][0]["date"], to_value("2020-05-03").unwrap());
     }
 
-    #[test_case(&RawFrontMatter::Toml(String::from(r#"
+    #[test_case(&RawFrontMatter::Toml(r#"
 title = "Hello World"
 
 [taxonomies]
 tags = ["Rust", "JavaScript"]
 categories = ["Dev"]
-"#)); "toml")]
-    #[test_case(&RawFrontMatter::Yaml(String::from(r#"
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello World
 
 taxonomies:
@@ -440,7 +440,7 @@ taxonomies:
         - JavaScript
     categories:
         - Dev
-"#)); "yaml")]
+"#); "yaml")]
     fn can_parse_taxonomies(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);

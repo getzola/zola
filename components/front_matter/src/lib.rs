@@ -20,12 +20,12 @@ lazy_static! {
         Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---\r?\n?((?s).*(?-s))$").unwrap();
 }
 
-pub enum RawFrontMatter {
-    Toml(String),
-    Yaml(String),
+pub enum RawFrontMatter<'a> {
+    Toml(&'a str),
+    Yaml(&'a str),
 }
 
-impl RawFrontMatter {
+impl RawFrontMatter<'_> {
     fn deserialize<T>(&self) -> Result<T>
     where
         T: serde::de::DeserializeOwned,
@@ -62,7 +62,7 @@ pub enum InsertAnchor {
 
 /// Split a file between the front matter and its content
 /// Will return an error if the front matter wasn't found
-fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(RawFrontMatter, &'c str)> {
+fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(RawFrontMatter<'c>, &'c str)> {
     let (re, is_toml) = if TOML_RE.is_match(content) {
         (&TOML_RE as &Regex, true)
     } else if YAML_RE.is_match(content) {
@@ -79,7 +79,7 @@ fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(RawFrontMatt
     // caps[0] is the full match
     // caps[1] => front matter
     // caps[2] => content
-    let front_matter = caps.get(1).unwrap().as_str().to_string();
+    let front_matter = caps.get(1).unwrap().as_str();
     let content = caps.get(2).unwrap().as_str();
     if is_toml {
         Ok((RawFrontMatter::Toml(front_matter), content))
