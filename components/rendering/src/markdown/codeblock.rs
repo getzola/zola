@@ -1,11 +1,13 @@
 use config::highlighting::{resolve_syntax_and_theme, SyntaxAndTheme};
 use config::Config;
-use tera::escape_html;
-use syntect::highlighting::{Style, FontStyle, Color, Theme, HighlightState, Highlighter, HighlightIterator};
-use syntect::html::{
-    start_highlighted_html_snippet, IncludeBackground,
+use syntect::highlighting::{
+    Color, FontStyle, HighlightIterator, HighlightState, Highlighter, Style, Theme,
 };
-use syntect::parsing::{BasicScopeStackOp, ParseState, ScopeStack, ScopeStackOp, SyntaxSet, SCOPE_REPO};
+use syntect::html::{start_highlighted_html_snippet, IncludeBackground};
+use syntect::parsing::{
+    BasicScopeStackOp, ParseState, ScopeStack, ScopeStackOp, SyntaxSet, SCOPE_REPO,
+};
+use tera::escape_html;
 
 use super::fence::{FenceSettings, Range};
 
@@ -16,12 +18,12 @@ enum CodeBlockImplementation<'config> {
         hl_background: Color,
         include_background: IncludeBackground,
         theme: &'config Theme,
-        prev_style: Option<Style>
+        prev_style: Option<Style>,
     },
     Classed {
         scope_stack: ScopeStack,
         open_spans: Vec<String>,
-        need_reopen: bool
+        need_reopen: bool,
     },
 }
 
@@ -40,26 +42,14 @@ impl<'config> CodeBlockImplementation<'config> {
     fn open_mark(&self, html: &mut String) {
         match self {
             Inline { hl_background, .. } => {
+                // TODO: Should the mark have a background color applied? (pro) Having the background color is more automatic.  (con) Harder to override.
                 html.push_str("<mark style=\"background-color: ");
                 css_color(html, hl_background);
                 html.push_str(";\">");
-            },
-            Classed { .. } => html.push_str("<mark>")
-        }
-    }
-    fn close(&self, html: &mut String) {
-        match self {
-            Inline {prev_style, .. } => {
-                if prev_style.is_some() {
-                    html.push_str("</span>");
-                }
-            },
-            Classed { open_spans, .. } => {
-                html.extend((0..(open_spans.len())).map(|_| "</span>"));
             }
+            Classed { .. } => html.push_str("<mark>"),
         }
     }
-    
     fn close_to_root(&mut self, html: &mut String) {
         // Close open spans:
         match self {
@@ -67,7 +57,7 @@ impl<'config> CodeBlockImplementation<'config> {
                 if prev_style.take().is_some() {
                     html.push_str("</span>");
                 }
-            },
+            }
             Classed { open_spans, need_reopen, .. } => {
                 html.extend((0..open_spans.len()).map(|_| "</span>"));
                 *need_reopen = true;
@@ -76,22 +66,13 @@ impl<'config> CodeBlockImplementation<'config> {
     }
     fn handle_line(&mut self, line: String, tokens: Vec<(usize, ScopeStackOp)>, html: &mut String) {
         match self {
-            Inline { 
-                highlight_state,
-                highlighter,
-                include_background,
-                prev_style,
-                ..
-            } => {
-                for (ref style, text) in HighlightIterator::new(
-                    highlight_state,
-                    &tokens,
-                    &line,
-                    highlighter
-                ) {
+            Inline { highlight_state, highlighter, include_background, prev_style, .. } => {
+                for (style, text) in
+                    HighlightIterator::new(highlight_state, &tokens, &line, highlighter)
+                {
                     let unify_style = if let Some(ps) = prev_style {
-                        style == ps ||
-                            (style.background == ps.background && text.trim().is_empty())
+                        style == *ps
+                            || (style.background == ps.background && text.trim().is_empty())
                     } else {
                         false
                     };
@@ -101,7 +82,6 @@ impl<'config> CodeBlockImplementation<'config> {
                         if prev_style.is_some() {
                             html.push_str("</span>");
                         }
-                        *prev_style = Some(*style);
                         html.push_str("<span style=\"");
                         let include_bg = match include_background {
                             IncludeBackground::Yes => true,
@@ -126,10 +106,18 @@ impl<'config> CodeBlockImplementation<'config> {
                         css_color(html, &style.foreground);
                         html.push_str(";\">");
                         html.push_str(&escape_html(text));
+                        *prev_style = Some(style);
                     }
                 }
             }
             Classed { scope_stack, open_spans, need_reopen } => {
+                // When we close_to_root (to insert a mark for example) we don't want to reopen all the spans because they might be immediately closed due to a scope stack pop.  Instead, we wait to reopen the spans until we push a new scope or before outputting text.
+                fn ensure_open(html: &mut String, open_spans: &[String], need_reopen: &mut bool) {
+                    if *need_reopen {
+                        html.extend(open_spans.iter().map(String::as_str));
+                        *need_reopen = false;
+                    }
+                }
                 let repo =
                     SCOPE_REPO.lock().expect("A thread must have poisened the scope repo mutex.");
                 let mut prev_i = 0usize;
@@ -140,6 +128,7 @@ impl<'config> CodeBlockImplementation<'config> {
                     scope_stack.apply_with_hook(op, |basic_op, _| match basic_op {
                         BasicScopeStackOp::Pop => {
                             if !*need_reopen {
+                                // If we need_reopen then this span doesn't need to be closed because it hasn't been reopened yet.
                                 html.push_str("</span>");
                             }
                             open_spans.pop();
@@ -150,15 +139,14 @@ impl<'config> CodeBlockImplementation<'config> {
                                 let atom = scope.atom_at(i as usize);
                                 let atom_s = repo.atom_str(atom);
                                 if i != 0 {
-                                    new_span.push_str(" ");
+                                    new_span.push(' ');
                                 }
                                 new_span.push_str(atom_s);
                             }
                             new_span.push_str("\">");
-                            if *need_reopen {
-                                html.extend(open_spans.iter().map(String::as_str));
-                                *need_reopen = false;
-                            }
+
+                            ensure_open(html, open_spans, need_reopen);
+
                             html.push_str(&new_span);
                             open_spans.push(new_span);
                         }
@@ -166,10 +154,8 @@ impl<'config> CodeBlockImplementation<'config> {
                 });
                 let remainder = &line[prev_i..];
                 if !remainder.is_empty() {
-                    if *need_reopen {
-                        html.extend(open_spans.iter().map(String::as_str));
-                        *need_reopen = false;
-                    }
+                    ensure_open(html, open_spans, need_reopen);
+
                     html.push_str(&escape_html(remainder));
                 }
             }
@@ -224,21 +210,22 @@ impl<'config, 'fence_info> CodeBlock<'config> {
                 theme,
             }
         } else {
-            Classed {
-                scope_stack: ScopeStack::new(),
-                open_spans: Vec::new(),
-                need_reopen: false,
-            }
+            Classed { scope_stack: ScopeStack::new(), open_spans: Vec::new(), need_reopen: false }
         };
-        
+        let save = if line_numbers {
+            // We seed save with </td><td> which is what needs to be inserted between the line numbers (which are output line by line) and the highlighted code (which is collected into save).
+            String::from("</td><td>")
+        } else {
+            String::new()
+        };
+
         let mut ret = Self {
-            save: String::from("</td><td>"),
+            save,
             parser: ParseState::new(syntax),
             mark_open: false,
             remainder: String::new(),
             syntax_set,
             line_numbers,
-            // is_first_line: true,
             current_line,
             highlight_lines,
             inner,
@@ -251,6 +238,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
     fn begin(&mut self, language: Option<&str>) -> String {
         // Open the <pre> tag
         let mut html = match &mut self.inner {
+            // TODO: This is the only use of the .theme property.  It would be nice if it wasn't needed.
             Inline { theme, .. } => start_highlighted_html_snippet(theme).0,
             Classed { .. } => {
                 // When Syntect outputs CSS for a theme, it places the default color and background onto `.code`
@@ -274,32 +262,27 @@ impl<'config, 'fence_info> CodeBlock<'config> {
         html
     }
 
-    pub fn finish(self) -> String {
-        let CodeBlock {
-            mark_open,
-            remainder,
-            inner,
-            line_numbers,
-            mut save,
-            ..
-        } = self;
-        // Output the remaining text (TODO: Also highlight the remainder before output)
-        if self.mark_open {
-            save.insert_str(0, "</mark>");
+    pub fn finish(mut self) -> String {
+        // Output any remaining text (there shouldn't be any).
+        if !self.remainder.is_empty() {
+            // If there's a remainder, then there must not have been a newline so add one.
+            let temp = self.highlight("\n");
+            self.save.insert_str(0, &temp);
         }
-        save.push_str(&escape_html(&remainder));
+
         // Close any open spans
-        inner.close(&mut save);
+        self.inner.close_to_root(&mut self.save);
         // Close <mark>
-        if mark_open {
-            save.push_str("</mark>");
+        if self.mark_open {
+            self.save.push_str("</mark>");
         }
         // Close <td><tr><table> if line numbers
-        if line_numbers {
-            save.push_str("</td></tr></table>");
+        if self.line_numbers {
+            self.save.push_str("</td></tr></table>");
         }
-        save.push_str("</code></pre>");
-        save
+        // Close the <code> and <pre>
+        self.save.push_str("</code></pre>");
+        self.save
     }
 
     fn get_line(&mut self) -> Option<String> {
@@ -310,6 +293,7 @@ impl<'config, 'fence_info> CodeBlock<'config> {
             line
         })
     }
+
     fn is_line_highlighted(&self) -> bool {
         let mut is_highlighted = false;
         for range in self.highlight_lines.iter() {
@@ -323,13 +307,16 @@ impl<'config, 'fence_info> CodeBlock<'config> {
     }
 
     pub fn highlight(&mut self, text: &str) -> String {
+        // Add the new text into the remainder
         self.remainder.push_str(text);
+
         let mut html = String::new();
         while let Some(line) = self.get_line() {
             let is_highlighted = self.is_line_highlighted();
-            
+
             // Where to store the highlighted output.  Without line numbers we'll just output it, but if we're using line numbers than we'll save the output while we output line numbers, and then when we finish we'll output the saved highlighted code.
             let output_location = if self.line_numbers {
+                // A highlighted line has two mark tags: one around the line number and one around the line
                 if is_highlighted && !self.mark_open {
                     self.inner.open_mark(&mut html);
                 }
@@ -342,10 +329,10 @@ impl<'config, 'fence_info> CodeBlock<'config> {
             } else {
                 &mut html
             };
-            
+
             if is_highlighted != self.mark_open {
                 self.inner.close_to_root(output_location);
-                
+
                 // Handle hl_lines
                 if is_highlighted {
                     self.inner.open_mark(output_location);
@@ -358,8 +345,9 @@ impl<'config, 'fence_info> CodeBlock<'config> {
 
             // Parse the line:
             let tokens = self.parser.parse_line(line.as_str(), self.syntax_set);
+            // Syntax highlight the line and output to either html or save
             self.inner.handle_line(line, tokens, output_location);
-            
+
             self.current_line += 1;
         }
         html
