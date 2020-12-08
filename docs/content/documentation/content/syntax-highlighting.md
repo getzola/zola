@@ -20,6 +20,30 @@ let highlight = true;
 You can replace `rust` with another language or not put anything to get the text
 interpreted as plain text.
 
+You can also add line numbers or highlight specific lines by adding options after the language.  For example:
+
+````
+```rust, linenos, hl_lines=53, linenostart=50
+fn main() {
+    println!("Hello line numbers!");
+}
+```
+````
+Produces:
+```rust, linenos, hl_lines=53, linenostart=50
+fn main() {
+    println!("Hello line numbers!");
+}
+```
+
+* `linenos`: Enables line numbers
+* `linenostart`: Specifies the number for the first line.  `hl_lines` considers `linenosstart` when deciding if a line is highlighted.
+* `hl_lines`: Specifies which lines to highlight.  It is space seperated and can use ranges. Example: `hl_lines=1 3-5 40-15 9`.
+
+By default Zola uses inline styles to highlight code, but you can change that using the special `css` theme.  More information about that can be found in [CSS Syntax Highlighting](@/documentation/content/css-syntax-highlighting.md).
+Your theme may not have default styling for codeblocks so make sure to look at 
+[Styling Codeblocks](@/documentation/content/styling-codeblocks.md) to learn how to style codeblocks to your liking.
+
 Here is a full list of supported languages and their short names:
 
 ```
