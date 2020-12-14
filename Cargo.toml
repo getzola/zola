@@ -1,6 +1,6 @@
 [package]
 name = "zola"
-version = "0.12.2"
+version = "0.13.0"
 authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
 edition = "2018"
 license = "MIT"

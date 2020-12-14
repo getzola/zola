@@ -2,38 +2,44 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 
 use base64::{decode, encode};
-use pulldown_cmark as cmark;
-use tera::{to_value, try_get_value, Result as TeraResult, Value};
+use config::Config;
+use rendering::{render_content, RenderContext};
+use tera::{to_value, try_get_value, Filter as TeraFilter, Result as TeraResult, Value};
 
-pub fn markdown<S: BuildHasher>(
-    value: &Value,
-    args: &HashMap<String, Value, S>,
-) -> TeraResult<Value> {
-    let s = try_get_value!("markdown", "value", String, value);
-    let inline = match args.get("inline") {
-        Some(val) => try_get_value!("markdown", "inline", bool, val),
-        None => false,
-    };
+#[derive(Debug)]
+pub struct MarkdownFilter {
+    config: Config,
+}
 
-    let mut opts = cmark::Options::empty();
-    opts.insert(cmark::Options::ENABLE_TABLES);
-    opts.insert(cmark::Options::ENABLE_FOOTNOTES);
-    opts.insert(cmark::Options::ENABLE_STRIKETHROUGH);
-    opts.insert(cmark::Options::ENABLE_TASKLISTS);
-
-    let mut html = String::new();
-    let parser = cmark::Parser::new_ext(&s, opts);
-    cmark::html::push_html(&mut html, parser);
-
-    if inline {
-        html = html
-            .trim_start_matches("<p>")
-            // pulldown_cmark finishes a paragraph with `</p>\n`
-            .trim_end_matches("</p>\n")
-            .to_string();
+impl MarkdownFilter {
+    pub fn new(config: Config) -> Self {
+        Self { config }
     }
+}
 
-    Ok(to_value(&html).unwrap())
+impl TeraFilter for MarkdownFilter {
+    fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        let context = RenderContext::from_config(&self.config);
+        let s = try_get_value!("markdown", "value", String, value);
+        let inline = match args.get("inline") {
+            Some(val) => try_get_value!("markdown", "inline", bool, val),
+            None => false,
+        };
+        let mut html = match render_content(&s, &context) {
+            Ok(res) => res.body,
+            Err(e) => return Err(format!("Failed to render markdown filter: {:?}", e).into()),
+        };
+
+        if inline {
+            html = html
+                .trim_start_matches("<p>")
+                // pulldown_cmark finishes a paragraph with `</p>\n`
+                .trim_end_matches("</p>\n")
+                .to_string();
+        }
+
+        Ok(to_value(&html).unwrap())
+    }
 }
 
 pub fn base64_encode<S: BuildHasher>(
@@ -56,22 +62,24 @@ pub fn base64_decode<S: BuildHasher>(
 mod tests {
     use std::collections::HashMap;
 
-    use tera::to_value;
+    use tera::{to_value, Filter};
 
-    use super::{base64_decode, base64_encode, markdown};
+    use super::{base64_decode, base64_encode, MarkdownFilter};
+    use config::Config;
 
     #[test]
     fn markdown_filter() {
-        let result = markdown(&to_value(&"# Hey").unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(Config::default())
+            .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value(&"<h1>Hey</h1>\n").unwrap());
+        assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
     }
 
     #[test]
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = markdown(
+        let result = MarkdownFilter::new(Config::default()).filter(
             &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
             &args,
         );
@@ -84,7 +92,7 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = markdown(
+        let result = MarkdownFilter::new(Config::default()).filter(
             &to_value(
                 &r#"
 |id|author_id|       timestamp_created|title                 |content           |
@@ -98,6 +106,26 @@ mod tests {
         );
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<table>"));
+    }
+
+    #[test]
+    fn markdown_filter_use_config_options() {
+        let mut config = Config::default();
+        config.markdown.highlight_code = true;
+        config.markdown.smart_punctuation = true;
+        config.markdown.render_emoji = true;
+        config.markdown.external_links_target_blank = true;
+
+        let md = "Hello <https://google.com> :smile: ...";
+        let result =
+            MarkdownFilter::new(config.clone()).filter(&to_value(&md).unwrap(), &HashMap::new());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
+
+        let md = "```py\ni=0\n```";
+        let result = MarkdownFilter::new(config).filter(&to_value(&md).unwrap(), &HashMap::new());
+        assert!(result.is_ok());
+        assert!(result.unwrap().as_str().unwrap().contains("<pre style"));
     }
 
     #[test]

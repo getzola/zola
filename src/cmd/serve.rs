@@ -22,11 +22,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::fs::{read_dir, remove_dir_all};
+use std::net::{SocketAddrV4, TcpListener};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
-use std::net::{SocketAddrV4, TcpListener};
 
 use hyper::header;
 use hyper::service::{make_service_fn, service_fn};
@@ -173,7 +173,7 @@ fn create_new_site(
     root_dir: &Path,
     interface: &str,
     interface_port: u16,
-    output_dir: &Path,
+    output_dir: Option<&Path>,
     base_url: &str,
     config_file: &Path,
     include_drafts: bool,
@@ -192,7 +192,9 @@ fn create_new_site(
 
     site.enable_serve_mode();
     site.set_base_url(base_url);
-    site.set_output_path(output_dir);
+    if let Some(output_dir) = output_dir {
+        site.set_output_path(output_dir);
+    }
     if include_drafts {
         site.include_drafts();
     }
@@ -212,7 +214,7 @@ pub fn serve(
     root_dir: &Path,
     interface: &str,
     interface_port: u16,
-    output_dir: &Path,
+    output_dir: Option<&Path>,
     base_url: &str,
     config_file: &Path,
     watch_only: bool,
@@ -236,7 +238,7 @@ pub fn serve(
     // Stop right there if we can't bind to the address
     let bind_address: SocketAddrV4 = address.parse().unwrap();
     if (TcpListener::bind(&bind_address)).is_err() {
-        return Err(format!("Cannot start server on address {}.", address))?;
+        return Err(format!("Cannot start server on address {}.", address).into());
     }
 
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
@@ -277,7 +279,7 @@ pub fn serve(
 
     let ws_port = site.live_reload;
     let ws_address = format!("{}:{}", interface, ws_port.unwrap());
-    let output_path = Path::new(output_dir).to_path_buf();
+    let output_path = site.output_path.clone();
 
     // output path is going to need to be moved later on, so clone it for the
     // http closure to avoid contention.
@@ -440,10 +442,7 @@ pub fn serve(
     loop {
         match rx.recv() {
             Ok(event) => {
-                let can_do_fast_reload = match event {
-                    Remove(_) => false,
-                    _ => true,
-                };
+                let can_do_fast_reload = !matches!(event, Remove(_));
 
                 match event {
                     // Intellij does weird things on edit, chmod is there to count those changes
@@ -503,10 +502,8 @@ pub fn serve(
                                             site = s;
                                         }
                                     }
-                                } else {
-                                    if let Some(s) = recreate_site() {
-                                        site = s;
-                                    }
+                                } else if let Some(s) = recreate_site() {
+                                    site = s;
                                 }
                             }
                             (ChangeKind::Templates, partial_path) => {

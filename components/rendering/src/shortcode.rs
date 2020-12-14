@@ -3,6 +3,7 @@ use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::Parser;
 use regex::Regex;
+use std::collections::HashMap;
 use tera::{to_value, Context, Map, Value};
 
 use crate::context::RenderContext;
@@ -102,6 +103,7 @@ fn render_shortcode(
     name: &str,
     args: &Map<String, Value>,
     context: &RenderContext,
+    invocation_count: u32,
     body: Option<&str>,
 ) -> Result<String> {
     let mut tera_context = Context::new();
@@ -112,6 +114,7 @@ fn render_shortcode(
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
         tera_context.insert("body", b.trim_end());
     }
+    tera_context.insert("nth", &invocation_count);
     tera_context.extend(context.tera_context.clone());
 
     let mut template_name = format!("shortcodes/{}.md", name);
@@ -139,6 +142,12 @@ fn render_shortcode(
 
 pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
     let mut res = String::with_capacity(content.len());
+    let mut invocation_map: HashMap<String, u32> = HashMap::new();
+    let mut get_invocation_count = |name: &str| {
+        let invocation_number = invocation_map.entry(String::from(name)).or_insert(0);
+        *invocation_number += 1;
+        *invocation_number
+    };
 
     let mut pairs = match ContentParser::parse(Rule::page, content) {
         Ok(p) => p,
@@ -184,7 +193,13 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
             Rule::text => res.push_str(p.as_span().as_str()),
             Rule::inline_shortcode => {
                 let (name, args) = parse_shortcode_call(p);
-                res.push_str(&render_shortcode(&name, &args, context, None)?);
+                res.push_str(&render_shortcode(
+                    &name,
+                    &args,
+                    context,
+                    get_invocation_count(&name),
+                    None,
+                )?);
             }
             Rule::shortcode_with_body => {
                 let mut inner = p.into_inner();
@@ -192,7 +207,13 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                 // we don't care about the closing tag
                 let (name, args) = parse_shortcode_call(inner.next().unwrap());
                 let body = inner.next().unwrap().as_span().as_str();
-                res.push_str(&render_shortcode(&name, &args, context, Some(body))?);
+                res.push_str(&render_shortcode(
+                    &name,
+                    &args,
+                    context,
+                    get_invocation_count(&name),
+                    Some(body),
+                )?);
             }
             Rule::ignored_inline_shortcode => {
                 res.push_str(

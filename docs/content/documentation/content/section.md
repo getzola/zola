@@ -18,6 +18,9 @@ Any non-Markdown file in a section directory is added to the `assets` collection
 [content overview](@/documentation/content/overview.md#asset-colocation). These files are then available in the
 Markdown file using relative links.
 
+## Drafting
+Just like pages sections can be drafted by setting the `draft` option in the front matter. By default this is not done. When a section is drafted it's descendants like pages, subsections and assets will not be processed unless the `--drafts` flag is passed. Note that even pages that don't have a `draft` status will not be processed if one of their parent sections is drafted. 
+
 ## Front matter
 
 The `_index.md` file within a directory defines the content and metadata for that section.  To set
@@ -30,6 +33,9 @@ to your templates through the `section.content` variable.
 
 Although none of the front matter variables are mandatory, the opening and closing `+++` are required.
 
+Note that even though the use of TOML is encouraged, YAML front matter is also supported to ease porting
+legacy content. In this case the embedded metadata must be enclosed by triple minuses (`---`).
+
 Here is an example `_index.md` with all the available variables. The values provided below are the
 default values.
 
@@ -38,6 +44,9 @@ default values.
 title = ""
 
 description = ""
+
+# A draft section is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
+draft = false
 
 # Used to sort pages by "date", "weight" or "none". See below for more information.
 sort_by = "none"

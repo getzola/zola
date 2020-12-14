@@ -1,5 +1,6 @@
 pub mod languages;
 pub mod link_checker;
+pub mod markup;
 pub mod search;
 pub mod slugify;
 pub mod taxonomies;
@@ -96,6 +97,8 @@ pub struct Config {
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_syntax_set: Option<SyntaxSet>,
 
+    pub output_dir: String,
+
     pub link_checker: link_checker::LinkChecker,
 
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
@@ -103,6 +106,9 @@ pub struct Config {
 
     /// The search config, telling what to include in the search index
     pub search: search::Search,
+
+    /// The config for the Markdown rendering: syntax highlighting and everything
+    pub markdown: markup::Markdown,
 
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
@@ -153,8 +159,9 @@ impl Config {
             }
         }
 
-        // TODO: re-enable once it's a bit more tested
-        config.minify_html = false;
+        if config.highlight_code {
+            println!("`highlight_code` has been moved to a [markdown] section. Top level `highlight_code` and `highlight_theme` will stop working in 0.14.");
+        }
 
         Ok(config)
     }
@@ -168,6 +175,30 @@ impl Config {
             &format!("No `{:?}` file found. Are you in the right directory?", file_name),
         )?;
         Config::parse(&content)
+    }
+
+    /// Temporary, while we have the settings in 2 places
+    /// TODO: remove me in 0.14
+    pub fn highlight_code(&self) -> bool {
+        if !self.highlight_code && !self.markdown.highlight_code {
+            return false;
+        }
+
+        if self.highlight_code {
+            true
+        } else {
+            self.markdown.highlight_code
+        }
+    }
+
+    /// Temporary, while we have the settings in 2 places
+    /// TODO: remove me in 0.14
+    pub fn highlight_theme(&self) -> &str {
+        if self.highlight_theme != markup::DEFAULT_HIGHLIGHT_THEME {
+            &self.highlight_theme
+        } else {
+            &self.markdown.highlight_theme
+        }
     }
 
     /// Attempt to load any extra syntax found in the extra syntaxes of the config
@@ -333,9 +364,11 @@ impl Default for Config {
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
+            output_dir: "public".to_string(),
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),
+            markdown: markup::Markdown::default(),
             extra: HashMap::new(),
         }
     }
@@ -653,5 +686,28 @@ bar = "baz"
         let theme = Theme::parse(theme_str).unwrap();
         // We expect an error here
         assert_eq!(false, config.add_theme_extra(&theme).is_ok());
+    }
+
+    #[test]
+    fn default_output_dir() {
+        let config = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+        "#;
+
+        let config = Config::parse(config).unwrap();
+        assert_eq!(config.output_dir, "public".to_string());
+    }
+
+    #[test]
+    fn can_add_output_dir() {
+        let config = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+output_dir = "docs"
+        "#;
+
+        let config = Config::parse(config).unwrap();
+        assert_eq!(config.output_dir, "docs".to_string());
     }
 }

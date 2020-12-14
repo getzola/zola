@@ -28,6 +28,7 @@ enum OutputFormat {
     Toml,
     Json,
     Csv,
+    Bibtex,
     Plain,
 }
 
@@ -51,6 +52,7 @@ impl FromStr for OutputFormat {
             "toml" => Ok(OutputFormat::Toml),
             "csv" => Ok(OutputFormat::Csv),
             "json" => Ok(OutputFormat::Json),
+            "bibtex" => Ok(OutputFormat::Bibtex),
             "plain" => Ok(OutputFormat::Plain),
             format => Err(format!("Unknown output format {}", format).into()),
         }
@@ -63,6 +65,7 @@ impl OutputFormat {
             OutputFormat::Json => "application/json",
             OutputFormat::Csv => "text/csv",
             OutputFormat::Toml => "application/toml",
+            OutputFormat::Bibtex => "application/x-bibtex",
             OutputFormat::Plain => "text/plain",
         })
     }
@@ -148,7 +151,7 @@ fn get_output_format_from_args(
     let format_arg = optional_arg!(
         String,
         args.get("format"),
-        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, plain)"
+        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, bibtex, plain)"
     );
 
     if let Some(format) = format_arg {
@@ -165,11 +168,11 @@ fn get_output_format_from_args(
     };
 
     // Always default to Plain if we don't know what it is
-    OutputFormat::from_str(from_extension).or_else(|_| Ok(OutputFormat::Plain))
+    OutputFormat::from_str(from_extension).or(Ok(OutputFormat::Plain))
 }
 
 /// A Tera function to load data from a file or from a URL
-/// Currently the supported formats are json, toml, csv and plain text
+/// Currently the supported formats are json, toml, csv, bibtex and plain text
 #[derive(Debug)]
 pub struct LoadData {
     base_path: PathBuf,
@@ -223,6 +226,7 @@ impl TeraFn for LoadData {
             OutputFormat::Toml => load_toml(data),
             OutputFormat::Csv => load_csv(data),
             OutputFormat::Json => load_json(data),
+            OutputFormat::Bibtex => load_bibtex(data),
             OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
         };
 
@@ -250,6 +254,47 @@ fn load_toml(toml_data: String) -> Result<Value> {
         Value::Object(m) => Ok(fix_toml_dates(m)),
         _ => unreachable!("Loaded something other than a TOML object"),
     }
+}
+
+/// Parse a BIBTEX string and convert it to a Tera Value
+fn load_bibtex(bibtex_data: String) -> Result<Value> {
+    let bibtex_model = nom_bibtex::Bibtex::parse(&bibtex_data).map_err(|e| format!("{:?}", e))?;
+    let mut bibtex_map = Map::new();
+
+    let preambles_array =
+        bibtex_model.preambles().iter().map(|v| Value::String(v.to_string())).collect();
+    bibtex_map.insert(String::from("preambles"), Value::Array(preambles_array));
+
+    let comments_array =
+        bibtex_model.comments().iter().map(|v| Value::String(v.to_string())).collect();
+    bibtex_map.insert(String::from("comments"), Value::Array(comments_array));
+
+    let mut variables_map = Map::new();
+    for (key, val) in bibtex_model.variables() {
+        variables_map.insert(key.to_string(), Value::String(val.to_string()));
+    }
+    bibtex_map.insert(String::from("variables"), Value::Object(variables_map));
+
+    let bibliographies_array = bibtex_model
+        .bibliographies()
+        .iter()
+        .map(|b| {
+            let mut m = Map::new();
+            m.insert(String::from("entry_type"), Value::String(b.entry_type().to_string()));
+            m.insert(String::from("citation_key"), Value::String(b.citation_key().to_string()));
+
+            let mut tags = Map::new();
+            for (key, val) in b.tags() {
+                tags.insert(key.to_lowercase().to_string(), Value::String(val.to_string()));
+            }
+            m.insert(String::from("tags"), Value::Object(tags));
+            Value::Object(m)
+        })
+        .collect();
+    bibtex_map.insert(String::from("bibliographies"), Value::Array(bibliographies_array));
+
+    let bibtex_value: Value = Value::Object(bibtex_map);
+    to_value(bibtex_value).map_err(|err| err.into())
 }
 
 /// Parse a CSV string and convert it to a Tera Value

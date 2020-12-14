@@ -1,5 +1,5 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use utils::net::{get_available_port, port_is_available};
@@ -37,12 +37,12 @@ fn main() {
         ("build", Some(matches)) => {
             console::info("Building site...");
             let start = Instant::now();
-            let output_dir = PathBuf::from(matches.value_of("output_dir").unwrap());
+            let output_dir = matches.value_of("output_dir").map(|output_dir| Path::new(output_dir));
             match cmd::build(
                 &root_dir,
                 &config_file,
                 matches.value_of("base_url"),
-                &output_dir,
+                output_dir,
                 matches.is_present("drafts"),
             ) {
                 Ok(()) => console::report_elapsed_time(start),
@@ -80,14 +80,14 @@ fn main() {
                     ::std::process::exit(1);
                 }
             }
-            let output_dir = PathBuf::from(matches.value_of("output_dir").unwrap());
+            let output_dir = matches.value_of("output_dir").map(|output_dir| Path::new(output_dir));
             let base_url = matches.value_of("base_url").unwrap();
             console::info("Building site...");
             match cmd::serve(
                 &root_dir,
                 interface,
                 port,
-                &output_dir,
+                output_dir,
                 base_url,
                 &config_file,
                 watch_only,

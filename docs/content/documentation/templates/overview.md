@@ -109,7 +109,7 @@ If you only need the metadata of the section, you can pass `metadata_only=true` 
 {% set section = get_section(path="blog/_index.md", metadata_only=true) %}
 ```
 
-### ` get_url`
+### `get_url`
 Gets the permalink for the given path.
 If the path starts with `@/`, it will be treated as an internal
 link like the ones used in Markdown, starting from the root `content` directory.
@@ -146,7 +146,7 @@ In the case of non-internal links, you can also add a cachebust of the format `?
 by passing `cachebust=true` to the `get_url` function.
 
 
-### 'get_file_hash`
+### `get_file_hash`
 
 Gets the hash digest for a static file. Supported hashes are SHA-256, SHA-384 (default) and SHA-512. Requires `path`. The `sha_type` key is optional and must be one of 256, 384 or 512.
 
@@ -202,7 +202,7 @@ items: Array<TaxonomyTerm>;
 See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
 
 ### `load_data`
-Loads data from a file or URL. Supported file types include *toml*, *json* and *csv*.
+Loads data from a file or URL. Supported file types include *toml*, *json*, *csv* and *bibtex*.
 Any other file type will be loaded as plain text.
 
 The `path` argument specifies the path to the data file relative to your base directory, where your `config.toml` is.
@@ -213,7 +213,7 @@ As a security precaution, if this file is outside the main site directory, your 
 ```
 
 The optional `format` argument allows you to specify and override which data type is contained
-within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`
+within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`, `bibtex`
 or `plain`. If the `format` argument isn't specified, then the path extension is used.
 
 ```jinja2
@@ -249,6 +249,58 @@ template:
         ["2", "Printing"]
     ],
 }
+```
+
+The `bibtex` format loads data into a structure matching the format used by the
+[nom-bibtex crate](https://crates.io/crates/nom-bibtex). The following is an example of data
+in bibtex format:
+
+```
+@preamble{"A bibtex preamble" # " this is."}
+
+@Comment{
+    Here is a comment.
+}
+
+Another comment!
+
+@string(name = "Vincent Prouillet")
+@string(github = "https://github.com/getzola/zola")
+
+@misc {my_citation_key,
+    author= name,
+    title = "Zola",
+    note = "github: " # github
+}                                                    }
+```
+
+The following is the json-equivalent format of the produced bibtex data structure:
+```json
+{
+    "preambles": ["A bibtex preamble this is."],
+    "comments": ["Here is a comment.", "Another comment!"],
+    "variables": {
+        "name": "Vincent Prouillet",
+        "github": "https://github.com/getzola/zola"
+    },
+    "bibliographies": [
+        {
+            "entry_type": "misc",
+            "citation_key": "my_citation_key",
+            "tags": {
+                "author": "Vincent Prouillet",
+                "title": "Zola",
+                "note": "github: https://github.com/getzola/zola"
+            }
+        }
+    ]
+}
+```
+
+Finally, the bibtex data can be accessed from the template as follows:
+```jinja2
+{% set tags = data.bibliographies[0].tags %}
+This was generated using {{ tags.title }}, authored by {{ tags.author }}.
 ```
 
 #### Remote content
