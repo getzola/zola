@@ -15,6 +15,8 @@
 - Add `external_links_target_blank`, `external_links_no_follow` and `external_links_no_referrer`
 - Add a `smart_punctuation` option in the `[markdown]` section in `config.toml` to turn elements like dots and dashes 
 into their typographic forms
+- Add iteration count variable `nth` for shortcodes to know how many times a shortcode has been invoked in a given
+content
 
 ## 0.12.2 (2020-09-28)
 
