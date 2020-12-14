@@ -267,7 +267,7 @@ pub fn serve(
         let should_watch = match mode {
             WatchMode::Required => true,
             WatchMode::Optional => watch_path.exists(),
-            WatchMode::Condition(b) => b,
+            WatchMode::Condition(b) => b && watch_path.exists(),
         };
         if should_watch {
             watcher
