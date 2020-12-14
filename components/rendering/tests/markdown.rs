@@ -1060,6 +1060,36 @@ fn emoji_aliases_are_ignored_when_disabled_in_config() {
 }
 
 #[test]
+fn invocation_count_increments_in_shortcode() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+
+    let shortcode_template_a = r#"<p>a: {{ nth }}</p>"#;
+    let shortcode_template_b = r#"<p>b: {{ nth }}</p>"#;
+
+    let markdown_string = r#"{{ a() }}
+{{ b() }}
+{{ a() }}
+{{ b() }}
+"#;
+
+    let expected = r#"<p>a: 1</p>
+<p>b: 1</p>
+<p>a: 2</p>
+<p>b: 2</p>
+"#;
+
+    tera.add_raw_template("shortcodes/a.html", shortcode_template_a).unwrap();
+    tera.add_raw_template("shortcodes/b.html", shortcode_template_b).unwrap();
+    let config = Config::default();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, expected);
+}
+
+#[test]
 fn basic_external_links_unchanged() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default();
