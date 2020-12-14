@@ -3,11 +3,11 @@
 title = "hallo"
 description = "A single-page theme to introduce yourself."
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T20:45:47+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T20:45:47+01:00
+updated = 2020-12-14T20:45:47+01:00
 repository = "https://github.com/flyingP0tat0/zola-hallo.git"
 homepage = "https://github.com/janbaudisch/zola-hallo"
 minimum_version = "0.4.0"
@@ -122,8 +122,8 @@ foreground = "#FFF" # text and portrait border
 hover = "#333" # link hover
 ```
 
-[build-img]: https://travis-ci.com/janbaudisch/zola-hallo.svg?branch=master
-[build-url]: https://travis-ci.com/janbaudisch/zola-hallo
+[build-img]: https://builds.sr.ht/~janbaudisch/zola-hallo.svg
+[build-url]: https://builds.sr.ht/~janbaudisch/zola-hallo
 [demo-img]: https://img.shields.io/badge/demo-live-green.svg
 [demo-url]: https://zola-hallo.janbaudisch.dev
 [zola]: https://www.getzola.org

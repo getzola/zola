@@ -3,11 +3,11 @@
 title = "codinfox-zola"
 description = "Codinfox theme for Zola"
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T20:45:47+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T20:45:47+01:00
+updated = 2020-12-14T20:45:47+01:00
 repository = "https://github.com/svavs/codinfox-zola"
 homepage = "https://github.com/svavs/codinfox-zola"
 minimum_version = "0.11.0"
