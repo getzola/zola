@@ -174,6 +174,9 @@ impl Site {
         // which we can only decide to use after we've deserialised the section
         // so it's kinda necessecary
         let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
+        let mut allowed_index_filenames: Vec<_> = self.config.languages.iter().map(|l| format!("_index.{}.md", l.code)).collect();
+        allowed_index_filenames.push("_index.md".to_string());
+
         loop {
             let entry: DirEntry = match dir_walker.next() {
                 None => break,
@@ -222,11 +225,14 @@ impl Site {
                         Ok(f) => {
                             let path_str = f.path().file_name().unwrap().to_str().unwrap();
                             if f.path().is_file()
-                                && path_str.starts_with("_index.")
-                                && path_str.ends_with(".md")
+                                && allowed_index_filenames.iter().find(|&s| *s == path_str).is_some()
                             {
                                 Some(f)
                             } else {
+                                // https://github.com/getzola/zola/issues/1244
+                                if path_str.starts_with("_index.") {
+                                    println!("Expected a section filename, got `{}`. Allowed values: `{:?}`", path_str, &allowed_index_filenames);
+                                }
                                 None
                             }
                         }
