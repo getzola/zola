@@ -3,11 +3,11 @@
 title = "lightspeed"
 description = "Zola theme with a perfect Lighthouse score"
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T22:00:44+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T22:00:44+01:00
+updated = 2020-12-14T22:00:44+01:00
 repository = "https://github.com/carpetscheme/lightspeed"
 homepage = "https://github.com/carpetscheme/lightspeed"
 minimum_version = "0.10.0"
@@ -26,8 +26,9 @@ An insanely fast and performance-based Zola theme, ported from [Light Speed Jeky
 Some fun facts about the theme:
 
 * Perfect score on Google's Lighthouse audit
-* Only ~600 bytes of CSS
+* Only ~700 bytes of CSS
 * No JavaScript
+* Now with SEO!
 
 Demo: [quirky-perlman-34d0da.netlify.com](https://quirky-perlman-34d0da.netlify.com)
 
@@ -38,10 +39,10 @@ Demo: [quirky-perlman-34d0da.netlify.com](https://quirky-perlman-34d0da.netlify.
 - [Installation](#installation)
 - [Options](#options)
   - [Title](#title)
-  - [Sass](#Sass)
   - [Footer menu](#footer-menu)
-  - [Author](#author)
-  - [Netlify](#netlify)
+  - [SEO](#seo)
+  - [Footer text](#footer-text)
+  - [Sass](#Sass)
 - [Original](#original)
 - [License](#license)
 
@@ -77,18 +78,6 @@ description = "for different folks"
 
 ```
 
-### Sass
-
-Styles are compiled from sass and imported inline to the header :zap:
-
-You can overide the styles by enabling sass compilation in the config:
-
-```toml
-compile_sass = true
-```
-
-...and placing a replacement `style.scss` file in your sass folder.
-
 ### Footer-menu
 Set a field in `extra` with a key of `footer_links`:
 
@@ -97,7 +86,7 @@ Set a field in `extra` with a key of `footer_links`:
 
 footer_links = [
     {url = "$BASE_URL/about", name = "About"},
-    {url = "$BASE_URL/rss.xml", name = "RSS"},
+    {url = "$BASE_URL/atom.xml", name = "RSS"},
     {url = "https://google.com", name = "Google"},
 ]
 ```
@@ -111,32 +100,45 @@ Create pages such as `$BASE_URL/about` by placing them in a subfolder of the con
 path = "about"
 ```
 
-### Author
+### SEO
 
-To add author name to the head meta-data, set an `author` field in `extra`:
+Most SEO tags are populated by the page metadata, but you can set the `author` and for the `og:image` tag provide the path to an image:
 
 ```toml
 [extra]
 
 author = "Grant Green"
+ogimage = "Greenery.png"
 ```
 
-### Netlify
+### Footer-text
 
-Deployed on netlify? Add a link in the footer by setting `netlify` in `extra` as `true`.
+By default the footer provides links to Zola and Netlify, and a tagline of "Maintained with :heart: for the web".
+To disable any of those parts, and/or add a custom tagline of your own, the following options are available:
 
 ```toml
 [extra]
 
-netlify = true
+zola = true
+netlify = false
+maintained_with_love = false
+footer_tagline = "What if everything is an illusion and nothing exists? In that case, I definitely overpaid for my carpet."
 ```
 
+### Sass
+
+Styles are compiled from sass and imported inline to the header :zap:
+
+You can overide the styles by enabling sass compilation in the config:
+
+```toml
+compile_sass = true
+```
+
+...and placing a replacement `style.scss` file in your sass folder.
+
 ## Original
-This template is based on the Jekyll template [Light Speed Jekyll](https://github.com/bradleytaunt/lightspeed) by **Bradley Taunt**:
-
-- <https://github.com/bradleytaunt>
-- <https://twitter.com/bradtaunt>
-
+This template is based on the Jekyll template [Light Speed Jekyll](https://github.com/bradleytaunt/lightspeed) by Bradley Taunt.
 
 ## License
 

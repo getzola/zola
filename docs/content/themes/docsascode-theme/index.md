@@ -3,11 +3,11 @@
 title = "Docsascode_theme"
 description = "A modern simple Zola's theme related to docs as code methodology"
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T22:00:44+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T22:00:44+01:00
+updated = 2020-12-14T22:00:44+01:00
 repository = "https://github.com/codeandmedia/zola_docsascode_theme.git"
 homepage = "https://github.com/codeandmedia/zola_docsascode_theme"
 minimum_version = "0.10.0"
@@ -27,6 +27,12 @@ The repo contains a theme for [Zola](https://www.getzola.org/) (the best static 
 
 ```
 codeandmedia/docsascode-theme:latest
+```
+
+If you would use Docker on MacBook M1 processors \ Raspberry Pi4 64bit \ Amazon Graviton or another ARM64 - just fork the ARM64 branch or push
+
+```
+codeandmedia/docsascode-theme-arm64:latest
 ```
 
 ## Perks

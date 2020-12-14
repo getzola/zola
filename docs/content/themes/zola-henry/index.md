@@ -3,11 +3,11 @@
 title = "henry"
 description = "A timeless blog theme"
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T22:00:44+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T22:00:44+01:00
+updated = 2020-12-14T22:00:44+01:00
 repository = "https://github.com/sirodoht/zola-henry"
 homepage = "https://github.com/sirodoht/zola-henry"
 minimum_version = "0.4.0"
@@ -63,6 +63,15 @@ By default Henry ships with GitHub icon link in the right side of the footer. Yo
 ```toml
 [extra]
 henry_github = "https://github.com/sirodoht/zola-henry"
+```
+
+### Footer Twitter icon link
+
+Twitter is too mainstream and a bit lame, but 100% of our users have requested, so we offer it.
+
+```toml
+[extra]
+henry_twitter = "https://twitter.com/dhh"
 ```
 
 ## License
