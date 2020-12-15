@@ -17,6 +17,7 @@
 into their typographic forms
 - Add iteration count variable `nth` for shortcodes to know how many times a shortcode has been invoked in a given
 content
+- Update some highlighting syntaxes and the TS syntax will now be used instead of JS due to issues with it
 
 ## 0.12.2 (2020-09-28)
 
