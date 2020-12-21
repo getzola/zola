@@ -26,6 +26,7 @@ use utils::fs::{
 };
 use utils::net::get_available_port;
 use utils::templates::render_template;
+use std::time::Instant;
 
 lazy_static! {
     /// The in-memory rendered map content
@@ -628,32 +629,41 @@ impl Site {
 
     /// Deletes the `public` directory (only for `zola build`) and builds the site
     pub fn build(&self) -> Result<()> {
+        let mut start = Instant::now();
         // Do not clean on `zola serve` otherwise we end up copying assets all the time
         if self.build_mode == BuildMode::Disk {
             self.clean()?;
         }
+        start = log_time(start, "Cleaned folder");
 
         // Generate/move all assets before rendering any content
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
             if theme_path.join("sass").exists() {
                 sass::compile_sass(&theme_path, &self.output_path)?;
+                start = log_time(start, "Compiled theme Sass");
             }
         }
 
         if self.config.compile_sass {
             sass::compile_sass(&self.base_path, &self.output_path)?;
+            start = log_time(start, "Compiled own Sass");
         }
 
         if self.config.build_search_index {
             self.build_search_index()?;
+            start = log_time(start, "Built search index");
         }
 
         // Render aliases first to allow overwriting
         self.render_aliases()?;
+        start = log_time(start, "Rendered aliases");
         self.render_sections()?;
+        start = log_time(start, "Rendered sections");
         self.render_orphan_pages()?;
+        start = log_time(start, "Rendered orphan pages");
         self.render_sitemap()?;
+        start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
         if self.config.generate_feed {
@@ -669,6 +679,7 @@ impl Site {
                 library.pages_values()
             };
             self.render_feed(pages, None, &self.config.default_language, |c| c)?;
+            start = log_time(start, "Generated feed in default language");
         }
 
         for lang in &self.config.languages {
@@ -678,16 +689,22 @@ impl Site {
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
             self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, |c| c)?;
+            start = log_time(start, "Generated feed in other language");
         }
 
         self.render_404()?;
+        start = log_time(start, "Rendered 404");
         self.render_robots()?;
+        start = log_time(start, "Rendered robots.txt");
         self.render_taxonomies()?;
+        start = log_time(start, "Rendered taxonomies");
         // We process images at the end as we might have picked up images to process from markdown
         // or from templates
         self.process_images()?;
+        start = log_time(start, "Processed images");
         // Processed images will be in static so the last step is to copy it
         self.copy_static_directories()?;
+        log_time(start, "Copied static dir");
 
         Ok(())
     }
@@ -1096,4 +1113,14 @@ impl Site {
             })
             .collect::<Result<()>>()
     }
+}
+
+
+fn log_time(start: Instant, message: &str) -> Instant {
+    let do_print = std::env::var("ZOLA_PERF_LOG").is_ok();
+    let now = Instant::now();
+    if do_print {
+        println!("{} took {}ms", message, now.duration_since(start).as_millis());
+    }
+    now
 }
