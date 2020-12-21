@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
-use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
+use syntect::parsing::{SyntaxSetBuilder};
 use toml::Value as Toml;
 
 use crate::highlighting::THEME_SET;
@@ -93,9 +93,6 @@ pub struct Config {
 
     /// A list of directories to search for additional `.sublime-syntax` files in.
     pub extra_syntaxes: Vec<String>,
-    /// The compiled extra syntaxes into a syntax set
-    #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
-    pub extra_syntax_set: Option<SyntaxSet>,
 
     pub output_dir: String,
 
@@ -162,6 +159,9 @@ impl Config {
         if config.highlight_code {
             println!("`highlight_code` has been moved to a [markdown] section. Top level `highlight_code` and `highlight_theme` will stop working in 0.14.");
         }
+        if !config.extra_syntaxes.is_empty() {
+            println!("`extra_syntaxes` has been moved to a [markdown] section. Top level `extra_syntaxes` will stop working in 0.14.");
+        }
 
         Ok(config)
     }
@@ -201,17 +201,32 @@ impl Config {
         }
     }
 
+    /// TODO: remove me in 0.14
+    pub fn extra_syntaxes(&self) -> Vec<String> {
+        if !self.markdown.extra_syntaxes.is_empty() {
+            return self.markdown.extra_syntaxes.clone();
+        }
+
+        if !self.extra_syntaxes.is_empty() {
+            return self.extra_syntaxes.clone();
+        }
+
+        Vec::new()
+    }
+
     /// Attempt to load any extra syntax found in the extra syntaxes of the config
+    /// TODO: move to markup.rs in 0.14
     pub fn load_extra_syntaxes(&mut self, base_path: &Path) -> Result<()> {
-        if self.extra_syntaxes.is_empty() {
+        let extra_syntaxes = self.extra_syntaxes();
+        if extra_syntaxes.is_empty() {
             return Ok(());
         }
 
         let mut ss = SyntaxSetBuilder::new();
-        for dir in &self.extra_syntaxes {
+        for dir in &extra_syntaxes {
             ss.add_from_folder(base_path.join(dir), true)?;
         }
-        self.extra_syntax_set = Some(ss.build());
+        self.markdown.extra_syntax_set = Some(ss.build());
 
         Ok(())
     }
@@ -363,7 +378,6 @@ impl Default for Config {
             ignored_content_globset: None,
             translations: HashMap::new(),
             extra_syntaxes: Vec::new(),
-            extra_syntax_set: None,
             output_dir: "public".to_string(),
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),

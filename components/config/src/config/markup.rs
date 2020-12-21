@@ -1,8 +1,9 @@
 use serde_derive::{Deserialize, Serialize};
+use syntect::parsing::SyntaxSet;
 
 pub const DEFAULT_HIGHLIGHT_THEME: &str = "base16-ocean-dark";
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Markdown {
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
@@ -21,6 +22,12 @@ pub struct Markdown {
     pub external_links_no_referrer: bool,
     /// Whether smart punctuation is enabled (changing quotes, dashes, dots etc in their typographic form)
     pub smart_punctuation: bool,
+
+    /// A list of directories to search for additional `.sublime-syntax` files in.
+    pub extra_syntaxes: Vec<String>,
+    /// The compiled extra syntaxes into a syntax set
+    #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
+    pub extra_syntax_set: Option<SyntaxSet>,
 }
 
 impl Markdown {
@@ -66,6 +73,8 @@ impl Default for Markdown {
             external_links_no_follow: false,
             external_links_no_referrer: false,
             smart_punctuation: false,
+            extra_syntaxes: vec![],
+            extra_syntax_set: None,
         }
     }
 }

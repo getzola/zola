@@ -29,7 +29,7 @@ impl<'config> CodeBlock<'config> {
         Self {
             highlighter,
             extra_syntax_set: match in_extra {
-                true => config.extra_syntax_set.as_ref(),
+                true => config.markdown.extra_syntax_set.as_ref(),
                 false => None,
             },
             background,

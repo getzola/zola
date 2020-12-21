@@ -30,10 +30,11 @@ pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLin
         let syntax = SYNTAX_SET
             .find_syntax_by_token(hacked_lang)
             .or_else(|| {
-                if let Some(ref extra) = config.extra_syntax_set {
+                if let Some(ref extra) = config.markdown.extra_syntax_set {
                     let s = extra.find_syntax_by_token(hacked_lang);
                     if s.is_some() {
                         in_extra = true;
+                        println!("Found extra syntax");
                     }
                     s
                 } else {
