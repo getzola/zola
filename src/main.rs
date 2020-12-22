@@ -61,18 +61,17 @@ fn main() {
                     ::std::process::exit(1);
                 }
             };
-            let watch_only = matches.is_present("watch_only");
             let open = matches.is_present("open");
             let include_drafts = matches.is_present("drafts");
             let fast = matches.is_present("fast");
 
             // Default one
-            if port != 1111 && !watch_only && !port_is_available(port) {
+            if port != 1111 && !port_is_available(port) {
                 console::error("The requested port is not available");
                 ::std::process::exit(1);
             }
 
-            if !watch_only && !port_is_available(port) {
+            if !port_is_available(port) {
                 port = if let Some(p) = get_available_port(1111) {
                     p
                 } else {
@@ -90,7 +89,6 @@ fn main() {
                 output_dir,
                 base_url,
                 &config_file,
-                watch_only,
                 open,
                 include_drafts,
                 fast,

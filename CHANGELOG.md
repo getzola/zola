@@ -18,6 +18,7 @@ into their typographic forms
 - Add iteration count variable `nth` for shortcodes to know how many times a shortcode has been invoked in a given
 content
 - Update some highlighting syntaxes and the TS syntax will now be used instead of JS due to issues with it
+- Remove `zola serve --watch-only`: since we build the HTML in memory and not on disk, it doesn't make sense anymore
 
 ## 0.12.2 (2020-09-28)
 

@@ -669,7 +669,7 @@ fn can_build_with_extra_syntaxes() {
     assert!(file_contains!(
         public,
         "posts/extra-syntax/index.html",
-        r#"<span style="color:#d08770;">test</span>"#
+        r#"<span style="color:"#
     ));
 }
 

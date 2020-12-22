@@ -145,25 +145,23 @@ fn not_found(content: Option<String>) -> Response<Body> {
         .expect("Could not build Not Found response")
 }
 
-fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_path: &str) {
+fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
     match res {
         Ok(_) => {
-            if let Some(broadcaster) = broadcaster.as_ref() {
-                broadcaster
-                    .send(format!(
-                        r#"
-                    {{
-                        "command": "reload",
-                        "path": "{}",
-                        "originalPath": "",
-                        "liveCSS": true,
-                        "liveImg": true,
-                        "protocol": ["http://livereload.com/protocols/official-7"]
-                    }}"#,
-                        reload_path
-                    ))
-                    .unwrap();
-            }
+            broadcaster
+                .send(format!(
+                    r#"
+                {{
+                    "command": "reload",
+                    "path": "{}",
+                    "originalPath": "",
+                    "liveCSS": true,
+                    "liveImg": true,
+                    "protocol": ["http://livereload.com/protocols/official-7"]
+                }}"#,
+                    reload_path
+                ))
+                .unwrap();
         }
         Err(e) => console::unravel_errors("Failed to build the site", &e),
     }
@@ -217,7 +215,6 @@ pub fn serve(
     output_dir: Option<&Path>,
     base_url: &str,
     config_file: &Path,
-    watch_only: bool,
     open: bool,
     include_drafts: bool,
     fast_rebuild: bool,
@@ -284,7 +281,7 @@ pub fn serve(
     // output path is going to need to be moved later on, so clone it for the
     // http closure to avoid contention.
     let static_root = output_path.clone();
-    let broadcaster = if !watch_only {
+    let broadcaster = {
         thread::spawn(move || {
             let addr = address.parse().unwrap();
 
@@ -347,10 +344,7 @@ pub fn serve(
             ws_server.run().unwrap();
         });
 
-        Some(broadcaster)
-    } else {
-        println!("Watching in watch only mode, no web server will be started");
-        None
+        broadcaster
     };
 
     println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(", "));
