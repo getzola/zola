@@ -3270,6 +3270,7 @@ dependencies = [
  "notify",
  "open",
  "relative-path",
+ "serde_json",
  "site",
  "termcolor",
  "tokio",

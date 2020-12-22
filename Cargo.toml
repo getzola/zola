@@ -36,6 +36,7 @@ ctrlc = "3"
 open = "1.2"
 globset = "0.4"
 relative-path = "1"
+serde_json = "1.0"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
