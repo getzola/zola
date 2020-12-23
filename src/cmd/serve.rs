@@ -153,13 +153,13 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                     r#"
                 {{
                     "command": "reload",
-                    "path": "{}",
+                    "path": {},
                     "originalPath": "",
                     "liveCSS": true,
                     "liveImg": true,
                     "protocol": ["http://livereload.com/protocols/official-7"]
                 }}"#,
-                    reload_path
+                    serde_json::to_string(&reload_path).unwrap()
                 ))
                 .unwrap();
         }
