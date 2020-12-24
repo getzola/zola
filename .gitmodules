@@ -67,3 +67,6 @@
 [submodule "sublime/syntaxes/GDScript-sublime"]
 	path = sublime/syntaxes/GDScript-sublime
 	url = https://github.com/beefsack/GDScript-sublime.git
+[submodule "sublime/syntaxes/sublime-clojure"]
+	path = sublime/syntaxes/sublime-clojure
+	url = https://github.com/tonsky/sublime-clojure
