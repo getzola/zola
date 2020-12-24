@@ -173,7 +173,7 @@ We now need to make the `blog-page.html` template. In the `templates` directory,
   {{ page.title }}
 </h1>
 <p class="subtitle"><strong>{{ page.date }}</strong></p>
-<p>{{ page.content | safe }}</p>
+{{ page.content | safe }}
 {% endblock content %}
 ```
 
