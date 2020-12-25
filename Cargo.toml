@@ -27,7 +27,7 @@ termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "2"
 # Below is for the serve cmd
-hyper = { version = "0.13", default-features = false, features = ["runtime"] }
+hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2"] }
 hyper-staticfile = "0.5"
 tokio = { version = "1.0.1", default-features = false, features = ["rt"] }
 notify = "4"

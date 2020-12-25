@@ -30,7 +30,8 @@ use std::net::{SocketAddrV4, TcpListener};
 
 use hyper::header;
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use hyper::{Body, Method, Request, Response, StatusCode};
+use hyper::server::Server;
 use hyper_staticfile::ResolveResult;
 
 use chrono::prelude::*;
