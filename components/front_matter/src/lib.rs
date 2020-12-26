@@ -4,6 +4,9 @@ use serde_derive::{Deserialize, Serialize};
 use errors::{bail, Error, Result};
 use regex::Regex;
 use std::path::Path;
+use std::process::Command;
+use chrono::DateTime;
+use chrono::offset::Utc;
 
 mod page;
 mod section;
@@ -14,6 +17,10 @@ pub use section::SectionFrontMatter;
 lazy_static! {
     static ref PAGE_RE: Regex =
         Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
+
+    
+    static ref TITLE_RE: Regex =
+        Regex::new(r"#[ ]*(.*)[ ]*(\n|$)").unwrap();
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
@@ -36,13 +43,9 @@ pub enum InsertAnchor {
 }
 
 /// Split a file between the front matter and its content
-/// Will return an error if the front matter wasn't found
 fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(&'c str, &'c str)> {
     if !PAGE_RE.is_match(content) {
-        bail!(
-            "Couldn't find front matter in `{}`. Did you forget to add `+++`?",
-            file_path.to_string_lossy()
-        );
+        return Ok(("", content));
     }
 
     // 2. extract the front matter and the content
@@ -76,12 +79,81 @@ pub fn split_page_content<'c>(
     content: &'c str,
 ) -> Result<(PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
+    let mut meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
         Error::chain(
             format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy()),
             e,
         )
     })?;
+
+    // Try to get a title by other means
+    if meta.title.is_none() {
+        if let Some(mat) = TITLE_RE.captures(content) {
+            meta.title = Some(mat[1].to_string());
+        }
+    }
+    if meta.title.is_none() {
+        if let Some(file_stem) = file_path.file_stem() {
+            meta.title = Some(file_stem.to_string_lossy().to_string());
+        }
+    }
+
+    // Try to get the dates by other means
+    if meta.date.is_none() {
+        // See when the file was first added to git
+        let dir = file_path.parent().unwrap_or(file_path);
+        let file = file_path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let output = Command::new("git")
+            .args(&["log", "--diff-filter=A", "--follow", "--format=%aI", "--", &file])
+            .current_dir(&dir)
+            .output()?;
+        if output.status.success() {
+            let output = String::from_utf8_lossy(&output.stdout);
+            if let Some(last_line) = output.lines().last() {
+                if !last_line.is_empty() {
+                    meta.date = Some(last_line.to_string());
+                    meta.date_to_datetime();
+                }
+            }
+        }
+    }
+    if meta.date.is_none() {
+        // Take file creation date
+        if let Ok(file_info) = file_path.metadata() {
+            if let Ok(created) = file_info.created() {
+                let created: DateTime<Utc> = created.into();
+                meta.date = Some(created.to_rfc3339());
+                meta.date_to_datetime();
+            }
+        }
+    }
+    if meta.updated.is_none() {
+        // See when the file was last modified in a commit
+        let dir = file_path.parent().unwrap_or(file_path);
+        let file = file_path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let output = Command::new("git")
+            .args(&["log", "--format=%aI", "--", &file])
+            .current_dir(&dir)
+            .output()?;
+        if output.status.success() {
+            let output = String::from_utf8_lossy(&output.stdout);
+            if let Some(first_line) = output.lines().next() {
+                if !first_line.is_empty() {
+                    meta.updated = Some(first_line.to_string());
+                }
+            }
+        }
+    }
+    if meta.updated.is_none() {
+        // Take file creation date
+        if let Ok(file_info) = file_path.metadata() {
+            if let Ok(modified) = file_info.modified() {
+                let modified: DateTime<Utc> = modified.into();
+                meta.updated = Some(modified.to_rfc3339());
+            }
+        }
+    }
+
     Ok((meta, content))
 }
 
