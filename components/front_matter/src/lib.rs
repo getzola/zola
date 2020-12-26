@@ -36,13 +36,9 @@ pub enum InsertAnchor {
 }
 
 /// Split a file between the front matter and its content
-/// Will return an error if the front matter wasn't found
 fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(&'c str, &'c str)> {
     if !PAGE_RE.is_match(content) {
-        bail!(
-            "Couldn't find front matter in `{}`. Did you forget to add `+++`?",
-            file_path.to_string_lossy()
-        );
+        return Ok(("", content));
     }
 
     // 2. extract the front matter and the content
