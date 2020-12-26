@@ -14,6 +14,10 @@ pub use section::SectionFrontMatter;
 lazy_static! {
     static ref PAGE_RE: Regex =
         Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
+
+    
+    static ref TITLE_RE: Regex =
+        Regex::new(r"#[ ]*(.*)[ ]*(\n|$)").unwrap();
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
@@ -72,12 +76,27 @@ pub fn split_page_content<'c>(
     content: &'c str,
 ) -> Result<(PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
+    let mut meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
         Error::chain(
             format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy()),
             e,
         )
     })?;
+
+    // Try to get a title by other means
+    if let None = meta.title {
+        if let Some(mat) = TITLE_RE.captures(content) {
+            meta.title = Some(mat[1].to_string());
+        }
+    }
+    if let None = meta.title {
+        if let Some(file_name) = file_path.file_name() {
+            let file_name = file_name.to_string_lossy();
+            let file_name = file_name.strip_suffix(".md").unwrap_or(&file_name);
+            meta.title = Some(file_name.to_string());
+        }
+    }
+
     Ok((meta, content))
 }
 
