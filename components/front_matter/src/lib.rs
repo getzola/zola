@@ -17,9 +17,9 @@ pub use section::SectionFrontMatter;
 lazy_static! {
     static ref PAGE_RE: Regex =
         Regex::new(r"^[[:space:]]*(\+\+\+|<!--)(\r?\n(?s).*?(?-s))(\+\+\+|-->)\r?\n?((?s).*(?-s))$").unwrap();
-
+    
     static ref TITLE_RE: Regex =
-        Regex::new(r"#[ ]*(.*)[ ]*(\n|$)").unwrap();
+        Regex::new(r"^[[:space:]]*#[ ]*(.*)[ ]*\r?\n?((?s).*(?-s))$").unwrap();
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
@@ -77,7 +77,7 @@ pub fn split_page_content<'c>(
     file_path: &Path,
     content: &'c str,
 ) -> Result<(PageFrontMatter, &'c str)> {
-    let (front_matter, content) = split_content(file_path, content)?;
+    let (front_matter, mut content) = split_content(file_path, content)?;
     let mut meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
         Error::chain(
             format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy()),
@@ -89,6 +89,8 @@ pub fn split_page_content<'c>(
     if meta.title.is_none() {
         if let Some(mat) = TITLE_RE.captures(content) {
             meta.title = Some(mat[1].to_string());
+            // Trim title from contents
+            content = mat.get(2).unwrap().as_str();
         }
     }
     if meta.title.is_none() {
