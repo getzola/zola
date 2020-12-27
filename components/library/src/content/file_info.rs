@@ -49,6 +49,8 @@ pub struct FileInfo {
     /// This is `parent` + `name`, used to find content referring to the same content but in
     /// various languages.
     pub canonical: PathBuf,
+    /// True if this is a single page folder (containing either `index.md` or `<name>.md`).
+    pub page_folder: bool,
 }
 
 impl FileInfo {
@@ -68,7 +70,9 @@ impl FileInfo {
         // If we have a folder with an asset, don't consider it as a component
         // Splitting on `.` as we might have a language so it isn't *only* index but also index.fr
         // etc
-        if !components.is_empty() && name.split('.').collect::<Vec<_>>()[0] == "index" {
+        let base_name = name.split('.').collect::<Vec<_>>()[0];
+        let page_folder = !components.is_empty() && (base_name == "index"  || base_name == components.last().unwrap());
+        if page_folder {
             components.pop();
             // also set parent_path to grandparent instead
             parent = parent.parent().unwrap().to_path_buf();
@@ -84,6 +88,7 @@ impl FileInfo {
             name,
             components,
             relative,
+            page_folder
         }
     }
 
@@ -109,6 +114,7 @@ impl FileInfo {
             name,
             components,
             relative,
+            page_folder: false,
         }
     }
 

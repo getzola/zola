@@ -118,7 +118,7 @@ impl Page {
         page.reading_time = Some(reading_time);
 
         let mut slug_from_dated_filename = None;
-        let file_path = if page.file.name == "index" {
+        let file_path = if page.file.page_folder {
             if let Some(parent) = page.file.path.parent() {
                 parent.file_name().unwrap().to_str().unwrap().to_string()
             } else {
@@ -138,7 +138,7 @@ impl Page {
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slugify_paths(slug, config.slugify.paths)
-            } else if page.file.name == "index" {
+            } else if page.file.page_folder {
                 if let Some(parent) = page.file.path.parent() {
                     if let Some(slug) = slug_from_dated_filename {
                         slugify_paths(&slug, config.slugify.paths)
@@ -205,7 +205,7 @@ impl Page {
         let content = read_file(path)?;
         let mut page = Page::parse(path, &content, config, base_path)?;
 
-        if page.file.name == "index" {
+        if page.file.page_folder {
             let parent_dir = path.parent().unwrap();
             let assets = find_related_assets(parent_dir);
 
