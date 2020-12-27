@@ -16,9 +16,8 @@ pub use section::SectionFrontMatter;
 
 lazy_static! {
     static ref PAGE_RE: Regex =
-        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
+        Regex::new(r"^[[:space:]]*(\+\+\+|<!--)(\r?\n(?s).*?(?-s))(\+\+\+|-->)\r?\n?((?s).*(?-s))$").unwrap();
 
-    
     static ref TITLE_RE: Regex =
         Regex::new(r"#[ ]*(.*)[ ]*(\n|$)").unwrap();
 }
@@ -51,9 +50,9 @@ fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(&'c str, &'c
     // 2. extract the front matter and the content
     let caps = PAGE_RE.captures(content).unwrap();
     // caps[0] is the full match
-    // caps[1] => front matter
-    // caps[2] => content
-    Ok((caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str()))
+    // caps[2] => front matter
+    // caps[4] => content
+    Ok((caps.get(2).unwrap().as_str(), caps.get(4).unwrap().as_str()))
 }
 
 /// Split a file between the front matter and its content.
