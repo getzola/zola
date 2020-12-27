@@ -132,7 +132,7 @@ pub fn split_page_content<'c>(
         let dir = file_path.parent().unwrap_or(file_path);
         let file = file_path.file_name().unwrap_or_default().to_string_lossy().to_string();
         let output = Command::new("git")
-            .args(&["log", "--format=%aI", "--", &file])
+            .args(&["log", "--diff-filter=M", "--format=%aI", "--", &file])
             .current_dir(&dir)
             .output()?;
         if output.status.success() {
