@@ -16,11 +16,10 @@ pub use section::SectionFrontMatter;
 
 lazy_static! {
     static ref PAGE_RE: Regex =
-        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
-
+        Regex::new(r"^[[:space:]]*(\+\+\+|<!--)(\r?\n(?s).*?(?-s))(\+\+\+|-->)\r?\n?((?s).*(?-s))$").unwrap();
     
     static ref TITLE_RE: Regex =
-        Regex::new(r"#[ ]*(.*)[ ]*(\n|$)").unwrap();
+        Regex::new(r"^[[:space:]]*#[ ]*(.*)[ ]*\r?\n?((?s).*(?-s))$").unwrap();
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
@@ -51,9 +50,9 @@ fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(&'c str, &'c
     // 2. extract the front matter and the content
     let caps = PAGE_RE.captures(content).unwrap();
     // caps[0] is the full match
-    // caps[1] => front matter
-    // caps[2] => content
-    Ok((caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str()))
+    // caps[2] => front matter
+    // caps[4] => content
+    Ok((caps.get(2).unwrap().as_str(), caps.get(4).unwrap().as_str()))
 }
 
 /// Split a file between the front matter and its content.
@@ -78,7 +77,7 @@ pub fn split_page_content<'c>(
     file_path: &Path,
     content: &'c str,
 ) -> Result<(PageFrontMatter, &'c str)> {
-    let (front_matter, content) = split_content(file_path, content)?;
+    let (front_matter, mut content) = split_content(file_path, content)?;
     let mut meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
         Error::chain(
             format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy()),
@@ -90,6 +89,8 @@ pub fn split_page_content<'c>(
     if meta.title.is_none() {
         if let Some(mat) = TITLE_RE.captures(content) {
             meta.title = Some(mat[1].to_string());
+            // Trim title from contents
+            content = mat.get(2).unwrap().as_str();
         }
     }
     if meta.title.is_none() {
