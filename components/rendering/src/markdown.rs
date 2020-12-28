@@ -167,11 +167,43 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
     heading_refs
 }
 
+fn escape_markdown(content: &str) -> String {
+    // Characters that need to be backslash escaped in CommonMark.
+    const ESCAPE: &str = r"<[`#&_\*.";
+    let mut result = String::new();
+    for c in content.chars() {
+        if ESCAPE.contains(c) {
+            result.push('\\');
+        }
+        result.push(c);
+    }
+    result
+}
+
+fn protect_latex(content: &str) -> String {
+    use regex::{Regex, Captures};
+    lazy_static! {
+        static ref INLINE_RE: Regex = Regex::new(r"([^\\]\$)(.*?[^\\])(\$)").unwrap();
+        static ref DISPLAY_RE: Regex = Regex::new(r"(?sm)(^\$\$$)(.*?)(^\$\$$)").unwrap();
+    }
+    let content = INLINE_RE.replace_all(content, |capture: &Captures| {
+        format!("{}{}{}", &capture[1], escape_markdown(&capture[2]), &capture[3])
+    });
+    let content = DISPLAY_RE.replace_all(&content, |capture: &Captures| {
+        format!("{}{}{}", &capture[1], escape_markdown(&capture[2]), &capture[3])
+    });
+    content.to_string()
+}
+
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
     // the rendered html
     let mut html = String::with_capacity(content.len());
     // Set while parsing
     let mut error = None;
+
+    // Preprocess escape latex
+    let content = protect_latex(content);
+    let content = &content;
 
     let mut highlighter: Option<CodeBlock> = None;
 
