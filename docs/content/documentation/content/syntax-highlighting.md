@@ -35,7 +35,6 @@ Here is a full list of supported languages and their short names:
 - C -> ["c", "h"]
 - C# -> ["cs", "csx"]
 - C++ -> ["C", "c++", "cc", "cp", "cpp", "cxx", "h", "h++", "hh", "hpp", "hxx", "inl", "ipp"]
-- Clojure -> ["clj", "cljc", "cljs", "edn"]
 - ClojureC -> ["boot", "clj", "cljc", "cljs", "cljx"]
 - CMake -> ["CMakeLists.txt", "cmake"]
 - CMake C Header -> ["h.in"]
