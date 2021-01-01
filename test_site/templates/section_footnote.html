@@ -1,0 +1,17 @@
+{% extends "page.html" %}
+
+{% block content %}
+
+    <div>
+        {{ section.content | safe }}
+    </div>
+
+
+    {% for page in section.pages %}
+        <div>
+            The summary of this page:
+            <div>{{ page.summary | safe }}</div>
+        </div>
+    {% endfor %}
+
+{% endblock content %}
