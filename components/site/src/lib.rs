@@ -20,13 +20,13 @@ use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
 use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
 use relative_path::RelativePathBuf;
+use std::time::Instant;
 use templates::render_redirect_template;
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
 };
 use utils::net::get_available_port;
 use utils::templates::render_template;
-use std::time::Instant;
 
 lazy_static! {
     /// The in-memory rendered map content
@@ -175,7 +175,8 @@ impl Site {
         // which we can only decide to use after we've deserialised the section
         // so it's kinda necessecary
         let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
-        let mut allowed_index_filenames: Vec<_> = self.config.languages.iter().map(|l| format!("_index.{}.md", l.code)).collect();
+        let mut allowed_index_filenames: Vec<_> =
+            self.config.languages.iter().map(|l| format!("_index.{}.md", l.code)).collect();
         allowed_index_filenames.push("_index.md".to_string());
 
         loop {
@@ -1114,7 +1115,6 @@ impl Site {
             .collect::<Result<()>>()
     }
 }
-
 
 fn log_time(start: Instant, message: &str) -> Instant {
     let do_print = std::env::var("ZOLA_PERF_LOG").is_ok();

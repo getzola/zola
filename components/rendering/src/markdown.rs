@@ -218,7 +218,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
                         if !context.config.highlight_code() {
                             if let Some(lang) = language {
-                                let html = format!(r#"<pre><code class="language-{}">"#, lang);
+                                let html = format!(
+                                    r#"<pre><code class="language-{}" data-lang="{}">"#,
+                                    lang, lang
+                                );
                                 return Event::Html(html.into());
                             }
                             return Event::Html("<pre><code>".into());
@@ -245,9 +248,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         let snippet = start_highlighted_html_snippet(theme);
                         let mut html = snippet.0;
                         if let Some(lang) = language {
-                            html.push_str(r#"<code class="language-"#);
-                            html.push_str(lang);
-                            html.push_str(r#"">"#);
+                            html.push_str(&format!(
+                                r#"<code class="language-{}" data-lang="{}">"#,
+                                lang, lang
+                            ));
                         } else {
                             html.push_str("<code>");
                         }

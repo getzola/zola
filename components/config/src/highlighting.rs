@@ -35,7 +35,8 @@ pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLin
             // https://github.com/getzola/zola/issues/1174
             let hacked_lang = if *lang == "js" || *lang == "javascript" { "ts" } else { lang };
             SYNTAX_SET.find_syntax_by_token(hacked_lang)
-        }.unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());
+        }
+        .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());
         (HighlightLines::new(syntax, theme), in_extra)
     } else {
         (HighlightLines::new(SYNTAX_SET.find_syntax_plain_text(), theme), false)

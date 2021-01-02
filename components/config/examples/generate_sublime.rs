@@ -7,10 +7,10 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
 use std::iter::FromIterator;
+use std::path::Path;
 use syntect::dumps::*;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSetBuilder;
-use std::path::Path;
 
 fn usage_and_exit() -> ! {
     println!("USAGE: cargo run --example generate_sublime synpack source-dir newlines.packdump nonewlines.packdump\n
@@ -44,7 +44,6 @@ fn main() {
                 Ok(_) => (),
                 Err(e) => println!("Loading error: {:?}", e),
             };
-
 
             let ss = builder.build();
             dump_to_file(&ss, packpath_newlines).unwrap();
