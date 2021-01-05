@@ -62,27 +62,29 @@ impl Library {
         }
     }
 
+    fn insert_reverse_aliases(&mut self, entries: Vec<String>, file_rel_path: &str) {
+        for entry in entries {
+            self.reverse_aliases
+                .entry(entry)
+                .and_modify(|s| {
+                    s.insert(file_rel_path.to_owned());
+                })
+                .or_insert_with(|| {
+                    let mut s = HashSet::new();
+                    s.insert(file_rel_path.to_owned());
+                    s
+                });
+        }
+    }
+
     /// Add a section and return its Key
     pub fn insert_section(&mut self, section: Section) -> DefaultKey {
         let file_path = section.file.path.clone();
-        let file_rel_path = section.file.relative.clone();
         let rel_path = section.path.clone();
 
         let mut entries = vec![rel_path.clone()];
         entries.extend(section.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
-
-        for entry in &entries {
-            self.reverse_aliases
-                .entry(entry.to_string())
-                .and_modify(|s| {
-                    s.insert(file_rel_path.clone());
-                })
-                .or_insert_with(|| {
-                    let mut s = HashSet::new();
-                    s.insert(file_rel_path.clone());
-                    s
-                });
-        }
+        self.insert_reverse_aliases(entries, &section.file.relative);
 
         let key = self.sections.insert(section);
         self.paths_to_sections.insert(file_path, key);
@@ -92,24 +94,11 @@ impl Library {
     /// Add a page and return its Key
     pub fn insert_page(&mut self, page: Page) -> DefaultKey {
         let file_path = page.file.path.clone();
-        let file_rel_path = page.file.relative.clone();
         let rel_path = page.path.clone();
 
         let mut entries = vec![rel_path.clone()];
         entries.extend(page.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
-
-        for entry in &entries {
-            self.reverse_aliases
-                .entry(entry.to_string())
-                .and_modify(|s| {
-                    s.insert(file_rel_path.clone());
-                })
-                .or_insert_with(|| {
-                    let mut s = HashSet::new();
-                    s.insert(file_rel_path.clone());
-                    s
-                });
-        }
+        self.insert_reverse_aliases(entries, &page.file.relative);
 
         let key = self.pages.insert(page);
 
