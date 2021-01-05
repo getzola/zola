@@ -56,8 +56,6 @@ pub struct Section {
     /// The language of that section. Equal to the default lang if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the _index.{lang}.md file scheme
     pub lang: String,
-    /// Contains all the translated version of that section
-    pub translations: Vec<DefaultKey>,
     /// Contains the internal links that have an anchor: we can only check the anchor
     /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
     /// it would have errored before getting there

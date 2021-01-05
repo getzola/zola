@@ -41,6 +41,12 @@ pub struct Library {
     pub paths_to_sections: HashMap<PathBuf, DefaultKey>,
     /// Whether we need to look for translations
     is_multilingual: bool,
+
+    // aliases -> files,
+    // so we can easily check for conflicts
+    pub reverse_aliases: HashMap<String, HashSet<String>>,
+
+    pub translations: HashMap<PathBuf, HashSet<DefaultKey>>,
 }
 
 impl Library {
@@ -51,22 +57,63 @@ impl Library {
             paths_to_pages: HashMap::with_capacity(cap_pages),
             paths_to_sections: HashMap::with_capacity(cap_sections),
             is_multilingual,
+            reverse_aliases: HashMap::new(),
+            translations: HashMap::new(),
         }
     }
 
     /// Add a section and return its Key
     pub fn insert_section(&mut self, section: Section) -> DefaultKey {
-        let path = section.file.path.clone();
+        let file_path = section.file.path.clone();
+        let file_rel_path = section.file.relative.clone();
+        let rel_path = section.path.clone();
+
+        let mut entries = vec![rel_path.clone()];
+        entries.extend(section.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
+
+        for entry in &entries {
+            self.reverse_aliases
+                .entry(entry.to_string())
+                .and_modify(|s| {
+                    s.insert(file_rel_path.clone());
+                })
+                .or_insert_with(|| {
+                    let mut s = HashSet::new();
+                    s.insert(file_rel_path.clone());
+                    s
+                });
+        }
+
         let key = self.sections.insert(section);
-        self.paths_to_sections.insert(path, key);
+        self.paths_to_sections.insert(file_path, key);
         key
     }
 
     /// Add a page and return its Key
     pub fn insert_page(&mut self, page: Page) -> DefaultKey {
-        let path = page.file.path.clone();
+        let file_path = page.file.path.clone();
+        let file_rel_path = page.file.relative.clone();
+        let rel_path = page.path.clone();
+
+        let mut entries = vec![rel_path.clone()];
+        entries.extend(page.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
+
+        for entry in &entries {
+            self.reverse_aliases
+                .entry(entry.to_string())
+                .and_modify(|s| {
+                    s.insert(file_rel_path.clone());
+                })
+                .or_insert_with(|| {
+                    let mut s = HashSet::new();
+                    s.insert(file_rel_path.clone());
+                    s
+                });
+        }
+
         let key = self.pages.insert(page);
-        self.paths_to_pages.insert(path, key);
+
+        self.paths_to_pages.insert(file_path, key);
         key
     }
 
@@ -103,7 +150,7 @@ impl Library {
         let mut ancestors: HashMap<PathBuf, Vec<_>> = HashMap::new();
         let mut subsections: HashMap<PathBuf, Vec<_>> = HashMap::new();
 
-        for section in self.sections.values_mut() {
+        for (key, section) in self.sections.iter_mut() {
             // Make sure the pages of a section are empty since we can call that many times on `serve`
             section.pages = vec![];
             section.ignored_pages = vec![];
@@ -139,6 +186,16 @@ impl Library {
                 }
             }
             ancestors.insert(section.file.path.clone(), parents);
+
+            // populate translations if necessary
+            if self.is_multilingual {
+                self.translations
+                    .entry(section.file.canonical.clone())
+                    .and_modify(|trans| {
+                        trans.insert(key);
+                    })
+                    .or_insert(set![key]);
+            };
         }
 
         for (key, page) in &mut self.pages {
@@ -184,9 +241,18 @@ impl Library {
                     None => break,
                 }
             }
+
+            // populate translations if necessary
+            if self.is_multilingual {
+                self.translations
+                    .entry(page.file.canonical.clone())
+                    .and_modify(|trans| {
+                        trans.insert(key);
+                    })
+                    .or_insert(set![key]);
+            };
         }
 
-        self.populate_translations();
         self.sort_sections_pages();
 
         let sections = self.paths_to_sections.clone();
@@ -272,51 +338,6 @@ impl Library {
                 s.pages = sorted;
                 s.ignored_pages = cannot_be_sorted;
             }
-        }
-    }
-
-    /// Finds all the translations for each section/page and set the `translations`
-    /// field of each as needed
-    /// A no-op for sites without multiple languages
-    fn populate_translations(&mut self) {
-        if !self.is_multilingual {
-            return;
-        }
-
-        // Sections first
-        let mut sections_translations = HashMap::new();
-        for (key, section) in &self.sections {
-            sections_translations
-                .entry(section.file.canonical.clone()) // TODO: avoid this clone
-                .or_insert_with(Vec::new)
-                .push(key);
-        }
-
-        for (key, section) in self.sections.iter_mut() {
-            let translations = &sections_translations[&section.file.canonical];
-            if translations.len() == 1 {
-                section.translations = vec![];
-                continue;
-            }
-            section.translations = translations.iter().filter(|k| **k != key).cloned().collect();
-        }
-
-        // Same thing for pages
-        let mut pages_translations = HashMap::new();
-        for (key, page) in &self.pages {
-            pages_translations
-                .entry(page.file.canonical.clone()) // TODO: avoid this clone
-                .or_insert_with(Vec::new)
-                .push(key);
-        }
-
-        for (key, page) in self.pages.iter_mut() {
-            let translations = &pages_translations[&page.file.canonical];
-            if translations.len() == 1 {
-                page.translations = vec![];
-                continue;
-            }
-            page.translations = translations.iter().filter(|k| **k != key).cloned().collect();
         }
     }
 
@@ -414,56 +435,17 @@ impl Library {
     /// This will check every section/page paths + the aliases and ensure none of them
     /// are colliding.
     /// Returns (path colliding, [list of files causing that collision])
-    pub fn check_for_path_collisions(&self) -> Vec<(&str, Vec<String>)> {
-        let mut paths: HashMap<&str, HashSet<DefaultKey>> = HashMap::new();
-
-        for (key, page) in &self.pages {
-            paths
-                .entry(&page.path)
-                .and_modify(|s| {
-                    s.insert(key);
-                })
-                .or_insert_with(|| set!(key));
-
-            for alias in &page.meta.aliases {
-                paths
-                    .entry(&alias)
-                    .and_modify(|s| {
-                        s.insert(key);
-                    })
-                    .or_insert_with(|| set!(key));
-            }
-        }
-
-        for (key, section) in &self.sections {
-            if !section.meta.render {
-                continue;
-            }
-            paths
-                .entry(&section.path)
-                .and_modify(|s| {
-                    s.insert(key);
-                })
-                .or_insert_with(|| set!(key));
-        }
-
-        let mut collisions = vec![];
-        for (p, keys) in paths {
-            if keys.len() > 1 {
-                let file_paths: Vec<String> = keys
-                    .iter()
-                    .map(|k| {
-                        self.pages.get(*k).map(|p| p.file.relative.clone()).unwrap_or_else(|| {
-                            self.sections.get(*k).map(|s| s.file.relative.clone()).unwrap()
-                        })
-                    })
-                    .collect();
-
-                collisions.push((p, file_paths));
-            }
-        }
-
-        collisions
+    pub fn check_for_path_collisions(&self) -> Vec<(String, Vec<String>)> {
+        self.reverse_aliases
+            .iter()
+            .filter_map(|(alias, files)| {
+                if files.len() > 1 {
+                    Some((alias.clone(), files.clone().into_iter().collect::<Vec<_>>()))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }
 
