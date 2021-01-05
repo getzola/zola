@@ -29,9 +29,9 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use hyper::header;
+use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
-use hyper_staticfile::ResolveResult;
+use hyper::{Body, Method, Request, Response, StatusCode};
 
 use chrono::prelude::*;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -70,7 +70,7 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
-async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
+async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Response<Body>> {
     let mut path = RelativePathBuf::new();
 
     for c in req.uri().path().split('/') {
@@ -90,18 +90,37 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
         return Ok(in_memory_html(content));
     }
 
-    let result = hyper_staticfile::resolve(&root, &req).await.unwrap();
-    match result {
-        ResolveResult::MethodNotMatched => return Ok(method_not_allowed()),
-        ResolveResult::NotFound | ResolveResult::UriNotMatched => {
-            let not_found_path = RelativePath::new("404.html");
-            let content_404 = SITE_CONTENT.read().unwrap().get(not_found_path).cloned();
-            return Ok(not_found(content_404));
-        }
-        _ => (),
+    // Handle only `GET`/`HEAD` requests
+    match *req.method() {
+        Method::HEAD | Method::GET => {}
+        _ => return Ok(method_not_allowed()),
+    }
+
+    // Handle only simple path requests
+    if req.uri().scheme_str().is_some() || req.uri().host().is_some() {
+        return Ok(not_found());
+    }
+
+    // Remove the trailing slash from the request path
+    // otherwise `PathBuf` will interpret it as an absolute path
+    root.push(&req.uri().path()[1..]);
+    let result = tokio::fs::read(root).await;
+
+    let contents = match result {
+        Err(err) => match err.kind() {
+            std::io::ErrorKind::NotFound => return Ok(not_found()),
+            std::io::ErrorKind::PermissionDenied => {
+                return Ok(Response::builder()
+                    .status(StatusCode::FORBIDDEN)
+                    .body(Body::empty())
+                    .unwrap())
+            }
+            _ => panic!("{}", err),
+        },
+        Ok(contents) => contents,
     };
 
-    Ok(hyper_staticfile::ResponseBuilder::new().request(&req).build(result).unwrap())
+    Ok(Response::builder().status(StatusCode::OK).body(Body::from(contents)).unwrap())
 }
 
 fn livereload_js() -> Response<Body> {
@@ -128,7 +147,10 @@ fn method_not_allowed() -> Response<Body> {
         .expect("Could not build Method Not Allowed response")
 }
 
-fn not_found(content: Option<String>) -> Response<Body> {
+fn not_found() -> Response<Body> {
+    let not_found_path = RelativePath::new("404.html");
+    let content = SITE_CONTENT.read().unwrap().get(not_found_path).cloned();
+
     if let Some(body) = content {
         return Response::builder()
             .header(header::CONTENT_TYPE, "text/html")
@@ -285,9 +307,8 @@ pub fn serve(
         thread::spawn(move || {
             let addr = address.parse().unwrap();
 
-            let mut rt = tokio::runtime::Builder::new()
+            let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
-                .basic_scheduler()
                 .build()
                 .expect("Could not build tokio runtime");
 
