@@ -17,7 +17,7 @@ macro_rules! colored_html_line {
         result
     }};
     ( @hl $s:expr ) => {{
-        let mut result = "<mark style=\"background-color:#65737e30;\">".to_string();
+        let mut result = "<mark style=\"color:currentcolor;background-color:#65737e30;\">".to_string();
         result.push_str($s);
         result.push_str("\n</mark>");
         result

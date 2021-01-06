@@ -14,7 +14,7 @@ use self::cmark::{Event, LinkType, Options, Parser, Tag};
 
 mod codeblock;
 mod fence;
-use self::codeblock::CodeBlock;
+use self::codeblock::ZolaCodeBlock;
 use fence::FenceSettings;
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
@@ -170,7 +170,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     // Set while parsing
     let mut error = None;
 
-    let mut code_block: Option<CodeBlock> = None;
+    let mut code_block: Option<ZolaCodeBlock> = None;
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headings: Vec<Heading> = vec![];
@@ -196,7 +196,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     Event::Text(text) => {
                         // if we are in the middle of a highlighted code block
                         if let Some(ref mut code_block) = code_block {
-                            let html = code_block.highlight(&text);
+                            let html = code_block.code(&text);
                             Event::Html(html.into())
                         } else if context.config.markdown.render_emoji {
                             let processed_text = EMOJI_REPLACER.replace_all(&text);
@@ -213,25 +213,13 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             _ => "",
                         };
                         let fence = FenceSettings::new(fence_info);
-                        if !context.config.highlight_code() {
-                            if let Some(lang) = fence.language {
-                                Event::Html(
-                                    format!(r#"<pre><code class="language-{}">"#, lang).into(),
-                                )
-                            } else {
-                                // TODO: Should we just pass the event along and let cmark deal with it?
-                                Event::Html("<pre><code>".into())
-                            }
-                        } else {
-                            let (block, begin) = CodeBlock::new(fence, &context.config);
-                            code_block = Some(block);
-
-                            Event::Html(begin.into())
-                        }
+                        let (block, begin) = ZolaCodeBlock::new(fence, &context.config);
+                        code_block = Some(block);
+                        Event::Html(begin.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
                         Event::Html(if let Some(block) = code_block.take() {
-                            block.finish().into()
+                            block.close().into()
                         } else {
                             "</code></pre>\n".into()
                         })

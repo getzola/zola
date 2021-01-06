@@ -26,7 +26,7 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
     config.markdown.highlight_code = false;
     let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
     let res = render_content("```\n$ gutenberg server\n```", &context).unwrap();
-    assert_eq!(res.body, "<pre><code>$ gutenberg server\n</code></pre>\n");
+    assert_eq!(res.body, "<pre><code>$ gutenberg server\n</code></pre>");
 }
 
 #[test]
