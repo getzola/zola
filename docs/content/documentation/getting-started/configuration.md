@@ -13,11 +13,12 @@ If you are not familiar with TOML, have a look at [the TOML spec](https://github
 
 Here are the current `config.toml` sections:
 1. main (unnamed)
-2. link_checker
-3. slugify
-4. search
-5. translations
-6. extra
+2. markdown
+3. link_checker
+4. slugify
+5. search
+6. translations
+7. extra
 
 **Only the `base_url` variable is mandatory**. Everything else is optional. All configuration variables
 used by Zola as well as their default values are listed below:
