@@ -10,7 +10,6 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
 use lazy_static::lazy_static;
-use minify_html::{with_friendly_error, Cfg};
 use rayon::prelude::*;
 use tera::{Context, Tera};
 use walkdir::{DirEntry, WalkDir};
@@ -25,6 +24,7 @@ use templates::render_redirect_template;
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
 };
+use utils::minify;
 use utils::net::get_available_port;
 use utils::templates::render_template;
 
@@ -490,26 +490,6 @@ impl Site {
         html
     }
 
-    /// Minifies html content
-    fn minify(&self, html: String) -> Result<String> {
-        let cfg = &Cfg { minify_js: false };
-        let mut input_bytes = html.as_bytes().to_vec();
-        match with_friendly_error(&mut input_bytes, cfg) {
-            Ok(_len) => match std::str::from_utf8(&input_bytes) {
-                Ok(result) => Ok(result.to_string()),
-                Err(err) => bail!("Failed to convert bytes to string : {}", err),
-            },
-            Err(minify_error) => {
-                bail!(
-                    "Failed to truncate html at character {}: {} \n {}",
-                    minify_error.position,
-                    minify_error.message,
-                    minify_error.code_context
-                );
-            }
-        }
-    }
-
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
@@ -581,7 +561,7 @@ impl Site {
         let final_content = if !filename.ends_with("html") || !self.config.minify_html {
             content
         } else {
-            match self.minify(content) {
+            match minify::html(content) {
                 Ok(minified_content) => minified_content,
                 Err(error) => bail!(error),
             }

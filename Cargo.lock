@@ -2423,7 +2423,6 @@ dependencies = [
  "lazy_static",
  "library",
  "link_checker",
- "minify-html",
  "rayon",
  "relative-path",
  "sass-rs",
@@ -2976,6 +2975,7 @@ version = "0.1.0"
 dependencies = [
  "errors",
  "filetime",
+ "minify-html",
  "percent-encoding",
  "serde",
  "serde_derive",
