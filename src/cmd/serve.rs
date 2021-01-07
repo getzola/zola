@@ -72,8 +72,13 @@ const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Response<Body>> {
     let mut path = RelativePathBuf::new();
+    // https://zola.discourse.group/t/percent-encoding-for-slugs/736
+    let decoded = match percent_encoding::percent_decode_str(req.uri().path()).decode_utf8() {
+        Ok(d) => d,
+        Err(_) => return Ok(not_found()),
+    };
 
-    for c in req.uri().path().split('/') {
+    for c in decoded.split('/') {
         path.push(c);
     }
 

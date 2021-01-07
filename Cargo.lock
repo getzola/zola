@@ -3263,6 +3263,7 @@ dependencies = [
  "lazy_static",
  "notify",
  "open",
+ "percent-encoding",
  "relative-path",
  "serde_json",
  "site",

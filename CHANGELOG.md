@@ -21,6 +21,7 @@ content
 - Remove `zola serve --watch-only`: since we build the HTML in memory and not on disk, it doesn't make sense anymore
 - Update clojure syntax
 - Prefer extra syntaxes to the default ones if we have a match for language
+- Fix `zola serve` having issues with non-ascii paths
 
 ## 0.12.2 (2020-09-28)
 
