@@ -18,7 +18,7 @@ lazy_static! {
 
 /// Returns the highlighter and whether it was found in the extra or not
 pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLines<'static>, bool) {
-    let theme = &THEME_SET.themes[&config.highlight_theme];
+    let theme = &THEME_SET.themes[config.highlight_theme()];
     let mut in_extra = false;
 
     if let Some(ref lang) = language {

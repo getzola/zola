@@ -24,7 +24,7 @@ pub struct CodeBlock<'config> {
 impl<'config> CodeBlock<'config> {
     pub fn new(fence_info: &str, config: &'config Config, background: IncludeBackground) -> Self {
         let fence_info = FenceSettings::new(fence_info);
-        let theme = &THEME_SET.themes[&config.highlight_theme];
+        let theme = &THEME_SET.themes[config.highlight_theme()];
         let (highlighter, in_extra) = get_highlighter(fence_info.language, config);
         Self {
             highlighter,
