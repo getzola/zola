@@ -39,7 +39,7 @@ impl TeraFn for Trans {
         let term = self
             .config
             .get_translation(lang, key)
-            .map_err(|e| Error::chain("Failed to retreive term translation", e))?;
+            .map_err(|e| Error::chain("Failed to retrieve term translation", e))?;
 
         Ok(to_value(term).unwrap())
     }
@@ -331,7 +331,7 @@ impl GetTaxonomyUrl {
             }
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), items);
         }
-        Self { taxonomies, default_lang: default_lang.to_string(), slugify: slugify }
+        Self { taxonomies, default_lang: default_lang.to_string(), slugify }
     }
 }
 impl TeraFn for GetTaxonomyUrl {
@@ -735,7 +735,7 @@ title = "A title"
 
         let config = Config::parse(TRANS_CONFIG).unwrap();
         let error = Trans::new(config).call(&args).unwrap_err();
-        assert_eq!("Failed to retreive term translation", format!("{}", error));
+        assert_eq!("Failed to retrieve term translation", format!("{}", error));
     }
 
     #[test]
@@ -746,7 +746,7 @@ title = "A title"
 
         let config = Config::parse(TRANS_CONFIG).unwrap();
         let error = Trans::new(config).call(&args).unwrap_err();
-        assert_eq!("Failed to retreive term translation", format!("{}", error));
+        assert_eq!("Failed to retrieve term translation", format!("{}", error));
     }
 
     #[test]

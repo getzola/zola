@@ -18,24 +18,25 @@ lazy_static! {
 
 /// Returns the highlighter and whether it was found in the extra or not
 pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLines<'static>, bool) {
-    let theme = &THEME_SET.themes[&config.highlight_theme];
+    let theme = &THEME_SET.themes[config.highlight_theme()];
     let mut in_extra = false;
 
     if let Some(ref lang) = language {
-        let syntax = SYNTAX_SET
-            .find_syntax_by_token(lang)
-            .or_else(|| {
-                if let Some(ref extra) = config.extra_syntax_set {
-                    let s = extra.find_syntax_by_token(lang);
-                    if s.is_some() {
-                        in_extra = true;
-                    }
-                    s
-                } else {
-                    None
-                }
-            })
-            .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());
+        let syntax = if let Some(ref extra) = config.markdown.extra_syntax_set {
+            let s = extra.find_syntax_by_token(lang);
+            if s.is_some() {
+                in_extra = true;
+            }
+            s
+        } else {
+            // The JS syntax hangs a lot... the TS syntax is probably better anyway.
+            // https://github.com/getzola/zola/issues/1241
+            // https://github.com/getzola/zola/issues/1211
+            // https://github.com/getzola/zola/issues/1174
+            let hacked_lang = if *lang == "js" || *lang == "javascript" { "ts" } else { lang };
+            SYNTAX_SET.find_syntax_by_token(hacked_lang)
+        }
+        .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());
         (HighlightLines::new(syntax, theme), in_extra)
     } else {
         (HighlightLines::new(SYNTAX_SET.find_syntax_plain_text(), theme), false)

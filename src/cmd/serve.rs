@@ -22,16 +22,16 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::fs::{read_dir, remove_dir_all};
+use std::net::{SocketAddrV4, TcpListener};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
-use std::net::{SocketAddrV4, TcpListener};
 
 use hyper::header;
+use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
-use hyper_staticfile::ResolveResult;
+use hyper::{Body, Method, Request, Response, StatusCode};
 
 use chrono::prelude::*;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -70,10 +70,15 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
-async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Body>> {
+async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Response<Body>> {
     let mut path = RelativePathBuf::new();
+    // https://zola.discourse.group/t/percent-encoding-for-slugs/736
+    let decoded = match percent_encoding::percent_decode_str(req.uri().path()).decode_utf8() {
+        Ok(d) => d,
+        Err(_) => return Ok(not_found()),
+    };
 
-    for c in req.uri().path().split('/') {
+    for c in decoded.split('/') {
         path.push(c);
     }
 
@@ -90,18 +95,37 @@ async fn handle_request(req: Request<Body>, root: PathBuf) -> Result<Response<Bo
         return Ok(in_memory_html(content));
     }
 
-    let result = hyper_staticfile::resolve(&root, &req).await.unwrap();
-    match result {
-        ResolveResult::MethodNotMatched => return Ok(method_not_allowed()),
-        ResolveResult::NotFound | ResolveResult::UriNotMatched => {
-            let not_found_path = RelativePath::new("404.html");
-            let content_404 = SITE_CONTENT.read().unwrap().get(not_found_path).cloned();
-            return Ok(not_found(content_404));
-        }
-        _ => (),
+    // Handle only `GET`/`HEAD` requests
+    match *req.method() {
+        Method::HEAD | Method::GET => {}
+        _ => return Ok(method_not_allowed()),
+    }
+
+    // Handle only simple path requests
+    if req.uri().scheme_str().is_some() || req.uri().host().is_some() {
+        return Ok(not_found());
+    }
+
+    // Remove the trailing slash from the request path
+    // otherwise `PathBuf` will interpret it as an absolute path
+    root.push(&req.uri().path()[1..]);
+    let result = tokio::fs::read(root).await;
+
+    let contents = match result {
+        Err(err) => match err.kind() {
+            std::io::ErrorKind::NotFound => return Ok(not_found()),
+            std::io::ErrorKind::PermissionDenied => {
+                return Ok(Response::builder()
+                    .status(StatusCode::FORBIDDEN)
+                    .body(Body::empty())
+                    .unwrap())
+            }
+            _ => panic!("{}", err),
+        },
+        Ok(contents) => contents,
     };
 
-    Ok(hyper_staticfile::ResponseBuilder::new().request(&req).build(result).unwrap())
+    Ok(Response::builder().status(StatusCode::OK).body(Body::from(contents)).unwrap())
 }
 
 fn livereload_js() -> Response<Body> {
@@ -128,7 +152,10 @@ fn method_not_allowed() -> Response<Body> {
         .expect("Could not build Method Not Allowed response")
 }
 
-fn not_found(content: Option<String>) -> Response<Body> {
+fn not_found() -> Response<Body> {
+    let not_found_path = RelativePath::new("404.html");
+    let content = SITE_CONTENT.read().unwrap().get(not_found_path).cloned();
+
     if let Some(body) = content {
         return Response::builder()
             .header(header::CONTENT_TYPE, "text/html")
@@ -145,25 +172,23 @@ fn not_found(content: Option<String>) -> Response<Body> {
         .expect("Could not build Not Found response")
 }
 
-fn rebuild_done_handling(broadcaster: &Option<Sender>, res: Result<()>, reload_path: &str) {
+fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
     match res {
         Ok(_) => {
-            if let Some(broadcaster) = broadcaster.as_ref() {
-                broadcaster
-                    .send(format!(
-                        r#"
-                    {{
-                        "command": "reload",
-                        "path": "{}",
-                        "originalPath": "",
-                        "liveCSS": true,
-                        "liveImg": true,
-                        "protocol": ["http://livereload.com/protocols/official-7"]
-                    }}"#,
-                        reload_path
-                    ))
-                    .unwrap();
-            }
+            broadcaster
+                .send(format!(
+                    r#"
+                {{
+                    "command": "reload",
+                    "path": {},
+                    "originalPath": "",
+                    "liveCSS": true,
+                    "liveImg": true,
+                    "protocol": ["http://livereload.com/protocols/official-7"]
+                }}"#,
+                    serde_json::to_string(&reload_path).unwrap()
+                ))
+                .unwrap();
         }
         Err(e) => console::unravel_errors("Failed to build the site", &e),
     }
@@ -173,7 +198,7 @@ fn create_new_site(
     root_dir: &Path,
     interface: &str,
     interface_port: u16,
-    output_dir: &Path,
+    output_dir: Option<&Path>,
     base_url: &str,
     config_file: &Path,
     include_drafts: bool,
@@ -192,7 +217,9 @@ fn create_new_site(
 
     site.enable_serve_mode();
     site.set_base_url(base_url);
-    site.set_output_path(output_dir);
+    if let Some(output_dir) = output_dir {
+        site.set_output_path(output_dir);
+    }
     if include_drafts {
         site.include_drafts();
     }
@@ -212,10 +239,9 @@ pub fn serve(
     root_dir: &Path,
     interface: &str,
     interface_port: u16,
-    output_dir: &Path,
+    output_dir: Option<&Path>,
     base_url: &str,
     config_file: &Path,
-    watch_only: bool,
     open: bool,
     include_drafts: bool,
     fast_rebuild: bool,
@@ -236,7 +262,7 @@ pub fn serve(
     // Stop right there if we can't bind to the address
     let bind_address: SocketAddrV4 = address.parse().unwrap();
     if (TcpListener::bind(&bind_address)).is_err() {
-        return Err(format!("Cannot start server on address {}.", address))?;
+        return Err(format!("Cannot start server on address {}.", address).into());
     }
 
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
@@ -265,7 +291,7 @@ pub fn serve(
         let should_watch = match mode {
             WatchMode::Required => true,
             WatchMode::Optional => watch_path.exists(),
-            WatchMode::Condition(b) => b,
+            WatchMode::Condition(b) => b && watch_path.exists(),
         };
         if should_watch {
             watcher
@@ -277,18 +303,17 @@ pub fn serve(
 
     let ws_port = site.live_reload;
     let ws_address = format!("{}:{}", interface, ws_port.unwrap());
-    let output_path = Path::new(output_dir).to_path_buf();
+    let output_path = site.output_path.clone();
 
     // output path is going to need to be moved later on, so clone it for the
     // http closure to avoid contention.
     let static_root = output_path.clone();
-    let broadcaster = if !watch_only {
+    let broadcaster = {
         thread::spawn(move || {
             let addr = address.parse().unwrap();
 
-            let mut rt = tokio::runtime::Builder::new()
+            let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
-                .basic_scheduler()
                 .build()
                 .expect("Could not build tokio runtime");
 
@@ -345,10 +370,7 @@ pub fn serve(
             ws_server.run().unwrap();
         });
 
-        Some(broadcaster)
-    } else {
-        println!("Watching in watch only mode, no web server will be started");
-        None
+        broadcaster
     };
 
     println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(", "));
@@ -440,10 +462,7 @@ pub fn serve(
     loop {
         match rx.recv() {
             Ok(event) => {
-                let can_do_fast_reload = match event {
-                    Remove(_) => false,
-                    _ => true,
-                };
+                let can_do_fast_reload = !matches!(event, Remove(_));
 
                 match event {
                     // Intellij does weird things on edit, chmod is there to count those changes
@@ -503,10 +522,8 @@ pub fn serve(
                                             site = s;
                                         }
                                     }
-                                } else {
-                                    if let Some(s) = recreate_site() {
-                                        site = s;
-                                    }
+                                } else if let Some(s) = recreate_site() {
+                                    site = s;
                                 }
                             }
                             (ChangeKind::Templates, partial_path) => {

@@ -11,4 +11,6 @@ and the default is what most sites want:
 
 ```jinja2
 User-agent: *
+Allow: /
+Sitemap: {{/* get_url(path="sitemap.xml") */}}
 ```

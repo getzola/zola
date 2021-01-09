@@ -1,6 +1,6 @@
 [package]
 name = "zola"
-version = "0.12.2"
+version = "0.13.0"
 authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
 edition = "2018"
 license = "MIT"
@@ -27,15 +27,16 @@ termcolor = "1.0.4"
 # Used in init to ensure the url given as base_url is a valid one
 url = "2"
 # Below is for the serve cmd
-hyper = { version = "0.13", default-features = false, features = ["runtime"] }
-hyper-staticfile = "0.5"
-tokio = { version = "0.2", default-features = false, features = [] }
+hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }
+tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs"] }
+percent-encoding = "2"
 notify = "4"
 ws = "0.9"
 ctrlc = "3"
 open = "1.2"
 globset = "0.4"
 relative-path = "1"
+serde_json = "1.0"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }

@@ -57,7 +57,7 @@ impl Error {
     }
 
     /// Create an error from a list of path collisions, formatting the output
-    pub fn from_collisions(collisions: Vec<(&str, Vec<String>)>) -> Self {
+    pub fn from_collisions(collisions: Vec<(String, Vec<String>)>) -> Self {
         let mut msg = String::from("Found path collisions:\n");
 
         for (path, filepaths) in collisions {

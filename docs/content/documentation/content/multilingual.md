@@ -33,8 +33,8 @@ uses the filename to detect the language:
 - `content/an-article.md`: this will be the default language
 - `content/an-article.fr.md`: this will be in French
 
-If the language code in the filename does not correspond to one of the languages configured,
-an error will be shown.
+If the language code in the filename does not correspond to one of the languages or
+the default language configured, an error will be shown.
 
 If your default language has an `_index.md` in a directory, you will need to add an `_index.{code}.md`
 file with the desired front-matter options as there is no language fallback.

@@ -6,27 +6,28 @@ edition = "2018"
 
 [dependencies]
 tera = "1"
-base64 = "0.12"
+base64 = "0.13"
 lazy_static = "1"
-pulldown-cmark = { version = "0.8", default-features = false }
 toml = "0.5"
 csv = "1"
 image = "0.23"
 serde_json = "1.0"
 sha2 = "0.9"
 url = "2"
+nom-bibtex = "0.3"
+svg_metadata = "0.4.1"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
 library = { path = "../library" }
 config = { path = "../config" }
 imageproc = { path = "../imageproc" }
-svg_metadata = "0.4.1"
+rendering = { path = "../rendering" }
 
 [dependencies.reqwest]
-version = "0.10"
+version = "0.11"
 default-features = false
 features = ["blocking", "rustls-tls"]
 
 [dev-dependencies]
-mockito = "0.27"
+mockito = "0.28"

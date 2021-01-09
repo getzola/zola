@@ -177,6 +177,9 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "nested_sass/sass.css"));
     assert!(file_exists!(public, "nested_sass/scss.css"));
 
+    assert!(!file_exists!(public, "secret_section/index.html"));
+    assert!(!file_exists!(public, "secret_section/page.html"));
+    assert!(!file_exists!(public, "secret_section/secret_sub_section/hello.html"));
     // no live reload code
     assert_eq!(
         file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"),
@@ -210,7 +213,7 @@ fn can_build_site_without_live_reload() {
 
 #[test]
 fn can_build_site_with_live_reload_and_drafts() {
-    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+    let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.enable_live_reload(1000);
         site.include_drafts();
         (site, true)
@@ -254,6 +257,15 @@ fn can_build_site_with_live_reload_and_drafts() {
     // Drafts are included
     assert!(file_exists!(public, "posts/draft/index.html"));
     assert!(file_contains!(public, "sitemap.xml", "draft"));
+
+    // drafted sections are included
+    let library = site.library.read().unwrap();
+    assert_eq!(library.sections().len(), 14);
+
+    assert!(file_exists!(public, "secret_section/index.html"));
+    assert!(file_exists!(public, "secret_section/draft-page/index.html"));
+    assert!(file_exists!(public, "secret_section/page/index.html"));
+    assert!(file_exists!(public, "secret_section/secret_sub_section/hello/index.html"));
 }
 
 #[test]
@@ -654,11 +666,7 @@ fn can_build_with_extra_syntaxes() {
 
     assert!(&public.exists());
     assert!(file_exists!(public, "posts/extra-syntax/index.html"));
-    assert!(file_contains!(
-        public,
-        "posts/extra-syntax/index.html",
-        r#"<span style="color:#d08770;">test</span>"#
-    ));
+    assert!(file_contains!(public, "posts/extra-syntax/index.html", r#"<span style="color:"#));
 }
 
 #[test]

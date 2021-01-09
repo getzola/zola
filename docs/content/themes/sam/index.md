@@ -3,11 +3,11 @@
 title = "sam"
 description = "A Simple and Minimalist theme with a focus on typography and content."
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T20:45:47+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T20:45:47+01:00
+updated = 2020-12-14T20:45:47+01:00
 repository = "https://github.com/janbaudisch/zola-sam.git"
 homepage = "https://github.com/janbaudisch/zola-sam"
 minimum_version = "0.4.0"
@@ -154,8 +154,8 @@ To place some text at the end of pages, set the following:
 text = "Some footer text."
 ```
 
-[build-img]: https://travis-ci.com/janbaudisch/zola-sam.svg?branch=master
-[build-url]: https://travis-ci.com/janbaudisch/zola-sam
+[build-img]: https://builds.sr.ht/~janbaudisch/zola-sam.svg
+[build-url]: https://builds.sr.ht/~janbaudisch/zola-sam
 [demo-img]: https://img.shields.io/badge/demo-live-green.svg
 [demo-url]: https://zola-sam.janbaudisch.dev
 [zola]: https://getzola.org

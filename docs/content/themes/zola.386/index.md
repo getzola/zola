@@ -3,14 +3,14 @@
 title = "zola.386"
 description = "Zola port of the BOOTSTRA.386 theme."
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T20:45:47+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T20:45:47+01:00
+updated = 2020-12-14T20:45:47+01:00
 repository = "https://github.com/lopes/zola.386"
 homepage = "https://github.com/lopes/zola.386"
-minimum_version = "0.1.3"
+minimum_version = "0.10.1"
 license = "MIT"
 demo = "https://zola-386.netlify.com"
 
@@ -35,7 +35,7 @@ ZOLA.386 is a port of the BOOTSTRA.386 theme and was based on:
 ZOLA.386 is a theme that refers to the 90s, but with cutting edge features to be fast and responsive.
 
 
-## Instalation
+## Installation
 The easiest way to install ZOLA.386 is to clone this repository and build your site upon it:
 
 ```bash
@@ -46,7 +46,7 @@ Of course you can install it just as another theme for your site, but ZOLA.386 m
 
 ```bash
 $ cd themes
-$ git clone https://github.com/lopes/zola.386.git
+$ git submodule add https://github.com/lopes/zola.386 
 ```
 
 
@@ -82,15 +82,16 @@ zola386_menu = [
 ### Social
 ZOLA.386 is also prepared to deal with Google Analytics, Disqus, and Twitter --[Open Graph Protocol](https://ogp.me/) is welcome.  This theme is prepared to use the output of [Favicon Generator](https://www.favicon-generator.org/), to do so, you'll just need to download the output of that site and extract in `static/images`. 
 
-As said, Disqus is supportted, but besides setting the username in `config.toml`, you also must to put a `disqus = true` extra option on the pages where Disqus will be enable --this gives you the freedom to enable or disable comments on certain posts.  You can use the extra option `image` on each page, to represent that post.
+As said, Disqus is supportted, but besides setting the username in `config.toml`, you also must to put a `comments = true` extra option on the pages where Disqus will be enabled --this gives you the freedom to enable or disable comments on certain posts.  You can use the extra option `image` on each page, to represent that post.
 
 ### Animations
 All JavaScript animations can be set at `static/js/zola386.js`.  Basically you can disable all animations, use one or two scans, and change the scan speed.  Personally, I prefer only one scan with a speed factor of 5.
 
-
 ### Language
-
 Under the `label_` variables, you can set names to better localize your site.  Note that you can change the language of a single page, by using `page.extra.lang`, which causes `<html lang="">` to change only on that page.  A theme to provide information for its owner and SEO-friendly.
+
+### Search
+Search was implemented according to the [official documentation](https://www.getzola.org/documentation/content/search/).  It uses JavaScript to search on an indexed version of the site based on `search_index.LANG.js`, `elasticlunr.min.js`, and `search.js` --the first two are generated after each build.  If you're running your site in other default language other than English, you **must** change the `search_index.LANG.js` line in `index.html`, setting up `LANG` accordingly.
 
 ### Other files
 The `content\_index.md` file must be properly configured to provide better experience.  Check out this file for more information.

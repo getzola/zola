@@ -17,12 +17,12 @@ Lorem markdownum litora, care ponto nomina, et ut aspicit gelidas sui et
 purpureo genuit. Tamen colla venientis [delphina](http://nil-sol.com/ecquis)
 Tusci et temptata citaeque curam isto ubi vult vulnere reppulit.
 
-- Seque vidit flendoque de quodam
-- Dabit minimos deiecto caputque noctis pluma
-- Leti coniunx est Helicen
-- Illius pulvereumque Icare inpositos
-- Vivunt pereo pluvio tot ramos Olenios gelidis
-- Quater teretes natura inde
+- :one: Seque vidit flendoque de quodam
+- :two: Dabit minimos deiecto caputque noctis pluma
+- :three: Leti coniunx est Helicen
+- :four: Illius pulvereumque Icare inpositos
+- :five: Vivunt pereo pluvio tot ramos Olenios gelidis
+- :six: Quater teretes natura inde
 
 ### A subsection
 
@@ -35,7 +35,7 @@ granum captantur potuisse Minervae, frugum.
 > Clivo sub inprovisoque nostrum minus fama est, discordia patrem petebat precatur
 absumitur, poena per sit. Foramina *tamen cupidine* memor supplex tollentes
 dictum unam orbem, Anubis caecae. Viderat formosior tegebat satis, Aethiopasque
-sit submisso coniuge tristis ubi!
+sit submisso coniuge tristis ubi! :exclamation:
 
 ## Praeceps Corinthus totidem quem crus vultum cape
 
@@ -68,7 +68,7 @@ And a shortcode:
 ### Another subsection
 Gotta make the toc do a little bit of work
 
-# A big title
+# A big title :fire:
 
 - hello
 - world
@@ -96,7 +96,7 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
-    config.highlight_code = false;
+    config.markdown.highlight_code = false;
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
@@ -106,7 +106,7 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     let tera = Tera::default();
     let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
     let mut config = Config::default();
-    config.highlight_code = false;
+    config.markdown.highlight_code = false;
     let permalinks_ctx = HashMap::new();
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
@@ -122,4 +122,17 @@ fn bench_render_shortcodes_one_present(b: &mut test::Bencher) {
     let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
 
     b.iter(|| render_shortcodes(CONTENT, &context));
+}
+
+#[bench]
+fn bench_render_content_no_shortcode_with_emoji(b: &mut test::Bencher) {
+    let tera = Tera::default();
+    let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
+    let mut config = Config::default();
+    config.markdown.highlight_code = false;
+    config.markdown.render_emoji = true;
+    let permalinks_ctx = HashMap::new();
+    let context = RenderContext::new(&tera, &config, "", &permalinks_ctx, InsertAnchor::None);
+
+    b.iter(|| render_content(&content2, &context).unwrap());
 }

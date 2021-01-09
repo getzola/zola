@@ -1,10 +1,10 @@
 %YAML 1.2
 ---
-file_extensions:
-  - test-syntax
-scope: source.test
+name: mylang
+file_extensions: [mylang]
+scope: source.mylang
 
 contexts:
   main:
-    - match: "test"
-      scope: constant.language.test
+    - match: \b(if|else|for|while)\b
+      scope: keyword.control

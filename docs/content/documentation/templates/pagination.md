@@ -49,3 +49,31 @@ A paginated taxonomy gets two variables aside from the `paginator` variable:
 - a `term` variable of type `TaxonomyTerm`.
 
 See the [taxonomies page](@/documentation/templates/taxonomies.md) for a detailed version of the types.
+
+## Example
+
+Here is an example from a theme on how to use pagination on a page (`index.html` in this case):
+
+```jinja2
+<div class="posts">
+    {% for page in paginator.pages %}
+        <article class="post">
+            {{ post_macros::title(page=page) }}
+            <div class="post__summary">
+                {{ page.summary | safe }}
+            </div>
+            <div class="read-more">
+                <a href="{{ page.permalink }}">Read more...</a>
+            </div>
+        </article>
+    {% endfor %}
+</div>
+<nav class="pagination">
+    {% if paginator.previous %}
+        <a class="previous" href="{{ paginator.previous }}">‹ Previous</a>
+    {% endif %}
+    {% if paginator.next %}
+        <a class="next" href="{{ paginator.next }}">Next ›</a>
+    {% endif %}
+</nav>
+```

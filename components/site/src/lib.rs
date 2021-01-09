@@ -9,21 +9,22 @@ use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use glob::glob;
 use lazy_static::lazy_static;
-use minify_html::{with_friendly_error, Cfg};
 use rayon::prelude::*;
 use tera::{Context, Tera};
+use walkdir::{DirEntry, WalkDir};
 
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
 use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
 use relative_path::RelativePathBuf;
+use std::time::Instant;
 use templates::render_redirect_template;
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
 };
+use utils::minify;
 use utils::net::get_available_port;
 use utils::templates::render_template;
 
@@ -85,7 +86,7 @@ impl Site {
         let static_path = path.join("static");
         let imageproc =
             imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
-        let output_path = path.join("public");
+        let output_path = path.join(config.output_dir.clone());
 
         let site = Site {
             base_path: path.to_path_buf(),
@@ -166,72 +167,114 @@ impl Site {
     /// out of them
     pub fn load(&mut self) -> Result<()> {
         let base_path = self.base_path.to_string_lossy().replace("\\", "/");
-        let content_glob = format!("{}/{}", base_path, "content/**/*.md");
 
-        let (section_entries, page_entries): (Vec<_>, Vec<_>) = glob(&content_glob)
-            .expect("Invalid glob")
-            .filter_map(|e| e.ok())
-            .filter(|e| !e.as_path().file_name().unwrap().to_str().unwrap().starts_with('.'))
-            .partition(|entry| {
-                entry.as_path().file_name().unwrap().to_str().unwrap().starts_with("_index.")
-            });
-
-        self.library = Arc::new(RwLock::new(Library::new(
-            page_entries.len(),
-            section_entries.len(),
-            self.config.is_multilingual(),
-        )));
-
-        let sections = {
-            let config = &self.config;
-
-            section_entries
-                .into_par_iter()
-                .map(|entry| {
-                    let path = entry.as_path();
-                    Section::from_file(path, config, &self.base_path)
-                })
-                .collect::<Vec<_>>()
-        };
-
-        let pages = {
-            let config = &self.config;
-
-            page_entries
-                .into_par_iter()
-                .filter(|entry| match &config.ignored_content_globset {
-                    Some(gs) => !gs.is_match(entry.as_path()),
-                    None => true,
-                })
-                .map(|entry| {
-                    let path = entry.as_path();
-                    Page::from_file(path, config, &self.base_path)
-                })
-                .collect::<Vec<_>>()
-        };
-
-        // Kinda duplicated code for add_section/add_page but necessary to do it that
-        // way because of the borrow checker
-        for section in sections {
-            let s = section?;
-            self.add_section(s, false)?;
-        }
-
-        self.create_default_index_sections()?;
-
+        self.library = Arc::new(RwLock::new(Library::new(0, 0, self.config.is_multilingual())));
         let mut pages_insert_anchors = HashMap::new();
-        for page in pages {
-            let p = page?;
-            // Should draft pages be ignored?
-            if p.meta.draft && !self.include_drafts {
+
+        // not the most elegant loop, but this is necessary to use skip_current_dir
+        // which we can only decide to use after we've deserialised the section
+        // so it's kinda necessecary
+        let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
+        let mut allowed_index_filenames: Vec<_> =
+            self.config.languages.iter().map(|l| format!("_index.{}.md", l.code)).collect();
+        allowed_index_filenames.push("_index.md".to_string());
+
+        loop {
+            let entry: DirEntry = match dir_walker.next() {
+                None => break,
+                Some(Err(_)) => continue,
+                Some(Ok(entry)) => entry,
+            };
+            let path = entry.path();
+            let file_name = match path.file_name() {
+                None => continue,
+                Some(name) => name.to_str().unwrap(),
+            };
+
+            // ignore excluded content
+            match &self.config.ignored_content_globset {
+                Some(gs) => {
+                    if gs.is_match(path) {
+                        continue;
+                    }
+                }
+
+                None => (),
+            }
+
+            // we process a section when we encounter the dir
+            // so we can process it before any of the pages
+            // therefore we should skip the actual file to avoid duplication
+            if file_name.starts_with("_index.") {
                 continue;
             }
-            pages_insert_anchors.insert(
-                p.file.path.clone(),
-                self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
-            );
-            self.add_page(p, false)?;
+
+            // skip hidden files and non md files
+            if !path.is_dir() && (!file_name.ends_with(".md") || file_name.starts_with('.')) {
+                continue;
+            }
+
+            // is it a section or not?
+            if path.is_dir() {
+                // if we are processing a section we have to collect
+                // index files for all languages and process them simultaniously
+                // before any of the pages
+                let index_files = WalkDir::new(&path)
+                    .max_depth(1)
+                    .into_iter()
+                    .filter_map(|e| match e {
+                        Err(_) => None,
+                        Ok(f) => {
+                            let path_str = f.path().file_name().unwrap().to_str().unwrap();
+                            if f.path().is_file()
+                                && allowed_index_filenames.iter().find(|&s| *s == path_str).is_some()
+                            {
+                                Some(f)
+                            } else {
+                                // https://github.com/getzola/zola/issues/1244
+                                if path_str.starts_with("_index.") {
+                                    println!("Expected a section filename, got `{}`. Allowed values: `{:?}`", path_str, &allowed_index_filenames);
+                                }
+                                None
+                            }
+                        }
+                    })
+                    .collect::<Vec<DirEntry>>();
+
+                for index_file in index_files {
+                    let section = match Section::from_file(
+                        index_file.path(),
+                        &self.config,
+                        &self.base_path,
+                    ) {
+                        Err(_) => continue,
+                        Ok(sec) => sec,
+                    };
+
+                    // if the section is drafted we can skip the enitre dir
+                    if section.meta.draft && !self.include_drafts {
+                        dir_walker.skip_current_dir();
+                        continue;
+                    }
+
+                    self.add_section(section, false)?;
+                }
+            } else {
+                let page = Page::from_file(path, &self.config, &self.base_path)
+                    .expect("error deserialising page");
+
+                // should we skip drafts?
+                if page.meta.draft && !self.include_drafts {
+                    continue;
+                }
+                pages_insert_anchors.insert(
+                    page.file.path.clone(),
+                    self.find_parent_section_insert_anchor(&page.file.parent.clone(), &page.lang),
+                );
+                self.add_page(page, false)?;
+            }
         }
+        self.create_default_index_sections()?;
 
         {
             let library = self.library.read().unwrap();
@@ -447,26 +490,6 @@ impl Site {
         html
     }
 
-    /// Minifies html content
-    fn minify(&self, html: String) -> Result<String> {
-        let cfg = &Cfg { minify_js: false };
-        let mut input_bytes = html.as_bytes().to_vec();
-        match with_friendly_error(&mut input_bytes, cfg) {
-            Ok(_len) => match std::str::from_utf8(&input_bytes) {
-                Ok(result) => Ok(result.to_string()),
-                Err(err) => bail!("Failed to convert bytes to string : {}", err),
-            },
-            Err(minify_error) => {
-                bail!(
-                    "Failed to truncate html at character {}: {} \n {}",
-                    minify_error.position,
-                    minify_error.message,
-                    minify_error.code_context
-                );
-            }
-        }
-    }
-
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
@@ -538,7 +561,7 @@ impl Site {
         let final_content = if !filename.ends_with("html") || !self.config.minify_html {
             content
         } else {
-            match self.minify(content) {
+            match minify::html(content) {
                 Ok(minified_content) => minified_content,
                 Err(error) => bail!(error),
             }
@@ -587,32 +610,41 @@ impl Site {
 
     /// Deletes the `public` directory (only for `zola build`) and builds the site
     pub fn build(&self) -> Result<()> {
+        let mut start = Instant::now();
         // Do not clean on `zola serve` otherwise we end up copying assets all the time
         if self.build_mode == BuildMode::Disk {
             self.clean()?;
         }
+        start = log_time(start, "Cleaned folder");
 
         // Generate/move all assets before rendering any content
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
             if theme_path.join("sass").exists() {
                 sass::compile_sass(&theme_path, &self.output_path)?;
+                start = log_time(start, "Compiled theme Sass");
             }
         }
 
         if self.config.compile_sass {
             sass::compile_sass(&self.base_path, &self.output_path)?;
+            start = log_time(start, "Compiled own Sass");
         }
 
         if self.config.build_search_index {
             self.build_search_index()?;
+            start = log_time(start, "Built search index");
         }
 
         // Render aliases first to allow overwriting
         self.render_aliases()?;
+        start = log_time(start, "Rendered aliases");
         self.render_sections()?;
+        start = log_time(start, "Rendered sections");
         self.render_orphan_pages()?;
+        start = log_time(start, "Rendered orphan pages");
         self.render_sitemap()?;
+        start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
         if self.config.generate_feed {
@@ -628,6 +660,7 @@ impl Site {
                 library.pages_values()
             };
             self.render_feed(pages, None, &self.config.default_language, |c| c)?;
+            start = log_time(start, "Generated feed in default language");
         }
 
         for lang in &self.config.languages {
@@ -637,16 +670,22 @@ impl Site {
             let pages =
                 library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
             self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, |c| c)?;
+            start = log_time(start, "Generated feed in other language");
         }
 
         self.render_404()?;
+        start = log_time(start, "Rendered 404");
         self.render_robots()?;
+        start = log_time(start, "Rendered robots.txt");
         self.render_taxonomies()?;
+        start = log_time(start, "Rendered taxonomies");
         // We process images at the end as we might have picked up images to process from markdown
         // or from templates
         self.process_images()?;
+        start = log_time(start, "Processed images");
         // Processed images will be in static so the last step is to copy it
         self.copy_static_directories()?;
+        log_time(start, "Copied static dir");
 
         Ok(())
     }
@@ -731,6 +770,7 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config);
+        context.insert("lang", &self.config.default_language);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
         self.write_content(&[], "404.html", content, false)?;
@@ -1055,4 +1095,13 @@ impl Site {
             })
             .collect::<Result<()>>()
     }
+}
+
+fn log_time(start: Instant, message: &str) -> Instant {
+    let do_print = std::env::var("ZOLA_PERF_LOG").is_ok();
+    let now = Instant::now();
+    if do_print {
+        println!("{} took {}ms", message, now.duration_since(start).as_millis());
+    }
+    now
 }

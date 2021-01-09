@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
 use std::iter::FromIterator;
+use std::path::Path;
 use syntect::dumps::*;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSetBuilder;
@@ -26,10 +27,24 @@ fn main() {
         (Some(ref cmd), Some(ref package_dir), Some(ref packpath_newlines)) if cmd == "synpack" => {
             let mut builder = SyntaxSetBuilder::new();
             builder.add_plain_text_syntax();
-            match builder.add_from_folder(package_dir, true) {
+            let base_path = Path::new(&package_dir).to_path_buf();
+
+            // First the official Sublime packages
+            let mut default = base_path.clone();
+            default.push("Packages");
+            match builder.add_from_folder(&default, true) {
                 Ok(_) => (),
                 Err(e) => println!("Loading error: {:?}", e),
             };
+
+            // and then the ones we add
+            let mut extra = base_path.clone();
+            extra.push("extra");
+            match builder.add_from_folder(&extra, true) {
+                Ok(_) => (),
+                Err(e) => println!("Loading error: {:?}", e),
+            };
+
             let ss = builder.build();
             dump_to_file(&ss, packpath_newlines).unwrap();
             let mut syntaxes: HashMap<String, HashSet<String>> = HashMap::new();

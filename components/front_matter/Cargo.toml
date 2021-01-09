@@ -9,9 +9,17 @@ tera = "1"
 chrono = "0.4"
 serde = "1"
 serde_derive = "1"
+serde_yaml = "0.8"
 toml = "0.5"
 regex = "1"
 lazy_static = "1"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
+
+[dev-dependencies]
+# Remove from git patch when 1.0.1 is released
+# https://github.com/frondeus/test-case/issues/62
+# test-case = "1.0"
+test-case = { git = "https://github.com/frondeus/test-case" }
+

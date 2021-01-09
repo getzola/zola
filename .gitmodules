@@ -2,68 +2,71 @@
 	path = sublime/syntaxes/Packages
 	url = https://github.com/sublimehq/Packages.git
 [submodule "sublime/syntaxes/awk-sublime"]
-	path = sublime/syntaxes/awk-sublime
+	path = sublime/syntaxes/extra/awk-sublime
 	url = https://github.com/JohnNilsson/awk-sublime.git
 [submodule "sublime/syntaxes/AsciiDoc"]
 	path = sublime/syntaxes/AsciiDoc
 	url = https://github.com/SublimeText/AsciiDoc.git
 [submodule "sublime/syntaxes/Sublime-CMakeLists"]
-	path = sublime/syntaxes/Sublime-CMakeLists
+	path = sublime/syntaxes/extra/Sublime-CMakeLists
 	url = https://github.com/zyxar/Sublime-CMakeLists.git
 [submodule "sublime/syntaxes/SublimeTextLinkerSyntax"]
-	path = sublime/syntaxes/SublimeTextLinkerSyntax
+	path = sublime/syntaxes/extra/SublimeTextLinkerSyntax
 	url = https://github.com/jbw3/SublimeTextLinkerSyntax
 [submodule "sublime/syntaxes/Docker.tmbundle"]
-	path = sublime/syntaxes/Docker.tmbundle
+	path = sublime/syntaxes/extra/Docker.tmbundle
 	url = https://github.com/asbjornenge/Docker.tmbundle.git
 [submodule "sublime/syntaxes/Sublime-VimL"]
 	path = sublime/syntaxes/Sublime-VimL
 	url = https://github.com/SalGnt/Sublime-VimL.git
 [submodule "sublime/syntaxes/elixir-sublime-syntax"]
-	path = sublime/syntaxes/elixir-sublime-syntax
+	path = sublime/syntaxes/extra/elixir-sublime-syntax
 	url = https://github.com/princemaple/elixir-sublime-syntax.git
 [submodule "sublime/syntaxes/SublimeElmLanguageSupport"]
-	path = sublime/syntaxes/SublimeElmLanguageSupport
+	path = sublime/syntaxes/extra/SublimeElmLanguageSupport
 	url = https://github.com/elm-community/SublimeElmLanguageSupport.git
 [submodule "sublime/syntaxes/sublimetext-fsharp"]
-	path = sublime/syntaxes/sublimetext-fsharp
+	path = sublime/syntaxes/extra/sublimetext-fsharp
 	url = https://github.com/hoest/sublimetext-fsharp.git
 [submodule "sublime/syntaxes/sublime-fish"]
-	path = sublime/syntaxes/sublime-fish
+	path = sublime/syntaxes/extra/sublime-fish
 	url = https://github.com/Phidica/sublime-fish.git
 [submodule "sublime/syntaxes/SublimeFortran"]
-	path = sublime/syntaxes/SublimeFortran
+	path = sublime/syntaxes/extra/SublimeFortran
 	url = https://github.com/315234/SublimeFortran.git
 [submodule "sublime/syntaxes/GraphQL-SublimeText3"]
-	path = sublime/syntaxes/GraphQL-SublimeText3
+	path = sublime/syntaxes/extra/GraphQL-SublimeText3
 	url = https://github.com/dncrews/GraphQL-SublimeText3.git
 [submodule "sublime/syntaxes/Sublime-GenericConfig"]
-	path = sublime/syntaxes/Sublime-GenericConfig
+	path = sublime/syntaxes/extra/Sublime-GenericConfig
 	url = https://github.com/skozlovf/Sublime-GenericConfig.git
 [submodule "sublime/syntaxes/sublime-jinja2"]
-	path = sublime/syntaxes/sublime-jinja2
+	path = sublime/syntaxes/extra/sublime-jinja2
 	url = https://github.com/Martin819/sublime-jinja2.git
 [submodule "sublime/syntaxes/Julia-sublime"]
-	path = sublime/syntaxes/Julia-sublime
+	path = sublime/syntaxes/extra/Julia-sublime
 	url = https://github.com/JuliaEditorSupport/Julia-sublime.git
 [submodule "sublime/syntaxes/LESS-sublime"]
-	path = sublime/syntaxes/LESS-sublime
+	path = sublime/syntaxes/extra/LESS-sublime
 	url = https://github.com/danro/LESS-sublime.git
 [submodule "sublime/syntaxes/sublime-purescript-syntax"]
-	path = sublime/syntaxes/sublime-purescript-syntax
+	path = sublime/syntaxes/extra/sublime-purescript-syntax
 	url = https://github.com/tellnobody1/sublime-purescript-syntax.git
 [submodule "sublime/syntaxes/SublimeSass"]
-	path = sublime/syntaxes/SublimeSass
+	path = sublime/syntaxes/extra/SublimeSass
 	url = https://github.com/braver/SublimeSass.git
 [submodule "sublime/syntaxes/sublime_toml_highlighting"]
-	path = sublime/syntaxes/sublime_toml_highlighting
+	path = sublime/syntaxes/extra/sublime_toml_highlighting
 	url = https://github.com/jasonwilliams/sublime_toml_highlighting.git
 [submodule "sublime/syntaxes/vue-syntax-highlight"]
-	path = sublime/syntaxes/vue-syntax-highlight
+	path = sublime/syntaxes/extra/vue-syntax-highlight
 	url = https://github.com/vuejs/vue-syntax-highlight.git
 [submodule "sublime/syntaxes/sublime-glsl"]
-	path = sublime/syntaxes/sublime-glsl
+	path = sublime/syntaxes/extra/sublime-glsl
 	url = https://github.com/euler0/sublime-glsl.git
 [submodule "sublime/syntaxes/GDScript-sublime"]
-	path = sublime/syntaxes/GDScript-sublime
+	path = sublime/syntaxes/extra/GDScript-sublime
 	url = https://github.com/beefsack/GDScript-sublime.git
+[submodule "sublime/syntaxes/extra/sublime-clojure"]
+	path = sublime/syntaxes/extra/sublime-clojure
+	url = https://github.com/tonsky/sublime-clojure.git

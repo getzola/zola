@@ -35,7 +35,7 @@ Here is a full list of supported languages and their short names:
 - C -> ["c", "h"]
 - C# -> ["cs", "csx"]
 - C++ -> ["C", "c++", "cc", "cp", "cpp", "cxx", "h", "h++", "hh", "hpp", "hxx", "inl", "ipp"]
-- Clojure -> ["clj", "cljc", "cljs", "edn"]
+- ClojureC -> ["boot", "clj", "cljc", "cljs", "cljx"]
 - CMake -> ["CMakeLists.txt", "cmake"]
 - CMake C Header -> ["h.in"]
 - CMake C++ Header -> ["h++.in", "hh.in", "hpp.in", "hxx.in"]
@@ -46,6 +46,7 @@ Here is a full list of supported languages and their short names:
 - Dart -> ["dart"]
 - Diff -> ["diff", "patch"]
 - Dockerfile -> ["Dockerfile", "dockerfile"]
+- EDN -> ["edn"]
 - Elixir -> ["ex", "exs"]
 - Elm -> ["elm"]
 - Erlang -> ["Emakefile", "emakefile", "erl", "escript", "hrl"]
@@ -66,7 +67,7 @@ Here is a full list of supported languages and their short names:
 - Git Rebase Todo -> ["git-rebase-todo"]
 - GLSL -> ["comp", "frag", "fs", "fsh", "fshader", "geom", "glsl", "gs", "gsh", "gshader", "tesc", "tese", "vert", "vs", "vsh", "vshader"]
 - Go -> ["go"]
-- GraphQL -> ["gql", "graphql"]
+- GraphQL -> ["gql", "graphql", "graphqls"]
 - Graphviz (DOT) -> ["DOT", "dot", "gv"]
 - Groovy -> ["Jenkinsfile", "gradle", "groovy", "gvy"]
 - Handlebars -> ["handlebars", "handlebars.html", "hbr", "hbrs", "hbs", "hdbs", "hjs", "mu", "mustache", "rac", "stache", "template", "tmpl"]
@@ -143,6 +144,9 @@ Here is a full list of supported languages and their short names:
 - XML -> ["dtml", "opml", "rng", "rss", "svg", "tld", "xml", "xsd", "xslt"]
 - YAML -> ["sublime-syntax", "yaml", "yml"]
 ```
+
+Note: due to some issues with the JavaScript syntax, the TypeScript syntax will be used instead.
+If 
 
 If you want to highlight a language not on this list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 Alternatively, the `extra_syntaxes` configuration option can be used to add additional syntax files.

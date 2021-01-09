@@ -11,9 +11,9 @@ config = { path = "../config" }
 errors = { path = "../errors" }
 
 [dependencies.reqwest]
-version = "0.10"
+version = "0.11"
 default-features = false
 features = ["blocking", "rustls-tls"]
 
 [dev-dependencies]
-mockito = "0.27"
+mockito = "0.28"

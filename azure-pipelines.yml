@@ -21,7 +21,7 @@ stages:
               rustup_toolchain: stable
             linux-pinned:
               imageName: 'ubuntu-20.04'
-              rustup_toolchain: 1.43.0
+              rustup_toolchain: 1.45.2
         pool:
           vmImage: $(imageName)
         steps:

@@ -3,11 +3,11 @@
 title = "book"
 description = "A book theme inspired from GitBook/mdBook"
 template = "theme.html"
-date = 2020-12-08T16:58:54+01:00
+date = 2020-12-14T20:45:47+01:00
 
 [extra]
-created = 2020-12-08T16:58:54+01:00
-updated = 2020-12-08T16:58:54+01:00
+created = 2020-12-14T20:45:47+01:00
+updated = 2020-12-14T20:45:47+01:00
 repository = "https://github.com/getzola/book.git"
 homepage = "https://github.com/getzola/book"
 minimum_version = "0.5.0"
@@ -68,10 +68,10 @@ slug `introduction`, then you would set `redirect_to = "introduction"`.
 
 ### Numbered chapters
 By default, the `book` theme will number the chapters and pages in the left menu.
-You can disable that by setting the `book_numbered_chapters` in `extra`:
+You can disable that by setting the `book_number_chapters` in `extra`:
 
 ```toml
-book_numbered_chapters = false
+book_number_chapters = false
 ```
 
         

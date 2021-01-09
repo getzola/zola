@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.13.0 (2021-01-09)
+
+- Enable HTML minification
+- Support `output_dir` in `config.toml`
+- Allow sections to be drafted
+- Allow specifying default language in filenames
+- Render emoji in Markdown content if the `render_emoji` option is enabled
+- Enable YouTube privacy mode for the YouTube shortcode
+- Add language as class to the `<code>` block and as `data-lang`
+- Add bibtex to `load_data`
+- Add a `[markdown]` section to `config.toml` to configure rendering
+- Add `highlight_code` and `highlight_theme` to a `[markdown]` section in `config.toml`
+- Add `external_links_target_blank`, `external_links_no_follow` and `external_links_no_referrer`
+- Add a `smart_punctuation` option in the `[markdown]` section in `config.toml` to turn elements like dots and dashes 
+into their typographic forms
+- Add iteration count variable `nth` for shortcodes to know how many times a shortcode has been invoked in a given
+content
+- Update some highlighting syntaxes and the TS syntax will now be used instead of JS due to issues with it
+- Remove `zola serve --watch-only`: since we build the HTML in memory and not on disk, it doesn't make sense anymore
+- Update clojure syntax
+- Prefer extra syntaxes to the default ones if we have a match for language
+- Fix `zola serve` having issues with non-ascii paths
+- 404 page now gets the site default language as `lang`
+
 ## 0.12.2 (2020-09-28)
 
 - Fix `zola serve` being broken on reload

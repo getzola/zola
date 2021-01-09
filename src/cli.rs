@@ -44,7 +44,6 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("output_dir")
                         .short("o")
                         .long("output-dir")
-                        .default_value("public")
                         .takes_value(true)
                         .help("Outputs the generated site in the given path"),
                     Arg::with_name("drafts")
@@ -68,7 +67,6 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("output_dir")
                         .short("o")
                         .long("output-dir")
-                        .default_value("public")
                         .takes_value(true)
                         .help("Outputs the generated site in the given path"),
                     Arg::with_name("base_url")
@@ -77,10 +75,6 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("127.0.0.1")
                         .takes_value(true)
                         .help("Changes the base_url"),
-                    Arg::with_name("watch_only")
-                        .long("watch-only")
-                        .takes_value(false)
-                        .help("Do not start a server, just re-build project on changes"),
                     Arg::with_name("drafts")
                         .long("drafts")
                         .takes_value(false)

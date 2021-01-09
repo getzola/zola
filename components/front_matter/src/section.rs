@@ -2,8 +2,10 @@ use serde_derive::{Deserialize, Serialize};
 use tera::{Map, Value};
 
 use super::{InsertAnchor, SortBy};
-use errors::{bail, Result};
+use errors::Result;
 use utils::de::fix_toml_dates;
+
+use crate::RawFrontMatter;
 
 static DEFAULT_PAGINATE_PATH: &str = "page";
 
@@ -22,6 +24,8 @@ pub struct SectionFrontMatter {
     /// Higher values means it will be at the end. Defaults to `0`
     #[serde(skip_serializing)]
     pub weight: usize,
+    /// whether the section is a draft
+    pub draft: bool,
     /// Optional template, if we want to specify which template to render for that section
     #[serde(skip_serializing)]
     pub template: Option<String>,
@@ -71,11 +75,8 @@ pub struct SectionFrontMatter {
 }
 
 impl SectionFrontMatter {
-    pub fn parse(toml: &str) -> Result<SectionFrontMatter> {
-        let mut f: SectionFrontMatter = match toml::from_str(toml) {
-            Ok(d) => d,
-            Err(e) => bail!(e),
-        };
+    pub fn parse(raw: &RawFrontMatter) -> Result<SectionFrontMatter> {
+        let mut f: SectionFrontMatter = raw.deserialize()?;
 
         f.extra = match fix_toml_dates(f.extra) {
             Value::Object(o) => o,
@@ -114,6 +115,7 @@ impl Default for SectionFrontMatter {
             aliases: Vec::new(),
             generate_feed: false,
             extra: Map::new(),
+            draft: false,
         }
     }
 }

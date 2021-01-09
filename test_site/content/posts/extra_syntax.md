@@ -4,6 +4,14 @@ description = ""
 date = 2018-08-14
 +++
 
-```test-syntax
-This is a test code snippet.
+```mylang
+for (int i = 0; ; i++ ) {
+    if (i < 10) 
+}
+```
+
+```c
+for (int i = 0; ; i++ ) {
+    if (i < 10) 
+}
 ```

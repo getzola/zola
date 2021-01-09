@@ -1,5 +1,6 @@
 //! What we are sending to the templates when rendering them
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::path::Path;
 
 use serde_derive::Serialize;
@@ -24,7 +25,13 @@ impl<'a> TranslatedContent<'a> {
     pub fn find_all_sections(section: &'a Section, library: &'a Library) -> Vec<Self> {
         let mut translations = vec![];
 
-        for key in &section.translations {
+        for key in library
+            .translations
+            .get(&section.file.canonical)
+            .or(Some(&HashSet::new()))
+            .unwrap()
+            .iter()
+        {
             let other = library.get_section_by_key(*key);
             translations.push(TranslatedContent {
                 lang: &other.lang,
@@ -40,7 +47,9 @@ impl<'a> TranslatedContent<'a> {
     pub fn find_all_pages(page: &'a Page, library: &'a Library) -> Vec<Self> {
         let mut translations = vec![];
 
-        for key in &page.translations {
+        for key in
+            library.translations.get(&page.file.canonical).or(Some(&HashSet::new())).unwrap().iter()
+        {
             let other = library.get_page_by_key(*key);
             translations.push(TranslatedContent {
                 lang: &other.lang,

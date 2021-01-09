@@ -1,6 +1,5 @@
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
-highlight_code = true
 compile_sass = true
 generate_feed = true
 theme = "sample"
@@ -10,9 +9,11 @@ taxonomies = [
     {name = "podcast_authors", feed = true},
 ]
 
-extra_syntaxes = ["syntaxes"]
-
 ignored_content = ["*/ignored.md"]
+
+[markdown]
+highlight_code = true
+extra_syntaxes = ["syntaxes"]
 
 [slugify]
 paths = "on"
