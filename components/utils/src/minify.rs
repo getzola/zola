@@ -2,7 +2,7 @@ use errors::{bail, Result};
 use minify_html::{with_friendly_error, Cfg};
 
 pub fn html(html: String) -> Result<String> {
-    let cfg = &Cfg { minify_js: false };
+    let cfg = &Cfg { minify_js: false, minify_css: false };
     let mut input_bytes = html.as_bytes().to_vec();
 
     match with_friendly_error(&mut input_bytes, cfg) {
