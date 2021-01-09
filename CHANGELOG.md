@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.13.0 (unreleased)
+## 0.13.0 (2021-01-09)
 
 - Enable HTML minification
 - Support `output_dir` in `config.toml`
@@ -22,6 +22,7 @@ content
 - Update clojure syntax
 - Prefer extra syntaxes to the default ones if we have a match for language
 - Fix `zola serve` having issues with non-ascii paths
+- 404 page now gets the site default language as `lang`
 
 ## 0.12.2 (2020-09-28)
 
