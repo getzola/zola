@@ -8,3 +8,13 @@
 
 [context.deploy-preview]
     command = "zola build --base-url $DEPLOY_PRIME_URL"
+
+[[redirects]]
+  from = "/documentation/"
+  to = "/documentation/getting-started/overview/"
+  status = 302
+
+[[redirects]]
+  from = "/documentation/getting-started/"
+  to = "/documentation/getting-started/overview/"
+  status = 302
