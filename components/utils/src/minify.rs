@@ -6,8 +6,8 @@ pub fn html(html: String) -> Result<String> {
     let mut input_bytes = html.as_bytes().to_vec();
 
     match with_friendly_error(&mut input_bytes, cfg) {
-        Ok(len) => match std::str::from_utf8(&input_bytes) {
-            Ok(result) => Ok(result[..len].to_string()),
+        Ok(len) => match std::str::from_utf8(&input_bytes[..len]) {
+            Ok(result) => Ok(result.to_string()),
             Err(err) => bail!("Failed to convert bytes to string : {}", err),
         },
         Err(minify_error) => {
@@ -44,6 +44,18 @@ mod tests {
 </html>
 "#;
         let expected = r#"<!doctype html><html><head><meta charset=utf-8><body><p>Example blog post</p> FOO BAR"#;
+        let res = html(input.to_owned()).unwrap();
+        assert_eq!(res, expected);
+    }
+
+    // https://github.com/getzola/zola/issues/1304
+    #[test]
+    fn can_minify_multibyte_characters() {
+        let input = r#"
+俺が好きなのはキツネの…ケツねｗ
+ー丁寧なインタネット生活の人より
+"#;
+        let expected = r#"俺が好きなのはキツネの…ケツねｗ ー丁寧なインタネット生活の人より"#;
         let res = html(input.to_owned()).unwrap();
         assert_eq!(res, expected);
     }
