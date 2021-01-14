@@ -415,6 +415,17 @@ mod tests {
     }
 
     #[test]
+    fn doesnt_fail_when_missing_file_is_not_required() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
+        args.insert("required".to_string(), to_value(false).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), tera::Value::Null);
+    }
+
+    #[test]
     fn cant_load_outside_content_dir() {
         let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
         let mut args = HashMap::new();
@@ -511,6 +522,26 @@ mod tests {
             format!("Failed to request {}: 404 Not Found", url)
         );
     }
+
+    #[test]
+    fn doesnt_fail_when_request_404s_is_not_required() {
+        let _m = mock("GET", "/aazeow0kog")
+            .with_status(404)
+            .with_header("content-type", "text/plain")
+            .with_body("Not Found")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
+        let static_fn = LoadData::new(PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
+        args.insert("required".to_string(), to_value(false).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), tera::Value::Null);
+    }
+
 
     #[test]
     fn set_default_user_agent() {
