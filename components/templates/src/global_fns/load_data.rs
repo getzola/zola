@@ -673,6 +673,28 @@ mod tests {
     }
 
     #[test]
+    fn bad_csv_should_result_in_error_even_when_not_required() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
+        args.insert("required".to_string(), to_value(false).unwrap());
+        let result = static_fn.call(&args.clone());
+
+        assert!(result.is_err());
+
+        let error_kind = result.err().unwrap().kind;
+        match error_kind {
+            tera::ErrorKind::Msg(msg) => {
+                if msg != String::from("Error encountered when parsing csv records") {
+                    panic!("Error message is wrong. Perhaps wrong error is being returned?");
+                }
+            }
+            _ => panic!("Error encountered was not expected CSV error"),
+        }
+    }
+
+
+    #[test]
     fn can_load_json() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
