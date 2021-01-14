@@ -124,8 +124,9 @@ impl Config {
             bail!("A base URL is required in config.toml with key `base_url`");
         }
 
-        if !THEME_SET.themes.contains_key(&config.highlight_theme) {
-            bail!("Highlight theme {} not available", config.highlight_theme)
+        let highlight_theme = config.highlight_theme();
+        if !THEME_SET.themes.contains_key(highlight_theme) {
+            bail!("Highlight theme {} not available", highlight_theme)
         }
 
         if config.languages.iter().any(|l| l.code == config.default_language) {
