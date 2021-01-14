@@ -97,7 +97,7 @@ impl DataSource {
         if let Some(url) = url_arg {
             return Url::parse(&url)
                 .map(DataSource::Url)
-                .map(|x| { Some(x) })
+                .map(|x| Some(x))
                 .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
         }
 
