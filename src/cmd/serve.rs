@@ -32,6 +32,7 @@ use hyper::header;
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
+use mime_guess::from_path as mimetype_from_path;
 
 use chrono::prelude::*;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -109,7 +110,7 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     // Remove the trailing slash from the request path
     // otherwise `PathBuf` will interpret it as an absolute path
     root.push(&req.uri().path()[1..]);
-    let result = tokio::fs::read(root).await;
+    let result = tokio::fs::read(&root).await;
 
     let contents = match result {
         Err(err) => match err.kind() {
@@ -125,7 +126,11 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
         Ok(contents) => contents,
     };
 
-    Ok(Response::builder().status(StatusCode::OK).body(Body::from(contents)).unwrap())
+    Ok(Response::builder()
+        .status(StatusCode::OK)
+        .header("Content-Type", mimetype_from_path(&root).first_or_octet_stream().essence_str())
+        .body(Body::from(contents))
+        .unwrap())
 }
 
 fn livereload_js() -> Response<Body> {
