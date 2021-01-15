@@ -8,8 +8,9 @@ use crate::config::Config;
 
 lazy_static! {
     pub static ref SYNTAX_SET: SyntaxSet = {
-        let ss: SyntaxSet =
-            from_binary(include_bytes!("../../../sublime/syntaxes/newlines.packdump"));
+        let ss: SyntaxSet = from_binary(include_bytes!(
+            "../../../sublime/syntaxes/newlines.packdump"
+        ));
         ss
     };
     pub static ref THEME_SET: ThemeSet =
@@ -33,12 +34,20 @@ pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLin
             // https://github.com/getzola/zola/issues/1241
             // https://github.com/getzola/zola/issues/1211
             // https://github.com/getzola/zola/issues/1174
-            let hacked_lang = if *lang == "js" || *lang == "javascript" { "ts" } else { lang };
+            let hacked_lang = if *lang == "js" || *lang == "javascript" {
+                "ts"
+            } else {
+                lang
+            };
             SYNTAX_SET.find_syntax_by_token(hacked_lang)
         }
-        .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());
+        .or_else(|| SYNTAX_SET.find_syntax_by_token(lang)) // if syntax not found in extra, use regular syntaxes
+        .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text()); // if still not found, use plaintext
         (HighlightLines::new(syntax, theme), in_extra)
     } else {
-        (HighlightLines::new(SYNTAX_SET.find_syntax_plain_text(), theme), false)
+        (
+            HighlightLines::new(SYNTAX_SET.find_syntax_plain_text(), theme),
+            false,
+        )
     }
 }
