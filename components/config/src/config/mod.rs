@@ -16,7 +16,7 @@ use toml::Value as Toml;
 use crate::highlighting::THEME_SET;
 use crate::theme::Theme;
 use errors::{bail, Error, Result};
-use utils::fs::read_file_with_error;
+use utils::fs::read_file;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
@@ -170,11 +170,7 @@ impl Config {
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let path = path.as_ref();
-        let file_name = path.file_name().unwrap();
-        let content = read_file_with_error(
-            path,
-            &format!("No `{:?}` file found. Are you in the right directory?", file_name),
-        )?;
+        let content = read_file(path)?;
         Config::parse(&content)
     }
 
@@ -271,8 +267,8 @@ impl Config {
 
     /// Parse the theme.toml file and merges the extra data from the theme
     /// with the config extra data
-    pub fn merge_with_theme(&mut self, path: &PathBuf) -> Result<()> {
-        let theme = Theme::from_file(path)?;
+    pub fn merge_with_theme(&mut self, path: &PathBuf, theme_name: &str) -> Result<()> {
+        let theme = Theme::from_file(path, theme_name)?;
         self.add_theme_extra(&theme)
     }
 

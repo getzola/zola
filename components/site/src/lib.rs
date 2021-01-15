@@ -72,12 +72,12 @@ impl Site {
     pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
-        let mut config = get_config(config_file);
+        let mut config = get_config(config_file)?;
         config.load_extra_syntaxes(path)?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
-            config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
+            config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"), &theme)?;
         }
 
         let tera = tpls::load_tera(path, &config)?;
