@@ -26,8 +26,12 @@ pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLin
             let s = extra.find_syntax_by_token(lang);
             if s.is_some() {
                 in_extra = true;
+                s
+            } else {
+                // Copied from below
+                let hacked_lang = if *lang == "js" || *lang == "javascript" { "ts" } else { lang };
+                SYNTAX_SET.find_syntax_by_token(hacked_lang)
             }
-            s
         } else {
             // The JS syntax hangs a lot... the TS syntax is probably better anyway.
             // https://github.com/getzola/zola/issues/1241
