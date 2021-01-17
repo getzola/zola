@@ -2668,8 +2668,9 @@ dependencies = [
 
 [[package]]
 name = "test-case"
-version = "1.0.0"
-source = "git+https://github.com/frondeus/test-case#65b6fb60c69054950a149b64a0a9f042c0e4fd59"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "956044ef122917dde830c19dec5f76d0670329fde4104836d62ebcb14f4865f1"
 dependencies = [
  "cfg-if 1.0.0",
  "proc-macro2",
