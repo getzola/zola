@@ -180,9 +180,9 @@ to newest (at the bottom).
 
 `reverse` has no effect on:
 
-* `page.later`/`page.earlier`,
+* `page.later` / `page.earlier`,
 * `page.title_prev` / `page.title_next`, or
-* `page.heavier`/`page.lighter`.
+* `page.heavier` / `page.lighter`.
 
 If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
 
