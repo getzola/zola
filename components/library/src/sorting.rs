@@ -175,11 +175,6 @@ mod tests {
             println!("{:?}", page);
         }
         // Should be sorted by title
-        // DefaultKey(2v1)
-        // DefaultKey(4v1)
-        // DefaultKey(1v1)
-        // DefaultKey(5v1)
-        // DefaultKey(3v1)
         assert_eq!(sorted[0], keys[2]);
         assert_eq!(sorted[1], keys[4]);
         assert_eq!(sorted[2], keys[0]);
