@@ -171,9 +171,6 @@ mod tests {
             |(i, page)| (&keys[i], page.meta.title.as_deref(), page.permalink.as_ref())
         ).collect();
         let (sorted, _) = sort_pages_by_title(input);
-        for page in sorted.iter() {
-            println!("{:?}", page);
-        }
         // Should be sorted by title
         assert_eq!(sorted[0], keys[2]);
         assert_eq!(sorted[1], keys[4]);
