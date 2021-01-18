@@ -161,9 +161,18 @@ get `page.earlier` and `page.later` variables that contain the pages with
 earlier and later dates, respectively.
 
 ### `title`
-This will sort all pages by their `title` field in alphabetical order from
-'a' to 'z'.  Each page will get `page.title_prev` and `page.title_next`
-variables that contain the pages with previous and next titles, respectively.
+This will sort all pages by their `title` field in natural lexical order, as
+defined  by `natural_lexical_cmp` in the [lexical-sort] crate. Each page will
+get `page.title_prev` and `page.title_next` variables that  contain the pages
+with  previous and next titles, respectively.
+
+For example, here is a natural lexical ordering: "bachata, BART, bolero,
+μ-kernel, meter, Métro, Track-2, Track-3, Track-13, underground". Notice how
+special characters and numbers are sorted reasonably. This is better than
+the standard sorting: "BART, Métro, Track-13, Track-2, Track-3, bachata,
+bolero, meter, underground, μ-kernel".
+
+[lexical-sort]: https://docs.rs/lexical-sort
 
 ### `weight`
 This will be sort all pages by their `weight` field, from lightest weight

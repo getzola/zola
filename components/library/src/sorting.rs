@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use chrono::NaiveDateTime;
+use lexical_sort::natural_lexical_cmp;
 use rayon::prelude::*;
 use slotmap::DefaultKey;
 
@@ -39,9 +40,10 @@ pub fn sort_pages_by_date(
     (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
 }
 
-/// Takes a list of (page key, title, permalink) and sort them by title if possible
-/// Pages without title will be put in the unsortable bucket
-/// The permalink is used to break ties
+/// Takes a list of (page key, title, permalink) and sort them by title if possible.
+/// Uses the a natural lexical comparison as defined by the lexical_sort crate.
+/// Pages without title will be put in the unsortable bucket.
+/// The permalink is used to break ties.
 pub fn sort_pages_by_title(
     pages: Vec<(&DefaultKey, Option<&str>, &str)>,
 ) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
@@ -49,7 +51,7 @@ pub fn sort_pages_by_title(
         pages.into_par_iter().partition(|page| page.1.is_some());
 
     can_be_sorted.par_sort_unstable_by(|a, b| {
-        let ord = a.1.unwrap().cmp(&b.1.unwrap());
+        let ord = natural_lexical_cmp(a.1.unwrap(), b.1.unwrap());
         if ord == Ordering::Equal {
             a.2.cmp(&b.2)
         } else {
@@ -159,7 +161,18 @@ mod tests {
 
     #[test]
     fn can_sort_by_titles() {
-        let titles = vec!["free", "penguin", "as", "in", "beer"];
+        let titles = vec![
+            "bagel",
+            "track_3",
+            "microkernel",
+            "métro",
+            "BART",
+            "Underground",
+            "track_13",
+            "μ-kernel",
+            "meter",
+            "track_1",
+        ];
         let pages: Vec<Page> = titles.iter().map(
             |title| create_page_with_title(title)
         ).collect();
@@ -172,11 +185,21 @@ mod tests {
         ).collect();
         let (sorted, _) = sort_pages_by_title(input);
         // Should be sorted by title
-        assert_eq!(sorted[0], keys[2]);
-        assert_eq!(sorted[1], keys[4]);
-        assert_eq!(sorted[2], keys[0]);
-        assert_eq!(sorted[3], keys[3]);
-        assert_eq!(sorted[4], keys[1]);
+        let sorted_titles: Vec<_> = sorted.iter().map(
+            |key| dense.get(*key).unwrap().meta.title.as_ref().unwrap()
+        ).collect();
+        assert_eq!(sorted_titles, vec![
+            "bagel",
+            "BART",
+            "μ-kernel",
+            "meter",
+            "métro",
+            "microkernel",
+            "track_1",
+            "track_3",
+            "track_13",
+            "Underground",
+        ]);
     }
 
     #[test]
