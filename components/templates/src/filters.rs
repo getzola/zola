@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::hash::BuildHasher;
+use std::borrow::Cow;
 
 use base64::{decode, encode};
 use config::Config;
@@ -9,17 +10,19 @@ use tera::{to_value, try_get_value, Filter as TeraFilter, Result as TeraResult, 
 #[derive(Debug)]
 pub struct MarkdownFilter {
     config: Config,
+    permalinks: HashMap<String, String>,
 }
 
 impl MarkdownFilter {
-    pub fn new(config: Config) -> Self {
-        Self { config }
+    pub fn new(config: Config, permalinks: HashMap<String, String>) -> Self {
+        Self { config, permalinks }
     }
 }
 
 impl TeraFilter for MarkdownFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-        let context = RenderContext::from_config(&self.config);
+        let mut context = RenderContext::from_config(&self.config);
+        context.permalinks = Cow::Borrowed(&self.permalinks);
         let s = try_get_value!("markdown", "value", String, value);
         let inline = match args.get("inline") {
             Some(val) => try_get_value!("markdown", "inline", bool, val),

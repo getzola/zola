@@ -64,9 +64,7 @@ Zola adds a few filters in addition to [those](https://tera.netlify.com/docs/#fi
 in Tera.
 
 ### markdown
-Converts the given variable to HTML using Markdown. This doesn't apply any of the
-features that Zola adds to Markdown; for example, internal links and shortcodes won't work.
-
+Converts the given variable to HTML using Markdown. Shortcodes won't work within this filter.
 By default, the filter will wrap all text in a paragraph. To disable this behaviour, you can
 pass `true` to the inline argument:
 
