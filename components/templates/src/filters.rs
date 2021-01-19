@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn markdown_filter() {
-        let result = MarkdownFilter::new(Config::default())
+        let result = MarkdownFilter::new(Config::default(), HashMap::new())
             .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
@@ -82,7 +82,7 @@ mod tests {
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(Config::default()).filter(
+        let result = MarkdownFilter::new(Config::default(), HashMap::new()).filter(
             &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
             &args,
         );
@@ -95,7 +95,7 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(Config::default()).filter(
+        let result = MarkdownFilter::new(Config::default(), HashMap::new()).filter(
             &to_value(
                 &r#"
 |id|author_id|       timestamp_created|title                 |content           |
@@ -121,14 +121,24 @@ mod tests {
 
         let md = "Hello <https://google.com> :smile: ...";
         let result =
-            MarkdownFilter::new(config.clone()).filter(&to_value(&md).unwrap(), &HashMap::new());
+            MarkdownFilter::new(config.clone(), HashMap::new()).filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
-        let result = MarkdownFilter::new(config).filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(config, HashMap::new()).filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<pre style"));
+    }
+
+    #[test]
+    fn mardown_filter_can_use_internal_links() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
+        let md = "Hello. Check out [my blog](@/blog/_index.md)!";
+        let result = MarkdownFilter::new(Config::default(), permalinks).filter(&to_value(&md).unwrap(), &HashMap::new());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"<p>Hello. Check out <a href=\"/foo/blog\">my blog</a>!</p>\n").unwrap());
     }
 
     #[test]
