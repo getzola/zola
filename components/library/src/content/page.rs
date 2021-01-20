@@ -62,6 +62,10 @@ pub struct Page {
     pub earlier: Option<DefaultKey>,
     /// The later page, for pages sorted by date
     pub later: Option<DefaultKey>,
+    /// The previous page, for pages sorted by title
+    pub title_prev: Option<DefaultKey>,
+    /// The next page, for pages sorted by title
+    pub title_next: Option<DefaultKey>,
     /// The lighter page, for pages sorted by weight
     pub lighter: Option<DefaultKey>,
     /// The heavier page, for pages sorted by weight

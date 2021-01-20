@@ -19,7 +19,7 @@ Any non-Markdown file in a section directory is added to the `assets` collection
 Markdown file using relative links.
 
 ## Drafting
-Just like pages sections can be drafted by setting the `draft` option in the front matter. By default this is not done. When a section is drafted it's descendants like pages, subsections and assets will not be processed unless the `--drafts` flag is passed. Note that even pages that don't have a `draft` status will not be processed if one of their parent sections is drafted. 
+Just like pages sections can be drafted by setting the `draft` option in the front matter. By default this is not done. When a section is drafted it's descendants like pages, subsections and assets will not be processed unless the `--drafts` flag is passed. Note that even pages that don't have a `draft` status will not be processed if one of their parent sections is drafted.
 
 ## Front matter
 
@@ -48,7 +48,7 @@ description = ""
 # A draft section is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
 draft = false
 
-# Used to sort pages by "date", "weight" or "none". See below for more information.
+# Used to sort pages by "date", "title, "weight", or "none". See below for more information.
 sort_by = "none"
 
 # Used by the parent section to order its subsections.
@@ -91,7 +91,7 @@ render = true
 # Useful for the same reason as `render` but when you don't want a 404 when
 # landing on the root section page.
 # Example: redirect_to = "documentation/content/overview"
-redirect_to = 
+redirect_to =
 
 # If set to "true", the section will pass its pages on to the parent section. Defaults to `false`.
 # Useful when the section shouldn't split up the parent section, like
@@ -124,6 +124,7 @@ You can also change the pagination path (the word displayed while paginated in t
 by setting the `paginate_path` variable, which defaults to `page`.
 
 ## Sorting
+
 It is very common for Zola templates to iterate over pages or sections
 to display all pages/sections in a given directory.  Consider a very simple
 example: a `blog` directory with three files: `blog/Post_1.md`,
@@ -139,7 +140,7 @@ create a list of links to the posts, a simple template might look like this:
 This would iterate over the posts in the order specified
 by the `sort_by` variable set in the `_index.md` page for the corresponding
 section.  The `sort_by` variable can be given one of three values: `date`,
-`weight` or `none`.  If `sort_by` is not set, the pages will be
+`title`, `weight` or `none`.  If `sort_by` is not set, the pages will be
 sorted in the `none` order, which is not intended for sorted content.
 
 Any page that is missing the data it needs to be sorted will be ignored and
@@ -159,6 +160,20 @@ top of the list) to the oldest (at the bottom of the list).  Each page will
 get `page.earlier` and `page.later` variables that contain the pages with
 earlier and later dates, respectively.
 
+### `title`
+This will sort all pages by their `title` field in natural lexical order, as
+defined  by `natural_lexical_cmp` in the [lexical-sort] crate. Each page will
+get `page.title_prev` and `page.title_next` variables that  contain the pages
+with  previous and next titles, respectively.
+
+For example, here is a natural lexical ordering: "bachata, BART, bolero,
+μ-kernel, meter, Métro, Track-2, Track-3, Track-13, underground". Notice how
+special characters and numbers are sorted reasonably. This is better than
+the standard sorting: "BART, Métro, Track-13, Track-2, Track-3, bachata,
+bolero, meter, underground, μ-kernel".
+
+[lexical-sort]: https://docs.rs/lexical-sort
+
 ### `weight`
 This will be sort all pages by their `weight` field, from lightest weight
 (at the top of the list) to heaviest (at the bottom of the list).  Each
@@ -172,9 +187,13 @@ pages sorted by weight will be sorted from lightest (at the top) to heaviest
 (at the bottom); pages sorted by date will be sorted from oldest (at the top)
 to newest (at the bottom).
 
-`reverse` has no effect on `page.later`/`page.earlier` or `page.heavier`/`page.lighter`.
+`reverse` has no effect on:
 
-If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter. 
+* `page.later` / `page.earlier`,
+* `page.title_prev` / `page.title_next`, or
+* `page.heavier` / `page.lighter`.
+
+If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
 
 ## Sorting subsections
 Sorting sections is a bit less flexible: sections can only be sorted by `weight`,
