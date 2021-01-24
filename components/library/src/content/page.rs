@@ -25,7 +25,7 @@ lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
     // A regex parsing RFC3339 date followed by {_,-}, some characters and ended by .md
     static ref RFC3339_DATE: Regex = Regex::new(
-        r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)(_|-)(?P<slug>.+$)"
+        r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)\s?(_|-)(?P<slug>.+$)"
     ).unwrap();
 }
 
@@ -701,6 +701,23 @@ Hello world
 
         assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
         assert_eq!(page.slug, " こんにちは");
+    }
+
+    #[test]
+    fn can_get_date_from_filename_with_spaces() {
+        let config = Config::default();
+        let content = r#"
++++
++++
+Hello world
+<!-- more -->"#
+            .to_string();
+        let res = Page::parse(Path::new("2018-10-08 - hello.md"), &content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+
+        assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
+        assert_eq!(page.slug, "hello");
     }
 
     #[test]
