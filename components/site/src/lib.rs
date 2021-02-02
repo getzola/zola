@@ -247,7 +247,10 @@ impl Site {
                         &self.config,
                         &self.base_path,
                     ) {
-                        Err(_) => continue,
+                        Err(e) => {
+                            println!("Failed to load section: {:?}", e);
+                            continue;
+                        }
                         Ok(sec) => sec,
                     };
 
@@ -260,8 +263,13 @@ impl Site {
                     self.add_section(section, false)?;
                 }
             } else {
-                let page = Page::from_file(path, &self.config, &self.base_path)
-                    .expect("error deserialising page");
+                let page = match Page::from_file(path, &self.config, &self.base_path) {
+                    Err(e) => {
+                        println!("Failed to load page: {:?}", e);
+                        continue;
+                    }
+                    Ok(p) => p,
+                };
 
                 // should we skip drafts?
                 if page.meta.draft && !self.include_drafts {
