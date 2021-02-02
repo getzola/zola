@@ -5,6 +5,7 @@
 ### Features
 
 - internal links are now resolved in the `markdown` filter in the templates (#1296 #1316)
+- Add a `required` argument to `load_data` so it can be allowed to fail
 
 ## 0.13.0 (2021-01-09)
 
