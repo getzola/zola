@@ -173,33 +173,35 @@ mod tests {
             "meter",
             "track_1",
         ];
-        let pages: Vec<Page> = titles.iter().map(
-            |title| create_page_with_title(title)
-        ).collect();
+        let pages: Vec<Page> = titles.iter().map(|title| create_page_with_title(title)).collect();
         let mut dense = DenseSlotMap::new();
-        let keys: Vec<_> = pages.iter().map(
-            |p| dense.insert(p)
-        ).collect();
-        let input: Vec<_> = pages.iter().enumerate().map(
-            |(i, page)| (&keys[i], page.meta.title.as_deref(), page.permalink.as_ref())
-        ).collect();
+        let keys: Vec<_> = pages.iter().map(|p| dense.insert(p)).collect();
+        let input: Vec<_> = pages
+            .iter()
+            .enumerate()
+            .map(|(i, page)| (&keys[i], page.meta.title.as_deref(), page.permalink.as_ref()))
+            .collect();
         let (sorted, _) = sort_pages_by_title(input);
         // Should be sorted by title
-        let sorted_titles: Vec<_> = sorted.iter().map(
-            |key| dense.get(*key).unwrap().meta.title.as_ref().unwrap()
-        ).collect();
-        assert_eq!(sorted_titles, vec![
-            "bagel",
-            "BART",
-            "μ-kernel",
-            "meter",
-            "métro",
-            "microkernel",
-            "track_1",
-            "track_3",
-            "track_13",
-            "Underground",
-        ]);
+        let sorted_titles: Vec<_> = sorted
+            .iter()
+            .map(|key| dense.get(*key).unwrap().meta.title.as_ref().unwrap())
+            .collect();
+        assert_eq!(
+            sorted_titles,
+            vec![
+                "bagel",
+                "BART",
+                "μ-kernel",
+                "meter",
+                "métro",
+                "microkernel",
+                "track_1",
+                "track_3",
+                "track_13",
+                "Underground",
+            ]
+        );
     }
 
     #[test]

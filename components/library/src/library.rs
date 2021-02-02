@@ -6,7 +6,9 @@ use slotmap::{DefaultKey, DenseSlotMap};
 use front_matter::SortBy;
 
 use crate::content::{Page, Section};
-use crate::sorting::{find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight};
+use crate::sorting::{
+    find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight,
+};
 use config::Config;
 
 // Like vec! but for HashSet

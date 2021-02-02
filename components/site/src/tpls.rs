@@ -50,7 +50,10 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) {
-    site.tera.register_filter("markdown", filters::MarkdownFilter::new(site.config.clone(), site.permalinks.clone()));
+    site.tera.register_filter(
+        "markdown",
+        filters::MarkdownFilter::new(site.config.clone(), site.permalinks.clone()),
+    );
 
     site.tera.register_function(
         "get_url",

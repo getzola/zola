@@ -190,7 +190,15 @@ impl LoadData {
 
 impl TeraFn for LoadData {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let required = if let Some(req) = optional_arg!(bool, args.get("required"), "`load_data`: `required` must be a boolean (true or false)") { req } else { true };
+        let required = if let Some(req) = optional_arg!(
+            bool,
+            args.get("required"),
+            "`load_data`: `required` must be a boolean (true or false)"
+        ) {
+            req
+        } else {
+            true
+        };
         let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         let data_source = DataSource::from_args(path_arg.clone(), url_arg, &self.base_path)?;
@@ -198,13 +206,19 @@ impl TeraFn for LoadData {
         // If the file doesn't exist, source is None
         match (&data_source, required) {
             // If the file was not required, return a Null value to the template
-            (None, false) => { return Ok(Value::Null); },
+            (None, false) => {
+                return Ok(Value::Null);
+            }
             // If the file was required, error
             (None, true) => {
                 // source is None only with path_arg (not URL), so path_arg is safely unwrap
-                return Err(format!("{} doesn't exist", &self.base_path.join(path_arg.unwrap()).display()).into());
-            },
-            _ => {},
+                return Err(format!(
+                    "{} doesn't exist",
+                    &self.base_path.join(path_arg.unwrap()).display()
+                )
+                .into());
+            }
+            _ => {}
         }
         let data_source = data_source.unwrap();
         let file_format = get_output_format_from_args(&args, &data_source)?;
@@ -223,25 +237,26 @@ impl TeraFn for LoadData {
                     .get(url.as_str())
                     .header(header::ACCEPT, file_format.as_accept_header())
                     .send()
-                    .and_then(|res| res.error_for_status()) {
-                        Ok(r) => {
-                            r.text()
-                            .map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
-                        },
-                        Err(e) => {
-                            if !required {
-                                // HTTP error is discarded (because required=false) and
-                                // Null value is returned to the template
-                                return Ok(Value::Null);
-                            }
-                            Err(match e.status() {
-                                Some(status) => format!("Failed to request {}: {}", url, status),
-                                None => format!("Could not get response status for url: {}", url),
-                            }.into())
+                    .and_then(|res| res.error_for_status())
+                {
+                    Ok(r) => r.text().map_err(|e| {
+                        format!("Failed to parse response from {}: {:?}", url, e).into()
+                    }),
+                    Err(e) => {
+                        if !required {
+                            // HTTP error is discarded (because required=false) and
+                            // Null value is returned to the template
+                            return Ok(Value::Null);
                         }
+                        Err(match e.status() {
+                            Some(status) => format!("Failed to request {}: {}", url, status),
+                            None => format!("Could not get response status for url: {}", url),
+                        }
+                        .into())
+                    }
                 }
-            },
-        // Now that we have discarded recoverable errors, we can unwrap the result
+            }
+            // Now that we have discarded recoverable errors, we can unwrap the result
         }?;
 
         let result_value: Result<Value> = match file_format {
@@ -542,7 +557,6 @@ mod tests {
         assert_eq!(result.unwrap(), tera::Value::Null);
     }
 
-
     #[test]
     fn set_default_user_agent() {
         let user_agent = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
@@ -692,7 +706,6 @@ mod tests {
             _ => panic!("Error encountered was not expected CSV error"),
         }
     }
-
 
     #[test]
     fn can_load_json() {

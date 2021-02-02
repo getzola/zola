@@ -24,7 +24,10 @@ pub enum HighlightSource {
 }
 
 /// Returns the highlighter and whether it was found in the extra or not
-pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLines<'static>, HighlightSource) {
+pub fn get_highlighter(
+    language: Option<&str>,
+    config: &Config,
+) -> (HighlightLines<'static>, HighlightSource) {
     let theme = &THEME_SET.themes[config.highlight_theme()];
 
     if let Some(ref lang) = language {
@@ -41,7 +44,10 @@ pub fn get_highlighter(language: Option<&str>, config: &Config) -> (HighlightLin
         if let Some(syntax) = SYNTAX_SET.find_syntax_by_token(hacked_lang) {
             (HighlightLines::new(syntax, theme), HighlightSource::Theme)
         } else {
-            (HighlightLines::new(SYNTAX_SET.find_syntax_plain_text(), theme), HighlightSource::NotFound)
+            (
+                HighlightLines::new(SYNTAX_SET.find_syntax_plain_text(), theme),
+                HighlightSource::NotFound,
+            )
         }
     } else {
         (HighlightLines::new(SYNTAX_SET.find_syntax_plain_text(), theme), HighlightSource::Plain)

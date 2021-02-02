@@ -1,6 +1,6 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
-use std::borrow::Cow;
 
 use base64::{decode, encode};
 use config::Config;
@@ -120,13 +120,14 @@ mod tests {
         config.markdown.external_links_target_blank = true;
 
         let md = "Hello <https://google.com> :smile: ...";
-        let result =
-            MarkdownFilter::new(config.clone(), HashMap::new()).filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(config.clone(), HashMap::new())
+            .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
-        let result = MarkdownFilter::new(config, HashMap::new()).filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(config, HashMap::new())
+            .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<pre style"));
     }
@@ -136,9 +137,13 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
-        let result = MarkdownFilter::new(Config::default(), permalinks).filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(Config::default(), permalinks)
+            .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value(&"<p>Hello. Check out <a href=\"/foo/blog\">my blog</a>!</p>\n").unwrap());
+        assert_eq!(
+            result.unwrap(),
+            to_value(&"<p>Hello. Check out <a href=\"/foo/blog\">my blog</a>!</p>\n").unwrap()
+        );
     }
 
     #[test]
