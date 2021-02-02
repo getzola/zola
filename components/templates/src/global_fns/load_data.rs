@@ -255,8 +255,7 @@ impl TeraFn for LoadData {
                         .into())
                     }
                 }
-            }
-            // Now that we have discarded recoverable errors, we can unwrap the result
+            } // Now that we have discarded recoverable errors, we can unwrap the result
         }?;
 
         let result_value: Result<Value> = match file_format {
