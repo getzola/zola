@@ -40,7 +40,7 @@ To do this, create a file called `.gitlab-ci.yml` in the root directory of your 
 image: alpine:latest
 variables:
   # This variable will ensure that the CI runner pulls in your theme from the submodule
-  GIT_SUBMODULE_STRATEGY: recursive  
+  GIT_SUBMODULE_STRATEGY: recursive
   # Specify the zola version you want to use here
   ZOLA_VERSION: "v0.12.0"
 
@@ -50,14 +50,14 @@ pages:
     - apk add --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ zola
     # Execute zola build
     - zola build
-    
+
   artifacts:
     paths:
       # Path of our artifacts
       - public
-      
+
   # This config will only publish changes that are pushed on the master branch
-  only: 
+  only:
     - master
 ```
 

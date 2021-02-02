@@ -33,19 +33,19 @@ on: push
 name: Build and deploy GH Pages
 jobs:
   build:
-    name: shalzz/zola-deploy-action
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
-    # Checkout
-    - uses: actions/checkout@master
-    # Build & deploy
-    - name: shalzz/zola-deploy-action
-      uses: shalzz/zola-deploy-action@v0.12.0
-      env:
-        # Target branch
-        PAGES_BRANCH: gh-pages
-        # Provide personal access token
-        TOKEN: ${{ secrets.TOKEN }}
+      # Checkout
+      - uses: actions/checkout@v2
+      # Build & deploy
+      - name: Deploy to gh-pages branch
+        uses: shalzz/zola-deploy-action@v0.12.0
+        env:
+          # Target branch
+          PAGES_BRANCH: gh-pages
+          # Provide personal access token
+          TOKEN: ${{ secrets.TOKEN }}
 ```
 
 This script is pretty simple, because the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action) is doing everything for you. You just need to provide some details. For more configuration options check out the [README](https://github.com/shalzz/zola-deploy-action/blob/master/README.md).
