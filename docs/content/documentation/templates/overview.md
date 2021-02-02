@@ -210,9 +210,19 @@ As a security precaution, if this file is outside the main site directory, your 
 {% set data = load_data(path="content/blog/story/data.toml") %}
 ```
 
+The optional `required` boolean argument can be set to false so that missing data (HTTP error or local file not found) does not produce an error, but returns a null value instead. However, permission issues with a local file and invalid data that could not be parsed to the requested data format will still produce an error even with `required=false`.
+
+The snippet below outputs the HTML from a Wikipedia page, or "No data found" if the page was not reachable, or did not return a successful HTTP code:
+
+```jinja2
+{% set data = load_data(path="https://en.wikipedia.org/wiki/Commune_of_Paris", required=false) %}
+{% if data %}{{ data | safe }}{% else %}No data found{% endif %}
+```
+
 The optional `format` argument allows you to specify and override which data type is contained
 within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`, `bibtex`
 or `plain`. If the `format` argument isn't specified, then the path extension is used.
+
 
 ```jinja2
 {% set data = load_data(path="content/blog/story/data.txt", format="json") %}
