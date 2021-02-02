@@ -476,9 +476,11 @@ pub fn serve(
                         if is_ignored_file(&site.config.ignored_content_globset, &path) {
                             continue;
                         }
-                        if is_temp_file(&path) || path.is_dir() {
+
+                        if path.is_file() && is_temp_file(&path) {
                             continue;
                         }
+
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
                             continue;
