@@ -22,6 +22,14 @@ Zola is available in the official Arch Linux repositories.
 $ pacman -S zola
 ```
 
+### Alpine Linux
+
+Zola is available in the official Alpine Linux repository, only on the `edge` version for now.
+
+```sh
+$ apk add zola --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
+```
+
 ### Fedora
 
 Zola has been available in the official repositories since Fedora 29.
