@@ -38,7 +38,7 @@ homepage = "https://vincent.is"
 # the info of the original author here
 [original]
 author =  "mdo"
-homepage = "http://markdotto.com/"
+homepage = "https://markdotto.com/"
 repo = "https://www.github.com/mdo/hyde"
 ```
 

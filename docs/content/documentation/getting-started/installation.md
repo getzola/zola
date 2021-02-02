@@ -62,7 +62,7 @@ $ snap install --edge zola
 
 ## Windows
 
-Zola is available on [Scoop](http://scoop.sh):
+Zola is available on [Scoop](https://scoop.sh):
 
 ```bash
 $ scoop install zola
