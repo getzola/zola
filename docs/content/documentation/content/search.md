@@ -22,5 +22,5 @@ the JavaScript/CSS code to do an actual search and display results. You can look
 implements it to get an idea: [search.js](https://github.com/getzola/zola/tree/master/docs/static/search.js).
 
 ## Configuring the search index
-In some cases, the default indexing strategy is not suitable. You can customise which fields to include and whether
+In some cases, the default indexing strategy is not suitable. You can customize which fields to include and whether
 to truncate the content in the [search configuration](@/documentation/getting-started/configuration.md).

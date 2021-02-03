@@ -12,7 +12,7 @@ repository = "https://git.42l.fr/HugoTrentesaux/toucan.git"
 homepage = "https://git.42l.fr/HugoTrentesaux/toucan"
 minimum_version = "0.8.0"
 license = "AGPL"
-demo = "http://blog.coinduf.eu/"
+demo = "https://coinduf.eu/"
 
 [extra.author]
 name = "Hugo Trentesaux"

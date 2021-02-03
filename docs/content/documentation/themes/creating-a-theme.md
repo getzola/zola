@@ -23,7 +23,7 @@ min_version = "0.4.0"
 # An optional live demo URL
 demo = ""
 
-# Any variable there can be overriden in the end user `config.toml`
+# Any variable there can be overridden in the end user `config.toml`
 # You don't need to prefix variables by the theme name but as this will
 # be merged with user data, some kind of prefix or nesting is preferable
 # Use snake_casing to be consistent with the rest of Zola
@@ -38,7 +38,7 @@ homepage = "https://vincent.is"
 # the info of the original author here
 [original]
 author =  "mdo"
-homepage = "http://markdotto.com/"
+homepage = "https://markdotto.com/"
 repo = "https://www.github.com/mdo/hyde"
 ```
 

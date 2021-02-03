@@ -3,6 +3,7 @@
 | Site                                                               |                   Source Code                            |
 |:-------------------------------------------------------------------|:--------------------------------------------------------:|
 | [vincentprouillet.com](https://www.vincentprouillet.com/)          | https://github.com/Keats/vincentprouillet/               |
+| [blog.williamdes.eu](http://blog.williamdes.eu/)                   | https://github.com/wdesportes/blog.williamdes.eu         |
 | [t-rex.tileserver.ch](https://t-rex.tileserver.ch)                 | https://github.com/t-rex-tileserver/t-rex-website/       |
 | [Philipp Oppermann's blog](https://os.phil-opp.com/)               | https://github.com/phil-opp/blog_os/tree/master/blog     |
 | [seventeencups](https://www.seventeencups.net)                     | https://github.com/17cupsofcoffee/seventeencups.net      |

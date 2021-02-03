@@ -23,11 +23,11 @@ After the import, you can set the settings for your project.
 All we have to is include a `vercel.json` in our project's root directory by
 specifying the `ZOLA_VERSION` we want to use to deploy the site.
 
-```
+```json
   {
   "build": {
     "env": {
-      "ZOLA_VERSION": "0.12.0"
+      "ZOLA_VERSION": "0.13.0"
     }
   }
 }

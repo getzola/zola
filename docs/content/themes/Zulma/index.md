@@ -23,7 +23,7 @@ homepage = ""
 
 A Bulma theme for Zola. See a live preview [here](https://festive-morse-47d46c.netlify.com/)
 
-![Zulma Screenshot](/screenshot.png)
+![Zulma Screenshot](./screenshot.png)
 
 ## Contents
 

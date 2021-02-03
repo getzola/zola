@@ -23,7 +23,7 @@ homepage = "https://github.com/ejmg"
 
 a minimalist and dark theme for [Zola](https://getzola.org).
 
-![Screenshot](../master/zerm-preview.png?raw=true)
+![screenshot](./screenshot.png)
 
 [**Live Preview!**](https://zerm.ejmg.now.sh/)
 

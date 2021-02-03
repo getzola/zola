@@ -10,7 +10,7 @@ Zola provides pre-built binaries for MacOS, Linux and Windows on the
 
 Zola is available on [Brew](https://brew.sh):
 
-```bash
+```sh
 $ brew install zola
 ```
 
@@ -18,8 +18,16 @@ $ brew install zola
 
 Zola is available in the official Arch Linux repositories.
 
-```bash
+```sh
 $ pacman -S zola
+```
+
+### Alpine Linux
+
+Zola is available in the official Alpine Linux repository, only on the `edge` version for now.
+
+```sh
+$ apk add zola --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
 ```
 
 ### Fedora
@@ -31,6 +39,7 @@ $ sudo dnf install zola
 ```
 
 ### Void Linux
+
 Zola is available in the official Void Linux repositories.
 
 ```sh
@@ -46,6 +55,7 @@ $ pkg install zola
 ```
 
 ### OpenBSD
+
 Zola is available in the official package repository.
 
 ```sh
@@ -56,27 +66,28 @@ $ doas pkg_add zola
 
 Zola is available on snapcraft:
 
-```bash
+```sh
 $ snap install --edge zola
 ```
 
 ## Windows
 
-Zola is available on [Scoop](http://scoop.sh):
+Zola is available on [Scoop](https://scoop.sh):
 
-```bash
+```sh
 $ scoop install zola
 ```
 
 and [Chocolatey](https://chocolatey.org/):
 
-```bash
+```sh
 $ choco install zola
 ```
 
 Zola does not work in PowerShell ISE.
 
 ## From source
+
 To build Zola from source, you will need to have Git, [Rust (at least 1.45) and Cargo](https://www.rust-lang.org/)
 installed. You will also need to meet additional dependencies to compile [libsass](https://github.com/sass/libsass):
 
@@ -98,7 +109,7 @@ installed. You will also need to meet additional dependencies to compile [libsas
 
 From a terminal, you can now run the following command:
 
-```bash
+```sh
 $ cargo build --release
 ```
 
