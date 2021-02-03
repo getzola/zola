@@ -48,7 +48,9 @@ pub fn create_directory(path: &Path) -> Result<()> {
 /// Return the content of a file, with error handling added
 pub fn read_file(path: &Path) -> Result<String> {
     let mut content = String::new();
-    File::open(path)?.read_to_string(&mut content)?;
+    File::open(path)
+        .map_err(|e| Error::chain(format!("Failed to open '{}'", path.display()), e))?
+        .read_to_string(&mut content)?;
 
     // Remove utf-8 BOM if any.
     if content.starts_with("\u{feff}") {
