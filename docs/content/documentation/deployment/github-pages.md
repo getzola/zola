@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v2
       # Build & deploy
       - name: Deploy to gh-pages branch
-        uses: shalzz/zola-deploy-action@v0.12.0
+        uses: shalzz/zola-deploy-action@v0.13.0
         env:
           # Target branch
           PAGES_BRANCH: gh-pages
