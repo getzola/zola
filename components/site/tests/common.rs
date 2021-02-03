@@ -182,9 +182,14 @@ impl Translations {
             panic!("No such page or section: {}", path);
         };
 
-        let translations = library.translations
-            .get(&unified_path)
-            .expect(&format!("Could not find page {} in translations", unified_path.display()))
+        let translations = library.translations.get(&unified_path);
+        if translations.is_none() {
+            println!("Page canonical path {} is not in library translations", unified_path.display());
+            panic!("Library error");
+        }
+
+        let translations = translations
+            .unwrap()
             .iter().map(|key| {
                 // Are we looking for a section? (no file extension here)
                 if unified_path.ends_with("_index") {
