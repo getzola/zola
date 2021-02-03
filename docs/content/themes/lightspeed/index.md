@@ -142,7 +142,7 @@ This template is based on the Jekyll template [Light Speed Jekyll](https://githu
 
 ## License
 
-Open sourced under the [MIT license](LICENSE.md).
+Open sourced under the [MIT license](https://github.com/bradleytaunt/lightspeed/blob/master/LICENSE.md).
 
 This project is open source except for example articles found in `content`.
 

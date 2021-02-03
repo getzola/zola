@@ -21,7 +21,7 @@ homepage = "https://github.com/lopes"
 
 # ZOLA.386
 
-![ZOLA.386 screenshot](https://github.com/lopes/zola.386/blob/master/screenshot.png?raw=true)
+![ZOLA.386 screenshot](./screenshot.png)
 
 ## [Live demo](https://zola386.netlify.app/)
 

@@ -57,7 +57,7 @@ enable_mathjax = false
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/waynee95/zola-theme-hikari/blob/master/LICENSE)
 
 Thanks to [Mathieu Mayer-Mazzoli](https://github.com/mx3m) for creating this awesome theme!
 

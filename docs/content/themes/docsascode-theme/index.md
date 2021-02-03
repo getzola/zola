@@ -21,7 +21,7 @@ homepage = "https://codeandmedia.com"
 
 **Demo: [docsascode.codeandmedia.com](http://docsascode.codeandmedia.com)**
 
-I was inspired by [Linode's approach](https://www.linode.com/2020/01/17/docs-as-code-at-linode/) to creating and managing docs. They call it _docs as code methodology._  Thereby my aim was making simple and productive way to work with any sort of documents and articles through Markdown, Git and Docker/k8s optionally. 
+I was inspired by [Linode's approach](https://www.linode.com/blog/linode/docs-as-code-at-linode/) to creating and managing docs. They call it _docs as code methodology._  Thereby my aim was making simple and productive way to work with any sort of documents and articles through Markdown, Git and Docker/k8s optionally.
 
 The repo contains a theme for [Zola](https://www.getzola.org/) (the best static site generator I've ever seen) and dockerfile for building Docker images with Nginx-alpine.  You can pull to your Docker an [image with demo-content](https://hub.docker.com/r/codeandmedia/docsascode-theme)
 

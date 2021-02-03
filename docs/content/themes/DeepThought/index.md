@@ -12,7 +12,7 @@ repository = "https://github.com/RatanShreshtha/DeepThought.git"
 homepage = "https://github.com/RatanShreshtha/DeepThought"
 minimum_version = "0.9.0"
 license = "MIT"
-demo = "https://zen-austin-0c80be.netlify.app/"
+demo = "https://deepthought-theme.netlify.app/"
 
 [extra.author]
 name = "Ratan Kulshreshtha"
@@ -24,7 +24,7 @@ homepage = "https://ratanshreshtha.dev"
 
 ![DeepThought](./screenshot.png)
 
-# [Live Demo](https://zen-austin-0c80be.netlify.app/)
+# [Live Demo](https://deepthought-theme.netlify.app/)
 
 ## Installation
 Get [Zola](https://www.getzola.org/) and/or follow their guide on [installing a theme](https://www.getzola.org/documentation/themes/installing-and-using-themes/).
