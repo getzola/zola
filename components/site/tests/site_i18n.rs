@@ -14,7 +14,7 @@ fn can_parse_multilingual_site() {
     site.load().unwrap();
 
     let library = site.library.read().unwrap();
-    assert_eq!(library.pages().len(), 10);
+    assert_eq!(library.pages().len(), 11);
     assert_eq!(library.sections().len(), 6);
 
     // default index sections
