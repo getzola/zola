@@ -49,7 +49,7 @@ pub fn create_directory(path: &Path) -> Result<()> {
 pub fn read_file(path: &Path) -> Result<String> {
     let mut content = String::new();
     File::open(path)
-        .map_err(|e| Error::chain(format!("Failed to open '{:?}'", path.display()), e))?
+        .map_err(|e| Error::chain(format!("Failed to open '{}'", path.display()), e))?
         .read_to_string(&mut content)?;
 
     // Remove utf-8 BOM if any.
@@ -58,19 +58,6 @@ pub fn read_file(path: &Path) -> Result<String> {
     }
 
     Ok(content)
-}
-
-/// Return the content of a file, with error handling added.
-/// The default error message is overwritten by the message given.
-/// That means it is allocating 2 strings, oh well
-pub fn read_file_with_error(path: &Path, message: &str) -> Result<String> {
-    let res = read_file(&path);
-    if res.is_ok() {
-        return res;
-    }
-    let mut err = Error::msg(message);
-    err.source = res.unwrap_err().source;
-    Err(err)
 }
 
 /// Looks into the current folder for the path and see if there's anything that is not a .md
