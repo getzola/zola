@@ -143,26 +143,34 @@ An example is:
 In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
 by passing `cachebust=true` to the `get_url` function.
 
-
 ### `get_file_hash`
 
-Gets the hash digest for a static file. Supported hashes are SHA-256, SHA-384 (default) and SHA-512. Requires `path`. The `sha_type` key is optional and must be one of 256, 384 or 512.
+Returns the hash digest of a static file. Supported hashing algorithms are
+SHA-256, SHA-384 (default) and SHA-512. Requires `path`. The `sha_type`
+parameter is optional and must be one of 256, 384 or 512.
 
 ```jinja2
 {{/* get_file_hash(path="js/app.js", sha_type=256) */}}
 ```
 
-This can be used to implement subresource integrity. Do note that subresource integrity is typically used when using external scripts, which `get_file_hash` does not support.
+The function can also output a base64-encoded hash value when its `base64`
+parameter is set to `true`. This can be used to implement [subresource
+integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity).
 
 ```jinja2
 <script src="{{/* get_url(path="js/app.js") */}}"
-        integrity="sha384-{{/* get_file_hash(path="js/app.js", sha_type=384) */}}"></script>
+  integrity="sha384-{{ get_file_hash(path="js/app.js", sha_type=384, base64=true) | safe }}"></script>
 ```
 
-Whenever hashing files, whether using `get_file_hash` or `get_url(..., cachebust=true)`, the file is searched for in three places: `static/`, `content/` and the output path (so e.g. compiled SASS can be hashed, too.)
+Do note that subresource integrity is typically used when using external
+scripts, which `get_file_hash` does not support.
 
+Whenever hashing files, whether using `get_file_hash` or `get_url(...,
+cachebust=true)`, the file is searched for in three places: `static/`,
+`content/` and the output path (so e.g. compiled SASS can be hashed, too.)
 
 ### `get_image_metadata`
+
 Gets metadata for an image. This supports common formats like JPEG, PNG, as well as SVG.
 Currently, the only supported keys are `width` and `height`.
 
