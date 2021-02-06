@@ -59,4 +59,35 @@ mod tests {
         let res = html(input.to_owned()).unwrap();
         assert_eq!(res, expected);
     }
+
+    // https://github.com/getzola/zola/issues/1300
+    #[test]
+    fn can_minify_and_preserve_whitespace_in_pre_elements() {
+        let input = r#"
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+  <pre><code>fn main() {
+    println!("Hello, world!");
+    <span>loop {
+      println!("Hello, world!");
+    }</span>
+  }
+  </code></pre>
+</body>
+</html>
+"#;
+        let expected = r#"<!doctype html><html><head><meta charset=utf-8><body><pre><code>fn main() {
+    println!("Hello, world!");
+    <span>loop {
+      println!("Hello, world!");
+    }</span>
+  }
+  </code></pre>"#;
+        let res = html(input.to_owned()).unwrap();
+        assert_eq!(res, expected);
+    }
 }
