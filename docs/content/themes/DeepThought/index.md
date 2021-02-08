@@ -56,7 +56,6 @@ avatar = "/images/avatar.png"
 
 # Social link setup
 [extra.social]
-[extra.social]
 facebook = "<facebook_username>"
 github = "<github_username>"
 keybase = "<keybase_username>"
