@@ -5,7 +5,7 @@ use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
-use image::imageops::FilterType;
+use image::{avif::AvifEncoder, imageops::FilterType, ColorType};
 use image::{GenericImageView, ImageOutputFormat};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
@@ -140,6 +140,8 @@ pub enum Format {
     Jpeg(u8),
     /// PNG
     Png,
+    /// AVIF
+    Avif(u8),
 }
 
 impl Format {
@@ -156,6 +158,7 @@ impl Format {
             },
             "jpeg" | "jpg" => Ok(Jpeg(quality)),
             "png" => Ok(Png),
+            "avif" => Ok(Avif(quality)),
             _ => Err(format!("Invalid image format: {}", format).into()),
         }
     }
@@ -182,6 +185,7 @@ impl Format {
         match *self {
             Png => "png",
             Jpeg(_) => "jpg",
+            Avif(_) => "avif",
         }
     }
 }
@@ -194,6 +198,7 @@ impl Hash for Format {
         let q = match *self {
             Png => 0,
             Jpeg(q) => q,
+            Avif(q) => 101 + q,
         };
 
         hasher.write_u8(q);
@@ -302,6 +307,16 @@ impl ImageOp {
             }
             Format::Jpeg(q) => {
                 img.write_to(&mut f, ImageOutputFormat::Jpeg(q))?;
+            }
+            Format::Avif(q) => {
+                let mut avif: Vec<u8> = Vec::new();
+                AvifEncoder::new_with_speed_quality(&mut avif, 1, q).write_image(
+                    &img.as_bytes(),
+                    img.dimensions().0,
+                    img.dimensions().1,
+                    ColorType::Rgb8,
+                )?;
+                std::io::Write::write_all(&mut f, &avif)?;
             }
         }
 
