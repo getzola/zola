@@ -8,7 +8,7 @@ edition = "2018"
 lazy_static = "1"
 regex = "1.0"
 tera = "1"
-image = "0.23"
+image = { version = "0.23.13", features = ["avif"] }
 rayon = "1"
 
 errors = { path = "../errors" }
