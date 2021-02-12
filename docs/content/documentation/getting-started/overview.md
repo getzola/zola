@@ -45,6 +45,24 @@ You will be asked a few questions.
 └── themes
 ```
 
+For reference, by the **end** of this overview, our `myblog` directory will have the following structure:
+
+```
+├── config.toml
+├── content/
+│   └── blog/
+│       ├── _index.md
+│       └── first.md
+├── sass/
+├── static/
+├── templates/
+│   ├── base.html
+│   ├── blog-page.html
+│   ├── blog.html
+│   └── index.html
+└── themes/
+```
+
 Let's start the Zola development server with:
 
 ```bash
