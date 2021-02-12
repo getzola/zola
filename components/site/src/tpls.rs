@@ -5,7 +5,11 @@ use templates::{filters, global_fns};
 pub fn register_early_global_fns(site: &mut Site) {
     site.tera.register_filter(
         "markdown",
-        filters::MarkdownFilter::new(site.config.clone(), site.permalinks.clone()),
+        filters::MarkdownFilter::new(
+            site.base_path.clone(),
+            site.config.clone(),
+            site.permalinks.clone(),
+        ),
     );
 
     site.tera.register_function(
