@@ -109,7 +109,7 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
 
     // Remove the trailing slash from the request path
     // otherwise `PathBuf` will interpret it as an absolute path
-    root.push(&req.uri().path()[1..]);
+    root.push(&decoded[1..]);
     let result = tokio::fs::read(&root).await;
 
     let contents = match result {
