@@ -94,6 +94,10 @@ $ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 bal
 
 You can now browse http://localhost:8080.
 
+> To enable live browser reload, you may have to bind to port 1024. Zola searches for an open
+> port between 1024 and 9000 for live reload. The new docker command would be
+> `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 balthek/zola:0.13.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
+
 ## Windows
 
 Zola is available on [Scoop](https://scoop.sh):
