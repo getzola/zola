@@ -170,6 +170,7 @@ impl Format {
                 "png" => Some(false),
                 "gif" => Some(false),
                 "bmp" => Some(false),
+                "webp" => Some(false),
                 _ => None,
             })
             .unwrap_or(None)
