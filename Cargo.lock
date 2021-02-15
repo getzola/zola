@@ -212,6 +212,9 @@ name = "cc"
 version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c0496836a84f8d0495758516b8621a622beb77c0fed418570e50764093ced48"
+dependencies = [
+ "jobserver",
+]
 
 [[package]]
 name = "cedarwood"
@@ -1017,9 +1020,9 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.23.12"
+version = "0.23.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ce04077ead78e39ae8610ad26216aed811996b043d47beed5090db674f9e9b5"
+checksum = "293f07a1875fa7e9c5897b51aa68b2d8ed8271b87e1a44cb64b9c3d98aabbc0d"
 dependencies = [
  "bytemuck",
  "byteorder",
@@ -1045,6 +1048,7 @@ dependencies = [
  "regex",
  "tera",
  "utils",
+ "webp",
 ]
 
 [[package]]
@@ -1110,6 +1114,15 @@ dependencies = [
  "phf",
  "phf_codegen",
  "regex",
+]
+
+[[package]]
+name = "jobserver"
+version = "0.1.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c71313ebb9439f74b00d9d2dcec36440beaf57a6aa0623068441dd7cd81a7f2"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -1207,6 +1220,15 @@ dependencies = [
  "tera",
  "toml",
  "utils",
+]
+
+[[package]]
+name = "libwebp-sys"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3e70c064738b35a28fd6f991d27c0d9680353641d167ae3702a8228dd8272ef6"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -3112,6 +3134,16 @@ checksum = "c40dc691fc48003eba817c38da7113c15698142da971298003cac3ef175680b3"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "webp"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea1f2bd35e46165ef40a7fd74f33f64f2912ad92593fbfc5ec75eb2604cfd7b5"
+dependencies = [
+ "image",
+ "libwebp-sys",
 ]
 
 [[package]]
