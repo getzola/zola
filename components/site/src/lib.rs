@@ -295,7 +295,7 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
-        tpls::register_early_global_fns(self);
+        tpls::register_early_global_fns(self)?;
         self.populate_sections();
         self.render_markdown()?;
         tpls::register_tera_global_fns(self);

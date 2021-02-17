@@ -1,15 +1,16 @@
 use crate::Site;
 use templates::{filters, global_fns};
+use tera::Result as TeraResult;
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
-pub fn register_early_global_fns(site: &mut Site) {
+pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     site.tera.register_filter(
         "markdown",
         filters::MarkdownFilter::new(
             site.base_path.clone(),
             site.config.clone(),
             site.permalinks.clone(),
-        ),
+        )?,
     );
 
     site.tera.register_function(
@@ -44,6 +45,8 @@ pub fn register_early_global_fns(site: &mut Site) {
             site.content_path.clone(),
         ]),
     );
+
+    Ok(())
 }
 
 /// Functions filled once we have parsed all the pages/sections only, so not available in shortcodes

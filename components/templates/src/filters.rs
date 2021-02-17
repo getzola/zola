@@ -6,20 +6,22 @@ use std::path::PathBuf;
 use base64::{decode, encode};
 use config::Config;
 use rendering::{render_content, RenderContext};
-use tera::{to_value, try_get_value, Filter as TeraFilter, Result as TeraResult, Value};
+use tera::{Filter as TeraFilter, Result as TeraResult, Tera, Value, to_value, try_get_value};
 
 use crate::load_tera;
 
 #[derive(Debug)]
 pub struct MarkdownFilter {
-    path: PathBuf,
     config: Config,
     permalinks: HashMap<String, String>,
+    tera: Tera,
 }
 
 impl MarkdownFilter {
-    pub fn new(path: PathBuf, config: Config, permalinks: HashMap<String, String>) -> Self {
-        Self { path, config, permalinks }
+    pub fn new(path: PathBuf, config: Config, permalinks: HashMap<String, String>) -> TeraResult<Self> {
+        let tera = load_tera(&path, &config)
+            .map_err(|err| tera::Error::msg(err))?;
+        Ok(Self { config, permalinks, tera })
     }
 }
 
@@ -27,10 +29,7 @@ impl TeraFilter for MarkdownFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
         let mut context = RenderContext::from_config(&self.config);
         context.permalinks = Cow::Borrowed(&self.permalinks);
-        context.tera = Cow::Owned(
-            load_tera(&self.path, &self.config)
-                .map_err(|err| tera::Error::msg(err))?
-        );
+        context.tera = Cow::Borrowed(&self.tera);
 
         let s = try_get_value!("markdown", "value", String, value);
         let inline = match args.get("inline") {
@@ -82,6 +81,7 @@ mod tests {
     #[test]
     fn markdown_filter() {
         let result = MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new())
+            .unwrap()
             .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
@@ -91,10 +91,11 @@ mod tests {
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).filter(
-            &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
-            &args,
-        );
+        let result =
+            MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).unwrap().filter(
+                &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
+                &args,
+            );
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
     }
@@ -104,18 +105,19 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).filter(
-            &to_value(
-                &r#"
+        let result =
+            MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).unwrap().filter(
+                &to_value(
+                    &r#"
 |id|author_id|       timestamp_created|title                 |content           |
 |-:|--------:|-----------------------:|:---------------------|:-----------------|
 | 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
 | 2|        1|2018-08-22 13:11:50.050Z|How to bake a nice pie|Badly written blog|
         "#,
-            )
-            .unwrap(),
-            &args,
-        );
+                )
+                .unwrap(),
+                &args,
+            );
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<table>"));
     }
@@ -130,12 +132,14 @@ mod tests {
 
         let md = "Hello <https://google.com> :smile: ...";
         let result = MarkdownFilter::new(PathBuf::new(), config.clone(), HashMap::new())
+            .unwrap()
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
         let result = MarkdownFilter::new(PathBuf::new(), config, HashMap::new())
+            .unwrap()
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<pre style"));
@@ -147,6 +151,7 @@ mod tests {
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
         let result = MarkdownFilter::new(PathBuf::new(), Config::default(), permalinks)
+            .unwrap()
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(
