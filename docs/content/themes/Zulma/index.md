@@ -3,11 +3,11 @@
 title = "Zulma"
 description = "A zola theme based off bulma.css"
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-18T22:27:50+01:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-18T22:27:50+01:00
+updated = 2021-02-18T22:27:50+01:00
 repository = "https://github.com/Worble/Zulma"
 homepage = "https://github.com/Worble/Zulma"
 minimum_version = "0.6.0"
@@ -23,7 +23,7 @@ homepage = ""
 
 A Bulma theme for Zola. See a live preview [here](https://festive-morse-47d46c.netlify.com/)
 
-![Zulma Screenshot](./screenshot.png)
+![Zulma Screenshot](/screenshot.png)
 
 ## Contents
 

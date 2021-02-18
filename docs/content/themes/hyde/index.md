@@ -3,11 +3,11 @@
 title = "hyde"
 description = "A classic blog theme"
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-18T22:27:50+01:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-18T22:27:50+01:00
+updated = 2021-02-18T22:27:50+01:00
 repository = "https://github.com/getzola/hyde.git"
 homepage = "https://github.com/getzola/hyde"
 minimum_version = "0.11.0"
@@ -38,8 +38,8 @@ Hyde is a brazen two-column [Zola](https://github.com/getzola/zola) based on the
 First download this theme to your `themes` directory:
 
 ```bash
-$ cd themes
-$ git clone https://github.com/getzola/hyde.git
+cd themes
+git clone https://github.com/getzola/hyde.git
 ```
 and then enable it in your `config.toml`:
 

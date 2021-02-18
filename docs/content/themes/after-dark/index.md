@@ -3,11 +3,11 @@
 title = "after-dark"
 description = "A robust, elegant dark theme"
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-18T22:27:50+01:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-18T22:27:50+01:00
+updated = 2021-02-18T22:27:50+01:00
 repository = "https://github.com/getzola/after-dark.git"
 homepage = "https://github.com/getzola/after-dark"
 minimum_version = "0.11.0"
@@ -34,8 +34,8 @@ homepage = "https://www.vincentprouillet.com"
 First download this theme to your `themes` directory:
 
 ```bash
-$ cd themes
-$ git clone https://github.com/getzola/after-dark.git
+cd themes
+git clone https://github.com/getzola/after-dark.git
 ```
 and then enable it in your `config.toml`:
 
@@ -56,8 +56,8 @@ The theme requires tags and categories taxonomies to be enabled in your `config.
 ```toml
 taxonomies = [
     # You can enable/disable RSS
-    {name = "categories", rss = true},
-    {name = "tags", rss = true},
+    {name = "categories", feed = true},
+    {name = "tags", feed = true},
 ]
 ```
 If you want to paginate taxonomies pages, you will need to overwrite the templates

@@ -3,11 +3,11 @@
 title = "Float"
 description = "An elegant blog theme"
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-18T22:27:50+01:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-18T22:27:50+01:00
+updated = 2021-02-18T22:27:50+01:00
 repository = "https://gitlab.com/float-theme/float.git"
 homepage = "https://float-theme.netlify.app/"
 minimum_version = "0.11.0"
@@ -19,7 +19,7 @@ name = "Leon"
 homepage = "https://exp2.uniuni.space/"
 +++        
 
-![Float](content/blog/2020-06-14-Float theme for Zola/Float.png)
+![Float](content/blog/2020/2020-06-14-Float theme for Zola/Float.png)
 
 **[English](README.en.md)**
 
@@ -45,9 +45,9 @@ Float 是一款為 [Zola](https://www.getzola.org/) 設計的佈景主題。
 
 在您的 Zola 專案資料夾內：
 
+把 Float 以 Git 子模組的方式加入專案內：
 ```shell
-cd themes
-git clone git@gitlab.com:float-theme/float.git
+git submodule add https://gitlab.com/float-theme/float.git theme/float
 ```
 
 編輯您的 config.toml，指定 Float 作為佈景主題：
@@ -85,11 +85,12 @@ cp -r themes/float/content/* content/
 ```
 content/
 └── blog/
-     └── 2020-06-21-Float theme for Zola/
-          ├── index.md
-          ├── pic1.png
-          ├── pic2.png
-          └── qa_report.pdf
+    └── 2020/
+        └── 2020-06-21-Float theme for Zola/
+            ├── index.md
+            ├── pic1.png
+            ├── pic2.png
+            └── qa_report.pdf
 ```
 
 文章為 index.md，文內的配圖或其它檔案也是放在文章資料夾內。
@@ -107,6 +108,7 @@ tags = ["Float", "Zola"]
 [extra]
 feature_image = "pic1.png" # 卡片圖片。
 feature = true # 是否為重點文章，重點文章會以寬版卡片顯示。
+link = "" # 指定卡片連結，若有指定則卡片不會連結到文章頁。
 ```
 
 ## 客製化
@@ -115,6 +117,8 @@ feature = true # 是否為重點文章，重點文章會以寬版卡片顯示。
 
 ```TOML
 [extra]
+main_section = "blog"
+
 copyright = ""
 
 web_fonts = "<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&display=swap'>"
