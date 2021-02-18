@@ -5,7 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 use toml::Value as Toml;
 
 use errors::{bail, Result};
-use utils::fs::read_file_with_error;
+use utils::fs::read_file;
 
 /// Holds the data from a `theme.toml` file.
 /// There are other fields than `extra` in it but Zola
@@ -39,13 +39,9 @@ impl Theme {
     }
 
     /// Parses a theme file from the given path
-    pub fn from_file(path: &PathBuf) -> Result<Theme> {
-        let content = read_file_with_error(
-            path,
-            "No `theme.toml` file found. \
-             Is the `theme` defined in your `config.toml` present in the `themes` directory \
-             and does it have a `theme.toml` inside?",
-        )?;
+    pub fn from_file(path: &PathBuf, theme_name: &str) -> Result<Theme> {
+        let content = read_file(path)
+            .map_err(|e| errors::Error::chain(format!("Failed to load theme {}", theme_name), e))?;
         Theme::parse(&content)
     }
 }

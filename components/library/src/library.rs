@@ -6,7 +6,9 @@ use slotmap::{DefaultKey, DenseSlotMap};
 use front_matter::SortBy;
 
 use crate::content::{Page, Section};
-use crate::sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
+use crate::sorting::{
+    find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight,
+};
 use config::Config;
 
 // Like vec! but for HashSet
@@ -282,6 +284,21 @@ impl Library {
 
                     sort_pages_by_date(data)
                 }
+                SortBy::Title => {
+                    let data = section
+                        .pages
+                        .iter()
+                        .map(|k| {
+                            if let Some(page) = self.pages.get(*k) {
+                                (k, page.meta.title.as_deref(), page.permalink.as_ref())
+                            } else {
+                                unreachable!("Sorting got an unknown page")
+                            }
+                        })
+                        .collect();
+
+                    sort_pages_by_title(data)
+                }
                 SortBy::Weight => {
                     let data = section
                         .pages
@@ -311,6 +328,10 @@ impl Library {
                         SortBy::Date => {
                             page.earlier = val2;
                             page.later = val1;
+                        }
+                        SortBy::Title => {
+                            page.title_prev = val1;
+                            page.title_next = val2;
                         }
                         SortBy::Weight => {
                             page.lighter = val1;

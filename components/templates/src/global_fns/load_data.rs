@@ -72,11 +72,16 @@ impl OutputFormat {
 }
 
 impl DataSource {
+    /// Returns Some(DataSource) on success, from optional load_data() path/url arguments
+    /// Returns an Error when a URL could not be parsed and Ok(None) when the path
+    /// is missing, so that the load_data() function can decide whether this is an error
+    /// Note: if the signature of this function changes, please update LoadData::call()
+    /// so we don't mistakenly unwrap things over there
     fn from_args(
         path_arg: Option<String>,
         url_arg: Option<String>,
         content_path: &PathBuf,
-    ) -> Result<Self> {
+    ) -> Result<Option<Self>> {
         if path_arg.is_some() && url_arg.is_some() {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
         }
@@ -84,14 +89,15 @@ impl DataSource {
         if let Some(path) = path_arg {
             let full_path = content_path.join(path);
             if !full_path.exists() {
-                return Err(format!("{} doesn't exist", full_path.display()).into());
+                return Ok(None);
             }
-            return Ok(DataSource::Path(full_path));
+            return Ok(Some(DataSource::Path(full_path)));
         }
 
         if let Some(url) = url_arg {
             return Url::parse(&url)
                 .map(DataSource::Url)
+                .map(|x| Some(x))
                 .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
         }
 
@@ -116,16 +122,6 @@ impl Hash for DataSource {
             }
         };
     }
-}
-
-fn get_data_source_from_args(
-    content_path: &PathBuf,
-    args: &HashMap<String, Value>,
-) -> Result<DataSource> {
-    let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
-    let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
-
-    DataSource::from_args(path_arg, url_arg, content_path)
 }
 
 fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
@@ -194,7 +190,37 @@ impl LoadData {
 
 impl TeraFn for LoadData {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let data_source = get_data_source_from_args(&self.base_path, &args)?;
+        let required = if let Some(req) = optional_arg!(
+            bool,
+            args.get("required"),
+            "`load_data`: `required` must be a boolean (true or false)"
+        ) {
+            req
+        } else {
+            true
+        };
+        let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let data_source = DataSource::from_args(path_arg.clone(), url_arg, &self.base_path)?;
+
+        // If the file doesn't exist, source is None
+        match (&data_source, required) {
+            // If the file was not required, return a Null value to the template
+            (None, false) => {
+                return Ok(Value::Null);
+            }
+            // If the file was required, error
+            (None, true) => {
+                // source is None only with path_arg (not URL), so path_arg is safely unwrap
+                return Err(format!(
+                    "{} doesn't exist",
+                    &self.base_path.join(path_arg.unwrap()).display()
+                )
+                .into());
+            }
+            _ => {}
+        }
+        let data_source = data_source.unwrap();
         let file_format = get_output_format_from_args(&args, &data_source)?;
         let cache_key = data_source.get_cache_key(&file_format);
 
@@ -207,19 +233,29 @@ impl TeraFn for LoadData {
         let data = match data_source {
             DataSource::Path(path) => read_data_file(&self.base_path, path),
             DataSource::Url(url) => {
-                let response = response_client
+                match response_client
                     .get(url.as_str())
                     .header(header::ACCEPT, file_format.as_accept_header())
                     .send()
                     .and_then(|res| res.error_for_status())
-                    .map_err(|e| match e.status() {
-                        Some(status) => format!("Failed to request {}: {}", url, status),
-                        None => format!("Could not get response status for url: {}", url),
-                    })?;
-                response
-                    .text()
-                    .map_err(|e| format!("Failed to parse response from {}: {:?}", url, e).into())
-            }
+                {
+                    Ok(r) => r.text().map_err(|e| {
+                        format!("Failed to parse response from {}: {:?}", url, e).into()
+                    }),
+                    Err(e) => {
+                        if !required {
+                            // HTTP error is discarded (because required=false) and
+                            // Null value is returned to the template
+                            return Ok(Value::Null);
+                        }
+                        Err(match e.status() {
+                            Some(status) => format!("Failed to request {}: {}", url, status),
+                            None => format!("Could not get response status for url: {}", url),
+                        }
+                        .into())
+                    }
+                }
+            } // Now that we have discarded recoverable errors, we can unwrap the result
         }?;
 
         let result_value: Result<Value> = match file_format {
@@ -393,6 +429,17 @@ mod tests {
     }
 
     #[test]
+    fn doesnt_fail_when_missing_file_is_not_required() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
+        args.insert("required".to_string(), to_value(false).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), tera::Value::Null);
+    }
+
+    #[test]
     fn cant_load_outside_content_dir() {
         let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
         let mut args = HashMap::new();
@@ -488,6 +535,25 @@ mod tests {
             result.unwrap_err().to_string(),
             format!("Failed to request {}: 404 Not Found", url)
         );
+    }
+
+    #[test]
+    fn doesnt_fail_when_request_404s_is_not_required() {
+        let _m = mock("GET", "/aazeow0kog")
+            .with_status(404)
+            .with_header("content-type", "text/plain")
+            .with_body("Not Found")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
+        let static_fn = LoadData::new(PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
+        args.insert("required".to_string(), to_value(false).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), tera::Value::Null);
     }
 
     #[test]
@@ -604,6 +670,27 @@ mod tests {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
+        let result = static_fn.call(&args.clone());
+
+        assert!(result.is_err());
+
+        let error_kind = result.err().unwrap().kind;
+        match error_kind {
+            tera::ErrorKind::Msg(msg) => {
+                if msg != String::from("Error encountered when parsing csv records") {
+                    panic!("Error message is wrong. Perhaps wrong error is being returned?");
+                }
+            }
+            _ => panic!("Error encountered was not expected CSV error"),
+        }
+    }
+
+    #[test]
+    fn bad_csv_should_result_in_error_even_when_not_required() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
+        args.insert("required".to_string(), to_value(false).unwrap());
         let result = static_fn.call(&args.clone());
 
         assert!(result.is_err());

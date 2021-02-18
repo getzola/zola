@@ -15,9 +15,9 @@ pub use section::SectionFrontMatter;
 
 lazy_static! {
     static ref TOML_RE: Regex =
-        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
+        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n((?s).*(?-s))$").unwrap();
     static ref YAML_RE: Regex =
-        Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---\r?\n?((?s).*(?-s))$").unwrap();
+        Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---\r?\n((?s).*(?-s))$").unwrap();
 }
 
 pub enum RawFrontMatter<'a> {
@@ -46,6 +46,8 @@ impl RawFrontMatter<'_> {
 pub enum SortBy {
     /// Most recent to oldest
     Date,
+    /// Sort by title
+    Title,
     /// Lower weight comes first
     Weight,
     /// No sorting
@@ -172,13 +174,15 @@ Hello
 title = "Title"
 description = "hey there"
 date = 2002-10-12
-+++"#; "toml")]
++++
+"#; "toml")]
     #[test_case(r#"
 ---
 title: Title
 description: hey there
 date: 2002-10-12
----"#; "yaml")]
+---
+"#; "yaml")]
     fn can_split_content_with_only_frontmatter_valid(content: &str) {
         let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
         assert_eq!(content, "");

@@ -72,12 +72,12 @@ impl Site {
     pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
-        let mut config = get_config(config_file);
+        let mut config = get_config(config_file)?;
         config.load_extra_syntaxes(path)?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
-            config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"))?;
+            config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"), &theme)?;
         }
 
         let tera = tpls::load_tera(path, &config)?;
@@ -247,7 +247,10 @@ impl Site {
                         &self.config,
                         &self.base_path,
                     ) {
-                        Err(_) => continue,
+                        Err(e) => {
+                            println!("Failed to load section: {:?}", e);
+                            continue;
+                        }
                         Ok(sec) => sec,
                     };
 
@@ -260,8 +263,13 @@ impl Site {
                     self.add_section(section, false)?;
                 }
             } else {
-                let page = Page::from_file(path, &self.config, &self.base_path)
-                    .expect("error deserialising page");
+                let page = match Page::from_file(path, &self.config, &self.base_path) {
+                    Err(e) => {
+                        println!("Failed to load page: {:?}", e);
+                        continue;
+                    }
+                    Ok(p) => p,
+                };
 
                 // should we skip drafts?
                 if page.meta.draft && !self.include_drafts {

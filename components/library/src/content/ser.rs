@@ -92,6 +92,8 @@ pub struct SerializingPage<'a> {
     heavier: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
     later: Option<Box<SerializingPage<'a>>>,
+    title_prev: Option<Box<SerializingPage<'a>>>,
+    title_next: Option<Box<SerializingPage<'a>>>,
     translations: Vec<TranslatedContent<'a>>,
 }
 
@@ -118,6 +120,12 @@ impl<'a> SerializingPage<'a> {
             .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
         let later = page
             .later
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let title_prev = page
+            .title_prev
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let title_next = page
+            .title_next
             .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
         let ancestors = page
             .ancestors
@@ -155,6 +163,8 @@ impl<'a> SerializingPage<'a> {
             heavier,
             earlier,
             later,
+            title_prev,
+            title_next,
             translations,
         }
     }
@@ -217,6 +227,8 @@ impl<'a> SerializingPage<'a> {
             heavier: None,
             earlier: None,
             later: None,
+            title_prev: None,
+            title_next: None,
             translations,
         }
     }

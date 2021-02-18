@@ -30,6 +30,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Name of the project. Will create a new directory with that name in the current directory"),
                     Arg::with_name("force")
                         .short("f")
+                        .long("force")
                         .takes_value(false)
                         .help("Force creation of project even if directory is non-empty")
                 ]),

@@ -242,6 +242,18 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                                     fence_info,
                                     &context.config,
                                     IncludeBackground::IfDifferent(color),
+                                    context
+                                        .tera_context
+                                        .get("page")
+                                        .or(context.tera_context.get("section"))
+                                        .map(|x| {
+                                            x.as_object()
+                                                .unwrap()
+                                                .get("relative_path")
+                                                .unwrap()
+                                                .as_str()
+                                                .unwrap()
+                                        }),
                                 ));
                             }
                         };

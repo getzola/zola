@@ -1,4 +1,4 @@
-use config::highlighting::{get_highlighter, SYNTAX_SET, THEME_SET};
+use config::highlighting::{get_highlighter, HighlightSource, SYNTAX_SET, THEME_SET};
 use config::Config;
 use std::cmp::min;
 use std::collections::HashSet;
@@ -22,16 +22,32 @@ pub struct CodeBlock<'config> {
 }
 
 impl<'config> CodeBlock<'config> {
-    pub fn new(fence_info: &str, config: &'config Config, background: IncludeBackground) -> Self {
+    pub fn new(
+        fence_info: &str,
+        config: &'config Config,
+        background: IncludeBackground,
+        path: Option<&'config str>,
+    ) -> Self {
         let fence_info = FenceSettings::new(fence_info);
         let theme = &THEME_SET.themes[config.highlight_theme()];
-        let (highlighter, in_extra) = get_highlighter(fence_info.language, config);
+        let (highlighter, highlight_source) = get_highlighter(fence_info.language, config);
+        let extra_syntax_set = match highlight_source {
+            HighlightSource::Extra => config.markdown.extra_syntax_set.as_ref(),
+            HighlightSource::NotFound => {
+                // Language was not found, so it exists (safe unwrap)
+                let lang = fence_info.language.unwrap();
+                if let Some(path) = path {
+                    eprintln!("Warning: Highlight language {} not found in {}", lang, path);
+                } else {
+                    eprintln!("Warning: Highlight language {} not found", lang);
+                }
+                None
+            }
+            _ => None,
+        };
         Self {
             highlighter,
-            extra_syntax_set: match in_extra {
-                true => config.markdown.extra_syntax_set.as_ref(),
-                false => None,
-            },
+            extra_syntax_set,
             background,
             theme,
 
