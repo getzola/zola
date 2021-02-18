@@ -3,16 +3,16 @@
 title = "DeepThought"
 description = "A simple blog theme focused on writing powered by Bulma and Zola."
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-19T05:19:19+08:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-19T05:19:19+08:00
+updated = 2021-02-19T05:19:19+08:00
 repository = "https://github.com/RatanShreshtha/DeepThought.git"
 homepage = "https://github.com/RatanShreshtha/DeepThought"
 minimum_version = "0.9.0"
 license = "MIT"
-demo = "https://deepthought-theme.netlify.app/"
+demo = "https://zen-austin-0c80be.netlify.app/"
 
 [extra.author]
 name = "Ratan Kulshreshtha"
@@ -24,7 +24,7 @@ homepage = "https://ratanshreshtha.dev"
 
 ![DeepThought](./screenshot.png)
 
-# [Live Demo](https://deepthought-theme.netlify.app/)
+# [Live Demo](https://zen-austin-0c80be.netlify.app/)
 
 ## Installation
 Get [Zola](https://www.getzola.org/) and/or follow their guide on [installing a theme](https://www.getzola.org/documentation/themes/installing-and-using-themes/).

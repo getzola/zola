@@ -3,11 +3,11 @@
 title = "codinfox-zola"
 description = "Codinfox theme for Zola"
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-19T05:19:19+08:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-19T05:19:19+08:00
+updated = 2021-02-19T05:19:19+08:00
 repository = "https://github.com/svavs/codinfox-zola"
 homepage = "https://github.com/svavs/codinfox-zola"
 minimum_version = "0.11.0"
@@ -21,11 +21,11 @@ homepage = "https://svavs.github.io/"
 
 # Codinfox-Zola
 
-This is a [Zola](https://www.getzola.org) theme inspired to [Codinfox-Lanyon](https://codinfox.github.com/), a Lanyon based theme for [Jekyll](http://jekyllrb.com). See a live demo [here](https://codinfox-zola.vercel.app/).
+This is a [Zola](https://www.getzola.com) theme inspired to [Codinfox-Lanyon](https://codinfox.github.com/), a Lanyon based theme for [Jekyll](http://jekyllrb.com). See a live demo [here](https://codinfox-zola.vercel.app/).
 
 This theme places content first by tucking away navigation in a hidden drawer.
 
-* Built for [Zola](https://www.getzola.org)
+* Built for [Zola](https://www.getzola.com)
 * Developed on GitHub and hosted for free on [GitHub Pages](https://pages.github.com)
 * Coded with [Spacemacs](https://www.spacemacs.org)
 
@@ -66,7 +66,7 @@ If you want to have a Blog with this theme, then create a folder inside the `con
  
 ## License
 
-Open sourced under the [MIT license](https://github.com/svavs/codinfox-zola/blob/master/LICENSE.md).
+Open sourced under the [MIT license](LICENSE.md).
 
 
 ## TODO

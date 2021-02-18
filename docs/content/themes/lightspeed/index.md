@@ -3,11 +3,11 @@
 title = "lightspeed"
 description = "Zola theme with a perfect Lighthouse score"
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-19T05:19:19+08:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-19T05:19:19+08:00
+updated = 2021-02-19T05:19:19+08:00
 repository = "https://github.com/carpetscheme/lightspeed"
 homepage = "https://github.com/carpetscheme/lightspeed"
 minimum_version = "0.10.0"
@@ -142,7 +142,7 @@ This template is based on the Jekyll template [Light Speed Jekyll](https://githu
 
 ## License
 
-Open sourced under the [MIT license](https://github.com/bradleytaunt/lightspeed/blob/master/LICENSE.md).
+Open sourced under the [MIT license](LICENSE.md).
 
 This project is open source except for example articles found in `content`.
 

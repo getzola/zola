@@ -3,11 +3,11 @@
 title = "zola.386"
 description = "Zola port of the BOOTSTRA.386 theme."
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-19T05:19:19+08:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-19T05:19:19+08:00
+updated = 2021-02-19T05:19:19+08:00
 repository = "https://github.com/lopes/zola.386"
 homepage = "https://github.com/lopes/zola.386"
 minimum_version = "0.10.1"
@@ -21,7 +21,7 @@ homepage = "https://github.com/lopes"
 
 # ZOLA.386
 
-![ZOLA.386 screenshot](./screenshot.png)
+![ZOLA.386 screenshot](https://github.com/lopes/zola.386/blob/master/screenshot.png?raw=true)
 
 ## [Live demo](https://zola386.netlify.app/)
 
