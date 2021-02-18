@@ -1,11 +1,11 @@
-use std::collections::hash_map::DefaultHasher;
+use std::{collections::hash_map::DefaultHasher, io::Write};
 use std::collections::hash_map::Entry as HEntry;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
-use image::imageops::FilterType;
+use image::{EncodableLayout, imageops::FilterType};
 use image::{GenericImageView, ImageOutputFormat};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
@@ -18,7 +18,7 @@ static RESIZED_SUBDIR: &str = "processed_images";
 
 lazy_static! {
     pub static ref RESIZED_FILENAME: Regex =
-        Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png)"#).unwrap();
+        Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png|webp)"#).unwrap();
 }
 
 /// Describes the precise kind of a resize operation
@@ -132,6 +132,7 @@ impl Hash for ResizeOp {
         }
     }
 }
+const DEFAULT_Q_JPG: u8 = 75;
 
 /// Thumbnail image format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -140,22 +141,26 @@ pub enum Format {
     Jpeg(u8),
     /// PNG
     Png,
+    /// WebP, The `u8` argument is WebP quality (in percent), None meaning lossless.
+    WebP(Option<u8>),
 }
 
 impl Format {
-    pub fn from_args(source: &str, format: &str, quality: u8) -> Result<Format> {
+    pub fn from_args(source: &str, format: &str, quality: Option<u8>) -> Result<Format> {
         use Format::*;
-
-        assert!(quality > 0 && quality <= 100, "Jpeg quality must be within the range [1; 100]");
-
+        if let Some(quality) = quality {
+            assert!(quality > 0 && quality <= 100, "Quality must be within the range [1; 100]");
+        }
+        let jpg_quality = quality.unwrap_or(DEFAULT_Q_JPG);
         match format {
             "auto" => match Self::is_lossy(source) {
-                Some(true) => Ok(Jpeg(quality)),
+                Some(true) => Ok(Jpeg(jpg_quality)),
                 Some(false) => Ok(Png),
                 None => Err(format!("Unsupported image file: {}", source).into()),
             },
-            "jpeg" | "jpg" => Ok(Jpeg(quality)),
-            "png" => Ok(Png),
+            "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
+            "png" => Ok(Png),            
+            "webp" => Ok(WebP(quality)),
             _ => Err(format!("Invalid image format: {}", format).into()),
         }
     }
@@ -170,6 +175,8 @@ impl Format {
                 "png" => Some(false),
                 "gif" => Some(false),
                 "bmp" => Some(false),
+                // It is assumed that webp is lossless, but it can be both
+                "webp" => Some(false),
                 _ => None,
             })
             .unwrap_or(None)
@@ -182,6 +189,7 @@ impl Format {
         match *self {
             Png => "png",
             Jpeg(_) => "jpg",
+            WebP(_) => "webp"
         }
     }
 }
@@ -193,7 +201,9 @@ impl Hash for Format {
 
         let q = match *self {
             Png => 0,
-            Jpeg(q) => q,
+            Jpeg(q) => q,                        
+            WebP(None) => 0,
+            WebP(Some(q)) => q
         };
 
         hasher.write_u8(q);
@@ -232,7 +242,7 @@ impl ImageOp {
         width: Option<u32>,
         height: Option<u32>,
         format: &str,
-        quality: u8,
+        quality: Option<u8>,
     ) -> Result<ImageOp> {
         let op = ResizeOp::from_args(op, width, height)?;
         let format = Format::from_args(&source, format, quality)?;
@@ -302,6 +312,19 @@ impl ImageOp {
             }
             Format::Jpeg(q) => {
                 img.write_to(&mut f, ImageOutputFormat::Jpeg(q))?;
+            }
+            Format::WebP(q) => {
+                let encoder = webp::Encoder::from_image(&img);
+                let memory = match q {
+                    Some(q) => {
+                        encoder.encode(q as f32 / 100.)
+                    }
+                    None => {
+                        encoder.encode_lossless()
+                    }
+                };
+                let mut bytes = memory.as_bytes();
+                f.write_all(&mut bytes)?;
             }
         }
 

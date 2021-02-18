@@ -221,7 +221,6 @@ impl ResizeImage {
 
 static DEFAULT_OP: &str = "fill";
 static DEFAULT_FMT: &str = "auto";
-const DEFAULT_Q: u8 = 75;
 
 impl TeraFn for ResizeImage {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
@@ -248,10 +247,11 @@ impl TeraFn for ResizeImage {
                 .unwrap_or_else(|| DEFAULT_FMT.to_string());
 
         let quality =
-            optional_arg!(u8, args.get("quality"), "`resize_image`: `quality` must be a number")
-                .unwrap_or(DEFAULT_Q);
-        if quality == 0 || quality > 100 {
-            return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
+            optional_arg!(u8, args.get("quality"), "`resize_image`: `quality` must be a number");
+        if let Some(quality) = quality {
+            if quality == 0 || quality > 100 {
+                return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
+            }
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
