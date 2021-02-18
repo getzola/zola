@@ -1,13 +1,13 @@
 
 +++
 title = "juice"
-description = "An intuitive, elegant, and lightweight Zola™ theme for product sites."
+description = "An intuitive, elegant, and lightweight Zola theme for product sites."
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-18T22:27:50+01:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-18T22:27:50+01:00
+updated = 2021-02-18T22:27:50+01:00
 repository = "https://github.com/huhu/juice"
 homepage = "https://github.com/huhu/juice"
 minimum_version = "0.11.0"
@@ -21,9 +21,9 @@ homepage = "https://huhu.io"
 
 # Juice
 
-<img align="right" width="150" height="150" src="/static/juice.svg">
+<img align="right" width="150" height="150" src="/content/juice.svg">
 
-**Juice** is an intuitive, elegant, and responsive Zola™ theme for product sites.
+**Juice** is an intuitive, elegant, and responsive Zola theme for product sites.
 
 - Build for product sites
 - Simple and intuitive structure
@@ -78,7 +78,7 @@ You can change the frontmatter's `weight` value to sort the order (ascending ord
 +++
 title = "Changelog"
 description = "Changelog"
-weight = 3
+weight = 2
 +++
 
 ```
@@ -117,6 +117,10 @@ juice_extra_menu = [
     { title = "Github", link = "https://github.com/huhu/juice"}
 ]
 ```
+
+# Showcases
+
+Please see the [showcases page](/showcases).
 
 # Contributing
 

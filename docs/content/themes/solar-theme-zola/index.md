@@ -3,11 +3,11 @@
 title = "solar-theme-zola"
 description = "A port of solar-theme-hugo for zola"
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-18T22:27:50+01:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-18T22:27:50+01:00
+updated = 2021-02-18T22:27:50+01:00
 repository = "https://github.com/hulufei/solar-theme-zola.git"
 homepage = "https://github.com/hulufei/solar-theme-zola"
 minimum_version = "0.4.0"
@@ -16,7 +16,7 @@ demo = ""
 
 [extra.author]
 name = "hulufei"
-homepage = "https://github/hulufei"
+homepage = "https://github.com/hulufei"
 +++        
 
 # Solar Theme for Zola
@@ -62,7 +62,7 @@ Set a field in `extra` with a key of `site_menus`:
 
 ```toml
 site_menus = [
-  { url = "https://github/hulufei/solar-theme-zola", name = "Repository" },
+  { url = "https://github/hulufei.com/solar-theme-zola", name = "Repository" },
   { url = "rss.xml", name = "RSS" },
 ]
 ```

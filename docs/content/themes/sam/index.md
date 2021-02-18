@@ -3,11 +3,11 @@
 title = "sam"
 description = "A Simple and Minimalist theme with a focus on typography and content."
 template = "theme.html"
-date = 2021-01-09T22:53:10+09:00
+date = 2021-02-18T22:27:50+01:00
 
 [extra]
-created = 2021-01-09T22:53:10+09:00
-updated = 2021-01-09T22:53:10+09:00
+created = 2021-02-18T22:27:50+01:00
+updated = 2021-02-18T22:27:50+01:00
 repository = "https://github.com/janbaudisch/zola-sam.git"
 homepage = "https://github.com/janbaudisch/zola-sam"
 minimum_version = "0.4.0"
@@ -55,6 +55,29 @@ Either way, you will have to enable the theme in your `config.toml`.
 ```toml
 theme = "sam"
 ```
+
+## Taxonomies
+
+Sam supports the `tags` and `authors` taxonomies.
+
+To use them, declare them in your `config.toml`:
+
+```toml
+taxonomies = [
+    { name = "tags", rss = true },
+    { name = "authors", rss = true }
+]
+```
+
+Set them in your page's frontmatter:
+
+```toml
+[taxonomies]
+tags = ["some", "tag"]
+authors = ["Alice", "Sam"]
+```
+
+See [Zola's documentation][taxonomies-docs] for more details.
 
 ## Options
 
@@ -162,6 +185,7 @@ text = "Some footer text."
 [hugo-sam]: https://github.com/victoriadotdev/hugo-theme-sam
 [upstream]: https://github.com/janbaudisch/zola-sam/blob/master/upstream
 [upstream-license]: https://github.com/janbaudisch/zola-sam/blob/master/upstream/LICENSE
+[taxonomies-docs]: https://www.getzola.org/documentation/content/taxonomies
 [config]: https://github.com/janbaudisch/zola-sam/blob/master/config.toml
 [date-format-docs]: https://docs.rs/chrono/latest/chrono/format/strftime/index.html
 
