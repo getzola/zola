@@ -64,7 +64,7 @@ Zola adds a few filters in addition to [those](https://tera.netlify.com/docs/#fi
 in Tera.
 
 ### markdown
-Converts the given variable to HTML using Markdown. Please note that shortcodes evaluated by this filter won't be able to access any context variables.
+Converts the given variable to HTML using Markdown. Please note that shortcodes evaluated by this filter cannot access the current rendering context. `config` will be available, but accessing `section` or `page` (among others) from a shortcode called within the `markdown` filter will prevent your site from building. See [this discussion](https://github.com/getzola/zola/pull/1358).
 
 By default, the filter will wrap all text in a paragraph. To disable this behaviour, you can
 pass `true` to the inline argument:
