@@ -20,7 +20,7 @@ use front_matter::InsertAnchor;
 use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
 use relative_path::RelativePathBuf;
 use std::time::Instant;
-use templates::render_redirect_template;
+use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
 };
@@ -80,7 +80,7 @@ impl Site {
             config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"), &theme)?;
         }
 
-        let tera = tpls::load_tera(path, &config)?;
+        let tera = load_tera(path, &config)?;
 
         let content_path = path.join("content");
         let static_path = path.join("static");
@@ -295,7 +295,7 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
-        tpls::register_early_global_fns(self);
+        tpls::register_early_global_fns(self)?;
         self.populate_sections();
         self.render_markdown()?;
         tpls::register_tera_global_fns(self);

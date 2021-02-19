@@ -1,58 +1,16 @@
-use std::path::Path;
-
-use tera::Tera;
-
 use crate::Site;
-use config::Config;
-use errors::{bail, Error, Result};
-use templates::{filters, global_fns, ZOLA_TERA};
-use utils::templates::rewrite_theme_paths;
-
-pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
-    let tpl_glob =
-        format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.{*ml,md}");
-
-    // Only parsing as we might be extending templates from themes and that would error
-    // as we haven't loaded them yet
-    let mut tera =
-        Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
-
-    if let Some(ref theme) = config.theme {
-        // Test that the templates folder exist for that theme
-        let theme_path = path.join("themes").join(&theme);
-        if !theme_path.join("templates").exists() {
-            bail!("Theme `{}` is missing a templates folder", theme);
-        }
-
-        let theme_tpl_glob = format!(
-            "{}/{}",
-            path.to_string_lossy().replace("\\", "/"),
-            format!("themes/{}/templates/**/*.{{*ml,md}}", theme)
-        );
-        let mut tera_theme = Tera::parse(&theme_tpl_glob)
-            .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
-        rewrite_theme_paths(&mut tera_theme, &theme);
-
-        if theme_path.join("templates").join("robots.txt").exists() {
-            tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
-        }
-        tera.extend(&tera_theme)?;
-    }
-    tera.extend(&ZOLA_TERA)?;
-    tera.build_inheritance_chains()?;
-
-    if path.join("templates").join("robots.txt").exists() {
-        tera.add_template_file(path.join("templates").join("robots.txt"), Some("robots.txt"))?;
-    }
-
-    Ok(tera)
-}
+use templates::{filters, global_fns};
+use tera::Result as TeraResult;
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
-pub fn register_early_global_fns(site: &mut Site) {
+pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     site.tera.register_filter(
         "markdown",
-        filters::MarkdownFilter::new(site.config.clone(), site.permalinks.clone()),
+        filters::MarkdownFilter::new(
+            site.base_path.clone(),
+            site.config.clone(),
+            site.permalinks.clone(),
+        )?,
     );
 
     site.tera.register_function(
@@ -87,6 +45,8 @@ pub fn register_early_global_fns(site: &mut Site) {
             site.content_path.clone(),
         ]),
     );
+
+    Ok(())
 }
 
 /// Functions filled once we have parsed all the pages/sections only, so not available in shortcodes
