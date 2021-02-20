@@ -77,7 +77,8 @@ impl Site {
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
-            config.merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"), &theme)?;
+            config
+                .merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"), &theme)?;
         }
 
         let tera = load_tera(path, &config)?;

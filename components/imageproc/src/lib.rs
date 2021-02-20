@@ -1,11 +1,11 @@
-use std::{collections::hash_map::DefaultHasher, io::Write};
 use std::collections::hash_map::Entry as HEntry;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
+use std::{collections::hash_map::DefaultHasher, io::Write};
 
-use image::{EncodableLayout, imageops::FilterType};
+use image::{imageops::FilterType, EncodableLayout};
 use image::{GenericImageView, ImageOutputFormat};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
@@ -159,7 +159,7 @@ impl Format {
                 None => Err(format!("Unsupported image file: {}", source).into()),
             },
             "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
-            "png" => Ok(Png),            
+            "png" => Ok(Png),
             "webp" => Ok(WebP(quality)),
             _ => Err(format!("Invalid image format: {}", format).into()),
         }
@@ -189,7 +189,7 @@ impl Format {
         match *self {
             Png => "png",
             Jpeg(_) => "jpg",
-            WebP(_) => "webp"
+            WebP(_) => "webp",
         }
     }
 }
@@ -201,9 +201,9 @@ impl Hash for Format {
 
         let q = match *self {
             Png => 0,
-            Jpeg(q) => q,                        
+            Jpeg(q) => q,
             WebP(None) => 0,
-            WebP(Some(q)) => q
+            WebP(Some(q)) => q,
         };
 
         hasher.write_u8(q);
@@ -316,12 +316,8 @@ impl ImageOp {
             Format::WebP(q) => {
                 let encoder = webp::Encoder::from_image(&img);
                 let memory = match q {
-                    Some(q) => {
-                        encoder.encode(q as f32 / 100.)
-                    }
-                    None => {
-                        encoder.encode_lossless()
-                    }
+                    Some(q) => encoder.encode(q as f32 / 100.),
+                    None => encoder.encode_lossless(),
                 };
                 let mut bytes = memory.as_bytes();
                 f.write_all(&mut bytes)?;

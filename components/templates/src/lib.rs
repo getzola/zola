@@ -7,7 +7,7 @@ use config::Config;
 use lazy_static::lazy_static;
 use tera::{Context, Tera};
 
-use errors::{Error, Result, bail};
+use errors::{bail, Error, Result};
 use utils::templates::rewrite_theme_paths;
 
 lazy_static! {

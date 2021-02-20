@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use base64::{decode, encode};
 use config::Config;
 use rendering::{render_content, RenderContext};
-use tera::{Filter as TeraFilter, Result as TeraResult, Tera, Value, to_value, try_get_value};
+use tera::{to_value, try_get_value, Filter as TeraFilter, Result as TeraResult, Tera, Value};
 
 use crate::load_tera;
 
@@ -18,9 +18,12 @@ pub struct MarkdownFilter {
 }
 
 impl MarkdownFilter {
-    pub fn new(path: PathBuf, config: Config, permalinks: HashMap<String, String>) -> TeraResult<Self> {
-        let tera = load_tera(&path, &config)
-            .map_err(|err| tera::Error::msg(err))?;
+    pub fn new(
+        path: PathBuf,
+        config: Config,
+        permalinks: HashMap<String, String>,
+    ) -> TeraResult<Self> {
+        let tera = load_tera(&path, &config).map_err(|err| tera::Error::msg(err))?;
         Ok(Self { config, permalinks, tera })
     }
 }

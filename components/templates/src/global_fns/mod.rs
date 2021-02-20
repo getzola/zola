@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::{fs, io, result};
 
 use base64::encode as encode_b64;
-use sha2::{Digest, Sha256, Sha384, Sha512};
+use sha2::{digest, Sha256, Sha384, Sha512};
 use svg_metadata as svg;
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 
@@ -90,40 +90,22 @@ fn open_file(search_paths: &[PathBuf], url: &str) -> result::Result<fs::File, io
     Err(io::Error::from(io::ErrorKind::NotFound))
 }
 
-fn compute_file_sha256(mut file: fs::File) -> result::Result<String, io::Error> {
-    let mut hasher = Sha256::new();
+fn compute_file_hash<D: digest::Digest>(
+    mut file: fs::File,
+    base64: bool,
+) -> result::Result<String, io::Error>
+where
+    digest::Output<D>: core::fmt::LowerHex,
+    D: std::io::Write,
+{
+    let mut hasher = D::new();
     io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.finalize()))
-}
-
-fn compute_file_sha256_base64(mut file: fs::File) -> result::Result<String, io::Error> {
-    let mut hasher = Sha256::new();
-    io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{}", encode_b64(hasher.finalize())))
-}
-
-fn compute_file_sha384(mut file: fs::File) -> result::Result<String, io::Error> {
-    let mut hasher = Sha384::new();
-    io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.finalize()))
-}
-
-fn compute_file_sha384_base64(mut file: fs::File) -> result::Result<String, io::Error> {
-    let mut hasher = Sha384::new();
-    io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{}", encode_b64(hasher.finalize())))
-}
-
-fn compute_file_sha512(mut file: fs::File) -> result::Result<String, io::Error> {
-    let mut hasher = Sha512::new();
-    io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.finalize()))
-}
-
-fn compute_file_sha512_base64(mut file: fs::File) -> result::Result<String, io::Error> {
-    let mut hasher = Sha512::new();
-    io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{}", encode_b64(hasher.finalize())))
+    let val = format!("{:x}", hasher.finalize());
+    if base64 {
+        Ok(encode_b64(val))
+    } else {
+        Ok(val)
+    }
 }
 
 fn file_not_found_err(search_paths: &[PathBuf], url: &str) -> Result<Value> {
@@ -174,7 +156,9 @@ impl TeraFn for GetUrl {
             }
 
             if cachebust {
-                match open_file(&self.search_paths, &path).and_then(compute_file_sha256) {
+                match open_file(&self.search_paths, &path)
+                    .and_then(|f| compute_file_hash::<Sha256>(f, false))
+                {
                     Ok(hash) => {
                         permalink = format!("{}?h={}", permalink, hash);
                     }
@@ -219,17 +203,19 @@ impl TeraFn for GetFileHash {
         )
         .unwrap_or(DEFAULT_BASE64);
 
-        let compute_hash_fn = match (sha_type, base64) {
-            (256, true) => compute_file_sha256_base64,
-            (256, false) => compute_file_sha256,
-            (384, true) => compute_file_sha384_base64,
-            (384, false) => compute_file_sha384,
-            (512, true) => compute_file_sha512_base64,
-            (512, false) => compute_file_sha512,
-            _ => return Err("`get_file_hash`: bad arguments".into()),
+        let f = match open_file(&self.search_paths, &path) {
+            Ok(f) => f,
+            Err(e) => {
+                return Err(format!("File {} could not be open {}", path, e).into());
+            }
         };
 
-        let hash = open_file(&self.search_paths, &path).and_then(compute_hash_fn);
+        let hash = match sha_type {
+            256 => compute_file_hash::<Sha256>(f, base64),
+            384 => compute_file_hash::<Sha384>(f, base64),
+            512 => compute_file_hash::<Sha512>(f, base64),
+            _ => return Err("`get_file_hash`: Invalid sha value".into()),
+        };
 
         match hash {
             Ok(digest) => Ok(to_value(digest).unwrap()),

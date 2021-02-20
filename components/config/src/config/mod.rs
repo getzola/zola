@@ -170,8 +170,8 @@ impl Config {
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let path = path.as_ref();
-        let content = read_file(path)
-            .map_err(|e| errors::Error::chain("Failed to load config", e))?;
+        let content =
+            read_file(path).map_err(|e| errors::Error::chain("Failed to load config", e))?;
         Config::parse(&content)
     }
 
