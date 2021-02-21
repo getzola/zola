@@ -146,7 +146,6 @@ Here is a full list of supported languages and their short names:
 ```
 
 Note: due to some issues with the JavaScript syntax, the TypeScript syntax will be used instead.
-If 
 
 If you want to highlight a language not on this list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 Alternatively, the `extra_syntaxes` configuration option can be used to add additional syntax files.
