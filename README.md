@@ -6,7 +6,7 @@ A fast static site generator in a single binary with everything built-in.
 
 **Test results:** [![Build Status](https://dev.azure.com/getzola/zola/_apis/build/status/getzola.zola?branchName=master)](https://dev.azure.com/getzola/zola/_build/latest?definitionId=1&branchName=master)
 
-**Minimum Supported Rust Version:** v1.44
+[**Minimum Supported Rust Version**](azure-pipelines.yml#L24)
 
 ## Intro
 
@@ -20,7 +20,7 @@ Bug reports and patches for those are welcome at any time on our repository. If 
 
 ## Demo
 
-Please head over to [EXAMPLES.md](EXAMPLES.md) for example sites produced with zola.
+[getzola.org](https://www.getzola.org/) is entirely produced with zola. Please head over to [EXAMPLES.md](EXAMPLES.md) for more example sites produced with zola.
 
 ## Comparisons with other static site generators
 
@@ -89,7 +89,7 @@ The following input formats are supported:
 | Pagination                      | [![yes]](https://www.getzola.org/documentation/templates/pagination/) | ![no]  | ![yes] | ![yes]  |
 | Table of contents               | [![yes]](https://www.getzola.org/documentation/templates/pages-sections/#table-of-contents) | ![no]  | ![yes] | ![yes]  |
 | Themes                          | [![yes]](https://www.getzola.org/documentation/themes/creating-a-theme/) | ![no]  | ![yes] | ![yes]  |
-| Extensible themes               | [![yes]](https://www.getzola.org/documentation/themes/extending-a-theme) |   ?    |   ?   |   ?   |
+| Extensible themes               | [![yes]](https://www.getzola.org/documentation/themes/extending-a-theme) |   ?    |  [![yes]](https://gohugo.io/templates/base/)   |   [![yes]](https://docs.getpelican.com/en/latest/themes.html#inheritance)   |
 | Sane & powerful template engine | [![yes]](https://www.getzola.org/documentation/templates/overview/) | ![yes] | ![ehh] | ![yes]  |
 | Custom output formats           | [![no]](https://zola.discourse.group/t/proposal-custom-output-formats/68/4)  | ![no]  | ![yes] | ![no]   |
 | URL templates                   | [![no]](https://github.com/getzola/zola/issues/635)  | ![no]  | [![yes]](https://gohugo.io/content-management/urls/#permalinks-configuration-example) | ? |
@@ -156,10 +156,6 @@ zola is not yet packaged for all systems. An updated list of zola packages can b
 - [Debian](https://debian.org/): zola is currently unavailable, even on `experimental` ; ideally, we would like to support [backports](https://backports.debian.org/) on `stable` as well, because zola is evolving fast
 - [nix](https://nixos.org/): zola on nix is outdated (v0.12.0 as of writing this)
 - [GNU guix](https://guix.gnu.org/): zola is currently unavailable in GNU guix
-
-### Integration
-
-If you are developing free-software user-friendly tooling for content edition (content managing system), or a selfhosting distribution which aims to empower users for self-publication, please get in touch. We'd be glad to help integrate zola with your tools.
 
 ## License
 
