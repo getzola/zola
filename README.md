@@ -47,7 +47,7 @@ zola may or may not be the right tool for you. If you would like to see at a gla
 **Notes:**
 
 - *Multilingual site*
-  - zola gets ![ehh] because despite having a basic translations system, it is being redesigned to evade its current limitations (see [discussion on the forum](https://zola.discourse.group/t/rfc-internationalization-system-rework/546))
+  - zola gets ![ehh] because despite having a basic translations system, it is being redesigned to evade its current limitations (see [discussion on the forum](https://zola.discourse.group/t/rfc-internationalization-system-rework/546)) ; also, custom `base_url` settings per language is currently not supported
 - *Search*
   - zola gets ![ehh] because search engine is disabled by default in some languages, as explained [in the docs](https://www.getzola.org/documentation/content/multilingual/#configuration)
 
