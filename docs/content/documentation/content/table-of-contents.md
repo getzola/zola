@@ -34,3 +34,20 @@ While headers are neatly ordered in this example, it will work just as well with
 
 Note that all existing HTML tags from the title will NOT be present in the table of contents to
 avoid various issues.
+
+## Conditional rendering
+
+If you want to show the table only if it contains anything, you can check the truthiness of `page.toc`. For example:
+
+```jinja2
+{% if page.toc %}
+    <h2>
+        Table of contents
+    </h2>
+    <ul>
+        {% for h1 in page.toc %}
+            …
+        {% endfor %}
+    </ul>
+{% endif %}
+```
