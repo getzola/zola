@@ -13,6 +13,7 @@ First, `TaxonomyTerm` has the following fields:
 ```ts
 name: String;
 slug: String;
+path: String;
 permalink: String;
 pages: Array<Page>;
 ```

@@ -413,6 +413,7 @@ mod tests {
         let taxonomy_item = TaxonomyItem {
             name: "Something".to_string(),
             slug: "something".to_string(),
+            path: "/tags/something".to_string(),
             permalink: "https://vincent.is/tags/something/".to_string(),
             pages: library.pages().keys().collect(),
         };
@@ -446,6 +447,7 @@ mod tests {
         let taxonomy_item = TaxonomyItem {
             name: "Something".to_string(),
             slug: "something".to_string(),
+            path: "/some-tags/something/".to_string(),
             permalink: "https://vincent.is/some-tags/something/".to_string(),
             pages: library.pages().keys().collect(),
         };

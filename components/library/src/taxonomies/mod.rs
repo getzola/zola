@@ -18,6 +18,7 @@ use utils::slugs::slugify_paths;
 pub struct SerializedTaxonomyItem<'a> {
     name: &'a str,
     slug: &'a str,
+    path: &'a str,
     permalink: &'a str,
     pages: Vec<SerializingPage<'a>>,
 }
@@ -34,6 +35,7 @@ impl<'a> SerializedTaxonomyItem<'a> {
         SerializedTaxonomyItem {
             name: &item.name,
             slug: &item.slug,
+            path: &item.path,
             permalink: &item.permalink,
             pages,
         }
@@ -45,6 +47,7 @@ impl<'a> SerializedTaxonomyItem<'a> {
 pub struct TaxonomyItem {
     pub name: String,
     pub slug: String,
+    pub path: String,
     pub permalink: String,
     pub pages: Vec<DefaultKey>,
 }
@@ -73,16 +76,17 @@ impl TaxonomyItem {
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
         let item_slug = slugify_paths(name, config.slugify.taxonomies);
-        let permalink = if taxonomy.lang != config.default_language {
-            config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxo_slug, item_slug))
+        let path = if taxonomy.lang != config.default_language {
+            format!("/{}/{}/{}/", taxonomy.lang, taxo_slug, item_slug)
         } else {
-            config.make_permalink(&format!("/{}/{}", taxo_slug, item_slug))
+            format!("/{}/{}/", taxo_slug, item_slug)
         };
+        let permalink = config.make_permalink(&path);
 
         // We still append pages without dates at the end
         pages.extend(ignored_pages);
 
-        TaxonomyItem { name: name.to_string(), permalink, slug: item_slug, pages }
+        TaxonomyItem { name: name.to_string(), permalink, path, slug: item_slug, pages }
     }
 
     pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyItem<'a> {
@@ -338,6 +342,7 @@ mod tests {
         assert_eq!(tags.items[0].name, "db");
         assert_eq!(tags.items[0].slug, "db");
         assert_eq!(tags.items[0].permalink, "http://a-website.com/tags/db/");
+        assert_eq!(tags.items[0].path, "/tags/db/");
         assert_eq!(tags.items[0].pages.len(), 1);
 
         assert_eq!(tags.items[1].name, "js");
@@ -438,6 +443,7 @@ mod tests {
         assert_eq!(tags.items[1].name, "js");
         assert_eq!(tags.items[1].slug, "js");
         assert_eq!(tags.items[1].permalink, "http://a-website.com/tags/js/");
+        assert_eq!(tags.items[1].path, "/tags/js/");
         assert_eq!(tags.items[1].pages.len(), 2);
 
         assert_eq!(tags.items[2].name, "rust");
