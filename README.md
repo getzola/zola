@@ -125,20 +125,23 @@ If you would like to contribute to improve zola together as a community, there a
 
 When you notice something isn't clear in the documentation, you may submit a patch to improve it for every one else. If you're doing something which you think could be of interest to other folks, please write about it [on the forums](https://zola.discourse.group/). If you notice some usage patterns emerging on the forums, feel free to turn that into a documentation page to help other people achieve the same goals.
 
-### Usability and architecture
+### Areas to improve
 
 Despite being three decades old, the world wide web isn't always the most convenient platform to use. zola tries to make your life better, but if you're experiencing difficulties with it, don't hesitate to report those. Please be clear about what was confusing or unexpected regarding what you tried to achieve.
 
-zola doesn't shine for all use cases we can think of, and could use feedback in particular for:
+zola doesn't shine for all use cases we can think of. We want to improve certain things in the next release, and could use feedback in particular for:
 
 - a better [translations system](https://zola.discourse.group/t/rfc-internationalization-system-rework/546)
 - a [unified path](https://github.com/getzola/zola/issues/977) representation
+
+Additionally, we currently only support Markdown input and HTML/Atom output. Following some feature requests, we are considering to add support for more formats as a long-term goal (other priorities apply for the next releases). However, we do not want to create more problems down the road (inconsistencies and maintenance burden), and so we would appreciate feedback on how to implement:
+
 - support for [non-Markdown input formats](https://zola.discourse.group/t/alternative-input-formats/76)
 - support for [non-HTML output formats](https://zola.discourse.group/t/proposal-custom-output-formats/68/4)
 
 ### Translations
 
-The documentation is currently only available in english, which is a shame because most of the world does not speak english. If you would like to help making zola available to more people, feel free to translate documentation in your language.
+The documentation is currently only available in English, which is a shame because most of the world does not speak english. If you would like to help making zola available to more people, feel free to translate documentation in your language.
 
 ### Programming
 
