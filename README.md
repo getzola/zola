@@ -42,6 +42,7 @@ zola may or may not be the right tool for you. If you would like to see at a gla
 | Search                          | [![ehh]](https://www.getzola.org/documentation/content/search/) | ![no]  | ![no]  | ![yes]  |
 | Data files                      | [![yes]](https://www.getzola.org/documentation/templates/overview/#load-data) | ![yes] | ![yes] | ![no]   |
 | LiveReload                      | [![yes]](https://www.getzola.org/documentation/getting-started/cli-usage/#serve) | ![no]  | ![yes] | ![yes]  |
+| Configurable error/warn levels  | ![no]  | ![no]  | ![yes] | ? |
 
 **Notes:**
 
@@ -59,7 +60,6 @@ zola may or may not be the right tool for you. If you would like to see at a gla
 | HTML shortcodes                 | [![yes]](https://www.getzola.org/documentation/content/shortcodes/) | ![no]  | ![yes] | ![yes]  |
 | Format-specific shortcodes      | [![yes]](https://www.getzola.org/documentation/content/shortcodes/) |   ?    |    ?   |    ?    |
 | Internal links                  | [![ehh]](https://www.getzola.org/documentation/content/linking/) | ![no]  | ![yes] | ![yes]  |
-| Warn or error for broken links  | [![no]](https://github.com/getzola/zola/issues/977#issuecomment-759725671)  | ![no]  | [![yes]](https://gohugo.io/content-management/cross-references/) | ? |
 | Custom taxonomies               | [![yes]](https://www.getzola.org/documentation/content/taxonomies/) | ![no]  | ![yes] | ![no]   |
 | Multiple static mounts          | [![no]](https://github.com/getzola/zola/issues/499) | ![no] | [![yes]](https://gohugo.io/hugo-modules/configuration/#module-config-mounts) | ? |
 
