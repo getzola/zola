@@ -270,7 +270,7 @@ mod tests {
 
     use crate::content::Page;
     use crate::library::Library;
-    use config::{Config, Language, Slugify, Taxonomy as TaxonomyConfig};
+    use config::{Config, LanguageOptions, Slugify, Taxonomy as TaxonomyConfig};
     use utils::slugs::SlugifyStrategy;
 
     #[test]
@@ -495,7 +495,7 @@ mod tests {
     #[test]
     fn can_make_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.languages.push(Language { feed: false, code: "fr".to_string(), search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
@@ -605,11 +605,7 @@ mod tests {
     fn can_make_utf8_taxonomies() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::Safe;
-        config.languages.push(Language {
-            feed: false,
-            code: "fr".to_string(),
-            ..Language::default()
-        });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![TaxonomyConfig {
@@ -638,11 +634,7 @@ mod tests {
     fn can_make_slugified_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        config.languages.push(Language {
-            feed: false,
-            code: "fr".to_string(),
-            ..Language::default()
-        });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![

@@ -44,7 +44,7 @@ pub struct Config {
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
     /// The list of supported languages outside of the default one
-    pub languages: Vec<languages::Language>,
+    pub languages: HashMap<String, languages::LanguageOptions>,
 
     /// Languages list and translated strings
     ///
@@ -129,8 +129,13 @@ impl Config {
             bail!("Highlight theme {} defined in config does not exist.", highlight_theme);
         }
 
-        if config.languages.iter().any(|l| l.code == config.default_language) {
+        if config.languages.iter().any(|(code, _)| code == &config.default_language) {
             bail!("Default language `{}` should not appear both in `config.default_language` and `config.languages`", config.default_language)
+        }
+
+        languages::validate_code(&config.default_language)?;
+        for code in config.languages.keys() {
+            languages::validate_code(&code)?;
         }
 
         if !config.ignored_content.is_empty() {
@@ -280,7 +285,7 @@ impl Config {
 
     /// Returns the codes of all additional languages
     pub fn languages_codes(&self) -> Vec<&str> {
-        self.languages.iter().map(|l| l.code.as_ref()).collect()
+        self.languages.iter().map(|(code, _)| code.as_ref()).collect()
     }
 
     pub fn is_in_build_mode(&self) -> bool {
@@ -362,7 +367,7 @@ impl Default for Config {
             highlight_code: false,
             highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
-            languages: Vec::new(),
+            languages: HashMap::new(),
             generate_feed: false,
             feed_limit: None,
             feed_filename: "atom.xml".to_string(),
@@ -671,10 +676,11 @@ anchors = "off"
         let config_str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
-languages = [
-    { code = "fr" },
-    { code = "en" },
-]
+
+[languages.fr]
+
+[languages.en]
+
         "#;
         let config = Config::parse(config_str);
         let err = config.unwrap_err();

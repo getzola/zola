@@ -18,10 +18,11 @@ taxonomies = [
     {name = "tags", lang = "fr"},
 ]
 
-languages = [
- {code = "fr", feed = true},
- {code = "it", feed = false, search = true },
-]
+[languages.fr]
+generate_feed = true
+
+[languages.it]
+build_search_index = true
 
 [markdown]
 highlight_code = false

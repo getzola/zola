@@ -333,7 +333,7 @@ mod tests {
     use tera::Tera;
 
     use super::Page;
-    use config::{Config, Language};
+    use config::{Config, LanguageOptions};
     use front_matter::InsertAnchor;
     use utils::slugs::SlugifyStrategy;
 
@@ -805,7 +805,7 @@ Hello world
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let content = r#"
 +++
 +++
@@ -822,7 +822,7 @@ Bonjour le monde"#
     #[test]
     fn can_specify_language_in_filename_with_date() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let content = r#"
 +++
 +++
@@ -841,7 +841,7 @@ Bonjour le monde"#
     #[test]
     fn i18n_frontmatter_path_overrides_default_permalink() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let content = r#"
 +++
 path = "bonjour"

@@ -67,7 +67,7 @@ fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<Stri
         return Ok(path);
     }
 
-    if !config.languages.iter().any(|x| x.code == lang) {
+    if !config.languages.iter().any(|(x, _)| x == lang) {
         return Err(
             format!("`{}` is not an authorized language (check config.languages).", lang).into()
         );
@@ -728,9 +728,9 @@ mod tests {
     const TRANS_CONFIG: &str = r#"
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
-languages = [
-    { code = "en" },
-]
+
+[languages]
+[languages.en]
 
 [translations]
 [translations.fr]
