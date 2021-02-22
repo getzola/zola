@@ -152,7 +152,7 @@ impl FileInfo {
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use config::{Config, Language};
+    use config::{Config, LanguageOptions};
 
     use super::{find_content_components, FileInfo};
 
@@ -184,7 +184,7 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_page() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
@@ -197,7 +197,7 @@ mod tests {
     #[test]
     fn can_find_valid_language_with_default_locale() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python.en.md"),
             &PathBuf::new(),
@@ -210,7 +210,7 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_page_with_assets() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),
@@ -236,7 +236,7 @@ mod tests {
     #[test]
     fn errors_on_unknown_language_in_page_with_i18n_on() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("it"), feed: false, search: false });
+        config.languages.insert("it".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
@@ -248,7 +248,7 @@ mod tests {
     #[test]
     fn can_find_valid_language_in_section() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_section(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
             &PathBuf::new(),
@@ -275,7 +275,7 @@ mod tests {
     #[test]
     fn correct_canonical_after_find_language() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),

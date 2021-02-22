@@ -1,16 +1,31 @@
 use std::collections::HashMap;
 
+use errors::{bail, Result};
 use serde_derive::{Deserialize, Serialize};
+use unic_langid::LanguageIdentifier;
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
-pub struct Language {
-    /// The language code
-    pub code: String,
+pub struct LanguageOptions {
     /// Whether to generate a feed for that language, defaults to `false`
-    pub feed: bool,
+    pub generate_feed: bool,
     /// Whether to generate search index for that language, defaults to `false`
-    pub search: bool,
+    pub build_search_index: bool,
+}
+
+impl Default for LanguageOptions {
+    fn default() -> Self {
+        LanguageOptions { generate_feed: false, build_search_index: false }
+    }
 }
 
 pub type TranslateTerm = HashMap<String, String>;
+
+/// We want to ensure the language codes are valid ones
+pub fn validate_code(code: &str) -> Result<()> {
+    if LanguageIdentifier::from_bytes(code.as_bytes()).is_err() {
+        bail!("Language `{}` is not a valid Unicode Language Identifier (see http://unicode.org/reports/tr35/#Unicode_language_identifier)", code)
+    }
+
+    Ok(())
+}

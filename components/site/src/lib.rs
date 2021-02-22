@@ -126,11 +126,8 @@ impl Site {
     /// There are one index section for the default language + 1 per language
     fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
         let mut res = vec![(self.content_path.join("_index.md"), None)];
-        for language in &self.config.languages {
-            res.push((
-                self.content_path.join(format!("_index.{}.md", language.code)),
-                Some(language.code.clone()),
-            ));
+        for code in self.config.languages.keys() {
+            res.push((self.content_path.join(format!("_index.{}.md", code)), Some(code.clone())));
         }
         res
     }
@@ -177,7 +174,7 @@ impl Site {
         // so it's kinda necessecary
         let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
         let mut allowed_index_filenames: Vec<_> =
-            self.config.languages.iter().map(|l| format!("_index.{}.md", l.code)).collect();
+            self.config.languages.iter().map(|(code, _)| format!("_index.{}.md", code)).collect();
         allowed_index_filenames.push("_index.md".to_string());
 
         loop {
@@ -228,7 +225,7 @@ impl Site {
                         Ok(f) => {
                             let path_str = f.path().file_name().unwrap().to_str().unwrap();
                             if f.path().is_file()
-                                && allowed_index_filenames.iter().find(|&s| *s == path_str).is_some()
+                                && allowed_index_filenames.iter().any(|s| s == path_str)
                             {
                                 Some(f)
                             } else {
@@ -660,13 +657,13 @@ impl Site {
             start = log_time(start, "Generated feed in default language");
         }
 
-        for lang in &self.config.languages {
-            if !lang.feed {
+        for (code, language) in &self.config.languages {
+            if !language.generate_feed {
                 continue;
             }
             let pages =
-                library.pages_values().iter().filter(|p| p.lang == lang.code).cloned().collect();
-            self.render_feed(pages, Some(&PathBuf::from(lang.code.clone())), &lang.code, |c| c)?;
+                library.pages_values().iter().filter(|p| &p.lang == code).cloned().collect();
+            self.render_feed(pages, Some(&PathBuf::from(code)), &code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
 
@@ -704,17 +701,13 @@ impl Site {
             ),
         )?;
 
-        for language in &self.config.languages {
-            if language.code != self.config.default_language && language.search {
+        for (code, language) in &self.config.languages {
+            if code != &self.config.default_language && language.build_search_index {
                 create_file(
-                    &self.output_path.join(&format!("search_index.{}.js", &language.code)),
+                    &self.output_path.join(&format!("search_index.{}.js", &code)),
                     &format!(
                         "window.searchIndex = {};",
-                        search::build_index(
-                            &language.code,
-                            &self.library.read().unwrap(),
-                            &self.config
-                        )?
+                        search::build_index(&code, &self.library.read().unwrap(), &self.config)?
                     ),
                 )?;
             }

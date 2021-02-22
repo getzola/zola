@@ -254,7 +254,7 @@ mod tests {
     use tempfile::tempdir;
 
     use super::Section;
-    use config::{Config, Language};
+    use config::{Config, LanguageOptions};
 
     #[test]
     fn section_with_assets_gets_right_info() {
@@ -312,7 +312,7 @@ mod tests {
     #[test]
     fn can_specify_language_in_filename() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let content = r#"
 +++
 +++
@@ -334,7 +334,7 @@ Bonjour le monde"#
     #[test]
     fn can_make_links_to_translated_sections_without_double_trailing_slash() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let content = r#"
 +++
 +++
@@ -351,7 +351,7 @@ Bonjour le monde"#
     #[test]
     fn can_make_links_to_translated_subsections_with_trailing_slash() {
         let mut config = Config::default();
-        config.languages.push(Language { code: String::from("fr"), feed: false, search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let content = r#"
 +++
 +++
