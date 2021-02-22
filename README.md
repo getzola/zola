@@ -68,7 +68,7 @@ zola may or may not be the right tool for you. If you would like to see at a gla
 - *Assets co-location*
   - zola receives ![ehh] because assets cannot be shared across pages/sections, despite living in the same folder ([discussion on the forum](https://zola.discourse.group/t/reusing-markdown-docs-from-github-repo-in-zola-site/776))
 - *Internal links*
-  - zola receives ![ehh] because so there is currently no reliable way to reference static assets from the content pages (though a shortcode can do it very easily), which is a limitation that only affects builds for a subfolder (see discussion about [path unification](https://github.com/getzola/zola/issues/977)) ; sites built for the webroot of a domain are unaffected by this limitation
+  - zola receives ![ehh] because in case you are building your website for a subfolder of the webroot (for example `https://myserver.example/mysite`), linking to static assets (or another page's colocated assets) requires using a dedicated shortcode (see discussion about [path unification](https://github.com/getzola/zola/issues/977) for how to improve that) ; sites built for the webroot of a domain are unaffected by this limitation
 
 The following input formats are supported:
 
