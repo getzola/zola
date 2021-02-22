@@ -205,7 +205,11 @@ impl TeraFn for GetFileHash {
         let f = match open_file(&self.search_paths, &path) {
             Ok(f) => f,
             Err(e) => {
-                return Err(format!("File {} could not be open: {} (searched in {:?})", path, e, self.search_paths).into());
+                return Err(format!(
+                    "File {} could not be open: {} (searched in {:?})",
+                    path, e, self.search_paths
+                )
+                .into());
             }
         };
 

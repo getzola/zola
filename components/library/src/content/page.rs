@@ -683,6 +683,26 @@ Hello world
         assert_eq!(page.slug, "hello");
     }
 
+    // https://github.com/getzola/zola/pull/1323#issuecomment-779401063
+    #[test]
+    fn can_get_date_from_short_date_in_filename_respects_slugification_strategy() {
+        let mut config = Config::default();
+        config.slugify.paths = SlugifyStrategy::Off;
+        let content = r#"
++++
++++
+Hello world
+<!-- more -->"#
+            .to_string();
+        let res =
+            Page::parse(Path::new("2018-10-08_ こんにちは.md"), &content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+
+        assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
+        assert_eq!(page.slug, " こんにちは");
+    }
+
     #[test]
     fn can_get_date_from_full_rfc3339_date_in_filename() {
         let config = Config::default();
@@ -703,6 +723,30 @@ Hello world
 
         assert_eq!(page.meta.date, Some("2018-10-02T15:00:00Z".to_string()));
         assert_eq!(page.slug, "hello");
+    }
+
+    // https://github.com/getzola/zola/pull/1323#issuecomment-779401063
+    #[test]
+    fn can_get_date_from_full_rfc3339_date_in_filename_respects_slugification_strategy() {
+        let mut config = Config::default();
+        config.slugify.paths = SlugifyStrategy::Off;
+        let content = r#"
++++
++++
+Hello world
+<!-- more -->"#
+            .to_string();
+        let res = Page::parse(
+            Path::new("2018-10-02T15:00:00Z- こんにちは.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let page = res.unwrap();
+
+        assert_eq!(page.meta.date, Some("2018-10-02T15:00:00Z".to_string()));
+        assert_eq!(page.slug, " こんにちは");
     }
 
     #[test]
