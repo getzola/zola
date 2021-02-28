@@ -468,7 +468,7 @@ pub fn serve(
         match rx.recv() {
             Ok(event) => {
                 let can_do_fast_reload = !matches!(event, Remove(_));
-
+                
                 match event {
                     // Intellij does weird things on edit, chmod is there to count those changes
                     // https://github.com/passcod/notify/issues/150#issuecomment-494912080
@@ -477,7 +477,7 @@ pub fn serve(
                             continue;
                         }
 
-                        if path.is_file() && is_temp_file(&path) {
+                        if is_temp_file(&path) {
                             continue;
                         }
 
@@ -485,7 +485,6 @@ pub fn serve(
                         if path.is_dir() && is_folder_empty(&path) {
                             continue;
                         }
-
                         println!(
                             "Change detected @ {}",
                             Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
@@ -600,7 +599,7 @@ fn is_temp_file(path: &Path) -> bool {
             x if x.ends_with("jb_old___") => true,
             x if x.ends_with("jb_tmp___") => true,
             x if x.ends_with("jb_bak___") => true,
-            // vim
+            // vim & jetbrains
             x if x.ends_with('~') => true,
             _ => {
                 if let Some(filename) = path.file_stem() {
