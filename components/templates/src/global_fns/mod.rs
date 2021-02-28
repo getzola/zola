@@ -149,20 +149,15 @@ impl TeraFn for GetUrl {
             }
         } else {
             // anything else
-            let mut pathbuf = PathBuf::new();
+            let mut segments = vec![];
 
             if lang != self.config.default_language {
-                pathbuf.push(lang);
+                segments.push(lang);
             };
 
-            // Have to strip off leading slashes since pushing an absolute
-            // path will replace the existing content of the PathBuf
-            pathbuf.push(path.trim_start_matches('/'));
+            segments.push(path);
 
-            let path_with_lang = pathbuf.to_str()
-                .ok_or(
-                    format!("Invalid pathname `{}` in call to get_url.", &path)
-                )?;
+            let path_with_lang = segments.join("/");
 
             let mut permalink = self.config.make_permalink(&path_with_lang);
             if !trailing_slash && permalink.ends_with('/') {
