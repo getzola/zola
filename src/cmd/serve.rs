@@ -128,7 +128,11 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
 
     Ok(Response::builder()
         .status(StatusCode::OK)
-        .header("Content-Type", mimetype_from_path(&root).first_or_octet_stream().essence_str())
+        .header(
+            header::CONTENT_TYPE,
+            mimetype_from_path(&root).first_or_octet_stream().essence_str(),
+        )
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
         .body(Body::from(contents))
         .unwrap())
 }
