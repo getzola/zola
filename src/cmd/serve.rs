@@ -270,10 +270,16 @@ pub fn serve(
         return Err(format!("Cannot start server on address {}.", address).into());
     }
 
+    let config_filename = config_file
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap_or("config.toml");
+
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate
     let watch_this = vec![
-        ("config.toml", WatchMode::Required),
+        (config_filename, WatchMode::Required),
         ("content", WatchMode::Required),
         ("sass", WatchMode::Condition(site.config.compile_sass)),
         ("static", WatchMode::Optional),
@@ -631,7 +637,7 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
         ChangeKind::StaticFiles
     } else if partial_path.starts_with("/sass") {
         ChangeKind::Sass
-    } else if partial_path == Path::new("/config.toml") {
+    } else if partial_path.extension().unwrap() == "toml" {
         ChangeKind::Config
     } else {
         unreachable!("Got a change in an unexpected path: {}", partial_path.display());
