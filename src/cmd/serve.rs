@@ -497,7 +497,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&root_dir, &path) {
+                        match detect_change_kind(&root_dir, &path, &config_filename) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
 
@@ -623,9 +623,12 @@ fn is_temp_file(path: &Path) -> bool {
 
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
-fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
+fn detect_change_kind(pwd: &Path, path: &Path, config_filename: &str) -> (ChangeKind, PathBuf) {
     let mut partial_path = PathBuf::from("/");
     partial_path.push(path.strip_prefix(pwd).unwrap_or(path));
+
+    let mut partial_config_path = PathBuf::from("/");
+    partial_config_path.push(config_filename);
 
     let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
@@ -637,7 +640,7 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
         ChangeKind::StaticFiles
     } else if partial_path.starts_with("/sass") {
         ChangeKind::Sass
-    } else if partial_path.extension().unwrap() == "toml" {
+    } else if partial_path == partial_config_path {
         ChangeKind::Config
     } else {
         unreachable!("Got a change in an unexpected path: {}", partial_path.display());
