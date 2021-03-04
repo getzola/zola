@@ -689,36 +689,48 @@ mod tests {
                 (ChangeKind::Templates, PathBuf::from("/templates/hello.html")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/templates/hello.html"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Themes, PathBuf::from("/themes/hello.html")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/themes/hello.html"),
+                "config.toml",
             ),
             (
                 (ChangeKind::StaticFiles, PathBuf::from("/static/site.css")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/static/site.css"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Content, PathBuf::from("/content/posts/hello.md")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/content/posts/hello.md"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Sass, PathBuf::from("/sass/print.scss")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/sass/print.scss"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Config, PathBuf::from("/config.toml")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/config.toml"),
+                "config.toml",
+            ),
+            (
+                (ChangeKind::Config, PathBuf::from("/config.staging.toml")),
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/config.staging.toml"),
+                "config.staging.toml",
             ),
         ];
 
-        for (expected, pwd, path) in test_cases {
-            assert_eq!(expected, detect_change_kind(&pwd, &path));
+        for (expected, pwd, path, config_filename) in test_cases {
+            assert_eq!(expected, detect_change_kind(&pwd, &path, &config_filename));
         }
     }
 
@@ -728,7 +740,8 @@ mod tests {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
         let pwd = Path::new(r#"C:\\Users\johan\site"#);
         let path = Path::new(r#"C:\\Users\johan\site\templates\hello.html"#);
-        assert_eq!(expected, detect_change_kind(pwd, path));
+        let config_filename = "config.toml";
+        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 
     #[test]
@@ -736,6 +749,7 @@ mod tests {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
         let pwd = Path::new("/home/johan/site");
         let path = Path::new("templates/hello.html");
-        assert_eq!(expected, detect_change_kind(pwd, path));
+        let config_filename = "config.toml";
+        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 }
