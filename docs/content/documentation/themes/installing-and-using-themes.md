@@ -27,7 +27,8 @@ Zola to use it by setting the `theme` variable in the
 [configuration file](@/documentation/getting-started/configuration.md). The theme
 name has to be the name of the directory you cloned the theme in.
 For example, if you cloned a theme in `themes/simple-blog`, the theme name to use
-in the configuration file is `simple-blog`.
+in the configuration file is `simple-blog`. Also make sure to place the variable in the top level of the 
+`.toml` hierarchy and not after a dict like [extra] or [markdown].
 
 ## Customizing a theme
 
