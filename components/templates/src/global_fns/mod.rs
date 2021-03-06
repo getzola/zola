@@ -67,7 +67,7 @@ fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<Stri
         return Ok(path);
     }
 
-    if !config.languages.iter().any(|(x, _)| x == lang) {
+    if !config.other_languages().contains_key(lang) {
         return Err(
             format!("`{}` is not an authorized language (check config.languages).", lang).into()
         );
