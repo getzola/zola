@@ -129,13 +129,21 @@ impl Config {
             bail!("Highlight theme {} defined in config does not exist.", highlight_theme);
         }
 
-        if config.languages.iter().any(|(code, _)| code == &config.default_language) {
-            bail!("Default language `{}` should not appear both in `config.default_language` and `config.languages`", config.default_language)
-        }
-
         languages::validate_code(&config.default_language)?;
         for code in config.languages.keys() {
             languages::validate_code(&code)?;
+        }
+
+        // We automatically insert a language option for the default language *if* it isn't present
+        // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
+        // TODO: as source of truth?
+        if !config.languages.contains_key(&config.default_language) {
+            config.languages.insert(config.default_language.clone(), languages::LanguageOptions {
+                title: config.title.clone(),
+                description: config.title.clone(),
+                generate_feed: config.generate_feed,
+                build_search_index: config.build_search_index,
+            });
         }
 
         if !config.ignored_content.is_empty() {
@@ -278,14 +286,20 @@ impl Config {
         self.add_theme_extra(&theme)
     }
 
-    /// Is this site using i18n?
-    pub fn is_multilingual(&self) -> bool {
-        !self.languages.is_empty()
+    pub fn other_languages(&self) -> HashMap<&str, &languages::LanguageOptions> {
+        let mut others = HashMap::new();
+        for (k, v) in &self.languages {
+            if k == &self.default_language {
+                continue;
+            }
+            others.insert(k.as_str(), v);
+        }
+        others
     }
 
-    /// Returns the codes of all additional languages
-    pub fn languages_codes(&self) -> Vec<&str> {
-        self.languages.iter().map(|(code, _)| code.as_ref()).collect()
+    /// Is this site using i18n?
+    pub fn is_multilingual(&self) -> bool {
+        !self.other_languages().is_empty()
     }
 
     pub fn is_in_build_mode(&self) -> bool {
@@ -545,6 +559,7 @@ title = "A title"
     #[test]
     fn can_use_present_translation() {
         let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        assert!(config.languages.contains_key("fr"));
         assert_eq!(config.get_translation("fr", "title").unwrap(), "Un titre");
         assert_eq!(config.get_translation("en", "title").unwrap(), "A title");
     }
@@ -669,22 +684,6 @@ anchors = "off"
         assert_eq!(config.slugify.paths, SlugifyStrategy::On);
         assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Safe);
         assert_eq!(config.slugify.anchors, SlugifyStrategy::Off);
-    }
-
-    #[test]
-    fn error_on_language_set_twice() {
-        let config_str = r#"
-base_url = "https://remplace-par-ton-url.fr"
-default_language = "fr"
-
-[languages.fr]
-
-[languages.en]
-
-        "#;
-        let config = Config::parse(config_str);
-        let err = config.unwrap_err();
-        assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
     }
 
     #[test]

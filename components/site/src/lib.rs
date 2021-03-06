@@ -124,10 +124,10 @@ impl Site {
 
     /// The index sections are ALWAYS at those paths
     /// There are one index section for the default language + 1 per language
-    fn index_section_paths(&self) -> Vec<(PathBuf, Option<String>)> {
+    fn index_section_paths(&self) -> Vec<(PathBuf, Option<&str>)> {
         let mut res = vec![(self.content_path.join("_index.md"), None)];
-        for code in self.config.languages.keys() {
-            res.push((self.content_path.join(format!("_index.{}.md", code)), Some(code.clone())));
+        for (code, _) in self.config.other_languages() {
+            res.push((self.content_path.join(format!("_index.{}.md", code)), Some(code)));
         }
         res
     }
@@ -174,7 +174,7 @@ impl Site {
         // so it's kinda necessecary
         let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
         let mut allowed_index_filenames: Vec<_> =
-            self.config.languages.iter().map(|(code, _)| format!("_index.{}.md", code)).collect();
+            self.config.other_languages().iter().map(|(code, _)| format!("_index.{}.md", code)).collect();
         allowed_index_filenames.push("_index.md".to_string());
 
         loop {
@@ -657,7 +657,7 @@ impl Site {
             start = log_time(start, "Generated feed in default language");
         }
 
-        for (code, language) in &self.config.languages {
+        for (code, language) in &self.config.other_languages() {
             if !language.generate_feed {
                 continue;
             }
@@ -701,7 +701,7 @@ impl Site {
             ),
         )?;
 
-        for (code, language) in &self.config.languages {
+        for (code, language) in &self.config.other_languages() {
             if code != &self.config.default_language && language.build_search_index {
                 create_file(
                     &self.output_path.join(&format!("search_index.{}.js", &code)),

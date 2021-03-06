@@ -136,7 +136,7 @@ impl FileInfo {
 
         // The language code is not present in the config: typo or the user forgot to add it to the
         // config
-        if !config.languages_codes().contains(&parts[1].as_ref()) {
+        if !config.other_languages().contains_key(&parts[1].as_ref()) {
             bail!("File {:?} has a language code of {} which isn't present in the config.toml `languages`", self.path, parts[1]);
         }
 

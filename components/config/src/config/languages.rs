@@ -7,6 +7,10 @@ use unic_langid::LanguageIdentifier;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct LanguageOptions {
+    /// Title of the site. Defaults to None
+    pub title: Option<String>,
+    /// Description of the site. Defaults to None
+    pub description: Option<String>,
     /// Whether to generate a feed for that language, defaults to `false`
     pub generate_feed: bool,
     /// Whether to generate search index for that language, defaults to `false`
@@ -15,7 +19,7 @@ pub struct LanguageOptions {
 
 impl Default for LanguageOptions {
     fn default() -> Self {
-        LanguageOptions { generate_feed: false, build_search_index: false }
+        LanguageOptions { title: None, description: None, generate_feed: false, build_search_index: false }
     }
 }
 
