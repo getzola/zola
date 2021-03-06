@@ -243,17 +243,11 @@ impl Site {
                     .collect::<Vec<DirEntry>>();
 
                 for index_file in index_files {
-                    let section = match Section::from_file(
+                    let section = Section::from_file(
                         index_file.path(),
                         &self.config,
                         &self.base_path,
-                    ) {
-                        Err(e) => {
-                            println!("Failed to load section: {:?}", e);
-                            continue;
-                        }
-                        Ok(sec) => sec,
-                    };
+                    )?;
 
                     // if the section is drafted we can skip the enitre dir
                     if section.meta.draft && !self.include_drafts {
@@ -264,13 +258,7 @@ impl Site {
                     self.add_section(section, false)?;
                 }
             } else {
-                let page = match Page::from_file(path, &self.config, &self.base_path) {
-                    Err(e) => {
-                        println!("Failed to load page: {:?}", e);
-                        continue;
-                    }
-                    Ok(p) => p,
-                };
+                let page = Page::from_file(path, &self.config, &self.base_path)?;
 
                 // should we skip drafts?
                 if page.meta.draft && !self.include_drafts {
