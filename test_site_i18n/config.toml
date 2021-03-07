@@ -13,13 +13,15 @@ generate_feed = true
 
 taxonomies = [
     {name = "authors", feed = true},
-    {name = "auteurs", lang = "fr"},
     {name = "tags"},
-    {name = "tags", lang = "fr"},
 ]
 
 [languages.fr]
 generate_feed = true
+taxonomies = [
+    {name = "auteurs", lang = "fr"},
+    {name = "tags", lang = "fr"},
+]
 
 [languages.it]
 build_search_index = true

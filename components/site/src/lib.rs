@@ -173,8 +173,12 @@ impl Site {
         // which we can only decide to use after we've deserialised the section
         // so it's kinda necessecary
         let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
-        let mut allowed_index_filenames: Vec<_> =
-            self.config.other_languages().iter().map(|(code, _)| format!("_index.{}.md", code)).collect();
+        let mut allowed_index_filenames: Vec<_> = self
+            .config
+            .other_languages()
+            .iter()
+            .map(|(code, _)| format!("_index.{}.md", code))
+            .collect();
         allowed_index_filenames.push("_index.md".to_string());
 
         loop {
@@ -240,11 +244,8 @@ impl Site {
                     .collect::<Vec<DirEntry>>();
 
                 for index_file in index_files {
-                    let section = Section::from_file(
-                        index_file.path(),
-                        &self.config,
-                        &self.base_path,
-                    )?;
+                    let section =
+                        Section::from_file(index_file.path(), &self.config, &self.base_path)?;
 
                     // if the section is drafted we can skip the enitre dir
                     if section.meta.draft && !self.include_drafts {
@@ -794,8 +795,8 @@ impl Site {
         ensure_directory_exists(&self.output_path)?;
 
         let mut components = Vec::new();
-        if taxonomy.kind.lang != self.config.default_language {
-            components.push(taxonomy.kind.lang.as_ref());
+        if taxonomy.lang != self.config.default_language {
+            components.push(taxonomy.lang.as_ref());
         }
 
         components.push(taxonomy.slug.as_ref());
@@ -829,11 +830,7 @@ impl Site {
                     self.render_feed(
                         item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
                         Some(&PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))),
-                        if self.config.is_multilingual() && !taxonomy.kind.lang.is_empty() {
-                            &taxonomy.kind.lang
-                        } else {
-                            &self.config.default_language
-                        },
+                        &taxonomy.lang,
                         |mut context: Context| {
                             context.insert("taxonomy", &taxonomy.kind);
                             context

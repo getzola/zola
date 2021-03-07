@@ -11,9 +11,6 @@ pub struct Taxonomy {
     pub paginate_path: Option<String>,
     /// Whether to generate a feed only for each taxonomy term, defaults to false
     pub feed: bool,
-    /// The language for that taxonomy, only used in multilingual sites.
-    /// Defaults to the config `default_language` if not set
-    pub lang: String,
 }
 
 impl Taxonomy {

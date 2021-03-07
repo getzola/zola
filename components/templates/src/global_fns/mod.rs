@@ -358,7 +358,7 @@ impl GetTaxonomyUrl {
             for item in &taxo.items {
                 items.insert(slugify_paths(&item.name.clone(), slugify), item.permalink.clone());
             }
-            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), items);
+            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), items);
         }
         Self { taxonomies, default_lang: default_lang.to_string(), slugify }
     }
@@ -476,7 +476,7 @@ impl GetTaxonomy {
     ) -> Self {
         let mut taxonomies = HashMap::new();
         for taxo in all_taxonomies {
-            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.kind.lang), taxo);
+            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), taxo);
         }
         Self { taxonomies, library, default_lang: default_lang.to_string() }
     }
@@ -587,20 +587,13 @@ mod tests {
     fn can_get_taxonomy() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        let taxo_config = TaxonomyConfig {
-            name: "tags".to_string(),
-            lang: config.default_language.clone(),
-            ..TaxonomyConfig::default()
-        };
-        let taxo_config_fr = TaxonomyConfig {
-            name: "tags".to_string(),
-            lang: "fr".to_string(),
-            ..TaxonomyConfig::default()
-        };
+        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let taxo_config_fr =
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
         let tag = TaxonomyItem::new(
             "Programming",
-            &taxo_config,
+            &config.default_language,
             "tags",
             &config,
             vec![],
@@ -608,15 +601,24 @@ mod tests {
         );
         let tag_fr = TaxonomyItem::new(
             "Programmation",
-            &taxo_config_fr,
+            "fr",
             "tags",
             &config,
             vec![],
             &library.read().unwrap(),
         );
-        let tags = Taxonomy { kind: taxo_config, slug: "tags".to_string(), items: vec![tag] };
-        let tags_fr =
-            Taxonomy { kind: taxo_config_fr, slug: "tags".to_string(), items: vec![tag_fr] };
+        let tags = Taxonomy {
+            kind: taxo_config,
+            lang: config.default_language.clone(),
+            slug: "tags".to_string(),
+            items: vec![tag],
+        };
+        let tags_fr = Taxonomy {
+            kind: taxo_config_fr,
+            lang: "fr".to_owned(),
+            slug: "tags".to_string(),
+            items: vec![tag_fr],
+        };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
         let static_fn =
@@ -668,23 +670,31 @@ mod tests {
     fn can_get_taxonomy_url() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        let taxo_config = TaxonomyConfig {
-            name: "tags".to_string(),
-            lang: config.default_language.clone(),
-            ..TaxonomyConfig::default()
-        };
-        let taxo_config_fr = TaxonomyConfig {
-            name: "tags".to_string(),
-            lang: "fr".to_string(),
-            ..TaxonomyConfig::default()
-        };
+        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let taxo_config_fr =
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new("Programming", &taxo_config, "tags", &config, vec![], &library);
-        let tag_fr =
-            TaxonomyItem::new("Programmation", &taxo_config_fr, "tags", &config, vec![], &library);
-        let tags = Taxonomy { kind: taxo_config, slug: "tags".to_string(), items: vec![tag] };
-        let tags_fr =
-            Taxonomy { kind: taxo_config_fr, slug: "tags".to_string(), items: vec![tag_fr] };
+        let tag = TaxonomyItem::new(
+            "Programming",
+            &config.default_language,
+            "tags",
+            &config,
+            vec![],
+            &library,
+        );
+        let tag_fr = TaxonomyItem::new("Programmation", "fr", "tags", &config, vec![], &library);
+        let tags = Taxonomy {
+            kind: taxo_config,
+            lang: config.default_language.clone(),
+            slug: "tags".to_string(),
+            items: vec![tag],
+        };
+        let tags_fr = Taxonomy {
+            kind: taxo_config_fr,
+            lang: "fr".to_owned(),
+            slug: "tags".to_string(),
+            items: vec![tag_fr],
+        };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
         let static_fn =
@@ -839,27 +849,23 @@ title = "A title"
     #[test]
     fn can_get_feed_url_with_default_language() {
         let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn =
+            GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
-        assert_eq!(
-            static_fn.call(&args).unwrap(),
-            "https://remplace-par-ton-url.fr/atom.xml"
-        );
+        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/atom.xml");
     }
 
     #[test]
     fn can_get_feed_url_with_other_language() {
         let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn =
+            GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
-        assert_eq!(
-            static_fn.call(&args).unwrap(),
-            "https://remplace-par-ton-url.fr/en/atom.xml"
-        );
+        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/en/atom.xml");
     }
 
     #[test]
