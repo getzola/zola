@@ -233,7 +233,7 @@ impl<'a> Paginator<'a> {
             PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
                 context.insert("term", &item.serialize(library));
-                context.insert("lang", &t.kind.lang);
+                context.insert("lang", &t.lang);
             }
         };
         context.insert("current_url", &pager.permalink);
@@ -419,6 +419,7 @@ mod tests {
         };
         let taxonomy = Taxonomy {
             kind: taxonomy_def,
+            lang: "en".to_owned(),
             slug: "tags".to_string(),
             items: vec![taxonomy_item.clone()],
         };
@@ -453,6 +454,7 @@ mod tests {
         };
         let taxonomy = Taxonomy {
             kind: taxonomy_def,
+            lang: "en".to_owned(),
             slug: "some-tags".to_string(),
             items: vec![taxonomy_item.clone()],
         };

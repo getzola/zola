@@ -274,11 +274,7 @@ pub fn serve(
         return Err(format!("Cannot start server on address {}.", address).into());
     }
 
-    let config_filename = config_file
-        .file_name()
-        .unwrap()
-        .to_str()
-        .unwrap_or("config.toml");
+    let config_filename = config_file.file_name().unwrap().to_str().unwrap_or("config.toml");
 
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate
@@ -478,7 +474,7 @@ pub fn serve(
         match rx.recv() {
             Ok(event) => {
                 let can_do_fast_reload = !matches!(event, Remove(_));
-                
+
                 match event {
                     // Intellij does weird things on edit, chmod is there to count those changes
                     // https://github.com/passcod/notify/issues/150#issuecomment-494912080

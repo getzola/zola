@@ -138,12 +138,16 @@ impl Config {
         // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
         // TODO: as source of truth?
         if !config.languages.contains_key(&config.default_language) {
-            config.languages.insert(config.default_language.clone(), languages::LanguageOptions {
-                title: config.title.clone(),
-                description: config.title.clone(),
-                generate_feed: config.generate_feed,
-                build_search_index: config.build_search_index,
-            });
+            config.languages.insert(
+                config.default_language.clone(),
+                languages::LanguageOptions {
+                    title: config.title.clone(),
+                    description: config.title.clone(),
+                    generate_feed: config.generate_feed,
+                    build_search_index: config.build_search_index,
+                    taxonomies: config.taxonomies.clone(),
+                },
+            );
         }
 
         if !config.ignored_content.is_empty() {
@@ -162,12 +166,6 @@ impl Config {
             }
             config.ignored_content_globset =
                 Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
-        }
-
-        for taxonomy in config.taxonomies.iter_mut() {
-            if taxonomy.lang.is_empty() {
-                taxonomy.lang = config.default_language.clone();
-            }
         }
 
         if config.highlight_code {
@@ -270,7 +268,7 @@ impl Config {
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
         for (key, val) in &theme.extra {
             if !self.extra.contains_key(key) {
-                // The key is not overriden in site config, insert it
+                // The key is not overridden in site config, insert it
                 self.extra.insert(key.to_string(), val.clone());
                 continue;
             }
