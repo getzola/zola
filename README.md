@@ -33,6 +33,7 @@ in the `docs/content` folder of the repository and the community can use [its fo
 | LiveReload                      | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Netlify support                 | ![yes] | ![no]  | ![yes] | ![no]   |
 | Vercel support                  | ![yes] | ![no]  | ![yes] | ![yes]  |
+| Cloudflare Pags support         | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Breadcrumbs                     | ![yes] | ![no]  | ![no]  | ![yes]  |
 | Custom output formats           | ![no]  | ![no]  | ![yes] | ![no]   |
 
