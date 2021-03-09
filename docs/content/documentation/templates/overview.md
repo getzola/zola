@@ -339,6 +339,18 @@ as below.
 {{ response }}
 ```
 
+When no other parameters are specified the URL will always be retrieved using a HTTP GET request.
+Using the parameter `method`, since version 0.14.0, you can also choose to retrieve the URL using a POST request.
+
+When using `method="POST"` you can also use the parameters `body` and `contenttype`.
+The parameter body is the actual contents sent in the POST request.
+The parameter contenttype should be the mimetype of the body.
+
+```jinja2
+{% set postresponse = load_data(url="https://postman-echo.com/post", format="json", method="POST", body="{i_am:'json'}", contenttype="application/json") %}
+{{ postresponse }}
+```
+
 #### Data caching
 
 Data file loading and remote requests are cached in memory during the build, so multiple requests aren't made
