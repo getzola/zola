@@ -754,7 +754,7 @@ mod tests {
         let result = static_fn.call(&args.clone()).unwrap();
 
         if cfg!(windows) {
-            assert_eq!(result, ".hello {}\n",);
+            assert_eq!(result.as_str().unwrap().replace("\r\n","\n"), ".hello {}\n",);
         } else {
             assert_eq!(result, ".hello {}\n",);
         };
@@ -769,7 +769,7 @@ mod tests {
         let result = static_fn.call(&args.clone()).unwrap();
 
         if cfg!(windows) {
-            assert_eq!(result, "Number,Title\n1,Gutenberg\n2,Printing",);
+            assert_eq!(result.as_str().unwrap().replace("\r\n","\n"), "Number,Title\n1,Gutenberg\n2,Printing",);
         } else {
             assert_eq!(result, "Number,Title\n1,Gutenberg\n2,Printing",);
         };
@@ -784,7 +784,7 @@ mod tests {
         let result = static_fn.call(&args.clone()).unwrap();
 
         if cfg!(windows) {
-            assert_eq!(result, ".hello {}\n",);
+            assert_eq!(result.as_str().unwrap().replace("\r\n","\n"), ".hello {}\n",);
         } else {
             assert_eq!(result, ".hello {}\n",);
         };
