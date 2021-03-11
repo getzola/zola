@@ -45,6 +45,9 @@ errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
 
+[dev-dependencies]
+same-file = "1"
+
 [workspace]
 members = [
     "components/config",
