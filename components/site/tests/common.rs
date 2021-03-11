@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 use site::Site;
 use tempfile::{tempdir, TempDir};
+use path_slash::PathExt;
 
 // 2 helper macros to make all the build testing more bearable
 #[macro_export]
@@ -73,7 +74,7 @@ where
 /// potential language (if not default) associated with a path
 /// When the path is not a markdown file (.md), None is returned
 /// Strips base_dir from the start of path
-fn find_lang_for(entry: &Path, base_dir: &str) -> Option<(String, Option<String>)> {
+fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String>)> {
     let ext = entry.extension();
     if ext.is_none() {
         // Not a markdown file (no extension), skip
@@ -96,13 +97,19 @@ fn find_lang_for(entry: &Path, base_dir: &str) -> Option<(String, Option<String>
         unified_path.pop();
         // Readd stem with .md added
         unified_path.push(&format!("{}.md", stem.unwrap().to_str().unwrap()));
-        let unified_path = unified_path.to_str().unwrap().trim_start_matches(base_dir).to_string();
-        return Some((unified_path, Some(lang.to_str().unwrap().into())));
+        let unified_path_str = match unified_path.strip_prefix(base_dir)  {
+			Ok(path_without_prefix) => {path_without_prefix.to_slash_lossy()}
+			_ => {unified_path.to_slash_lossy()}
+		};
+        return Some((unified_path_str, Some(lang.to_str().unwrap().into())));
     } else {
         // No lang, return no_ext directly
-        let mut no_ext = no_ext.to_str().unwrap().trim_start_matches(base_dir).to_string();
-        no_ext.push_str(".md");
-        return Some((no_ext, None));
+		let mut no_ext_string = match no_ext.strip_prefix(base_dir)  {
+			Ok(path_without_prefix) => {path_without_prefix.to_slash_lossy()}
+			_ => {no_ext.to_slash_lossy()}
+		};
+		no_ext_string.push_str(".md");
+        return Some((no_ext_string, None));
     }
 }
 
@@ -111,7 +118,7 @@ fn find_lang_for(entry: &Path, base_dir: &str) -> Option<(String, Option<String>
 /// TODO: This implementation does not support files with a dot inside (foo.bar.md where bar is
 /// not a language), because it requires to know what languages are enabled from config, and it's
 /// unclear how to distinguish (and what to do) between disabled language or "legit" dots
-pub fn add_translations_from(dir: &Path, strip: &str, default: &str) -> HashMap<String, Vec<String>> {
+pub fn add_translations_from(dir: &Path, strip: &Path, default: &str) -> HashMap<String, Vec<String>> {
     let mut expected: HashMap<String, Vec<String>> = HashMap::new();
     for entry in dir.read_dir().expect("Failed to read dir") {
         let entry = entry.expect("Failed to read entry").path();
@@ -147,7 +154,7 @@ pub fn find_expected_translations(name: &str, default_language: &str) -> HashMap
     // We remove BASEDIR/content/ from the keys so they match paths in library
     let mut strip_prefix = path.to_str().unwrap().to_string();
     strip_prefix.push('/');
-    add_translations_from(&path, &strip_prefix, default_language)
+    add_translations_from(&path, &path, default_language)
 }
 
 /// Checks whether a given permalink has a corresponding HTML page in output folder
@@ -215,7 +222,7 @@ impl Translations {
             trans: translations,
         }
     }
-    
+
     pub fn languages(&self) -> Vec<String> {
         let mut lang: Vec<String> = self.trans.iter().map(|x| x.lang.clone()).collect();
         lang.sort_unstable();
@@ -246,7 +253,7 @@ fn library_translations_lang_for(site: &Site, path: &str) -> Vec<String> {
 pub fn ensure_translations_match(translations: &HashMap<String, Vec<String>>, site: &Site, path: &str) -> bool {
     let library_page_translations = library_translations_lang_for(site, path);
 
-    if let Some((unified_path, _lang)) = find_lang_for(&PathBuf::from(path), "") {
+    if let Some((unified_path, _lang)) = find_lang_for(&PathBuf::from(path), Path::new("")) {
         if let Some(page_translations) = translations.get(&unified_path) {
             // We order both claimed translations so we can compare them
             // library_page_translations is already ordered
