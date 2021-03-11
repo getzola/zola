@@ -32,6 +32,8 @@ current_index: Number;
 total_pages: Number;
 ```
 
+**The variable will not be defined if `paginate_by` is not set to a positive number.**
+
 A pager is a page of the pagination; if you have 100 pages and paginate_by is set to 10, you will have 10 pagers each
 containing 10 pages.
 
