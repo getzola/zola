@@ -1,5 +1,9 @@
+use std::path::Path;
+
 use serde_derive::{Deserialize, Serialize};
-use syntect::parsing::SyntaxSet;
+use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
+
+use errors::Result;
 
 pub const DEFAULT_HIGHLIGHT_THEME: &str = "base16-ocean-dark";
 
@@ -31,6 +35,21 @@ pub struct Markdown {
 }
 
 impl Markdown {
+    /// Attempt to load any extra syntax found in the extra syntaxes of the config
+    pub fn load_extra_syntaxes(&mut self, base_path: &Path) -> Result<()> {
+        if self.extra_syntaxes.is_empty() {
+            return Ok(());
+        }
+
+        let mut ss = SyntaxSetBuilder::new();
+        for dir in &self.extra_syntaxes {
+            ss.add_from_folder(base_path.join(dir), true)?;
+        }
+        self.extra_syntax_set = Some(ss.build());
+
+        Ok(())
+    }
+
     pub fn has_external_link_tweaks(&self) -> bool {
         self.external_links_target_blank
             || self.external_links_no_follow

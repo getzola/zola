@@ -29,7 +29,7 @@ impl<'config> CodeBlock<'config> {
         path: Option<&'config str>,
     ) -> Self {
         let fence_info = FenceSettings::new(fence_info);
-        let theme = &THEME_SET.themes[config.highlight_theme()];
+        let theme = &THEME_SET.themes[&config.markdown.highlight_theme];
         let (highlighter, highlight_source) = get_highlighter(fence_info.language, config);
         let extra_syntax_set = match highlight_source {
             HighlightSource::Extra => config.markdown.extra_syntax_set.as_ref(),

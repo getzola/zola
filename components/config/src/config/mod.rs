@@ -10,7 +10,6 @@ use std::path::{Path, PathBuf};
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
-use syntect::parsing::SyntaxSetBuilder;
 use toml::Value as Toml;
 
 use crate::highlighting::THEME_SET;
@@ -55,12 +54,6 @@ pub struct Config {
     /// key into different language.
     translations: HashMap<String, languages::TranslateTerm>,
 
-    /// Whether to highlight all code blocks found in markdown files. Defaults to false
-    highlight_code: bool,
-    /// Which themes to use for code highlighting. See Readme for supported themes
-    /// Defaults to "base16-ocean-dark"
-    highlight_theme: String,
-
     /// Whether to generate a feed. Defaults to false.
     pub generate_feed: bool,
     /// The number of articles to include in the feed. Defaults to including all items.
@@ -90,9 +83,6 @@ pub struct Config {
     /// command being used.
     #[serde(skip_serializing)]
     pub mode: Mode,
-
-    /// A list of directories to search for additional `.sublime-syntax` files in.
-    pub extra_syntaxes: Vec<String>,
 
     pub output_dir: String,
 
@@ -124,9 +114,8 @@ impl Config {
             bail!("A base URL is required in config.toml with key `base_url`");
         }
 
-        let highlight_theme = config.highlight_theme();
-        if !THEME_SET.themes.contains_key(highlight_theme) {
-            bail!("Highlight theme {} defined in config does not exist.", highlight_theme);
+        if !THEME_SET.themes.contains_key(&config.markdown.highlight_theme) {
+            bail!("Highlight theme {} defined in config does not exist.", config.markdown.highlight_theme);
         }
 
         languages::validate_code(&config.default_language)?;
@@ -168,13 +157,6 @@ impl Config {
                 Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
         }
 
-        if config.highlight_code {
-            println!("`highlight_code` has been moved to a [markdown] section. Top level `highlight_code` and `highlight_theme` will stop working in 0.14.");
-        }
-        if !config.extra_syntaxes.is_empty() {
-            println!("`extra_syntaxes` has been moved to a [markdown] section. Top level `extra_syntaxes` will stop working in 0.14.");
-        }
-
         Ok(config)
     }
 
@@ -184,60 +166,6 @@ impl Config {
         let content =
             read_file(path).map_err(|e| errors::Error::chain("Failed to load config", e))?;
         Config::parse(&content)
-    }
-
-    /// Temporary, while we have the settings in 2 places
-    /// TODO: remove me in 0.14
-    pub fn highlight_code(&self) -> bool {
-        if !self.highlight_code && !self.markdown.highlight_code {
-            return false;
-        }
-
-        if self.highlight_code {
-            true
-        } else {
-            self.markdown.highlight_code
-        }
-    }
-
-    /// Temporary, while we have the settings in 2 places
-    /// TODO: remove me in 0.14
-    pub fn highlight_theme(&self) -> &str {
-        if self.highlight_theme != markup::DEFAULT_HIGHLIGHT_THEME {
-            &self.highlight_theme
-        } else {
-            &self.markdown.highlight_theme
-        }
-    }
-
-    /// TODO: remove me in 0.14
-    pub fn extra_syntaxes(&self) -> Vec<String> {
-        if !self.markdown.extra_syntaxes.is_empty() {
-            return self.markdown.extra_syntaxes.clone();
-        }
-
-        if !self.extra_syntaxes.is_empty() {
-            return self.extra_syntaxes.clone();
-        }
-
-        Vec::new()
-    }
-
-    /// Attempt to load any extra syntax found in the extra syntaxes of the config
-    /// TODO: move to markup.rs in 0.14
-    pub fn load_extra_syntaxes(&mut self, base_path: &Path) -> Result<()> {
-        let extra_syntaxes = self.extra_syntaxes();
-        if extra_syntaxes.is_empty() {
-            return Ok(());
-        }
-
-        let mut ss = SyntaxSetBuilder::new();
-        for dir in &extra_syntaxes {
-            ss.add_from_folder(base_path.join(dir), true)?;
-        }
-        self.markdown.extra_syntax_set = Some(ss.build());
-
-        Ok(())
     }
 
     /// Makes a url, taking into account that the base url might have a trailing slash
@@ -284,6 +212,7 @@ impl Config {
         self.add_theme_extra(&theme)
     }
 
+    /// Returns all the languages settings for languages other than the default one
     pub fn other_languages(&self) -> HashMap<&str, &languages::LanguageOptions> {
         let mut others = HashMap::new();
         for (k, v) in &self.languages {
@@ -300,14 +229,6 @@ impl Config {
         !self.other_languages().is_empty()
     }
 
-    pub fn is_in_build_mode(&self) -> bool {
-        self.mode == Mode::Build
-    }
-
-    pub fn is_in_serve_mode(&self) -> bool {
-        self.mode == Mode::Serve
-    }
-
     pub fn is_in_check_mode(&self) -> bool {
         self.mode == Mode::Check
     }
@@ -318,9 +239,8 @@ impl Config {
 
     pub fn enable_check_mode(&mut self) {
         self.mode = Mode::Check;
-        // Disable syntax highlighting since the results won't be used
-        // and this operation can be expensive.
-        self.highlight_code = false;
+        // Disable syntax highlighting since the results won't be used and it is slow
+        self.markdown.highlight_code = false;
     }
 
     pub fn get_translation<S: AsRef<str>>(&self, lang: S, key: S) -> Result<String> {
@@ -376,8 +296,6 @@ impl Default for Config {
             title: None,
             description: None,
             theme: None,
-            highlight_code: false,
-            highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
             languages: HashMap::new(),
             generate_feed: false,
@@ -392,7 +310,6 @@ impl Default for Config {
             ignored_content: Vec::new(),
             ignored_content_globset: None,
             translations: HashMap::new(),
-            extra_syntaxes: Vec::new(),
             output_dir: "public".to_string(),
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),

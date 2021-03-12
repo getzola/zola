@@ -28,7 +28,7 @@ pub fn get_highlighter(
     language: Option<&str>,
     config: &Config,
 ) -> (HighlightLines<'static>, HighlightSource) {
-    let theme = &THEME_SET.themes[config.highlight_theme()];
+    let theme = &THEME_SET.themes[&config.markdown.highlight_theme];
 
     if let Some(ref lang) = language {
         if let Some(ref extra_syntaxes) = config.markdown.extra_syntax_set {
