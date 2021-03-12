@@ -216,7 +216,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             _ => None,
                         };
 
-                        if !context.config.highlight_code() {
+                        if !context.config.markdown.highlight_code {
                             if let Some(lang) = language {
                                 let html = format!(
                                     r#"<pre><code class="language-{}" data-lang="{}">"#,
@@ -227,7 +227,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             return Event::Html("<pre><code>".into());
                         }
 
-                        let theme = &THEME_SET.themes[context.config.highlight_theme()];
+                        let theme = &THEME_SET.themes[&context.config.markdown.highlight_theme];
                         match kind {
                             cmark::CodeBlockKind::Indented => (),
                             cmark::CodeBlockKind::Fenced(fence_info) => {
@@ -270,7 +270,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         Event::Html(html.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
-                        if !context.config.highlight_code() {
+                        if !context.config.markdown.highlight_code {
                             return Event::Html("</code></pre>\n".into());
                         }
                         // reset highlight and close the code block

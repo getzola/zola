@@ -73,7 +73,7 @@ impl Site {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
         let mut config = get_config(config_file)?;
-        config.load_extra_syntaxes(path)?;
+        config.markdown.load_extra_syntaxes(path)?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
