@@ -149,21 +149,32 @@ impl TeraFn for GetUrl {
             }
         } else {
             // anything else
-            let mut permalink = self.config.make_permalink(&path);
+            let mut segments = vec![];
+
+            if lang != self.config.default_language {
+                segments.push(lang);
+            };
+
+            segments.push(path);
+
+            let path_with_lang = segments.join("/");
+
+            let mut permalink = self.config.make_permalink(&path_with_lang);
             if !trailing_slash && permalink.ends_with('/') {
                 permalink.pop(); // Removes the slash
             }
 
             if cachebust {
-                match open_file(&self.search_paths, &path)
+                match open_file(&self.search_paths, &path_with_lang)
                     .and_then(|f| compute_file_hash::<Sha256>(f, false))
                 {
                     Ok(hash) => {
                         permalink = format!("{}?h={}", permalink, hash);
                     }
-                    Err(_) => return file_not_found_err(&self.search_paths, &path),
+                    Err(_) => return file_not_found_err(&self.search_paths, &path_with_lang),
                 };
             }
+
             Ok(to_value(permalink).unwrap())
         }
     }
@@ -822,6 +833,32 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/"
+        );
+    }
+
+    #[test]
+    fn can_get_feed_url_with_default_language() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let static_fn = GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/atom.xml"
+        );
+    }
+
+    #[test]
+    fn can_get_feed_url_with_other_language() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let static_fn = GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
+        args.insert("lang".to_string(), to_value("en").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/en/atom.xml"
         );
     }
 

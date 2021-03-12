@@ -270,10 +270,16 @@ pub fn serve(
         return Err(format!("Cannot start server on address {}.", address).into());
     }
 
+    let config_filename = config_file
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap_or("config.toml");
+
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate
     let watch_this = vec![
-        ("config.toml", WatchMode::Required),
+        (config_filename, WatchMode::Required),
         ("content", WatchMode::Required),
         ("sass", WatchMode::Condition(site.config.compile_sass)),
         ("static", WatchMode::Optional),
@@ -491,7 +497,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&root_dir, &path) {
+                        match detect_change_kind(&root_dir, &path, &config_filename) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
 
@@ -617,9 +623,12 @@ fn is_temp_file(path: &Path) -> bool {
 
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
-fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
+fn detect_change_kind(pwd: &Path, path: &Path, config_filename: &str) -> (ChangeKind, PathBuf) {
     let mut partial_path = PathBuf::from("/");
     partial_path.push(path.strip_prefix(pwd).unwrap_or(path));
+
+    let mut partial_config_path = PathBuf::from("/");
+    partial_config_path.push(config_filename);
 
     let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
@@ -631,7 +640,7 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
         ChangeKind::StaticFiles
     } else if partial_path.starts_with("/sass") {
         ChangeKind::Sass
-    } else if partial_path == Path::new("/config.toml") {
+    } else if partial_path == partial_config_path {
         ChangeKind::Config
     } else {
         unreachable!("Got a change in an unexpected path: {}", partial_path.display());
@@ -680,36 +689,48 @@ mod tests {
                 (ChangeKind::Templates, PathBuf::from("/templates/hello.html")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/templates/hello.html"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Themes, PathBuf::from("/themes/hello.html")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/themes/hello.html"),
+                "config.toml",
             ),
             (
                 (ChangeKind::StaticFiles, PathBuf::from("/static/site.css")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/static/site.css"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Content, PathBuf::from("/content/posts/hello.md")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/content/posts/hello.md"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Sass, PathBuf::from("/sass/print.scss")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/sass/print.scss"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Config, PathBuf::from("/config.toml")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/config.toml"),
+                "config.toml",
+            ),
+            (
+                (ChangeKind::Config, PathBuf::from("/config.staging.toml")),
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/config.staging.toml"),
+                "config.staging.toml",
             ),
         ];
 
-        for (expected, pwd, path) in test_cases {
-            assert_eq!(expected, detect_change_kind(&pwd, &path));
+        for (expected, pwd, path, config_filename) in test_cases {
+            assert_eq!(expected, detect_change_kind(&pwd, &path, &config_filename));
         }
     }
 
@@ -719,7 +740,8 @@ mod tests {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
         let pwd = Path::new(r#"C:\\Users\johan\site"#);
         let path = Path::new(r#"C:\\Users\johan\site\templates\hello.html"#);
-        assert_eq!(expected, detect_change_kind(pwd, path));
+        let config_filename = "config.toml";
+        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 
     #[test]
@@ -727,6 +749,7 @@ mod tests {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
         let pwd = Path::new("/home/johan/site");
         let path = Path::new("templates/hello.html");
-        assert_eq!(expected, detect_change_kind(pwd, path));
+        let config_filename = "config.toml";
+        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 }
