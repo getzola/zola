@@ -15,7 +15,9 @@ you can place `{{ __tera_context }}` in the template to print the whole context.
 
 A few variables are available on all templates except feeds and the sitemap:
 
-- `config`: the [configuration](@/documentation/getting-started/configuration.md) without any modifications
+- `config`: the [configuration](@/documentation/getting-started/configuration.md)
+  with an extra field, `mode`, containing the build mode (`"Check"`,
+  `"Build"`, or `"Serve"`)
 - `current_path`: the path (full URL without `base_url`) of the current page, always starting with a `/`
 - `current_url`: the full URL for the current page
 - `lang`: the language for the current page

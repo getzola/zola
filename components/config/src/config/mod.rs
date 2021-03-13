@@ -88,7 +88,7 @@ pub struct Config {
 
     /// The mode Zola is currently being ran on. Some logging/feature can differ depending on the
     /// command being used.
-    #[serde(skip_serializing)]
+    #[serde(skip_deserializing)]
     pub mode: Mode,
 
     /// A list of directories to search for additional `.sublime-syntax` files in.
