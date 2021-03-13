@@ -4,6 +4,7 @@ use errors::{bail, Result};
 use serde_derive::{Deserialize, Serialize};
 use unic_langid::LanguageIdentifier;
 
+use crate::config::search;
 use crate::config::taxonomies;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -15,9 +16,11 @@ pub struct LanguageOptions {
     pub description: Option<String>,
     /// Whether to generate a feed for that language, defaults to `false`
     pub generate_feed: bool,
+    pub taxonomies: Vec<taxonomies::Taxonomy>,
     /// Whether to generate search index for that language, defaults to `false`
     pub build_search_index: bool,
-    pub taxonomies: Vec<taxonomies::Taxonomy>,
+    /// The search config, telling what to include in the search index for that language
+    pub search: search::Search,
 }
 
 impl Default for LanguageOptions {
@@ -28,6 +31,7 @@ impl Default for LanguageOptions {
             generate_feed: false,
             build_search_index: false,
             taxonomies: Vec::new(),
+            search: search::Search::default(),
         }
     }
 }

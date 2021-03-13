@@ -205,6 +205,7 @@ impl Config {
                     generate_feed: self.generate_feed,
                     build_search_index: self.build_search_index,
                     taxonomies: self.taxonomies.clone(),
+                    search: self.search.clone(),
                 },
             );
         }
@@ -290,7 +291,7 @@ impl Config {
             translations: &self.translations,
             generate_feed: options.generate_feed,
             taxonomies: &options.taxonomies,
-            build_search_index: self.build_search_index,
+            build_search_index: options.build_search_index,
             extra: &self.extra,
         }
     }
