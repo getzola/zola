@@ -193,6 +193,7 @@ Zola currently has the following highlight themes available:
 - [ayu-dark](https://github.com/dempfi/ayu)
 - [ayu-light](https://github.com/dempfi/ayu)
 - [ayu-mirage](https://github.com/dempfi/ayu)
+- [base16-aterlierdune-light](https://atelierbram.github.io/syntax-highlighting/atelier-schemes/dune/)
 - [base16-ocean-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Base16%20Ocean%20Dark)
 - [base16-ocean-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Base16%20Ocean%20Light)
 - [bbedit](https://tmtheme-editor.herokuapp.com/#!/editor/theme/BBEdit)
