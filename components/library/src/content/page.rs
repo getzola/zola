@@ -249,8 +249,14 @@ impl Page {
         config: &Config,
         anchor_insert: InsertAnchor,
     ) -> Result<()> {
-        let mut context =
-            RenderContext::new(tera, config, &self.permalink, permalinks, anchor_insert);
+        let mut context = RenderContext::new(
+            tera,
+            config,
+            &self.lang,
+            &self.permalink,
+            permalinks,
+            anchor_insert,
+        );
 
         context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
@@ -275,7 +281,7 @@ impl Page {
         };
 
         let mut context = TeraContext::new();
-        context.insert("config", config);
+        context.insert("config", &config.serialize(&self.lang));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
         context.insert("page", &self.to_serialized(library));

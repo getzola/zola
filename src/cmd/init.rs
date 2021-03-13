@@ -256,9 +256,9 @@ mod tests {
         }
         create_dir(&dir).expect("Could not create test directory");
         if cfg!(target_os = "windows") {
-			let stripped_path = strip_unc(&canonicalize(Path::new(&dir)).unwrap());
-			assert!(same_file::is_same_file(Path::new(&stripped_path),&dir).unwrap()); 
-            assert!(!stripped_path.starts_with(LOCAL_UNC),"The path was not stripped.");
+            let stripped_path = strip_unc(&canonicalize(Path::new(&dir)).unwrap());
+            assert!(same_file::is_same_file(Path::new(&stripped_path), &dir).unwrap());
+            assert!(!stripped_path.starts_with(LOCAL_UNC), "The path was not stripped.");
         } else {
             assert_eq!(
                 strip_unc(&canonicalize(Path::new(&dir)).unwrap()),
@@ -281,9 +281,9 @@ mod tests {
             remove_dir_all(&dir).expect("Could not free test directory");
         }
         create_dir(&dir).expect("Could not create test directory");
-		
-		let canonicalized_path = canonicalize(Path::new(&dir)).unwrap();
-		assert!(same_file::is_same_file(Path::new(&canonicalized_path),&dir).unwrap());
+
+        let canonicalized_path = canonicalize(Path::new(&dir)).unwrap();
+        assert!(same_file::is_same_file(Path::new(&canonicalized_path), &dir).unwrap());
         assert!(canonicalized_path.to_str().unwrap().starts_with(LOCAL_UNC));
 
         remove_dir_all(&dir).unwrap();

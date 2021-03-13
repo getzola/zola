@@ -20,14 +20,14 @@ use utils::fs::read_file;
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Mode {
     Build,
     Serve,
     Check,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
@@ -87,18 +87,28 @@ pub struct Config {
     pub output_dir: String,
 
     pub link_checker: link_checker::LinkChecker,
-
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
     pub slugify: slugify::Slugify,
-
     /// The search config, telling what to include in the search index
     pub search: search::Search,
-
     /// The config for the Markdown rendering: syntax highlighting and everything
     pub markdown: markup::Markdown,
-
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
+}
+
+#[derive(Serialize)]
+pub struct SerializedConfig<'a> {
+    base_url: &'a str,
+    mode: Mode,
+    title: &'a Option<String>,
+    description: &'a Option<String>,
+    languages: HashMap<&'a String, &'a languages::LanguageOptions>,
+    translations: &'a HashMap<String, languages::TranslateTerm>,
+    generate_feed: bool,
+    taxonomies: &'a [taxonomies::Taxonomy],
+    build_search_index: bool,
+    extra: &'a HashMap<String, Toml>,
 }
 
 impl Config {
@@ -115,7 +125,10 @@ impl Config {
         }
 
         if !THEME_SET.themes.contains_key(&config.markdown.highlight_theme) {
-            bail!("Highlight theme {} defined in config does not exist.", config.markdown.highlight_theme);
+            bail!(
+                "Highlight theme {} defined in config does not exist.",
+                config.markdown.highlight_theme
+            );
         }
 
         languages::validate_code(&config.default_language)?;
@@ -123,21 +136,7 @@ impl Config {
             languages::validate_code(&code)?;
         }
 
-        // We automatically insert a language option for the default language *if* it isn't present
-        // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
-        // TODO: as source of truth?
-        if !config.languages.contains_key(&config.default_language) {
-            config.languages.insert(
-                config.default_language.clone(),
-                languages::LanguageOptions {
-                    title: config.title.clone(),
-                    description: config.title.clone(),
-                    generate_feed: config.generate_feed,
-                    build_search_index: config.build_search_index,
-                    taxonomies: config.taxonomies.clone(),
-                },
-            );
-        }
+        config.add_default_language();
 
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
@@ -189,6 +188,25 @@ impl Config {
             format!("{}{}{}", self.base_url, path, trailing_bit)
         } else {
             format!("{}/{}{}", self.base_url, path, trailing_bit)
+        }
+    }
+
+    /// Adds the default language to the list of languages if not present
+    fn add_default_language(&mut self) {
+        // We automatically insert a language option for the default language *if* it isn't present
+        // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
+        // TODO: as source of truth?
+        if !self.languages.contains_key(&self.default_language) {
+            self.languages.insert(
+                self.default_language.clone(),
+                languages::LanguageOptions {
+                    title: self.title.clone(),
+                    description: self.title.clone(),
+                    generate_feed: self.generate_feed,
+                    build_search_index: self.build_search_index,
+                    taxonomies: self.taxonomies.clone(),
+                },
+            );
         }
     }
 
@@ -259,6 +277,23 @@ impl Config {
             })
             .map(|term| term.to_string())
     }
+
+    pub fn serialize(&self, lang: &str) -> SerializedConfig {
+        let options = &self.languages[lang];
+
+        SerializedConfig {
+            base_url: &self.base_url,
+            mode: self.mode,
+            title: &options.title,
+            description: &options.description,
+            languages: self.languages.iter().filter(|(k, _)| k.as_str() != lang).collect(),
+            translations: &self.translations,
+            generate_feed: options.generate_feed,
+            taxonomies: &options.taxonomies,
+            build_search_index: self.build_search_index,
+            extra: &self.extra,
+        }
+    }
 }
 
 // merge TOML data that can be a table, or anything else
@@ -291,7 +326,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
 
 impl Default for Config {
     fn default() -> Config {
-        Config {
+        let mut config = Config {
             base_url: DEFAULT_BASE_URL.to_string(),
             title: None,
             description: None,
@@ -316,7 +351,9 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
-        }
+        };
+        config.add_default_language();
+        config
     }
 }
 

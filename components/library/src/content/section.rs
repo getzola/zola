@@ -172,6 +172,7 @@ impl Section {
         let mut context = RenderContext::new(
             tera,
             config,
+            &self.lang,
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links,
@@ -195,7 +196,7 @@ impl Section {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
-        context.insert("config", config);
+        context.insert("config", &config.serialize(&self.lang));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
         context.insert("section", &self.to_serialized(library));

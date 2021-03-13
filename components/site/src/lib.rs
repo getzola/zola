@@ -760,7 +760,7 @@ impl Site {
     pub fn render_404(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
-        context.insert("config", &self.config);
+        context.insert("config", &self.config.serialize(&self.config.default_language));
         context.insert("lang", &self.config.default_language);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
@@ -772,7 +772,7 @@ impl Site {
     pub fn render_robots(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let mut context = Context::new();
-        context.insert("config", &self.config);
+        context.insert("config", &self.config.serialize(&self.config.default_language));
         let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
         self.write_content(&[], "robots.txt", content, false)?;
         Ok(())
