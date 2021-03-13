@@ -223,17 +223,18 @@ impl<'a> Paginator<'a> {
         library: &Library,
     ) -> Result<String> {
         let mut context = Context::new();
-        context.insert("config", &config);
         match self.root {
             PaginationRoot::Section(s) => {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
                 context.insert("lang", &s.lang);
+                context.insert("config", &config.serialize(&s.lang));
             }
             PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
                 context.insert("term", &item.serialize(library));
                 context.insert("lang", &t.lang);
+                context.insert("config", &config.serialize(&t.lang));
             }
         };
         context.insert("current_url", &pager.permalink);

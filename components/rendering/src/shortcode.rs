@@ -270,7 +270,14 @@ mod tests {
     fn render_shortcodes(code: &str, tera: &Tera) -> String {
         let config = Config::default();
         let permalinks = HashMap::new();
-        let context = RenderContext::new(&tera, &config, "", &permalinks, InsertAnchor::None);
+        let context = RenderContext::new(
+            &tera,
+            &config,
+            &config.default_language,
+            "",
+            &permalinks,
+            InsertAnchor::None,
+        );
         super::render_shortcodes(code, &context).unwrap()
     }
 

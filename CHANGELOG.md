@@ -7,7 +7,8 @@
 - Newlines are now required after the closing `+++` of front-matter
 - i18n rework: languages now have their sections in `config.toml` to set up all their options
   1. taxonomies don't have a `lang` anymore in the config, you need to declare them in their respective language section
-  2. 
+  2. the `config` variable in templates has been changed and is now a stripped down language aware version of the previous `config`
+  object
 
 ### Other
 

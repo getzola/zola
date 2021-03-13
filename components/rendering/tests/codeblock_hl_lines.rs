@@ -38,7 +38,14 @@ fn hl_lines_simple() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=2
@@ -67,7 +74,14 @@ fn hl_lines_in_middle() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=2-3
@@ -96,7 +110,14 @@ fn hl_lines_all() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=1-4
@@ -123,7 +144,14 @@ fn hl_lines_start_from_one() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=1-3
@@ -151,7 +179,14 @@ fn hl_lines_start_from_zero() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=0-3
@@ -179,7 +214,14 @@ fn hl_lines_end() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=3-4
@@ -207,7 +249,14 @@ fn hl_lines_end_out_of_bounds() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=3-4294967295
@@ -235,7 +284,14 @@ fn hl_lines_overlap() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=2-3 1-2
@@ -262,7 +318,14 @@ fn hl_lines_multiple() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=2-3,hl_lines=1-2
@@ -290,7 +353,14 @@ fn hl_lines_extra_spaces() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```     hl_lines     =       2 - 3      1    -       2
@@ -318,7 +388,14 @@ fn hl_lines_int_and_range() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=1 3-4
@@ -347,7 +424,14 @@ fn hl_lines_single_line_range() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=2-2
@@ -376,7 +460,14 @@ fn hl_lines_reverse_range() {
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default();
     config.markdown.highlight_code = true;
-    let context = RenderContext::new(&tera_ctx, &config, "", &permalinks_ctx, InsertAnchor::None);
+    let context = RenderContext::new(
+        &tera_ctx,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
     let res = render_content(
         r#"
 ```hl_lines=3-2

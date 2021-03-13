@@ -20,12 +20,13 @@ impl<'a> RenderContext<'a> {
     pub fn new(
         tera: &'a Tera,
         config: &'a Config,
+        lang: &'a str,
         current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
-        tera_context.insert("config", config);
+        tera_context.insert("config", &config.serialize(lang));
         Self {
             tera: Cow::Borrowed(tera),
             tera_context,

@@ -59,7 +59,7 @@ pub fn render_feed(
         pages.iter().take(num_entries).map(|x| x.to_serialized_basic(&library)).collect::<Vec<_>>();
 
     context.insert("pages", &p);
-    context.insert("config", &site.config);
+    context.insert("config", &site.config.serialize(lang));
     context.insert("lang", lang);
 
     let feed_filename = &site.config.feed_filename;
