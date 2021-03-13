@@ -16,6 +16,7 @@
 - Fix `zola serve` failing for some static files
 - Fix `zola serve` not picking up directory renaming
 - Add `path` to the taxonomy terms to be on par with pages and sections
+- Add the `base16-aterlierdune-light` syntax highlight theme
 
 ## 0.13.0 (2021-01-09)
 
