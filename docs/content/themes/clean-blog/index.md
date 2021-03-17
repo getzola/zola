@@ -3,11 +3,11 @@
 title = "Clean Blog"
 description = "A port of Start Bootstrap Clean Blog for Zola"
 template = "theme.html"
-date = 2021-02-18T22:27:50+01:00
+date = 2021-03-17T09:10:19+01:00
 
 [extra]
-created = 2021-02-18T22:27:50+01:00
-updated = 2021-02-18T22:27:50+01:00
+created = 2021-03-17T09:10:19+01:00
+updated = 2021-03-17T09:10:19+01:00
 repository = "https://github.com/dave-tucker/zola-clean-blog"
 homepage = "https://github.com/dave-tucker/zola-clean-blog"
 minimum_version = "0.4.0"
