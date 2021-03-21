@@ -9,6 +9,8 @@
   1. taxonomies don't have a `lang` anymore in the config, you need to declare them in their respective language section
   2. the `config` variable in templates has been changed and is now a stripped down language aware version of the previous `config`
   object
+  3. Search settings are now language specific
+  4. Translations are now nested in the languages table
 
 ### Other
 

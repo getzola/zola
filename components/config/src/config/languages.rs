@@ -21,6 +21,11 @@ pub struct LanguageOptions {
     pub build_search_index: bool,
     /// The search config, telling what to include in the search index for that language
     pub search: search::Search,
+    /// A toml crate `Table` with String key representing term and value
+    /// another `String` representing its translation.
+    ///
+    /// Use `get_translation()` method for translating key into different languages.
+    pub translations: HashMap<String, String>,
 }
 
 impl Default for LanguageOptions {
@@ -32,11 +37,10 @@ impl Default for LanguageOptions {
             build_search_index: false,
             taxonomies: Vec::new(),
             search: search::Search::default(),
+            translations: HashMap::new(),
         }
     }
 }
-
-pub type TranslateTerm = HashMap<String, String>;
 
 /// We want to ensure the language codes are valid ones
 pub fn validate_code(code: &str) -> Result<()> {

@@ -44,15 +44,8 @@ pub struct Config {
     pub default_language: String,
     /// The list of supported languages outside of the default one
     pub languages: HashMap<String, languages::LanguageOptions>,
-
-    /// Languages list and translated strings
-    ///
-    /// The `String` key of `HashMap` is a language name, the value should be toml crate `Table`
-    /// with String key representing term and value another `String` representing its translation.
-    ///
-    /// The attribute is intentionally not public, use `get_translation()` method for translating
-    /// key into different language.
-    translations: HashMap<String, languages::TranslateTerm>,
+    /// The translations strings for the default language
+    translations: HashMap<String, String>,
 
     /// Whether to generate a feed. Defaults to false.
     pub generate_feed: bool,
@@ -104,7 +97,6 @@ pub struct SerializedConfig<'a> {
     title: &'a Option<String>,
     description: &'a Option<String>,
     languages: HashMap<&'a String, &'a languages::LanguageOptions>,
-    translations: &'a HashMap<String, languages::TranslateTerm>,
     generate_feed: bool,
     taxonomies: &'a [taxonomies::Taxonomy],
     build_search_index: bool,
@@ -206,6 +198,7 @@ impl Config {
                     build_search_index: self.build_search_index,
                     taxonomies: self.taxonomies.clone(),
                     search: self.search.clone(),
+                    translations: self.translations.clone(),
                 },
             );
         }
@@ -262,21 +255,21 @@ impl Config {
         self.markdown.highlight_code = false;
     }
 
-    pub fn get_translation<S: AsRef<str>>(&self, lang: S, key: S) -> Result<String> {
-        let terms = self.translations.get(lang.as_ref()).ok_or_else(|| {
-            Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
-        })?;
-
-        terms
-            .get(key.as_ref())
-            .ok_or_else(|| {
-                Error::msg(format!(
-                    "Translation key '{}' for language '{}' is missing",
-                    key.as_ref(),
-                    lang.as_ref()
-                ))
-            })
-            .map(|term| term.to_string())
+    pub fn get_translation(&self, lang: &str, key: &str) -> Result<String> {
+        if let Some(options) = self.languages.get(lang) {
+            options
+                .translations
+                .get(key)
+                .ok_or_else(|| {
+                    Error::msg(format!(
+                        "Translation key '{}' for language '{}' is missing",
+                        key, lang
+                    ))
+                })
+                .map(|term| term.to_string())
+        } else {
+            bail!("Language '{}' not found.", lang)
+        }
     }
 
     pub fn serialize(&self, lang: &str) -> SerializedConfig {
@@ -288,7 +281,6 @@ impl Config {
             title: &options.title,
             description: &options.description,
             languages: self.languages.iter().filter(|(k, _)| k.as_str() != lang).collect(),
-            translations: &self.translations,
             generate_feed: options.generate_feed,
             taxonomies: &options.taxonomies,
             build_search_index: options.build_search_index,
@@ -502,12 +494,12 @@ base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 
 [translations]
-[translations.fr]
 title = "Un titre"
 
-[translations.en]
+[languages.en]
+[languages.en.translations]
 title = "A title"
-        "#;
+"#;
 
     #[test]
     fn can_use_present_translation() {
@@ -522,7 +514,7 @@ title = "A title"
         let config = Config::parse(CONFIG_TRANSLATION).unwrap();
         let error = config.get_translation("absent", "key").unwrap_err();
 
-        assert_eq!("Translation for language 'absent' is missing", format!("{}", error));
+        assert_eq!("Language 'absent' not found.", format!("{}", error));
     }
 
     #[test]

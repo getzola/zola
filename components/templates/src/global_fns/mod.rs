@@ -39,7 +39,7 @@ impl TeraFn for Trans {
 
         let term = self
             .config
-            .get_translation(lang, key)
+            .get_translation(&lang, &key)
             .map_err(|e| Error::chain("Failed to retrieve term translation", e))?;
 
         Ok(to_value(term).unwrap())
@@ -739,16 +739,13 @@ mod tests {
 base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 
-[languages]
-[languages.en]
-
 [translations]
-[translations.fr]
 title = "Un titre"
 
-[translations.en]
-title = "A title"
-        "#;
+[languages]
+[languages.en]
+[languages.en.translations]
+title = "A title" "#;
 
     #[test]
     fn can_translate_a_string() {
