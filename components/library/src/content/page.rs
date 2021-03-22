@@ -721,6 +721,24 @@ Hello world
     }
 
     #[test]
+    fn can_get_date_from_filename_with_spaces_respects_slugification() {
+        let mut config = Config::default();
+        config.slugify.paths = SlugifyStrategy::Off;
+        let content = r#"
++++
++++
+Hello world
+<!-- more -->"#
+            .to_string();
+        let res = Page::parse(Path::new("2018-10-08 - hello.md"), &content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let page = res.unwrap();
+
+        assert_eq!(page.meta.date, Some("2018-10-08".to_string()));
+        assert_eq!(page.slug, " hello");
+    }
+
+    #[test]
     fn can_get_date_from_full_rfc3339_date_in_filename() {
         let config = Config::default();
         let content = r#"
