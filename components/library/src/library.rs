@@ -154,6 +154,16 @@ impl Library {
                     .push(section.file.path.clone());
             }
 
+            // populate translations if necessary
+            if self.is_multilingual {
+                self.translations
+                    .entry(section.file.canonical.clone())
+                    .and_modify(|trans| {
+                        trans.insert(key);
+                    })
+                    .or_insert(set![key]);
+            };
+
             // Index has no ancestors, no need to go through it
             if section.is_index() {
                 ancestors.insert(section.file.path.clone(), vec![]);
@@ -178,15 +188,7 @@ impl Library {
             }
             ancestors.insert(section.file.path.clone(), parents);
 
-            // populate translations if necessary
-            if self.is_multilingual {
-                self.translations
-                    .entry(section.file.canonical.clone())
-                    .and_modify(|trans| {
-                        trans.insert(key);
-                    })
-                    .or_insert(set![key]);
-            };
+
         }
 
         for (key, page) in &mut self.pages {

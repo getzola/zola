@@ -2,7 +2,7 @@ mod common;
 
 use std::env;
 
-use common::build_site;
+use common::*;
 use site::Site;
 
 #[test]
@@ -14,7 +14,7 @@ fn can_parse_multilingual_site() {
     site.load().unwrap();
 
     let library = site.library.read().unwrap();
-    assert_eq!(library.pages().len(), 10);
+    assert_eq!(library.pages().len(), 11);
     assert_eq!(library.sections().len(), 6);
 
     // default index sections
@@ -173,4 +173,28 @@ fn can_build_multilingual_site() {
     assert!(file_exists!(public, "search_index.en.js"));
     assert!(file_exists!(public, "search_index.it.js"));
     assert!(!file_exists!(public, "search_index.fr.js"));
+}
+
+#[test]
+fn correct_translations_on_all_pages() {
+    let (site, _tmp_dir, public) = build_site("test_site_i18n");
+
+    assert!(public.exists());
+
+    let translations = find_expected_translations("test_site_i18n", &site.config.default_language);
+
+    for (path, link) in &site.permalinks {
+        // link ends with /, does not add index.html
+        let link = format!("{}index.html", link);
+
+        // Ensure every permalink has produced a HTML page
+        assert!(ensure_output_exists(&public, &site.config.base_url, &link));
+
+        // Ensure translations expected here match with those in the library
+        // TODO: add constructive error message inside the function
+        assert!(ensure_translations_match(&translations, &site, &path));
+
+        // Ensure output file contains all translations URLs
+        assert!(ensure_translations_in_output(&site, &path, &link));
+    }
 }

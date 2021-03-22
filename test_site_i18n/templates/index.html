@@ -2,3 +2,7 @@
     {{page.title}}
 {% endfor %}
 Language: {{lang}}
+
+{% for t in section.translations %}
+Translated in {{t.lang|default(value=config.default_language)}}: {{t.title}} {{t.permalink|safe}}
+{% endfor %}
