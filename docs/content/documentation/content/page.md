@@ -65,12 +65,12 @@ When the article's output path is not specified in the frontmatter, it is extrac
 - if the filename is `index.md`, its parent folder name (`bar`) is used as output path
 - otherwise, the output path is extracted from `thing` (the filename without the `.md` extension)
 
-If the path found starts with a datetime string (`YYYY-mm-dd` or [a RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by an underscore (`_`) or a dash (`-`), this date is removed from the output path and will be used as the page date (unless already set in the front-matter). Note that the full RFC3339 datetime contains colons, which is not a valid character in a filename on Windows.
+If the path found starts with a datetime string (`YYYY-mm-dd` or [a RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by optional whitespace and then an underscore (`_`) or a dash (`-`), this date is removed from the output path and will be used as the page date (unless already set in the front-matter). Note that the full RFC3339 datetime contains colons, which is not a valid character in a filename on Windows.
 
 The output path extracted from the file path is then slugified or not, depending on the `slugify.paths` config, as explained previously.
 
 **Example:**
-The file `content/blog/2018-10-10-hello-world.md` will yield a page at `[base_url]/blog/hello-world`.
+The file `content/blog/2018-10-10-hello-world.md` will yield a page at `[base_url]/blog/hello-world`. With optional whitespace, the file `content/blog/2021-01-23 -hello new world.md` will yield a page at `[base_url]/blog/hello-new-world`
 
 ## Front matter
 
