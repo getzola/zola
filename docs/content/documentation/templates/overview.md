@@ -349,13 +349,13 @@ The parameter contenttype should be the mimetype of the body.
 This example will make a POST request to the kroki service to generate a SVG.
 
 ```jinja2
-{% set postdata = load_data(url="https://kroki.io/blockdiag/svg", format="plain", method="POST" , contenttype="text/plain", body="blockdiag {
+{% set postdata = load_data(url="https://kroki.io/blockdiag/svg", format="plain", method="POST" ,content_type="text/plain", body="blockdiag {
   'Doing POST' -> 'using load_data'
-  'using load_data' -> 'can generate' -> 'Block diagrams';
+  'using load_data' -> 'can generate' -> 'block diagrams';
   'using load_data' -> is -> 'very easy!';
 
   'Doing POST' [color = 'greenyellow'];
-  'Block diagrams' [color = 'pink'];
+  'block diagrams' [color = 'pink'];
   'very easy!' [color = 'orange'];
 }")%}
 {{postdata|safe}}

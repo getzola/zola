@@ -209,7 +209,7 @@ impl TeraFn for LoadData {
         let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
 		let post_body_arg = optional_arg!(String, args.get("body"), "`load_data` body must be a string, if set.");
-		let post_content_type = optional_arg!(String, args.get("contenttype"), "`load_data` contenttype must be a string, if set.");
+		let post_content_type = optional_arg!(String, args.get("content_type"), "`load_data` content_type must be a string, if set.");
 		let method_arg = optional_arg!(String, args.get("method"), "`load_data` method must either be POST or GET.");
 		let method = match method_arg {
 			Some(method_str) => {
