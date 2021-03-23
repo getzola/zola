@@ -346,9 +346,19 @@ When using `method="POST"` you can also use the parameters `body` and `contentty
 The parameter body is the actual contents sent in the POST request.
 The parameter contenttype should be the mimetype of the body.
 
+This example will make a POST request to the kroki service to generate a SVG.
+
 ```jinja2
-{% set postresponse = load_data(url="https://postman-echo.com/post", format="json", method="POST", body="{i_am:'json'}", contenttype="application/json") %}
-{{ postresponse }}
+{% set postdata = load_data(url="https://kroki.io/blockdiag/svg", format="plain", method="POST" , contenttype="text/plain", body="blockdiag {
+  'Doing POST' -> 'using load_data'
+  'using load_data' -> 'can generate' -> 'Block diagrams';
+  'using load_data' -> is -> 'very easy!';
+
+  'Doing POST' [color = 'greenyellow'];
+  'Block diagrams' [color = 'pink'];
+  'very easy!' [color = 'orange'];
+}")%}
+{{postdata|safe}}
 ```
 
 #### Data caching
