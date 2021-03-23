@@ -24,6 +24,7 @@ enum DataSource {
     Path(PathBuf),
 }
 
+#[derive(Debug,PartialEq,Clone,Copy,Hash)]
 enum Method {
 	Post,
 	Get,
