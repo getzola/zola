@@ -56,12 +56,11 @@ pub struct Section {
     /// The language of that section. Equal to the default lang if the user doesn't setup `languages` in config.
     /// Corresponds to the lang in the _index.{lang}.md file scheme
     pub lang: String,
-    /// Contains the internal links that have an anchor: we can only check the anchor
-    /// after all pages have been built and their ToC compiled. The page itself should exist otherwise
-    /// it would have errored before getting there
-    /// (path to markdown, anchor value)
-    pub internal_links_with_anchors: Vec<(String, String)>,
-    /// Contains the external links that need to be checked
+    /// The list of all internal links (as path to markdown file), with optional anchor fragments.
+    /// We can only check the anchor after all pages have been built and their ToC compiled.
+    /// The page itself should exist otherwise it would have errored before getting there.
+    pub internal_links: Vec<(String, Option<String>)>,
+    /// The list of all links to external webpages. They can be validated by the `link_checker`.
     pub external_links: Vec<String>,
 }
 
@@ -185,7 +184,7 @@ impl Section {
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
-        self.internal_links_with_anchors = res.internal_links_with_anchors;
+        self.internal_links = res.internal_links;
 
         Ok(())
     }
