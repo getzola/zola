@@ -1,7 +1,10 @@
 use rayon::prelude::*;
 
 use crate::Site;
+use core::time;
 use errors::{Error, ErrorKind, Result};
+use std::{collections::HashMap, path::PathBuf, thread};
+use url::Url;
 
 /// Very similar to check_external_links but can't be merged as far as I can see since we always
 /// want to check the internal links but only the external in zola check :/
@@ -101,7 +104,16 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         .values()
         .map(|p| {
             let path = &p.file.path;
-            p.external_links.iter().map(move |l| (path.clone(), l))
+            p.external_links.iter().map(move |l| {
+                let domain = match Url::parse(l) {
+                    Ok(url) => match url.host_str().map(String::from) {
+                        Some(domain_str) => domain_str,
+                        None => "".to_string(),
+                    },
+                    Err(why) => panic!("{:?}", why),
+                };
+                (path.clone(), l.to_string(), domain)
+            })
         })
         .flatten();
     let section_links = library
@@ -109,45 +121,77 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         .values()
         .map(|p| {
             let path = &p.file.path;
-            p.external_links.iter().map(move |l| (path.clone(), l))
+            p.external_links.iter().map(move |l| {
+                let domain = match Url::parse(l) {
+                    Ok(url) => match url.host_str().map(String::from) {
+                        Some(domain_str) => domain_str,
+                        None => "".to_string(),
+                    },
+                    Err(why) => panic!("{:?}", why),
+                };
+                (path.clone(), l.to_string(), domain)
+            })
         })
         .flatten();
     let all_links = page_links.chain(section_links).collect::<Vec<_>>();
     println!("Checking {} external link(s).", all_links.len());
+
+    let mut links_by_domain: HashMap<String, Vec<(PathBuf, String)>> = HashMap::new();
+
+    for link in all_links.iter() {
+        links_by_domain.entry(link.2.to_string()).or_insert(Vec::new());
+        // Insert content path and link under the domain key
+        links_by_domain
+            .get_mut(&link.2.to_string())
+            .unwrap()
+            .push((link.0.clone(), link.1.clone()));
+    }
 
     if all_links.is_empty() {
         return Ok(());
     }
 
     // create thread pool with lots of threads so we can fetch
-    // (almost) all pages simultaneously
-    let threads = std::cmp::min(all_links.len(), 32);
+    // (almost) all pages simultaneously, limiting all links for a single
+    // domain to one thread to avoid rate-limiting
+    let threads = std::cmp::min(links_by_domain.len(), 8);
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(threads)
         .build()
         .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string()), source: None })?;
 
-    let errors: Vec<_> = pool.install(|| {
-        all_links
+    let errors = pool.install(|| {
+        links_by_domain
             .par_iter()
-            .filter_map(|(page_path, link)| {
-                if site
-                    .config
-                    .link_checker
-                    .skip_prefixes
-                    .iter()
-                    .any(|prefix| link.starts_with(prefix))
-                {
-                    return None;
-                }
-                let res = link_checker::check_url(&link, &site.config.link_checker);
-                if link_checker::is_valid(&res) {
-                    None
-                } else {
-                    Some((page_path, link, res))
-                }
+            .map(|(domain, links)| {
+                println!("Thread for domain: {}", domain);
+
+                links
+                    .into_iter()
+                    .filter_map(move |(page_path, link)| {
+                        println!("Domain: {}, url: {:?}", domain, link);
+                        if site
+                            .config
+                            .link_checker
+                            .skip_prefixes
+                            .iter()
+                            .any(|prefix| link.starts_with(prefix))
+                        {
+                            return None;
+                        }
+                        let res = link_checker::check_url(&link, &site.config.link_checker);
+                        // Prevent rate-limiting
+                        thread::sleep(time::Duration::from_millis(500));
+                        if link_checker::is_valid(&res) {
+                            None
+                        } else {
+                            Some((page_path, link, res))
+                        }
+                    })
+                    .collect::<Vec<_>>()
             })
-            .collect()
+            .flatten()
+            .collect::<Vec<_>>()
     });
 
     println!("> Checked {} external link(s): {} error(s) found.", all_links.len(), errors.len());
@@ -168,5 +212,6 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         })
         .collect::<Vec<_>>()
         .join("\n");
+
     Err(Error { kind: ErrorKind::Msg(msg), source: None })
 }
