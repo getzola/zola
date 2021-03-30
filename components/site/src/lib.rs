@@ -243,11 +243,8 @@ impl Site {
                     .collect::<Vec<DirEntry>>();
 
                 for index_file in index_files {
-                    let section = Section::from_file(
-                        index_file.path(),
-                        &self.config,
-                        &self.base_path,
-                    )?;
+                    let section =
+                        Section::from_file(index_file.path(), &self.config, &self.base_path)?;
 
                     // if the section is drafted we can skip the enitre dir
                     if section.meta.draft && !self.include_drafts {

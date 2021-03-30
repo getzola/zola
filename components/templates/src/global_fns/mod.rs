@@ -839,27 +839,23 @@ title = "A title"
     #[test]
     fn can_get_feed_url_with_default_language() {
         let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn =
+            GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
-        assert_eq!(
-            static_fn.call(&args).unwrap(),
-            "https://remplace-par-ton-url.fr/atom.xml"
-        );
+        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/atom.xml");
     }
 
     #[test]
     fn can_get_feed_url_with_other_language() {
         let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn =
+            GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
-        assert_eq!(
-            static_fn.call(&args).unwrap(),
-            "https://remplace-par-ton-url.fr/en/atom.xml"
-        );
+        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/en/atom.xml");
     }
 
     #[test]
