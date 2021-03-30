@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-slotmap = "0.4"
+slotmap = "1"
 rayon = "1"
 chrono = { version = "0.4", features = ["serde"] }
 tera = "1"
