@@ -2,7 +2,8 @@ use rayon::prelude::*;
 
 use crate::Site;
 use core::time;
-use errors::{Error, ErrorKind, Result};
+use errors::{bail, Result};
+use errors::{Error, ErrorKind};
 use std::{collections::HashMap, path::PathBuf, thread};
 use url::Url;
 
@@ -97,43 +98,35 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     Err(Error { kind: ErrorKind::Msg(msg), source: None })
 }
 
+fn get_link_domain(link: &str) -> Result<String> {
+    return match Url::parse(&link) {
+        Ok(url) => match url.host_str().map(String::from) {
+            Some(domain_str) => Ok(domain_str),
+            None => bail!("could not parse domain `{}` from link", link),
+        },
+        Err(err) => bail!("could not parse domain `{}` from link: `{}`", link, err),
+    };
+}
+
 pub fn check_external_links(site: &Site) -> Result<()> {
     let library = site.library.write().expect("Get lock for check_external_links");
-    let page_links = library
-        .pages()
-        .values()
-        .map(|p| {
-            let path = &p.file.path;
-            p.external_links.iter().map(move |l| {
-                let domain = match Url::parse(l) {
-                    Ok(url) => match url.host_str().map(String::from) {
-                        Some(domain_str) => domain_str,
-                        None => "".to_string(),
-                    },
-                    Err(why) => panic!("{:?}", why),
-                };
-                (path.clone(), l.to_string(), domain)
-            })
-        })
-        .flatten();
-    let section_links = library
-        .sections()
-        .values()
-        .map(|p| {
-            let path = &p.file.path;
-            p.external_links.iter().map(move |l| {
-                let domain = match Url::parse(l) {
-                    Ok(url) => match url.host_str().map(String::from) {
-                        Some(domain_str) => domain_str,
-                        None => "".to_string(),
-                    },
-                    Err(why) => panic!("{:?}", why),
-                };
-                (path.clone(), l.to_string(), domain)
-            })
-        })
-        .flatten();
-    let all_links = page_links.chain(section_links).collect::<Vec<_>>();
+
+    let mut all_links: Vec<(PathBuf, String, String)> = vec![];
+
+    for p in library.pages_values().into_iter() {
+        for external_link in p.clone().external_links.into_iter() {
+            let domain = get_link_domain(&external_link)?;
+            all_links.push((p.file.path.clone(), external_link, domain));
+        }
+    }
+
+    for s in library.sections_values().into_iter() {
+        for external_link in s.clone().external_links.into_iter() {
+            let domain = get_link_domain(&external_link)?;
+            all_links.push((s.file.path.clone(), external_link, domain));
+        }
+    }
+
     println!("Checking {} external link(s).", all_links.len());
 
     let mut links_by_domain: HashMap<String, Vec<(PathBuf, String)>> = HashMap::new();
