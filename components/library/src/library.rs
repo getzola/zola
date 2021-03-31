@@ -187,8 +187,6 @@ impl Library {
                 }
             }
             ancestors.insert(section.file.path.clone(), parents);
-
-
         }
 
         for (key, page) in &mut self.pages {
