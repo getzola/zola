@@ -1,11 +1,11 @@
 #![allow(dead_code)]
-use std::env;
-use std::path::{PathBuf, Path};
 use std::collections::HashMap;
+use std::env;
+use std::path::{Path, PathBuf};
 
+use path_slash::PathExt;
 use site::Site;
 use tempfile::{tempdir, TempDir};
-use path_slash::PathExt;
 
 // 2 helper macros to make all the build testing more bearable
 #[macro_export]
@@ -97,18 +97,18 @@ fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String
         unified_path.pop();
         // Readd stem with .md added
         unified_path.push(&format!("{}.md", stem.unwrap().to_str().unwrap()));
-        let unified_path_str = match unified_path.strip_prefix(base_dir)  {
-			Ok(path_without_prefix) => {path_without_prefix.to_slash_lossy()}
-			_ => {unified_path.to_slash_lossy()}
-		};
+        let unified_path_str = match unified_path.strip_prefix(base_dir) {
+            Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
+            _ => unified_path.to_slash_lossy(),
+        };
         return Some((unified_path_str, Some(lang.to_str().unwrap().into())));
     } else {
         // No lang, return no_ext directly
-		let mut no_ext_string = match no_ext.strip_prefix(base_dir)  {
-			Ok(path_without_prefix) => {path_without_prefix.to_slash_lossy()}
-			_ => {no_ext.to_slash_lossy()}
-		};
-		no_ext_string.push_str(".md");
+        let mut no_ext_string = match no_ext.strip_prefix(base_dir) {
+            Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
+            _ => no_ext.to_slash_lossy(),
+        };
+        no_ext_string.push_str(".md");
         return Some((no_ext_string, None));
     }
 }
@@ -118,7 +118,11 @@ fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String
 /// TODO: This implementation does not support files with a dot inside (foo.bar.md where bar is
 /// not a language), because it requires to know what languages are enabled from config, and it's
 /// unclear how to distinguish (and what to do) between disabled language or "legit" dots
-pub fn add_translations_from(dir: &Path, strip: &Path, default: &str) -> HashMap<String, Vec<String>> {
+pub fn add_translations_from(
+    dir: &Path,
+    strip: &Path,
+    default: &str,
+) -> HashMap<String, Vec<String>> {
     let mut expected: HashMap<String, Vec<String>> = HashMap::new();
     for entry in dir.read_dir().expect("Failed to read dir") {
         let entry = entry.expect("Failed to read entry").path();
@@ -132,7 +136,7 @@ pub fn add_translations_from(dir: &Path, strip: &Path, default: &str) -> HashMap
                 index.push(lang.unwrap_or(default.to_string()));
             } else {
                 // rel_path is not registered yet, insert it in expected
-                expected.insert(unified_path, vec!(lang.unwrap_or(default.to_string())));
+                expected.insert(unified_path, vec![lang.unwrap_or(default.to_string())]);
             }
         } else {
             // Not a markdown file, skip
@@ -145,7 +149,10 @@ pub fn add_translations_from(dir: &Path, strip: &Path, default: &str) -> HashMap
 /// Calculate output path for Markdown files
 /// respecting page/section `path` fields, but not aliases (yet)
 /// Returns a mapping of unified Markdown paths -> translations
-pub fn find_expected_translations(name: &str, default_language: &str) -> HashMap<String, Vec<String>> {
+pub fn find_expected_translations(
+    name: &str,
+    default_language: &str,
+) -> HashMap<String, Vec<String>> {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push(name);
     path.push("content");
@@ -181,9 +188,12 @@ impl Translations {
         let library = site.library.clone();
         let library = library.read().unwrap();
         // WORKAROUND because site.content_path is private
-        let unified_path = if let Some(page) = library.get_page(site.base_path.join("content").join(path)) {
+        let unified_path = if let Some(page) =
+            library.get_page(site.base_path.join("content").join(path))
+        {
             page.file.canonical.clone()
-        } else if let Some(section) = library.get_section(site.base_path.join("content").join(path)) {
+        } else if let Some(section) = library.get_section(site.base_path.join("content").join(path))
+        {
             section.file.canonical.clone()
         } else {
             panic!("No such page or section: {}", path);
@@ -191,13 +201,17 @@ impl Translations {
 
         let translations = library.translations.get(&unified_path);
         if translations.is_none() {
-            println!("Page canonical path {} is not in library translations", unified_path.display());
+            println!(
+                "Page canonical path {} is not in library translations",
+                unified_path.display()
+            );
             panic!("Library error");
         }
 
         let translations = translations
             .unwrap()
-            .iter().map(|key| {
+            .iter()
+            .map(|key| {
                 // Are we looking for a section? (no file extension here)
                 if unified_path.ends_with("_index") {
                     //library.get_section_by_key(*key).file.relative.to_string()
@@ -216,11 +230,10 @@ impl Translations {
                     }
                     //library.get_page_by_key(*key).file.relative.to_string()
                 }
-            }).collect();
+            })
+            .collect();
 
-        Translations {
-            trans: translations,
-        }
+        Translations { trans: translations }
     }
 
     pub fn languages(&self) -> Vec<String> {
@@ -250,7 +263,11 @@ fn library_translations_lang_for(site: &Site, path: &str) -> Vec<String> {
 
 /// This function takes a list of translations generated by find_expected_translations(),
 /// a site instance, and a path of a page to check that translations are the same on both sides
-pub fn ensure_translations_match(translations: &HashMap<String, Vec<String>>, site: &Site, path: &str) -> bool {
+pub fn ensure_translations_match(
+    translations: &HashMap<String, Vec<String>>,
+    site: &Site,
+    path: &str,
+) -> bool {
     let library_page_translations = library_translations_lang_for(site, path);
 
     if let Some((unified_path, _lang)) = find_lang_for(&PathBuf::from(path), Path::new("")) {
@@ -268,7 +285,10 @@ pub fn ensure_translations_match(translations: &HashMap<String, Vec<String>>, si
                 if unified_path == "_index.md" {
                     for lang in &page_translations {
                         if !library_page_translations.contains(lang) {
-                            println!("Library is missing language: {} for page {}", lang, unified_path);
+                            println!(
+                                "Library is missing language: {} for page {}",
+                                lang, unified_path
+                            );
                             return false;
                         }
                     }
@@ -305,11 +325,12 @@ pub fn ensure_translations_in_output(site: &Site, path: &str, permalink: &str) -
     let output_path = permalink.trim_start_matches(&site.config.base_url);
     // Strip leading / so it's not interpreted as an absolute path
     let output_path = output_path.trim_start_matches('/');
-    // Don't forget to remove / because 
+    // Don't forget to remove / because
     let output_path = site.output_path.join(output_path);
 
-    let output = std::fs::read_to_string(&output_path).expect(&format!("Output not found in {}", output_path.display()));
-    
+    let output = std::fs::read_to_string(&output_path)
+        .expect(&format!("Output not found in {}", output_path.display()));
+
     for permalink in &translations_permalinks {
         if !output.contains(permalink) {
             println!("Page {} has translation {}, but it was not found in output", path, permalink);

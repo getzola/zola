@@ -718,7 +718,8 @@ Hello world
 Hello world
 <!-- more -->"#
             .to_string();
-        let res = Page::parse(Path::new("2018-10-08 - hello.md"), &content, &config, &PathBuf::new());
+        let res =
+            Page::parse(Path::new("2018-10-08 - hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
 
@@ -736,7 +737,8 @@ Hello world
 Hello world
 <!-- more -->"#
             .to_string();
-        let res = Page::parse(Path::new("2018-10-08 - hello.md"), &content, &config, &PathBuf::new());
+        let res =
+            Page::parse(Path::new("2018-10-08 - hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let page = res.unwrap();
 
