@@ -159,12 +159,12 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             .map(|(domain, links)| {
                 println!("Thread for domain: {}", domain);
 
-                let mut links_processed = 0;
+                let mut links_to_process = links.len();
                 links
                     .into_iter()
                     .filter_map(move |(page_path, link)| {
                         println!("Domain: {}, url: {:?}", domain, link);
-                        links_processed += 1;
+                        links_to_process -= 1;
 
                         if site
                             .config
@@ -178,7 +178,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
 
                         let res = link_checker::check_url(&link, &site.config.link_checker);
 
-                        if links_processed != links.len() {
+                        if links_to_process > 0 {
                             // Prevent rate-limiting, wait before next crawl unless we're done with this domain
                             thread::sleep(time::Duration::from_millis(500));
                         }
