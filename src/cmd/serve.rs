@@ -107,9 +107,16 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
         return Ok(not_found());
     }
 
-    // Remove the trailing slash from the request path
+    // Remove the first slash from the request path
     // otherwise `PathBuf` will interpret it as an absolute path
     root.push(&decoded[1..]);
+
+    let metadata = tokio::fs::metadata(root.as_path()).await?;
+    if metadata.is_dir() {
+        // if root is a directory, append index.html to try to read that instead
+        root.push("index.html");
+    };
+
     let result = tokio::fs::read(&root).await;
 
     let contents = match result {
