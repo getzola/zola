@@ -81,7 +81,7 @@ impl PageFrontMatter {
         }
 
         if let Some(ref path) = f.path {
-            if path == "" {
+            if path.is_empty() {
                 bail!("`path` can't be empty if present")
             }
         }

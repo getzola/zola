@@ -3,9 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use errors::{bail, Error, Result};
 use regex::Regex;
-use serde_yaml;
 use std::path::Path;
-use toml;
 
 mod page;
 mod section;

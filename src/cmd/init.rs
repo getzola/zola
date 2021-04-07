@@ -1,6 +1,5 @@
 use std::fs::{canonicalize, create_dir};
 use std::path::Path;
-use std::path::PathBuf;
 
 use errors::{bail, Result};
 use utils::fs::create_file;
@@ -68,7 +67,7 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
 }
 
 // Remove the unc part of a windows path
-fn strip_unc(path: &PathBuf) -> String {
+fn strip_unc(path: &Path) -> String {
     let path_to_refine = path.to_str().unwrap();
     path_to_refine.trim_start_matches(LOCAL_UNC).to_string()
 }
