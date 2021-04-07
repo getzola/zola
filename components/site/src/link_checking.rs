@@ -156,14 +156,11 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     let errors = pool.install(|| {
         links_by_domain
             .par_iter()
-            .map(|(domain, links)| {
-                println!("Thread for domain: {}", domain);
-
+            .map(|(_domain, links)| {
                 let mut links_to_process = links.len();
                 links
                     .into_iter()
                     .filter_map(move |(page_path, link)| {
-                        println!("Domain: {}, url: {:?}", domain, link);
                         links_to_process -= 1;
 
                         if site
