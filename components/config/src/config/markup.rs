@@ -59,7 +59,7 @@ impl Markdown {
     pub fn construct_external_link_tag(&self, url: &str, title: &str) -> String {
         let mut rel_opts = Vec::new();
         let mut target = "".to_owned();
-        let title = if title == "" { "".to_owned() } else { format!("title=\"{}\" ", title) };
+        let title = if title.is_empty() { "".to_owned() } else { format!("title=\"{}\" ", title) };
 
         if self.external_links_target_blank {
             // Security risk otherwise

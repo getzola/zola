@@ -84,7 +84,7 @@ impl Library {
         let file_path = section.file.path.clone();
         let rel_path = section.path.clone();
 
-        let mut entries = vec![rel_path.clone()];
+        let mut entries = vec![rel_path];
         entries.extend(section.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
         self.insert_reverse_aliases(entries, &section.file.relative);
 
@@ -98,7 +98,7 @@ impl Library {
         let file_path = page.file.path.clone();
         let rel_path = page.path.clone();
 
-        let mut entries = vec![rel_path.clone()];
+        let mut entries = vec![rel_path];
         entries.extend(page.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
         self.insert_reverse_aliases(entries, &page.file.relative);
 

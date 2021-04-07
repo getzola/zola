@@ -319,8 +319,7 @@ impl ImageOp {
                     Some(q) => encoder.encode(q as f32 / 100.),
                     None => encoder.encode_lossless(),
                 };
-                let mut bytes = memory.as_bytes();
-                f.write_all(&mut bytes)?;
+                f.write_all(&memory.as_bytes())?;
             }
         }
 
