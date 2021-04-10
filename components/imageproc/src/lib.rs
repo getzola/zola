@@ -207,6 +207,7 @@ impl Hash for Format {
         };
 
         hasher.write_u8(q);
+        hasher.write(self.extension().as_bytes());
     }
 }
 
