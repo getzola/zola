@@ -34,12 +34,10 @@ impl FromStr for Method {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self> {
-        if s.to_lowercase() == "post" {
-            Ok(Method::Post)
-        } else if s.to_lowercase() == "get" {
-            Ok(Method::Get)
-        } else {
-            return Err("`load_data` method must either be POST or GET.".into());
+        match s.to_lowercase().as_ref() {
+            "post" => Ok(Method::Post),
+            "get" => Ok(Method::Get),
+            _ => Err("`load_data` method must either be POST or GET.".into()),
         }
     }
 }
