@@ -30,6 +30,15 @@ Zola is available in the official Alpine Linux repository, only on the `edge` ve
 $ apk add zola --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
 ```
 
+### Debian
+
+Zola is available over at [barnumbirr/zola-debian](https://github.com/barnumbirr/zola-debian).
+Grab the latest `.deb` for your Debian version then simply run:
+
+```sh
+$ sudo dpkg -i zola_<version>_amd64_debian_<debian_version>.deb
+```
+
 ### Fedora
 
 Zola has been available in the official repositories since Fedora 29.
