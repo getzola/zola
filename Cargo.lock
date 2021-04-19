@@ -3016,7 +3016,6 @@ dependencies = [
  "minify-html",
  "percent-encoding",
  "serde",
- "serde_derive",
  "slug",
  "tempfile",
  "tera",
