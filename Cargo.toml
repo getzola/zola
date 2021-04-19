@@ -44,6 +44,7 @@ site = { path = "components/site" }
 errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
+search = { path = "components/search" }
 
 [dev-dependencies]
 same-file = "1"

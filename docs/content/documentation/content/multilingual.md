@@ -21,9 +21,9 @@ If you want to use per-language taxonomies, ensure you set the `lang` field in t
 configuration.
 
 Note: By default, Chinese and Japanese search indexing is not included. You can include
-the support by building `zola` using `cargo build --features search/indexing-ja search/indexing-zh`.
+the support by building `zola` using `cargo build --features search/indexing-ja --features search/indexing-zh`.
 Please also note that, enabling Chinese indexing will increase the binary size by approximately
-5 MB while enabling Japanese indexing will increase the binary size by approximately 70 MB 
+5 MB while enabling Japanese indexing will increase the binary size by approximately 70 MB
 due to the incredibly large dictionaries.
 
 ## Content
