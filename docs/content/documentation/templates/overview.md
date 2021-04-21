@@ -342,9 +342,9 @@ as below.
 When no other parameters are specified the URL will always be retrieved using a HTTP GET request.
 Using the parameter `method`, since version 0.14.0, you can also choose to retrieve the URL using a POST request.
 
-When using `method="POST"` you can also use the parameters `body` and `contenttype`.
+When using `method="POST"` you can also use the parameters `body` and `content_type`.
 The parameter body is the actual contents sent in the POST request.
-The parameter contenttype should be the mimetype of the body.
+The parameter `content_type` should be the mimetype of the body.
 
 This example will make a POST request to the kroki service to generate a SVG.
 

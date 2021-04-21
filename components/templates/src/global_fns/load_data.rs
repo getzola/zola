@@ -126,15 +126,15 @@ impl DataSource {
     fn get_cache_key(
         &self,
         format: &OutputFormat,
-        method_arg: Option<String>,
-        method_post_body: Option<String>,
-        method_post_contenttype: Option<String>,
+        method: Method,
+        post_body: Option<String>,
+        post_content_type: Option<String>,
     ) -> u64 {
         let mut hasher = DefaultHasher::new();
         format.hash(&mut hasher);
-        method_arg.hash(&mut hasher);
-        method_post_body.hash(&mut hasher);
-        method_post_contenttype.hash(&mut hasher);
+        method.hash(&mut hasher);
+        post_body.hash(&mut hasher);
+        post_content_type.hash(&mut hasher);
         self.hash(&mut hasher);
         hasher.finish()
     }
@@ -271,7 +271,7 @@ impl TeraFn for LoadData {
         let file_format = get_output_format_from_args(&args, &data_source)?;
         let cache_key = data_source.get_cache_key(
             &file_format,
-            method_arg,
+            method,
             post_body_arg.clone(),
             post_content_type.clone(),
         );
@@ -300,7 +300,7 @@ impl TeraFn for LoadData {
                                 }
                                 Err(_) => {
                                     return Err(format!(
-                                        "{} is an illegal contenttype",
+                                        "{} is an illegal content type",
                                         &content_type
                                     )
                                     .into());
@@ -484,6 +484,7 @@ mod tests {
     use std::collections::HashMap;
     use std::path::PathBuf;
 
+    use crate::global_fns::load_data::Method;
     use mockito::mock;
     use serde_json::json;
     use tera::{to_value, Function};
@@ -638,13 +639,13 @@ mod tests {
         // We can't test against a fixed value, due to the fact the cache key is built from the absolute path
         let cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
-            None,
+            Method::Get,
             None,
             None,
         );
         let cache_key_2 = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
-            None,
+            Method::Get,
             None,
             None,
         );
@@ -652,33 +653,16 @@ mod tests {
     }
 
     #[test]
-    fn calculates_cache_key_for_url() {
-        let _m = mock("GET", "/kr1zdgbm4y")
-            .with_header("content-type", "text/plain")
-            .with_body("Test")
-            .create();
-
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
-        let cache_key = DataSource::Url(url.parse().unwrap()).get_cache_key(
-            &OutputFormat::Plain,
-            None,
-            None,
-            None,
-        );
-        assert_eq!(cache_key, 16044537454280534951);
-    }
-
-    #[test]
     fn different_cache_key_per_filename() {
         let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
-            None,
+            Method::Get,
             None,
             None,
         );
         let json_cache_key = DataSource::Path(get_test_file("test.json")).get_cache_key(
             &OutputFormat::Toml,
-            None,
+            Method::Get,
             None,
             None,
         );
@@ -689,13 +673,13 @@ mod tests {
     fn different_cache_key_per_format() {
         let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
-            None,
+            Method::Get,
             None,
             None,
         );
         let json_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Json,
-            None,
+            Method::Get,
             None,
             None,
         );
@@ -951,7 +935,7 @@ mod tests {
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
         args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
         args.insert("body".to_string(), to_value("this is a match").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_ok());
@@ -960,7 +944,7 @@ mod tests {
         args2.insert("url".to_string(), to_value(&url).unwrap());
         args2.insert("format".to_string(), to_value("plain").unwrap());
         args2.insert("method".to_string(), to_value("post").unwrap());
-        args2.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args2.insert("content_type".to_string(), to_value("text/plain").unwrap());
         args2.insert("body".to_string(), to_value("this is a match2").unwrap());
         let result2 = static_fn.call(&args2);
         assert!(result2.is_ok());
@@ -983,7 +967,7 @@ mod tests {
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
         args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
         args.insert("body".to_string(), to_value("this is a match").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_ok());
@@ -992,7 +976,7 @@ mod tests {
         args2.insert("url".to_string(), to_value(&url).unwrap());
         args2.insert("format".to_string(), to_value("plain").unwrap());
         args2.insert("method".to_string(), to_value("post").unwrap());
-        args2.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args2.insert("content_type".to_string(), to_value("text/plain").unwrap());
         args2.insert("body".to_string(), to_value("this is a match").unwrap());
         let result2 = static_fn.call(&args2);
         assert!(result2.is_ok());

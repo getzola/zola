@@ -23,6 +23,8 @@
 - Fix `zola serve` not picking up directory renaming
 - Add `path` to the taxonomy terms to be on par with pages and sections
 - Add the `base16-aterlierdune-light` syntax highlight theme
+- Improve link checking: less concurrency and try to not overload the servers
+- Allow using POST for `load_data`, along with a body to POST
 
 ## 0.13.0 (2021-01-09)
 
