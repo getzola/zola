@@ -2449,6 +2449,7 @@ dependencies = [
  "tempfile",
  "templates",
  "tera",
+ "url",
  "utils",
  "walkdir",
 ]
