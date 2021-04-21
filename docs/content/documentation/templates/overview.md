@@ -339,6 +339,28 @@ as below.
 {{ response }}
 ```
 
+When no other parameters are specified the URL will always be retrieved using a HTTP GET request.
+Using the parameter `method`, since version 0.14.0, you can also choose to retrieve the URL using a POST request.
+
+When using `method="POST"` you can also use the parameters `body` and `contenttype`.
+The parameter body is the actual contents sent in the POST request.
+The parameter contenttype should be the mimetype of the body.
+
+This example will make a POST request to the kroki service to generate a SVG.
+
+```jinja2
+{% set postdata = load_data(url="https://kroki.io/blockdiag/svg", format="plain", method="POST" ,content_type="text/plain", body="blockdiag {
+  'Doing POST' -> 'using load_data'
+  'using load_data' -> 'can generate' -> 'block diagrams';
+  'using load_data' -> is -> 'very easy!';
+
+  'Doing POST' [color = 'greenyellow'];
+  'block diagrams' [color = 'pink'];
+  'very easy!' [color = 'orange'];
+}")%}
+{{postdata|safe}}
+```
+
 #### Data caching
 
 Data file loading and remote requests are cached in memory during the build, so multiple requests aren't made

@@ -1,6 +1,7 @@
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
+use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::{blocking::Client, header};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
@@ -21,6 +22,24 @@ static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
 enum DataSource {
     Url(Url),
     Path(PathBuf),
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, Hash)]
+enum Method {
+    Post,
+    Get,
+}
+
+impl FromStr for Method {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s.to_lowercase().as_ref() {
+            "post" => Ok(Method::Post),
+            "get" => Ok(Method::Get),
+            _ => Err("`load_data` method must either be POST or GET.".into()),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -104,9 +123,18 @@ impl DataSource {
         Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
     }
 
-    fn get_cache_key(&self, format: &OutputFormat) -> u64 {
+    fn get_cache_key(
+        &self,
+        format: &OutputFormat,
+        method_arg: Option<String>,
+        method_post_body: Option<String>,
+        method_post_contenttype: Option<String>,
+    ) -> u64 {
         let mut hasher = DefaultHasher::new();
         format.hash(&mut hasher);
+        method_arg.hash(&mut hasher);
+        method_post_body.hash(&mut hasher);
+        method_post_contenttype.hash(&mut hasher);
         self.hash(&mut hasher);
         hasher.finish()
     }
@@ -201,6 +229,25 @@ impl TeraFn for LoadData {
         };
         let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let post_body_arg =
+            optional_arg!(String, args.get("body"), "`load_data` body must be a string, if set.");
+        let post_content_type = optional_arg!(
+            String,
+            args.get("content_type"),
+            "`load_data` content_type must be a string, if set."
+        );
+        let method_arg = optional_arg!(
+            String,
+            args.get("method"),
+            "`load_data` method must either be POST or GET."
+        );
+        let method = match method_arg {
+            Some(ref method_str) => match Method::from_str(&method_str) {
+                Ok(m) => m,
+                Err(e) => return Err(e),
+            },
+            _ => Method::Get,
+        };
         let data_source = DataSource::from_args(path_arg.clone(), url_arg, &self.base_path)?;
 
         // If the file doesn't exist, source is None
@@ -222,7 +269,12 @@ impl TeraFn for LoadData {
         }
         let data_source = data_source.unwrap();
         let file_format = get_output_format_from_args(&args, &data_source)?;
-        let cache_key = data_source.get_cache_key(&file_format);
+        let cache_key = data_source.get_cache_key(
+            &file_format,
+            method_arg,
+            post_body_arg.clone(),
+            post_content_type.clone(),
+        );
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
         let response_client = self.client.lock().expect("response client lock");
@@ -233,12 +285,40 @@ impl TeraFn for LoadData {
         let data = match data_source {
             DataSource::Path(path) => read_data_file(&self.base_path, path),
             DataSource::Url(url) => {
-                match response_client
-                    .get(url.as_str())
-                    .header(header::ACCEPT, file_format.as_accept_header())
-                    .send()
-                    .and_then(|res| res.error_for_status())
-                {
+                let req = match method {
+                    Method::Get => response_client
+                        .get(url.as_str())
+                        .header(header::ACCEPT, file_format.as_accept_header()),
+                    Method::Post => {
+                        let mut resp = response_client
+                            .post(url.as_str())
+                            .header(header::ACCEPT, file_format.as_accept_header());
+                        match post_content_type {
+                            Some(content_type) => match HeaderValue::from_str(&content_type) {
+                                Ok(c) => {
+                                    resp = resp.header(CONTENT_TYPE, c);
+                                }
+                                Err(_) => {
+                                    return Err(format!(
+                                        "{} is an illegal contenttype",
+                                        &content_type
+                                    )
+                                    .into());
+                                }
+                            },
+                            _ => {}
+                        };
+                        match post_body_arg {
+                            Some(body) => {
+                                resp = resp.body(body);
+                            }
+                            _ => {}
+                        };
+                        resp
+                    }
+                };
+
+                match req.send().and_then(|res| res.error_for_status()) {
                     Ok(r) => r.text().map_err(|e| {
                         format!("Failed to parse response from {}: {:?}", url, e).into()
                     }),
@@ -419,6 +499,106 @@ mod tests {
     }
 
     #[test]
+    fn fails_illegal_method_parameter() {
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value("https://example.com").unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("illegalmethod").unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("`load_data` method must either be POST or GET."));
+    }
+
+    #[test]
+    fn can_load_remote_data_using_post_method() {
+        let _mg = mock("GET", "/kr1zdgbm4y")
+            .with_header("content-type", "text/plain")
+            .with_body("GET response")
+            .expect(0)
+            .create();
+        let _mp = mock("POST", "/kr1zdgbm4y")
+            .with_header("content-type", "text/plain")
+            .with_body("POST response")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
+
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("post").unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "POST response");
+        _mg.assert();
+        _mp.assert();
+    }
+
+    #[test]
+    fn can_load_remote_data_using_post_method_with_content_type_header() {
+        let _mjson = mock("POST", "/kr1zdgbm4yw")
+            .match_header("content-type", "application/json")
+            .with_header("content-type", "application/json")
+            .with_body("{i_am:'json'}")
+            .expect(0)
+            .create();
+        let _mtext = mock("POST", "/kr1zdgbm4yw")
+            .match_header("content-type", "text/plain")
+            .with_header("content-type", "text/plain")
+            .with_body("POST response text")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4yw");
+
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("post").unwrap());
+        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "POST response text");
+        _mjson.assert();
+        _mtext.assert();
+    }
+
+    #[test]
+    fn can_load_remote_data_using_post_method_with_body() {
+        let _mjson = mock("POST", "/kr1zdgbm4y")
+            .match_body("qwerty")
+            .with_header("content-type", "application/json")
+            .with_body("{i_am:'json'}")
+            .expect(0)
+            .create();
+        let _mtext = mock("POST", "/kr1zdgbm4y")
+            .match_body("this is a match")
+            .with_header("content-type", "text/plain")
+            .with_body("POST response text")
+            .create();
+
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
+
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("post").unwrap());
+        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
+        args.insert("body".to_string(), to_value("this is a match").unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "POST response text");
+        _mjson.assert();
+        _mtext.assert();
+    }
+
+    #[test]
     fn fails_when_missing_file() {
         let static_fn = LoadData::new(PathBuf::from("../utils"));
         let mut args = HashMap::new();
@@ -456,10 +636,18 @@ mod tests {
     #[test]
     fn calculates_cache_key_for_path() {
         // We can't test against a fixed value, due to the fact the cache key is built from the absolute path
-        let cache_key =
-            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
-        let cache_key_2 =
-            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
+        let cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Toml,
+            None,
+            None,
+            None,
+        );
+        let cache_key_2 = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Toml,
+            None,
+            None,
+            None,
+        );
         assert_eq!(cache_key, cache_key_2);
     }
 
@@ -471,25 +659,46 @@ mod tests {
             .create();
 
         let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
-        let cache_key = DataSource::Url(url.parse().unwrap()).get_cache_key(&OutputFormat::Plain);
-        assert_eq!(cache_key, 425638486551656875);
+        let cache_key = DataSource::Url(url.parse().unwrap()).get_cache_key(
+            &OutputFormat::Plain,
+            None,
+            None,
+            None,
+        );
+        assert_eq!(cache_key, 16044537454280534951);
     }
 
     #[test]
     fn different_cache_key_per_filename() {
-        let toml_cache_key =
-            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
-        let json_cache_key =
-            DataSource::Path(get_test_file("test.json")).get_cache_key(&OutputFormat::Toml);
+        let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Toml,
+            None,
+            None,
+            None,
+        );
+        let json_cache_key = DataSource::Path(get_test_file("test.json")).get_cache_key(
+            &OutputFormat::Toml,
+            None,
+            None,
+            None,
+        );
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
     #[test]
     fn different_cache_key_per_format() {
-        let toml_cache_key =
-            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Toml);
-        let json_cache_key =
-            DataSource::Path(get_test_file("test.toml")).get_cache_key(&OutputFormat::Json);
+        let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Toml,
+            None,
+            None,
+            None,
+        );
+        let json_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Json,
+            None,
+            None,
+            None,
+        );
         assert_ne!(toml_cache_key, json_cache_key);
     }
 
@@ -609,7 +818,7 @@ mod tests {
         let result = static_fn.call(&args.clone()).unwrap();
 
         if cfg!(windows) {
-            assert_eq!(result, ".hello {}\r\n",);
+            assert_eq!(result.as_str().unwrap().replace("\r\n", "\n"), ".hello {}\n",);
         } else {
             assert_eq!(result, ".hello {}\n",);
         };
@@ -624,7 +833,10 @@ mod tests {
         let result = static_fn.call(&args.clone()).unwrap();
 
         if cfg!(windows) {
-            assert_eq!(result, "Number,Title\r\n1,Gutenberg\r\n2,Printing",);
+            assert_eq!(
+                result.as_str().unwrap().replace("\r\n", "\n"),
+                "Number,Title\n1,Gutenberg\n2,Printing",
+            );
         } else {
             assert_eq!(result, "Number,Title\n1,Gutenberg\n2,Printing",);
         };
@@ -639,7 +851,7 @@ mod tests {
         let result = static_fn.call(&args.clone()).unwrap();
 
         if cfg!(windows) {
-            assert_eq!(result, ".hello {}\r\n",);
+            assert_eq!(result.as_str().unwrap().replace("\r\n", "\n"), ".hello {}\n",);
         } else {
             assert_eq!(result, ".hello {}\n",);
         };
@@ -723,5 +935,68 @@ mod tests {
                 }
             })
         )
+    }
+
+    #[test]
+    fn is_load_remote_data_using_post_method_with_different_body_not_cached() {
+        let _mjson = mock("POST", "/kr1zdgbm4y3")
+            .with_header("content-type", "application/json")
+            .with_body("{i_am:'json'}")
+            .expect(2)
+            .create();
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y3");
+
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("post").unwrap());
+        args.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args.insert("body".to_string(), to_value("this is a match").unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+
+        let mut args2 = HashMap::new();
+        args2.insert("url".to_string(), to_value(&url).unwrap());
+        args2.insert("format".to_string(), to_value("plain").unwrap());
+        args2.insert("method".to_string(), to_value("post").unwrap());
+        args2.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args2.insert("body".to_string(), to_value("this is a match2").unwrap());
+        let result2 = static_fn.call(&args2);
+        assert!(result2.is_ok());
+
+        _mjson.assert();
+    }
+
+    #[test]
+    fn is_load_remote_data_using_post_method_with_same_body_cached() {
+        let _mjson = mock("POST", "/kr1zdgbm4y2")
+            .match_body("this is a match")
+            .with_header("content-type", "application/json")
+            .with_body("{i_am:'json'}")
+            .expect(1)
+            .create();
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y2");
+
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("post").unwrap());
+        args.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args.insert("body".to_string(), to_value("this is a match").unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+
+        let mut args2 = HashMap::new();
+        args2.insert("url".to_string(), to_value(&url).unwrap());
+        args2.insert("format".to_string(), to_value("plain").unwrap());
+        args2.insert("method".to_string(), to_value("post").unwrap());
+        args2.insert("contenttype".to_string(), to_value("text/plain").unwrap());
+        args2.insert("body".to_string(), to_value("this is a match").unwrap());
+        let result2 = static_fn.call(&args2);
+        assert!(result2.is_ok());
+
+        _mjson.assert();
     }
 }
