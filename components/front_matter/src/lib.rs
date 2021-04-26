@@ -13,10 +13,10 @@ pub use section::SectionFrontMatter;
 
 lazy_static! {
     static ref TOML_RE: Regex =
-        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+(?:$|(?:\r?\n((?s).*(?-s))$))")
+        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))")
             .unwrap();
     static ref YAML_RE: Regex =
-        Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---(?:$|(?:\r?\n((?s).*(?-s))$))").unwrap();
+        Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))").unwrap();
 }
 
 pub enum RawFrontMatter<'a> {
