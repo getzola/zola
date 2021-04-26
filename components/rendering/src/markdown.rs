@@ -51,7 +51,7 @@ impl HeadingRef {
 // for example an article could have several titles named Example
 // We add a counter after the slug if the slug is already present, which
 // means we will have example, example-1, example-2 etc
-fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
+fn find_anchor(anchors: &[String], name: String, level: u16) -> String {
     if level == 0 && !anchors.contains(&name) {
         return name;
     }
