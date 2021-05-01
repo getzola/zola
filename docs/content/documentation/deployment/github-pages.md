@@ -6,12 +6,21 @@ weight = 30
 By default, GitHub Pages uses Jekyll (a ruby based static site generator),
 but you can also publish any generated files provided you have an `index.html` file in the root of a branch called
 `gh-pages` or `master`. In addition you can publish from a `docs` directory in your repository. That branch name can
-also be manually changed in the settings of a repository.
+also be manually changed in the settings of a repository. To serve a site at `<username>.github.io` or
+`<organization>.github.io`, you must name the repository `<username>.github.io` or
+`<organization>.github.io` (otherwise GitHub will append the repository name to the URL, e.g.:
+`<username>.github.io/<repositoryname>`.
 
 We can use any continuous integration (CI) server to build and deploy our site. For example:
 
  * [Github Actions](#github-actions)
  * [Travis CI](#travis-ci)
+
+In either case, it seems to work best if you use `git submodule` to include your theme, e.g.:
+
+```shell
+git submodule add https://github.com/getzola/after-dark.git themes/after-dark
+```
 
 ## Github Actions
 
@@ -33,13 +42,11 @@ on: push
 name: Build and deploy GH Pages
 jobs:
   build:
-    name: Deploy
     runs-on: ubuntu-latest
     steps:
-      # Checkout
-      - uses: actions/checkout@v2
-      # Build & deploy
-      - name: Deploy to gh-pages branch
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build_and_deploy
         uses: shalzz/zola-deploy-action@v0.13.0
         env:
           # Target branch
@@ -54,11 +61,46 @@ By commiting the action your first build is triggered. Wait until it's finished,
 
 Finally we need to check the *Github Pages* section of the repository settings. Click on the *Settings* tab and scroll down to the *Github Pages* section. Check if the source is set to *gh-pages* branch and the directory is */ (root)*. You should also see your *Github Pages* link.
 
-There you can also configure a *custom domain* and *Enforce HTTPS* mode. Before configuring a *custom domains*, please check out [this](https://github.com/shalzz/zola-deploy-action/blob/master/README.md#custom-domain). 
+There you can also configure a *custom domain* and *Enforce HTTPS* mode. Before configuring a *custom domains*, please check out [this](https://github.com/shalzz/zola-deploy-action/blob/master/README.md#custom-domain).
+
+If you want to keep the source of your site in a private repository (including, for example, draft
+posts), adapt the following `.github/workflows/main.yml`:
+
+```yaml
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    steps:
+      - name: 'checkout'
+        uses: actions/checkout@v2
+      - name: 'build'
+        uses: shalzz/zola-deploy-action@v0.13.0
+        env:
+          PAGES_BRANCH: gh-pages
+          BUILD_DIR: .
+          TOKEN: ${{ secrets.TOKEN }}
+          # BUILD_ONLY: true
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: 'checkout'
+        uses: actions/checkout@v2
+      - name: 'build and deploy'
+        uses: shalzz/zola-deploy-action@v0.13.0
+        env:
+          PAGES_BRANCH: master
+          BUILD_DIR: .
+          TOKEN: ${{ secrets.PUBLIC_TOKEN }}
+          REPOSITORY: username/username.github.io
+```
+by substituting your username or organization.
 
 ## Travis CI
 
-We are going to use [Travis CI](https://travis-ci.org) to automatically publish the site. If you are not using Travis
+Alternatively, you can use [Travis CI](https://travis-ci.org) to automatically publish the site. If you are not using Travis
 already, you will need to login with the GitHub OAuth and activate Travis for the repository.
 Don't forget to also check if your repository allows GitHub Pages in its settings.
 
@@ -72,7 +114,7 @@ submodules. When doing this, ensure that you are using the `https` version of th
 $ git submodule add {THEME_URL} themes/{THEME_NAME}
 ```
 
-## Allowing Travis to push to GitHub
+### Allowing Travis to push to GitHub
 
 Before pushing anything, Travis needs a Github private access key to make changes to your repository.
 If you're already logged in to your account, just click [here](https://github.com/settings/tokens) to go to
@@ -86,7 +128,7 @@ Copy it into your clipboard and head back to Travis.
 Once on Travis, click on your project, and navigate to "Settings". Scroll down to "Environment Variables" and input a name of `GH_TOKEN` with a value of your access token.
 Make sure that "Display value in build log" is off, and then click add. Now Travis has access to your repository.
 
-## Setting up Travis
+### Setting up Travis
 
 We're almost done. We just need some scripts in a .travis.yml file to tell Travis what to do.
 
@@ -117,4 +159,4 @@ after_success: |
 If your site is using a custom domain, you will need to mention it in the `ghp-import` command:
 `ghp-import -c vaporsoft.net -n public` for example.
 
-Credits: this page is based on the article https://vaporsoft.net/publishing-gutenberg-to-github/
+Credits: The Travis-CI section of this page is based on the article https://vaporsoft.net/publishing-gutenberg-to-github/
