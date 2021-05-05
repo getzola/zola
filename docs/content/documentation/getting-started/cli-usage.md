@@ -91,11 +91,10 @@ $ zola serve --open
 ```
 
 The serve command will watch all your content and provide live reload without
-a hard refresh if possible.
+a hard refresh if possible. If you are using WSL2 on Windows, make sure to store the website on the WSL file system.
 
 Some changes cannot be handled automatically and thus live reload may not always work. If you
 fail to see your change or get an error, try restarting `zola serve`.
-
 
 You can also point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
 
