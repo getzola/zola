@@ -35,7 +35,7 @@ Tools > Developer > New Syntax from ... and put it at the root of `sublime_synta
 You can also add a submodule to the repository of the wanted syntax:
 
 ```bash
-$ cd sublime/syntaxes
+$ cd sublime/syntaxes/extra
 $ git submodule add https://github.com/elm-community/SublimeElmLanguageSupport
 ```
 
