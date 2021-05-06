@@ -3,11 +3,11 @@
 title = "juice"
 description = "An intuitive, elegant, and lightweight Zola theme for product sites."
 template = "theme.html"
-date = 2021-05-06T02:57:59+08:00
+date = 2021-05-06T18:30:07+02:00
 
 [extra]
-created = 2021-05-06T02:57:59+08:00
-updated = 2021-05-06T02:57:59+08:00
+created = 2021-05-06T18:30:07+02:00
+updated = 2021-05-06T18:30:07+02:00
 repository = "https://github.com/huhu/juice"
 homepage = "https://github.com/huhu/juice"
 minimum_version = "0.11.0"
@@ -61,6 +61,7 @@ theme = "juice"
 You can customize your **hero** by using `hero` block in the `index.html`.
 
 ```html
+{%/* extends "juice/templates/index.html" */%}
 {%/* block hero */%}
     <div>
         Your cool hero html...
@@ -116,11 +117,20 @@ juice_logo_path = "juice.svg"
 juice_extra_menu = [
     { title = "Github", link = "https://github.com/huhu/juice"}
 ]
+repository_url = "https://github.com/huhu/juice"
 ```
+
+# Shortcodes
+
+**Juice** have some builtin shortcodes available in `templates/shortcodes` directory.
+
+- `issue(id)` - A shortcode to render issue url, e.g. `issue(id=1)` would render to the link `https://github.com/huhu/juice/issue/1`.
+
+> The `repository_url` is required.
 
 # Showcases
 
-Please see the [showcases page](/showcases).
+Please see the [showcases page](https://juice.huhu.io/showcases).
 
 # Contributing
 
@@ -130,4 +140,5 @@ We appreciate any form of contribution:
 
 - New issues (feature requests, bug reports, questions, ideas, ...)
 - Pull requests (documentation improvements, code improvements, new features, ...)
+
         
