@@ -1,6 +1,6 @@
 # Changelog
 
-## unreleased
+## 0.14.0 (unreleased)
 
 ### Breaking
 
@@ -24,7 +24,9 @@
 - Add `path` to the taxonomy terms to be on par with pages and sections
 - Add the `base16-aterlierdune-light` syntax highlight theme
 - Improve link checking: less concurrency and try to not overload the servers
-- Allow using POST for `load_data`, along with a body to POST
+- Allow using POST for `load_data`, along with a body to POST and allow it to fail
+- Add Zig syntax highlighting
+- Footnotes links are now stripped from summaries - they were not linking to anything.
 
 ## 0.13.0 (2021-01-09)
 

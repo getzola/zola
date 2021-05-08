@@ -27,6 +27,8 @@ lazy_static! {
     static ref RFC3339_DATE: Regex = Regex::new(
         r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)\s?(_|-)(?P<slug>.+$)"
     ).unwrap();
+
+    static ref FOOTNOTES_RE: Regex = Regex::new(r"<sup\s*.*?>\s*.*?</sup>").unwrap();
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -263,7 +265,11 @@ impl Page {
             Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
         })?;
 
-        self.summary = res.summary_len.map(|l| res.body[0..l].to_owned());
+        self.summary = if let Some(s) = res.summary_len.map(|l| &res.body[0..l]) {
+            Some(FOOTNOTES_RE.replace(s, "").into_owned())
+        } else {
+            None
+        };
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
@@ -528,6 +534,33 @@ Hello world
         page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None)
             .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
+    }
+
+    #[test]
+    fn strips_footnotes_in_summary() {
+        let config = Config::default();
+        let content = r#"
++++
++++
+This page has footnotes, here's one. [^1]
+
+<!-- more -->
+
+And here's another. [^2]
+
+[^1]: This is the first footnote.
+
+[^2]: This is the second footnote."#
+            .to_string();
+        let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None)
+            .unwrap();
+        assert_eq!(
+            page.summary,
+            Some("<p>This page has footnotes, here\'s one. </p>\n".to_string())
+        );
     }
 
     #[test]

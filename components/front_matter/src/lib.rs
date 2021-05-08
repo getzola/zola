@@ -12,11 +12,14 @@ pub use page::PageFrontMatter;
 pub use section::SectionFrontMatter;
 
 lazy_static! {
-    static ref TOML_RE: Regex =
-        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))")
-            .unwrap();
-    static ref YAML_RE: Regex =
-        Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))").unwrap();
+    static ref TOML_RE: Regex = Regex::new(
+        r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))"
+    )
+    .unwrap();
+    static ref YAML_RE: Regex = Regex::new(
+        r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))"
+    )
+    .unwrap();
 }
 
 pub enum RawFrontMatter<'a> {
