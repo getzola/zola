@@ -3,13 +3,12 @@ use std::path::{Path, PathBuf};
 
 use slotmap::{DefaultKey, DenseSlotMap};
 
-use front_matter::SortBy;
-
 use crate::content::{Page, Section};
 use crate::sorting::{
     find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight,
 };
 use config::Config;
+use front_matter::{PageFrontMatter, SortBy};
 
 // Like vec! but for HashSet
 macro_rules! set {
@@ -265,52 +264,45 @@ impl Library {
     /// Sort all sections pages according to sorting method given
     /// Pages that cannot be sorted are set to the section.ignored_pages instead
     pub fn sort_sections_pages(&mut self) {
+        fn get_data<'a, T>(
+            section: &'a Section,
+            pages: &'a DenseSlotMap<DefaultKey, Page>,
+            field: impl Fn(&'a PageFrontMatter) -> Option<T>,
+        ) -> Vec<(&'a DefaultKey, Option<T>, &'a str)> {
+            section
+                .pages
+                .iter()
+                .map(|k| {
+                    if let Some(page) = pages.get(*k) {
+                        (k, field(&page.meta), page.permalink.as_ref())
+                    } else {
+                        unreachable!("Sorting got an unknown page")
+                    }
+                })
+                .collect()
+        }
+
         let mut updates = HashMap::new();
         for (key, section) in &self.sections {
             let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
                 SortBy::None => continue,
                 SortBy::Date => {
-                    let data = section
-                        .pages
-                        .iter()
-                        .map(|k| {
-                            if let Some(page) = self.pages.get(*k) {
-                                (k, page.meta.datetime, page.permalink.as_ref())
-                            } else {
-                                unreachable!("Sorting got an unknown page")
-                            }
-                        })
-                        .collect();
+                    let data = get_data(section, &self.pages, |meta| meta.datetime);
+
+                    sort_pages_by_date(data)
+                }
+                SortBy::UpdateDate => {
+                    let data = get_data(section, &self.pages, |meta| meta.updated_datetime);
 
                     sort_pages_by_date(data)
                 }
                 SortBy::Title => {
-                    let data = section
-                        .pages
-                        .iter()
-                        .map(|k| {
-                            if let Some(page) = self.pages.get(*k) {
-                                (k, page.meta.title.as_deref(), page.permalink.as_ref())
-                            } else {
-                                unreachable!("Sorting got an unknown page")
-                            }
-                        })
-                        .collect();
+                    let data = get_data(section, &self.pages, |meta| meta.title.as_deref());
 
                     sort_pages_by_title(data)
                 }
                 SortBy::Weight => {
-                    let data = section
-                        .pages
-                        .iter()
-                        .map(|k| {
-                            if let Some(page) = self.pages.get(*k) {
-                                (k, page.meta.weight, page.permalink.as_ref())
-                            } else {
-                                unreachable!("Sorting got an unknown page")
-                            }
-                        })
-                        .collect();
+                    let data = get_data(section, &self.pages, |meta| meta.weight);
 
                     sort_pages_by_weight(data)
                 }
@@ -328,6 +320,10 @@ impl Library {
                         SortBy::Date => {
                             page.earlier = val2;
                             page.later = val1;
+                        }
+                        SortBy::UpdateDate => {
+                            page.earlier_updated = val2;
+                            page.later_updated = val1;
                         }
                         SortBy::Title => {
                             page.title_prev = val1;
