@@ -93,7 +93,7 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     }
 
     if let Some(content) = SITE_CONTENT.read().unwrap().get(&path) {
-        return Ok(in_memory_html(content));
+        return Ok(in_memory_content(&path, content));
     }
 
     // Handle only `GET`/`HEAD` requests
@@ -152,9 +152,19 @@ fn livereload_js() -> Response<Body> {
         .expect("Could not build livereload.js response")
 }
 
-fn in_memory_html(content: &str) -> Response<Body> {
+fn in_memory_content(path: &RelativePathBuf, content: &str) -> Response<Body> {
+    let content_type = match path.extension() {
+        Some(ext) => {
+            match ext {
+                "xml" => "text/xml",
+                "json" => "application/json",
+                _ => "text/html",
+            }
+        },
+        None => "text/html",
+    };
     Response::builder()
-        .header(header::CONTENT_TYPE, "text/html")
+        .header(header::CONTENT_TYPE, content_type)
         .status(StatusCode::OK)
         .body(content.to_owned().into())
         .expect("Could not build HTML response")
