@@ -17,6 +17,8 @@ pub struct CodeBlock<'config> {
 
     /// List of ranges of lines to highlight.
     highlight_lines: Vec<Range>,
+    /// List of ranges of lines to hide.
+    hide_lines: Vec<Range>,
     /// The number of lines in the code block being processed.
     num_lines: usize,
 }
@@ -52,6 +54,7 @@ impl<'config> CodeBlock<'config> {
             theme,
 
             highlight_lines: fence_info.highlight_lines,
+            hide_lines: fence_info.hide_lines,
             num_lines: 0,
         }
     }
@@ -77,6 +80,9 @@ impl<'config> CodeBlock<'config> {
         let hl_lines = self.get_highlighted_lines();
         color_highlighted_lines(&mut highlighted, &hl_lines, hl_background);
 
+        let hide_lines = self.get_hidden_lines();
+        let highlighted = hide_hidden_lines(highlighted, &hide_lines);
+
         styled_line_to_highlighted_html(&highlighted, self.background)
     }
 
@@ -96,6 +102,17 @@ impl<'config> CodeBlock<'config> {
     fn get_highlighted_lines(&self) -> HashSet<usize> {
         let mut lines = HashSet::new();
         for range in &self.highlight_lines {
+            for line in range.from..=min(range.to, self.num_lines) {
+                // Ranges are one-indexed
+                lines.insert(line.saturating_sub(1));
+            }
+        }
+        lines
+    }
+
+    fn get_hidden_lines(&self) -> HashSet<usize> {
+        let mut lines = HashSet::new();
+        for range in &self.hide_lines {
             for line in range.from..=min(range.to, self.num_lines) {
                 // Ranges are one-indexed
                 lines.insert(line.saturating_sub(1));
@@ -195,4 +212,30 @@ fn color_highlighted_lines(data: &mut [(Style, &str)], lines: &HashSet<usize>, b
             current_line += 1;
         }
     }
+}
+
+fn hide_hidden_lines<'a>(
+    data: Vec<(Style, &'a str)>,
+    lines: &HashSet<usize>,
+) -> Vec<(Style, &'a str)> {
+    if lines.is_empty() {
+        return data;
+    }
+
+    let mut current_line = 0;
+
+    let mut to_keep = Vec::new();
+
+    for item in data {
+        if !lines.contains(&current_line) {
+            to_keep.push(item);
+        }
+
+        // We split the lines such that every newline is at the end of an item.
+        if item.1.ends_with('\n') {
+            current_line += 1;
+        }
+    }
+
+    to_keep
 }

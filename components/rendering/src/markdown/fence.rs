@@ -28,16 +28,23 @@ pub struct FenceSettings<'a> {
     pub language: Option<&'a str>,
     pub line_numbers: bool,
     pub highlight_lines: Vec<Range>,
+    pub hide_lines: Vec<Range>,
 }
 impl<'a> FenceSettings<'a> {
     pub fn new(fence_info: &'a str) -> Self {
-        let mut me = Self { language: None, line_numbers: false, highlight_lines: Vec::new() };
+        let mut me = Self {
+            language: None,
+            line_numbers: false,
+            highlight_lines: Vec::new(),
+            hide_lines: Vec::new(),
+        };
 
         for token in FenceIter::new(fence_info) {
             match token {
                 FenceToken::Language(lang) => me.language = Some(lang),
                 FenceToken::EnableLineNumbers => me.line_numbers = true,
                 FenceToken::HighlightLines(lines) => me.highlight_lines.extend(lines),
+                FenceToken::HideLines(lines) => me.hide_lines.extend(lines),
             }
         }
 
@@ -50,6 +57,7 @@ enum FenceToken<'a> {
     Language(&'a str),
     EnableLineNumbers,
     HighlightLines(Vec<Range>),
+    HideLines(Vec<Range>),
 }
 
 struct FenceIter<'a> {
@@ -80,6 +88,15 @@ impl<'a> Iterator for FenceIter<'a> {
                         }
                     }
                     return Some(FenceToken::HighlightLines(ranges));
+                }
+                "hide_lines" => {
+                    let mut ranges = Vec::new();
+                    for range in tok_split.next().unwrap_or("").split(' ') {
+                        if let Some(range) = Range::parse(range) {
+                            ranges.push(range);
+                        }
+                    }
+                    return Some(FenceToken::HideLines(ranges));
                 }
                 lang => {
                     return Some(FenceToken::Language(lang));
