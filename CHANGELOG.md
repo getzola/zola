@@ -25,7 +25,7 @@
 - Add the `base16-aterlierdune-light` syntax highlight theme
 - Improve link checking: less concurrency and try to not overload the servers
 - Allow using POST for `load_data`, along with a body to POST and allow it to fail
-- Add Zig syntax highlighting
+- Add Zig and Protobuf syntax highlighting
 - Footnotes links are now stripped from summaries - they were not linking to anything.
 
 ## 0.13.0 (2021-01-09)

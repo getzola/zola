@@ -113,6 +113,8 @@ Here is a full list of supported languages and their short names:
 - PHP -> ["php", "php3", "php4", "php5", "php7", "phps", "phpt", "phtml"]
 - Plain Text -> ["txt"]
 - PowerShell -> ["ps1", "psd1", "psm1"]
+- Protocol Buffer -> ["proto", "protodevel"]
+- Protocol Buffer (TEXT) -> ["pb.txt", "pbtxt", "proto.text", "prototxt", "textpb"]
 - PureScript -> ["purs"]
 - Python -> ["SConscript", "SConstruct", "Sconstruct", "Snakefile", "bazel", "bzl", "cpy", "gyp", "gypi", "pxd", "pxd.in", "pxi", "pxi.in", "py", "py3", "pyi", "pyw", "pyx", "pyx.in", "rpy", "sconstruct", "vpy", "wscript"]
 - R -> ["R", "Rprofile", "r"]
