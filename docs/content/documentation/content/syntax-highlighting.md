@@ -148,7 +148,6 @@ Here is a full list of supported languages and their short names:
 ```
 
 Note: due to some issues with the JavaScript syntax, the TypeScript syntax will be used instead.
-If 
 
 If you want to highlight a language not on this list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 Alternatively, the `extra_syntaxes` configuration option can be used to add additional syntax files.
@@ -171,3 +170,40 @@ If your site source is laid out as follows:
 ```
 
 you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
+
+## Annotations
+
+You can use additional annotations to customize how code blocks are displayed:
+
+- `linenos` to enable line numbering.
+````md
+
+```rust,linenos
+use highlighter::highlight;
+let code = "...";
+highlight(code);
+```
+
+````
+- `hl_lines` to highlight lines. You must specify a list of ranges of lines to highlight,
+separated by ` `. Ranges are 1-indexed.
+````md
+
+```rust,hl_lines=3
+use highlighter::highlight;
+let code = "...";
+highlight(code);
+```
+
+````
+- `hide_lines` to hide lines. You must specify a list of ranges of lines to hide,
+separated by ` `. Ranges are 1-indexed.
+````md
+
+```rust,hide_lines=1-2
+use highlighter::highlight;
+let code = "...";
+highlight(code);
+```
+
+````
