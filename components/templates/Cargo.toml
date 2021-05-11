@@ -31,3 +31,4 @@ features = ["blocking", "rustls-tls"]
 
 [dev-dependencies]
 mockito = "0.30"
+tempfile = "3"

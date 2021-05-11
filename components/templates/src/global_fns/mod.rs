@@ -4,7 +4,7 @@ use std::{fs, io, result};
 
 use base64::encode as encode_b64;
 use sha2::{digest, Sha256, Sha384, Sha512};
-use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
+use tera::{from_value, to_value, Function as TeraFn, Result, Value};
 
 use config::Config;
 use utils::site::resolve_internal_link;
@@ -13,36 +13,14 @@ use utils::site::resolve_internal_link;
 mod macros;
 
 mod content;
+mod i18n;
 mod images;
 mod load_data;
 
 pub use self::content::{GetPage, GetSection, GetTaxonomy, GetTaxonomyUrl};
+pub use self::i18n::Trans;
 pub use self::images::{GetImageMeta, ResizeImage};
 pub use self::load_data::LoadData;
-
-#[derive(Debug)]
-pub struct Trans {
-    config: Config,
-}
-impl Trans {
-    pub fn new(config: Config) -> Self {
-        Self { config }
-    }
-}
-impl TeraFn for Trans {
-    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let key = required_arg!(String, args.get("key"), "`trans` requires a `key` argument.");
-        let lang = optional_arg!(String, args.get("lang"), "`trans`: `lang` must be a string.")
-            .unwrap_or_else(|| self.config.default_language.clone());
-
-        let term = self
-            .config
-            .get_translation(&lang, &key)
-            .map_err(|e| Error::chain("Failed to retrieve term translation", e))?;
-
-        Ok(to_value(term).unwrap())
-    }
-}
 
 #[derive(Debug)]
 pub struct GetUrl {
@@ -238,49 +216,38 @@ impl TeraFn for GetFileHash {
 
 #[cfg(test)]
 mod tests {
-    use super::{GetFileHash, GetTaxonomy, GetTaxonomyUrl, GetUrl, Trans};
+    use super::{GetFileHash, GetUrl};
 
     use std::collections::HashMap;
-    use std::env::temp_dir;
-    use std::fs::remove_dir_all;
-    use std::path::PathBuf;
-    use std::sync::{Arc, RwLock};
 
-    use lazy_static::lazy_static;
+    use tempfile::{tempdir, TempDir};
+    use tera::{to_value, Function};
 
-    use tera::{to_value, Function, Value};
+    use config::Config;
+    use utils::fs::create_file;
 
-    use config::{Config, Taxonomy as TaxonomyConfig};
-    use library::{Library, Taxonomy, TaxonomyItem};
-    use utils::fs::{create_directory, create_file};
-    use utils::slugs::SlugifyStrategy;
-
-    struct TestContext {
-        static_path: PathBuf,
-    }
-    impl TestContext {
-        fn setup() -> Self {
-            let dir = temp_dir().join("static");
-            create_directory(&dir).expect("Could not create test directory");
-            create_file(&dir.join("app.css"), "// Hello world!")
-                .expect("Could not create test content (app.css)");
-            Self { static_path: dir }
-        }
-    }
-    impl Drop for TestContext {
-        fn drop(&mut self) {
-            remove_dir_all(&self.static_path).expect("Could not free test directory");
-        }
+    fn create_temp_dir() -> TempDir {
+        let dir = tempdir().unwrap();
+        create_file(&dir.path().join("app.css"), "// Hello world!").expect("Failed to create file");
+        dir
     }
 
-    lazy_static! {
-        static ref TEST_CONTEXT: TestContext = TestContext::setup();
-    }
+    const CONFIG_DATA: &str = r#"
+base_url = "https://remplace-par-ton-url.fr"
+default_language = "fr"
+
+[translations]
+title = "Un titre"
+
+[languages.en]
+[languages.en.translations]
+title = "A title"
+"#;
 
     #[test]
     fn can_add_cachebust_to_url() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
@@ -290,7 +257,7 @@ mod tests {
     #[test]
     fn can_add_trailing_slashes() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -300,7 +267,7 @@ mod tests {
     #[test]
     fn can_add_slashes_and_cachebust() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -311,66 +278,16 @@ mod tests {
     #[test]
     fn can_link_to_some_static_file() {
         let config = Config::default();
-        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
     }
 
-    const TRANS_CONFIG: &str = r#"
-base_url = "https://remplace-par-ton-url.fr"
-default_language = "fr"
-
-[translations]
-title = "Un titre"
-
-[languages]
-[languages.en]
-[languages.en.translations]
-title = "A title" "#;
-
-    #[test]
-    fn can_translate_a_string() {
-        let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = Trans::new(config);
-        let mut args = HashMap::new();
-
-        args.insert("key".to_string(), to_value("title").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "Un titre");
-
-        args.insert("lang".to_string(), to_value("en").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "A title");
-
-        args.insert("lang".to_string(), to_value("fr").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "Un titre");
-    }
-
-    #[test]
-    fn error_on_absent_translation_lang() {
-        let mut args = HashMap::new();
-        args.insert("lang".to_string(), to_value("absent").unwrap());
-        args.insert("key".to_string(), to_value("title").unwrap());
-
-        let config = Config::parse(TRANS_CONFIG).unwrap();
-        let error = Trans::new(config).call(&args).unwrap_err();
-        assert_eq!("Failed to retrieve term translation", format!("{}", error));
-    }
-
-    #[test]
-    fn error_on_absent_translation_key() {
-        let mut args = HashMap::new();
-        args.insert("lang".to_string(), to_value("en").unwrap());
-        args.insert("key".to_string(), to_value("absent").unwrap());
-
-        let config = Config::parse(TRANS_CONFIG).unwrap();
-        let error = Trans::new(config).call(&args).unwrap_err();
-        assert_eq!("Failed to retrieve term translation", format!("{}", error));
-    }
-
     #[test]
     fn error_when_language_not_available() {
-        let config = Config::parse(TRANS_CONFIG).unwrap();
-        let static_fn = GetUrl::new(config, HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let static_fn = GetUrl::new(config, HashMap::new(), vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
@@ -383,7 +300,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_url_with_default_language() {
-        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let config = Config::parse(CONFIG_DATA).unwrap();
         let mut permalinks = HashMap::new();
         permalinks.insert(
             "a_section/a_page.md".to_string(),
@@ -393,7 +310,7 @@ title = "A title" "#;
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks, vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetUrl::new(config, permalinks, vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -405,7 +322,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_url_with_other_language() {
-        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let config = Config::parse(CONFIG_DATA).unwrap();
         let mut permalinks = HashMap::new();
         permalinks.insert(
             "a_section/a_page.md".to_string(),
@@ -415,7 +332,7 @@ title = "A title" "#;
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
-        let static_fn = GetUrl::new(config, permalinks, vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetUrl::new(config, permalinks, vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
@@ -427,9 +344,9 @@ title = "A title" "#;
 
     #[test]
     fn can_get_feed_url_with_default_language() {
-        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let config = Config::parse(CONFIG_DATA).unwrap();
         let static_fn =
-            GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+            GetUrl::new(config.clone(), HashMap::new(), vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -438,9 +355,9 @@ title = "A title" "#;
 
     #[test]
     fn can_get_feed_url_with_other_language() {
-        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let config = Config::parse(CONFIG_DATA).unwrap();
         let static_fn =
-            GetUrl::new(config.clone(), HashMap::new(), vec![TEST_CONTEXT.static_path.clone()]);
+            GetUrl::new(config.clone(), HashMap::new(), vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
@@ -449,7 +366,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_file_hash_sha256() {
-        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetFileHash::new(vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -461,7 +378,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_file_hash_sha256_base64() {
-        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetFileHash::new(vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -471,7 +388,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_file_hash_sha384() {
-        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetFileHash::new(vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(
@@ -482,7 +399,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_file_hash_sha384_base64() {
-        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetFileHash::new(vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("base64".to_string(), to_value(true).unwrap());
@@ -494,7 +411,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_file_hash_sha512() {
-        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetFileHash::new(vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -506,7 +423,7 @@ title = "A title" "#;
 
     #[test]
     fn can_get_file_hash_sha512_base64() {
-        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetFileHash::new(vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -519,7 +436,7 @@ title = "A title" "#;
 
     #[test]
     fn error_when_file_not_found_for_hash() {
-        let static_fn = GetFileHash::new(vec![TEST_CONTEXT.static_path.clone()]);
+        let static_fn = GetFileHash::new(vec![create_temp_dir().into_path()]);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("doesnt-exist").unwrap());
         let err = format!("{}", static_fn.call(&args).unwrap_err());
