@@ -2595,6 +2595,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "svg_metadata",
+ "tempfile",
  "tera",
  "toml",
  "url",
