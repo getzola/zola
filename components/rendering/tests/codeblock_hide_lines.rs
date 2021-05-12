@@ -7,14 +7,8 @@ use front_matter::InsertAnchor;
 use rendering::{render_content, RenderContext};
 
 macro_rules! colored_html_line {
-    ( @no $s:expr ) => {{
+    ( $s:expr ) => {{
         let mut result = "<span style=\"color:#c0c5ce;\">".to_string();
-        result.push_str($s);
-        result.push_str("\n</span>");
-        result
-    }};
-    ( @hl $s:expr ) => {{
-        let mut result = "<span style=\"background-color:#65737e30;color:#c0c5ce;\">".to_string();
         result.push_str($s);
         result.push_str("\n</span>");
         result
@@ -22,10 +16,10 @@ macro_rules! colored_html_line {
 }
 
 macro_rules! colored_html {
-    ( $(@$kind:tt $s:expr),* $(,)* ) => {{
+    ( $($s:expr),* $(,)* ) => {{
         let mut result = "<pre style=\"background-color:#2b303b;\">\n<code>".to_string();
         $(
-            result.push_str(colored_html_line!(@$kind $s).as_str());
+            result.push_str(colored_html_line!($s).as_str());
         )*
         result.push_str("</code></pre>");
         result
@@ -51,8 +45,8 @@ fn hide_lines_simple() {
 ```hide_lines=2
 foo
 bar
-bar
 baz
+bat
 ```
     "#,
         &context,
@@ -61,7 +55,7 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @no "foo\nbar\nbaz",
+            "foo\nbaz\nbat",
         )
     );
 }
