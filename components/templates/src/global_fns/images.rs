@@ -4,16 +4,31 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use image::GenericImageView;
+use serde_derive::{Deserialize, Serialize};
 use svg_metadata as svg;
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
 
+#[derive(Debug, Serialize, Deserialize)]
+struct ResizeImageResponse {
+    /// The final URL for that asset
+    url: String,
+    /// The path to the static asset generated
+    static_path: String,
+}
+
 #[derive(Debug)]
 pub struct ResizeImage {
+    /// The base path of the Zola site
+    base_path: PathBuf,
+    search_paths: [PathBuf; 2],
     imageproc: Arc<Mutex<imageproc::Processor>>,
 }
+
 impl ResizeImage {
-    pub fn new(imageproc: Arc<Mutex<imageproc::Processor>>) -> Self {
-        Self { imageproc }
+    pub fn new(base_path: PathBuf, imageproc: Arc<Mutex<imageproc::Processor>>) -> Self {
+        let search_paths =
+            [base_path.join("static").to_path_buf(), base_path.join("content").to_path_buf()];
+        Self { base_path, imageproc, search_paths }
     }
 }
 
@@ -22,7 +37,7 @@ static DEFAULT_FMT: &str = "auto";
 
 impl TeraFn for ResizeImage {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let path = required_arg!(
+        let mut path = required_arg!(
             String,
             args.get("path"),
             "`resize_image` requires a `path` argument with a string value"
@@ -53,45 +68,38 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        if !imageproc.source_exists(&path) {
+        if path.starts_with("@/") {
+            path = path.replace("@/", "content/");
+        }
+
+        let mut file_path = self.base_path.join(&path);
+        let mut file_exists = file_path.exists();
+        if !file_exists {
+            // we need to search in both search folders now
+            for dir in &self.search_paths {
+                let p = dir.join(&path);
+                if p.exists() {
+                    file_path = p;
+                    file_exists = true;
+                    break;
+                }
+            }
+        }
+
+        if !file_exists {
             return Err(format!("`resize_image`: Cannot find path: {}", path).into());
         }
 
-        let imageop = imageproc::ImageOp::from_args(path, &op, width, height, &format, quality)
-            .map_err(|e| format!("`resize_image`: {}", e))?;
-        let url = imageproc.insert(imageop);
+        let imageop =
+            imageproc::ImageOp::from_args(path, file_path, &op, width, height, &format, quality)
+                .map_err(|e| format!("`resize_image`: {}", e))?;
+        let (static_path, url) = imageproc.insert(imageop);
 
-        to_value(url).map_err(|err| err.into())
-    }
-}
-
-#[derive(Debug)]
-pub struct GetImageMeta {
-    content_path: PathBuf,
-}
-
-impl GetImageMeta {
-    pub fn new(content_path: PathBuf) -> Self {
-        Self { content_path }
-    }
-}
-
-impl TeraFn for GetImageMeta {
-    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let path = required_arg!(
-            String,
-            args.get("path"),
-            "`get_image_metadata` requires a `path` argument with a string value"
-        );
-        let src_path = self.content_path.join(&path);
-        if !src_path.exists() {
-            return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
-        }
-        let (height, width) = image_dimensions(&src_path)?;
-        let mut map = tera::Map::new();
-        map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
-        map.insert(String::from("width"), Value::Number(tera::Number::from(width)));
-        Ok(Value::Object(map))
+        to_value(ResizeImageResponse {
+            static_path: static_path.to_string_lossy().into_owned(),
+            url,
+        })
+        .map_err(|err| err.into())
     }
 }
 
@@ -112,9 +120,163 @@ fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
     }
 }
 
+#[derive(Debug)]
+pub struct GetImageMetadata {
+    /// The base path of the Zola site
+    base_path: PathBuf,
+}
+
+impl GetImageMetadata {
+    pub fn new(base_path: PathBuf) -> Self {
+        Self { base_path }
+    }
+}
+
+impl TeraFn for GetImageMetadata {
+    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
+        let mut path = required_arg!(
+            String,
+            args.get("path"),
+            "`get_image_metadata` requires a `path` argument with a string value"
+        );
+        if path.starts_with("@/") {
+            path = path.replace("@/", "content/");
+        }
+        let src_path = self.base_path.join(&path);
+        if !src_path.exists() {
+            return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
+        }
+        let (height, width) = image_dimensions(&src_path)?;
+        let mut map = tera::Map::new();
+        map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
+        map.insert(String::from("width"), Value::Number(tera::Number::from(width)));
+        Ok(Value::Object(map))
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{GetImageMetadata, ResizeImage};
 
-    // TODO
+    use std::collections::HashMap;
+    use std::fs::{copy, create_dir_all};
+
+    use config::Config;
+    use std::sync::{Arc, Mutex};
+    use tempfile::{tempdir, TempDir};
+    use tera::{to_value, Function};
+
+    fn create_dir_with_image() -> TempDir {
+        let dir = tempdir().unwrap();
+        create_dir_all(dir.path().join("content").join("gallery")).unwrap();
+        create_dir_all(dir.path().join("static")).unwrap();
+        copy("gutenberg.jpg", dir.path().join("content").join("gutenberg.jpg")).unwrap();
+        copy("gutenberg.jpg", dir.path().join("content").join("gallery").join("asset.jpg"))
+            .unwrap();
+        copy("gutenberg.jpg", dir.path().join("static").join("gutenberg.jpg")).unwrap();
+        dir
+    }
+
+    // https://github.com/getzola/zola/issues/788
+    // https://github.com/getzola/zola/issues/1035
+    #[test]
+    fn can_resize_image() {
+        let dir = create_dir_with_image();
+        let imageproc = imageproc::Processor::new(dir.path().to_path_buf(), &Config::default());
+
+        let static_fn = ResizeImage::new(dir.path().to_path_buf(), Arc::new(Mutex::new(imageproc)));
+        let mut args = HashMap::new();
+        args.insert("height".to_string(), to_value(40).unwrap());
+        args.insert("width".to_string(), to_value(40).unwrap());
+
+        // hashing is stable based on filename and params so we can compare with hashes
+
+        // 1. resizing an image in static
+        args.insert("path".to_string(), to_value("static/gutenberg.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(
+            data["static_path"],
+            to_value("static/processed_images/e49f5bd23ec5007c00.jpg").unwrap()
+        );
+        assert_eq!(
+            data["url"],
+            to_value("http://a-website.com/processed_images/e49f5bd23ec5007c00.jpg").unwrap()
+        );
+
+        // 2. resizing an image in content with a relative path
+        args.insert("path".to_string(), to_value("content/gutenberg.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(
+            data["static_path"],
+            to_value("static/processed_images/32454a1e0243976c00.jpg").unwrap()
+        );
+        assert_eq!(
+            data["url"],
+            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
+        );
+
+        // 3. resizing an image in content starting with `@/`
+        args.insert("path".to_string(), to_value("@/gutenberg.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(
+            data["static_path"],
+            to_value("static/processed_images/32454a1e0243976c00.jpg").unwrap()
+        );
+        assert_eq!(
+            data["url"],
+            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
+        );
+
+        // 4. resizing an image with a relative path not starting with static or content
+        args.insert("path".to_string(), to_value("gallery/asset.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(
+            data["static_path"],
+            to_value("static/processed_images/c8aaba7b0593a60b00.jpg").unwrap()
+        );
+        assert_eq!(
+            data["url"],
+            to_value("http://a-website.com/processed_images/c8aaba7b0593a60b00.jpg").unwrap()
+        );
+
+        // 5. resizing with an absolute path
+        args.insert("path".to_string(), to_value("/content/gutenberg.jpg").unwrap());
+        assert!(static_fn.call(&args).is_err());
+    }
+
+    // TODO: consider https://github.com/getzola/zola/issues/1161
+    #[test]
+    fn can_get_image_metadata() {
+        let dir = create_dir_with_image();
+
+        let static_fn = GetImageMetadata::new(dir.path().to_path_buf());
+
+        // Let's test a few scenarii
+        let mut args = HashMap::new();
+
+        // 1. a call to something in `static` with a relative path
+        args.insert("path".to_string(), to_value("static/gutenberg.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(data["height"], to_value(380).unwrap());
+        assert_eq!(data["width"], to_value(300).unwrap());
+
+        // 2. a call to something in `static` with an absolute path is not handled currently
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("/static/gutenberg.jpg").unwrap());
+        assert!(static_fn.call(&args).is_err());
+
+        // 3. a call to something in `content` with a relative path
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("content/gutenberg.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(data["height"], to_value(380).unwrap());
+        assert_eq!(data["width"], to_value(300).unwrap());
+
+        // 4. a call to something in `content` with a @/ path corresponds to
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/gutenberg.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(data["height"], to_value(380).unwrap());
+        assert_eq!(data["width"], to_value(300).unwrap());
+    }
 }

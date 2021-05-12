@@ -1,5 +1,5 @@
 use filetime::{set_file_mtime, FileTime};
-use std::fs::{copy, create_dir_all, metadata, read_dir, File};
+use std::fs::{copy, create_dir_all, metadata, File};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -58,27 +58,6 @@ pub fn read_file(path: &Path) -> Result<String> {
     }
 
     Ok(content)
-}
-
-/// Looks into the current folder for the path and see if there's anything that is not a .md
-/// file. Those will be copied next to the rendered .html file
-pub fn find_related_assets(path: &Path) -> Vec<PathBuf> {
-    let mut assets = vec![];
-
-    for entry in read_dir(path).unwrap().filter_map(std::result::Result::ok) {
-        let entry_path = entry.path();
-        if entry_path.is_file() {
-            match entry_path.extension() {
-                Some(e) => match e.to_str() {
-                    Some("md") => continue,
-                    _ => assets.push(entry_path.to_path_buf()),
-                },
-                None => continue,
-            }
-        }
-    }
-
-    assets
 }
 
 /// Copy a file but takes into account where to start the copy as
@@ -204,25 +183,9 @@ mod tests {
     use std::path::PathBuf;
     use std::str::FromStr;
 
-    use tempfile::{tempdir, tempdir_in};
+    use tempfile::tempdir_in;
 
-    use super::{copy_file, find_related_assets};
-
-    #[test]
-    fn can_find_related_assets() {
-        let tmp_dir = tempdir().expect("create temp dir");
-        File::create(tmp_dir.path().join("index.md")).unwrap();
-        File::create(tmp_dir.path().join("example.js")).unwrap();
-        File::create(tmp_dir.path().join("graph.jpg")).unwrap();
-        File::create(tmp_dir.path().join("fail.png")).unwrap();
-
-        let assets = find_related_assets(tmp_dir.path());
-        assert_eq!(assets.len(), 3);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 3);
-        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "example.js").count(), 1);
-        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "graph.jpg").count(), 1);
-        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "fail.png").count(), 1);
-    }
+    use super::copy_file;
 
     #[test]
     fn test_copy_file_timestamp_preserved() {

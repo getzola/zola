@@ -12,14 +12,14 @@ use config::Config;
 use errors::{Error, Result};
 use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
 use rendering::{render_content, Heading, RenderContext};
-use utils::fs::{find_related_assets, read_file};
 use utils::site::get_reading_analytics;
+use utils::slugs::slugify_paths;
 use utils::templates::render_template;
 
 use crate::content::file_info::FileInfo;
-use crate::content::has_anchor;
 use crate::content::ser::SerializingPage;
-use utils::slugs::slugify_paths;
+use crate::content::{find_related_assets, has_anchor};
+use utils::fs::read_file;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
@@ -43,7 +43,7 @@ pub struct Page {
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
     pub assets: Vec<PathBuf>,
-    /// All the non-md files we found next to the .md file as string for use in templates
+    /// All the non-md files we found next to the .md file
     pub serialized_assets: Vec<String>,
     /// The HTML rendered of the page
     pub content: String,
@@ -216,27 +216,7 @@ impl Page {
 
         if page.file.name == "index" {
             let parent_dir = path.parent().unwrap();
-            let assets = find_related_assets(parent_dir);
-
-            if let Some(ref globset) = config.ignored_content_globset {
-                // `find_related_assets` only scans the immediate directory (it is not recursive) so our
-                // filtering only needs to work against the file_name component, not the full suffix. If
-                // `find_related_assets` was changed to also return files in subdirectories, we could
-                // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
-                // against the remaining path. Note that the current behaviour effectively means that
-                // the `ignored_content` setting in the config file is limited to single-file glob
-                // patterns (no "**" patterns).
-                page.assets = assets
-                    .into_iter()
-                    .filter(|path| match path.file_name() {
-                        None => false,
-                        Some(file) => !globset.is_match(file),
-                    })
-                    .collect();
-            } else {
-                page.assets = assets;
-            }
-
+            page.assets = find_related_assets(parent_dir, config);
             page.serialized_assets = page.serialize_assets(&base_path);
         } else {
             page.assets = vec![];
