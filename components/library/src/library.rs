@@ -292,7 +292,9 @@ impl Library {
                     sort_pages_by_date(data)
                 }
                 SortBy::UpdateDate => {
-                    let data = get_data(section, &self.pages, |meta| meta.updated_datetime);
+                    let data = get_data(section, &self.pages, |meta| {
+                        std::cmp::max(meta.datetime, meta.updated_datetime)
+                    });
 
                     sort_pages_by_date(data)
                 }
