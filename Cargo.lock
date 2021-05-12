@@ -1021,6 +1021,7 @@ dependencies = [
 name = "imageproc"
 version = "0.1.0"
 dependencies = [
+ "config",
  "errors",
  "image",
  "lazy_static",
@@ -2591,6 +2592,8 @@ dependencies = [
  "nom-bibtex",
  "rendering",
  "reqwest",
+ "serde",
+ "serde_derive",
  "serde_json",
  "sha2",
  "svg_metadata",

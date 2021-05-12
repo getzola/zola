@@ -85,8 +85,7 @@ impl Site {
 
         let content_path = path.join("content");
         let static_path = path.join("static");
-        let imageproc =
-            imageproc::Processor::new(content_path.clone(), &static_path, &config.base_url);
+        let imageproc = imageproc::Processor::new(path.to_path_buf(), &config);
         let output_path = path.join(config.output_dir.clone());
 
         let site = Site {
@@ -152,9 +151,9 @@ impl Site {
     }
 
     pub fn set_base_url(&mut self, base_url: String) {
-        let mut imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (set_base_url)");
-        imageproc.set_base_url(&base_url);
         self.config.base_url = base_url;
+        let mut imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (set_base_url)");
+        imageproc.set_base_url(&self.config);
     }
 
     pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {

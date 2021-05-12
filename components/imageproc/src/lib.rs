@@ -11,10 +11,12 @@ use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
 
+use config::Config;
 use errors::{Error, Result};
 use utils::fs as ufs;
 
 static RESIZED_SUBDIR: &str = "processed_images";
+const DEFAULT_Q_JPG: u8 = 75;
 
 lazy_static! {
     pub static ref RESIZED_FILENAME: Regex =
@@ -51,14 +53,12 @@ impl ResizeOp {
         match op {
             "fit_width" => {
                 if width.is_none() {
-                    return Err("op=\"fit_width\" requires a `width` argument".to_string().into());
+                    return Err("op=\"fit_width\" requires a `width` argument".into());
                 }
             }
             "fit_height" => {
                 if height.is_none() {
-                    return Err("op=\"fit_height\" requires a `height` argument"
-                        .to_string()
-                        .into());
+                    return Err("op=\"fit_height\" requires a `height` argument".into());
                 }
             }
             "scale" | "fit" | "fill" => {
@@ -132,8 +132,6 @@ impl Hash for ResizeOp {
         }
     }
 }
-const DEFAULT_Q_JPG: u8 = 75;
-
 /// Thumbnail image format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {
@@ -215,6 +213,7 @@ impl Hash for Format {
 #[derive(Debug, PartialEq, Eq)]
 pub struct ImageOp {
     source: String,
+    input_path: PathBuf,
     op: ResizeOp,
     format: Format,
     /// Hash of the above parameters
@@ -227,18 +226,9 @@ pub struct ImageOp {
 }
 
 impl ImageOp {
-    pub fn new(source: String, op: ResizeOp, format: Format) -> ImageOp {
-        let mut hasher = DefaultHasher::new();
-        hasher.write(source.as_ref());
-        op.hash(&mut hasher);
-        format.hash(&mut hasher);
-        let hash = hasher.finish();
-
-        ImageOp { source, op, format, hash, collision_id: 0 }
-    }
-
     pub fn from_args(
         source: String,
+        input_path: PathBuf,
         op: &str,
         width: Option<u32>,
         height: Option<u32>,
@@ -247,18 +237,24 @@ impl ImageOp {
     ) -> Result<ImageOp> {
         let op = ResizeOp::from_args(op, width, height)?;
         let format = Format::from_args(&source, format, quality)?;
-        Ok(Self::new(source, op, format))
+
+        let mut hasher = DefaultHasher::new();
+        hasher.write(source.as_ref());
+        op.hash(&mut hasher);
+        format.hash(&mut hasher);
+        let hash = hasher.finish();
+
+        Ok(ImageOp { source, input_path, op, format, hash, collision_id: 0 })
     }
 
-    fn perform(&self, content_path: &Path, target_path: &Path) -> Result<()> {
+    fn perform(&self, target_path: &Path) -> Result<()> {
         use ResizeOp::*;
 
-        let src_path = content_path.join(&self.source);
-        if !ufs::file_stale(&src_path, target_path) {
+        if !ufs::file_stale(&self.input_path, target_path) {
             return Ok(());
         }
 
-        let mut img = image::open(&src_path)?;
+        let mut img = image::open(&self.input_path)?;
         let (img_w, img_h) = img.dimensions();
 
         const RESIZE_FILTER: FilterType = FilterType::Lanczos3;
@@ -266,8 +262,8 @@ impl ImageOp {
 
         let img = match self.op {
             Scale(w, h) => img.resize_exact(w, h, RESIZE_FILTER),
-            FitWidth(w) => img.resize(w, u32::max_value(), RESIZE_FILTER),
-            FitHeight(h) => img.resize(u32::max_value(), h, RESIZE_FILTER),
+            FitWidth(w) => img.resize(w, u32::MAX, RESIZE_FILTER),
+            FitHeight(h) => img.resize(u32::MAX, h, RESIZE_FILTER),
             Fit(w, h) => {
                 if img_w > w || img_h > h {
                     img.resize(w, h, RESIZE_FILTER)
@@ -328,14 +324,15 @@ impl ImageOp {
     }
 }
 
-/// A strcture into which image operations can be enqueued and then performed.
+/// A struct into which image operations can be enqueued and then performed.
 /// All output is written in a subdirectory in `static_path`,
 /// taking care of file stale status based on timestamps and possible hash collisions.
 #[derive(Debug)]
 pub struct Processor {
-    content_path: PathBuf,
-    resized_path: PathBuf,
-    resized_url: String,
+    /// The base path of the Zola site
+    base_path: PathBuf,
+    base_url: String,
+    output_dir: PathBuf,
     /// A map of a ImageOps by their stored hash.
     /// Note that this cannot be a HashSet, because hashset handles collisions and we don't want that,
     /// we need to be aware of and handle collisions ourselves.
@@ -345,30 +342,18 @@ pub struct Processor {
 }
 
 impl Processor {
-    pub fn new(content_path: PathBuf, static_path: &Path, base_url: &str) -> Processor {
+    pub fn new(base_path: PathBuf, config: &Config) -> Processor {
         Processor {
-            content_path,
-            resized_path: static_path.join(RESIZED_SUBDIR),
-            resized_url: Self::resized_url(base_url),
+            output_dir: base_path.join("static").join(RESIZED_SUBDIR),
+            base_url: config.make_permalink(RESIZED_SUBDIR),
+            base_path,
             img_ops: HashMap::new(),
             img_ops_collisions: Vec::new(),
         }
     }
 
-    fn resized_url(base_url: &str) -> String {
-        if base_url.ends_with('/') {
-            format!("{}{}", base_url, RESIZED_SUBDIR)
-        } else {
-            format!("{}/{}", base_url, RESIZED_SUBDIR)
-        }
-    }
-
-    pub fn set_base_url(&mut self, base_url: &str) {
-        self.resized_url = Self::resized_url(base_url);
-    }
-
-    pub fn source_exists(&self, source: &str) -> bool {
-        self.content_path.join(source).exists()
+    pub fn set_base_url(&mut self, config: &Config) {
+        self.base_url = config.make_permalink(RESIZED_SUBDIR);
     }
 
     pub fn num_img_ops(&self) -> usize {
@@ -427,25 +412,25 @@ impl Processor {
         format!("{:016x}{:02x}.{}", hash, collision_id, format.extension())
     }
 
-    fn op_url(&self, hash: u64, collision_id: u32, format: Format) -> String {
-        format!("{}/{}", &self.resized_url, Self::op_filename(hash, collision_id, format))
-    }
-
-    pub fn insert(&mut self, img_op: ImageOp) -> String {
+    /// Adds the given operation to the queue but do not process it immediately.
+    /// Returns (path in static folder, final URL).
+    pub fn insert(&mut self, img_op: ImageOp) -> (PathBuf, String) {
         let hash = img_op.hash;
         let format = img_op.format;
         let collision_id = self.insert_with_collisions(img_op);
-        self.op_url(hash, collision_id, format)
+        let filename = Self::op_filename(hash, collision_id, format);
+        let url = format!("{}{}", self.base_url, filename);
+        (Path::new("static").join(RESIZED_SUBDIR).join(filename), url)
     }
 
     pub fn prune(&self) -> Result<()> {
         // Do not create folders if they don't exist
-        if !self.resized_path.exists() {
+        if !self.output_dir.exists() {
             return Ok(());
         }
 
-        ufs::ensure_directory_exists(&self.resized_path)?;
-        let entries = fs::read_dir(&self.resized_path)?;
+        ufs::ensure_directory_exists(&self.output_dir)?;
+        let entries = fs::read_dir(&self.output_dir)?;
         for entry in entries {
             let entry_path = entry?.path();
             if entry_path.is_file() {
@@ -466,15 +451,15 @@ impl Processor {
 
     pub fn do_process(&mut self) -> Result<()> {
         if !self.img_ops.is_empty() {
-            ufs::ensure_directory_exists(&self.resized_path)?;
+            ufs::ensure_directory_exists(&self.output_dir)?;
         }
 
         self.img_ops
             .par_iter()
             .map(|(hash, op)| {
                 let target =
-                    self.resized_path.join(Self::op_filename(*hash, op.collision_id, op.format));
-                op.perform(&self.content_path, &target)
+                    self.output_dir.join(Self::op_filename(*hash, op.collision_id, op.format));
+                op.perform(&target)
                     .map_err(|e| Error::chain(format!("Failed to process image: {}", op.source), e))
             })
             .collect::<Result<()>>()

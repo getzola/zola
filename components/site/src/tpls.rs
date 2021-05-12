@@ -21,11 +21,13 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             vec![site.static_path.clone(), site.output_path.clone(), site.content_path.clone()],
         ),
     );
-    site.tera
-        .register_function("resize_image", global_fns::ResizeImage::new(site.imageproc.clone()));
+    site.tera.register_function(
+        "resize_image",
+        global_fns::ResizeImage::new(site.base_path.clone(), site.imageproc.clone()),
+    );
     site.tera.register_function(
         "get_image_metadata",
-        global_fns::GetImageMeta::new(site.content_path.clone()),
+        global_fns::GetImageMetadata::new(site.base_path.clone()),
     );
     site.tera.register_function("load_data", global_fns::LoadData::new(site.base_path.clone()));
     site.tera.register_function("trans", global_fns::Trans::new(site.config.clone()));

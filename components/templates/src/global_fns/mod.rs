@@ -19,7 +19,7 @@ mod load_data;
 
 pub use self::content::{GetPage, GetSection, GetTaxonomy, GetTaxonomyUrl};
 pub use self::i18n::Trans;
-pub use self::images::{GetImageMeta, ResizeImage};
+pub use self::images::{GetImageMetadata, ResizeImage};
 pub use self::load_data::LoadData;
 
 #[derive(Debug)]
