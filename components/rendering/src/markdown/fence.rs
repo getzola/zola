@@ -67,6 +67,16 @@ impl<'a> FenceIter<'a> {
     fn new(fence_info: &'a str) -> Self {
         Self { split: fence_info.split(',') }
     }
+
+    fn parse_ranges(token: Option<&str>) -> Vec<Range> {
+        let mut ranges = Vec::new();
+        for range in token.unwrap_or("").split(' ') {
+            if let Some(range) = Range::parse(range) {
+                ranges.push(range);
+            }
+        }
+        ranges
+    }
 }
 
 impl<'a> Iterator for FenceIter<'a> {
@@ -81,21 +91,11 @@ impl<'a> Iterator for FenceIter<'a> {
                 "" => continue,
                 "linenos" => return Some(FenceToken::EnableLineNumbers),
                 "hl_lines" => {
-                    let mut ranges = Vec::new();
-                    for range in tok_split.next().unwrap_or("").split(' ') {
-                        if let Some(range) = Range::parse(range) {
-                            ranges.push(range);
-                        }
-                    }
+                    let ranges = Self::parse_ranges(tok_split.next());
                     return Some(FenceToken::HighlightLines(ranges));
                 }
                 "hide_lines" => {
-                    let mut ranges = Vec::new();
-                    for range in tok_split.next().unwrap_or("").split(' ') {
-                        if let Some(range) = Range::parse(range) {
-                            ranges.push(range);
-                        }
-                    }
+                    let ranges = Self::parse_ranges(tok_split.next());
                     return Some(FenceToken::HideLines(ranges));
                 }
                 lang => {

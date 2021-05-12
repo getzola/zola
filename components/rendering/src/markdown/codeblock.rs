@@ -100,19 +100,16 @@ impl<'config> CodeBlock<'config> {
     }
 
     fn get_highlighted_lines(&self) -> HashSet<usize> {
-        let mut lines = HashSet::new();
-        for range in &self.highlight_lines {
-            for line in range.from..=min(range.to, self.num_lines) {
-                // Ranges are one-indexed
-                lines.insert(line.saturating_sub(1));
-            }
-        }
-        lines
+        self.ranges_to_lines(&self.highlight_lines)
     }
 
     fn get_hidden_lines(&self) -> HashSet<usize> {
+        self.ranges_to_lines(&self.hide_lines)
+    }
+
+    fn ranges_to_lines(&self, range: &Vec<Range>) -> HashSet<usize> {
         let mut lines = HashSet::new();
-        for range in &self.hide_lines {
+        for range in range {
             for line in range.from..=min(range.to, self.num_lines) {
                 // Ranges are one-indexed
                 lines.insert(line.saturating_sub(1));
