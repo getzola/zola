@@ -1,5 +1,6 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{fs, io, result};
 
 use base64::encode as encode_b64;
@@ -21,6 +22,40 @@ pub use self::content::{GetPage, GetSection, GetTaxonomy, GetTaxonomyUrl};
 pub use self::i18n::Trans;
 pub use self::images::{GetImageMetadata, ResizeImage};
 pub use self::load_data::LoadData;
+
+/// This is used by a few Tera functions to search for files on the filesystem.
+/// This does try to find the file in 3 different spots:
+/// 1. base_path + path
+/// 2. base_path + static + path
+/// 3. base_path + content + path
+pub fn search_for_file(base_path: &Path, path: &str) -> Option<PathBuf> {
+    let search_paths = [base_path.join("static"), base_path.join("content")];
+    let actual_path = if path.starts_with("@/") {
+        Cow::Owned(path.replace("@/", "content/"))
+    } else {
+        Cow::Borrowed(path)
+    };
+    let mut file_path = base_path.join(&*actual_path);
+    let mut file_exists = file_path.exists();
+
+    if !file_exists {
+        // we need to search in both search folders now
+        for dir in &search_paths {
+            let p = dir.join(&*actual_path);
+            if p.exists() {
+                file_path = p;
+                file_exists = true;
+                break;
+            }
+        }
+    }
+
+    if file_exists {
+        Some(file_path)
+    } else {
+        None
+    }
+}
 
 #[derive(Debug)]
 pub struct GetUrl {
@@ -77,7 +112,7 @@ where
     let mut hasher = D::new();
     io::copy(&mut file, &mut hasher)?;
     if base64 {
-        Ok(format!("{}", encode_b64(hasher.finalize())))
+        Ok(encode_b64(hasher.finalize()))
     } else {
         Ok(format!("{:x}", hasher.finalize()))
     }
