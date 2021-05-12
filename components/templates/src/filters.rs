@@ -23,7 +23,7 @@ impl MarkdownFilter {
         config: Config,
         permalinks: HashMap<String, String>,
     ) -> TeraResult<Self> {
-        let tera = load_tera(&path, &config).map_err(|err| tera::Error::msg(err))?;
+        let tera = load_tera(&path, &config).map_err(tera::Error::msg)?;
         Ok(Self { config, permalinks, tera })
     }
 }

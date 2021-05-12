@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::ffi::OsStr;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use crate::global_fns::search_for_file;
 use image::GenericImageView;
 use serde_derive::{Deserialize, Serialize};
 use svg_metadata as svg;
@@ -20,15 +21,12 @@ struct ResizeImageResponse {
 pub struct ResizeImage {
     /// The base path of the Zola site
     base_path: PathBuf,
-    search_paths: [PathBuf; 2],
     imageproc: Arc<Mutex<imageproc::Processor>>,
 }
 
 impl ResizeImage {
     pub fn new(base_path: PathBuf, imageproc: Arc<Mutex<imageproc::Processor>>) -> Self {
-        let search_paths =
-            [base_path.join("static").to_path_buf(), base_path.join("content").to_path_buf()];
-        Self { base_path, imageproc, search_paths }
+        Self { base_path, imageproc }
     }
 }
 
@@ -37,7 +35,7 @@ static DEFAULT_FMT: &str = "auto";
 
 impl TeraFn for ResizeImage {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let mut path = required_arg!(
+        let path = required_arg!(
             String,
             args.get("path"),
             "`resize_image` requires a `path` argument with a string value"
@@ -68,27 +66,12 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        if path.starts_with("@/") {
-            path = path.replace("@/", "content/");
-        }
-
-        let mut file_path = self.base_path.join(&path);
-        let mut file_exists = file_path.exists();
-        if !file_exists {
-            // we need to search in both search folders now
-            for dir in &self.search_paths {
-                let p = dir.join(&path);
-                if p.exists() {
-                    file_path = p;
-                    file_exists = true;
-                    break;
-                }
+        let file_path = match search_for_file(&self.base_path, &path) {
+            Some(f) => f,
+            None => {
+                return Err(format!("`resize_image`: Cannot find path: {}", path).into());
             }
-        }
-
-        if !file_exists {
-            return Err(format!("`resize_image`: Cannot find path: {}", path).into());
-        }
+        };
 
         let imageop =
             imageproc::ImageOp::from_args(path, file_path, &op, width, height, &format, quality)
@@ -104,7 +87,7 @@ impl TeraFn for ResizeImage {
 }
 
 // Try to read the image dimensions for a given image
-fn image_dimensions(path: &PathBuf) -> Result<(u32, u32)> {
+fn image_dimensions(path: &Path) -> Result<(u32, u32)> {
     if let Some("svg") = path.extension().and_then(OsStr::to_str) {
         let img = svg::Metadata::parse_file(&path)
             .map_err(|e| Error::chain(format!("Failed to process SVG: {}", path.display()), e))?;
@@ -134,18 +117,17 @@ impl GetImageMetadata {
 
 impl TeraFn for GetImageMetadata {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let mut path = required_arg!(
+        let path = required_arg!(
             String,
             args.get("path"),
             "`get_image_metadata` requires a `path` argument with a string value"
         );
-        if path.starts_with("@/") {
-            path = path.replace("@/", "content/");
-        }
-        let src_path = self.base_path.join(&path);
-        if !src_path.exists() {
-            return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
-        }
+        let src_path = match search_for_file(&self.base_path, &path) {
+            Some(f) => f,
+            None => {
+                return Err(format!("`resize_image`: Cannot find path: {}", path).into());
+            }
+        };
         let (height, width) = image_dimensions(&src_path)?;
         let mut map = tera::Map::new();
         map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
@@ -220,11 +202,11 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value("static/processed_images/32454a1e0243976c00.jpg").unwrap()
+            to_value("static/processed_images/074e171855ee541800.jpg").unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/074e171855ee541800.jpg").unwrap()
         );
 
         // 4. resizing an image with a relative path not starting with static or content
