@@ -1,20 +1,19 @@
+use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
+use std::sync::{Arc, Mutex};
+
+use csv::Reader;
+use reqwest::header::{HeaderValue, CONTENT_TYPE};
+use reqwest::{blocking::Client, header};
+use tera::{from_value, to_value, Error, Function as TeraFn, Map, Result, Value};
+use url::Url;
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, is_path_in_directory, read_file};
 
-use reqwest::header::{HeaderValue, CONTENT_TYPE};
-use reqwest::{blocking::Client, header};
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-use std::str::FromStr;
-use url::Url;
-
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-
-use crate::global_fns::search_for_file;
-use csv::Reader;
-use std::collections::HashMap;
-use tera::{from_value, to_value, Error, Function as TeraFn, Map, Result, Value};
+use crate::global_fns::helpers::search_for_file;
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path` or `url` argument";
@@ -73,7 +72,7 @@ impl OutputFormat {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 enum DataSource {
     Url(Url),
     Path(PathBuf),
@@ -88,7 +87,7 @@ impl DataSource {
     fn from_args(
         path_arg: Option<String>,
         url_arg: Option<String>,
-        base_path: &PathBuf,
+        base_path: &Path,
     ) -> Result<Option<Self>> {
         if path_arg.is_some() && url_arg.is_some() {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
@@ -104,7 +103,7 @@ impl DataSource {
         if let Some(url) = url_arg {
             return Url::parse(&url)
                 .map(DataSource::Url)
-                .map(|x| Some(x))
+                .map(Some)
                 .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
         }
 
@@ -140,7 +139,7 @@ impl Hash for DataSource {
     }
 }
 
-fn read_local_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
+fn read_local_data_file(base_path: &Path, full_path: PathBuf) -> Result<String> {
     if !is_path_in_directory(&base_path, &full_path)
         .map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))?
     {
@@ -274,8 +273,8 @@ impl TeraFn for LoadData {
                         let mut resp = response_client
                             .post(url.as_str())
                             .header(header::ACCEPT, file_format.as_accept_header());
-                        match post_content_type {
-                            Some(content_type) => match HeaderValue::from_str(&content_type) {
+                        if let Some(content_type) = post_content_type {
+                            match HeaderValue::from_str(&content_type) {
                                 Ok(c) => {
                                     resp = resp.header(CONTENT_TYPE, c);
                                 }
@@ -286,9 +285,8 @@ impl TeraFn for LoadData {
                                     )
                                     .into());
                                 }
-                            },
-                            _ => {}
-                        };
+                            }
+                        }
                         if let Some(body) = post_body_arg {
                             resp = resp.body(body);
                         }

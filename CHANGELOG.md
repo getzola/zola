@@ -5,7 +5,9 @@
 ### Breaking
 
 - Newlines are now required after the closing `+++` of front-matter
-- `resize_image` now returns a map: `{url, static_path}` instead of just the URL so you can follow up with other functions  
+- `resize_image` now returns a map: `{url, static_path}` instead of just the URL so you can follow up with other functions
+- `get_file_hash` now has the `base64` option set to `true` by default (from `false`) since it's mainly used for integrity hashes which are base64  
+- `get_url` does not automatically strip leading `/` from paths anymore  
 - i18n rework: languages now have their sections in `config.toml` to set up all their options
   1. taxonomies don't have a `lang` anymore in the config, you need to declare them in their respective language section
   2. the `config` variable in templates has been changed and is now a stripped down language aware version of the previous `config`

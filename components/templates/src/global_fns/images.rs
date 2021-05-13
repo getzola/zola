@@ -3,11 +3,12 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use crate::global_fns::search_for_file;
 use image::GenericImageView;
 use serde_derive::{Deserialize, Serialize};
 use svg_metadata as svg;
 use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
+
+use crate::global_fns::helpers::search_for_file;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ResizeImageResponse {
@@ -69,7 +70,7 @@ impl TeraFn for ResizeImage {
         let file_path = match search_for_file(&self.base_path, &path) {
             Some(f) => f,
             None => {
-                return Err(format!("`resize_image`: Cannot find path: {}", path).into());
+                return Err(format!("`resize_image`: Cannot find file: {}", path).into());
             }
         };
 
