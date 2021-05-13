@@ -16,9 +16,9 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     site.tera.register_function(
         "get_url",
         global_fns::GetUrl::new(
+            site.base_path.clone(),
             site.config.clone(),
             site.permalinks.clone(),
-            vec![site.static_path.clone(), site.output_path.clone(), site.content_path.clone()],
         ),
     );
     site.tera.register_function(
@@ -39,14 +39,8 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.config.slugify.taxonomies,
         ),
     );
-    site.tera.register_function(
-        "get_file_hash",
-        global_fns::GetFileHash::new(vec![
-            site.static_path.clone(),
-            site.output_path.clone(),
-            site.content_path.clone(),
-        ]),
-    );
+    site.tera
+        .register_function("get_file_hash", global_fns::GetFileHash::new(site.base_path.clone()));
 
     Ok(())
 }
