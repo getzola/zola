@@ -319,28 +319,38 @@ impl Library {
         }
 
         for (key, (sorted, cannot_be_sorted, sort_by)) in updates {
-            // Find sibling between sorted pages first
-            let with_siblings = find_siblings(&sorted);
+            let section_is_transparent = if let Some(section) = self.sections.get(key) {
+                section.meta.transparent
+            } else {
+                false
+            };
 
-            for (k2, val1, val2) in with_siblings {
-                if let Some(page) = self.pages.get_mut(k2) {
-                    match sort_by {
-                        SortBy::Date => {
-                            page.earlier = val2;
-                            page.later = val1;
+            if !section_is_transparent {
+                // Find sibling between sorted pages first
+                let with_siblings = find_siblings(&sorted);
+
+                for (k2, val1, val2) in with_siblings {
+                    if let Some(page) = self.pages.get_mut(k2) {
+                        match sort_by {
+                            SortBy::Date => {
+                                page.earlier = val2;
+                                page.later = val1;
+                            }
+                            SortBy::Title => {
+                                page.title_prev = val1;
+                                page.title_next = val2;
+                            }
+                            SortBy::Weight => {
+                                page.lighter = val1;
+                                page.heavier = val2;
+                            }
+                            SortBy::None => {
+                                unreachable!("Impossible to find siblings in SortBy::None")
+                            }
                         }
-                        SortBy::Title => {
-                            page.title_prev = val1;
-                            page.title_next = val2;
-                        }
-                        SortBy::Weight => {
-                            page.lighter = val1;
-                            page.heavier = val2;
-                        }
-                        SortBy::None => unreachable!("Impossible to find siblings in SortBy::None"),
+                    } else {
+                        unreachable!("Sorting got an unknown page")
                     }
-                } else {
-                    unreachable!("Sorting got an unknown page")
                 }
             }
 
