@@ -90,6 +90,8 @@ pub struct SerializingPage<'a> {
     lang: &'a str,
     lighter: Option<Box<SerializingPage<'a>>>,
     heavier: Option<Box<SerializingPage<'a>>>,
+    earlier_updated: Option<Box<SerializingPage<'a>>>,
+    later_updated: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
     later: Option<Box<SerializingPage<'a>>>,
     title_prev: Option<Box<SerializingPage<'a>>>,
@@ -114,6 +116,12 @@ impl<'a> SerializingPage<'a> {
             .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
         let heavier = page
             .heavier
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let earlier_updated = page
+            .earlier_updated
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let later_updated = page
+            .later_updated
             .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
         let earlier = page
             .earlier
@@ -161,6 +169,8 @@ impl<'a> SerializingPage<'a> {
             lang: &page.lang,
             lighter,
             heavier,
+            earlier_updated,
+            later_updated,
             earlier,
             later,
             title_prev,
@@ -225,6 +235,8 @@ impl<'a> SerializingPage<'a> {
             lang: &page.lang,
             lighter: None,
             heavier: None,
+            earlier_updated: None,
+            later_updated: None,
             earlier: None,
             later: None,
             title_prev: None,

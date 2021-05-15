@@ -60,6 +60,10 @@ pub struct Page {
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
     pub summary: Option<String>,
+    /// The earlier updated page, for pages sorted by updated date
+    pub earlier_updated: Option<DefaultKey>,
+    /// The later updated page, for pages sorted by updated date
+    pub later_updated: Option<DefaultKey>,
     /// The earlier page, for pages sorted by date
     pub earlier: Option<DefaultKey>,
     /// The later page, for pages sorted by date

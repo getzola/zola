@@ -48,6 +48,8 @@ impl RawFrontMatter<'_> {
 pub enum SortBy {
     /// Most recent to oldest
     Date,
+    /// Most recent to oldest
+    UpdateDate,
     /// Sort by title
     Title,
     /// Lower weight comes first
