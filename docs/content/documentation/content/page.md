@@ -47,17 +47,17 @@ If you want URLs containing non-ASCII characters, `slugify.paths` needs to be se
 
 The output path for the page will first be read from the `slug` key in the page's frontmatter.
 
-**Example:** (file `content/zines/mlf-kurdistan.md`)
+**Example:** (file `content/yazilar/ornek.md`)
 
 ```
 +++
-title = "Le mouvement des Femmes Libres, à la tête de la libération kurde"
-slug = "femmes-libres-libération-kurde"
+title = "Örnek bir blog yazısı"
+slug = "ornek-bir-blog-yazisi"
 +++
 This is my article.
 ```
 
-This frontmatter will output the article to `[base_url]/zines/femmes-libres-libération-kurde` with `slugify.paths` set to `"safe"` or `"off"`, and to `[base_url]/zines/femmes-libres-liberation-kurde` with the default value for `slugify.paths` of `"on"`.
+This frontmatter will output the article to `[base_url]/yazilar/ornek` with `slugify.paths` set to `"safe"` or `"off"`, and to `[base_url]/yazilar/ornek-bir-blog-yazisi` with the default value for `slugify.paths` of `"on"`.
 
 ### Path from filename
 
