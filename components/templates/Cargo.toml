@@ -16,6 +16,7 @@ sha2 = "0.9"
 url = "2"
 nom-bibtex = "0.3"
 svg_metadata = "0.4.1"
+num-format = "0.4"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

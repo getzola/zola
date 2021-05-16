@@ -6,7 +6,10 @@ use std::path::PathBuf;
 use base64::{decode, encode};
 use config::Config;
 use rendering::{render_content, RenderContext};
-use tera::{to_value, try_get_value, Filter as TeraFilter, Result as TeraResult, Tera, Value};
+use tera::{
+    to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
+    Value,
+};
 
 use crate::load_tera;
 
@@ -72,13 +75,32 @@ pub fn base64_decode<S: BuildHasher>(
     Ok(to_value(&String::from_utf8(decode(s.as_bytes()).unwrap()).unwrap()).unwrap())
 }
 
+pub fn num_format(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+    use num_format::{Locale, ToFormattedString};
+
+    let num = try_get_value!("num_format", "value", i64, value);
+
+    let locale = match args.get("locale") {
+        Some(locale) => try_get_value!("num_format", "locale", String, locale),
+        None => "en".to_string(),
+    };
+    let locale = Locale::from_name(&locale).map_err(|_| {
+        TeraError::msg(format!(
+            "Filter `num_format` was called with an invalid `locale` argument: `{}`.",
+            locale
+        ))
+    })?;
+
+    Ok(to_value(num.to_formatted_string(&locale)).unwrap())
+}
+
 #[cfg(test)]
 mod tests {
     use std::{collections::HashMap, path::PathBuf};
 
     use tera::{to_value, Filter};
 
-    use super::{base64_decode, base64_encode, MarkdownFilter};
+    use super::{base64_decode, base64_encode, num_format, MarkdownFilter};
     use config::Config;
 
     #[test]
@@ -197,6 +219,43 @@ mod tests {
         for (input, expected) in tests {
             let args = HashMap::new();
             let result = base64_decode(&to_value(input).unwrap(), &args);
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), to_value(expected).unwrap());
+        }
+    }
+
+    #[test]
+    fn num_format_filter() {
+        let tests = vec![
+            (100, "100"),
+            (1_000, "1,000"),
+            (10_000, "10,000"),
+            (100_000, "100,000"),
+            (1_000_000, "1,000,000"),
+        ];
+
+        for (input, expected) in tests {
+            let args = HashMap::new();
+            let result = num_format(&to_value(input).unwrap(), &args);
+            let result = dbg!(result);
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), to_value(expected).unwrap());
+        }
+    }
+
+    #[test]
+    fn num_format_filter_with_locale() {
+        let tests = vec![
+            ("en", 1_000_000, "1,000,000"),
+            ("en-IN", 1_000_000, "10,00,000"),
+            ("fr", 1_000_000, "1\u{202f}000\u{202f}000"),
+        ];
+
+        for (locale, input, expected) in tests {
+            let mut args = HashMap::new();
+            args.insert("locale".to_string(), to_value(locale).unwrap());
+            let result = num_format(&to_value(input).unwrap(), &args);
+            let result = dbg!(result);
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), to_value(expected).unwrap());
         }
