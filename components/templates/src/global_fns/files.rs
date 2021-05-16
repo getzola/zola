@@ -2,13 +2,12 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{fs, io, result};
 
+use crate::global_fns::helpers::search_for_file;
 use base64::encode as encode_b64;
+use config::Config;
 use sha2::{digest, Sha256, Sha384, Sha512};
 use tera::{from_value, to_value, Function as TeraFn, Result, Value};
-use config::Config;
 use utils::site::resolve_internal_link;
-use crate::global_fns::helpers::search_for_file;
-
 
 fn compute_file_hash<D: digest::Digest>(
     mut file: fs::File,

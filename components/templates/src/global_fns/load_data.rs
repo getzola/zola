@@ -610,21 +610,22 @@ mod tests {
 
         let static_fn = LoadData::new(dir.path().to_path_buf());
         let mut args = HashMap::new();
+        let val = if cfg!(windows) { ".hello {}\r\n" } else { ".hello {}\n" };
 
         // 1. relative path in `static`
         args.insert("path".to_string(), to_value("static/test.css").unwrap());
         let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
-        assert_eq!(data, ".hello {}\n");
+        assert_eq!(data, val);
 
         // 2. relative path in `content`
         args.insert("path".to_string(), to_value("content/test.css").unwrap());
         let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
-        assert_eq!(data, ".hello {}\n");
+        assert_eq!(data, val);
 
         // 3. path starting with @/
         args.insert("path".to_string(), to_value("@/test.css").unwrap());
         let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
-        assert_eq!(data, ".hello {}\n");
+        assert_eq!(data, val);
 
         // 4. absolute path does not work
         args.insert("path".to_string(), to_value("/test.css").unwrap());

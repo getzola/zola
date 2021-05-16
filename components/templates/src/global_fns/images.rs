@@ -145,6 +145,7 @@ mod tests {
     use std::fs::{copy, create_dir_all};
 
     use config::Config;
+    use std::path::Path;
     use std::sync::{Arc, Mutex};
     use tempfile::{tempdir, TempDir};
     use tera::{to_value, Function};
@@ -177,9 +178,11 @@ mod tests {
         // 1. resizing an image in static
         args.insert("path".to_string(), to_value("static/gutenberg.jpg").unwrap());
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        let static_path = Path::new("static").join("processed_images");
+
         assert_eq!(
             data["static_path"],
-            to_value("static/processed_images/e49f5bd23ec5007c00.jpg").unwrap()
+            to_value(&format!("{}", static_path.join("e49f5bd23ec5007c00.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
@@ -191,7 +194,7 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value("static/processed_images/32454a1e0243976c00.jpg").unwrap()
+            to_value(&format!("{}", static_path.join("32454a1e0243976c00.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
@@ -203,7 +206,7 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value("static/processed_images/074e171855ee541800.jpg").unwrap()
+            to_value(&format!("{}", static_path.join("074e171855ee541800.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
@@ -215,7 +218,7 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value("static/processed_images/c8aaba7b0593a60b00.jpg").unwrap()
+            to_value(&format!("{}", static_path.join("c8aaba7b0593a60b00.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
