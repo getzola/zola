@@ -248,6 +248,9 @@ mod tests {
         let tests = vec![
             ("en", 1_000_000, "1,000,000"),
             ("en-IN", 1_000_000, "10,00,000"),
+            // Note:
+            // U+202F is the "NARROW NO-BREAK SPACE" code point.
+            // When displayed to the screen, it looks like a space.
             ("fr", 1_000_000, "1\u{202f}000\u{202f}000"),
         ];
 
