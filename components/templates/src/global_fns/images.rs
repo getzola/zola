@@ -123,9 +123,19 @@ impl TeraFn for GetImageMetadata {
             args.get("path"),
             "`get_image_metadata` requires a `path` argument with a string value"
         );
+        let allow_missing = optional_arg!(
+            bool,
+            args.get("allow_missing"),
+            "`get_image_metadata`: `allow_missing` must be a boolean (true or false)"
+        )
+        .unwrap_or(false);
         let src_path = match search_for_file(&self.base_path, &path) {
             Some(f) => f,
             None => {
+                if allow_missing {
+                    println!("Image at path {} could not be found or loaded", path);
+                    return Ok(Value::Null);
+                }
                 return Err(format!("`resize_image`: Cannot find path: {}", path).into());
             }
         };
