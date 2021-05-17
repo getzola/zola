@@ -1,12 +1,9 @@
 use std::collections::HashMap;
-use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use image::GenericImageView;
 use serde_derive::{Deserialize, Serialize};
-use svg_metadata as svg;
-use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
+use tera::{from_value, to_value, Function as TeraFn, Result, Value};
 
 use crate::global_fns::helpers::search_for_file;
 
@@ -87,23 +84,6 @@ impl TeraFn for ResizeImage {
     }
 }
 
-// Try to read the image dimensions for a given image
-fn image_dimensions(path: &Path) -> Result<(u32, u32)> {
-    if let Some("svg") = path.extension().and_then(OsStr::to_str) {
-        let img = svg::Metadata::parse_file(&path)
-            .map_err(|e| Error::chain(format!("Failed to process SVG: {}", path.display()), e))?;
-        match (img.height(), img.width(), img.view_box()) {
-            (Some(h), Some(w), _) => Ok((h as u32, w as u32)),
-            (_, _, Some(view_box)) => Ok((view_box.height as u32, view_box.width as u32)),
-            _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
-        }
-    } else {
-        let img = image::open(&path)
-            .map_err(|e| Error::chain(format!("Failed to process image: {}", path.display()), e))?;
-        Ok((img.height(), img.width()))
-    }
-}
-
 #[derive(Debug)]
 pub struct GetImageMetadata {
     /// The base path of the Zola site
@@ -139,7 +119,7 @@ impl TeraFn for GetImageMetadata {
                 return Err(format!("`resize_image`: Cannot find path: {}", path).into());
             }
         };
-        let (height, width) = image_dimensions(&src_path)?;
+        let (width, height) = imageproc::read_image_dimensions(&src_path)?;
         let mut map = tera::Map::new();
         map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
         map.insert(String::from("width"), Value::Number(tera::Number::from(width)));

@@ -1,5 +1,6 @@
 use std::collections::hash_map::Entry as HEntry;
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
@@ -7,9 +8,11 @@ use std::{collections::hash_map::DefaultHasher, io::Write};
 
 use image::{imageops::FilterType, EncodableLayout};
 use image::{GenericImageView, ImageOutputFormat};
+use image::io::Reader as ImgReader;
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
+use svg_metadata::Metadata as SvgMetadata;
 
 use config::Config;
 use errors::{Error, Result};
@@ -132,6 +135,7 @@ impl Hash for ResizeOp {
         }
     }
 }
+
 /// Thumbnail image format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {
@@ -463,5 +467,30 @@ impl Processor {
                     .map_err(|e| Error::chain(format!("Failed to process image: {}", op.source), e))
             })
             .collect::<Result<()>>()
+    }
+}
+
+/// Read image dimensions (cheaply), used in `get_image_metadata()`, supports SVG
+pub fn read_image_dimensions<P: AsRef<Path>>(path: P) -> tera::Result<(u32, u32)> {
+    use tera::Error;
+
+    let path = path.as_ref();
+
+    if let Some("svg") = path.extension().and_then(OsStr::to_str) {
+        let img = SvgMetadata::parse_file(&path)
+            .map_err(|e| Error::chain(format!("Failed to process SVG: {}", path.display()), e))?;
+        match (img.height(), img.width(), img.view_box()) {
+            (Some(h), Some(w), _) => Ok((h as u32, w as u32)),
+            (_, _, Some(view_box)) => Ok((view_box.height as u32, view_box.width as u32)),
+            _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
+        }
+    } else {
+        let errmsg = || format!("Failed to read image: {}", path.display());
+
+        ImgReader::open(path)
+            .and_then(ImgReader::with_guessed_format)
+            .map_err(|e| Error::chain(errmsg(), e))?
+            .into_dimensions()
+            .map_err(|e| Error::chain(errmsg(), e))
     }
 }
