@@ -58,6 +58,10 @@ impl TeraFn for GetTaxonomyUrl {
 
         Err(format!("`get_taxonomy_url`: couldn't find `{}` in `{}` taxonomy", name, kind).into())
     }
+
+    fn is_safe(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Debug)]

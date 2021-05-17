@@ -130,6 +130,10 @@ impl TeraFn for GetUrl {
             Ok(to_value(permalink).unwrap())
         }
     }
+
+    fn is_safe(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Debug)]

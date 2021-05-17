@@ -5,7 +5,7 @@
 ### Breaking
 
 - Newlines are now required after the closing `+++` of front-matter
-- `resize_image` now returns a map: `{url, static_path}` instead of just the URL so you can follow up with other functions
+- `resize_image` now returns an object: `{url, static_path}` instead of just the URL so you can follow up with other functions on the new file if needed
 - `get_file_hash` now has the `base64` option set to `true` by default (from `false`) since it's mainly used for integrity hashes which are base64  
 - `get_url` does not automatically strip leading `/` from paths anymore  
 - i18n rework: languages now have their sections in `config.toml` to set up all their options
@@ -30,6 +30,8 @@
 - Allow using POST for `load_data`, along with a body to POST and allow it to fail
 - Add Zig and Protobuf syntax highlighting
 - Footnotes links are now stripped from summaries - they were not linking to anything.
+- `get_url` and `get_taxonomy_url` are now marked as safe, no need to call `| safe` on their output
+- Add `allow_missing` optional argument to `get_image_metadata` to not error if the file is not found
 
 ## 0.13.0 (2021-01-09)
 

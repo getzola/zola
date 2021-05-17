@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 /// 1. base_path + path
 /// 2. base_path + static + path
 /// 3. base_path + content + path
+/// A path starting with @/ will replace it with `content/`
 pub fn search_for_file(base_path: &Path, path: &str) -> Option<PathBuf> {
     let search_paths = [base_path.join("static"), base_path.join("content")];
     let actual_path = if path.starts_with("@/") {
