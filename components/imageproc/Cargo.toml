@@ -11,6 +11,7 @@ tera = "1"
 image = "0.23"
 rayon = "1"
 webp = "0.1.1"
+serde = { version = "1", features = ["derive"] }
 svg_metadata = "0.4.1"
 
 errors = { path = "../errors" }

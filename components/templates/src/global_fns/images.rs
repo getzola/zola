@@ -2,18 +2,9 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use serde_derive::{Deserialize, Serialize};
 use tera::{from_value, to_value, Function as TeraFn, Result, Value};
 
 use crate::global_fns::helpers::search_for_file;
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ResizeImageResponse {
-    /// The final URL for that asset
-    url: String,
-    /// The path to the static asset generated
-    static_path: String,
-}
 
 #[derive(Debug)]
 pub struct ResizeImage {
@@ -71,16 +62,10 @@ impl TeraFn for ResizeImage {
             }
         };
 
-        let imageop =
-            imageproc::ImageOp::from_args(path, file_path, &op, width, height, &format, quality)
-                .map_err(|e| format!("`resize_image`: {}", e))?;
-        let (static_path, url) = imageproc.insert(imageop);
+        let response = imageproc.enqueue(file_path, &op, width, height, &format, quality)
+            .map_err(|e| format!("`resize_image`: {}", e))?;
 
-        to_value(ResizeImageResponse {
-            static_path: static_path.to_string_lossy().into_owned(),
-            url,
-        })
-        .map_err(|err| err.into())
+        to_value(response).map_err(Into::into)
     }
 }
 

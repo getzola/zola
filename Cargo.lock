@@ -1027,6 +1027,7 @@ dependencies = [
  "lazy_static",
  "rayon",
  "regex",
+ "serde",
  "svg_metadata",
  "tera",
  "utils",

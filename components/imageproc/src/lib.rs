@@ -7,11 +7,13 @@ use std::path::{Path, PathBuf};
 use std::{collections::hash_map::DefaultHasher, io::Write};
 
 use image::{imageops::FilterType, EncodableLayout};
-use image::{GenericImageView, ImageOutputFormat};
+use image::{ImageOutputFormat, ImageFormat};
+use image::error::ImageResult;
 use image::io::Reader as ImgReader;
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use svg_metadata::Metadata as SvgMetadata;
 
 use config::Config;
@@ -26,9 +28,37 @@ lazy_static! {
         Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png|webp)"#).unwrap();
 }
 
-/// Describes the precise kind of a resize operation
+/// Size and format read cheaply with `image`'s `Reader`.
+#[derive(Debug)]
+struct ImageMeta {
+    size: (u32, u32),
+    format: Option<ImageFormat>,
+}
+
+impl ImageMeta {
+    fn read(path: &Path) -> ImageResult<Self> {
+        let reader = ImgReader::open(path).and_then(ImgReader::with_guessed_format)?;
+        let format = reader.format();
+        let size = reader.into_dimensions()?;
+
+        Ok(Self { size, format })
+    }
+
+    fn is_lossy(&self) -> bool {
+        use ImageFormat::*;
+
+        // We assume lossy by default / if unknown format
+        match self.format.unwrap_or(Jpeg) {
+            Png | Pnm | Tiff | Tga | Bmp | Ico | Hdr | Farbfeld => false,
+            _ => true,
+        }
+    }
+}
+
+
+/// De-serialized & sanitized arguments of `resize_image`
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ResizeOp {
+pub enum ResizeArgs {
     /// A simple scale operation that doesn't take aspect ratio into account
     Scale(u32, u32),
     /// Scales the image to a specified width with height computed such
@@ -48,9 +78,9 @@ pub enum ResizeOp {
     Fill(u32, u32),
 }
 
-impl ResizeOp {
-    pub fn from_args(op: &str, width: Option<u32>, height: Option<u32>) -> Result<ResizeOp> {
-        use ResizeOp::*;
+impl ResizeArgs {
+    pub fn from_args(op: &str, width: Option<u32>, height: Option<u32>) -> Result<Self> {
+        use ResizeArgs::*;
 
         // Validate args:
         match op {
@@ -83,56 +113,85 @@ impl ResizeOp {
             _ => unreachable!(),
         })
     }
-
-    pub fn width(self) -> Option<u32> {
-        use ResizeOp::*;
-
-        match self {
-            Scale(w, _) => Some(w),
-            FitWidth(w) => Some(w),
-            FitHeight(_) => None,
-            Fit(w, _) => Some(w),
-            Fill(w, _) => Some(w),
-        }
-    }
-
-    pub fn height(self) -> Option<u32> {
-        use ResizeOp::*;
-
-        match self {
-            Scale(_, h) => Some(h),
-            FitWidth(_) => None,
-            FitHeight(h) => Some(h),
-            Fit(_, h) => Some(h),
-            Fill(_, h) => Some(h),
-        }
-    }
 }
 
-impl From<ResizeOp> for u8 {
-    fn from(op: ResizeOp) -> u8 {
-        use ResizeOp::*;
-
-        match op {
-            Scale(_, _) => 1,
-            FitWidth(_) => 2,
-            FitHeight(_) => 3,
-            Fit(_, _) => 4,
-            Fill(_, _) => 5,
-        }
-    }
+/// Contains image crop/resize instructions for use by `Processor`
+///
+/// The `Processor` applies `crop` first, if any, and then `resize`, if any.
+#[derive(Clone, PartialEq, Eq, Hash, Default, Debug)]
+struct ResizeOp {
+    crop: Option<(u32, u32, u32, u32)>,  // x, y, w, h
+    resize: Option<(u32, u32)>,          // w, h
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
-impl Hash for ResizeOp {
-    fn hash<H: Hasher>(&self, hasher: &mut H) {
-        hasher.write_u8(u8::from(*self));
-        if let Some(w) = self.width() {
-            hasher.write_u32(w);
+impl ResizeOp {
+    fn new(args: ResizeArgs, (orig_w, orig_h): (u32, u32)) -> Self {
+        use ResizeArgs::*;
+
+        let res = ResizeOp::default();
+
+        match args {
+            Scale(w, h) => res.resize((w, h)),
+            FitWidth(w) => {
+                let h = (orig_h as u64 * w as u64) / orig_w as u64;
+                res.resize((w, h as u32))
+            },
+            FitHeight(h) => {
+                let w = (orig_w as u64 * h as u64) / orig_h as u64;
+                res.resize((w as u32, h))
+            },
+            Fit(w, h) => {
+                let orig_w_h = orig_w as u64 * h as u64;
+                let orig_h_w = orig_h as u64 * w as u64;
+
+                if orig_w_h > orig_h_w {
+                    Self::new( FitWidth(w), (orig_w, orig_h))
+                } else {
+                    Self::new( FitHeight(h), (orig_w, orig_h))
+                }
+            }
+            Fill(w, h) => {
+                const RATIO_EPSILLION: f32 = 0.1;
+
+                let factor_w = orig_w as f32 / w as f32;
+                let factor_h = orig_h as f32 / h as f32;
+
+                if (factor_w - factor_h).abs() <= RATIO_EPSILLION {
+                    // If the horizontal and vertical factor is very similar,
+                    // that means the aspect is similar enough that there's not much point
+                    // in cropping, so just perform a simple scale in this case.
+                    res.resize((w, h))
+                } else {
+                    // We perform the fill such that a crop is performed first
+                    // and then resize_exact can be used, which should be cheaper than
+                    // resizing and then cropping (smaller number of pixels to resize).
+                    let (crop_w, crop_h) = if factor_w < factor_h {
+                        (orig_w, (factor_w * h as f32).round() as u32)
+                    } else {
+                        ((factor_h * w as f32).round() as u32, orig_h)
+                    };
+
+                    let (offset_w, offset_h) = if factor_w < factor_h {
+                        (0, (orig_h - crop_h) / 2)
+                    } else {
+                        ((orig_w - crop_w) / 2, 0)
+                    };
+
+                    res.crop((offset_w, offset_h, crop_w, crop_h))
+                        .resize((w, h))
+                }
+            },
         }
-        if let Some(h) = self.height() {
-            hasher.write_u32(h);
-        }
+    }
+
+    fn crop(mut self, crop: (u32, u32, u32, u32)) -> Self {
+        self.crop = Some(crop);
+        self
+    }
+
+    fn resize(mut self, size: (u32, u32)) -> Self {
+        self.resize = Some(size);
+        self
     }
 }
 
@@ -148,21 +207,21 @@ pub enum Format {
 }
 
 impl Format {
-    pub fn from_args(source: &str, format: &str, quality: Option<u8>) -> Result<Format> {
+    fn from_args(meta: &ImageMeta, format: &str, quality: Option<u8>) -> Result<Format> {
         use Format::*;
         if let Some(quality) = quality {
             assert!(quality > 0 && quality <= 100, "Quality must be within the range [1; 100]");
         }
         let jpg_quality = quality.unwrap_or(DEFAULT_Q_JPG);
         match format {
-            "auto" => match Self::is_lossy(source) {
-                Some(true) => Ok(Jpeg(jpg_quality)),
-                Some(false) => Ok(Png),
-                None => Err(format!("Unsupported image file: {}", source).into()),
-            },
+            "auto" => if meta.is_lossy() {
+                    Ok(Jpeg(jpg_quality))
+                } else {
+                    Ok(Png)
+                },
             "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
             "png" => Ok(Png),
-            "webp" => Ok(WebP(quality)),
+            "webp" => Ok(WebP(quality)),   // FIXME: this is undoc'd
             _ => Err(format!("Invalid image format: {}", format).into()),
         }
     }
@@ -216,7 +275,6 @@ impl Hash for Format {
 /// Holds all data needed to perform a resize operation
 #[derive(Debug, PartialEq, Eq)]
 pub struct ImageOp {
-    source: String,
     input_path: PathBuf,
     op: ResizeOp,
     format: Format,
@@ -230,79 +288,36 @@ pub struct ImageOp {
 }
 
 impl ImageOp {
-    pub fn from_args(
-        source: String,
-        input_path: PathBuf,
-        op: &str,
-        width: Option<u32>,
-        height: Option<u32>,
-        format: &str,
-        quality: Option<u8>,
-    ) -> Result<ImageOp> {
-        let op = ResizeOp::from_args(op, width, height)?;
-        let format = Format::from_args(&source, format, quality)?;
+    const RESIZE_FILTER: FilterType = FilterType::Lanczos3;
 
+    fn new(
+        input_path: PathBuf,
+        op: ResizeOp,
+        format: Format,
+    ) -> ImageOp {
         let mut hasher = DefaultHasher::new();
-        hasher.write(source.as_ref());
+        hasher.write(input_path.to_string_lossy().as_bytes());
         op.hash(&mut hasher);
         format.hash(&mut hasher);
         let hash = hasher.finish();
 
-        Ok(ImageOp { source, input_path, op, format, hash, collision_id: 0 })
+        ImageOp { input_path, op, format, hash, collision_id: 0 }
     }
 
     fn perform(&self, target_path: &Path) -> Result<()> {
-        use ResizeOp::*;
-
         if !ufs::file_stale(&self.input_path, target_path) {
             return Ok(());
         }
 
         let mut img = image::open(&self.input_path)?;
-        let (img_w, img_h) = img.dimensions();
 
-        const RESIZE_FILTER: FilterType = FilterType::Lanczos3;
-        const RATIO_EPSILLION: f32 = 0.1;
-
-        let img = match self.op {
-            Scale(w, h) => img.resize_exact(w, h, RESIZE_FILTER),
-            FitWidth(w) => img.resize(w, u32::MAX, RESIZE_FILTER),
-            FitHeight(h) => img.resize(u32::MAX, h, RESIZE_FILTER),
-            Fit(w, h) => {
-                if img_w > w || img_h > h {
-                    img.resize(w, h, RESIZE_FILTER)
-                } else {
-                    img
-                }
-            }
-            Fill(w, h) => {
-                let factor_w = img_w as f32 / w as f32;
-                let factor_h = img_h as f32 / h as f32;
-
-                if (factor_w - factor_h).abs() <= RATIO_EPSILLION {
-                    // If the horizontal and vertical factor is very similar,
-                    // that means the aspect is similar enough that there's not much point
-                    // in cropping, so just perform a simple scale in this case.
-                    img.resize_exact(w, h, RESIZE_FILTER)
-                } else {
-                    // We perform the fill such that a crop is performed first
-                    // and then resize_exact can be used, which should be cheaper than
-                    // resizing and then cropping (smaller number of pixels to resize).
-                    let (crop_w, crop_h) = if factor_w < factor_h {
-                        (img_w, (factor_w * h as f32).round() as u32)
-                    } else {
-                        ((factor_h * w as f32).round() as u32, img_h)
-                    };
-
-                    let (offset_w, offset_h) = if factor_w < factor_h {
-                        (0, (img_h - crop_h) / 2)
-                    } else {
-                        ((img_w - crop_w) / 2, 0)
-                    };
-
-                    img.crop(offset_w, offset_h, crop_w, crop_h).resize_exact(w, h, RESIZE_FILTER)
-                }
-            }
+        let img = match self.op.crop {
+            Some((x, y, w, h)) => img.crop(x, y, w, h),
+            None => img,
+        };
+        let img = match self.op.resize {
+            Some((w, h)) => img.resize_exact(w, h, Self::RESIZE_FILTER),
+            None => img,
         };
 
         let mut f = File::create(target_path)?;
@@ -327,6 +342,34 @@ impl ImageOp {
         Ok(())
     }
 }
+
+// FIXME: Explain this in the doc
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct EnqueueResponse {
+    /// The final URL for that asset
+    pub url: String,
+    /// The path to the static asset generated
+    pub static_path: String,
+    /// New image width
+    pub width: u32,
+    /// New image height
+    pub height: u32,
+    /// Original image width
+    pub orig_width: u32,
+    /// Original image height
+    pub orig_height: u32,
+}
+
+impl EnqueueResponse {
+    fn new(url: String, static_path: PathBuf, meta: &ImageMeta, op: &ResizeOp) -> Self {
+        let static_path = static_path.to_string_lossy().into_owned();
+        let (width, height) = op.resize.unwrap_or(meta.size);
+        let (orig_width, orig_height) = meta.size;
+
+        Self { url, static_path, width, height, orig_width, orig_height }
+    }
+}
+
 
 /// A struct into which image operations can be enqueued and then performed.
 /// All output is written in a subdirectory in `static_path`,
@@ -362,6 +405,27 @@ impl Processor {
 
     pub fn num_img_ops(&self) -> usize {
         self.img_ops.len() + self.img_ops_collisions.len()
+    }
+
+    pub fn enqueue(
+        &mut self,
+        input_path: PathBuf,
+        op: &str,
+        width: Option<u32>,
+        height: Option<u32>,
+        format: &str,
+        quality: Option<u8>,
+    ) -> Result<EnqueueResponse> {
+        let meta = ImageMeta::read(&input_path)
+            .map_err(|e| Error::chain(format!("Failed to read image: {}", input_path.display()), e))?;
+
+        let args = ResizeArgs::from_args(op, width, height)?;
+        let op = ResizeOp::new(args, meta.size);
+        let format = Format::from_args(&meta, format, quality)?;
+        let img_op = ImageOp::new(input_path, op.clone(), format);
+        let (static_path, url) = self.insert(img_op);
+
+        Ok(EnqueueResponse::new(url, static_path, &meta, &op))
     }
 
     fn insert_with_collisions(&mut self, mut img_op: ImageOp) -> u32 {
@@ -418,7 +482,7 @@ impl Processor {
 
     /// Adds the given operation to the queue but do not process it immediately.
     /// Returns (path in static folder, final URL).
-    pub fn insert(&mut self, img_op: ImageOp) -> (PathBuf, String) {
+    fn insert(&mut self, img_op: ImageOp) -> (PathBuf, String) {
         let hash = img_op.hash;
         let format = img_op.format;
         let collision_id = self.insert_with_collisions(img_op);
@@ -464,7 +528,8 @@ impl Processor {
                 let target =
                     self.output_dir.join(Self::op_filename(*hash, op.collision_id, op.format));
                 op.perform(&target)
-                    .map_err(|e| Error::chain(format!("Failed to process image: {}", op.source), e))
+                    .map_err(|e| Error::chain(
+                        format!("Failed to process image: {}", op.input_path.display()), e))
             })
             .collect::<Result<()>>()
     }
@@ -485,12 +550,8 @@ pub fn read_image_dimensions<P: AsRef<Path>>(path: P) -> tera::Result<(u32, u32)
             _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
         }
     } else {
-        let errmsg = || format!("Failed to read image: {}", path.display());
-
-        ImgReader::open(path)
-            .and_then(ImgReader::with_guessed_format)
-            .map_err(|e| Error::chain(errmsg(), e))?
-            .into_dimensions()
-            .map_err(|e| Error::chain(errmsg(), e))
+        ImageMeta::read(path)
+            .map(|meta| dbg!(meta.size))
+            .map_err(|e| Error::chain(format!("Failed to read image: {}", path.display()), e))
     }
 }
