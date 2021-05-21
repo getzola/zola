@@ -89,6 +89,8 @@ Format a number into its string representation.
 <!-- 1,000,000 -->
 ```
 
+By default this will format the number using the locale set by `config.default_language` in config.toml.
+
 To format a number for a specific locale, you can use the `locale` argument and pass the name of the desired locale:
 
 ```jinja2
