@@ -80,13 +80,13 @@ pub fn num_format(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Va
 
     let num = try_get_value!("num_format", "value", i64, value);
 
-    let locale = match args.get("locale") {
-        Some(locale) => try_get_value!("num_format", "locale", String, locale),
-        None => "en".to_string(),
-    };
+    let locale = args
+        .get("locale")
+        .ok_or_else(|| TeraError::msg("Filter `num_format` requires a `locale` argument"))?;
+    let locale = try_get_value!("num_format", "locale", String, locale);
     let locale = Locale::from_name(&locale).map_err(|_| {
         TeraError::msg(format!(
-            "Filter `num_format` was called with an invalid `locale` argument: `{}`.",
+            "Filter `num_format` was called with an invalid `locale` argument: `{}`",
             locale
         ))
     })?;
@@ -225,27 +225,12 @@ mod tests {
     }
 
     #[test]
-    fn num_format_filter() {
-        let tests = vec![
-            (100, "100"),
-            (1_000, "1,000"),
-            (10_000, "10,000"),
-            (100_000, "100,000"),
-            (1_000_000, "1,000,000"),
-        ];
-
-        for (input, expected) in tests {
-            let args = HashMap::new();
-            let result = num_format(&to_value(input).unwrap(), &args);
-            let result = dbg!(result);
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), to_value(expected).unwrap());
-        }
-    }
-
-    #[test]
     fn num_format_filter_with_locale() {
         let tests = vec![
+            ("en", 100, "100"),
+            ("en", 1_000, "1,000"),
+            ("en", 10_000, "10,000"),
+            ("en", 100_000, "100,000"),
             ("en", 1_000_000, "1,000,000"),
             ("en-IN", 1_000_000, "10,00,000"),
             // Note:
