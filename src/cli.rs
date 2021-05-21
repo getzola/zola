@@ -46,7 +46,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .short("o")
                         .long("output-dir")
                         .takes_value(true)
-                        .help("Outputs the generated site in the given path"),
+                        .help("Outputs the generated site in the given path (by default 'public' dir in project root)"),
                     Arg::with_name("drafts")
                         .long("drafts")
                         .takes_value(false)
@@ -69,7 +69,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .short("o")
                         .long("output-dir")
                         .takes_value(true)
-                        .help("Outputs the generated site in the given path"),
+                        .help("Outputs the generated site in the given path (by default 'public' dir in project root)"),
                     Arg::with_name("base_url")
                         .short("u")
                         .long("base-url")
