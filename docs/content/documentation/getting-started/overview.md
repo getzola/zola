@@ -52,7 +52,8 @@ For reference, by the **end** of this overview, our `myblog` directory will have
 ├── content/
 │   └── blog/
 │       ├── _index.md
-│       └── first.md
+│       ├── first.md
+│       └── second.md
 ├── sass/
 ├── static/
 ├── templates/
