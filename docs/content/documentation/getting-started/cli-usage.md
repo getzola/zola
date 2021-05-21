@@ -75,8 +75,6 @@ You can also specify different addresses for the interface and base_url using `-
 Use the `--open` flag to automatically open the locally hosted instance in your
 web browser.
 
-In the event you don't want Zola to run a local web server, you can use the `--watch-only` flag.
-
 Before starting, Zola will delete the `public` directory to start from a clean slate.
 
 ```bash
@@ -86,7 +84,6 @@ $ zola serve --interface 0.0.0.0
 $ zola serve --interface 0.0.0.0 --port 2000
 $ zola serve --interface 0.0.0.0 --base-url 127.0.0.1
 $ zola serve --interface 0.0.0.0 --port 2000 --output-dir www/public
-$ zola serve --watch-only
 $ zola serve --open
 ```
 
