@@ -75,23 +75,34 @@ pub fn base64_decode<S: BuildHasher>(
     Ok(to_value(&String::from_utf8(decode(s.as_bytes()).unwrap()).unwrap()).unwrap())
 }
 
-pub fn num_format(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-    use num_format::{Locale, ToFormattedString};
+#[derive(Debug)]
+pub struct NumFormatFilter {
+    default_language: String,
+}
 
-    let num = try_get_value!("num_format", "value", i64, value);
+impl NumFormatFilter {
+    pub fn new<S: Into<String>>(default_language: S) -> Self {
+        Self { default_language: default_language.into() }
+    }
+}
 
-    let locale = match args.get("locale") {
-        Some(locale) => try_get_value!("num_format", "locale", String, locale),
-        None => "en".to_string(),
-    };
-    let locale = Locale::from_name(&locale).map_err(|_| {
-        TeraError::msg(format!(
-            "Filter `num_format` was called with an invalid `locale` argument: `{}`.",
-            locale
-        ))
-    })?;
+impl TeraFilter for NumFormatFilter {
+    fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        use num_format::{Locale, ToFormattedString};
 
-    Ok(to_value(num.to_formatted_string(&locale)).unwrap())
+        let num = try_get_value!("num_format", "value", i64, value);
+        let locale = match args.get("locale") {
+            Some(locale) => try_get_value!("num_format", "locale", String, locale),
+            None => self.default_language.clone(),
+        };
+        let locale = Locale::from_name(&locale).map_err(|_| {
+            TeraError::msg(format!(
+                "Filter `num_format` was called with an invalid `locale` argument: `{}`.",
+                locale
+            ))
+        })?;
+        Ok(to_value(num.to_formatted_string(&locale)).unwrap())
+    }
 }
 
 #[cfg(test)]
@@ -100,7 +111,7 @@ mod tests {
 
     use tera::{to_value, Filter};
 
-    use super::{base64_decode, base64_encode, num_format, MarkdownFilter};
+    use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
     use config::Config;
 
     #[test]
@@ -236,7 +247,7 @@ mod tests {
 
         for (input, expected) in tests {
             let args = HashMap::new();
-            let result = num_format(&to_value(input).unwrap(), &args);
+            let result = NumFormatFilter::new("en").filter(&to_value(input).unwrap(), &args);
             let result = dbg!(result);
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), to_value(expected).unwrap());
@@ -257,7 +268,7 @@ mod tests {
         for (locale, input, expected) in tests {
             let mut args = HashMap::new();
             args.insert("locale".to_string(), to_value(locale).unwrap());
-            let result = num_format(&to_value(input).unwrap(), &args);
+            let result = NumFormatFilter::new("en").filter(&to_value(input).unwrap(), &args);
             let result = dbg!(result);
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), to_value(expected).unwrap());
