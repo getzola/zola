@@ -479,4 +479,12 @@ Some body {{ hello() }}{%/* end */%}"#,
         let res = render_shortcodes("{{ youtube() }}", &tera);
         assert_eq!(res, "* 1\n* 2\n* 3");
     }
+
+    #[test]
+    fn recursive_shortcodes() {
+        let mut tera = Tera::default();
+        tera.add_raw_template("shortcodes/outer.html", "This is the outer shortcode {{ body }} outer ends here").unwrap();
+        let res = render_shortcodes("{% outer() %} One! {% inner() %} Two! {% end %} Three! {% end %} Fin.", &tera);
+        assert_eq!(res, "<pre data-shortcode>This is the outer shortcode One! {% inner() %} Two! {% end %} Three! outer ends here</pre> Fin.");
+    }
 }
