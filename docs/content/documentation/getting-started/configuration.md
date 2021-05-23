@@ -96,6 +96,10 @@ languages = []
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
+# When set to "true", a search index is built from the pages and section
+# content for `default_language`.
+build_search_index = false
+
 # Configuration of the Markdown rendering
 [markdown]
 # When set to "true", all code blocks are highlighted.
@@ -141,10 +145,6 @@ skip_anchor_prefixes = [
 paths = "on"
 taxonomies = "on"
 anchors = "on"
-
-# When set to "true", a search index is built from the pages and section
-# content for `default_language`.
-build_search_index = false
 
 [search]
 # Whether to include the title of the page/section in the index
