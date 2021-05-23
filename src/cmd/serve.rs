@@ -154,12 +154,10 @@ fn livereload_js() -> Response<Body> {
 
 fn in_memory_content(path: &RelativePathBuf, content: &str) -> Response<Body> {
     let content_type = match path.extension() {
-        Some(ext) => {
-            match ext {
-                "xml" => "text/xml",
-                "json" => "application/json",
-                _ => "text/html",
-            }
+        Some(ext) => match ext {
+            "xml" => "text/xml",
+            "json" => "application/json",
+            _ => "text/html",
         },
         None => "text/html",
     };

@@ -173,7 +173,7 @@ mod tests {
     }
 
     #[test]
-    fn doesnt_fail_with_multiple_content_directories() {
+    fn doesnt_fail_with_multiple_content_directories_in_path() {
         let file = FileInfo::new_page(
             &Path::new("/home/vincent/code/content/site/content/posts/tutorials/python/index.md"),
             &PathBuf::from("/home/vincent/code/content/site"),

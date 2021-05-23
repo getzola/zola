@@ -371,22 +371,7 @@ impl Library {
             .collect()
     }
 
-    /// Find the parent section & all grandparents section that have transparent=true
-    /// Only used in rebuild.
-    pub fn find_parent_sections<P: AsRef<Path>>(&self, path: P) -> Vec<&Section> {
-        let mut parents = vec![];
-        let page = self.get_page(path.as_ref()).unwrap();
-        for ancestor in page.ancestors.iter().rev() {
-            let section = self.get_section_by_key(*ancestor);
-            if parents.is_empty() || section.meta.transparent {
-                parents.push(section);
-            }
-        }
-
-        parents
-    }
-
-    /// Only used in tests
+    /// Used in integration tests
     pub fn get_section_key<P: AsRef<Path>>(&self, path: P) -> Option<&DefaultKey> {
         self.paths_to_sections.get(path.as_ref())
     }
@@ -395,6 +380,7 @@ impl Library {
         self.sections.get(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
+    /// Used in integration tests
     pub fn get_section_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Section> {
         self.sections
             .get_mut(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
@@ -402,10 +388,6 @@ impl Library {
 
     pub fn get_section_by_key(&self, key: DefaultKey) -> &Section {
         self.sections.get(key).unwrap()
-    }
-
-    pub fn get_section_mut_by_key(&mut self, key: DefaultKey) -> &mut Section {
-        self.sections.get_mut(key).unwrap()
     }
 
     pub fn get_section_path_by_key(&self, key: DefaultKey) -> &str {
@@ -418,10 +400,6 @@ impl Library {
 
     pub fn get_page_by_key(&self, key: DefaultKey) -> &Page {
         self.pages.get(key).unwrap()
-    }
-
-    pub fn get_page_mut_by_key(&mut self, key: DefaultKey) -> &mut Page {
-        self.pages.get_mut(key).unwrap()
     }
 
     pub fn remove_section<P: AsRef<Path>>(&mut self, path: P) -> Option<Section> {
@@ -440,14 +418,8 @@ impl Library {
         }
     }
 
-    /// Used in rebuild, to check if we know it already
     pub fn contains_section<P: AsRef<Path>>(&self, path: P) -> bool {
         self.paths_to_sections.contains_key(path.as_ref())
-    }
-
-    /// Used in rebuild, to check if we know it already
-    pub fn contains_page<P: AsRef<Path>>(&self, path: P) -> bool {
-        self.paths_to_pages.contains_key(path.as_ref())
     }
 
     /// This will check every section/page paths + the aliases and ensure none of them

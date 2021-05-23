@@ -52,10 +52,5 @@ bat
         &context,
     )
     .unwrap();
-    assert_eq!(
-        res.body,
-        colored_html!(
-            "foo\nbaz\nbat",
-        )
-    );
+    assert_eq!(res.body, colored_html!("foo\nbaz\nbat",));
 }
