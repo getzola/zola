@@ -104,11 +104,10 @@ impl TeraFn for GetImageMetadata {
                 return Err(format!("`resize_image`: Cannot find path: {}", path).into());
             }
         };
-        let (width, height) = imageproc::read_image_dimensions(&src_path)?;
-        let mut map = tera::Map::new();
-        map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
-        map.insert(String::from("width"), Value::Number(tera::Number::from(width)));
-        Ok(Value::Object(map))
+
+        let response = imageproc::read_image_dimensions(&src_path)
+            .map_err(|e| format!("`resize_image`: {}", e))?;
+        to_value(response).map_err(Into::into)
     }
 }
 

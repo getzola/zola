@@ -535,23 +535,49 @@ impl Processor {
     }
 }
 
-/// Read image dimensions (cheaply), used in `get_image_metadata()`, supports SVG
-pub fn read_image_dimensions<P: AsRef<Path>>(path: P) -> tera::Result<(u32, u32)> {
-    use tera::Error;
+#[derive(Debug, Serialize)]
+pub struct ImageMetaResponse {
+    pub width: u32,
+    pub height: u32,
+    pub format: Option<&'static str>,
+}
 
+impl ImageMetaResponse {
+    pub fn new_svg(width: u32, height: u32) -> Self {
+        Self {
+            width,
+            height,
+            format: Some("svg")
+        }
+    }
+}
+
+impl From<ImageMeta> for ImageMetaResponse {
+    fn from(im: ImageMeta) -> Self {
+        Self {
+            width: im.size.0,
+            height: im.size.1,
+            format: im.format.and_then(|f| f.extensions_str().get(0)).map(|&f| f),
+        }
+    }
+}
+
+/// Read image dimensions (cheaply), used in `get_image_metadata()`, supports SVG
+pub fn read_image_dimensions<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse> {
     let path = path.as_ref();
 
     if let Some("svg") = path.extension().and_then(OsStr::to_str) {
         let img = SvgMetadata::parse_file(&path)
             .map_err(|e| Error::chain(format!("Failed to process SVG: {}", path.display()), e))?;
         match (img.height(), img.width(), img.view_box()) {
-            (Some(h), Some(w), _) => Ok((h as u32, w as u32)),
-            (_, _, Some(view_box)) => Ok((view_box.height as u32, view_box.width as u32)),
+            (Some(h), Some(w), _) => Ok((h, w)),
+            (_, _, Some(view_box)) => Ok((view_box.height, view_box.width)),
             _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
         }
+        .map(|(h, w)| ImageMetaResponse::new_svg(h as u32, w as u32))
     } else {
         ImageMeta::read(path)
-            .map(|meta| dbg!(meta.size))
+            .map(ImageMetaResponse::from)
             .map_err(|e| Error::chain(format!("Failed to read image: {}", path.display()), e))
     }
 }
