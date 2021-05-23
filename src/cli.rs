@@ -58,13 +58,13 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("interface")
                         .short("i")
                         .long("interface")
-                        .default_value("127.0.0.1")
-                        .help("Interface to bind on"),
+                        .takes_value(true)
+                        .help("Interface to bind on (default: 127.0.0.1)"),
                     Arg::with_name("port")
                         .short("p")
                         .long("port")
-                        .default_value("1111")
-                        .help("Which port to use"),
+                        .takes_value(true)
+                        .help("Which port to use (default: 1111)"),
                     Arg::with_name("output_dir")
                         .short("o")
                         .long("output-dir")
@@ -73,9 +73,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("base_url")
                         .short("u")
                         .long("base-url")
-                        .default_value("127.0.0.1")
                         .takes_value(true)
-                        .help("Changes the base_url"),
+                        .help("Changes the base_url (default: 127.0.0.1)"),
                     Arg::with_name("drafts")
                         .long("drafts")
                         .takes_value(false)

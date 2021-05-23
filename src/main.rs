@@ -54,7 +54,7 @@ fn main() {
         }
         ("serve", Some(matches)) => {
             let interface = matches.value_of("interface").unwrap_or("127.0.0.1");
-            let mut port: u16 = match matches.value_of("port").unwrap().parse() {
+            let mut port: u16 = match matches.value_of("port").unwrap_or("1111").parse() {
                 Ok(x) => x,
                 Err(_) => {
                     console::error("The request port needs to be an integer");
@@ -80,7 +80,7 @@ fn main() {
                 }
             }
             let output_dir = matches.value_of("output_dir").map(|output_dir| Path::new(output_dir));
-            let base_url = matches.value_of("base_url").unwrap();
+            let base_url = matches.value_of("base_url").unwrap_or("127.0.0.1");
             console::info("Building site...");
             match cmd::serve(
                 &root_dir,
