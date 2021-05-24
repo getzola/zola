@@ -204,6 +204,7 @@ Zola currently has the following highlight themes available:
 - [dimmed-fluid](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Dimmed%20Fluid)
 - [dracula](https://draculatheme.com/)
 - [gray-matter-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Gray%20Matter%20Dark)
+- [green](https://github.com/kristopherjohnson/MonochromeSublimeText)
 - [gruvbox-dark](https://github.com/morhetz/gruvbox)
 - [gruvbox-light](https://github.com/morhetz/gruvbox)
 - [idle](https://tmtheme-editor.herokuapp.com/#!/editor/theme/IDLE)
