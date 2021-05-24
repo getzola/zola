@@ -9,12 +9,10 @@ need to enable it in the [configuration](@/documentation/getting-started/configu
 Once this is done, Zola will automatically highlight all code blocks
 in your content. A code block in Markdown looks like the following:
 
-````md
-
+````
 ```rust
 let highlight = true;
 ```
-
 ````
 
 You can replace `rust` with another language or not put anything to get the text
@@ -178,34 +176,33 @@ you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1
 You can use additional annotations to customize how code blocks are displayed:
 
 - `linenos` to enable line numbering.
-````md
 
+````
 ```rust,linenos
 use highlighter::highlight;
 let code = "...";
 highlight(code);
 ```
-
 ````
+
 - `hl_lines` to highlight lines. You must specify a list of ranges of lines to highlight,
 separated by ` `. Ranges are 1-indexed.
-````md
-
+  
+````
 ```rust,hl_lines=3
 use highlighter::highlight;
 let code = "...";
 highlight(code);
 ```
-
 ````
+
 - `hide_lines` to hide lines. You must specify a list of ranges of lines to hide,
 separated by ` `. Ranges are 1-indexed.
-````md
-
+  
+````
 ```rust,hide_lines=1-2
 use highlighter::highlight;
 let code = "...";
 highlight(code);
 ```
-
 ````
