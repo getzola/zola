@@ -59,7 +59,8 @@ h1 {
 
 figcaption,
 figure,
-main { /* 1 */
+main {
+  /* 1 */
   display: block;
 }
 
@@ -219,6 +220,8 @@ audio:not([controls]) {
 
 img {
   border-style: none;
+  max-width: 100%;
+  height: auto;
 }
 
 /**
@@ -254,7 +257,8 @@ textarea {
  */
 
 button,
-input { /* 1 */
+input {
+  /* 1 */
   overflow: visible;
 }
 
@@ -264,7 +268,8 @@ input { /* 1 */
  */
 
 button,
-select { /* 1 */
+select {
+  /* 1 */
   text-transform: none;
 }
 
