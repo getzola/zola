@@ -62,7 +62,8 @@ impl TeraFn for ResizeImage {
             }
         };
 
-        let response = imageproc.enqueue(file_path, &op, width, height, &format, quality)
+        let response = imageproc
+            .enqueue(file_path, &op, width, height, &format, quality)
             .map_err(|e| format!("`resize_image`: {}", e))?;
 
         to_value(response).map_err(Into::into)

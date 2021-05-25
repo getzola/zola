@@ -1028,6 +1028,8 @@ dependencies = [
  "rayon",
  "regex",
  "serde",
+ "serde_json",
+ "site",
  "svg_metadata",
  "tera",
  "utils",

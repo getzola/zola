@@ -17,3 +17,8 @@ svg_metadata = "0.4.1"
 errors = { path = "../errors" }
 utils = { path = "../utils" }
 config = { path = "../config" }
+
+[dev-dependencies]
+# TODO: prune
+serde_json = "1"
+site = { path = "../site" }

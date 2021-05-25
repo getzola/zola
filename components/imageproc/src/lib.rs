@@ -6,10 +6,10 @@ use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::{collections::hash_map::DefaultHasher, io::Write};
 
-use image::{imageops::FilterType, EncodableLayout};
-use image::{ImageOutputFormat, ImageFormat};
 use image::error::ImageResult;
 use image::io::Reader as ImgReader;
+use image::{imageops::FilterType, EncodableLayout};
+use image::{ImageFormat, ImageOutputFormat};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
@@ -54,7 +54,6 @@ impl ImageMeta {
         }
     }
 }
-
 
 /// De-serialized & sanitized arguments of `resize_image`
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -120,8 +119,8 @@ impl ResizeArgs {
 /// The `Processor` applies `crop` first, if any, and then `resize`, if any.
 #[derive(Clone, PartialEq, Eq, Hash, Default, Debug)]
 struct ResizeOp {
-    crop: Option<(u32, u32, u32, u32)>,  // x, y, w, h
-    resize: Option<(u32, u32)>,          // w, h
+    crop: Option<(u32, u32, u32, u32)>, // x, y, w, h
+    resize: Option<(u32, u32)>,         // w, h
 }
 
 impl ResizeOp {
@@ -135,19 +134,19 @@ impl ResizeOp {
             FitWidth(w) => {
                 let h = (orig_h as u64 * w as u64) / orig_w as u64;
                 res.resize((w, h as u32))
-            },
+            }
             FitHeight(h) => {
                 let w = (orig_w as u64 * h as u64) / orig_h as u64;
                 res.resize((w as u32, h))
-            },
+            }
             Fit(w, h) => {
                 let orig_w_h = orig_w as u64 * h as u64;
                 let orig_h_w = orig_h as u64 * w as u64;
 
                 if orig_w_h > orig_h_w {
-                    Self::new( FitWidth(w), (orig_w, orig_h))
+                    Self::new(FitWidth(w), (orig_w, orig_h))
                 } else {
-                    Self::new( FitHeight(h), (orig_w, orig_h))
+                    Self::new(FitHeight(h), (orig_w, orig_h))
                 }
             }
             Fill(w, h) => {
@@ -177,10 +176,9 @@ impl ResizeOp {
                         ((orig_w - crop_w) / 2, 0)
                     };
 
-                    res.crop((offset_w, offset_h, crop_w, crop_h))
-                        .resize((w, h))
+                    res.crop((offset_w, offset_h, crop_w, crop_h)).resize((w, h))
                 }
-            },
+            }
         }
     }
 
@@ -214,14 +212,16 @@ impl Format {
         }
         let jpg_quality = quality.unwrap_or(DEFAULT_Q_JPG);
         match format {
-            "auto" => if meta.is_lossy() {
+            "auto" => {
+                if meta.is_lossy() {
                     Ok(Jpeg(jpg_quality))
                 } else {
                     Ok(Png)
-                },
+                }
+            }
             "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
             "png" => Ok(Png),
-            "webp" => Ok(WebP(quality)),   // FIXME: this is undoc'd
+            "webp" => Ok(WebP(quality)), // FIXME: this is undoc'd
             _ => Err(format!("Invalid image format: {}", format).into()),
         }
     }
@@ -290,11 +290,7 @@ pub struct ImageOp {
 impl ImageOp {
     const RESIZE_FILTER: FilterType = FilterType::Lanczos3;
 
-    fn new(
-        input_path: PathBuf,
-        op: ResizeOp,
-        format: Format,
-    ) -> ImageOp {
+    fn new(input_path: PathBuf, op: ResizeOp, format: Format) -> ImageOp {
         let mut hasher = DefaultHasher::new();
         hasher.write(input_path.to_string_lossy().as_bytes());
         op.hash(&mut hasher);
@@ -370,7 +366,6 @@ impl EnqueueResponse {
     }
 }
 
-
 /// A struct into which image operations can be enqueued and then performed.
 /// All output is written in a subdirectory in `static_path`,
 /// taking care of file stale status based on timestamps and possible hash collisions.
@@ -416,8 +411,9 @@ impl Processor {
         format: &str,
         quality: Option<u8>,
     ) -> Result<EnqueueResponse> {
-        let meta = ImageMeta::read(&input_path)
-            .map_err(|e| Error::chain(format!("Failed to read image: {}", input_path.display()), e))?;
+        let meta = ImageMeta::read(&input_path).map_err(|e| {
+            Error::chain(format!("Failed to read image: {}", input_path.display()), e)
+        })?;
 
         let args = ResizeArgs::from_args(op, width, height)?;
         let op = ResizeOp::new(args, meta.size);
@@ -491,6 +487,7 @@ impl Processor {
         (Path::new("static").join(RESIZED_SUBDIR).join(filename), url)
     }
 
+    /// Remove stale processed images in the output directory
     pub fn prune(&self) -> Result<()> {
         // Do not create folders if they don't exist
         if !self.output_dir.exists() {
@@ -517,6 +514,7 @@ impl Processor {
         Ok(())
     }
 
+    /// Run the enqueued image operations
     pub fn do_process(&mut self) -> Result<()> {
         if !self.img_ops.is_empty() {
             ufs::ensure_directory_exists(&self.output_dir)?;
@@ -527,9 +525,9 @@ impl Processor {
             .map(|(hash, op)| {
                 let target =
                     self.output_dir.join(Self::op_filename(*hash, op.collision_id, op.format));
-                op.perform(&target)
-                    .map_err(|e| Error::chain(
-                        format!("Failed to process image: {}", op.input_path.display()), e))
+                op.perform(&target).map_err(|e| {
+                    Error::chain(format!("Failed to process image: {}", op.input_path.display()), e)
+                })
             })
             .collect::<Result<()>>()
     }
@@ -544,11 +542,7 @@ pub struct ImageMetaResponse {
 
 impl ImageMetaResponse {
     pub fn new_svg(width: u32, height: u32) -> Self {
-        Self {
-            width,
-            height,
-            format: Some("svg")
-        }
+        Self { width, height, format: Some("svg") }
     }
 }
 
