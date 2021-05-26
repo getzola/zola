@@ -60,7 +60,7 @@ generate_feed = false
 # The filename to use for the feed. Used as the template filename, too.
 # Defaults to "atom.xml", which has a built-in template that renders an Atom 1.0 feed.
 # There is also a built-in template "rss.xml" that renders an RSS 2.0 feed.
-# feed_filename = "atom.xml"
+feed_filename = "atom.xml"
 
 # The number of articles to include in the feed. All items are included if
 # this limit is not set (the default).
@@ -70,7 +70,7 @@ generate_feed = false
 # static files. Note that for this to work, both `static` and the
 # output directory need to be on the same filesystem. Note that the theme's `static`
 # files are always copied, regardless of this setting.
-# hard_link_static = false
+hard_link_static = false
 
 # The taxonomies to be rendered for the site and their configuration.
 # Example:
