@@ -189,4 +189,4 @@ equally weighted sections. Thus, if the `weight` variable for your section is no
 is set in a way that produces ties), then your sections will be sorted in
 **random** order. Moreover, that order is determined at build time and will
 change with each site rebuild.  Thus, if there is any chance that you will
-iterate over your sections, you should always assign them a weight.
+iterate over your sections, you should always assign them distinct weights.
