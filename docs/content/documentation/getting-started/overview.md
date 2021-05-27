@@ -78,7 +78,7 @@ If you point your web browser to <http://127.0.0.1:1111>, you should see a "Welc
 
 ### Home Page
 
-Let's make a home page. To do this, let's first create a `base.html` file inside the `templates` directory. This step will make more sense as we move through this overview. We'll be using the CSS framework [Bulma](https://bulma.io/).
+Let's make a home page. To do this, let's first create a `base.html` file inside the `templates` directory. This step will make more sense as we move through this overview.
 
 ```html
 <!DOCTYPE html>
@@ -87,7 +87,6 @@ Let's make a home page. To do this, let's first create a `base.html` file inside
 <head>
   <meta charset="utf-8">
   <title>MyBlog</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
 </head>
 
 <body>

@@ -7,7 +7,7 @@ A section is created whenever a directory (or subdirectory) in the `content` sec
 `_index.md` file.  If a directory does not contain an `_index.md` file, no section will be
 created, but Markdown files within that directory will still create pages (known as orphan pages).
 
-The index page (i.e., the page displayed when a user browses to your `base_url`) is a section,
+The homepage (i.e., the page displayed when a user browses to your `base_url`) is a section,
 which is created whether or not you add an `_index.md` file at the root of your `content` directory.
 If you do not create an `_index.md` file in your content directory, this main content section will
 not have any content or metadata.  If you would like to add content or metadata, you can add an
