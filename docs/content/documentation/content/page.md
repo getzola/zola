@@ -149,7 +149,7 @@ paragraph of the page content in a list.
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
 where you want the summary to end. The content up to that point will be
 available separately in the
-[template](@/documentation/templates/pages-sections.md#page-variables).
+[template](@/documentation/templates/pages-sections.md#page-variables) via `page.summary`.
 
 A span element in this position with a `continue-reading` id is created, so you can link directly to it if needed. For example:
 `<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`.
