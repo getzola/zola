@@ -100,7 +100,7 @@ by substituting your username or organization.
 
 ## Travis CI
 
-Alternatively, you can use [Travis CI](https://travis-ci.org) to automatically publish the site. If you are not using Travis
+Alternatively, you can use [Travis CI](https://www.travis-ci.com/) to automatically publish the site. If you are not using Travis
 already, you will need to login with the GitHub OAuth and activate Travis for the repository.
 Don't forget to also check if your repository allows GitHub Pages in its settings.
 
