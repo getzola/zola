@@ -477,7 +477,7 @@ truc = "default"
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
         assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
-        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
+        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overridden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
         assert_eq!(extra["sub"]["sub"]["foo"].as_str().unwrap(), "bar".to_string());
         assert_eq!(
             extra["sub"]["sub"]
