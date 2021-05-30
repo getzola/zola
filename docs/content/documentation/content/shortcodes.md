@@ -10,7 +10,7 @@ try [Tera macros](https://tera.netlify.com/docs#macros).
 
 Broadly speaking, Zola's shortcodes cover two distinct use cases:
 
-* Inject more complex HTML: Markdown is good for writing, but it isn't great when you need add inline HTML or styling.
+* Inject more complex HTML: Markdown is good for writing, but it isn't great when you need to add inline HTML or styling.
 * Ease repetitive data based tasks: when you have [external data](@/documentation/templates/overview.md#load-data) that you
   want to display in your page's body.
 

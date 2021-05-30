@@ -57,7 +57,7 @@ jobs:
 
 This script is pretty simple, because the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action) is doing everything for you. You just need to provide some details. For more configuration options check out the [README](https://github.com/shalzz/zola-deploy-action/blob/master/README.md).
 
-By commiting the action your first build is triggered. Wait until it's finished, then you should see in your repository a new branch *gh-pages* with the compiled *Zola* page in it.
+By committing the action your first build is triggered. Wait until it's finished, then you should see in your repository a new branch *gh-pages* with the compiled *Zola* page in it.
 
 Finally we need to check the *Github Pages* section of the repository settings. Click on the *Settings* tab and scroll down to the *Github Pages* section. Check if the source is set to *gh-pages* branch and the directory is */ (root)*. You should also see your *Github Pages* link.
 
