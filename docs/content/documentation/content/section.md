@@ -74,7 +74,7 @@ paginate_by = 0
 paginate_path = "page"
 
 # If set, there will pagination will happen in a reversed order.
-paginate_reversed=true
+paginate_reversed = false
 
 # This determines whether to insert a link for each header like the ones you can see on this site if you hover over
 # a header.
