@@ -73,6 +73,9 @@ paginate_by = 0
 # The default is page/1.
 paginate_path = "page"
 
+# If set, there will pagination will happen in a reversed order.
+paginate_reversed = false
+
 # This determines whether to insert a link for each header like the ones you can see on this site if you hover over
 # a header.
 # The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
