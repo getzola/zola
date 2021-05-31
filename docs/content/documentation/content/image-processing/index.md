@@ -128,14 +128,16 @@ This can be used in shortcodes. For example, we can create a very simple html-on
 picture gallery with the following shortcode named `gallery.html`:
 
 ```jinja2
+<div>
 {% for asset in page.assets %}
   {% if asset is matching("[.](jpg|png)$") %}
-    <a href="{{ get_url(path=asset) }}">
-      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill") }}" />
+    <a href="{{ get_url(path=asset) }}" target="_blank">
+      <img src="{{ resize_image(path=asset, width=240, height=180) }}" />
     </a>
     &ensp;
   {% endif %}
 {% endfor %}
+</div>
 ```
 
 As you can notice, we didn't specify an `op` argument, which means that it'll default to `"fill"`. Similarly,
