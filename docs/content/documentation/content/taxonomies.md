@@ -131,7 +131,7 @@ In a similar manner to how section and pages calculate their output path:
 
 The taxonomy pages are then available at the following paths:
 
-```
+```txt
 $BASE_URL/$NAME/ (taxonomy)
 $BASE_URL/$NAME/$SLUG (taxonomy entry)
 ```
