@@ -353,7 +353,8 @@ mod tests {
     use utils::slugs::SlugifyStrategy;
 
     #[test]
-    fn test_can_parse_a_valid_page() {
+    fn can_parse_a_valid_page() {
+        let config = Config::default_for_test();
         let content = r#"
 +++
 title = "Hello"
@@ -361,16 +362,11 @@ description = "hey there"
 slug = "hello-world"
 +++
 Hello world"#;
-        let res = Page::parse(Path::new("post.md"), content, &Config::default(), &PathBuf::new());
+        let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &Tera::default(),
-            &Config::default(),
-            InsertAnchor::None,
-        )
-        .unwrap();
+        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None)
+            .unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -525,7 +521,7 @@ Hello world"#;
 
     #[test]
     fn can_specify_summary() {
-        let config = Config::default();
+        let config = Config::default_for_test();
         let content = r#"
 +++
 +++
@@ -542,7 +538,7 @@ Hello world
 
     #[test]
     fn strips_footnotes_in_summary() {
-        let config = Config::default();
+        let config = Config::default_for_test();
         let content = r#"
 +++
 +++

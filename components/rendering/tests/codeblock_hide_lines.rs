@@ -30,7 +30,7 @@ macro_rules! colored_html {
 fn hide_lines_simple() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,

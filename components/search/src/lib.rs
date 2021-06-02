@@ -1,8 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use elasticlunr::{Index, Language};
 use elasticlunr::pipeline;
 use elasticlunr::pipeline::TokenizerFn;
+use elasticlunr::{Index, Language};
 use lazy_static::lazy_static;
 
 use config::{Config, Search};
@@ -140,7 +140,13 @@ pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<Str
 
     for section in library.sections_values() {
         if section.lang == lang {
-            add_section_to_index(&mut index, section, library, &language_options.search, tokenizers.clone());
+            add_section_to_index(
+                &mut index,
+                section,
+                library,
+                &language_options.search,
+                tokenizers.clone(),
+            );
         }
     }
 
@@ -181,7 +187,13 @@ fn add_section_to_index(
 
         index.add_doc_with_tokenizers(
             &page.permalink,
-            &fill_index(search_config, &page.meta.title, &page.meta.description, &page.path, &page.content),
+            &fill_index(
+                search_config,
+                &page.meta.title,
+                &page.meta.description,
+                &page.path,
+                &page.content,
+            ),
             tokenizers.clone(),
         );
     }
