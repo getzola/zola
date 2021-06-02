@@ -13,6 +13,8 @@ pub struct Search {
     /// Includes the description in the search index. When the site becomes too large, you can switch
     /// to that instead. `false` by default
     pub include_description: bool,
+    /// Include the path of the page in the search index. `false` by default.
+    pub include_path: bool,
 }
 
 impl Default for Search {
@@ -21,6 +23,7 @@ impl Default for Search {
             include_title: true,
             include_content: true,
             include_description: false,
+            include_path: false,
             truncate_content_length: None,
         }
     }

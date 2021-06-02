@@ -151,6 +151,8 @@ build_search_index = false
 include_title = true
 # Whether to include the description of the page/section in the index
 include_description = false
+# Whether to include the path of the page/section in the index
+include_path = false
 # Whether to include the rendered content of the page/section in the index
 include_content = true
 # At which character to truncate the content to. Useful if you have a lot of pages and the index would
