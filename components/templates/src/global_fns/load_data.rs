@@ -622,14 +622,15 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
         assert_eq!(data, val);
 
-        // 3. path starting with @/
-        args.insert("path".to_string(), to_value("@/test.css").unwrap());
+        // 3. absolute path is the same
+        args.insert("path".to_string(), to_value("/content/test.css").unwrap());
         let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
         assert_eq!(data, val);
 
-        // 4. absolute path does not work
-        args.insert("path".to_string(), to_value("/test.css").unwrap());
-        assert!(static_fn.call(&args).is_err());
+        // 4. path starting with @/
+        args.insert("path".to_string(), to_value("@/test.css").unwrap());
+        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        assert_eq!(data, val);
     }
 
     #[test]

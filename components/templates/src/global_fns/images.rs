@@ -211,19 +211,29 @@ mod tests {
             to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
         );
 
-        // 3. resizing an image in content starting with `@/`
-        args.insert("path".to_string(), to_value("@/gutenberg.jpg").unwrap());
-        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        // 3. resizing with an absolute path is the same as the above
+        args.insert("path".to_string(), to_value("/content/gutenberg.jpg").unwrap());
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("074e171855ee541800.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("32454a1e0243976c00.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/074e171855ee541800.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
         );
 
-        // 4. resizing an image with a relative path not starting with static or content
+        // 4. resizing an image in content starting with `@/` is the same as 2 and 3
+        args.insert("path".to_string(), to_value("@/gutenberg.jpg").unwrap());
+        assert_eq!(
+            data["static_path"],
+            to_value(&format!("{}", static_path.join("32454a1e0243976c00.jpg").display())).unwrap()
+        );
+        assert_eq!(
+            data["url"],
+            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
+        );
+
+        // 5. resizing an image with a relative path not starting with static or content
         args.insert("path".to_string(), to_value("gallery/asset.jpg").unwrap());
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
@@ -234,10 +244,6 @@ mod tests {
             data["url"],
             to_value("http://a-website.com/processed_images/c8aaba7b0593a60b00.jpg").unwrap()
         );
-
-        // 5. resizing with an absolute path
-        args.insert("path".to_string(), to_value("/content/gutenberg.jpg").unwrap());
-        assert!(static_fn.call(&args).is_err());
     }
 
     // TODO: consider https://github.com/getzola/zola/issues/1161
@@ -256,10 +262,12 @@ mod tests {
         assert_eq!(data["height"], to_value(380).unwrap());
         assert_eq!(data["width"], to_value(300).unwrap());
 
-        // 2. a call to something in `static` with an absolute path is not handled currently
+        // 2. a call to something in `static` with an absolute path is handled currently the same as the above
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("/static/gutenberg.jpg").unwrap());
-        assert!(static_fn.call(&args).is_err());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(data["height"], to_value(380).unwrap());
+        assert_eq!(data["width"], to_value(300).unwrap());
 
         // 3. a call to something in `content` with a relative path
         let mut args = HashMap::new();
