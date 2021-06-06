@@ -202,12 +202,14 @@ mod tests {
             kind: taxo_config,
             lang: config.default_language.clone(),
             slug: "tags".to_string(),
+            permalink: "/tags/".to_string(),
             items: vec![tag],
         };
         let tags_fr = Taxonomy {
             kind: taxo_config_fr,
             lang: "fr".to_owned(),
             slug: "tags".to_string(),
+            permalink: "/fr/tags/".to_string(),
             items: vec![tag_fr],
         };
 
@@ -278,12 +280,14 @@ mod tests {
             kind: taxo_config,
             lang: config.default_language.clone(),
             slug: "tags".to_string(),
+            permalink: "/tags/".to_string(),
             items: vec![tag],
         };
         let tags_fr = Taxonomy {
             kind: taxo_config_fr,
             lang: "fr".to_owned(),
             slug: "tags".to_string(),
+            permalink: "/fr/tags/".to_string(),
             items: vec![tag_fr],
         };
 
