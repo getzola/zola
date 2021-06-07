@@ -534,7 +534,7 @@ impl Processor {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Eq, PartialEq)]
 pub struct ImageMetaResponse {
     pub width: u32,
     pub height: u32,

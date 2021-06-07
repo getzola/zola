@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use lazy_static::lazy_static;
 
 use config::Config;
-use imageproc::{EnqueueResponse, Processor};
+use imageproc::{EnqueueResponse, ImageMetaResponse, Processor};
 use utils::fs as ufs;
 
 static CONFIG: &str = r#"
@@ -67,6 +67,11 @@ fn image_op_test(
         .map(|meta| (meta.width, meta.height))
         .unwrap();
     assert_eq!(processed_size, (expect_width, expect_height));
+}
+
+fn image_meta_test(source_img: &str) -> ImageMetaResponse {
+    let source_path = TEST_IMGS.join(source_img);
+    imageproc::read_image_dimensions(&source_path).unwrap()
 }
 
 #[test]
@@ -253,5 +258,37 @@ fn resize_image_webp_jpg() {
         150,
         300,
         380,
+    );
+}
+
+#[test]
+fn read_image_dimensions_jpg() {
+    assert_eq!(
+        image_meta_test("jpg.jpg"),
+        ImageMetaResponse { width: 300, height: 380, format: Some("jpg") }
+    );
+}
+
+#[test]
+fn read_image_dimensions_png() {
+    assert_eq!(
+        image_meta_test("png.png"),
+        ImageMetaResponse { width: 300, height: 380, format: Some("png") }
+    );
+}
+
+#[test]
+fn read_image_dimensions_svg() {
+    assert_eq!(
+        image_meta_test("svg.svg"),
+        ImageMetaResponse { width: 300, height: 300, format: Some("svg") }
+    );
+}
+
+#[test]
+fn read_image_dimensions_webp() {
+    assert_eq!(
+        image_meta_test("webp.webp"),
+        ImageMetaResponse { width: 300, height: 380, format: Some("webp") }
     );
 }
