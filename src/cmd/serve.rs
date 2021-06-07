@@ -228,6 +228,8 @@ fn create_new_site(
     include_drafts: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, String)> {
+    SITE_CONTENT.write().unwrap().clear();
+
     let mut site = Site::new(root_dir, config_file)?;
 
     let base_address = format!("{}:{}", base_url, interface_port);
