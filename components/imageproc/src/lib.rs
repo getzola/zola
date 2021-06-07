@@ -276,6 +276,10 @@ impl Hash for Format {
 /// Holds all data needed to perform a resize operation
 #[derive(Debug, PartialEq, Eq)]
 pub struct ImageOp {
+    /// This is the source input path string as passed in the template, we need this to compute the hash.
+    /// Hashing the resolved `input_path` would include the absolute path to the image
+    /// with all filesystem components.
+    input_src: String,
     input_path: PathBuf,
     op: ResizeOp,
     format: Format,
@@ -291,14 +295,14 @@ pub struct ImageOp {
 impl ImageOp {
     const RESIZE_FILTER: FilterType = FilterType::Lanczos3;
 
-    fn new(input_path: PathBuf, op: ResizeOp, format: Format) -> ImageOp {
+    fn new(input_src: String, input_path: PathBuf, op: ResizeOp, format: Format) -> ImageOp {
         let mut hasher = DefaultHasher::new();
-        hasher.write(input_path.to_string_lossy().as_bytes());
+        hasher.write(input_src.as_ref());
         op.hash(&mut hasher);
         format.hash(&mut hasher);
         let hash = hasher.finish();
 
-        ImageOp { input_path, op, format, hash, collision_id: 0 }
+        ImageOp { input_src, input_path, op, format, hash, collision_id: 0 }
     }
 
     fn perform(&self, target_path: &Path) -> Result<()> {
@@ -405,6 +409,7 @@ impl Processor {
 
     pub fn enqueue(
         &mut self,
+        input_src: String,
         input_path: PathBuf,
         op: &str,
         width: Option<u32>,
@@ -419,7 +424,7 @@ impl Processor {
         let args = ResizeArgs::from_args(op, width, height)?;
         let op = ResizeOp::new(args, meta.size);
         let format = Format::from_args(&meta, format, quality)?;
-        let img_op = ImageOp::new(input_path, op.clone(), format);
+        let img_op = ImageOp::new(input_src, input_path, op.clone(), format);
         let (static_path, url) = self.insert(img_op);
 
         Ok(EnqueueResponse::new(url, static_path, &meta, &op))

@@ -50,7 +50,7 @@ fn image_op_test(
     let mut proc = Processor::new(TMPDIR.clone(), &config);
 
     assert_eq!(
-        proc.enqueue(source_path, op, width, height, format, None).unwrap(),
+        proc.enqueue(source_img.into(), source_path, op, width, height, format, None).unwrap(),
         EnqueueResponse {
             url: format!("https://example.com/processed_images/{}", hash_fn),
             static_path: format!("static/processed_images/{}", hash_fn),
@@ -78,7 +78,7 @@ fn image_meta_test(source_img: &str) -> ImageMetaResponse {
 fn resize_image_scale() {
     image_op_test(
         "jpg.jpg",
-        "7ae4a0dcedcc791c00",
+        "c8f95cf7298a3ac400",
         "scale",
         Some(150),
         Some(150),
@@ -95,7 +95,7 @@ fn resize_image_scale() {
 fn resize_image_fit_width() {
     image_op_test(
         "jpg.jpg",
-        "9e564fb1c07265b100",
+        "ea70e772cb2c927500",
         "fit_width",
         Some(150),
         None,
@@ -112,7 +112,7 @@ fn resize_image_fit_width() {
 fn resize_image_fit_height() {
     image_op_test(
         "webp.webp",
-        "33673d9e7bc6d63500",
+        "89286296c7c4070d00",
         "fit_height",
         None,
         Some(190),
@@ -129,7 +129,7 @@ fn resize_image_fit_height() {
 fn resize_image_fit1() {
     image_op_test(
         "jpg.jpg",
-        "9e564fb1c07265b100",
+        "ea70e772cb2c927500",
         "fit",
         Some(150),
         Some(200),
@@ -146,14 +146,14 @@ fn resize_image_fit1() {
 fn resize_image_fit2() {
     image_op_test(
         "jpg.jpg",
-        "9e564fb1c07265b100",
+        "83d2ef621b50ce6f00",
         "fit",
         Some(160),
-        Some(190),
+        Some(180),
         "auto",
         "jpg",
-        150,
-        190,
+        142,
+        180,
         300,
         380,
     );
@@ -163,7 +163,7 @@ fn resize_image_fit2() {
 fn resize_image_fill1() {
     image_op_test(
         "jpg.jpg",
-        "6510db4398782c3b00",
+        "375bbe63f375f8d100",
         "fill",
         Some(100),
         Some(200),
@@ -180,7 +180,7 @@ fn resize_image_fill1() {
 fn resize_image_fill2() {
     image_op_test(
         "jpg.jpg",
-        "6ecfe84c4b61ea3100",
+        "17d0d5cc1f47663500",
         "fill",
         Some(200),
         Some(100),
@@ -197,7 +197,7 @@ fn resize_image_fill2() {
 fn resize_image_png_png() {
     image_op_test(
         "png.png",
-        "3dd91090fa49930200",
+        "1dd3dac068d36b3900",
         "scale",
         Some(150),
         Some(150),
@@ -214,7 +214,7 @@ fn resize_image_png_png() {
 fn resize_image_png_jpg() {
     image_op_test(
         "png.png",
-        "f64506abec14eb8100",
+        "818d7df655ab2e0c00",
         "scale",
         Some(150),
         Some(150),
@@ -231,7 +231,7 @@ fn resize_image_png_jpg() {
 fn resize_image_png_webp() {
     image_op_test(
         "png.png",
-        "a79f6e7c4e90d4a300",
+        "ec478d2823b16d5d00",
         "scale",
         Some(150),
         Some(150),
@@ -248,7 +248,7 @@ fn resize_image_png_webp() {
 fn resize_image_webp_jpg() {
     image_op_test(
         "webp.webp",
-        "9acbfd3577812d8e00",
+        "a0591a71e1cd9ffd00",
         "scale",
         Some(150),
         Some(150),
