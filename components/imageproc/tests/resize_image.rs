@@ -1,5 +1,5 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
 
 use lazy_static::lazy_static;
 
@@ -17,6 +17,7 @@ build_search_index = false
 highlight_code = false
 "#;
 
+
 lazy_static! {
     static ref TEST_IMGS: PathBuf =
         [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect();
@@ -27,6 +28,7 @@ lazy_static! {
         ufs::ensure_directory_exists(&tmpdir).unwrap();
         tmpdir
     };
+    static ref PROCESSED_PREFIX: String = format!("static{0}processed_images{0}", SLASH);
 }
 
 fn image_op_test(
@@ -49,7 +51,7 @@ fn image_op_test(
     let resp =
         proc.enqueue(source_img.into(), source_path, op, width, height, format, None).unwrap();
     assert_processed_path_matches(&resp.url, "https://example.com/processed_images/", expect_ext);
-    assert_processed_path_matches(&resp.static_path, "static/processed_images/", expect_ext);
+    assert_processed_path_matches(&resp.static_path, PROCESSED_PREFIX.as_str(), expect_ext);
     assert_eq!(resp.width, expect_width);
     assert_eq!(resp.height, expect_height);
     assert_eq!(resp.orig_width, orig_width);
