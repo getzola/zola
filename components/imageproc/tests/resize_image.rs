@@ -63,7 +63,7 @@ fn image_op_test(
 
     proc.do_process().unwrap();
 
-    let processed_size = imageproc::read_image_dimensions(&PROCESSED_DIR.join(hash_fn))
+    let processed_size = imageproc::read_image_metadata(&PROCESSED_DIR.join(hash_fn))
         .map(|meta| (meta.width, meta.height))
         .unwrap();
     assert_eq!(processed_size, (expect_width, expect_height));
@@ -71,7 +71,7 @@ fn image_op_test(
 
 fn image_meta_test(source_img: &str) -> ImageMetaResponse {
     let source_path = TEST_IMGS.join(source_img);
-    imageproc::read_image_dimensions(&source_path).unwrap()
+    imageproc::read_image_metadata(&source_path).unwrap()
 }
 
 #[test]
@@ -262,7 +262,7 @@ fn resize_image_webp_jpg() {
 }
 
 #[test]
-fn read_image_dimensions_jpg() {
+fn read_image_metadata_jpg() {
     assert_eq!(
         image_meta_test("jpg.jpg"),
         ImageMetaResponse { width: 300, height: 380, format: Some("jpg") }
@@ -270,7 +270,7 @@ fn read_image_dimensions_jpg() {
 }
 
 #[test]
-fn read_image_dimensions_png() {
+fn read_image_metadata_png() {
     assert_eq!(
         image_meta_test("png.png"),
         ImageMetaResponse { width: 300, height: 380, format: Some("png") }
@@ -278,7 +278,7 @@ fn read_image_dimensions_png() {
 }
 
 #[test]
-fn read_image_dimensions_svg() {
+fn read_image_metadata_svg() {
     assert_eq!(
         image_meta_test("svg.svg"),
         ImageMetaResponse { width: 300, height: 300, format: Some("svg") }
@@ -286,7 +286,7 @@ fn read_image_dimensions_svg() {
 }
 
 #[test]
-fn read_image_dimensions_webp() {
+fn read_image_metadata_webp() {
     assert_eq!(
         image_meta_test("webp.webp"),
         ImageMetaResponse { width: 300, height: 380, format: Some("webp") }

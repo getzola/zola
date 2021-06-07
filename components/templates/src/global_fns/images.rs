@@ -106,7 +106,7 @@ impl TeraFn for GetImageMetadata {
             }
         };
 
-        let response = imageproc::read_image_dimensions(&src_path)
+        let response = imageproc::read_image_metadata(&src_path)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         to_value(response).map_err(Into::into)
     }

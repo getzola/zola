@@ -564,7 +564,7 @@ impl From<webp::WebPImage> for ImageMetaResponse {
 }
 
 /// Read image dimensions (cheaply), used in `get_image_metadata()`, supports SVG
-pub fn read_image_dimensions<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse> {
+pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse> {
     let path = path.as_ref();
     let ext = path.extension().and_then(OsStr::to_str).unwrap_or("").to_lowercase();
 
