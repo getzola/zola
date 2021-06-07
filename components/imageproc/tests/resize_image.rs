@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use lazy_static::lazy_static;
 
 use config::Config;
-use imageproc::{EnqueueResponse, ImageMetaResponse, Processor};
+use imageproc::{assert_processed_path_matches, ImageMetaResponse, Processor};
 use utils::fs as ufs;
 
 static CONFIG: &str = r#"
@@ -27,12 +27,10 @@ lazy_static! {
         ufs::ensure_directory_exists(&tmpdir).unwrap();
         tmpdir
     };
-    static ref PROCESSED_DIR: PathBuf = TMPDIR.join("static").join("processed_images");
 }
 
 fn image_op_test(
     source_img: &str,
-    hash: &str,
     op: &str,
     width: Option<u32>,
     height: Option<u32>,
@@ -44,26 +42,23 @@ fn image_op_test(
     orig_height: u32,
 ) {
     let source_path = TEST_IMGS.join(source_img);
-    let hash_fn = format!("{}.{}", hash, expect_ext);
 
     let config = Config::parse(&CONFIG).unwrap();
     let mut proc = Processor::new(TMPDIR.clone(), &config);
 
-    assert_eq!(
-        proc.enqueue(source_img.into(), source_path, op, width, height, format, None).unwrap(),
-        EnqueueResponse {
-            url: format!("https://example.com/processed_images/{}", hash_fn),
-            static_path: format!("static/processed_images/{}", hash_fn),
-            width: expect_width,
-            height: expect_height,
-            orig_width,
-            orig_height,
-        }
-    );
+    let resp =
+        proc.enqueue(source_img.into(), source_path, op, width, height, format, None).unwrap();
+    assert_processed_path_matches(&resp.url, "https://example.com/processed_images/", expect_ext);
+    assert_processed_path_matches(&resp.static_path, "static/processed_images/", expect_ext);
+    assert_eq!(resp.width, expect_width);
+    assert_eq!(resp.height, expect_height);
+    assert_eq!(resp.orig_width, orig_width);
+    assert_eq!(resp.orig_height, orig_height);
 
     proc.do_process().unwrap();
 
-    let processed_size = imageproc::read_image_metadata(&PROCESSED_DIR.join(hash_fn))
+    let processed_path = PathBuf::from(&resp.static_path);
+    let processed_size = imageproc::read_image_metadata(&TMPDIR.join(processed_path))
         .map(|meta| (meta.width, meta.height))
         .unwrap();
     assert_eq!(processed_size, (expect_width, expect_height));
@@ -76,189 +71,57 @@ fn image_meta_test(source_img: &str) -> ImageMetaResponse {
 
 #[test]
 fn resize_image_scale() {
-    image_op_test(
-        "jpg.jpg",
-        "c8f95cf7298a3ac400",
-        "scale",
-        Some(150),
-        Some(150),
-        "auto",
-        "jpg",
-        150,
-        150,
-        300,
-        380,
-    );
+    image_op_test("jpg.jpg", "scale", Some(150), Some(150), "auto", "jpg", 150, 150, 300, 380);
 }
 
 #[test]
 fn resize_image_fit_width() {
-    image_op_test(
-        "jpg.jpg",
-        "ea70e772cb2c927500",
-        "fit_width",
-        Some(150),
-        None,
-        "auto",
-        "jpg",
-        150,
-        190,
-        300,
-        380,
-    );
+    image_op_test("jpg.jpg", "fit_width", Some(150), None, "auto", "jpg", 150, 190, 300, 380);
 }
 
 #[test]
 fn resize_image_fit_height() {
-    image_op_test(
-        "webp.webp",
-        "89286296c7c4070d00",
-        "fit_height",
-        None,
-        Some(190),
-        "auto",
-        "jpg",
-        150,
-        190,
-        300,
-        380,
-    );
+    image_op_test("webp.webp", "fit_height", None, Some(190), "auto", "jpg", 150, 190, 300, 380);
 }
 
 #[test]
 fn resize_image_fit1() {
-    image_op_test(
-        "jpg.jpg",
-        "ea70e772cb2c927500",
-        "fit",
-        Some(150),
-        Some(200),
-        "auto",
-        "jpg",
-        150,
-        190,
-        300,
-        380,
-    );
+    image_op_test("jpg.jpg", "fit", Some(150), Some(200), "auto", "jpg", 150, 190, 300, 380);
 }
 
 #[test]
 fn resize_image_fit2() {
-    image_op_test(
-        "jpg.jpg",
-        "83d2ef621b50ce6f00",
-        "fit",
-        Some(160),
-        Some(180),
-        "auto",
-        "jpg",
-        142,
-        180,
-        300,
-        380,
-    );
+    image_op_test("jpg.jpg", "fit", Some(160), Some(180), "auto", "jpg", 142, 180, 300, 380);
 }
 
 #[test]
 fn resize_image_fill1() {
-    image_op_test(
-        "jpg.jpg",
-        "375bbe63f375f8d100",
-        "fill",
-        Some(100),
-        Some(200),
-        "auto",
-        "jpg",
-        100,
-        200,
-        300,
-        380,
-    );
+    image_op_test("jpg.jpg", "fill", Some(100), Some(200), "auto", "jpg", 100, 200, 300, 380);
 }
 
 #[test]
 fn resize_image_fill2() {
-    image_op_test(
-        "jpg.jpg",
-        "17d0d5cc1f47663500",
-        "fill",
-        Some(200),
-        Some(100),
-        "auto",
-        "jpg",
-        200,
-        100,
-        300,
-        380,
-    );
+    image_op_test("jpg.jpg", "fill", Some(200), Some(100), "auto", "jpg", 200, 100, 300, 380);
 }
 
 #[test]
 fn resize_image_png_png() {
-    image_op_test(
-        "png.png",
-        "1dd3dac068d36b3900",
-        "scale",
-        Some(150),
-        Some(150),
-        "auto",
-        "png",
-        150,
-        150,
-        300,
-        380,
-    );
+    image_op_test("png.png", "scale", Some(150), Some(150), "auto", "png", 150, 150, 300, 380);
 }
 
 #[test]
 fn resize_image_png_jpg() {
-    image_op_test(
-        "png.png",
-        "818d7df655ab2e0c00",
-        "scale",
-        Some(150),
-        Some(150),
-        "jpg",
-        "jpg",
-        150,
-        150,
-        300,
-        380,
-    );
+    image_op_test("png.png", "scale", Some(150), Some(150), "jpg", "jpg", 150, 150, 300, 380);
 }
 
 #[test]
 fn resize_image_png_webp() {
-    image_op_test(
-        "png.png",
-        "ec478d2823b16d5d00",
-        "scale",
-        Some(150),
-        Some(150),
-        "webp",
-        "webp",
-        150,
-        150,
-        300,
-        380,
-    );
+    image_op_test("png.png", "scale", Some(150), Some(150), "webp", "webp", 150, 150, 300, 380);
 }
 
 #[test]
 fn resize_image_webp_jpg() {
-    image_op_test(
-        "webp.webp",
-        "a0591a71e1cd9ffd00",
-        "scale",
-        Some(150),
-        Some(150),
-        "auto",
-        "jpg",
-        150,
-        150,
-        300,
-        380,
-    );
+    image_op_test("webp.webp", "scale", Some(150), Some(150), "auto", "jpg", 150, 150, 300, 380);
 }
 
 #[test]
@@ -292,3 +155,5 @@ fn read_image_metadata_webp() {
         ImageMetaResponse { width: 300, height: 380, format: Some("webp") }
     );
 }
+
+// TODO: Test that hash remains the same if physical path is changed

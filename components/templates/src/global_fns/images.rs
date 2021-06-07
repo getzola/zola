@@ -155,6 +155,8 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         let static_path = Path::new("static").join("processed_images");
 
+        // TODO: Use `assert_processed_path_matches()` from imageproc so that hashes don't need to be hardcoded
+
         assert_eq!(
             data["static_path"],
             to_value(&format!("{}", static_path.join("6a89d6483cdc5f7700.jpg").display())).unwrap()

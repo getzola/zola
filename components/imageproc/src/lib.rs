@@ -599,3 +599,21 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
         _ => ImageMeta::read(path).map(ImageMetaResponse::from).map_err(|e| error(e.into())),
     }
 }
+
+/// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
+/// this is useful in test so that we don't need to hardcode hash, which is annoying.
+pub fn assert_processed_path_matches(path: &str, prefix: &str, extension: &str) {
+    let filename = path
+        .strip_prefix(prefix)
+        .unwrap_or_else(|| panic!("Path `{}` doesn't start with `{}`", path, prefix));
+
+    let suffix = format!(".{}", extension);
+    assert!(filename.ends_with(&suffix), "Path `{}` doesn't end with `{}`", path, suffix);
+
+    assert!(
+        RESIZED_FILENAME.is_match_at(filename, 0),
+        "In path `{}`, file stem `{}` doesn't match the RESIZED_FILENAME regex",
+        path,
+        filename
+    );
+}
