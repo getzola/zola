@@ -49,10 +49,8 @@ impl ImageMeta {
         use ImageFormat::*;
 
         // We assume lossy by default / if unknown format
-        match self.format.unwrap_or(Jpeg) {
-            Png | Pnm | Tiff | Tga | Bmp | Ico | Hdr | Farbfeld => false,
-            _ => true,
-        }
+        let format = self.format.unwrap_or(Jpeg);
+        !matches!(format, Png | Pnm | Tiff | Tga | Bmp | Ico | Hdr | Farbfeld)
     }
 }
 
@@ -594,7 +592,7 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
             decoder
                 .decode()
                 .map(ImageMetaResponse::from)
-                .ok_or(Error::msg(format!("Failed to decode WebP image: {}", path.display())))
+                .ok_or_else(|| Error::msg(format!("Failed to decode WebP image: {}", path.display())))
         }
         _ => ImageMeta::read(path).map(ImageMetaResponse::from).map_err(|e| error(e.into())),
     }
