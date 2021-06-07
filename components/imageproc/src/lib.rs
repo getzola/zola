@@ -236,8 +236,8 @@ impl Format {
                 "png" => Some(false),
                 "gif" => Some(false),
                 "bmp" => Some(false),
-                // It is assumed that webp is lossless, but it can be both
-                "webp" => Some(false),
+                // It is assumed that webp is lossy, but it can be both
+                "webp" => Some(true),
                 _ => None,
             })
             .unwrap_or(None)
