@@ -223,7 +223,6 @@ fn resize_image_png_jpg() {
 }
 
 #[test]
-#[ignore]  // FIXME: webp loading
 fn resize_image_png_webp() {
     image_op_test(
         "png.png",
