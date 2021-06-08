@@ -1,22 +1,10 @@
 use std::collections::HashMap;
-use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use image::GenericImageView;
-use serde_derive::{Deserialize, Serialize};
-use svg_metadata as svg;
-use tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
+use tera::{from_value, to_value, Function as TeraFn, Result, Value};
 
 use crate::global_fns::helpers::search_for_file;
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ResizeImageResponse {
-    /// The final URL for that asset
-    url: String,
-    /// The path to the static asset generated
-    static_path: String,
-}
 
 #[derive(Debug)]
 pub struct ResizeImage {
@@ -74,33 +62,11 @@ impl TeraFn for ResizeImage {
             }
         };
 
-        let imageop =
-            imageproc::ImageOp::from_args(path, file_path, &op, width, height, &format, quality)
-                .map_err(|e| format!("`resize_image`: {}", e))?;
-        let (static_path, url) = imageproc.insert(imageop);
+        let response = imageproc
+            .enqueue(path, file_path, &op, width, height, &format, quality)
+            .map_err(|e| format!("`resize_image`: {}", e))?;
 
-        to_value(ResizeImageResponse {
-            static_path: static_path.to_string_lossy().into_owned(),
-            url,
-        })
-        .map_err(|err| err.into())
-    }
-}
-
-// Try to read the image dimensions for a given image
-fn image_dimensions(path: &Path) -> Result<(u32, u32)> {
-    if let Some("svg") = path.extension().and_then(OsStr::to_str) {
-        let img = svg::Metadata::parse_file(&path)
-            .map_err(|e| Error::chain(format!("Failed to process SVG: {}", path.display()), e))?;
-        match (img.height(), img.width(), img.view_box()) {
-            (Some(h), Some(w), _) => Ok((h as u32, w as u32)),
-            (_, _, Some(view_box)) => Ok((view_box.height as u32, view_box.width as u32)),
-            _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
-        }
-    } else {
-        let img = image::open(&path)
-            .map_err(|e| Error::chain(format!("Failed to process image: {}", path.display()), e))?;
-        Ok((img.height(), img.width()))
+        to_value(response).map_err(Into::into)
     }
 }
 
@@ -139,11 +105,10 @@ impl TeraFn for GetImageMetadata {
                 return Err(format!("`resize_image`: Cannot find path: {}", path).into());
             }
         };
-        let (height, width) = image_dimensions(&src_path)?;
-        let mut map = tera::Map::new();
-        map.insert(String::from("height"), Value::Number(tera::Number::from(height)));
-        map.insert(String::from("width"), Value::Number(tera::Number::from(width)));
-        Ok(Value::Object(map))
+
+        let response = imageproc::read_image_metadata(&src_path)
+            .map_err(|e| format!("`resize_image`: {}", e))?;
+        to_value(response).map_err(Into::into)
     }
 }
 
@@ -190,13 +155,15 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         let static_path = Path::new("static").join("processed_images");
 
+        // TODO: Use `assert_processed_path_matches()` from imageproc so that hashes don't need to be hardcoded
+
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("e49f5bd23ec5007c00.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("6a89d6483cdc5f7700.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/e49f5bd23ec5007c00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/6a89d6483cdc5f7700.jpg").unwrap()
         );
 
         // 2. resizing an image in content with a relative path
@@ -204,33 +171,33 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("32454a1e0243976c00.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("202d9263f4dbc95900.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/202d9263f4dbc95900.jpg").unwrap()
         );
 
         // 3. resizing with an absolute path is the same as the above
         args.insert("path".to_string(), to_value("/content/gutenberg.jpg").unwrap());
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("32454a1e0243976c00.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("202d9263f4dbc95900.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/202d9263f4dbc95900.jpg").unwrap()
         );
 
         // 4. resizing an image in content starting with `@/` is the same as 2 and 3
         args.insert("path".to_string(), to_value("@/gutenberg.jpg").unwrap());
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("32454a1e0243976c00.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("202d9263f4dbc95900.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/32454a1e0243976c00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/202d9263f4dbc95900.jpg").unwrap()
         );
 
         // 5. resizing an image with a relative path not starting with static or content
@@ -238,11 +205,11 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("c8aaba7b0593a60b00.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("6296a3c153f701be00.jpg").display())).unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/c8aaba7b0593a60b00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/6296a3c153f701be00.jpg").unwrap()
         );
     }
 
