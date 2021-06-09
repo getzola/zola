@@ -8,7 +8,8 @@ use std::path::{Path, PathBuf};
 /// 3. base_path + content + path
 /// A path starting with @/ will replace it with `content/` and a path starting with `/` will have
 /// it removed.
-pub fn search_for_file(base_path: &Path, path: &str) -> Option<PathBuf> {
+/// It also returns the unified path so it can be used as unique hash for a given file.
+pub fn search_for_file(base_path: &Path, path: &str) -> Option<(PathBuf, String)> {
     let search_paths = [base_path.join("static"), base_path.join("content")];
     let actual_path = if path.starts_with("@/") {
         Cow::Owned(path.replace("@/", "content/"))
@@ -31,7 +32,7 @@ pub fn search_for_file(base_path: &Path, path: &str) -> Option<PathBuf> {
     }
 
     if file_exists {
-        Some(file_path)
+        Some((file_path, actual_path.into_owned()))
     } else {
         None
     }
