@@ -17,7 +17,6 @@ build_search_index = false
 highlight_code = false
 "#;
 
-
 lazy_static! {
     static ref TEST_IMGS: PathBuf =
         [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect();
