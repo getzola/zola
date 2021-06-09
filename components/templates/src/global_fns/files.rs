@@ -115,7 +115,7 @@ impl TeraFn for GetUrl {
 
             if cachebust {
                 match search_for_file(&self.base_path, &path_with_lang)
-                    .and_then(|p| fs::File::open(&p).ok())
+                    .and_then(|(p, _)| fs::File::open(&p).ok())
                     .and_then(|f| compute_file_hash::<Sha256>(f, false).ok())
                 {
                     Some(hash) => {
@@ -167,7 +167,7 @@ impl TeraFn for GetFileHash {
         .unwrap_or(true);
 
         let file_path = match search_for_file(&self.base_path, &path) {
-            Some(f) => f,
+            Some((f, _)) => f,
             None => {
                 return Err(format!("`get_file_hash`: Cannot find file: {}", path).into());
             }

@@ -95,7 +95,7 @@ impl DataSource {
 
         if let Some(path) = path_arg {
             return match search_for_file(&base_path, &path) {
-                Some(f) => Ok(Some(DataSource::Path(f))),
+                Some((f, _)) => Ok(Some(DataSource::Path(f))),
                 None => Ok(None),
             };
         }

@@ -55,7 +55,7 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let file_path = match search_for_file(&self.base_path, &path) {
+        let (file_path, unified_path) = match search_for_file(&self.base_path, &path) {
             Some(f) => f,
             None => {
                 return Err(format!("`resize_image`: Cannot find file: {}", path).into());
@@ -63,7 +63,7 @@ impl TeraFn for ResizeImage {
         };
 
         let response = imageproc
-            .enqueue(path, file_path, &op, width, height, &format, quality)
+            .enqueue(unified_path, file_path, &op, width, height, &format, quality)
             .map_err(|e| format!("`resize_image`: {}", e))?;
 
         to_value(response).map_err(Into::into)
@@ -95,8 +95,8 @@ impl TeraFn for GetImageMetadata {
             "`get_image_metadata`: `allow_missing` must be a boolean (true or false)"
         )
         .unwrap_or(false);
-        let src_path = match search_for_file(&self.base_path, &path) {
-            Some(f) => f,
+        let (src_path, _) = match search_for_file(&self.base_path, &path) {
+            Some((f, p)) => (f, p),
             None => {
                 if allow_missing {
                     println!("Image at path {} could not be found or loaded", path);
@@ -180,25 +180,13 @@ mod tests {
 
         // 3. resizing with an absolute path is the same as the above
         args.insert("path".to_string(), to_value("/content/gutenberg.jpg").unwrap());
-        assert_eq!(
-            data["static_path"],
-            to_value(&format!("{}", static_path.join("202d9263f4dbc95900.jpg").display())).unwrap()
-        );
-        assert_eq!(
-            data["url"],
-            to_value("http://a-website.com/processed_images/202d9263f4dbc95900.jpg").unwrap()
-        );
+        let data2 = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(data, data2);
 
         // 4. resizing an image in content starting with `@/` is the same as 2 and 3
         args.insert("path".to_string(), to_value("@/gutenberg.jpg").unwrap());
-        assert_eq!(
-            data["static_path"],
-            to_value(&format!("{}", static_path.join("202d9263f4dbc95900.jpg").display())).unwrap()
-        );
-        assert_eq!(
-            data["url"],
-            to_value("http://a-website.com/processed_images/202d9263f4dbc95900.jpg").unwrap()
-        );
+        let data2 = static_fn.call(&args).unwrap().as_object().unwrap().clone();
+        assert_eq!(data, data2);
 
         // 5. resizing an image with a relative path not starting with static or content
         args.insert("path".to_string(), to_value("gallery/asset.jpg").unwrap());
