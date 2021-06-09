@@ -555,7 +555,7 @@ impl From<ImageMeta> for ImageMetaResponse {
         Self {
             width: im.size.0,
             height: im.size.1,
-            format: im.format.and_then(|f| f.extensions_str().get(0)).map(|&f| f),
+            format: im.format.and_then(|f| f.extensions_str().get(0)).copied(),
         }
     }
 }
@@ -589,10 +589,9 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
             // Unfortunatelly we have to load the entire image here, unlike with the others :|
             let data = fs::read(path).map_err(|e| error(e.into()))?;
             let decoder = webp::Decoder::new(&data[..]);
-            decoder
-                .decode()
-                .map(ImageMetaResponse::from)
-                .ok_or_else(|| Error::msg(format!("Failed to decode WebP image: {}", path.display())))
+            decoder.decode().map(ImageMetaResponse::from).ok_or_else(|| {
+                Error::msg(format!("Failed to decode WebP image: {}", path.display()))
+            })
         }
         _ => ImageMeta::read(path).map(ImageMetaResponse::from).map_err(|e| error(e.into())),
     }
