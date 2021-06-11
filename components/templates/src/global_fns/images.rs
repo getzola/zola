@@ -55,7 +55,9 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, unified_path) = match search_for_file(&self.base_path, &path) {
+        let (file_path, unified_path) = match search_for_file(&self.base_path, &path)
+            .map_err(|e| format!("`resize_image`: {}", e))?
+        {
             Some(f) => f,
             None => {
                 return Err(format!("`resize_image`: Cannot find file: {}", path).into());
@@ -95,14 +97,15 @@ impl TeraFn for GetImageMetadata {
             "`get_image_metadata`: `allow_missing` must be a boolean (true or false)"
         )
         .unwrap_or(false);
-        let (src_path, _) = match search_for_file(&self.base_path, &path) {
+        let (src_path, _) = match search_for_file(&self.base_path, &path)
+            .map_err(|e| format!("`get_image_metadata`: {}", e))?
+        {
             Some((f, p)) => (f, p),
             None => {
                 if allow_missing {
-                    println!("Image at path {} could not be found or loaded", path);
                     return Ok(Value::Null);
                 }
-                return Err(format!("`resize_image`: Cannot find path: {}", path).into());
+                return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
             }
         };
 

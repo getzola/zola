@@ -11,7 +11,7 @@ use reqwest::{blocking::Client, header};
 use tera::{from_value, to_value, Error, Function as TeraFn, Map, Result, Value};
 use url::Url;
 use utils::de::fix_toml_dates;
-use utils::fs::{get_file_time, is_path_in_directory, read_file};
+use utils::fs::{get_file_time, read_file};
 
 use crate::global_fns::helpers::search_for_file;
 
@@ -94,7 +94,9 @@ impl DataSource {
         }
 
         if let Some(path) = path_arg {
-            return match search_for_file(&base_path, &path) {
+            return match search_for_file(&base_path, &path)
+                .map_err(|e| format!("`load_data`: {}", e))?
+            {
                 Some((f, _)) => Ok(Some(DataSource::Path(f))),
                 None => Ok(None),
             };
@@ -104,7 +106,7 @@ impl DataSource {
             return Url::parse(&url)
                 .map(DataSource::Url)
                 .map(Some)
-                .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
+                .map_err(|e| format!("`load_data`: Failed to parse {} as url: {}", url, e).into());
         }
 
         Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
@@ -137,21 +139,6 @@ impl Hash for DataSource {
             }
         };
     }
-}
-
-fn read_local_data_file(base_path: &Path, full_path: PathBuf) -> Result<String> {
-    if !is_path_in_directory(&base_path, &full_path)
-        .map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))?
-    {
-        return Err(format!(
-            "{:?} is not inside the base site directory {:?}",
-            full_path, base_path
-        )
-        .into());
-    }
-
-    read_file(&full_path)
-        .map_err(|e| format!("`load_data`: error reading file {:?}: {}", full_path, e).into())
 }
 
 fn get_output_format_from_args(
@@ -235,21 +222,24 @@ impl TeraFn for LoadData {
 
         // If the file doesn't exist, source is None
         let data_source =
-            match (DataSource::from_args(path_arg.clone(), url_arg, &self.base_path)?, required) {
+            match (DataSource::from_args(path_arg.clone(), url_arg, &self.base_path), required) {
                 // If the file was not required, return a Null value to the template
-                (None, false) => {
+                (Ok(None), false) | (Err(_), false) => {
                     return Ok(Value::Null);
                 }
+                (Err(e), true) => {
+                    return Err(e);
+                }
                 // If the file was required, error
-                (None, true) => {
+                (Ok(None), true) => {
                     // source is None only with path_arg (not URL), so path_arg is safely unwrap
                     return Err(format!(
-                        "{} doesn't exist",
+                        "`load_data`: {} doesn't exist",
                         &self.base_path.join(path_arg.unwrap()).display()
                     )
                     .into());
                 }
-                (Some(data_source), _) => data_source,
+                (Ok(Some(data_source)), _) => data_source,
             };
 
         let file_format = get_output_format_from_args(format_arg, &data_source)?;
@@ -262,7 +252,8 @@ impl TeraFn for LoadData {
         }
 
         let data = match data_source {
-            DataSource::Path(path) => read_local_data_file(&self.base_path, path),
+            DataSource::Path(path) => read_file(&path)
+                .map_err(|e| format!("`load_data`: error reading file {:?}: {}", path, e)),
             DataSource::Url(url) => {
                 let response_client = self.client.lock().expect("response client lock");
                 let req = match method {
@@ -280,7 +271,7 @@ impl TeraFn for LoadData {
                                 }
                                 Err(_) => {
                                     return Err(format!(
-                                        "{} is an illegal content type",
+                                        "`load_data`: {} is an illegal content type",
                                         &content_type
                                     )
                                     .into());
@@ -296,7 +287,7 @@ impl TeraFn for LoadData {
 
                 match req.send().and_then(|res| res.error_for_status()) {
                     Ok(r) => r.text().map_err(|e| {
-                        format!("Failed to parse response from {}: {:?}", url, e).into()
+                        format!("`load_data`: Failed to parse response from {}: {:?}", url, e)
                     }),
                     Err(e) => {
                         if !required {
@@ -305,10 +296,14 @@ impl TeraFn for LoadData {
                             return Ok(Value::Null);
                         }
                         Err(match e.status() {
-                            Some(status) => format!("Failed to request {}: {}", url, status),
-                            None => format!("Could not get response status for url: {}", url),
-                        }
-                        .into())
+                            Some(status) => {
+                                format!("`load_data`: Failed to request {}: {}", url, status)
+                            }
+                            None => format!(
+                                "`load_data`: Could not get response status for url: {}",
+                                url
+                            ),
+                        })
                     }
                 }
             }
@@ -634,13 +629,14 @@ mod tests {
     }
 
     #[test]
-    fn cannot_load_outside_content_dir() {
+    fn cannot_load_outside_base_dir() {
         let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../README.md").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_err());
+        println!("{:?} {:?}", std::env::current_dir(), result);
         assert!(result.unwrap_err().to_string().contains("is not inside the base site directory"));
     }
 
@@ -736,7 +732,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err().to_string(),
-            format!("Failed to request {}: 404 Not Found", url)
+            format!("`load_data`: Failed to request {}: 404 Not Found", url)
         );
     }
 

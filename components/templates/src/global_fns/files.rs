@@ -19,7 +19,6 @@ where
 {
     let mut hasher = D::new();
     io::copy(&mut file, &mut hasher)?;
-    println!("base64: {}", as_base64);
     if as_base64 {
         Ok(encode_b64(hasher.finalize()))
     } else {
@@ -79,9 +78,6 @@ impl TeraFn for GetUrl {
         let lang = optional_arg!(String, args.get("lang"), "`get_url`: `lang` must be a string.")
             .unwrap_or_else(|| self.config.default_language.clone());
 
-        // TODO: handle rss files with langs
-        // https://zola.discourse.group/t/rss-and-languages-do-not-work/878
-        // TODO: clean up everything
         // if it starts with @/, resolve it as an internal link
         if path.starts_with("@/") {
             let path_with_lang = match make_path_with_lang(path, &lang, &self.config) {
@@ -91,10 +87,11 @@ impl TeraFn for GetUrl {
 
             match resolve_internal_link(&path_with_lang, &self.permalinks) {
                 Ok(resolved) => Ok(to_value(resolved.permalink).unwrap()),
-                Err(_) => {
-                    Err(format!("Could not resolve URL for link `{}` not found.", path_with_lang)
-                        .into())
-                }
+                Err(_) => Err(format!(
+                    "`get_url`: could not resolve URL for link `{}` not found.",
+                    path_with_lang
+                )
+                .into()),
             }
         } else {
             // anything else
@@ -115,6 +112,7 @@ impl TeraFn for GetUrl {
 
             if cachebust {
                 match search_for_file(&self.base_path, &path_with_lang)
+                    .map_err(|e| format!("`get_url`: {}", e))?
                     .and_then(|(p, _)| fs::File::open(&p).ok())
                     .and_then(|f| compute_file_hash::<Sha256>(f, false).ok())
                 {
@@ -122,7 +120,11 @@ impl TeraFn for GetUrl {
                         permalink = format!("{}?h={}", permalink, hash);
                     }
                     None => {
-                        return Err(format!("Could not find or open file {}", path_with_lang).into())
+                        return Err(format!(
+                            "`get_url`: Could not find or open file {}",
+                            path_with_lang
+                        )
+                        .into())
                     }
                 };
             }
@@ -166,7 +168,9 @@ impl TeraFn for GetFileHash {
         )
         .unwrap_or(true);
 
-        let file_path = match search_for_file(&self.base_path, &path) {
+        let file_path = match search_for_file(&self.base_path, &path)
+            .map_err(|e| format!("`get_file_hash`: {}", e))?
+        {
             Some((f, _)) => f,
             None => {
                 return Err(format!("`get_file_hash`: Cannot find file: {}", path).into());
@@ -261,6 +265,10 @@ title = "A title"
         let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
+
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("/app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
     }
 
@@ -431,7 +439,6 @@ title = "A title"
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("doesnt-exist").unwrap());
         let err = format!("{}", static_fn.call(&args).unwrap_err());
-        println!("{:?}", err);
 
         assert!(err.contains("Cannot find file"));
     }

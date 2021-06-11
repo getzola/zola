@@ -6,14 +6,19 @@
 
 - Newlines are now required after the closing `+++` of front-matter
 - `resize_image` now returns an object: `{url, static_path}` instead of just the URL so you can follow up with other functions on the new file if needed
-- `get_file_hash` now has the `base64` option set to `true` by default (from `false`) since it's mainly used for integrity hashes which are base64  
-- `get_url` does not automatically strip leading `/` from paths anymore  
+- `get_file_hash` now has the `base64` option set to `true` by default (from `false`) since it's mainly used for integrity hashes which are base64
 - i18n rework: languages now have their sections in `config.toml` to set up all their options
   1. taxonomies don't have a `lang` anymore in the config, you need to declare them in their respective language section
   2. the `config` variable in templates has been changed and is now a stripped down language aware version of the previous `config`
   object
   3. Search settings are now language specific
   4. Translations are now nested in the languages table
+- Paths unification: 
+  1. `get_url` does not load automatically from the `static` folder anymore
+  2. New path resolving logic for all on-disk files: replace `@/` by `content/`, trim leading `/` and 
+     search in $BASE_DIR + $path, $BASE_DIR + static + $path and $BASE_DIR + content + $path
+  3. `get_file_hash` now returns base64 encoded hash by default
+  4. all functions working on files can now only load files in the Zola directory
 
 ### Other
 
