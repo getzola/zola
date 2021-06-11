@@ -19,6 +19,7 @@
      search in $BASE_DIR + $path, $BASE_DIR + static + $path and $BASE_DIR + content + $path
   3. `get_file_hash` now returns base64 encoded hash by default
   4. all functions working on files can now only load files in the Zola directory
+  5. `resize_image` return value has changed
 
 ### Other
 
