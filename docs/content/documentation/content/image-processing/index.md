@@ -106,7 +106,7 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
 ## Using `resize_image` in markdown via shortcodes
 
-`resize_image` is a built-in Tera global function (see the [templates](@/documentation/templates/_index.md) chapter),
+`resize_image` is a Zola built-in Tera function (see the [templates](@/documentation/templates/_index.md) chapter),
 but it can be used in Markdown using [shortcodes](@/documentation/content/shortcodes.md).
 
 The examples above were generated using a shortcode file named `resize_image.html` with this content:
@@ -128,14 +128,16 @@ This can be used in shortcodes. For example, we can create a very simple html-on
 picture gallery with the following shortcode named `gallery.html`:
 
 ```jinja2
+<div>
 {% for asset in page.assets %}
   {% if asset is matching("[.](jpg|png)$") %}
-    <a href="{{ get_url(path=asset) }}">
-      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill") }}" />
+    <a href="{{ get_url(path=asset) }}" target="_blank">
+      <img src="{{ resize_image(path=asset, width=240, height=180) }}" />
     </a>
     &ensp;
   {% endif %}
 {% endfor %}
+</div>
 ```
 
 As you can notice, we didn't specify an `op` argument, which means that it'll default to `"fill"`. Similarly,
