@@ -76,11 +76,12 @@ impl TeraFn for ResizeImage {
 pub struct GetImageMetadata {
     /// The base path of the Zola site
     base_path: PathBuf,
+    result_cache: Arc<Mutex<HashMap<String, Value>>>,
 }
 
 impl GetImageMetadata {
     pub fn new(base_path: PathBuf) -> Self {
-        Self { base_path }
+        Self { base_path, result_cache: Arc::new(Mutex::new(HashMap::new())) }
     }
 }
 
@@ -97,7 +98,8 @@ impl TeraFn for GetImageMetadata {
             "`get_image_metadata`: `allow_missing` must be a boolean (true or false)"
         )
         .unwrap_or(false);
-        let (src_path, _) = match search_for_file(&self.base_path, &path)
+
+        let (src_path, unified_path) = match search_for_file(&self.base_path, &path)
             .map_err(|e| format!("`get_image_metadata`: {}", e))?
         {
             Some((f, p)) => (f, p),
@@ -109,9 +111,17 @@ impl TeraFn for GetImageMetadata {
             }
         };
 
+        let mut cache = self.result_cache.lock().expect("result cache lock");
+        if let Some(cached_result) = cache.get(&unified_path) {
+            return Ok(cached_result.clone());
+        }
+
         let response = imageproc::read_image_metadata(&src_path)
             .map_err(|e| format!("`resize_image`: {}", e))?;
-        to_value(response).map_err(Into::into)
+        let out = to_value(response).unwrap();
+        cache.insert(unified_path, out.clone());
+
+        Ok(out)
     }
 }
 
