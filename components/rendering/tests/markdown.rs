@@ -60,7 +60,7 @@ fn can_highlight_code_block_no_lang() {
     let res = render_content("```\n$ gutenberg server\n$ ping\n```", &context).unwrap();
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b;\">\n<code><span style=\"color:#c0c5ce;\">$ gutenberg server\n$ ping\n</span></code></pre>"
+        "<pre style=\"background-color:#2b303b;color:#c0c5ce;\"><code><span>$ gutenberg server\n</span><span>$ ping\n</span></code></pre>\n"
     );
 }
 
@@ -81,7 +81,7 @@ fn can_highlight_code_block_with_lang() {
     let res = render_content("```python\nlist.append(1)\n```", &context).unwrap();
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b;\">\n<code class=\"language-python\" data-lang=\"python\"><span style=\"color:#c0c5ce;\">list.</span><span style=\"color:#bf616a;\">append</span><span style=\"color:#c0c5ce;\">(</span><span style=\"color:#d08770;\">1</span><span style=\"color:#c0c5ce;\">)\n</span></code></pre>"
+        "<pre class=\"language-python\" data-lang=\"python\" style=\"background-color:#2b303b;color:#c0c5ce;\"><code class=\"language-python\" data-lang=\"python\"><span>list.</span><span style=\"color:#bf616a;\">append</span><span>(</span><span style=\"color:#d08770;\">1</span><span>)\n</span></code></pre>\n"
     );
 }
 
@@ -103,7 +103,7 @@ fn can_higlight_code_block_with_unknown_lang() {
     // defaults to plain text
     assert_eq!(
         res.body,
-        "<pre style=\"background-color:#2b303b;\">\n<code class=\"language-yolo\" data-lang=\"yolo\"><span style=\"color:#c0c5ce;\">list.append(1)\n</span></code></pre>"
+        "<pre class=\"language-yolo\" data-lang=\"yolo\" style=\"background-color:#2b303b;color:#c0c5ce;\"><code class=\"language-yolo\" data-lang=\"yolo\"><span>list.append(1)\n</span></code></pre>\n"
     );
 }
 

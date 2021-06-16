@@ -8,7 +8,7 @@ use rendering::{render_content, RenderContext};
 
 macro_rules! colored_html_line {
     ( $s:expr ) => {{
-        let mut result = "<span style=\"color:#c0c5ce;\">".to_string();
+        let mut result = "<span>".to_string();
         result.push_str($s);
         result.push_str("\n</span>");
         result
@@ -17,11 +17,11 @@ macro_rules! colored_html_line {
 
 macro_rules! colored_html {
     ( $($s:expr),* $(,)* ) => {{
-        let mut result = "<pre style=\"background-color:#2b303b;\">\n<code>".to_string();
+        let mut result = "<pre style=\"background-color:#2b303b;color:#c0c5ce;\"><code>".to_string();
         $(
             result.push_str(colored_html_line!($s).as_str());
         )*
-        result.push_str("</code></pre>");
+        result.push_str("</code></pre>\n");
         result
     }};
 }
@@ -52,5 +52,5 @@ bat
         &context,
     )
     .unwrap();
-    assert_eq!(res.body, colored_html!("foo\nbaz\nbat",));
+    assert_eq!(res.body, colored_html!("foo", "baz", "bat"));
 }

@@ -82,6 +82,24 @@ pre {
   padding: 1rem;
   overflow: auto;
 }
+pre[data-linenos] {
+  padding: 1rem 0;
+}
+pre mark {
+  // If you want your highlights to take the full width.
+  display: block;
+}
+pre table {
+  width: 100%;
+  border-collapse: collapse;
+}
+pre table td {
+  padding: 0;
+}
+pre table td:nth-of-type(1) {
+  text-align: center;
+  user-select: none;
+}
 
 p code, li code {
   background-color: #f5f5f5;

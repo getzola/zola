@@ -98,6 +98,7 @@ pub struct SerializedConfig<'a> {
     description: &'a Option<String>,
     languages: HashMap<&'a String, &'a languages::LanguageOptions>,
     generate_feed: bool,
+    feed_filename: &'a str,
     taxonomies: &'a [taxonomies::Taxonomy],
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
@@ -116,11 +117,13 @@ impl Config {
             bail!("A base URL is required in config.toml with key `base_url`");
         }
 
-        if !THEME_SET.themes.contains_key(&config.markdown.highlight_theme) {
-            bail!(
-                "Highlight theme {} defined in config does not exist.",
-                config.markdown.highlight_theme
-            );
+        if config.markdown.highlight_theme != "css" {
+            if !THEME_SET.themes.contains_key(&config.markdown.highlight_theme) {
+                bail!(
+                    "Highlight theme {} defined in config does not exist.",
+                    config.markdown.highlight_theme
+                );
+            }
         }
 
         languages::validate_code(&config.default_language)?;
@@ -201,6 +204,7 @@ impl Config {
                     title: self.title.clone(),
                     description: self.description.clone(),
                     generate_feed: self.generate_feed,
+                    feed_filename: self.feed_filename.clone(),
                     build_search_index: self.build_search_index,
                     taxonomies: self.taxonomies.clone(),
                     search: self.search.clone(),
@@ -288,6 +292,7 @@ impl Config {
             description: &options.description,
             languages: self.languages.iter().filter(|(k, _)| k.as_str() != lang).collect(),
             generate_feed: options.generate_feed,
+            feed_filename: &options.feed_filename,
             taxonomies: &options.taxonomies,
             build_search_index: options.build_search_index,
             extra: &self.extra,

@@ -171,6 +171,79 @@ If your site source is laid out as follows:
 
 you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
 
+## Inline VS classed highlighting
+
+If you use a highlighting scheme like
+
+```toml
+highlight_theme = "base16-ocean-dark"
+```
+
+for a code block like
+
+````md
+```rs
+let highlight = true;
+```
+````
+
+you get the colors directly encoded in the html file.
+
+```html
+<pre class="language-rs" style="background-color:#2b303b;">
+    <code class="language-rs">
+        <span style="color:#b48ead;">let</span>
+        <span style="color:#c0c5ce;"> highlight = </span>
+        <span style="color:#d08770;">true</span>
+        <span style="color:#c0c5ce;">;
+    </span>
+  </code>
+</pre>
+```
+
+This is nice, because your page will load faster if everything is in one file.
+But if you would like to have the user choose a theme from a
+list, or use different color schemes for dark/light color schemes, you need a
+different solution.
+
+If you use the special `css` color scheme
+
+```toml
+highlight_theme = "css"
+```
+
+you get CSS class definitions, instead.
+
+```html
+<pre class="language-rs">
+    <code class="language-rs">
+        <span class="z-source z-rust">
+            <span class="z-storage z-type z-rust">let</span> highlight
+            <span class="z-keyword z-operator z-assignment z-rust">=</span>
+            <span class="z-constant z-language z-rust">true</span>
+            <span class="z-punctuation z-terminator z-rust">;</span>
+        </span>
+    </code>
+</pre>
+```
+
+Zola can output a css file for a theme in the `static` directory using the `highlighting_themes_css` option.
+
+```toml
+highlight_themes_css = [
+  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
+  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
+]
+```
+
+You can then support light and dark mode like so:
+
+```css
+@import url("syntax-theme-dark.css") (prefers-color-scheme: dark);
+@import url("syntax-theme-light.css") (prefers-color-scheme: light);
+```
+
+
 ## Annotations
 
 You can use additional annotations to customize how code blocks are displayed:
@@ -185,18 +258,28 @@ highlight(code);
 ```
 ````
 
-- `hl_lines` to highlight lines. You must specify a list of ranges of lines to highlight,
-separated by ` `. Ranges are 1-indexed.
+- `linenostart` to specify the number for the first line (defaults to 1)
   
 ````
-```rust,hl_lines=3
+```rust,linenos,linenostart=20
 use highlighter::highlight;
 let code = "...";
 highlight(code);
 ```
 ````
 
-- `hide_lines` to hide lines. You must specify a list of ranges of lines to hide,
+- `hl_lines` to highlight lines. You must specify a list of inclusive ranges of lines to highlight,
+separated by whitespaces. Ranges are 1-indexed and `linenostart` doesn't influence the values, it always refers to the codeblock line number.
+  
+````
+```rust,hl_lines=1 3-5 9
+use highlighter::highlight;
+let code = "...";
+highlight(code);
+```
+````
+
+- `hide_lines` to hide lines. You must specify a list of inclusive ranges of lines to hide,
 separated by ` `. Ranges are 1-indexed.
   
 ````
@@ -206,3 +289,59 @@ let code = "...";
 highlight(code);
 ```
 ````
+
+## Styling codeblocks
+
+Depending on the annotations used, some codeblocks will be hard to read without any CSS. We recommend using the following
+snippet in your sites:
+
+```scss
+pre {
+  padding: 1rem;
+  overflow: auto;
+}
+// The line numbers already provide some kind of left/right padding
+pre[data-linenos] {
+  padding: 1rem 0;
+}
+pre table td {
+  padding: 0;
+}
+// The line number cells
+pre table td:nth-of-type(1) {
+  text-align: center;
+  user-select: none;
+}
+// If you want your highlights to take the full width.
+pre mark {
+  display: block;
+}
+pre table {
+  width: 100%;
+  border-collapse: collapse;
+}
+```
+
+This snippet makes the highlighting work on the full width and ensures that a user can copy the content without
+selecting the line numbers. Obviously you will probably need to adjust it to fit your site style.
+
+Here's an example with all the options used: `scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7` with the
+snippet above.
+
+```scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7
+pre mark {
+  // If you want your highlights to take the full width.
+  display: block;
+  color: currentcolor;
+}
+pre table td:nth-of-type(1) {
+  // Select a colour matching your theme
+  color: #6b6b6b;
+  font-style: italic;
+}
+```
+
+Line 2 and 7 are comments that are not shown in the final output.
+
+When line numbers are active, the code block is turned into a table with one row and two cells. The first cell contains the line number and the second cell contains the code.
+Highlights are done via the `<mark>` HTML tag. When a line with line number is highlighted two `<mark>` tags are created: one around the line number(s) and one around the code.
