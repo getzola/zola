@@ -40,3 +40,11 @@ Files with the `scss` extension use "Sassy CSS" syntax,
 while files with the `sass` extension use the "indented" syntax: <https://sass-lang.com/documentation/syntax>.
 Zola will return an error if `scss` and `sass` files with the same
 base name exist in the same folder to avoid confusion -- see the example above.
+
+### Cache invalidation
+
+Often, browsers will cache files such as stylesheets. In order to make sure that the visitors to your site always get the latest version, you can use the global `get_url` function’s `cachebust` option. For example:
+
+```jinja2
+<link href="{{ get_url(path='style.css', cachebust=true) }}" rel="stylesheet">
+```
