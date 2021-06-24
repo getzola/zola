@@ -197,7 +197,7 @@ impl Section {
             .iter()
             .filter_map(|asset| asset.file_name())
             .filter_map(|filename| filename.to_str())
-            .map(|filename| self.path.clone() + filename)
+            .map(|filename| format!("{}{}", self.path, filename))
             .collect()
     }
 
@@ -258,6 +258,7 @@ mod tests {
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.assets.len(), 3);
+        assert!(section.serialized_assets[0].starts_with('/'));
         assert_eq!(section.permalink, "http://a-website.com/posts/with-assets/");
     }
 

@@ -299,7 +299,7 @@ impl Page {
                     .to_path_buf();
                 path
             })
-            .map(|path| path.to_string_lossy().to_string())
+            .map(|path| format!("/{}", path.display()))
             .collect()
     }
 
@@ -567,6 +567,7 @@ And here's another. [^2]
         assert_eq!(page.file.parent, path.join("content").join("posts"));
         assert_eq!(page.slug, "with-assets");
         assert_eq!(page.assets.len(), 3);
+        assert!(section.serialized_assets[0].starts_with('/'));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
     }
 

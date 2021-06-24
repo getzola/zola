@@ -20,6 +20,7 @@
   3. `get_file_hash` now returns base64 encoded hash by default
   4. all functions working on files can now only load files in the Zola directory
   5. `resize_image` return value has changed
+  6. `page.assets` now start with a `/` to match `section.assets` and other paths
 
 ### Other
 
