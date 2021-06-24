@@ -286,7 +286,10 @@ pub fn serve(
     console::report_elapsed_time(start);
 
     // Stop right there if we can't bind to the address
-    let bind_address: SocketAddrV4 = address.parse().unwrap();
+    let bind_address: SocketAddrV4 = match address.parse() {
+        Ok(a) => a,
+        Err(_) => return Err(format!("Invalid address: {}.", address).into())
+    };
     if (TcpListener::bind(&bind_address)).is_err() {
         return Err(format!("Cannot start server on address {}.", address).into());
     }
