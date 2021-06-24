@@ -33,6 +33,9 @@ impl<'a> TranslatedContent<'a> {
             .iter()
         {
             let other = library.get_section_by_key(*key);
+            if other.permalink == section.permalink {
+                continue;
+            }
             translations.push(TranslatedContent {
                 lang: &other.lang,
                 permalink: &other.permalink,
@@ -51,6 +54,9 @@ impl<'a> TranslatedContent<'a> {
             library.translations.get(&page.file.canonical).or(Some(&HashSet::new())).unwrap().iter()
         {
             let other = library.get_page_by_key(*key);
+            if other.permalink == page.permalink {
+                continue;
+            }
             translations.push(TranslatedContent {
                 lang: &other.lang,
                 permalink: &other.permalink,
@@ -69,7 +75,7 @@ pub struct SerializingPage<'a> {
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
-    ancestors: Vec<String>,
+    ancestors: Vec<&'a str>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     updated: &'a Option<String>,
@@ -138,7 +144,7 @@ impl<'a> SerializingPage<'a> {
         let ancestors = page
             .ancestors
             .iter()
-            .map(|k| library.get_section_by_key(*k).file.relative.clone())
+            .map(|k| library.get_section_by_key(*k).file.relative.as_str())
             .collect();
 
         let translations = TranslatedContent::find_all_pages(page, library);
@@ -197,7 +203,7 @@ impl<'a> SerializingPage<'a> {
         let ancestors = if let Some(ref lib) = library {
             page.ancestors
                 .iter()
-                .map(|k| lib.get_section_by_key(*k).file.relative.clone())
+                .map(|k| lib.get_section_by_key(*k).file.relative.as_str())
                 .collect()
         } else {
             vec![]
@@ -251,7 +257,7 @@ pub struct SerializingSection<'a> {
     relative_path: &'a str,
     content: &'a str,
     permalink: &'a str,
-    ancestors: Vec<String>,
+    ancestors: Vec<&'a str>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     extra: &'a Map<String, Value>,
@@ -283,7 +289,7 @@ impl<'a> SerializingSection<'a> {
         let ancestors = section
             .ancestors
             .iter()
-            .map(|k| library.get_section_by_key(*k).file.relative.clone())
+            .map(|k| library.get_section_by_key(*k).file.relative.as_str())
             .collect();
         let translations = TranslatedContent::find_all_sections(section, library);
 
@@ -317,7 +323,7 @@ impl<'a> SerializingSection<'a> {
             ancestors = section
                 .ancestors
                 .iter()
-                .map(|k| lib.get_section_by_key(*k).file.relative.clone())
+                .map(|k| lib.get_section_by_key(*k).file.relative.as_str())
                 .collect();
             translations = TranslatedContent::find_all_sections(section, lib);
             subsections =

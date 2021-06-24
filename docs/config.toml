@@ -3,7 +3,6 @@ title = "Zola"
 description = "Everything you need to make a static site engine in one binary."
 
 compile_sass = true
-insert_anchor_links = true
 build_search_index = true
 
 [markdown]

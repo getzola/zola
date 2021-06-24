@@ -20,18 +20,27 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     site.tera.register_function(
         "get_url",
         global_fns::GetUrl::new(
+            site.base_path.clone(),
             site.config.clone(),
             site.permalinks.clone(),
-            vec![site.static_path.clone(), site.output_path.clone(), site.content_path.clone()],
         ),
     );
-    site.tera
-        .register_function("resize_image", global_fns::ResizeImage::new(site.imageproc.clone()));
+    site.tera.register_function(
+        "resize_image",
+        global_fns::ResizeImage::new(
+            site.base_path.clone(),
+            site.imageproc.clone(),
+            site.config.theme.clone(),
+        ),
+    );
     site.tera.register_function(
         "get_image_metadata",
-        global_fns::GetImageMeta::new(site.content_path.clone()),
+        global_fns::GetImageMetadata::new(site.base_path.clone(), site.config.theme.clone()),
     );
-    site.tera.register_function("load_data", global_fns::LoadData::new(site.base_path.clone()));
+    site.tera.register_function(
+        "load_data",
+        global_fns::LoadData::new(site.base_path.clone(), site.config.theme.clone()),
+    );
     site.tera.register_function("trans", global_fns::Trans::new(site.config.clone()));
     site.tera.register_function(
         "get_taxonomy_url",
@@ -43,11 +52,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     );
     site.tera.register_function(
         "get_file_hash",
-        global_fns::GetFileHash::new(vec![
-            site.static_path.clone(),
-            site.output_path.clone(),
-            site.content_path.clone(),
-        ]),
+        global_fns::GetFileHash::new(site.base_path.clone(), site.config.theme.clone()),
     );
 
     Ok(())

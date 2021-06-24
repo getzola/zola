@@ -151,6 +151,12 @@ impl Config {
         Ok(config)
     }
 
+    pub fn default_for_test() -> Self {
+        let mut config = Config::default();
+        config.add_default_language();
+        config
+    }
+
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let path = path.as_ref();
@@ -184,7 +190,7 @@ impl Config {
     }
 
     /// Adds the default language to the list of languages if not present
-    fn add_default_language(&mut self) {
+    pub fn add_default_language(&mut self) {
         // We automatically insert a language option for the default language *if* it isn't present
         // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
         // TODO: as source of truth?
@@ -193,7 +199,7 @@ impl Config {
                 self.default_language.clone(),
                 languages::LanguageOptions {
                     title: self.title.clone(),
-                    description: self.title.clone(),
+                    description: self.description.clone(),
                     generate_feed: self.generate_feed,
                     build_search_index: self.build_search_index,
                     taxonomies: self.taxonomies.clone(),
@@ -319,7 +325,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
 
 impl Default for Config {
     fn default() -> Config {
-        let mut config = Config {
+        Config {
             base_url: DEFAULT_BASE_URL.to_string(),
             title: None,
             description: None,
@@ -344,9 +350,7 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
-        };
-        config.add_default_language();
-        config
+        }
     }
 }
 
@@ -477,7 +481,7 @@ truc = "default"
         assert_eq!(extra["hello"].as_str().unwrap(), "world".to_string());
         assert_eq!(extra["a_value"].as_integer().unwrap(), 10);
         assert_eq!(extra["sub"]["foo"].as_str().unwrap(), "bar".to_string());
-        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overriden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
+        assert_eq!(extra["sub"].get("truc").expect("The whole extra.sub table was overridden by theme data, discarding extra.sub.truc").as_str().unwrap(), "default".to_string());
         assert_eq!(extra["sub"]["sub"]["foo"].as_str().unwrap(), "bar".to_string());
         assert_eq!(
             extra["sub"]["sub"]

@@ -12,7 +12,7 @@ use utils::slugs::SlugifyStrategy;
 fn can_do_render_content_simple() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -29,7 +29,7 @@ fn can_do_render_content_simple() {
 fn doesnt_highlight_code_block_with_highlighting_off() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = false;
     let context = RenderContext::new(
         &tera_ctx,
@@ -47,7 +47,7 @@ fn doesnt_highlight_code_block_with_highlighting_off() {
 fn can_highlight_code_block_no_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -68,7 +68,7 @@ fn can_highlight_code_block_no_lang() {
 fn can_highlight_code_block_with_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -89,7 +89,7 @@ fn can_highlight_code_block_with_lang() {
 fn can_higlight_code_block_with_unknown_lang() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -110,7 +110,7 @@ fn can_higlight_code_block_with_unknown_lang() {
 #[test]
 fn can_render_shortcode() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -137,7 +137,7 @@ Hello
 #[test]
 fn can_render_shortcode_with_markdown_char_in_args_name() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -157,7 +157,7 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
 #[test]
 fn can_render_shortcode_with_markdown_char_in_args_value() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -187,7 +187,7 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
     let input = vec!["quo_te", "qu_o_te"];
-    let config = Config::default();
+    let config = Config::default_for_test();
 
     for i in input {
         tera.add_raw_template(
@@ -232,7 +232,7 @@ Here is another paragraph.
 ";
 
     tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -272,7 +272,7 @@ Here is another paragraph.
 ";
 
     tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -290,7 +290,7 @@ Here is another paragraph.
 #[test]
 fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -331,7 +331,7 @@ Hello
 #[test]
 fn doesnt_render_ignored_shortcodes() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = false;
     let context = RenderContext::new(
         &ZOLA_TERA,
@@ -355,7 +355,7 @@ fn can_render_shortcode_with_body() {
     )
     .unwrap();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -382,7 +382,7 @@ A quote
 fn errors_rendering_unknown_shortcode() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -400,7 +400,7 @@ fn can_make_valid_relative_link() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
     let tera_ctx = Tera::default();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -425,7 +425,7 @@ fn can_make_relative_links_with_anchors() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
     let tera_ctx = Tera::default();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -443,7 +443,7 @@ fn can_make_relative_links_with_anchors() {
 fn errors_relative_link_inexistant() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -460,7 +460,7 @@ fn errors_relative_link_inexistant() {
 fn can_add_id_to_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -477,7 +477,7 @@ fn can_add_id_to_headings() {
 fn can_add_id_to_headings_same_slug() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -494,7 +494,7 @@ fn can_add_id_to_headings_same_slug() {
 fn can_add_non_slug_id_to_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.slugify.anchors = SlugifyStrategy::Safe;
     let context = RenderContext::new(
         &tera_ctx,
@@ -512,7 +512,7 @@ fn can_add_non_slug_id_to_headings() {
 fn can_handle_manual_ids_on_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -556,7 +556,7 @@ fn can_handle_manual_ids_on_headings() {
 fn blank_headings() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -575,7 +575,7 @@ fn blank_headings() {
 #[test]
 fn can_insert_anchor_left() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -594,7 +594,7 @@ fn can_insert_anchor_left() {
 #[test]
 fn can_insert_anchor_right() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -613,7 +613,7 @@ fn can_insert_anchor_right() {
 #[test]
 fn can_insert_anchor_for_multi_heading() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -634,7 +634,7 @@ fn can_insert_anchor_for_multi_heading() {
 #[test]
 fn can_insert_anchor_with_exclamation_mark() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -654,7 +654,7 @@ fn can_insert_anchor_with_exclamation_mark() {
 #[test]
 fn can_insert_anchor_with_link() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -673,7 +673,7 @@ fn can_insert_anchor_with_link() {
 #[test]
 fn can_insert_anchor_with_other_special_chars() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -692,7 +692,7 @@ fn can_insert_anchor_with_other_special_chars() {
 #[test]
 fn can_make_toc() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -725,7 +725,7 @@ fn can_make_toc() {
 #[test]
 fn can_ignore_tags_in_toc() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -762,7 +762,7 @@ fn can_ignore_tags_in_toc() {
 #[test]
 fn can_understand_backtick_in_titles() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -778,7 +778,7 @@ fn can_understand_backtick_in_titles() {
 #[test]
 fn can_understand_backtick_in_paragraphs() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -795,7 +795,7 @@ fn can_understand_backtick_in_paragraphs() {
 #[test]
 fn can_understand_links_in_heading() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -811,7 +811,7 @@ fn can_understand_links_in_heading() {
 #[test]
 fn can_understand_link_with_title_in_heading() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -831,7 +831,7 @@ fn can_understand_link_with_title_in_heading() {
 #[test]
 fn can_understand_emphasis_in_heading() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -847,7 +847,7 @@ fn can_understand_emphasis_in_heading() {
 #[test]
 fn can_understand_strong_in_heading() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -863,7 +863,7 @@ fn can_understand_strong_in_heading() {
 #[test]
 fn can_understand_code_in_heading() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -880,7 +880,7 @@ fn can_understand_code_in_heading() {
 #[test]
 fn can_understand_footnote_in_heading() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -905,7 +905,7 @@ fn can_make_valid_relative_link_in_heading() {
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about/".to_string());
     let tera_ctx = Tera::default();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -925,7 +925,7 @@ fn can_make_valid_relative_link_in_heading() {
 #[test]
 fn can_make_permalinks_with_colocated_assets_for_link() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -941,7 +941,7 @@ fn can_make_permalinks_with_colocated_assets_for_link() {
 #[test]
 fn can_make_permalinks_with_colocated_assets_for_image() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -960,7 +960,7 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
 #[test]
 fn markdown_doesnt_wrap_html_in_paragraph() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -993,7 +993,7 @@ Some text
 #[test]
 fn correctly_captures_external_links() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -1019,7 +1019,7 @@ Email: <foo@bar.baz>
 fn can_handle_summaries() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera_ctx,
         &config,
@@ -1074,7 +1074,7 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
     let expected = "<figure>\n     \n     <img src=\"/images/spherecluster.png\" alt=\"Some spheres.\" />\n     \n\n     <figcaption>Some spheres.</figcaption>\n</figure>";
 
     tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -1103,7 +1103,7 @@ fn can_emit_newlines_and_whitespace_with_shortcode() {
     let expected = "<pre>\nHello\n    \n    Zola\n   \n  !\n</pre>";
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "preformatted"), shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -1138,7 +1138,7 @@ fn can_emit_newlines_and_whitespace_with_shortcode() {
 //    let expected = r#"<p>["multi", "ple", "lines"]</p>"#;
 //
 //    tera.add_raw_template(&format!("shortcodes/{}.html", "alert"), shortcode).unwrap();
-//    let config = Config::default();
+//    let config = Config::default_for_test();
 //    let context = RenderContext::new(&tera, &config, &config.default_language, "", &permalinks_ctx, InsertAnchor::None);
 //
 //    let res = render_content(markdown_string, &context).unwrap();
@@ -1157,7 +1157,7 @@ fn leaves_custom_url_scheme_untouched() {
 "#;
 
     let tera_ctx = Tera::default();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let permalinks_ctx = HashMap::new();
 
     let context = RenderContext::new(
@@ -1184,7 +1184,7 @@ fn stops_with_an_error_on_an_empty_link() {
     let content = r#"[some link]()"#;
 
     let tera_ctx = Tera::default();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let permalinks_ctx = HashMap::new();
 
     let context = RenderContext::new(
@@ -1237,7 +1237,7 @@ Bla bla"#;
 "#;
 
     tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -1274,7 +1274,7 @@ fn can_render_shortcode_body_with_no_invalid_escaping() {
     let expected = "<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>";
 
     tera.add_raw_template("shortcodes/resize_image.html", shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -1310,7 +1310,7 @@ fn can_render_commented_out_shortcodes_fine() {
     let expected = "<!--<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>-->";
 
     tera.add_raw_template("shortcodes/resize_image.html", shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -1349,7 +1349,7 @@ Again more text"#;
 "#;
 
     tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -1366,7 +1366,7 @@ Again more text"#;
 #[test]
 fn can_render_emoji_alias() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.render_emoji = true;
     let context = RenderContext::new(
         &ZOLA_TERA,
@@ -1383,7 +1383,7 @@ fn can_render_emoji_alias() {
 #[test]
 fn emoji_aliases_are_ignored_when_disabled_in_config() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -1419,7 +1419,7 @@ fn invocation_count_increments_in_shortcode() {
 
     tera.add_raw_template("shortcodes/a.html", shortcode_template_a).unwrap();
     tera.add_raw_template("shortcodes/b.html", shortcode_template_b).unwrap();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -1436,7 +1436,7 @@ fn invocation_count_increments_in_shortcode() {
 #[test]
 fn basic_external_links_unchanged() {
     let permalinks_ctx = HashMap::new();
-    let config = Config::default();
+    let config = Config::default_for_test();
     let context = RenderContext::new(
         &ZOLA_TERA,
         &config,
@@ -1452,7 +1452,7 @@ fn basic_external_links_unchanged() {
 #[test]
 fn can_set_target_blank_for_external_link() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.external_links_target_blank = true;
     let context = RenderContext::new(
         &ZOLA_TERA,
@@ -1469,7 +1469,7 @@ fn can_set_target_blank_for_external_link() {
 #[test]
 fn can_set_nofollow_for_external_link() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.external_links_no_follow = true;
     let context = RenderContext::new(
         &ZOLA_TERA,
@@ -1490,7 +1490,7 @@ fn can_set_nofollow_for_external_link() {
 #[test]
 fn can_set_noreferrer_for_external_link() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.external_links_no_referrer = true;
     let context = RenderContext::new(
         &ZOLA_TERA,
@@ -1510,7 +1510,7 @@ fn can_set_noreferrer_for_external_link() {
 #[test]
 fn can_set_all_options_for_external_link() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.external_links_target_blank = true;
     config.markdown.external_links_no_follow = true;
     config.markdown.external_links_no_referrer = true;
@@ -1529,7 +1529,7 @@ fn can_set_all_options_for_external_link() {
 #[test]
 fn can_use_smart_punctuation() {
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.smart_punctuation = true;
     let context = RenderContext::new(
         &ZOLA_TERA,

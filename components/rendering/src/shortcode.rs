@@ -268,7 +268,7 @@ mod tests {
     }
 
     fn render_shortcodes(code: &str, tera: &Tera) -> String {
-        let config = Config::default();
+        let config = Config::default_for_test();
         let permalinks = HashMap::new();
         let context = RenderContext::new(
             &tera,

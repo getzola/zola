@@ -36,7 +36,7 @@ macro_rules! colored_html {
 fn hl_lines_simple() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -72,7 +72,7 @@ baz
 fn hl_lines_in_middle() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -108,7 +108,7 @@ baz
 fn hl_lines_all() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -142,7 +142,7 @@ baz
 fn hl_lines_start_from_one() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -177,7 +177,7 @@ baz
 fn hl_lines_start_from_zero() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -212,7 +212,7 @@ baz
 fn hl_lines_end() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -247,7 +247,7 @@ baz
 fn hl_lines_end_out_of_bounds() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -282,7 +282,7 @@ baz
 fn hl_lines_overlap() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -316,7 +316,7 @@ baz
 fn hl_lines_multiple() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -351,7 +351,7 @@ baz
 fn hl_lines_extra_spaces() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -386,7 +386,7 @@ baz
 fn hl_lines_int_and_range() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -422,7 +422,7 @@ baz
 fn hl_lines_single_line_range() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,
@@ -458,7 +458,7 @@ baz
 fn hl_lines_reverse_range() {
     let tera_ctx = Tera::default();
     let permalinks_ctx = HashMap::new();
-    let mut config = Config::default();
+    let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
     let context = RenderContext::new(
         &tera_ctx,

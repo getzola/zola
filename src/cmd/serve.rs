@@ -154,12 +154,10 @@ fn livereload_js() -> Response<Body> {
 
 fn in_memory_content(path: &RelativePathBuf, content: &str) -> Response<Body> {
     let content_type = match path.extension() {
-        Some(ext) => {
-            match ext {
-                "xml" => "text/xml",
-                "json" => "application/json",
-                _ => "text/html",
-            }
+        Some(ext) => match ext {
+            "xml" => "text/xml",
+            "json" => "application/json",
+            _ => "text/html",
         },
         None => "text/html",
     };
@@ -230,6 +228,8 @@ fn create_new_site(
     include_drafts: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, String)> {
+    SITE_CONTENT.write().unwrap().clear();
+
     let mut site = Site::new(root_dir, config_file)?;
 
     let base_address = format!("{}:{}", base_url, interface_port);
@@ -286,7 +286,10 @@ pub fn serve(
     console::report_elapsed_time(start);
 
     // Stop right there if we can't bind to the address
-    let bind_address: SocketAddrV4 = address.parse().unwrap();
+    let bind_address: SocketAddrV4 = match address.parse() {
+        Ok(a) => a,
+        Err(_) => return Err(format!("Invalid address: {}.", address).into()),
+    };
     if (TcpListener::bind(&bind_address)).is_err() {
         return Err(format!("Cannot start server on address {}.", address).into());
     }

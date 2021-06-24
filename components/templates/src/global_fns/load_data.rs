@@ -1,28 +1,22 @@
-use utils::de::fix_toml_dates;
-use utils::fs::{get_file_time, is_path_in_directory, read_file};
-
-use reqwest::header::{HeaderValue, CONTENT_TYPE};
-use reqwest::{blocking::Client, header};
 use std::collections::hash_map::DefaultHasher;
-use std::fmt;
+use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use url::Url;
-
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use csv::Reader;
-use std::collections::HashMap;
+use reqwest::header::{HeaderValue, CONTENT_TYPE};
+use reqwest::{blocking::Client, header};
 use tera::{from_value, to_value, Error, Function as TeraFn, Map, Result, Value};
+use url::Url;
+use utils::de::fix_toml_dates;
+use utils::fs::{get_file_time, read_file};
+
+use crate::global_fns::helpers::search_for_file;
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path` or `url` argument";
-
-enum DataSource {
-    Url(Url),
-    Path(PathBuf),
-}
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash)]
 enum Method {
@@ -42,7 +36,7 @@ impl FromStr for Method {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum OutputFormat {
     Toml,
     Json,
@@ -51,23 +45,11 @@ enum OutputFormat {
     Plain,
 }
 
-impl fmt::Display for OutputFormat {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(self, f)
-    }
-}
-
-impl Hash for OutputFormat {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.to_string().hash(state);
-    }
-}
-
 impl FromStr for OutputFormat {
     type Err = Error;
 
     fn from_str(output_format: &str) -> Result<Self> {
-        match output_format {
+        match output_format.to_lowercase().as_ref() {
             "toml" => Ok(OutputFormat::Toml),
             "csv" => Ok(OutputFormat::Csv),
             "json" => Ok(OutputFormat::Json),
@@ -90,6 +72,12 @@ impl OutputFormat {
     }
 }
 
+#[derive(Debug)]
+enum DataSource {
+    Url(Url),
+    Path(PathBuf),
+}
+
 impl DataSource {
     /// Returns Some(DataSource) on success, from optional load_data() path/url arguments
     /// Returns an Error when a URL could not be parsed and Ok(None) when the path
@@ -99,25 +87,27 @@ impl DataSource {
     fn from_args(
         path_arg: Option<String>,
         url_arg: Option<String>,
-        content_path: &PathBuf,
+        base_path: &Path,
+        theme: &Option<String>,
     ) -> Result<Option<Self>> {
         if path_arg.is_some() && url_arg.is_some() {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
         }
 
         if let Some(path) = path_arg {
-            let full_path = content_path.join(path);
-            if !full_path.exists() {
-                return Ok(None);
-            }
-            return Ok(Some(DataSource::Path(full_path)));
+            return match search_for_file(&base_path, &path, &theme)
+                .map_err(|e| format!("`load_data`: {}", e))?
+            {
+                Some((f, _)) => Ok(Some(DataSource::Path(f))),
+                None => Ok(None),
+            };
         }
 
         if let Some(url) = url_arg {
             return Url::parse(&url)
                 .map(DataSource::Url)
-                .map(|x| Some(x))
-                .map_err(|e| format!("Failed to parse {} as url: {}", url, e).into());
+                .map(Some)
+                .map_err(|e| format!("`load_data`: Failed to parse {} as url: {}", url, e).into());
         }
 
         Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
@@ -127,8 +117,8 @@ impl DataSource {
         &self,
         format: &OutputFormat,
         method: Method,
-        post_body: Option<String>,
-        post_content_type: Option<String>,
+        post_body: &Option<String>,
+        post_content_type: &Option<String>,
     ) -> u64 {
         let mut hasher = DefaultHasher::new();
         format.hash(&mut hasher);
@@ -152,47 +142,23 @@ impl Hash for DataSource {
     }
 }
 
-fn read_data_file(base_path: &PathBuf, full_path: PathBuf) -> Result<String> {
-    if !is_path_in_directory(&base_path, &full_path)
-        .map_err(|e| format!("Failed to read data file {}: {}", full_path.display(), e))?
-    {
-        return Err(format!(
-            "{} is not inside the base site directory {}",
-            full_path.display(),
-            base_path.display()
-        )
-        .into());
-    }
-    read_file(&full_path).map_err(|e| {
-        format!("`load_data`: error {} loading file {}", full_path.to_str().unwrap(), e).into()
-    })
-}
-
 fn get_output_format_from_args(
-    args: &HashMap<String, Value>,
+    format_arg: Option<String>,
     data_source: &DataSource,
 ) -> Result<OutputFormat> {
-    let format_arg = optional_arg!(
-        String,
-        args.get("format"),
-        "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, bibtex, plain)"
-    );
-
     if let Some(format) = format_arg {
-        if format == "plain" {
-            return Ok(OutputFormat::Plain);
-        }
         return OutputFormat::from_str(&format);
     }
 
-    let from_extension = if let DataSource::Path(path) = data_source {
-        path.extension().map(|extension| extension.to_str().unwrap()).unwrap_or_else(|| "plain")
+    if let DataSource::Path(path) = data_source {
+        match path.extension().and_then(|e| e.to_str()) {
+            Some(ext) => OutputFormat::from_str(ext).or(Ok(OutputFormat::Plain)),
+            None => Ok(OutputFormat::Plain),
+        }
     } else {
-        "plain"
-    };
-
-    // Always default to Plain if we don't know what it is
-    OutputFormat::from_str(from_extension).or(Ok(OutputFormat::Plain))
+        // Always default to Plain if we don't know what it is
+        Ok(OutputFormat::Plain)
+    }
 }
 
 /// A Tera function to load data from a file or from a URL
@@ -200,11 +166,12 @@ fn get_output_format_from_args(
 #[derive(Debug)]
 pub struct LoadData {
     base_path: PathBuf,
+    theme: Option<String>,
     client: Arc<Mutex<Client>>,
     result_cache: Arc<Mutex<HashMap<u64, Value>>>,
 }
 impl LoadData {
-    pub fn new(base_path: PathBuf) -> Self {
+    pub fn new(base_path: PathBuf, theme: Option<String>) -> Self {
         let client = Arc::new(Mutex::new(
             Client::builder()
                 .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
@@ -212,23 +179,28 @@ impl LoadData {
                 .expect("reqwest client build"),
         ));
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
-        Self { base_path, client, result_cache }
+        Self { base_path, client, result_cache, theme }
     }
 }
 
 impl TeraFn for LoadData {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let required = if let Some(req) = optional_arg!(
+        // Either a local path or a URL
+        let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        // Optional general params
+        let format_arg = optional_arg!(
+            String,
+            args.get("format"),
+            "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, bibtex, plain)"
+        );
+        let required = optional_arg!(
             bool,
             args.get("required"),
             "`load_data`: `required` must be a boolean (true or false)"
-        ) {
-            req
-        } else {
-            true
-        };
-        let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
-        let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        )
+        .unwrap_or(true);
+        // Remote URL parameters only
         let post_body_arg =
             optional_arg!(String, args.get("body"), "`load_data` body must be a string, if set.");
         let post_content_type = optional_arg!(
@@ -241,6 +213,7 @@ impl TeraFn for LoadData {
             args.get("method"),
             "`load_data` method must either be POST or GET."
         );
+
         let method = match method_arg {
             Some(ref method_str) => match Method::from_str(&method_str) {
                 Ok(m) => m,
@@ -248,43 +221,45 @@ impl TeraFn for LoadData {
             },
             _ => Method::Get,
         };
-        let data_source = DataSource::from_args(path_arg.clone(), url_arg, &self.base_path)?;
 
         // If the file doesn't exist, source is None
-        match (&data_source, required) {
+        let data_source = match (
+            DataSource::from_args(path_arg.clone(), url_arg, &self.base_path, &self.theme),
+            required,
+        ) {
             // If the file was not required, return a Null value to the template
-            (None, false) => {
+            (Ok(None), false) | (Err(_), false) => {
                 return Ok(Value::Null);
             }
+            (Err(e), true) => {
+                return Err(e);
+            }
             // If the file was required, error
-            (None, true) => {
+            (Ok(None), true) => {
                 // source is None only with path_arg (not URL), so path_arg is safely unwrap
                 return Err(format!(
-                    "{} doesn't exist",
+                    "`load_data`: {} doesn't exist",
                     &self.base_path.join(path_arg.unwrap()).display()
                 )
                 .into());
             }
-            _ => {}
-        }
-        let data_source = data_source.unwrap();
-        let file_format = get_output_format_from_args(&args, &data_source)?;
-        let cache_key = data_source.get_cache_key(
-            &file_format,
-            method,
-            post_body_arg.clone(),
-            post_content_type.clone(),
-        );
+            (Ok(Some(data_source)), _) => data_source,
+        };
+
+        let file_format = get_output_format_from_args(format_arg, &data_source)?;
+        let cache_key =
+            data_source.get_cache_key(&file_format, method, &post_body_arg, &post_content_type);
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
-        let response_client = self.client.lock().expect("response client lock");
         if let Some(cached_result) = cache.get(&cache_key) {
             return Ok(cached_result.clone());
         }
 
         let data = match data_source {
-            DataSource::Path(path) => read_data_file(&self.base_path, path),
+            DataSource::Path(path) => read_file(&path)
+                .map_err(|e| format!("`load_data`: error reading file {:?}: {}", path, e)),
             DataSource::Url(url) => {
+                let response_client = self.client.lock().expect("response client lock");
                 let req = match method {
                     Method::Get => response_client
                         .get(url.as_str())
@@ -293,34 +268,30 @@ impl TeraFn for LoadData {
                         let mut resp = response_client
                             .post(url.as_str())
                             .header(header::ACCEPT, file_format.as_accept_header());
-                        match post_content_type {
-                            Some(content_type) => match HeaderValue::from_str(&content_type) {
+                        if let Some(content_type) = post_content_type {
+                            match HeaderValue::from_str(&content_type) {
                                 Ok(c) => {
                                     resp = resp.header(CONTENT_TYPE, c);
                                 }
                                 Err(_) => {
                                     return Err(format!(
-                                        "{} is an illegal content type",
+                                        "`load_data`: {} is an illegal content type",
                                         &content_type
                                     )
                                     .into());
                                 }
-                            },
-                            _ => {}
-                        };
-                        match post_body_arg {
-                            Some(body) => {
-                                resp = resp.body(body);
                             }
-                            _ => {}
-                        };
+                        }
+                        if let Some(body) = post_body_arg {
+                            resp = resp.body(body);
+                        }
                         resp
                     }
                 };
 
                 match req.send().and_then(|res| res.error_for_status()) {
                     Ok(r) => r.text().map_err(|e| {
-                        format!("Failed to parse response from {}: {:?}", url, e).into()
+                        format!("`load_data`: Failed to parse response from {}: {:?}", url, e)
                     }),
                     Err(e) => {
                         if !required {
@@ -329,13 +300,17 @@ impl TeraFn for LoadData {
                             return Ok(Value::Null);
                         }
                         Err(match e.status() {
-                            Some(status) => format!("Failed to request {}: {}", url, status),
-                            None => format!("Could not get response status for url: {}", url),
-                        }
-                        .into())
+                            Some(status) => {
+                                format!("`load_data`: Failed to request {}: {}", url, status)
+                            }
+                            None => format!(
+                                "`load_data`: Could not get response status for url: {}",
+                                url
+                            ),
+                        })
                     }
                 }
-            } // Now that we have discarded recoverable errors, we can unwrap the result
+            }
         }?;
 
         let result_value: Result<Value> = match file_format {
@@ -368,7 +343,7 @@ fn load_toml(toml_data: String) -> Result<Value> {
 
     match toml_value {
         Value::Object(m) => Ok(fix_toml_dates(m)),
-        _ => unreachable!("Loaded something other than a TOML object"),
+        _ => Err("Loaded something other than a TOML object".into()),
     }
 }
 
@@ -436,11 +411,11 @@ fn load_csv(csv_data: String) -> Result<Value> {
     let mut csv_map = Map::new();
 
     {
-        let hdrs = reader.headers().map_err(|e| {
+        let headers = reader.headers().map_err(|e| {
             format!("'load_data': {} - unable to read CSV header line (line 1) for CSV file", e)
         })?;
 
-        let headers_array = hdrs.iter().map(|v| Value::String(v.to_string())).collect();
+        let headers_array = headers.iter().map(|v| Value::String(v.to_string())).collect();
 
         csv_map.insert(String::from("headers"), Value::Array(headers_array));
     }
@@ -487,6 +462,8 @@ mod tests {
     use crate::global_fns::load_data::Method;
     use mockito::mock;
     use serde_json::json;
+    use std::fs::{copy, create_dir_all};
+    use tempfile::tempdir;
     use tera::{to_value, Function};
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
@@ -501,7 +478,7 @@ mod tests {
 
     #[test]
     fn fails_illegal_method_parameter() {
-        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value("https://example.com").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -528,7 +505,7 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
 
-        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -556,7 +533,7 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4yw");
 
-        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -585,7 +562,7 @@ mod tests {
 
         let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
 
-        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -601,7 +578,7 @@ mod tests {
 
     #[test]
     fn fails_when_missing_file() {
-        let static_fn = LoadData::new(PathBuf::from("../utils"));
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
         let result = static_fn.call(&args);
@@ -611,7 +588,7 @@ mod tests {
 
     #[test]
     fn doesnt_fail_when_missing_file_is_not_required() {
-        let static_fn = LoadData::new(PathBuf::from("../utils"));
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
         args.insert("required".to_string(), to_value(false).unwrap());
@@ -621,17 +598,50 @@ mod tests {
     }
 
     #[test]
-    fn cant_load_outside_content_dir() {
-        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+    fn can_handle_various_local_file_locations() {
+        let dir = tempdir().unwrap();
+        create_dir_all(dir.path().join("content").join("gallery")).unwrap();
+        create_dir_all(dir.path().join("static")).unwrap();
+        copy(get_test_file("test.css"), dir.path().join("content").join("test.css")).unwrap();
+        copy(get_test_file("test.css"), dir.path().join("content").join("gallery").join("new.css"))
+            .unwrap();
+        copy(get_test_file("test.css"), dir.path().join("static").join("test.css")).unwrap();
+
+        let static_fn = LoadData::new(dir.path().to_path_buf(), None);
+        let mut args = HashMap::new();
+        let val = if cfg!(windows) { ".hello {}\r\n" } else { ".hello {}\n" };
+
+        // 1. relative path in `static`
+        args.insert("path".to_string(), to_value("static/test.css").unwrap());
+        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        assert_eq!(data, val);
+
+        // 2. relative path in `content`
+        args.insert("path".to_string(), to_value("content/test.css").unwrap());
+        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        assert_eq!(data, val);
+
+        // 3. absolute path is the same
+        args.insert("path".to_string(), to_value("/content/test.css").unwrap());
+        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        assert_eq!(data, val);
+
+        // 4. path starting with @/
+        args.insert("path".to_string(), to_value("@/test.css").unwrap());
+        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        assert_eq!(data, val);
+    }
+
+    #[test]
+    fn cannot_load_outside_base_dir() {
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("../../README.md").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("README.md is not inside the base site directory"));
+        println!("{:?} {:?}", std::env::current_dir(), result);
+        assert!(result.unwrap_err().to_string().contains("is not inside the base site directory"));
     }
 
     #[test]
@@ -640,14 +650,14 @@ mod tests {
         let cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
-            None,
-            None,
+            &None,
+            &None,
         );
         let cache_key_2 = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
-            None,
-            None,
+            &None,
+            &None,
         );
         assert_eq!(cache_key, cache_key_2);
     }
@@ -657,14 +667,14 @@ mod tests {
         let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
-            None,
-            None,
+            &None,
+            &None,
         );
         let json_cache_key = DataSource::Path(get_test_file("test.json")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
-            None,
-            None,
+            &None,
+            &None,
         );
         assert_ne!(toml_cache_key, json_cache_key);
     }
@@ -674,14 +684,14 @@ mod tests {
         let toml_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
-            None,
-            None,
+            &None,
+            &None,
         );
         let json_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Json,
             Method::Get,
-            None,
-            None,
+            &None,
+            &None,
         );
         assert_ne!(toml_cache_key, json_cache_key);
     }
@@ -701,7 +711,7 @@ mod tests {
             .create();
 
         let url = format!("{}{}", mockito::server_url(), "/zpydpkjj67");
-        let static_fn = LoadData::new(PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new(), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -718,7 +728,7 @@ mod tests {
             .create();
 
         let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
-        let static_fn = LoadData::new(PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new(), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -726,7 +736,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err().to_string(),
-            format!("Failed to request {}: 404 Not Found", url)
+            format!("`load_data`: Failed to request {}: 404 Not Found", url)
         );
     }
 
@@ -739,7 +749,7 @@ mod tests {
             .create();
 
         let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
-        let static_fn = LoadData::new(PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new(), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -766,7 +776,7 @@ mod tests {
             .create();
 
         let url = format!("{}{}", mockito::server_url(), "/chu8aizahBiy");
-        let static_fn = LoadData::new(PathBuf::new());
+        let static_fn = LoadData::new(PathBuf::new(), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("json").unwrap());
@@ -776,7 +786,7 @@ mod tests {
 
     #[test]
     fn can_load_toml() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.toml").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
@@ -796,10 +806,11 @@ mod tests {
 
     #[test]
     fn unknown_extension_defaults_to_plain() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.css").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
+        println!("{:?}", result);
 
         if cfg!(windows) {
             assert_eq!(result.as_str().unwrap().replace("\r\n", "\n"), ".hello {}\n",);
@@ -810,7 +821,7 @@ mod tests {
 
     #[test]
     fn can_override_known_extension_with_format() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.csv").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -828,7 +839,7 @@ mod tests {
 
     #[test]
     fn will_use_format_on_unknown_extension() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.css").unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -843,7 +854,7 @@ mod tests {
 
     #[test]
     fn can_load_csv() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.csv").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
@@ -863,7 +874,7 @@ mod tests {
     // Test points to bad csv file with uneven row lengths
     #[test]
     fn bad_csv_should_result_in_error() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
         let result = static_fn.call(&args.clone());
@@ -883,7 +894,7 @@ mod tests {
 
     #[test]
     fn bad_csv_should_result_in_error_even_when_not_required() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
         args.insert("required".to_string(), to_value(false).unwrap());
@@ -904,7 +915,7 @@ mod tests {
 
     #[test]
     fn can_load_json() {
-        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"));
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("test.json").unwrap());
         let result = static_fn.call(&args.clone()).unwrap();
@@ -930,7 +941,7 @@ mod tests {
             .create();
         let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y3");
 
-        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());
@@ -962,7 +973,7 @@ mod tests {
             .create();
         let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y2");
 
-        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")));
+        let static_fn = LoadData::new(PathBuf::from(PathBuf::from("../utils")), None);
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());

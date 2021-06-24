@@ -44,10 +44,24 @@ static/processed_images/
 
 The filename of each resized image is a hash of the function arguments,
 which means that once an image is resized in a certain way, it will be stored in the above directory and will not
-need to be resized again during subsequent builds (unless the image itself, the dimensions, or other arguments are changed).
-Therefore, if you have a large number of images, they will only need to be resized once.
+need to be resized again during subsequent builds (unless the image itself, the dimensions, or other arguments have changed).
 
-The function returns a full URL to the resized image.
+The function returns an object with the following schema:
+
+```
+/// The final URL for that asset
+url: String,
+/// The path to the static asset generated
+static_path: String,
+/// New image width
+width: u32,
+/// New image height
+height: u32,
+/// Original image width
+orig_width: u32,
+/// Original image height
+orig_height: u32,
+```
 
 ## Resize operations
 

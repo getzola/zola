@@ -82,7 +82,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     // Finally emit a summary, and return overall anchors-checking result.
     match errors.len() {
         0 => {
-            println!("> Succesfully checked {} internal link(s) with anchors.", anchors_total);
+            println!("> Successfully checked {} internal link(s) with anchors.", anchors_total);
             Ok(())
         }
         errors_total => {
