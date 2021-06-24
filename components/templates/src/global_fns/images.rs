@@ -10,12 +10,17 @@ use crate::global_fns::helpers::search_for_file;
 pub struct ResizeImage {
     /// The base path of the Zola site
     base_path: PathBuf,
+    theme: Option<String>,
     imageproc: Arc<Mutex<imageproc::Processor>>,
 }
 
 impl ResizeImage {
-    pub fn new(base_path: PathBuf, imageproc: Arc<Mutex<imageproc::Processor>>) -> Self {
-        Self { base_path, imageproc }
+    pub fn new(
+        base_path: PathBuf,
+        imageproc: Arc<Mutex<imageproc::Processor>>,
+        theme: Option<String>,
+    ) -> Self {
+        Self { base_path, imageproc, theme }
     }
 }
 
@@ -55,7 +60,7 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, unified_path) = match search_for_file(&self.base_path, &path)
+        let (file_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme)
             .map_err(|e| format!("`resize_image`: {}", e))?
         {
             Some(f) => f,
@@ -76,12 +81,13 @@ impl TeraFn for ResizeImage {
 pub struct GetImageMetadata {
     /// The base path of the Zola site
     base_path: PathBuf,
+    theme: Option<String>,
     result_cache: Arc<Mutex<HashMap<String, Value>>>,
 }
 
 impl GetImageMetadata {
-    pub fn new(base_path: PathBuf) -> Self {
-        Self { base_path, result_cache: Arc::new(Mutex::new(HashMap::new())) }
+    pub fn new(base_path: PathBuf, theme: Option<String>) -> Self {
+        Self { base_path, result_cache: Arc::new(Mutex::new(HashMap::new())), theme }
     }
 }
 
@@ -99,7 +105,7 @@ impl TeraFn for GetImageMetadata {
         )
         .unwrap_or(false);
 
-        let (src_path, unified_path) = match search_for_file(&self.base_path, &path)
+        let (src_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme)
             .map_err(|e| format!("`get_image_metadata`: {}", e))?
         {
             Some((f, p)) => (f, p),
@@ -142,10 +148,16 @@ mod tests {
         let dir = tempdir().unwrap();
         create_dir_all(dir.path().join("content").join("gallery")).unwrap();
         create_dir_all(dir.path().join("static")).unwrap();
+        create_dir_all(dir.path().join("themes").join("name").join("static")).unwrap();
         copy("gutenberg.jpg", dir.path().join("content").join("gutenberg.jpg")).unwrap();
         copy("gutenberg.jpg", dir.path().join("content").join("gallery").join("asset.jpg"))
             .unwrap();
         copy("gutenberg.jpg", dir.path().join("static").join("gutenberg.jpg")).unwrap();
+        copy(
+            "gutenberg.jpg",
+            dir.path().join("themes").join("name").join("static").join("in-theme.jpg"),
+        )
+        .unwrap();
         dir
     }
 
@@ -156,7 +168,11 @@ mod tests {
         let dir = create_dir_with_image();
         let imageproc = imageproc::Processor::new(dir.path().to_path_buf(), &Config::default());
 
-        let static_fn = ResizeImage::new(dir.path().to_path_buf(), Arc::new(Mutex::new(imageproc)));
+        let static_fn = ResizeImage::new(
+            dir.path().to_path_buf(),
+            Arc::new(Mutex::new(imageproc)),
+            Some("name".to_owned()),
+        );
         let mut args = HashMap::new();
         args.insert("height".to_string(), to_value(40).unwrap());
         args.insert("width".to_string(), to_value(40).unwrap());
@@ -212,6 +228,17 @@ mod tests {
             data["url"],
             to_value("http://a-website.com/processed_images/6296a3c153f701be00.jpg").unwrap()
         );
+
+        // 6. Looking up a file in the theme
+        args.insert("path".to_string(), to_value("in-theme.jpg").unwrap());
+        assert_eq!(
+            data["static_path"],
+            to_value(&format!("{}", static_path.join("6296a3c153f701be00.jpg").display())).unwrap()
+        );
+        assert_eq!(
+            data["url"],
+            to_value("http://a-website.com/processed_images/6296a3c153f701be00.jpg").unwrap()
+        );
     }
 
     // TODO: consider https://github.com/getzola/zola/issues/1161
@@ -219,7 +246,7 @@ mod tests {
     fn can_get_image_metadata() {
         let dir = create_dir_with_image();
 
-        let static_fn = GetImageMetadata::new(dir.path().to_path_buf());
+        let static_fn = GetImageMetadata::new(dir.path().to_path_buf(), None);
 
         // Let's test a few scenarii
         let mut args = HashMap::new();

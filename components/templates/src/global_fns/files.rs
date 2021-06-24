@@ -111,7 +111,7 @@ impl TeraFn for GetUrl {
             }
 
             if cachebust {
-                match search_for_file(&self.base_path, &path_with_lang)
+                match search_for_file(&self.base_path, &path_with_lang, &self.config.theme)
                     .map_err(|e| format!("`get_url`: {}", e))?
                     .and_then(|(p, _)| fs::File::open(&p).ok())
                     .and_then(|f| compute_file_hash::<Sha256>(f, false).ok())
@@ -141,10 +141,11 @@ impl TeraFn for GetUrl {
 #[derive(Debug)]
 pub struct GetFileHash {
     base_path: PathBuf,
+    theme: Option<String>,
 }
 impl GetFileHash {
-    pub fn new(base_path: PathBuf) -> Self {
-        Self { base_path }
+    pub fn new(base_path: PathBuf, theme: Option<String>) -> Self {
+        Self { base_path, theme }
     }
 }
 
@@ -168,7 +169,7 @@ impl TeraFn for GetFileHash {
         )
         .unwrap_or(true);
 
-        let file_path = match search_for_file(&self.base_path, &path)
+        let file_path = match search_for_file(&self.base_path, &path, &self.theme)
             .map_err(|e| format!("`get_file_hash`: {}", e))?
         {
             Some((f, _)) => f,
@@ -358,7 +359,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha256_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetFileHash::new(dir.into_path());
+        let static_fn = GetFileHash::new(dir.into_path(), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -372,7 +373,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha256_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetFileHash::new(dir.into_path());
+        let static_fn = GetFileHash::new(dir.into_path(), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -383,7 +384,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha384_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetFileHash::new(dir.into_path());
+        let static_fn = GetFileHash::new(dir.into_path(), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("base64".to_string(), to_value(false).unwrap());
@@ -396,7 +397,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha384() {
         let dir = create_temp_dir();
-        let static_fn = GetFileHash::new(dir.into_path());
+        let static_fn = GetFileHash::new(dir.into_path(), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(
@@ -408,7 +409,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha512_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetFileHash::new(dir.into_path());
+        let static_fn = GetFileHash::new(dir.into_path(), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -422,7 +423,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha512() {
         let dir = create_temp_dir();
-        let static_fn = GetFileHash::new(dir.into_path());
+        let static_fn = GetFileHash::new(dir.into_path(), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -435,7 +436,7 @@ title = "A title"
     #[test]
     fn error_when_file_not_found_for_hash() {
         let dir = create_temp_dir();
-        let static_fn = GetFileHash::new(dir.into_path());
+        let static_fn = GetFileHash::new(dir.into_path(), None);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("doesnt-exist").unwrap());
         let err = format!("{}", static_fn.call(&args).unwrap_err());
