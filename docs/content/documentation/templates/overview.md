@@ -149,6 +149,8 @@ kind: TaxonomyConfig;
 items: Array<TaxonomyTerm>;
 ```
 
+`lang` (optional) default to `config.default_language` in config.toml
+
 See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
 
 ### `get_url`
