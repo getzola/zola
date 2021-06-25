@@ -57,6 +57,8 @@ pub struct Config {
     pub feed_filename: String,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
+    /// If set, paths/permalinks will have a trailing slash appended.
+    pub trailing_slashes: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
@@ -181,12 +183,15 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        let trailing_bit =
-            if path.ends_with('/') || path.ends_with(&self.feed_filename) || path.is_empty() {
-                ""
-            } else {
-                "/"
-            };
+        let trailing_bit = if !self.trailing_slashes
+            || path.ends_with('/')
+            || path.ends_with(&self.feed_filename)
+            || path.is_empty()
+        {
+            ""
+        } else {
+            "/"
+        };
 
         // Index section with a base url that has a trailing slash
         if self.base_url.ends_with('/') && path == "/" {
@@ -362,6 +367,7 @@ impl Default for Config {
             feed_limit: None,
             feed_filename: "atom.xml".to_string(),
             hard_link_static: false,
+            trailing_slashes: true,
             taxonomies: Vec::new(),
             compile_sass: false,
             minify_html: false,
@@ -440,7 +446,7 @@ hello = "world"
     }
 
     #[test]
-    fn can_make_url_index_page_with_railing_slash_url() {
+    fn can_make_url_index_page_with_trailing_slash_url() {
         let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink(""), "http://vincent.is/");
     }
@@ -452,9 +458,25 @@ hello = "world"
     }
 
     #[test]
+    fn can_make_url_with_non_trailing_slash_base_url_without_trailing_slash() {
+        let mut config = Config::default();
+        config.trailing_slashes = false;
+        config.base_url = "http://vincent.is".to_string();
+        assert_eq!(config.make_permalink("hello"), "http://vincent.is/hello");
+    }
+
+    #[test]
     fn can_make_url_with_trailing_slash_path() {
         let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink("/hello"), "http://vincent.is/hello/");
+    }
+
+    #[test]
+    fn can_make_url_without_trailing_slash_path() {
+        let mut config = Config::default();
+        config.trailing_slashes = false;
+        config.base_url = "http://vincent.is/".to_string();
+        assert_eq!(config.make_permalink("/hello"), "http://vincent.is/hello");
     }
 
     #[test]

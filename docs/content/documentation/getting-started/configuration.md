@@ -73,6 +73,12 @@ feed_filename = "atom.xml"
 # files are always copied, regardless of this setting.
 hard_link_static = false
 
+# When set to "true", all links are generated with trailing slashes.
+# This is the default due to how most default web server configurations work.
+# Trailing slashes change what relative paths (images, links) are relative to.
+# Changing this may break all images and relative paths on a site, so be careful.
+trailing_slashes = true
+
 # The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
 #     taxonomies = [

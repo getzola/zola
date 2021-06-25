@@ -67,7 +67,11 @@ pub struct Paginator<'a> {
 impl<'a> Paginator<'a> {
     /// Create a new paginator from a section
     /// It will always at least create one pager (the first) even if there are not enough pages to paginate
-    pub fn from_section(section: &'a Section, library: &'a Library) -> Paginator<'a> {
+    pub fn from_section(
+        config: &Config,
+        section: &'a Section,
+        library: &'a Library,
+    ) -> Paginator<'a> {
         let paginate_by = section.meta.paginate_by.unwrap();
         let mut paginator = Paginator {
             all_pages: Cow::from(&section.pages[..]),
@@ -82,13 +86,14 @@ impl<'a> Paginator<'a> {
             template: section.get_template_name().to_string(),
         };
 
-        paginator.fill_pagers(library);
+        paginator.fill_pagers(config, library);
         paginator
     }
 
     /// Create a new paginator from a taxonomy
     /// It will always at least create one pager (the first) even if there are not enough pages to paginate
     pub fn from_taxonomy(
+        config: &Config,
         taxonomy: &'a Taxonomy,
         item: &'a TaxonomyTerm,
         library: &'a Library,
@@ -118,11 +123,11 @@ impl<'a> Paginator<'a> {
         };
 
         // taxonomy paginators have no sorting so we won't have to reverse
-        paginator.fill_pagers(library);
+        paginator.fill_pagers(config, library);
         paginator
     }
 
-    fn fill_pagers(&mut self, library: &'a Library) {
+    fn fill_pagers(&mut self, config: &Config, library: &'a Library) {
         // the list of pagers
         let mut pages = vec![];
         // the pages in the current pagers
@@ -154,12 +159,17 @@ impl<'a> Paginator<'a> {
                 continue;
             }
 
+            let trailing_bit = if config.trailing_slashes { "/" } else { "" };
             let page_path = if self.paginate_path.is_empty() {
-                format!("{}/", index + 1)
+                format!("{}{}", index + 1, trailing_bit)
             } else {
-                format!("{}/{}/", self.paginate_path, index + 1)
+                format!("{}/{}{}", self.paginate_path, index + 1, trailing_bit)
             };
-            let permalink = format!("{}{}", self.permalink, page_path);
+            let permalink = if self.permalink.ends_with('/') {
+                format!("{}{}", self.permalink, page_path)
+            } else {
+                format!("{}/{}", self.permalink, page_path)
+            };
 
             let pager_path = if self.is_index {
                 format!("/{}", page_path)
@@ -256,7 +266,7 @@ impl<'a> Paginator<'a> {
 mod tests {
     use super::*;
     use crate::{Page, SectionFrontMatter};
-    use config::TaxonomyConfig;
+    use config::{Config, TaxonomyConfig};
 
     fn create_section(is_index: bool, paginate_reversed: bool) -> Section {
         let f = SectionFrontMatter {
@@ -303,8 +313,9 @@ mod tests {
 
     #[test]
     fn test_can_create_section_paginator() {
+        let config = Config::default();
         let (section, library) = create_library(false, 3, false);
-        let paginator = Paginator::from_section(&section, &library);
+        let paginator = Paginator::from_section(&config, &section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -322,9 +333,22 @@ mod tests {
     }
 
     #[test]
+    fn test_can_create_section_paginator_without_trailing_slash() {
+        let mut config = Config::default();
+        config.trailing_slashes = false;
+        let (section, library) = create_library(false, 3, false);
+        let paginator = Paginator::from_section(&config, &section, &library);
+        assert_eq!(paginator.pagers.len(), 2);
+
+        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2");
+        assert_eq!(paginator.pagers[1].path, "/posts/page/2");
+    }
+
+    #[test]
     fn test_can_create_reversed_section_paginator() {
+        let config = Config::default();
         let (section, library) = create_library(false, 3, true);
-        let paginator = Paginator::from_section(&section, &library);
+        let paginator = Paginator::from_section(&config, &section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -343,8 +367,9 @@ mod tests {
 
     #[test]
     fn can_create_paginator_for_index() {
+        let config = Config::default();
         let (section, library) = create_library(true, 3, false);
-        let paginator = Paginator::from_section(&section, &library);
+        let paginator = Paginator::from_section(&config, &section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -360,8 +385,9 @@ mod tests {
 
     #[test]
     fn test_can_build_paginator_context() {
+        let config = Config::default();
         let (section, library) = create_library(false, 3, false);
-        let paginator = Paginator::from_section(&section, &library);
+        let paginator = Paginator::from_section(&config, &section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         let context = paginator.build_paginator_context(&paginator.pagers[0]);
@@ -386,6 +412,7 @@ mod tests {
 
     #[test]
     fn test_can_create_paginator_for_taxonomy() {
+        let config = Config::default();
         let (_, library) = create_library(false, 3, false);
         let tera = Tera::default();
         let taxonomy_def = TaxonomyConfig {
@@ -408,7 +435,8 @@ mod tests {
             permalink: "https://vincent.is/some-tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
-        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library, &tera, &None);
+        let paginator =
+            Paginator::from_taxonomy(&config, &taxonomy, &taxonomy_item, &library, &tera, &None);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -425,9 +453,10 @@ mod tests {
     // https://github.com/getzola/zola/issues/866
     #[test]
     fn works_with_empty_paginate_path() {
+        let config = Config::default();
         let (mut section, library) = create_library(false, 3, false);
         section.meta.paginate_path = String::new();
-        let paginator = Paginator::from_section(&section, &library);
+        let paginator = Paginator::from_section(&config, &section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
