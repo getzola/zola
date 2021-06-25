@@ -12,6 +12,10 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.permalinks.clone(),
         )?,
     );
+    site.tera.register_filter(
+        "num_format",
+        filters::NumFormatFilter::new(&site.config.default_language),
+    );
 
     site.tera.register_function(
         "get_url",

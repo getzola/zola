@@ -81,6 +81,22 @@ Encode the variable to base64.
 ### base64_decode
 Decode the variable from base64.
 
+### num_format
+Format a number into its string representation.
+
+```jinja2
+{{ 1000000 | num_format }}
+<!-- 1,000,000 -->
+```
+
+By default this will format the number using the locale set by `config.default_language` in config.toml.
+
+To format a number for a specific locale, you can use the `locale` argument and pass the name of the desired locale:
+
+```jinja2
+{{ 1000000 | num_format(locale="en-IN") }}
+<!-- 10,00,000 -->
+```
 
 ## Built-in functions
 
