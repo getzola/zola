@@ -95,10 +95,11 @@ impl Section {
         } else {
             "".into()
         };
+        let trailing_bit = if config.trailing_slashes { "/" } else { "" };
         section.path = if path.is_empty() {
-            format!("{}/", lang_path)
+            format!("{}{}", lang_path, trailing_bit)
         } else {
-            format!("{}/{}/", lang_path, path)
+            format!("{}/{}{}", lang_path, path, trailing_bit)
         };
 
         section.components = section
@@ -348,5 +349,27 @@ Bonjour le monde"#
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
+    }
+
+    #[test]
+    fn can_make_links_to_translated_subsections_without_trailing_slash() {
+        let mut config = Config::default();
+        config.trailing_slashes = false;
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Section::parse(
+            Path::new("content/subcontent/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/subcontent");
     }
 }
