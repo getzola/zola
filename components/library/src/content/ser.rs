@@ -33,9 +33,6 @@ impl<'a> TranslatedContent<'a> {
             .iter()
         {
             let other = library.get_section_by_key(*key);
-            if other.permalink == section.permalink {
-                continue;
-            }
             translations.push(TranslatedContent {
                 lang: &other.lang,
                 permalink: &other.permalink,
@@ -54,9 +51,6 @@ impl<'a> TranslatedContent<'a> {
             library.translations.get(&page.file.canonical).or(Some(&HashSet::new())).unwrap().iter()
         {
             let other = library.get_page_by_key(*key);
-            if other.permalink == page.permalink {
-                continue;
-            }
             translations.push(TranslatedContent {
                 lang: &other.lang,
                 permalink: &other.permalink,
