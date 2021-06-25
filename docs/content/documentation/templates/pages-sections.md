@@ -57,7 +57,7 @@ ancestors: Array<String>;
 relative_path: String;
 // The language for the page if there is one. Default to the config `default_language`
 lang: String;
-// Information about all the available languages for that content
+// Information about all the available languages for that content, including the current page
 translations: Array<TranslatedContent>;
 ```
 
