@@ -1,5 +1,5 @@
 +++
-title = "Extending a theme"
+title = "Customizing a theme"
 weight = 30
 +++
 
@@ -7,7 +7,7 @@ When your site uses a theme, you can replace parts of it in your site's template
 
 ## Replacing a template
 
-When a site template and a theme template have the same path, for example `templates/page.html` and `themes/theme_name/templates/page.html`, the site template is the one that will be used. This is how you can replace a whole template for a theme.
+When your site uses a theme, the generated structure follows the theme's structure whenever possible, i.e. there are no user defined templates with the same name and relative path as the theme's; for example: with two files `templates/page.html` and `themes/theme_name/templates/page.html`, the site template is the one that will be used. Such a conflict results in the theme's template being ignored in favor of the template defined by the user.  
 
 ## Overriding a block
 
