@@ -12,7 +12,8 @@ serde_derive = "1"
 chrono = "0.4"
 globset = "0.4"
 lazy_static = "1"
-syntect = "4.1"
+# TODO: go back to version 4/5 once https://github.com/trishume/syntect/pull/337 is merged
+syntect = { git = "https://github.com/Keats/syntect.git", branch = "scopestack" }
 unic-langid = "0.9"
 
 errors = { path = "../errors" }

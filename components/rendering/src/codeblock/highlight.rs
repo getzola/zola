@@ -6,7 +6,7 @@ use syntect::highlighting::{Color, Theme};
 use syntect::html::{
     styled_line_to_highlighted_html, tokens_to_classed_spans, ClassStyle, IncludeBackground,
 };
-use syntect::parsing::{ParseState, SyntaxReference, SyntaxSet};
+use syntect::parsing::{ParseState, ScopeStack, SyntaxReference, SyntaxSet};
 
 /// Not public, but from syntect::html
 fn write_css_color(s: &mut String, c: Color) {
@@ -21,12 +21,13 @@ pub(crate) struct ClassHighlighter<'config> {
     syntax_set: &'config SyntaxSet,
     open_spans: isize,
     parse_state: ParseState,
+    scope_stack: ScopeStack,
 }
 
 impl<'config> ClassHighlighter<'config> {
     pub fn new(syntax: &'config SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
         let parse_state = ParseState::new(syntax);
-        Self { syntax_set, open_spans: 0, parse_state }
+        Self { syntax_set, open_spans: 0, parse_state, scope_stack: ScopeStack::new() }
     }
 
     /// Parse the line of code and update the internal HTML buffer with tagged HTML
@@ -36,8 +37,12 @@ impl<'config> ClassHighlighter<'config> {
     pub fn highlight_line(&mut self, line: &str) -> String {
         debug_assert!(line.ends_with("\n"));
         let parsed_line = self.parse_state.parse_line(line, &self.syntax_set);
-        let (formatted_line, delta) =
-            tokens_to_classed_spans(line, parsed_line.as_slice(), CLASS_STYLE);
+        let (formatted_line, delta) = tokens_to_classed_spans(
+            line,
+            parsed_line.as_slice(),
+            CLASS_STYLE,
+            &mut self.scope_stack,
+        );
         self.open_spans += delta;
         formatted_line
     }
@@ -137,7 +142,7 @@ impl<'config> SyntaxHighlighter<'config> {
     }
 
     /// Classed needs to set a class on the pre
-    pub fn pre_classes(&self) -> Option<String> {
+    pub fn pre_class(&self) -> Option<String> {
         use SyntaxHighlighter::*;
 
         match self {

@@ -20,23 +20,34 @@ fn opening_html(
     if line_numbers {
         html.push_str(" data-linenos");
     }
+    let mut classes = String::new();
+
     if let Some(lang) = language {
-        html.push_str(" class=\"language-");
-        html.push_str(lang);
-        html.push_str("\" data-lang=\"");
+        classes.push_str("language-");
+        classes.push_str(&lang);
+        classes.push_str(" ");
+
+        html.push_str(" data-lang=\"");
         html.push_str(lang);
         html.push('"');
     }
+
     if let Some(styles) = pre_style {
         html.push_str(" style=\"");
         html.push_str(styles.as_str());
         html.push('"');
     }
-    if let Some(classes) = pre_class {
+
+    if let Some(c) = pre_class {
+        classes.push_str(&c);
+    }
+
+    if !classes.is_empty() {
         html.push_str(" class=\"");
-        html.push_str(classes.as_str());
+        html.push_str(&classes);
         html.push('"');
     }
+
     html.push_str("><code");
     if let Some(lang) = language {
         html.push_str(" class=\"language-");
@@ -79,7 +90,7 @@ impl<'config> CodeBlock<'config> {
         let html_start = opening_html(
             fence.language,
             highlighter.pre_style(),
-            highlighter.pre_classes(),
+            highlighter.pre_class(),
             fence.line_numbers,
         );
         (

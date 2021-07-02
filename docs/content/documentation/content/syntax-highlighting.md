@@ -312,9 +312,11 @@ pre table td:nth-of-type(1) {
   text-align: center;
   user-select: none;
 }
-// If you want your highlights to take the full width.
 pre mark {
+  // If you want your highlights to take the full width.
   display: block;
+  // The default background colour of a mark is bright yellow
+  background-color: rgba(254, 252, 232, 0.9);
 }
 pre table {
   width: 100%;
