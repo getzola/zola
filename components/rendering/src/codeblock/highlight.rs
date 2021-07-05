@@ -60,6 +60,7 @@ impl<'config> ClassHighlighter<'config> {
 pub(crate) struct InlineHighlighter<'config> {
     theme: &'config Theme,
     fg_color: String,
+    bg_color: Color,
     syntax_set: &'config SyntaxSet,
     h: HighlightLines<'config>,
 }
@@ -74,13 +75,14 @@ impl<'config> InlineHighlighter<'config> {
         let mut color = String::new();
         write_css_color(&mut color, theme.settings.foreground.unwrap_or(Color::BLACK));
         let fg_color = format!(r#" style="color:{};""#, color);
-        Self { theme, fg_color, syntax_set, h }
+        let bg_color = theme.settings.background.unwrap_or(Color::WHITE);
+        Self { theme, fg_color, bg_color, syntax_set, h }
     }
 
     pub fn highlight_line(&mut self, line: &str) -> String {
         let regions = self.h.highlight(line, &self.syntax_set);
         // TODO: add a param like `IncludeBackground` for `IncludeForeground` in syntect
-        let highlighted = styled_line_to_highlighted_html(&regions, IncludeBackground::No);
+        let highlighted = styled_line_to_highlighted_html(&regions, IncludeBackground::IfDifferent(self.bg_color));
         highlighted.replace(&self.fg_color, "")
     }
 }
