@@ -81,7 +81,7 @@ fn can_highlight_code_block_with_lang() {
     let res = render_content("```python\nlist.append(1)\n```", &context).unwrap();
     assert_eq!(
         res.body,
-        "<pre class=\"language-python\" data-lang=\"python\" style=\"background-color:#2b303b;color:#c0c5ce;\"><code class=\"language-python\" data-lang=\"python\"><span>list.</span><span style=\"color:#bf616a;\">append</span><span>(</span><span style=\"color:#d08770;\">1</span><span>)\n</span></code></pre>\n"
+        "<pre data-lang=\"python\" style=\"background-color:#2b303b;color:#c0c5ce;\" class=\"language-python \"><code class=\"language-python\" data-lang=\"python\"><span>list.</span><span style=\"color:#bf616a;\">append</span><span>(</span><span style=\"color:#d08770;\">1</span><span>)\n</span></code></pre>\n"
     );
 }
 
@@ -103,7 +103,7 @@ fn can_higlight_code_block_with_unknown_lang() {
     // defaults to plain text
     assert_eq!(
         res.body,
-        "<pre class=\"language-yolo\" data-lang=\"yolo\" style=\"background-color:#2b303b;color:#c0c5ce;\"><code class=\"language-yolo\" data-lang=\"yolo\"><span>list.append(1)\n</span></code></pre>\n"
+        "<pre data-lang=\"yolo\" style=\"background-color:#2b303b;color:#c0c5ce;\" class=\"language-yolo \"><code class=\"language-yolo\" data-lang=\"yolo\"><span>list.append(1)\n</span></code></pre>\n"
     );
 }
 
