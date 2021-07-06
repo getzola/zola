@@ -224,7 +224,7 @@ impl Format {
             }
             "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
             "png" => Ok(Png),
-            "webp" => Ok(WebP(quality)), // FIXME: this is undoc'd
+            "webp" => Ok(WebP(quality)),
             _ => Err(format!("Invalid image format: {}", format).into()),
         }
     }
@@ -346,7 +346,6 @@ impl ImageOp {
     }
 }
 
-// FIXME: Explain this in the doc
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EnqueueResponse {
     /// The final URL for that asset
