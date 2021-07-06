@@ -139,6 +139,10 @@ impl ResizeOp {
                 res.resize((w as u32, h))
             }
             Fit(w, h) => {
+                if orig_w <= w && orig_h <= h {
+                    return res;  // ie. no-op
+                }
+
                 let orig_w_h = orig_w as u64 * h as u64;
                 let orig_h_w = orig_h as u64 * w as u64;
 
