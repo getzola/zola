@@ -139,6 +139,10 @@ impl ResizeOp {
                 res.resize((w as u32, h))
             }
             Fit(w, h) => {
+                if orig_w <= w && orig_h <= h {
+                    return res;  // ie. no-op
+                }
+
                 let orig_w_h = orig_w as u64 * h as u64;
                 let orig_h_w = orig_h as u64 * w as u64;
 
@@ -220,7 +224,7 @@ impl Format {
             }
             "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
             "png" => Ok(Png),
-            "webp" => Ok(WebP(quality)), // FIXME: this is undoc'd
+            "webp" => Ok(WebP(quality)),
             _ => Err(format!("Invalid image format: {}", format).into()),
         }
     }
@@ -342,7 +346,6 @@ impl ImageOp {
     }
 }
 
-// FIXME: Explain this in the doc
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EnqueueResponse {
     /// The final URL for that asset

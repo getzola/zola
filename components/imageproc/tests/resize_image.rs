@@ -96,6 +96,11 @@ fn resize_image_fit2() {
 }
 
 #[test]
+fn resize_image_fit3() {
+    image_op_test("jpg.jpg", "fit", Some(400), Some(400), "auto", "jpg", 300, 380, 300, 380);
+}
+
+#[test]
 fn resize_image_fill1() {
     image_op_test("jpg.jpg", "fill", Some(100), Some(200), "auto", "jpg", 100, 200, 300, 380);
 }
