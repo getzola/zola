@@ -127,7 +127,8 @@ but it can be used in Markdown using [shortcodes](@/documentation/content/shortc
 The examples above were generated using a shortcode file named `resize_image.html` with this content:
 
 ```jinja2
-  <img src="{{ resize_image(path=path, width=width, height=height, op=op) }}" />
+{% set image = resize_image(path=path, width=width, height=height, op=op) %}
+<img src="{{ image.url }}" />
 ```
 
 ## Creating picture galleries
@@ -143,14 +144,16 @@ This can be used in shortcodes. For example, we can create a very simple html-on
 picture gallery with the following shortcode named `gallery.html`:
 
 ```jinja2
-{% for asset in page.assets %}
-  {% if asset is matching("[.](jpg|png)$") %}
-    <a href="{{ get_url(path=asset) }}">
-      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill") }}" />
+<div>
+{% for asset in page.assets -%}
+  {%- if asset is matching("[.](jpg|png)$") -%}
+    {% set image = resize_image(path=asset, width=240, height=180) %}
+    <a href="{{ get_url(path=asset) }}" target="_blank">
+      <img src="{{ image.url }}" />
     </a>
-    &ensp;
-  {% endif %}
-{% endfor %}
+  {%- endif %}
+{%- endfor %}
+</div>
 ```
 
 As you can notice, we didn't specify an `op` argument, which means that it'll default to `"fill"`. Similarly,
