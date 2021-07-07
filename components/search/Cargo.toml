@@ -5,7 +5,7 @@ authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-elasticlunr-rs = {version = "2", default-features = false, features = ["da", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
+elasticlunr-rs = {version = "2", default-features = false, features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
 ammonia = "3"
 lazy_static = "1"
 
