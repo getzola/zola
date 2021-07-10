@@ -24,10 +24,10 @@
 
 ### Other
 
-- internal links are now resolved in the `markdown` filter in the templates (#1296 #1316)
+- Internal links are now resolved in the `markdown` filter in the templates (#1296 #1316)
 - Add a `required` argument to `load_data` so it can be allowed to fail
 - `get_file_hash` now supports returning the base64 encoded hash
-- the `markdown` filter not renders shortcodes
+- The `markdown` filter not renders shortcodes
 - Image processing now supports WebP
 - Fix `zola serve` failing for some static files
 - Fix `zola serve` not picking up directory renaming
@@ -39,6 +39,13 @@
 - Footnotes links are now stripped from summaries - they were not linking to anything.
 - `get_url` and `get_taxonomy_url` are now marked as safe, no need to call `| safe` on their output
 - Add `allow_missing` optional argument to `get_image_metadata` to not error if the file is not found
+- Add `permalink` to `Taxonomy` in templates
+- Syntax highlighting improvements, see documentation for details on each
+  1. Add CSS class based syntax highlighting
+  2. Allow hiding specific lines
+  3. Allow showing line numbers
+
+
 
 ## 0.13.0 (2021-01-09)
 
