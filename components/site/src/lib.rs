@@ -832,7 +832,7 @@ impl Site {
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
                         comp.clone(),
-                        &Paginator::from_taxonomy(&taxonomy, item, &library),
+                        &Paginator::from_taxonomy(&self.config, &taxonomy, item, &library),
                     )?;
                 } else {
                     let single_output =
@@ -1021,7 +1021,7 @@ impl Site {
         if section.meta.is_paginated() {
             self.render_paginated(
                 components,
-                &Paginator::from_section(&section, &self.library.read().unwrap()),
+                &Paginator::from_section(&self.config, &section, &self.library.read().unwrap()),
             )?;
         } else {
             let output =

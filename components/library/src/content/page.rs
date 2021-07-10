@@ -189,7 +189,7 @@ impl Page {
             format!("/{}", path)
         };
 
-        if !page.path.ends_with('/') {
+        if config.trailing_slashes && !page.path.ends_with('/') {
             page.path = format!("{}/", page.path);
         }
 

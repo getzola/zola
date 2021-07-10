@@ -55,6 +55,10 @@ generate_feed = false
 # files are always copied, regardless of this setting.
 # hard_link_static = false
 
+# When set to "true", all links are generated with trailing slashes.
+# This is the default due to how most default web server configurations work.
+trailing_slashes = true
+
 # The taxonomies to be rendered for the site and their configuration.
 # Example:
 #     taxonomies = [
