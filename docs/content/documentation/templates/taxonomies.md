@@ -26,6 +26,7 @@ paginate_by: Number?;
 paginate_path: String?;
 feed: Bool;
 lang: String;
+permalink: String;
 ```
 
 

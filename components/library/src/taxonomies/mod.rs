@@ -108,6 +108,7 @@ impl PartialEq for TaxonomyItem {
 pub struct SerializedTaxonomy<'a> {
     kind: &'a TaxonomyConfig,
     lang: &'a str,
+    permalink: &'a str,
     items: Vec<SerializedTaxonomyItem<'a>>,
 }
 
@@ -115,7 +116,12 @@ impl<'a> SerializedTaxonomy<'a> {
     pub fn from_taxonomy(taxonomy: &'a Taxonomy, library: &'a Library) -> Self {
         let items: Vec<SerializedTaxonomyItem> =
             taxonomy.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
-        SerializedTaxonomy { kind: &taxonomy.kind, lang: &taxonomy.lang, items }
+        SerializedTaxonomy {
+            kind: &taxonomy.kind,
+            lang: &taxonomy.lang,
+            permalink: &taxonomy.permalink,
+            items,
+        }
     }
 }
 
@@ -125,6 +131,7 @@ pub struct Taxonomy {
     pub kind: TaxonomyConfig,
     pub lang: String,
     pub slug: String,
+    pub permalink: String,
     // this vec is sorted by the count of item
     pub items: Vec<TaxonomyItem>,
 }
@@ -159,7 +166,14 @@ impl Taxonomy {
                 false
             }
         });
-        Taxonomy { kind, slug, lang: lang.to_owned(), items: sorted_items }
+        let path = if lang != config.default_language {
+            format!("/{}/{}/", lang, slug)
+        } else {
+            format!("/{}/", slug)
+        };
+        let permalink = config.make_permalink(&path);
+
+        Taxonomy { kind, slug, lang: lang.to_owned(), permalink, items: sorted_items }
     }
 
     pub fn len(&self) -> usize {

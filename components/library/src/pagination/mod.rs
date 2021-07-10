@@ -422,6 +422,7 @@ mod tests {
             kind: taxonomy_def,
             lang: "en".to_owned(),
             slug: "tags".to_string(),
+            permalink: "/tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
         let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
@@ -457,6 +458,7 @@ mod tests {
             kind: taxonomy_def,
             lang: "en".to_owned(),
             slug: "some-tags".to_string(),
+            permalink: "/some-tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
         let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
