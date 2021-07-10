@@ -8,26 +8,28 @@ use rendering::{render_content, RenderContext};
 
 macro_rules! colored_html_line {
     ( @no $s:expr ) => {{
-        let mut result = "<span style=\"color:#c0c5ce;\">".to_string();
+        let mut result = "<span>".to_string();
         result.push_str($s);
         result.push_str("\n</span>");
         result
     }};
     ( @hl $s:expr ) => {{
-        let mut result = "<span style=\"background-color:#65737e30;color:#c0c5ce;\">".to_string();
+        let mut result = "<mark style=\"background-color:#65737e30;\">".to_string();
+        result.push_str("<span>");
         result.push_str($s);
         result.push_str("\n</span>");
+        result.push_str("</mark>");
         result
     }};
 }
 
 macro_rules! colored_html {
     ( $(@$kind:tt $s:expr),* $(,)* ) => {{
-        let mut result = "<pre style=\"background-color:#2b303b;\">\n<code>".to_string();
+        let mut result = "<pre style=\"background-color:#2b303b;color:#c0c5ce;\"><code>".to_string();
         $(
             result.push_str(colored_html_line!(@$kind $s).as_str());
         )*
-        result.push_str("</code></pre>");
+        result.push_str("</code></pre>\n");
         result
     }};
 }
@@ -63,7 +65,8 @@ baz
         colored_html!(
             @no "foo",
             @hl "bar",
-            @no "bar\nbaz",
+            @no "bar",
+            @no "baz",
         )
     );
 }
@@ -98,7 +101,8 @@ baz
         res.body,
         colored_html!(
             @no "foo",
-            @hl "bar\nbar",
+            @hl "bar",
+            @hl "bar",
             @no "baz",
         )
     );
@@ -133,7 +137,10 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @hl "foo\nbar\nbar\nbaz",
+            @hl "foo",
+            @hl "bar",
+            @hl "bar",
+            @hl "baz",
         )
     );
 }
@@ -167,7 +174,9 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @hl "foo\nbar\nbar",
+            @hl "foo",
+            @hl "bar",
+            @hl "bar",
             @no "baz",
         )
     );
@@ -202,7 +211,9 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @hl "foo\nbar\nbar",
+            @hl "foo",
+            @hl "bar",
+            @hl "bar",
             @no "baz",
         )
     );
@@ -237,8 +248,10 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @no "foo\nbar",
-            @hl "bar\nbaz",
+            @no "foo",
+            @no "bar",
+            @hl "bar",
+            @hl "baz",
         )
     );
 }
@@ -272,8 +285,10 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @no "foo\nbar",
-            @hl "bar\nbaz",
+            @no "foo",
+            @no "bar",
+            @hl "bar",
+            @hl "baz",
         )
     );
 }
@@ -307,7 +322,9 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @hl "foo\nbar\nbar",
+            @hl "foo",
+            @hl "bar",
+            @hl "bar",
             @no "baz",
         )
     );
@@ -341,7 +358,9 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @hl "foo\nbar\nbar",
+            @hl "foo",
+            @hl "bar",
+            @hl "bar",
             @no "baz",
         )
     );
@@ -376,7 +395,9 @@ baz
     assert_eq!(
         res.body,
         colored_html!(
-            @hl "foo\nbar\nbar",
+            @hl "foo",
+            @hl "bar",
+            @hl "bar",
             @no "baz",
         )
     );
@@ -413,7 +434,8 @@ baz
         colored_html!(
             @hl "foo",
             @no "bar",
-            @hl "bar\nbaz",
+            @hl "bar",
+            @hl "baz",
         )
     );
 }
@@ -449,7 +471,8 @@ baz
         colored_html!(
             @no "foo",
             @hl "bar",
-            @no "bar\nbaz",
+            @no "bar",
+            @no "baz",
         )
     );
 }
@@ -484,7 +507,8 @@ baz
         res.body,
         colored_html!(
             @no "foo",
-            @hl "bar\nbar",
+            @hl "bar",
+            @hl "bar",
             @no "baz",
         )
     );

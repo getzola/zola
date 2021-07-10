@@ -178,7 +178,7 @@ mod tests {
             .unwrap()
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
-        assert!(result.unwrap().as_str().unwrap().contains("<pre style"));
+        assert!(result.unwrap().as_str().unwrap().contains("style"));
     }
 
     #[test]

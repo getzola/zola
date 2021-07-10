@@ -7,7 +7,8 @@ include = ["src/**/*"]
 
 [dependencies]
 tera = { version = "1", features = ["preserve_order"] }
-syntect = "4.1"
+# TODO: go back to version 4/5 once https://github.com/trishume/syntect/pull/337 is merged
+syntect = { git = "https://github.com/Keats/syntect.git", branch = "scopestack" }
 pulldown-cmark = { version = "0.8", default-features = false }
 serde = "1"
 serde_derive = "1"

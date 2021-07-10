@@ -7,6 +7,21 @@ use errors::Result;
 
 pub const DEFAULT_HIGHLIGHT_THEME: &str = "base16-ocean-dark";
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ThemeCss {
+    /// Which theme are we generating the CSS from
+    pub theme: String,
+    /// In which file are we going to output the CSS
+    pub filename: String,
+}
+
+impl Default for ThemeCss {
+    fn default() -> ThemeCss {
+        ThemeCss { theme: String::new(), filename: String::new() }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Markdown {
@@ -15,6 +30,8 @@ pub struct Markdown {
     /// Which themes to use for code highlighting. See Readme for supported themes
     /// Defaults to "base16-ocean-dark"
     pub highlight_theme: String,
+    /// Generate CSS files for Themes out of syntect
+    pub highlight_themes_css: Vec<ThemeCss>,
     /// Whether to render emoji aliases (e.g.: :smile: => 😄) in the markdown files
     pub render_emoji: bool,
     /// Whether external links are to be opened in a new tab
@@ -87,12 +104,13 @@ impl Default for Markdown {
         Markdown {
             highlight_code: false,
             highlight_theme: DEFAULT_HIGHLIGHT_THEME.to_owned(),
+            highlight_themes_css: Vec::new(),
             render_emoji: false,
             external_links_target_blank: false,
             external_links_no_follow: false,
             external_links_no_referrer: false,
             smart_punctuation: false,
-            extra_syntaxes: vec![],
+            extra_syntaxes: Vec::new(),
             extra_syntax_set: None,
         }
     }

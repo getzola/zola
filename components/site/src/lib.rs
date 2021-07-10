@@ -14,6 +14,7 @@ use rayon::prelude::*;
 use tera::{Context, Tera};
 use walkdir::{DirEntry, WalkDir};
 
+use config::highlighting::export_theme_css;
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
@@ -666,7 +667,8 @@ impl Site {
             self.render_feed(pages, Some(&PathBuf::from(code)), &code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
-
+        self.render_themes_css()?;
+        start = log_time(start, "Rendered themes css");
         self.render_404()?;
         start = log_time(start, "Rendered 404");
         self.render_robots()?;
@@ -680,6 +682,20 @@ impl Site {
         // Processed images will be in static so the last step is to copy it
         self.copy_static_directories()?;
         log_time(start, "Copied static dir");
+
+        Ok(())
+    }
+
+    pub fn render_themes_css(&self) -> Result<()> {
+        ensure_directory_exists(&self.static_path)?;
+
+        for t in &self.config.markdown.highlight_themes_css {
+            let p = self.static_path.join(&t.filename);
+            if !p.exists() {
+                let content = export_theme_css(&t.theme);
+                create_file(&p, &content)?;
+            }
+        }
 
         Ok(())
     }
