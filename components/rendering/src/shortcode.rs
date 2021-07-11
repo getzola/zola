@@ -251,7 +251,10 @@ mod tests {
     use super::*;
     use config::Config;
     use front_matter::InsertAnchor;
+    use templates::filters::MarkdownFilter;
     use tera::Tera;
+    use tempfile::tempdir;
+    use std::fs::{self, create_dir_all};
 
     macro_rules! assert_lex_rule {
         ($rule: expr, $input: expr) => {
@@ -478,5 +481,21 @@ Some body {{ hello() }}{%/* end */%}"#,
         .unwrap();
         let res = render_shortcodes("{{ youtube() }}", &tera);
         assert_eq!(res, "* 1\n* 2\n* 3");
+    }
+
+    #[test]
+    fn recursive_shortcodes() {
+        let basedir = tempdir().unwrap();
+        let shortcode_dir = basedir.path().join("templates").join("shortcodes");
+        create_dir_all(&shortcode_dir).unwrap();
+        fs::write(shortcode_dir.join("inner.html"), "We're inside! {{ body | markdown | safe }}").unwrap();
+        fs::write(shortcode_dir.join("outer.html"), "This is the outer shortcode {{ body | markdown | safe }} outer ends here").unwrap();
+
+        let config = Config::default();
+        let mut tera = templates::load_tera(&basedir.path(), &config).unwrap();
+        let md = MarkdownFilter::new(basedir.path().to_owned(), config, HashMap::new()).unwrap();
+        tera.register_filter("markdown", md);
+        let res = render_shortcodes("{% outer() %} One! {% inner() %} Two! {% end %} Three! {% end %} Fin.", &tera);
+        assert_eq!(res, "TODO");
     }
 }
