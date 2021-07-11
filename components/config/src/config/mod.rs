@@ -12,7 +12,6 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
 use toml::Value as Toml;
 
-use crate::highlighting::THEME_SET;
 use crate::theme::Theme;
 use errors::{bail, Error, Result};
 use utils::fs::read_file;
@@ -105,6 +104,7 @@ pub struct SerializedConfig<'a> {
 }
 
 impl Config {
+    // any extra syntax and highlight themes have been loaded and validated already by the from_file method before parsing the config
     /// Parses a string containing TOML to our Config struct
     /// Any extra parameter will end up in the extra field
     pub fn parse(content: &str) -> Result<Config> {
@@ -115,15 +115,6 @@ impl Config {
 
         if config.base_url.is_empty() || config.base_url == DEFAULT_BASE_URL {
             bail!("A base URL is required in config.toml with key `base_url`");
-        }
-
-        if config.markdown.highlight_theme != "css"
-            && !THEME_SET.themes.contains_key(&config.markdown.highlight_theme)
-        {
-            bail!(
-                "Highlight theme {} defined in config does not exist.",
-                config.markdown.highlight_theme
-            );
         }
 
         languages::validate_code(&config.default_language)?;
@@ -165,7 +156,16 @@ impl Config {
         let path = path.as_ref();
         let content =
             read_file(path).map_err(|e| errors::Error::chain("Failed to load config", e))?;
-        Config::parse(&content)
+
+        let mut config = Config::parse(&content)?;
+        let config_dir = path
+            .parent()
+            .ok_or(Error::msg("Failed to find directory containing the config file."))?;
+
+        // this is the step at which missing extra syntax and highlighting themes are raised as errors
+        config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
+
+        Ok(config)
     }
 
     /// Makes a url, taking into account that the base url might have a trailing slash

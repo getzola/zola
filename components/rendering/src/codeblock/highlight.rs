@@ -26,7 +26,7 @@ pub(crate) struct ClassHighlighter<'config> {
 }
 
 impl<'config> ClassHighlighter<'config> {
-    pub fn new(syntax: &'config SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
+    pub fn new(syntax: &SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
         let parse_state = ParseState::new(syntax);
         Self { syntax_set, open_spans: 0, parse_state, scope_stack: ScopeStack::new() }
     }

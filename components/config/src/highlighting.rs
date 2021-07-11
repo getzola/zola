@@ -1,10 +1,12 @@
 use lazy_static::lazy_static;
 use syntect::dumps::from_binary;
 use syntect::highlighting::{Theme, ThemeSet};
+use syntect::html::ClassStyle;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use crate::config::Config;
-use syntect::html::{css_for_theme_with_class_style, ClassStyle};
+
+pub const CLASS_STYLE: ClassStyle = ClassStyle::SpacedPrefixed { prefix: "z-" };
 
 lazy_static! {
     pub static ref SYNTAX_SET: SyntaxSet = {
@@ -15,8 +17,6 @@ lazy_static! {
     pub static ref THEME_SET: ThemeSet =
         from_binary(include_bytes!("../../../sublime/themes/all.themedump"));
 }
-
-pub const CLASS_STYLE: ClassStyle = ClassStyle::SpacedPrefixed { prefix: "z-" };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum HighlightSource {
@@ -42,11 +42,7 @@ pub fn resolve_syntax_and_theme<'config>(
     language: Option<&'_ str>,
     config: &'config Config,
 ) -> SyntaxAndTheme<'config> {
-    let theme = if config.markdown.highlight_theme != "css" {
-        Some(&THEME_SET.themes[&config.markdown.highlight_theme])
-    } else {
-        None
-    };
+    let theme = config.markdown.get_highlight_theme();
 
     if let Some(ref lang) = language {
         if let Some(ref extra_syntaxes) = config.markdown.extra_syntax_set {
@@ -87,9 +83,4 @@ pub fn resolve_syntax_and_theme<'config>(
             source: HighlightSource::Plain,
         }
     }
-}
-
-pub fn export_theme_css(theme_name: &str) -> String {
-    let theme = &THEME_SET.themes[theme_name];
-    css_for_theme_with_class_style(theme, CLASS_STYLE)
 }
