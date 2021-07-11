@@ -12,7 +12,6 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
 use toml::Value as Toml;
 
-use crate::highlighting::THEME_SET;
 use crate::theme::Theme;
 use errors::{bail, Error, Result};
 use utils::fs::read_file;
@@ -117,15 +116,6 @@ impl Config {
             bail!("A base URL is required in config.toml with key `base_url`");
         }
 
-        if config.markdown.highlight_theme != "css" {
-            if !THEME_SET.themes.contains_key(&config.markdown.highlight_theme) {
-                bail!(
-                    "Highlight theme {} defined in config does not exist.",
-                    config.markdown.highlight_theme
-                );
-            }
-        }
-
         languages::validate_code(&config.default_language)?;
         for code in config.languages.keys() {
             languages::validate_code(&code)?;
@@ -165,7 +155,15 @@ impl Config {
         let path = path.as_ref();
         let content =
             read_file(path).map_err(|e| errors::Error::chain("Failed to load config", e))?;
-        Config::parse(&content)
+
+        let mut config = Config::parse(&content)?;
+        let config_dir = path
+            .parent()
+            .ok_or(Error::msg("Failed to find directory containing the config file."))?;
+
+        config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
+
+        Ok(config)
     }
 
     /// Makes a url, taking into account that the base url might have a trailing slash

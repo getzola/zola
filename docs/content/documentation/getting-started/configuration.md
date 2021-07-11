@@ -232,6 +232,9 @@ Zola currently has the following highlight themes available:
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 
+Alternatively you can use the `extra_syntaxes_and_themes` configuration option to load your own custom themes from a .tmTheme file.
+See [Syntax Highlighting](@/syntax-highlighting.md) for more details.
+
 ## Slugification strategies
 
 By default, Zola will turn every path, taxonomies and anchors to a slug, an ASCII representation with no special characters.

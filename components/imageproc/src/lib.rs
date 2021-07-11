@@ -140,7 +140,7 @@ impl ResizeOp {
             }
             Fit(w, h) => {
                 if orig_w <= w && orig_h <= h {
-                    return res;  // ie. no-op
+                    return res; // ie. no-op
                 }
 
                 let orig_w_h = orig_w as u64 * h as u64;

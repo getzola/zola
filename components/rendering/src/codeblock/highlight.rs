@@ -25,7 +25,7 @@ pub(crate) struct ClassHighlighter<'config> {
 }
 
 impl<'config> ClassHighlighter<'config> {
-    pub fn new(syntax: &'config SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
+    pub fn new(syntax: &SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
         let parse_state = ParseState::new(syntax);
         Self { syntax_set, open_spans: 0, parse_state, scope_stack: ScopeStack::new() }
     }
@@ -82,7 +82,10 @@ impl<'config> InlineHighlighter<'config> {
     pub fn highlight_line(&mut self, line: &str) -> String {
         let regions = self.h.highlight(line, &self.syntax_set);
         // TODO: add a param like `IncludeBackground` for `IncludeForeground` in syntect
-        let highlighted = styled_line_to_highlighted_html(&regions, IncludeBackground::IfDifferent(self.bg_color));
+        let highlighted = styled_line_to_highlighted_html(
+            &regions,
+            IncludeBackground::IfDifferent(self.bg_color),
+        );
         highlighted.replace(&self.fg_color, "")
     }
 }
