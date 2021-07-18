@@ -85,7 +85,7 @@ extra: HashMap<String, Any>;
 // date and weight, respectively.
 pages: Array<Page>;
 // Direct subsections to this section, sorted by subsections weight
-// This only contains the path to use in the `get_section` Tera function to get
+// This only contains the path to use in the `get_section` built-in function to get
 // the actual section object if you need it
 subsections: Array<String>;
 toc: Array<Header>,

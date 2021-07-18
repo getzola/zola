@@ -37,13 +37,30 @@ default_language = "en"
 # The site theme to use.
 theme = ""
 
+# For overriding the default output directory `public`, set it to another value (e.g.: "docs")
+output_dir = "public"
+
+# When set to "true", the Sass files in the `sass` directory in the site root are compiled.
+# Sass files in theme directories are always compiled.
+compile_sass = false
+
+# When set to "true", the generated HTML files are minified.
+minify_html = false
+
+# A list of glob patterns specifying asset files to ignore when the content
+# directory is processed. Defaults to none, which means that all asset files are
+# copied over to the `public` directory.
+# Example:
+#     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
+ignored_content = []
+
 # When set to "true", a feed is automatically generated.
 generate_feed = false
 
 # The filename to use for the feed. Used as the template filename, too.
 # Defaults to "atom.xml", which has a built-in template that renders an Atom 1.0 feed.
 # There is also a built-in template "rss.xml" that renders an RSS 2.0 feed.
-# feed_filename = "atom.xml"
+feed_filename = "atom.xml"
 
 # The number of articles to include in the feed. All items are included if
 # this limit is not set (the default).
@@ -53,7 +70,7 @@ generate_feed = false
 # static files. Note that for this to work, both `static` and the
 # output directory need to be on the same filesystem. Note that the theme's `static`
 # files are always copied, regardless of this setting.
-# hard_link_static = false
+hard_link_static = false
 
 # The taxonomies to be rendered for the site and their configuration.
 # Example:
@@ -76,25 +93,12 @@ taxonomies = []
 #
 languages = []
 
-# When set to "true", the Sass files in the `sass` directory in the site root are compiled.
-# Sass files in theme directories are always compiled.
-compile_sass = false
-
-# When set to "true", the generated HTML files are minified.
-minify_html = false
-
-# A list of glob patterns specifying asset files to ignore when the content
-# directory is processed. Defaults to none, which means that all asset files are
-# copied over to the `public` directory.
-# Example:
-#     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
-ignored_content = []
-
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
 
-# You can override the default output directory `public` by setting an another value.
-# output_dir = "docs"
+# When set to "true", a search index is built from the pages and section
+# content for `default_language`.
+build_search_index = false
 
 # Configuration of the Markdown rendering
 [markdown]
@@ -141,10 +145,6 @@ skip_anchor_prefixes = [
 paths = "on"
 taxonomies = "on"
 anchors = "on"
-
-# When set to "true", a search index is built from the pages and section
-# content for `default_language`.
-build_search_index = false
 
 [search]
 # Whether to include the title of the page/section in the index
@@ -207,6 +207,7 @@ Zola currently has the following highlight themes available:
 - [dimmed-fluid](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Dimmed%20Fluid)
 - [dracula](https://draculatheme.com/)
 - [gray-matter-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Gray%20Matter%20Dark)
+- [green](https://github.com/kristopherjohnson/MonochromeSublimeText)
 - [gruvbox-dark](https://github.com/morhetz/gruvbox)
 - [gruvbox-light](https://github.com/morhetz/gruvbox)
 - [idle](https://tmtheme-editor.herokuapp.com/#!/editor/theme/IDLE)
@@ -219,13 +220,15 @@ Zola currently has the following highlight themes available:
 - [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
 - [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
 - [one-dark](https://github.com/andresmichel/one-dark-theme)
-- [OneHalf](https://github.com/sonph/onehalf)
+- [OneHalfDark](https://github.com/sonph/onehalf)
+- [OneHalfLight](https://github.com/sonph/onehalf)
+- [railsbase16-green-screen-dark](https://github.com/tompave/rails_base_16)
 - [solarized-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(dark))
 - [solarized-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Solarized%20(light))
 - [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
 - [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
 - [Tomorrow](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Tomorrow)
-- [TwoDark](https://github.com/erremauro/TwoDark)
+- [two-dark](https://github.com/erremauro/TwoDark)
 - [visual-studio-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Visual%20Studio%20Dark)
 - [zenburn](https://github.com/colinta/zenburn)
 

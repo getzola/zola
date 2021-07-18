@@ -7,7 +7,7 @@ A section is created whenever a directory (or subdirectory) in the `content` sec
 `_index.md` file.  If a directory does not contain an `_index.md` file, no section will be
 created, but Markdown files within that directory will still create pages (known as orphan pages).
 
-The index page (i.e., the page displayed when a user browses to your `base_url`) is a section,
+The homepage (i.e., the page displayed when a user browses to your `base_url`) is a section,
 which is created whether or not you add an `_index.md` file at the root of your `content` directory.
 If you do not create an `_index.md` file in your content directory, this main content section will
 not have any content or metadata.  If you would like to add content or metadata, you can add an
@@ -72,6 +72,9 @@ paginate_by = 0
 # If set, this will be the path used by the paginated page. The page number will be appended after this path.
 # The default is page/1.
 paginate_path = "page"
+
+# If set, there will pagination will happen in a reversed order.
+paginate_reversed = false
 
 # This determines whether to insert a link for each header like the ones you can see on this site if you hover over
 # a header.
@@ -208,4 +211,4 @@ equally weighted sections. Thus, if the `weight` variable for your section is no
 is set in a way that produces ties), then your sections will be sorted in
 **random** order. Moreover, that order is determined at build time and will
 change with each site rebuild.  Thus, if there is any chance that you will
-iterate over your sections, you should always assign them a weight.
+iterate over your sections, you should always assign them distinct weights.

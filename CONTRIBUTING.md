@@ -30,7 +30,7 @@ $ git submodule update --init
 
 Zola only works with syntaxes in the `.sublime-syntax` format. If your syntax
 is in `.tmLanguage` format, open it in Sublime Text and convert it to `sublime-syntax` by clicking on
-Tools > Developer > New Syntax from ... and put it at the root of `sublime_syntaxes`.
+Tools > Developer > New Syntax from ... and put it in the `sublime/syntaxes` directory.
 
 You can also add a submodule to the repository of the wanted syntax:
 
@@ -56,7 +56,7 @@ $ cargo run --example generate_sublime synpack ../../sublime/syntaxes ../../subl
 
 ### Adding a theme
 A gallery containing lots of themes is located at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
-More themes can be easily added to Zola, just make a PR with the wanted theme added in the `sublime_themes` directory.
+More themes can be easily added to Zola, just make a PR with the wanted theme added in the `sublime/themes` directory.
 
 If you want to test Zola with a new theme, it needs to be built into the syntect file `all.themedump`.
 

@@ -8,7 +8,7 @@ maintenance of large sets of CSS rules. If you're curious about what Sass
 is and why it might be useful for styling your static site, the following links
 may be of interest:
 
-* The [official Sass website](http://sass-lang.com/)
+* The [official Sass website](https://sass-lang.com/)
 * [Why Sass?](https://alistapart.com/article/why-sass), by Dan Cederholm
 
 ## Using Sass in Zola

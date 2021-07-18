@@ -10,10 +10,10 @@ If a file ending with `.md` is named `index.md`, it will generate a page
 with the name of its directory (for example, `/content/about/index.md` would
 create a page at `[base_url]/about`). (Note the lack of an underscore; if the file
 were named `_index.md`, then it would create a **section** at `[base_url]/about`, as
-discussed in a previous part of this documentation.  In contrast, naming the file `index.md` will
+discussed in a previous part of this documentation. In contrast, naming the file `index.md` will
 create a **page** at `[base_url]/about`).
 
-If the file is given any name *other* than `index.md` or `_index.md`, then it will
+If the file is given any name _other_ than `index.md` or `_index.md`, then it will
 create a page with that name (without the `.md`). For example, naming a file in the root of your
 content directory `about.md` would create a page at `[base_url]/about`.
 Another exception to this rule is that a filename starting with a datetime (YYYY-mm-dd or [an RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by
@@ -23,7 +23,7 @@ be available at `[base_url]/hello-world`. Note that the full RFC3339 datetime co
 character in a filename on Windows.
 
 As you can see, creating an `about.md` file is equivalent to creating an
-`about/index.md` file.  The only difference between the two methods is that creating
+`about/index.md` file. The only difference between the two methods is that creating
 the `about` directory allows you to use asset co-location, as discussed in the
 [overview](@/documentation/content/overview.md#asset-colocation) section.
 
@@ -35,7 +35,7 @@ For any page within your content folder, its output path will be defined by eith
 - its filename
 
 Either way, these proposed path will be sanitized before being used.
-If `slugify.paths` is set to `"on"` in the site's config - the default - paths are [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug). 
+If `slugify.paths` is set to `"on"` in the site's config - the default - paths are [slugified](https://en.wikipedia.org/wiki/Clean_URL#Slug).
 If it is set to `"safe"`, only sanitation is performed, with the following characters being removed: `<`, `>`, `:`, `/`, `|`, `?`, `*`, `#`, `\\`, `(`, `)`, `[`, `]` as well as newlines and tabulations. This ensures that the path can be represented on all operating systems.
 Additionally, trailing whitespace and dots are removed and whitespaces are replaced by `_`.
 
@@ -62,6 +62,7 @@ This frontmatter will output the article to `[base_url]/zines/femmes-libres-libÃ
 ### Path from filename
 
 When the article's output path is not specified in the frontmatter, it is extracted from the file's path in the content folder. Consider a file `content/foo/bar/thing.md`. The output path is constructed:
+
 - if the filename is `index.md`, its parent folder name (`bar`) is used as output path
 - otherwise, the output path is extracted from `thing`Â (the filename without the `.md` extension)
 
@@ -109,7 +110,7 @@ weight = 0
 # A draft page is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
 draft = false
 
-# If set, this slug will be instead of the filename to make the URL.
+# If set, this slug will be used instead of the filename to make the URL.
 # The section path will still be used.
 slug = ""
 
@@ -148,7 +149,7 @@ paragraph of the page content in a list.
 To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
 where you want the summary to end. The content up to that point will be
 available separately in the
-[template](@/documentation/templates/pages-sections.md#page-variables).
+[template](@/documentation/templates/pages-sections.md#page-variables) via `page.summary`.
 
 A span element in this position with a `continue-reading` id is created, so you can link directly to it if needed. For example:
 `<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`.

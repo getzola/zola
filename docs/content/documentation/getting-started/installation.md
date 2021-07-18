@@ -10,7 +10,7 @@ Zola provides pre-built binaries for MacOS, Linux and Windows on the
 
 Zola is available on [Brew](https://brew.sh):
 
-```bash
+```sh
 $ brew install zola
 ```
 
@@ -18,8 +18,25 @@ $ brew install zola
 
 Zola is available in the official Arch Linux repositories.
 
-```bash
+```sh
 $ pacman -S zola
+```
+
+### Alpine Linux
+
+Zola is available in the official Alpine Linux repository, only on the `edge` version for now.
+
+```sh
+$ apk add zola --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
+```
+
+### Debian
+
+Zola is available over at [barnumbirr/zola-debian](https://github.com/barnumbirr/zola-debian).
+Grab the latest `.deb` for your Debian version then simply run:
+
+```sh
+$ sudo dpkg -i zola_<version>_amd64_debian_<debian_version>.deb
 ```
 
 ### Fedora
@@ -31,6 +48,7 @@ $ sudo dnf install zola
 ```
 
 ### Void Linux
+
 Zola is available in the official Void Linux repositories.
 
 ```sh
@@ -46,6 +64,7 @@ $ pkg install zola
 ```
 
 ### OpenBSD
+
 Zola is available in the official package repository.
 
 ```sh
@@ -56,21 +75,49 @@ $ doas pkg_add zola
 
 Zola is available on snapcraft:
 
-```bash
+```sh
 $ snap install --edge zola
 ```
 
+### Docker
+
+Zola is available on [Docker Hub](https://hub.docker.com/r/balthek/zola).
+It has no `latest` tag, you will need to specify a [specific version to pull](https://hub.docker.com/r/balthek/zola/tags).
+
+```sh
+$ docker pull balthek/zola:0.13.0
+$ docker run balthek/zola:0.13.0 --version
+```
+
+#### Build
+
+```sh
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app balthek/zola:0.13.0 build
+```
+
+#### Serve
+
+```sh
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 balthek/zola:0.13.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost
+```
+
+You can now browse http://localhost:8080.
+
+> To enable live browser reload, you may have to bind to port 1024. Zola searches for an open
+> port between 1024 and 9000 for live reload. The new docker command would be
+> `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 balthek/zola:0.13.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
+
 ## Windows
 
-Zola is available on [Scoop](http://scoop.sh):
+Zola is available on [Scoop](https://scoop.sh):
 
-```bash
+```sh
 $ scoop install zola
 ```
 
 and [Chocolatey](https://chocolatey.org/):
 
-```bash
+```sh
 $ choco install zola
 ```
 
@@ -98,7 +145,7 @@ installed. You will also need to meet additional dependencies to compile [libsas
 
 From a terminal, you can now run the following command:
 
-```bash
+```sh
 $ cargo build --release
 ```
 

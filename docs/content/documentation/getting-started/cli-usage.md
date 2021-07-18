@@ -31,7 +31,7 @@ $ zola init
 
 ## build
 
-This will build the whole site in the `public` directory (if this directory already exists, it is overwritten).
+This will build the whole site in the `public` directory (if this directory already exists, it is deleted).
 
 ```bash
 $ zola build
@@ -46,7 +46,7 @@ $ zola build --base-url $DEPLOY_URL
 This is useful for example when you want to deploy previews of a site to a dynamic URL, such as Netlify
 deploy previews.
 
-You can override the default output directory `public` by passing another value to the `output-dir` flag.
+You can override the default output directory `public` by passing another value to the `output-dir` flag (if this directory already exists, it is deleted).
 
 ```bash
 $ zola build --output-dir $DOCUMENT_ROOT
@@ -75,9 +75,7 @@ You can also specify different addresses for the interface and base_url using `-
 Use the `--open` flag to automatically open the locally hosted instance in your
 web browser.
 
-In the event you don't want Zola to run a local web server, you can use the `--watch-only` flag.
-
-Before starting, Zola will delete the `public` directory to start from a clean slate.
+Before starting, Zola will delete the output directory (by default `public` in project root) to start from a clean slate.
 
 ```bash
 $ zola serve
@@ -86,7 +84,6 @@ $ zola serve --interface 0.0.0.0
 $ zola serve --interface 0.0.0.0 --port 2000
 $ zola serve --interface 0.0.0.0 --base-url 127.0.0.1
 $ zola serve --interface 0.0.0.0 --port 2000 --output-dir www/public
-$ zola serve --watch-only
 $ zola serve --open
 ```
 

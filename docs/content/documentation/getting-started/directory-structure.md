@@ -32,7 +32,7 @@ that contains [pages](@/documentation/content/page.md) (your `.md` files).
 To learn more, read the [content overview page](@/documentation/content/overview.md).
 
 ## `sass`
-Contains the [Sass](http://sass-lang.com) files to be compiled. Non-Sass files will be ignored.
+Contains the [Sass](https://sass-lang.com) files to be compiled. Non-Sass files will be ignored.
 The directory structure of the `sass` folder will be preserved when copying over the compiled files; for example, a file at
 `sass/something/site.scss` will be compiled to `public/something/site.css`.
 

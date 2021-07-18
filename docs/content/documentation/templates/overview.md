@@ -408,11 +408,12 @@ The format is also taken into account when caching, so a request will be sent tw
 different formats.
 
 ### `trans`
-Gets the translation of the given `key`, for the `default_language` or the `lang`uage given
+Gets the translation of the given `key`, for the `default_language`, the `lang`uage given or the active language:
 
 ```jinja2
 {{/* trans(key="title") */}}
 {{/* trans(key="title", lang="fr") */}}
+{{/* trans(key="title", lang=lang) */}}
 ```
 
 ### `resize_image`
