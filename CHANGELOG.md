@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.14.0 (unreleased)
+## 0.14.0 (2021-07-18)
 
 ### Breaking
 
