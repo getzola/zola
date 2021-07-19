@@ -10,25 +10,24 @@ use std::path::{Path, PathBuf};
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde_derive::{Deserialize, Serialize};
-use syntect::parsing::SyntaxSetBuilder;
 use toml::Value as Toml;
 
 use crate::highlighting::THEME_SET;
 use crate::theme::Theme;
 use errors::{bail, Error, Result};
-use utils::fs::read_file_with_error;
+use utils::fs::read_file;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Mode {
     Build,
     Serve,
     Check,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
@@ -44,22 +43,9 @@ pub struct Config {
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
     /// The list of supported languages outside of the default one
-    pub languages: Vec<languages::Language>,
-
-    /// Languages list and translated strings
-    ///
-    /// The `String` key of `HashMap` is a language name, the value should be toml crate `Table`
-    /// with String key representing term and value another `String` representing its translation.
-    ///
-    /// The attribute is intentionally not public, use `get_translation()` method for translating
-    /// key into different language.
-    translations: HashMap<String, languages::TranslateTerm>,
-
-    /// Whether to highlight all code blocks found in markdown files. Defaults to false
-    highlight_code: bool,
-    /// Which themes to use for code highlighting. See Readme for supported themes
-    /// Defaults to "base16-ocean-dark"
-    highlight_theme: String,
+    pub languages: HashMap<String, languages::LanguageOptions>,
+    /// The translations strings for the default language
+    translations: HashMap<String, String>,
 
     /// Whether to generate a feed. Defaults to false.
     pub generate_feed: bool,
@@ -91,24 +77,31 @@ pub struct Config {
     #[serde(skip_serializing)]
     pub mode: Mode,
 
-    /// A list of directories to search for additional `.sublime-syntax` files in.
-    pub extra_syntaxes: Vec<String>,
-
     pub output_dir: String,
 
     pub link_checker: link_checker::LinkChecker,
-
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
     pub slugify: slugify::Slugify,
-
     /// The search config, telling what to include in the search index
     pub search: search::Search,
-
     /// The config for the Markdown rendering: syntax highlighting and everything
     pub markdown: markup::Markdown,
-
     /// All user params set in [extra] in the config
     pub extra: HashMap<String, Toml>,
+}
+
+#[derive(Serialize)]
+pub struct SerializedConfig<'a> {
+    base_url: &'a str,
+    mode: Mode,
+    title: &'a Option<String>,
+    description: &'a Option<String>,
+    languages: HashMap<&'a String, &'a languages::LanguageOptions>,
+    generate_feed: bool,
+    feed_filename: &'a str,
+    taxonomies: &'a [taxonomies::Taxonomy],
+    build_search_index: bool,
+    extra: &'a HashMap<String, Toml>,
 }
 
 impl Config {
@@ -124,13 +117,21 @@ impl Config {
             bail!("A base URL is required in config.toml with key `base_url`");
         }
 
-        if !THEME_SET.themes.contains_key(&config.highlight_theme) {
-            bail!("Highlight theme {} not available", config.highlight_theme)
+        if config.markdown.highlight_theme != "css" {
+            if !THEME_SET.themes.contains_key(&config.markdown.highlight_theme) {
+                bail!(
+                    "Highlight theme {} defined in config does not exist.",
+                    config.markdown.highlight_theme
+                );
+            }
         }
 
-        if config.languages.iter().any(|l| l.code == config.default_language) {
-            bail!("Default language `{}` should not appear both in `config.default_language` and `config.languages`", config.default_language)
+        languages::validate_code(&config.default_language)?;
+        for code in config.languages.keys() {
+            languages::validate_code(&code)?;
         }
+
+        config.add_default_language();
 
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
@@ -150,85 +151,21 @@ impl Config {
                 Some(glob_set_builder.build().expect("Bad ignored_content in config file."));
         }
 
-        for taxonomy in config.taxonomies.iter_mut() {
-            if taxonomy.lang.is_empty() {
-                taxonomy.lang = config.default_language.clone();
-            }
-        }
-
-        if config.highlight_code {
-            println!("`highlight_code` has been moved to a [markdown] section. Top level `highlight_code` and `highlight_theme` will stop working in 0.14.");
-        }
-        if !config.extra_syntaxes.is_empty() {
-            println!("`extra_syntaxes` has been moved to a [markdown] section. Top level `extra_syntaxes` will stop working in 0.14.");
-        }
-
         Ok(config)
+    }
+
+    pub fn default_for_test() -> Self {
+        let mut config = Config::default();
+        config.add_default_language();
+        config
     }
 
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let path = path.as_ref();
-        let file_name = path.file_name().unwrap();
-        let content = read_file_with_error(
-            path,
-            &format!("No `{:?}` file found. Are you in the right directory?", file_name),
-        )?;
+        let content =
+            read_file(path).map_err(|e| errors::Error::chain("Failed to load config", e))?;
         Config::parse(&content)
-    }
-
-    /// Temporary, while we have the settings in 2 places
-    /// TODO: remove me in 0.14
-    pub fn highlight_code(&self) -> bool {
-        if !self.highlight_code && !self.markdown.highlight_code {
-            return false;
-        }
-
-        if self.highlight_code {
-            true
-        } else {
-            self.markdown.highlight_code
-        }
-    }
-
-    /// Temporary, while we have the settings in 2 places
-    /// TODO: remove me in 0.14
-    pub fn highlight_theme(&self) -> &str {
-        if self.highlight_theme != markup::DEFAULT_HIGHLIGHT_THEME {
-            &self.highlight_theme
-        } else {
-            &self.markdown.highlight_theme
-        }
-    }
-
-    /// TODO: remove me in 0.14
-    pub fn extra_syntaxes(&self) -> Vec<String> {
-        if !self.markdown.extra_syntaxes.is_empty() {
-            return self.markdown.extra_syntaxes.clone();
-        }
-
-        if !self.extra_syntaxes.is_empty() {
-            return self.extra_syntaxes.clone();
-        }
-
-        Vec::new()
-    }
-
-    /// Attempt to load any extra syntax found in the extra syntaxes of the config
-    /// TODO: move to markup.rs in 0.14
-    pub fn load_extra_syntaxes(&mut self, base_path: &Path) -> Result<()> {
-        let extra_syntaxes = self.extra_syntaxes();
-        if extra_syntaxes.is_empty() {
-            return Ok(());
-        }
-
-        let mut ss = SyntaxSetBuilder::new();
-        for dir in &extra_syntaxes {
-            ss.add_from_folder(base_path.join(dir), true)?;
-        }
-        self.markdown.extra_syntax_set = Some(ss.build());
-
-        Ok(())
     }
 
     /// Makes a url, taking into account that the base url might have a trailing slash
@@ -255,6 +192,28 @@ impl Config {
         }
     }
 
+    /// Adds the default language to the list of languages if not present
+    pub fn add_default_language(&mut self) {
+        // We automatically insert a language option for the default language *if* it isn't present
+        // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
+        // TODO: as source of truth?
+        if !self.languages.contains_key(&self.default_language) {
+            self.languages.insert(
+                self.default_language.clone(),
+                languages::LanguageOptions {
+                    title: self.title.clone(),
+                    description: self.description.clone(),
+                    generate_feed: self.generate_feed,
+                    feed_filename: self.feed_filename.clone(),
+                    build_search_index: self.build_search_index,
+                    taxonomies: self.taxonomies.clone(),
+                    search: self.search.clone(),
+                    translations: self.translations.clone(),
+                },
+            );
+        }
+    }
+
     /// Merges the extra data from the theme with the config extra data
     fn add_theme_extra(&mut self, theme: &Theme) -> Result<()> {
         for (key, val) in &theme.extra {
@@ -270,27 +229,26 @@ impl Config {
 
     /// Parse the theme.toml file and merges the extra data from the theme
     /// with the config extra data
-    pub fn merge_with_theme(&mut self, path: &PathBuf) -> Result<()> {
-        let theme = Theme::from_file(path)?;
+    pub fn merge_with_theme(&mut self, path: &PathBuf, theme_name: &str) -> Result<()> {
+        let theme = Theme::from_file(path, theme_name)?;
         self.add_theme_extra(&theme)
+    }
+
+    /// Returns all the languages settings for languages other than the default one
+    pub fn other_languages(&self) -> HashMap<&str, &languages::LanguageOptions> {
+        let mut others = HashMap::new();
+        for (k, v) in &self.languages {
+            if k == &self.default_language {
+                continue;
+            }
+            others.insert(k.as_str(), v);
+        }
+        others
     }
 
     /// Is this site using i18n?
     pub fn is_multilingual(&self) -> bool {
-        !self.languages.is_empty()
-    }
-
-    /// Returns the codes of all additional languages
-    pub fn languages_codes(&self) -> Vec<&str> {
-        self.languages.iter().map(|l| l.code.as_ref()).collect()
-    }
-
-    pub fn is_in_build_mode(&self) -> bool {
-        self.mode == Mode::Build
-    }
-
-    pub fn is_in_serve_mode(&self) -> bool {
-        self.mode == Mode::Serve
+        !self.other_languages().is_empty()
     }
 
     pub fn is_in_check_mode(&self) -> bool {
@@ -303,26 +261,42 @@ impl Config {
 
     pub fn enable_check_mode(&mut self) {
         self.mode = Mode::Check;
-        // Disable syntax highlighting since the results won't be used
-        // and this operation can be expensive.
-        self.highlight_code = false;
+        // Disable syntax highlighting since the results won't be used and it is slow
+        self.markdown.highlight_code = false;
     }
 
-    pub fn get_translation<S: AsRef<str>>(&self, lang: S, key: S) -> Result<String> {
-        let terms = self.translations.get(lang.as_ref()).ok_or_else(|| {
-            Error::msg(format!("Translation for language '{}' is missing", lang.as_ref()))
-        })?;
+    pub fn get_translation(&self, lang: &str, key: &str) -> Result<String> {
+        if let Some(options) = self.languages.get(lang) {
+            options
+                .translations
+                .get(key)
+                .ok_or_else(|| {
+                    Error::msg(format!(
+                        "Translation key '{}' for language '{}' is missing",
+                        key, lang
+                    ))
+                })
+                .map(|term| term.to_string())
+        } else {
+            bail!("Language '{}' not found.", lang)
+        }
+    }
 
-        terms
-            .get(key.as_ref())
-            .ok_or_else(|| {
-                Error::msg(format!(
-                    "Translation key '{}' for language '{}' is missing",
-                    key.as_ref(),
-                    lang.as_ref()
-                ))
-            })
-            .map(|term| term.to_string())
+    pub fn serialize(&self, lang: &str) -> SerializedConfig {
+        let options = &self.languages[lang];
+
+        SerializedConfig {
+            base_url: &self.base_url,
+            mode: self.mode,
+            title: &options.title,
+            description: &options.description,
+            languages: self.languages.iter().filter(|(k, _)| k.as_str() != lang).collect(),
+            generate_feed: options.generate_feed,
+            feed_filename: &options.feed_filename,
+            taxonomies: &options.taxonomies,
+            build_search_index: options.build_search_index,
+            extra: &self.extra,
+        }
     }
 }
 
@@ -361,10 +335,8 @@ impl Default for Config {
             title: None,
             description: None,
             theme: None,
-            highlight_code: false,
-            highlight_theme: "base16-ocean-dark".to_string(),
             default_language: "en".to_string(),
-            languages: Vec::new(),
+            languages: HashMap::new(),
             generate_feed: false,
             feed_limit: None,
             feed_filename: "atom.xml".to_string(),
@@ -377,7 +349,6 @@ impl Default for Config {
             ignored_content: Vec::new(),
             ignored_content_globset: None,
             translations: HashMap::new(),
-            extra_syntaxes: Vec::new(),
             output_dir: "public".to_string(),
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
@@ -532,16 +503,17 @@ base_url = "https://remplace-par-ton-url.fr"
 default_language = "fr"
 
 [translations]
-[translations.fr]
 title = "Un titre"
 
-[translations.en]
+[languages.en]
+[languages.en.translations]
 title = "A title"
-        "#;
+"#;
 
     #[test]
     fn can_use_present_translation() {
         let config = Config::parse(CONFIG_TRANSLATION).unwrap();
+        assert!(config.languages.contains_key("fr"));
         assert_eq!(config.get_translation("fr", "title").unwrap(), "Un titre");
         assert_eq!(config.get_translation("en", "title").unwrap(), "A title");
     }
@@ -551,7 +523,7 @@ title = "A title"
         let config = Config::parse(CONFIG_TRANSLATION).unwrap();
         let error = config.get_translation("absent", "key").unwrap_err();
 
-        assert_eq!("Translation for language 'absent' is missing", format!("{}", error));
+        assert_eq!("Language 'absent' not found.", format!("{}", error));
     }
 
     #[test]
@@ -666,21 +638,6 @@ anchors = "off"
         assert_eq!(config.slugify.paths, SlugifyStrategy::On);
         assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Safe);
         assert_eq!(config.slugify.anchors, SlugifyStrategy::Off);
-    }
-
-    #[test]
-    fn error_on_language_set_twice() {
-        let config_str = r#"
-base_url = "https://remplace-par-ton-url.fr"
-default_language = "fr"
-languages = [
-    { code = "fr" },
-    { code = "en" },
-]
-        "#;
-        let config = Config::parse(config_str);
-        let err = config.unwrap_err();
-        assert_eq!("Default language `fr` should not appear both in `config.default_language` and `config.languages`", format!("{}", err));
     }
 
     #[test]

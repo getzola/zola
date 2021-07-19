@@ -20,6 +20,12 @@ pub struct PageFrontMatter {
     /// Updated date
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub updated: Option<String>,
+    /// Chrono converted update datatime
+    #[serde(default, skip_deserializing)]
+    pub updated_datetime: Option<NaiveDateTime>,
+    /// The converted update datetime into a (year, month, day) tuple
+    #[serde(default, skip_deserializing)]
+    pub updated_datetime_tuple: Option<(i32, u32, u32)>,
     /// Date if we want to order pages (ie blog post)
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub date: Option<String>,
@@ -81,7 +87,7 @@ impl PageFrontMatter {
         }
 
         if let Some(ref path) = f.path {
-            if path == "" {
+            if path.is_empty() {
                 bail!("`path` can't be empty if present")
             }
         }
@@ -107,6 +113,10 @@ impl PageFrontMatter {
     pub fn date_to_datetime(&mut self) {
         self.datetime = self.date.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
         self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
+
+        self.updated_datetime = self.updated.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
+        self.updated_datetime_tuple =
+            self.updated_datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
     }
 
     pub fn weight(&self) -> usize {
@@ -120,6 +130,8 @@ impl Default for PageFrontMatter {
             title: None,
             description: None,
             updated: None,
+            updated_datetime: None,
+            updated_datetime_tuple: None,
             date: None,
             datetime: None,
             datetime_tuple: None,

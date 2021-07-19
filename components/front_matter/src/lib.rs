@@ -3,9 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use errors::{bail, Error, Result};
 use regex::Regex;
-use serde_yaml;
 use std::path::Path;
-use toml;
 
 mod page;
 mod section;
@@ -14,10 +12,14 @@ pub use page::PageFrontMatter;
 pub use section::SectionFrontMatter;
 
 lazy_static! {
-    static ref TOML_RE: Regex =
-        Regex::new(r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+\r?\n?((?s).*(?-s))$").unwrap();
-    static ref YAML_RE: Regex =
-        Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---\r?\n?((?s).*(?-s))$").unwrap();
+    static ref TOML_RE: Regex = Regex::new(
+        r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))"
+    )
+    .unwrap();
+    static ref YAML_RE: Regex = Regex::new(
+        r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))"
+    )
+    .unwrap();
 }
 
 pub enum RawFrontMatter<'a> {
@@ -46,6 +48,10 @@ impl RawFrontMatter<'_> {
 pub enum SortBy {
     /// Most recent to oldest
     Date,
+    /// Most recent to oldest
+    UpdateDate,
+    /// Sort by title
+    Title,
     /// Lower weight comes first
     Weight,
     /// No sorting
@@ -80,7 +86,8 @@ fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(RawFrontMatt
     // caps[1] => front matter
     // caps[2] => content
     let front_matter = caps.get(1).unwrap().as_str();
-    let content = caps.get(2).unwrap().as_str();
+    let content = caps.get(2).map_or("", |m| m.as_str());
+
     if is_toml {
         Ok((RawFrontMatter::Toml(front_matter), content))
     } else {
@@ -172,13 +179,27 @@ Hello
 title = "Title"
 description = "hey there"
 date = 2002-10-12
-+++"#; "toml")]
++++
+"#; "toml")]
     #[test_case(r#"
 ---
 title: Title
 description: hey there
 date: 2002-10-12
----"#; "yaml")]
+---
+"#; "yaml")]
+    #[test_case(r#"
++++
+title = "Title"
+description = "hey there"
+date = 2002-10-12
++++"#; "toml no newline")]
+    #[test_case(r#"
+---
+title: Title
+description: hey there
+date: 2002-10-12
+---"#; "yaml no newline")]
     fn can_split_content_with_only_frontmatter_valid(content: &str) {
         let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
         assert_eq!(content, "");
@@ -231,6 +252,12 @@ description = "hey there"
 date = 2002-10-12
 ---"#; "toml unmatched")]
     #[test_case(r#"
++++
+title = "Title"
+description = "hey there"
+date = 2002-10-12
+++++"#; "toml too many pluses")]
+    #[test_case(r#"
 ---
 title: Title
 description: hey there
@@ -241,6 +268,12 @@ title: Title
 description: hey there
 date: 2002-10-12
 +++"#; "yaml unmatched")]
+    #[test_case(r#"
+---
+title: Title
+description: hey there
+date: 2002-10-12
+----"#; "yaml too many dashes")]
     fn errors_if_cannot_locate_frontmatter(content: &str) {
         let res = split_page_content(Path::new(""), content);
         assert!(res.is_err());

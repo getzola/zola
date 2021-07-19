@@ -1,11 +1,9 @@
 use lazy_static::lazy_static;
 use pulldown_cmark as cmark;
 use regex::Regex;
-use syntect::html::{start_highlighted_html_snippet, IncludeBackground};
 
 use crate::context::RenderContext;
 use crate::table_of_contents::{make_table_of_contents, Heading};
-use config::highlighting::THEME_SET;
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
 use utils::site::resolve_internal_link;
@@ -13,10 +11,7 @@ use utils::slugs::slugify_anchors;
 use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
-
-mod codeblock;
-mod fence;
-use self::codeblock::CodeBlock;
+use crate::codeblock::{CodeBlock, FenceSettings};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -26,11 +21,13 @@ pub struct Rendered {
     pub body: String,
     pub summary_len: Option<usize>,
     pub toc: Vec<Heading>,
-    pub internal_links_with_anchors: Vec<(String, String)>,
+    /// Links to site-local pages: relative path plus optional anchor target.
+    pub internal_links: Vec<(String, Option<String>)>,
+    /// Outgoing links to external webpages (i.e. HTTP(S) targets).
     pub external_links: Vec<String>,
 }
 
-// tracks a heading in a slice of pulldown-cmark events
+/// Tracks a heading in a slice of pulldown-cmark events
 #[derive(Debug)]
 struct HeadingRef {
     start_idx: usize,
@@ -49,7 +46,7 @@ impl HeadingRef {
 // for example an article could have several titles named Example
 // We add a counter after the slug if the slug is already present, which
 // means we will have example, example-1, example-2 etc
-fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
+fn find_anchor(anchors: &[String], name: String, level: u16) -> String {
     if level == 0 && !anchors.contains(&name) {
         return name;
     }
@@ -62,13 +59,13 @@ fn find_anchor(anchors: &[String], name: String, level: u8) -> String {
     find_anchor(anchors, name, level + 1)
 }
 
-// Returns whether the given string starts with a schema.
-//
-// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
-// private schemes. This function checks if the given string starts with something that just looks
-// like a scheme, i.e., a case-insensitive identifier followed by a colon.
-//
-// [uri-schemes]: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+/// Returns whether the given string starts with a schema.
+///
+/// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
+/// private schemes. This function checks if the given string starts with something that just looks
+/// like a scheme, i.e., a case-insensitive identifier followed by a colon.
+///
+/// [uri-schemes]: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
 fn starts_with_schema(s: &str) -> bool {
     lazy_static! {
         static ref PATTERN: Regex = Regex::new(r"^[0-9A-Za-z\-]+:").unwrap();
@@ -77,14 +74,14 @@ fn starts_with_schema(s: &str) -> bool {
     PATTERN.is_match(s)
 }
 
-// Colocated asset links refers to the files in the same directory,
-// there it should be a filename only
+/// Colocated asset links refers to the files in the same directory,
+/// there it should be a filename only
 fn is_colocated_asset_link(link: &str) -> bool {
     !link.contains('/')  // http://, ftp://, ../ etc
         && !starts_with_schema(link)
 }
 
-// Returns whether a link starts with an HTTP(s) scheme.
+/// Returns whether a link starts with an HTTP(s) scheme.
 fn is_external_link(link: &str) -> bool {
     link.starts_with("http:") || link.starts_with("https:")
 }
@@ -93,7 +90,7 @@ fn fix_link(
     link_type: LinkType,
     link: &str,
     context: &RenderContext,
-    internal_links_with_anchors: &mut Vec<(String, String)>,
+    internal_links: &mut Vec<(String, Option<String>)>,
     external_links: &mut Vec<String>,
 ) -> Result<String> {
     if link_type == LinkType::Email {
@@ -107,10 +104,7 @@ fn fix_link(
     let result = if link.starts_with("@/") {
         match resolve_internal_link(&link, &context.permalinks) {
             Ok(resolved) => {
-                if resolved.anchor.is_some() {
-                    internal_links_with_anchors
-                        .push((resolved.md_path.unwrap(), resolved.anchor.unwrap()));
-                }
+                internal_links.push((resolved.md_path, resolved.anchor));
                 resolved.permalink
             }
             Err(_) => {
@@ -166,16 +160,21 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
         static ref EMOJI_REPLACER: gh_emoji::Replacer = gh_emoji::Replacer::new();
     }
 
+    let path = context
+        .tera_context
+        .get("page")
+        .or(context.tera_context.get("section"))
+        .map(|x| x.as_object().unwrap().get("relative_path").unwrap().as_str().unwrap());
     // the rendered html
     let mut html = String::with_capacity(content.len());
     // Set while parsing
     let mut error = None;
 
-    let mut highlighter: Option<CodeBlock> = None;
+    let mut code_block: Option<CodeBlock> = None;
 
     let mut inserted_anchors: Vec<String> = vec![];
     let mut headings: Vec<Heading> = vec![];
-    let mut internal_links_with_anchors = Vec::new();
+    let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
 
     let mut opts = Options::empty();
@@ -196,7 +195,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 match event {
                     Event::Text(text) => {
                         // if we are in the middle of a highlighted code block
-                        if let Some(ref mut code_block) = highlighter {
+                        if let Some(ref mut code_block) = code_block {
                             let html = code_block.highlight(&text);
                             Event::Html(html.into())
                         } else if context.config.markdown.render_emoji {
@@ -208,62 +207,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         }
                     }
                     Event::Start(Tag::CodeBlock(ref kind)) => {
-                        let language = match kind {
+                        let fence = match kind {
                             cmark::CodeBlockKind::Fenced(fence_info) => {
-                                let fence_info = fence::FenceSettings::new(fence_info);
-                                fence_info.language
+                                FenceSettings::new(fence_info)
                             }
-                            _ => None,
+                            _ => FenceSettings::new(""),
                         };
-
-                        if !context.config.highlight_code() {
-                            if let Some(lang) = language {
-                                let html = format!(
-                                    r#"<pre><code class="language-{}" data-lang="{}">"#,
-                                    lang, lang
-                                );
-                                return Event::Html(html.into());
-                            }
-                            return Event::Html("<pre><code>".into());
-                        }
-
-                        let theme = &THEME_SET.themes[context.config.highlight_theme()];
-                        match kind {
-                            cmark::CodeBlockKind::Indented => (),
-                            cmark::CodeBlockKind::Fenced(fence_info) => {
-                                // This selects the background color the same way that
-                                // start_coloured_html_snippet does
-                                let color = theme
-                                    .settings
-                                    .background
-                                    .unwrap_or(::syntect::highlighting::Color::WHITE);
-
-                                highlighter = Some(CodeBlock::new(
-                                    fence_info,
-                                    &context.config,
-                                    IncludeBackground::IfDifferent(color),
-                                ));
-                            }
-                        };
-                        let snippet = start_highlighted_html_snippet(theme);
-                        let mut html = snippet.0;
-                        if let Some(lang) = language {
-                            html.push_str(&format!(
-                                r#"<code class="language-{}" data-lang="{}">"#,
-                                lang, lang
-                            ));
-                        } else {
-                            html.push_str("<code>");
-                        }
-                        Event::Html(html.into())
+                        let (block, begin) = CodeBlock::new(fence, &context.config, path);
+                        code_block = Some(block);
+                        Event::Html(begin.into())
                     }
                     Event::End(Tag::CodeBlock(_)) => {
-                        if !context.config.highlight_code() {
-                            return Event::Html("</code></pre>\n".into());
-                        }
                         // reset highlight and close the code block
-                        highlighter = None;
-                        Event::Html("</code></pre>".into())
+                        code_block = None;
+                        Event::Html("</code></pre>\n".into())
                     }
                     Event::Start(Tag::Image(link_type, src, title)) => {
                         if is_colocated_asset_link(&src) {
@@ -282,7 +239,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             link_type,
                             &link,
                             context,
-                            &mut internal_links_with_anchors,
+                            &mut internal_links,
                             &mut external_links,
                         ) {
                             Ok(fixed_link) => fixed_link,
@@ -417,7 +374,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
             body: html,
             toc: make_table_of_contents(headings),
-            internal_links_with_anchors,
+            internal_links,
             external_links,
         })
     }

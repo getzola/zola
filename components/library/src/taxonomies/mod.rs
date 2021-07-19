@@ -18,6 +18,7 @@ use utils::slugs::slugify_paths;
 pub struct SerializedTaxonomyItem<'a> {
     name: &'a str,
     slug: &'a str,
+    path: &'a str,
     permalink: &'a str,
     pages: Vec<SerializingPage<'a>>,
 }
@@ -34,6 +35,7 @@ impl<'a> SerializedTaxonomyItem<'a> {
         SerializedTaxonomyItem {
             name: &item.name,
             slug: &item.slug,
+            path: &item.path,
             permalink: &item.permalink,
             pages,
         }
@@ -45,6 +47,7 @@ impl<'a> SerializedTaxonomyItem<'a> {
 pub struct TaxonomyItem {
     pub name: String,
     pub slug: String,
+    pub path: String,
     pub permalink: String,
     pub pages: Vec<DefaultKey>,
 }
@@ -52,7 +55,7 @@ pub struct TaxonomyItem {
 impl TaxonomyItem {
     pub fn new(
         name: &str,
-        taxonomy: &TaxonomyConfig,
+        lang: &str,
         taxo_slug: &str,
         config: &Config,
         keys: Vec<DefaultKey>,
@@ -73,16 +76,17 @@ impl TaxonomyItem {
             .collect();
         let (mut pages, ignored_pages) = sort_pages_by_date(data);
         let item_slug = slugify_paths(name, config.slugify.taxonomies);
-        let permalink = if taxonomy.lang != config.default_language {
-            config.make_permalink(&format!("/{}/{}/{}", taxonomy.lang, taxo_slug, item_slug))
+        let path = if lang != config.default_language {
+            format!("/{}/{}/{}/", lang, taxo_slug, item_slug)
         } else {
-            config.make_permalink(&format!("/{}/{}", taxo_slug, item_slug))
+            format!("/{}/{}/", taxo_slug, item_slug)
         };
+        let permalink = config.make_permalink(&path);
 
         // We still append pages without dates at the end
         pages.extend(ignored_pages);
 
-        TaxonomyItem { name: name.to_string(), permalink, slug: item_slug, pages }
+        TaxonomyItem { name: name.to_string(), permalink, path, slug: item_slug, pages }
     }
 
     pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyItem<'a> {
@@ -103,6 +107,8 @@ impl PartialEq for TaxonomyItem {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SerializedTaxonomy<'a> {
     kind: &'a TaxonomyConfig,
+    lang: &'a str,
+    permalink: &'a str,
     items: Vec<SerializedTaxonomyItem<'a>>,
 }
 
@@ -110,7 +116,12 @@ impl<'a> SerializedTaxonomy<'a> {
     pub fn from_taxonomy(taxonomy: &'a Taxonomy, library: &'a Library) -> Self {
         let items: Vec<SerializedTaxonomyItem> =
             taxonomy.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
-        SerializedTaxonomy { kind: &taxonomy.kind, items }
+        SerializedTaxonomy {
+            kind: &taxonomy.kind,
+            lang: &taxonomy.lang,
+            permalink: &taxonomy.permalink,
+            items,
+        }
     }
 }
 
@@ -118,7 +129,9 @@ impl<'a> SerializedTaxonomy<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Taxonomy {
     pub kind: TaxonomyConfig,
+    pub lang: String,
     pub slug: String,
+    pub permalink: String,
     // this vec is sorted by the count of item
     pub items: Vec<TaxonomyItem>,
 }
@@ -126,6 +139,7 @@ pub struct Taxonomy {
 impl Taxonomy {
     fn new(
         kind: TaxonomyConfig,
+        lang: &str,
         config: &Config,
         items: HashMap<String, Vec<DefaultKey>>,
         library: &Library,
@@ -133,7 +147,7 @@ impl Taxonomy {
         let mut sorted_items = vec![];
         let slug = slugify_paths(&kind.name, config.slugify.taxonomies);
         for (name, pages) in items {
-            sorted_items.push(TaxonomyItem::new(&name, &kind, &slug, config, pages, library));
+            sorted_items.push(TaxonomyItem::new(&name, lang, &slug, config, pages, library));
         }
         //sorted_items.sort_by(|a, b| a.name.cmp(&b.name));
         sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
@@ -143,7 +157,7 @@ impl Taxonomy {
         });
         sorted_items.dedup_by(|a, b| {
             // custom Eq impl checks for equal permalinks
-            // here we make sure all pages from a get coppied to b
+            // here we make sure all pages from a get copied to b
             // before dedup gets rid of it
             if a == b {
                 b.merge(a.to_owned());
@@ -152,7 +166,14 @@ impl Taxonomy {
                 false
             }
         });
-        Taxonomy { kind, slug, items: sorted_items }
+        let path = if lang != config.default_language {
+            format!("/{}/{}/", lang, slug)
+        } else {
+            format!("/{}/", slug)
+        };
+        let permalink = config.make_permalink(&path);
+
+        Taxonomy { kind, slug, lang: lang.to_owned(), permalink, items: sorted_items }
     }
 
     pub fn len(&self) -> usize {
@@ -171,8 +192,8 @@ impl Taxonomy {
         library: &Library,
     ) -> Result<String> {
         let mut context = Context::new();
-        context.insert("config", config);
-        context.insert("lang", &self.kind.lang);
+        context.insert("config", &config.serialize(&self.lang));
+        context.insert("lang", &self.lang);
         context.insert("term", &SerializedTaxonomyItem::from_item(item, library));
         context.insert("taxonomy", &self.kind);
         context.insert(
@@ -194,11 +215,11 @@ impl Taxonomy {
         library: &Library,
     ) -> Result<String> {
         let mut context = Context::new();
-        context.insert("config", config);
+        context.insert("config", &config.serialize(&self.lang));
         let terms: Vec<SerializedTaxonomyItem> =
             self.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
         context.insert("terms", &terms);
-        context.insert("lang", &self.kind.lang);
+        context.insert("lang", &self.lang);
         context.insert("taxonomy", &self.kind);
         context.insert("current_url", &config.make_permalink(&self.kind.name));
         context.insert("current_path", &format!("/{}/", self.kind.name));
@@ -215,11 +236,26 @@ impl Taxonomy {
 }
 
 pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonomy>> {
+    let mut slugs_to_lang = HashMap::new();
+
     let taxonomies_def = {
         let mut m = HashMap::new();
+        // the default language taxonomies
         for t in &config.taxonomies {
             let slug = slugify_paths(&t.name, config.slugify.taxonomies);
-            m.insert(format!("{}-{}", slug, t.lang), t);
+            let key = format!("{}-{}", slug, config.default_language);
+            slugs_to_lang.insert(key.clone(), config.default_language.as_str());
+            m.insert(key, t);
+        }
+
+        // other languages taxonomies
+        for (code, options) in config.other_languages() {
+            for t in &options.taxonomies {
+                let slug = slugify_paths(&t.name, config.slugify.taxonomies);
+                let key = format!("{}-{}", slug, code);
+                slugs_to_lang.insert(key.clone(), code);
+                m.insert(key, t);
+            }
         }
         m
     };
@@ -253,7 +289,13 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
     let mut taxonomies = vec![];
 
     for (name, taxo) in all_taxonomies {
-        taxonomies.push(Taxonomy::new(taxonomies_def[&name].clone(), config, taxo, library));
+        taxonomies.push(Taxonomy::new(
+            taxonomies_def[&name].clone(),
+            slugs_to_lang[&name],
+            config,
+            taxo,
+            library,
+        ));
     }
 
     Ok(taxonomies)
@@ -266,7 +308,7 @@ mod tests {
 
     use crate::content::Page;
     use crate::library::Library;
-    use config::{Config, Language, Slugify, Taxonomy as TaxonomyConfig};
+    use config::{Config, LanguageOptions, Slugify, Taxonomy as TaxonomyConfig};
     use utils::slugs::SlugifyStrategy;
 
     #[test]
@@ -275,21 +317,9 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "categories".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "tags".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "authors".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
+            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() },
         ];
 
         let mut page1 = Page::default();
@@ -338,6 +368,7 @@ mod tests {
         assert_eq!(tags.items[0].name, "db");
         assert_eq!(tags.items[0].slug, "db");
         assert_eq!(tags.items[0].permalink, "http://a-website.com/tags/db/");
+        assert_eq!(tags.items[0].path, "/tags/db/");
         assert_eq!(tags.items[0].pages.len(), 1);
 
         assert_eq!(tags.items[1].name, "js");
@@ -370,21 +401,9 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "categories".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "tags".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "authors".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
+            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() },
         ];
 
         let mut page1 = Page::default();
@@ -438,6 +457,7 @@ mod tests {
         assert_eq!(tags.items[1].name, "js");
         assert_eq!(tags.items[1].slug, "js");
         assert_eq!(tags.items[1].permalink, "http://a-website.com/tags/js/");
+        assert_eq!(tags.items[1].path, "/tags/js/");
         assert_eq!(tags.items[1].pages.len(), 2);
 
         assert_eq!(tags.items[2].name, "rust");
@@ -464,11 +484,8 @@ mod tests {
         let mut config = Config::default();
         let mut library = Library::new(2, 0, false);
 
-        config.taxonomies = vec![TaxonomyConfig {
-            name: "authors".to_string(),
-            lang: config.default_language.clone(),
-            ..TaxonomyConfig::default()
-        }];
+        config.taxonomies =
+            vec![TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() }];
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
@@ -489,31 +506,22 @@ mod tests {
     #[test]
     fn can_make_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
-        config.languages.push(Language { feed: false, code: "fr".to_string(), search: false });
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "categories".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "tags".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "auteurs".to_string(),
-                lang: "fr".to_string(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "tags".to_string(),
-                lang: "fr".to_string(),
-                ..TaxonomyConfig::default()
-            },
+            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
         ];
+        let french_taxo = vec![
+            TaxonomyConfig { name: "auteurs".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
+        ];
+        let lang_options = config::LanguageOptions {
+            taxonomies: french_taxo,
+            ..config::LanguageOptions::default()
+        };
+        config.languages.insert("fr".to_owned(), lang_options);
 
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();
@@ -547,7 +555,7 @@ mod tests {
             for x in taxonomies {
                 match x.kind.name.as_ref() {
                     "tags" => {
-                        if x.kind.lang == "en" {
+                        if x.lang == "en" {
                             t = Some(x)
                         }
                     }
@@ -599,18 +607,15 @@ mod tests {
     fn can_make_utf8_taxonomies() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::Safe;
-        config.languages.push(Language {
-            feed: false,
-            code: "fr".to_string(),
-            ..Language::default()
-        });
         let mut library = Library::new(2, 0, true);
 
-        config.taxonomies = vec![TaxonomyConfig {
-            name: "catégories".to_string(),
-            lang: "fr".to_string(),
-            ..TaxonomyConfig::default()
-        }];
+        let french_taxo =
+            vec![TaxonomyConfig { name: "catégories".to_string(), ..TaxonomyConfig::default() }];
+        let lang_options = config::LanguageOptions {
+            taxonomies: french_taxo,
+            ..config::LanguageOptions::default()
+        };
+        config.languages.insert("fr".to_owned(), lang_options);
 
         let mut page = Page::default();
         page.lang = "fr".to_string();
@@ -632,36 +637,21 @@ mod tests {
     fn can_make_slugified_taxonomies_in_multiple_languages() {
         let mut config = Config::default();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        config.languages.push(Language {
-            feed: false,
-            code: "fr".to_string(),
-            ..Language::default()
-        });
         let mut library = Library::new(2, 0, true);
 
         config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "categories".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "tags".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "auteurs".to_string(),
-                lang: "fr".to_string(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "tags".to_string(),
-                lang: "fr".to_string(),
-                ..TaxonomyConfig::default()
-            },
+            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
         ];
-
+        let french_taxo = vec![
+            TaxonomyConfig { name: "auteurs".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
+        ];
+        let lang_options = config::LanguageOptions {
+            taxonomies: french_taxo,
+            ..config::LanguageOptions::default()
+        };
+        config.languages.insert("fr".to_owned(), lang_options);
         let mut page1 = Page::default();
         let mut taxo_page1 = HashMap::new();
         taxo_page1.insert("tags".to_string(), vec!["rust".to_string(), "db".to_string()]);
@@ -694,7 +684,7 @@ mod tests {
             for x in taxonomies {
                 match x.kind.name.as_ref() {
                     "tags" => {
-                        if x.kind.lang == "en" {
+                        if x.lang == "en" {
                             t = Some(x)
                         }
                     }
@@ -748,26 +738,10 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "test-taxonomy".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "test taxonomy".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "test-taxonomy ".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "Test-Taxonomy ".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
+            TaxonomyConfig { name: "test-taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test-taxonomy ".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "Test-Taxonomy ".to_string(), ..TaxonomyConfig::default() },
         ];
 
         let mut page1 = Page::default();
@@ -833,26 +807,10 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "test-taxonomy".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "test taxonomy".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "test-taxonomy ".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "Test-Taxonomy ".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
+            TaxonomyConfig { name: "test-taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test-taxonomy ".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "Test-Taxonomy ".to_string(), ..TaxonomyConfig::default() },
         ];
 
         let mut page1 = Page::default();
@@ -911,26 +869,10 @@ mod tests {
         let mut library = Library::new(2, 0, false);
 
         config.taxonomies = vec![
-            TaxonomyConfig {
-                name: "test-taxonomy".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "test taxonomy".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "test-taxonomy ".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
-            TaxonomyConfig {
-                name: "Test-Taxonomy ".to_string(),
-                lang: config.default_language.clone(),
-                ..TaxonomyConfig::default()
-            },
+            TaxonomyConfig { name: "test-taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test-taxonomy ".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "Test-Taxonomy ".to_string(), ..TaxonomyConfig::default() },
         ];
 
         let mut page1 = Page::default();
@@ -966,7 +908,7 @@ mod tests {
         let tax = &taxonomies[0];
 
         // if names are different permalinks should also be different so
-        // the tems are still accessable
+        // the items are still accessible
         for term1 in tax.items.iter() {
             for term2 in tax.items.iter() {
                 assert!(term1.name == term2.name || term1.permalink != term2.permalink);

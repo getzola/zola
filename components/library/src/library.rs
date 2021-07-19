@@ -3,11 +3,12 @@ use std::path::{Path, PathBuf};
 
 use slotmap::{DefaultKey, DenseSlotMap};
 
-use front_matter::SortBy;
-
 use crate::content::{Page, Section};
-use crate::sorting::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
+use crate::sorting::{
+    find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight,
+};
 use config::Config;
+use front_matter::{PageFrontMatter, SortBy};
 
 // Like vec! but for HashSet
 macro_rules! set {
@@ -82,7 +83,7 @@ impl Library {
         let file_path = section.file.path.clone();
         let rel_path = section.path.clone();
 
-        let mut entries = vec![rel_path.clone()];
+        let mut entries = vec![rel_path];
         entries.extend(section.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
         self.insert_reverse_aliases(entries, &section.file.relative);
 
@@ -96,7 +97,7 @@ impl Library {
         let file_path = page.file.path.clone();
         let rel_path = page.path.clone();
 
-        let mut entries = vec![rel_path.clone()];
+        let mut entries = vec![rel_path];
         entries.extend(page.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
         self.insert_reverse_aliases(entries, &page.file.relative);
 
@@ -152,6 +153,16 @@ impl Library {
                     .push(section.file.path.clone());
             }
 
+            // populate translations if necessary
+            if self.is_multilingual {
+                self.translations
+                    .entry(section.file.canonical.clone())
+                    .and_modify(|trans| {
+                        trans.insert(key);
+                    })
+                    .or_insert(set![key]);
+            };
+
             // Index has no ancestors, no need to go through it
             if section.is_index() {
                 ancestors.insert(section.file.path.clone(), vec![]);
@@ -175,16 +186,6 @@ impl Library {
                 }
             }
             ancestors.insert(section.file.path.clone(), parents);
-
-            // populate translations if necessary
-            if self.is_multilingual {
-                self.translations
-                    .entry(section.file.canonical.clone())
-                    .and_modify(|trans| {
-                        trans.insert(key);
-                    })
-                    .or_insert(set![key]);
-            };
         }
 
         for (key, page) in &mut self.pages {
@@ -263,37 +264,47 @@ impl Library {
     /// Sort all sections pages according to sorting method given
     /// Pages that cannot be sorted are set to the section.ignored_pages instead
     pub fn sort_sections_pages(&mut self) {
+        fn get_data<'a, T>(
+            section: &'a Section,
+            pages: &'a DenseSlotMap<DefaultKey, Page>,
+            field: impl Fn(&'a PageFrontMatter) -> Option<T>,
+        ) -> Vec<(&'a DefaultKey, Option<T>, &'a str)> {
+            section
+                .pages
+                .iter()
+                .map(|k| {
+                    if let Some(page) = pages.get(*k) {
+                        (k, field(&page.meta), page.permalink.as_ref())
+                    } else {
+                        unreachable!("Sorting got an unknown page")
+                    }
+                })
+                .collect()
+        }
+
         let mut updates = HashMap::new();
         for (key, section) in &self.sections {
             let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
                 SortBy::None => continue,
                 SortBy::Date => {
-                    let data = section
-                        .pages
-                        .iter()
-                        .map(|k| {
-                            if let Some(page) = self.pages.get(*k) {
-                                (k, page.meta.datetime, page.permalink.as_ref())
-                            } else {
-                                unreachable!("Sorting got an unknown page")
-                            }
-                        })
-                        .collect();
+                    let data = get_data(section, &self.pages, |meta| meta.datetime);
 
                     sort_pages_by_date(data)
                 }
+                SortBy::UpdateDate => {
+                    let data = get_data(section, &self.pages, |meta| {
+                        std::cmp::max(meta.datetime, meta.updated_datetime)
+                    });
+
+                    sort_pages_by_date(data)
+                }
+                SortBy::Title => {
+                    let data = get_data(section, &self.pages, |meta| meta.title.as_deref());
+
+                    sort_pages_by_title(data)
+                }
                 SortBy::Weight => {
-                    let data = section
-                        .pages
-                        .iter()
-                        .map(|k| {
-                            if let Some(page) = self.pages.get(*k) {
-                                (k, page.meta.weight, page.permalink.as_ref())
-                            } else {
-                                unreachable!("Sorting got an unknown page")
-                            }
-                        })
-                        .collect();
+                    let data = get_data(section, &self.pages, |meta| meta.weight);
 
                     sort_pages_by_weight(data)
                 }
@@ -302,24 +313,42 @@ impl Library {
         }
 
         for (key, (sorted, cannot_be_sorted, sort_by)) in updates {
-            // Find sibling between sorted pages first
-            let with_siblings = find_siblings(&sorted);
+            let section_is_transparent = if let Some(section) = self.sections.get(key) {
+                section.meta.transparent
+            } else {
+                false
+            };
 
-            for (k2, val1, val2) in with_siblings {
-                if let Some(page) = self.pages.get_mut(k2) {
-                    match sort_by {
-                        SortBy::Date => {
-                            page.earlier = val2;
-                            page.later = val1;
+            if !section_is_transparent {
+                // Find sibling between sorted pages first
+                let with_siblings = find_siblings(&sorted);
+
+                for (k2, val1, val2) in with_siblings {
+                    if let Some(page) = self.pages.get_mut(k2) {
+                        match sort_by {
+                            SortBy::Date => {
+                                page.earlier = val2;
+                                page.later = val1;
+                            }
+                            SortBy::UpdateDate => {
+                                page.earlier_updated = val2;
+                                page.later_updated = val1;
+                            }
+                            SortBy::Title => {
+                                page.title_prev = val1;
+                                page.title_next = val2;
+                            }
+                            SortBy::Weight => {
+                                page.lighter = val1;
+                                page.heavier = val2;
+                            }
+                            SortBy::None => {
+                                unreachable!("Impossible to find siblings in SortBy::None")
+                            }
                         }
-                        SortBy::Weight => {
-                            page.lighter = val1;
-                            page.heavier = val2;
-                        }
-                        SortBy::None => unreachable!("Impossible to find siblings in SortBy::None"),
+                    } else {
+                        unreachable!("Sorting got an unknown page")
                     }
-                } else {
-                    unreachable!("Sorting got an unknown page")
                 }
             }
 
@@ -342,22 +371,7 @@ impl Library {
             .collect()
     }
 
-    /// Find the parent section & all grandparents section that have transparent=true
-    /// Only used in rebuild.
-    pub fn find_parent_sections<P: AsRef<Path>>(&self, path: P) -> Vec<&Section> {
-        let mut parents = vec![];
-        let page = self.get_page(path.as_ref()).unwrap();
-        for ancestor in page.ancestors.iter().rev() {
-            let section = self.get_section_by_key(*ancestor);
-            if parents.is_empty() || section.meta.transparent {
-                parents.push(section);
-            }
-        }
-
-        parents
-    }
-
-    /// Only used in tests
+    /// Used in integration tests
     pub fn get_section_key<P: AsRef<Path>>(&self, path: P) -> Option<&DefaultKey> {
         self.paths_to_sections.get(path.as_ref())
     }
@@ -366,6 +380,7 @@ impl Library {
         self.sections.get(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
     }
 
+    /// Used in integration tests
     pub fn get_section_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Section> {
         self.sections
             .get_mut(self.paths_to_sections.get(path.as_ref()).cloned().unwrap_or_default())
@@ -373,10 +388,6 @@ impl Library {
 
     pub fn get_section_by_key(&self, key: DefaultKey) -> &Section {
         self.sections.get(key).unwrap()
-    }
-
-    pub fn get_section_mut_by_key(&mut self, key: DefaultKey) -> &mut Section {
-        self.sections.get_mut(key).unwrap()
     }
 
     pub fn get_section_path_by_key(&self, key: DefaultKey) -> &str {
@@ -389,10 +400,6 @@ impl Library {
 
     pub fn get_page_by_key(&self, key: DefaultKey) -> &Page {
         self.pages.get(key).unwrap()
-    }
-
-    pub fn get_page_mut_by_key(&mut self, key: DefaultKey) -> &mut Page {
-        self.pages.get_mut(key).unwrap()
     }
 
     pub fn remove_section<P: AsRef<Path>>(&mut self, path: P) -> Option<Section> {
@@ -411,14 +418,8 @@ impl Library {
         }
     }
 
-    /// Used in rebuild, to check if we know it already
     pub fn contains_section<P: AsRef<Path>>(&self, path: P) -> bool {
         self.paths_to_sections.contains_key(path.as_ref())
-    }
-
-    /// Used in rebuild, to check if we know it already
-    pub fn contains_page<P: AsRef<Path>>(&self, path: P) -> bool {
-        self.paths_to_pages.contains_key(path.as_ref())
     }
 
     /// This will check every section/page paths + the aliases and ensure none of them

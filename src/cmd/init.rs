@@ -1,6 +1,5 @@
 use std::fs::{canonicalize, create_dir};
 use std::path::Path;
-use std::path::PathBuf;
 
 use errors::{bail, Result};
 use utils::fs::create_file;
@@ -68,7 +67,7 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
 }
 
 // Remove the unc part of a windows path
-fn strip_unc(path: &PathBuf) -> String {
+fn strip_unc(path: &Path) -> String {
     let path_to_refine = path.to_str().unwrap();
     path_to_refine.trim_start_matches(LOCAL_UNC).to_string()
 }
@@ -250,16 +249,15 @@ mod tests {
     #[test]
     fn strip_unc_test() {
         let mut dir = temp_dir();
-        dir.push("new_project");
+        dir.push("new_project1");
         if dir.exists() {
             remove_dir_all(&dir).expect("Could not free test directory");
         }
         create_dir(&dir).expect("Could not create test directory");
         if cfg!(target_os = "windows") {
-            assert_eq!(
-                strip_unc(&canonicalize(Path::new(&dir)).unwrap()),
-                "C:\\Users\\VssAdministrator\\AppData\\Local\\Temp\\new_project"
-            )
+            let stripped_path = strip_unc(&canonicalize(Path::new(&dir)).unwrap());
+            assert!(same_file::is_same_file(Path::new(&stripped_path), &dir).unwrap());
+            assert!(!stripped_path.starts_with(LOCAL_UNC), "The path was not stripped.");
         } else {
             assert_eq!(
                 strip_unc(&canonicalize(Path::new(&dir)).unwrap()),
@@ -277,15 +275,15 @@ mod tests {
     #[cfg(target_os = "windows")]
     fn strip_unc_required_test() {
         let mut dir = temp_dir();
-        dir.push("new_project");
+        dir.push("new_project2");
         if dir.exists() {
             remove_dir_all(&dir).expect("Could not free test directory");
         }
         create_dir(&dir).expect("Could not create test directory");
-        assert_eq!(
-            canonicalize(Path::new(&dir)).unwrap().to_str().unwrap(),
-            "\\\\?\\C:\\Users\\VssAdministrator\\AppData\\Local\\Temp\\new_project"
-        );
+
+        let canonicalized_path = canonicalize(Path::new(&dir)).unwrap();
+        assert!(same_file::is_same_file(Path::new(&canonicalized_path), &dir).unwrap());
+        assert!(canonicalized_path.to_str().unwrap().starts_with(LOCAL_UNC));
 
         remove_dir_all(&dir).unwrap();
     }

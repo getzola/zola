@@ -15,7 +15,8 @@ serde_derive = "1"
 sass-rs = "0.2"
 lazy_static = "1.1"
 relative-path = "1"
-slotmap = "0.4"
+slotmap = "1"
+url = "2"
 
 errors = { path = "../errors" }
 config = { path = "../config" }
@@ -29,3 +30,4 @@ link_checker = { path = "../link_checker" }
 
 [dev-dependencies]
 tempfile = "3"
+path-slash = "0.1.4"

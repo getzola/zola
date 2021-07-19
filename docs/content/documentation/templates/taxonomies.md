@@ -13,6 +13,7 @@ First, `TaxonomyTerm` has the following fields:
 ```ts
 name: String;
 slug: String;
+path: String;
 permalink: String;
 pages: Array<Page>;
 ```
@@ -25,6 +26,7 @@ paginate_by: Number?;
 paginate_path: String?;
 feed: Bool;
 lang: String;
+permalink: String;
 ```
 
 

@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.14.0 (2021-07-19)
+
+### Breaking
+
+- Newlines are now required after the closing `+++` of front-matter
+- `resize_image` now returns an object: `{url, static_path}` instead of just the URL so you can follow up with other functions on the new file if needed
+- `get_file_hash` now has the `base64` option set to `true` by default (from `false`) since it's mainly used for integrity hashes which are base64
+- i18n rework: languages now have their sections in `config.toml` to set up all their options
+  1. taxonomies don't have a `lang` anymore in the config, you need to declare them in their respective language section
+  2. the `config` variable in templates has been changed and is now a stripped down language aware version of the previous `config`
+  object
+  3. Search settings are now language specific
+  4. Translations are now nested in the languages table
+- Paths unification: 
+  1. `get_url` does not load automatically from the `static` folder anymore
+  2. New path resolving logic for all on-disk files: replace `@/` by `content/`, trim leading `/` and 
+     search in $BASE_DIR + $path, $BASE_DIR + static + $path and $BASE_DIR + content + $path
+  3. `get_file_hash` now returns base64 encoded hash by default
+  4. all functions working on files can now only load files in the Zola directory
+  5. `resize_image` return value has changed
+  6. `page.assets` now start with a `/` to match `section.assets` and other paths
+
+### Other
+
+- Internal links are now resolved in the `markdown` filter in the templates (#1296 #1316)
+- Add a `required` argument to `load_data` so it can be allowed to fail
+- `get_file_hash` now supports returning the base64 encoded hash
+- The `markdown` filter not renders shortcodes
+- Image processing now supports WebP
+- Fix `zola serve` failing for some static files
+- Fix `zola serve` not picking up directory renaming
+- Add `path` to the taxonomy terms to be on par with pages and sections
+- Add the `base16-aterlierdune-light` syntax highlight theme
+- Improve link checking: less concurrency and try to not overload the servers
+- Allow using POST for `load_data`, along with a body to POST and allow it to fail
+- Add Zig and Protobuf syntax highlighting
+- Footnotes links are now stripped from summaries - they were not linking to anything.
+- `get_url` and `get_taxonomy_url` are now marked as safe, no need to call `| safe` on their output
+- Add `allow_missing` optional argument to `get_image_metadata` to not error if the file is not found
+- Add `permalink` to `Taxonomy` in templates
+- Syntax highlighting improvements, see documentation for details on each
+  1. Add CSS class based syntax highlighting
+  2. Allow hiding specific lines
+  3. Allow showing line numbers
+
+
+
 ## 0.13.0 (2021-01-09)
 
 - Enable HTML minification

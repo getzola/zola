@@ -69,7 +69,7 @@ pub struct SerializingPage<'a> {
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
-    ancestors: Vec<String>,
+    ancestors: Vec<&'a str>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     updated: &'a Option<String>,
@@ -90,8 +90,12 @@ pub struct SerializingPage<'a> {
     lang: &'a str,
     lighter: Option<Box<SerializingPage<'a>>>,
     heavier: Option<Box<SerializingPage<'a>>>,
+    earlier_updated: Option<Box<SerializingPage<'a>>>,
+    later_updated: Option<Box<SerializingPage<'a>>>,
     earlier: Option<Box<SerializingPage<'a>>>,
     later: Option<Box<SerializingPage<'a>>>,
+    title_prev: Option<Box<SerializingPage<'a>>>,
+    title_next: Option<Box<SerializingPage<'a>>>,
     translations: Vec<TranslatedContent<'a>>,
 }
 
@@ -113,16 +117,28 @@ impl<'a> SerializingPage<'a> {
         let heavier = page
             .heavier
             .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let earlier_updated = page
+            .earlier_updated
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let later_updated = page
+            .later_updated
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
         let earlier = page
             .earlier
             .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
         let later = page
             .later
             .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let title_prev = page
+            .title_prev
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
+        let title_next = page
+            .title_next
+            .map(|k| Box::new(Self::from_page_basic(pages.get(k).unwrap(), Some(library))));
         let ancestors = page
             .ancestors
             .iter()
-            .map(|k| library.get_section_by_key(*k).file.relative.clone())
+            .map(|k| library.get_section_by_key(*k).file.relative.as_str())
             .collect();
 
         let translations = TranslatedContent::find_all_pages(page, library);
@@ -153,8 +169,12 @@ impl<'a> SerializingPage<'a> {
             lang: &page.lang,
             lighter,
             heavier,
+            earlier_updated,
+            later_updated,
             earlier,
             later,
+            title_prev,
+            title_next,
             translations,
         }
     }
@@ -177,7 +197,7 @@ impl<'a> SerializingPage<'a> {
         let ancestors = if let Some(ref lib) = library {
             page.ancestors
                 .iter()
-                .map(|k| lib.get_section_by_key(*k).file.relative.clone())
+                .map(|k| lib.get_section_by_key(*k).file.relative.as_str())
                 .collect()
         } else {
             vec![]
@@ -215,8 +235,12 @@ impl<'a> SerializingPage<'a> {
             lang: &page.lang,
             lighter: None,
             heavier: None,
+            earlier_updated: None,
+            later_updated: None,
             earlier: None,
             later: None,
+            title_prev: None,
+            title_next: None,
             translations,
         }
     }
@@ -227,7 +251,7 @@ pub struct SerializingSection<'a> {
     relative_path: &'a str,
     content: &'a str,
     permalink: &'a str,
-    ancestors: Vec<String>,
+    ancestors: Vec<&'a str>,
     title: &'a Option<String>,
     description: &'a Option<String>,
     extra: &'a Map<String, Value>,
@@ -259,7 +283,7 @@ impl<'a> SerializingSection<'a> {
         let ancestors = section
             .ancestors
             .iter()
-            .map(|k| library.get_section_by_key(*k).file.relative.clone())
+            .map(|k| library.get_section_by_key(*k).file.relative.as_str())
             .collect();
         let translations = TranslatedContent::find_all_sections(section, library);
 
@@ -293,7 +317,7 @@ impl<'a> SerializingSection<'a> {
             ancestors = section
                 .ancestors
                 .iter()
-                .map(|k| lib.get_section_by_key(*k).file.relative.clone())
+                .map(|k| lib.get_section_by_key(*k).file.relative.as_str())
                 .collect();
             translations = TranslatedContent::find_all_sections(section, lib);
             subsections =

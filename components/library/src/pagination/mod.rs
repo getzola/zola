@@ -223,17 +223,18 @@ impl<'a> Paginator<'a> {
         library: &Library,
     ) -> Result<String> {
         let mut context = Context::new();
-        context.insert("config", &config);
         match self.root {
             PaginationRoot::Section(s) => {
                 context
                     .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
                 context.insert("lang", &s.lang);
+                context.insert("config", &config.serialize(&s.lang));
             }
             PaginationRoot::Taxonomy(t, item) => {
                 context.insert("taxonomy", &t.kind);
                 context.insert("term", &item.serialize(library));
-                context.insert("lang", &t.kind.lang);
+                context.insert("lang", &t.lang);
+                context.insert("config", &config.serialize(&t.lang));
             }
         };
         context.insert("current_url", &pager.permalink);
@@ -413,12 +414,15 @@ mod tests {
         let taxonomy_item = TaxonomyItem {
             name: "Something".to_string(),
             slug: "something".to_string(),
+            path: "/tags/something".to_string(),
             permalink: "https://vincent.is/tags/something/".to_string(),
             pages: library.pages().keys().collect(),
         };
         let taxonomy = Taxonomy {
             kind: taxonomy_def,
+            lang: "en".to_owned(),
             slug: "tags".to_string(),
+            permalink: "/tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
         let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
@@ -446,12 +450,15 @@ mod tests {
         let taxonomy_item = TaxonomyItem {
             name: "Something".to_string(),
             slug: "something".to_string(),
+            path: "/some-tags/something/".to_string(),
             permalink: "https://vincent.is/some-tags/something/".to_string(),
             pages: library.pages().keys().collect(),
         };
         let taxonomy = Taxonomy {
             kind: taxonomy_def,
+            lang: "en".to_owned(),
             slug: "some-tags".to_string(),
+            permalink: "/some-tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
         let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);

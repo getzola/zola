@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use chrono::NaiveDateTime;
+use lexical_sort::natural_lexical_cmp;
 use rayon::prelude::*;
 use slotmap::DefaultKey;
 
@@ -39,6 +40,28 @@ pub fn sort_pages_by_date(
     (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
 }
 
+/// Takes a list of (page key, title, permalink) and sort them by title if possible.
+/// Uses the a natural lexical comparison as defined by the lexical_sort crate.
+/// Pages without title will be put in the unsortable bucket.
+/// The permalink is used to break ties.
+pub fn sort_pages_by_title(
+    pages: Vec<(&DefaultKey, Option<&str>, &str)>,
+) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
+    let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) =
+        pages.into_par_iter().partition(|page| page.1.is_some());
+
+    can_be_sorted.par_sort_unstable_by(|a, b| {
+        let ord = natural_lexical_cmp(a.1.unwrap(), b.1.unwrap());
+        if ord == Ordering::Equal {
+            a.2.cmp(&b.2)
+        } else {
+            ord
+        }
+    });
+
+    (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
+}
+
 /// Takes a list of (page key, weight, permalink) and sort them by weight if possible
 /// Pages without weight will be put in the unsortable bucket
 /// The permalink is used to break ties
@@ -60,7 +83,8 @@ pub fn sort_pages_by_weight(
     (can_be_sorted.iter().map(|p| *p.0).collect(), cannot_be_sorted.iter().map(|p| *p.0).collect())
 }
 
-/// Find the lighter/heavier and earlier/later pages for all pages having a date/weight
+/// Find the lighter/heavier, earlier/later, and title_prev/title_next
+/// pages for all pages having a date/weight/title
 pub fn find_siblings(
     sorted: &[DefaultKey],
 ) -> Vec<(DefaultKey, Option<DefaultKey>, Option<DefaultKey>)> {
@@ -71,12 +95,12 @@ pub fn find_siblings(
         let mut with_siblings = (*key, None, None);
 
         if i > 0 {
-            // lighter / later
+            // lighter / later / title_prev
             with_siblings.1 = Some(sorted[i - 1]);
         }
 
         if i < length - 1 {
-            // heavier/earlier
+            // heavier / earlier / title_next
             with_siblings.2 = Some(sorted[i + 1]);
         }
         res.push(with_siblings);
@@ -90,7 +114,7 @@ mod tests {
     use slotmap::DenseSlotMap;
     use std::path::PathBuf;
 
-    use super::{find_siblings, sort_pages_by_date, sort_pages_by_weight};
+    use super::{find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight};
     use crate::content::Page;
     use front_matter::PageFrontMatter;
 
@@ -98,6 +122,12 @@ mod tests {
         let mut front_matter = PageFrontMatter::default();
         front_matter.date = Some(date.to_string());
         front_matter.date_to_datetime();
+        Page::new("content/hello.md", front_matter, &PathBuf::new())
+    }
+
+    fn create_page_with_title(title: &str) -> Page {
+        let mut front_matter = PageFrontMatter::default();
+        front_matter.title = Some(title.to_string());
         Page::new("content/hello.md", front_matter, &PathBuf::new())
     }
 
@@ -127,6 +157,51 @@ mod tests {
         assert_eq!(pages[0], key3);
         assert_eq!(pages[1], key1);
         assert_eq!(pages[2], key2);
+    }
+
+    #[test]
+    fn can_sort_by_titles() {
+        let titles = vec![
+            "bagel",
+            "track_3",
+            "microkernel",
+            "métro",
+            "BART",
+            "Underground",
+            "track_13",
+            "μ-kernel",
+            "meter",
+            "track_1",
+        ];
+        let pages: Vec<Page> = titles.iter().map(|title| create_page_with_title(title)).collect();
+        let mut dense = DenseSlotMap::new();
+        let keys: Vec<_> = pages.iter().map(|p| dense.insert(p)).collect();
+        let input: Vec<_> = pages
+            .iter()
+            .enumerate()
+            .map(|(i, page)| (&keys[i], page.meta.title.as_deref(), page.permalink.as_ref()))
+            .collect();
+        let (sorted, _) = sort_pages_by_title(input);
+        // Should be sorted by title
+        let sorted_titles: Vec<_> = sorted
+            .iter()
+            .map(|key| dense.get(*key).unwrap().meta.title.as_ref().unwrap())
+            .collect();
+        assert_eq!(
+            sorted_titles,
+            vec![
+                "bagel",
+                "BART",
+                "μ-kernel",
+                "meter",
+                "métro",
+                "microkernel",
+                "track_1",
+                "track_3",
+                "track_13",
+                "Underground",
+            ]
+        );
     }
 
     #[test]

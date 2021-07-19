@@ -32,6 +32,7 @@ use hyper::header;
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
+use mime_guess::from_path as mimetype_from_path;
 
 use chrono::prelude::*;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -92,7 +93,7 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     }
 
     if let Some(content) = SITE_CONTENT.read().unwrap().get(&path) {
-        return Ok(in_memory_html(content));
+        return Ok(in_memory_content(&path, content));
     }
 
     // Handle only `GET`/`HEAD` requests
@@ -106,10 +107,17 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
         return Ok(not_found());
     }
 
-    // Remove the trailing slash from the request path
+    // Remove the first slash from the request path
     // otherwise `PathBuf` will interpret it as an absolute path
-    root.push(&req.uri().path()[1..]);
-    let result = tokio::fs::read(root).await;
+    root.push(&decoded[1..]);
+
+    let metadata = tokio::fs::metadata(root.as_path()).await?;
+    if metadata.is_dir() {
+        // if root is a directory, append index.html to try to read that instead
+        root.push("index.html");
+    };
+
+    let result = tokio::fs::read(&root).await;
 
     let contents = match result {
         Err(err) => match err.kind() {
@@ -125,7 +133,15 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
         Ok(contents) => contents,
     };
 
-    Ok(Response::builder().status(StatusCode::OK).body(Body::from(contents)).unwrap())
+    Ok(Response::builder()
+        .status(StatusCode::OK)
+        .header(
+            header::CONTENT_TYPE,
+            mimetype_from_path(&root).first_or_octet_stream().essence_str(),
+        )
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+        .body(Body::from(contents))
+        .unwrap())
 }
 
 fn livereload_js() -> Response<Body> {
@@ -136,9 +152,17 @@ fn livereload_js() -> Response<Body> {
         .expect("Could not build livereload.js response")
 }
 
-fn in_memory_html(content: &str) -> Response<Body> {
+fn in_memory_content(path: &RelativePathBuf, content: &str) -> Response<Body> {
+    let content_type = match path.extension() {
+        Some(ext) => match ext {
+            "xml" => "text/xml",
+            "json" => "application/json",
+            _ => "text/html",
+        },
+        None => "text/html",
+    };
     Response::builder()
-        .header(header::CONTENT_TYPE, "text/html")
+        .header(header::CONTENT_TYPE, content_type)
         .status(StatusCode::OK)
         .body(content.to_owned().into())
         .expect("Could not build HTML response")
@@ -204,6 +228,8 @@ fn create_new_site(
     include_drafts: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, String)> {
+    SITE_CONTENT.write().unwrap().clear();
+
     let mut site = Site::new(root_dir, config_file)?;
 
     let base_address = format!("{}:{}", base_url, interface_port);
@@ -260,15 +286,20 @@ pub fn serve(
     console::report_elapsed_time(start);
 
     // Stop right there if we can't bind to the address
-    let bind_address: SocketAddrV4 = address.parse().unwrap();
+    let bind_address: SocketAddrV4 = match address.parse() {
+        Ok(a) => a,
+        Err(_) => return Err(format!("Invalid address: {}.", address).into()),
+    };
     if (TcpListener::bind(&bind_address)).is_err() {
         return Err(format!("Cannot start server on address {}.", address).into());
     }
 
+    let config_filename = config_file.file_name().unwrap().to_str().unwrap_or("config.toml");
+
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate
     let watch_this = vec![
-        ("config.toml", WatchMode::Required),
+        (config_filename, WatchMode::Required),
         ("content", WatchMode::Required),
         ("sass", WatchMode::Condition(site.config.compile_sass)),
         ("static", WatchMode::Optional),
@@ -471,21 +502,22 @@ pub fn serve(
                         if is_ignored_file(&site.config.ignored_content_globset, &path) {
                             continue;
                         }
-                        if is_temp_file(&path) || path.is_dir() {
+
+                        if is_temp_file(&path) {
                             continue;
                         }
+
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
                             continue;
                         }
-
                         println!(
                             "Change detected @ {}",
                             Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&root_dir, &path) {
+                        match detect_change_kind(&root_dir, &path, &config_filename) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
 
@@ -593,7 +625,7 @@ fn is_temp_file(path: &Path) -> bool {
             x if x.ends_with("jb_old___") => true,
             x if x.ends_with("jb_tmp___") => true,
             x if x.ends_with("jb_bak___") => true,
-            // vim
+            // vim & jetbrains
             x if x.ends_with('~') => true,
             _ => {
                 if let Some(filename) = path.file_stem() {
@@ -611,9 +643,12 @@ fn is_temp_file(path: &Path) -> bool {
 
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
-fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
+fn detect_change_kind(pwd: &Path, path: &Path, config_filename: &str) -> (ChangeKind, PathBuf) {
     let mut partial_path = PathBuf::from("/");
     partial_path.push(path.strip_prefix(pwd).unwrap_or(path));
+
+    let mut partial_config_path = PathBuf::from("/");
+    partial_config_path.push(config_filename);
 
     let change_kind = if partial_path.starts_with("/templates") {
         ChangeKind::Templates
@@ -625,7 +660,7 @@ fn detect_change_kind(pwd: &Path, path: &Path) -> (ChangeKind, PathBuf) {
         ChangeKind::StaticFiles
     } else if partial_path.starts_with("/sass") {
         ChangeKind::Sass
-    } else if partial_path == Path::new("/config.toml") {
+    } else if partial_path == partial_config_path {
         ChangeKind::Config
     } else {
         unreachable!("Got a change in an unexpected path: {}", partial_path.display());
@@ -674,36 +709,48 @@ mod tests {
                 (ChangeKind::Templates, PathBuf::from("/templates/hello.html")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/templates/hello.html"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Themes, PathBuf::from("/themes/hello.html")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/themes/hello.html"),
+                "config.toml",
             ),
             (
                 (ChangeKind::StaticFiles, PathBuf::from("/static/site.css")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/static/site.css"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Content, PathBuf::from("/content/posts/hello.md")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/content/posts/hello.md"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Sass, PathBuf::from("/sass/print.scss")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/sass/print.scss"),
+                "config.toml",
             ),
             (
                 (ChangeKind::Config, PathBuf::from("/config.toml")),
                 Path::new("/home/vincent/site"),
                 Path::new("/home/vincent/site/config.toml"),
+                "config.toml",
+            ),
+            (
+                (ChangeKind::Config, PathBuf::from("/config.staging.toml")),
+                Path::new("/home/vincent/site"),
+                Path::new("/home/vincent/site/config.staging.toml"),
+                "config.staging.toml",
             ),
         ];
 
-        for (expected, pwd, path) in test_cases {
-            assert_eq!(expected, detect_change_kind(&pwd, &path));
+        for (expected, pwd, path, config_filename) in test_cases {
+            assert_eq!(expected, detect_change_kind(&pwd, &path, &config_filename));
         }
     }
 
@@ -713,7 +760,8 @@ mod tests {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
         let pwd = Path::new(r#"C:\\Users\johan\site"#);
         let path = Path::new(r#"C:\\Users\johan\site\templates\hello.html"#);
-        assert_eq!(expected, detect_change_kind(pwd, path));
+        let config_filename = "config.toml";
+        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 
     #[test]
@@ -721,6 +769,7 @@ mod tests {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
         let pwd = Path::new("/home/johan/site");
         let path = Path::new("templates/hello.html");
-        assert_eq!(expected, detect_change_kind(pwd, path));
+        let config_filename = "config.toml";
+        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 }

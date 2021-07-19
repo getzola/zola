@@ -28,10 +28,11 @@ resize_image(path, width, height, op, format, quality)
     - `"auto"`
     - `"jpg"`
     - `"png"`
+    - `"webp"`
 
   The default is `"auto"`, this means that the format is chosen based on input image format.
   JPEG is chosen for JPEGs and other lossy formats, and PNG is chosen for PNGs and other lossless formats.
-- `quality` (_optional_): JPEG quality of the resized image, in percent. Only used when encoding JPEGs; default value is `75`.
+- `quality` (_optional_): JPEG or WebP quality of the resized image, in percent. Only used when encoding JPEGs or WebPs; for JPEG default value is `75`, for WebP default is lossless.
 
 ### Image processing and return value
 
@@ -43,10 +44,24 @@ static/processed_images/
 
 The filename of each resized image is a hash of the function arguments,
 which means that once an image is resized in a certain way, it will be stored in the above directory and will not
-need to be resized again during subsequent builds (unless the image itself, the dimensions, or other arguments are changed).
-Therefore, if you have a large number of images, they will only need to be resized once.
+need to be resized again during subsequent builds (unless the image itself, the dimensions, or other arguments have changed).
 
-The function returns a full URL to the resized image.
+The function returns an object with the following schema:
+
+```
+/// The final URL for that asset
+url: String,
+/// The path to the static asset generated
+static_path: String,
+/// New image width
+width: u32,
+/// New image height
+height: u32,
+/// Original image width
+orig_width: u32,
+/// Original image height
+orig_height: u32,
+```
 
 ## Resize operations
 
@@ -112,7 +127,8 @@ but it can be used in Markdown using [shortcodes](@/documentation/content/shortc
 The examples above were generated using a shortcode file named `resize_image.html` with this content:
 
 ```jinja2
-  <img src="{{ resize_image(path=path, width=width, height=height, op=op) }}" />
+{% set image = resize_image(path=path, width=width, height=height, op=op) %}
+<img src="{{ image.url }}" />
 ```
 
 ## Creating picture galleries
@@ -128,14 +144,16 @@ This can be used in shortcodes. For example, we can create a very simple html-on
 picture gallery with the following shortcode named `gallery.html`:
 
 ```jinja2
-{% for asset in page.assets %}
-  {% if asset is matching("[.](jpg|png)$") %}
-    <a href="{{ get_url(path=asset) }}">
-      <img src="{{ resize_image(path=asset, width=240, height=180, op="fill") }}" />
+<div>
+{% for asset in page.assets -%}
+  {%- if asset is matching("[.](jpg|png)$") -%}
+    {% set image = resize_image(path=asset, width=240, height=180) %}
+    <a href="{{ get_url(path=asset) }}" target="_blank">
+      <img src="{{ image.url }}" />
     </a>
-    &ensp;
-  {% endif %}
-{% endfor %}
+  {%- endif %}
+{%- endfor %}
+</div>
 ```
 
 As you can notice, we didn't specify an `op` argument, which means that it'll default to `"fill"`. Similarly,

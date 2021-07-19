@@ -1,5 +1,4 @@
 use serde::{Deserialize, Deserializer};
-use serde_derive::Deserialize;
 use tera::{Map, Value};
 
 /// Used as an attribute when we want to convert from TOML to a string date

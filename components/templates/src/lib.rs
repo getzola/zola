@@ -1,10 +1,14 @@
 pub mod filters;
 pub mod global_fns;
 
+use std::path::Path;
+
+use config::Config;
 use lazy_static::lazy_static;
 use tera::{Context, Tera};
 
-use errors::{Error, Result};
+use errors::{bail, Error, Result};
+use utils::templates::rewrite_theme_paths;
 
 lazy_static! {
     pub static ref ZOLA_TERA: Tera = {
@@ -50,4 +54,44 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
 
     tera.render("internal/alias.html", &context)
         .map_err(|e| Error::chain(format!("Failed to render alias for '{}'", url), e))
+}
+
+pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
+    let tpl_glob =
+        format!("{}/{}", path.to_string_lossy().replace("\\", "/"), "templates/**/*.{*ml,md}");
+
+    // Only parsing as we might be extending templates from themes and that would error
+    // as we haven't loaded them yet
+    let mut tera =
+        Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
+
+    if let Some(ref theme) = config.theme {
+        // Test that the templates folder exist for that theme
+        let theme_path = path.join("themes").join(&theme);
+        if !theme_path.join("templates").exists() {
+            bail!("Theme `{}` is missing a templates folder", theme);
+        }
+
+        let theme_tpl_glob = format!(
+            "{}/{}",
+            path.to_string_lossy().replace("\\", "/"),
+            format!("themes/{}/templates/**/*.{{*ml,md}}", theme)
+        );
+        let mut tera_theme = Tera::parse(&theme_tpl_glob)
+            .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
+        rewrite_theme_paths(&mut tera_theme, &theme);
+
+        if theme_path.join("templates").join("robots.txt").exists() {
+            tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
+        }
+        tera.extend(&tera_theme)?;
+    }
+    tera.extend(&ZOLA_TERA)?;
+    tera.build_inheritance_chains()?;
+
+    if path.join("templates").join("robots.txt").exists() {
+        tera.add_template_file(path.join("templates").join("robots.txt"), Some("robots.txt"))?;
+    }
+
+    Ok(tera)
 }

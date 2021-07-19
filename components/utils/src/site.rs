@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 use unicode_segmentation::UnicodeSegmentation;
 
-use errors::{bail, Result};
+use errors::Result;
 
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
@@ -14,12 +14,15 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
     (word_count, ((word_count + 199) / 200))
 }
 
+/// Result of a successful resolution of an internal link.
 #[derive(Debug, PartialEq, Clone)]
 pub struct ResolvedInternalLink {
+    /// Resolved link target, as absolute URL address.
     pub permalink: String,
-    // The 2 fields below are only set when there is an anchor
-    // as we will need that to check if it exists after the markdown rendering is done
-    pub md_path: Option<String>,
+    /// Internal path to the .md file, without the leading `@/`.
+    pub md_path: String,
+    /// Optional anchor target.
+    /// We can check whether it exists only after all the markdown rendering is done.
     pub anchor: Option<String>,
 }
 
@@ -36,20 +39,17 @@ pub fn resolve_internal_link<S: BuildHasher>(
     let parts = clean_link.split('#').collect::<Vec<_>>();
     // If we have slugification turned off, we might end up with some escaped characters so we need
     // to decode them first
-    let decoded = &*percent_decode(parts[0].as_bytes()).decode_utf8_lossy();
-    match permalinks.get(decoded) {
-        Some(p) => {
-            if parts.len() > 1 {
-                Ok(ResolvedInternalLink {
-                    permalink: format!("{}#{}", p, parts[1]),
-                    md_path: Some(decoded.to_string()),
-                    anchor: Some(parts[1].to_string()),
-                })
-            } else {
-                Ok(ResolvedInternalLink { permalink: p.to_string(), md_path: None, anchor: None })
-            }
-        }
-        None => bail!(format!("Relative link {} not found.", link)),
+    let decoded = percent_decode(parts[0].as_bytes()).decode_utf8_lossy().to_string();
+    let target =
+        permalinks.get(&decoded).ok_or_else(|| format!("Relative link {} not found.", link))?;
+    if parts.len() > 1 {
+        Ok(ResolvedInternalLink {
+            permalink: format!("{}#{}", target, parts[1]),
+            md_path: decoded,
+            anchor: Some(parts[1].to_string()),
+        })
+    } else {
+        Ok(ResolvedInternalLink { permalink: target.to_string(), md_path: decoded, anchor: None })
     }
 }
 
@@ -81,7 +81,7 @@ mod tests {
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let res = resolve_internal_link("@/pages/about.md#hello", &permalinks).unwrap();
         assert_eq!(res.permalink, "https://vincent.is/about#hello");
-        assert_eq!(res.md_path, Some("pages/about.md".to_string()));
+        assert_eq!(res.md_path, "pages/about.md".to_string());
         assert_eq!(res.anchor, Some("hello".to_string()));
     }
 
@@ -94,7 +94,7 @@ mod tests {
         );
         let res = resolve_internal_link("@/pages/about%20space.md#hello", &permalinks).unwrap();
         assert_eq!(res.permalink, "https://vincent.is/about%20space/#hello");
-        assert_eq!(res.md_path, Some("pages/about space.md".to_string()));
+        assert_eq!(res.md_path, "pages/about space.md".to_string());
         assert_eq!(res.anchor, Some("hello".to_string()));
     }
 

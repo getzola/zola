@@ -70,3 +70,9 @@
 [submodule "sublime/syntaxes/extra/sublime-clojure"]
 	path = sublime/syntaxes/extra/sublime-clojure
 	url = https://github.com/tonsky/sublime-clojure.git
+[submodule "sublime/syntaxes/extra/sublime-zig-language"]
+	path = sublime/syntaxes/extra/sublime-zig-language
+	url = https://github.com/ziglang/sublime-zig-language.git
+[submodule "sublime/syntaxes/extra/protobuf-syntax-highlighting"]
+	path = sublime/syntaxes/extra/protobuf-syntax-highlighting
+	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
