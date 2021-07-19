@@ -26,7 +26,7 @@ previous: String?;
 next: String?;
 // All pages for the current pager
 pages: Array<Page>;
-// Which pager are we on
+// Which pager are we on, 1-indexed
 current_index: Number;
 // Total number of pages across all the pagers
 total_pages: Number;
