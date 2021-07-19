@@ -58,7 +58,7 @@ stages:
               rustup_toolchain: stable
               target: 'x86_64-apple-darwin'
             linux-stable:
-              imageName: 'ubuntu-16.04'
+              imageName: 'ubuntu-20.04'
               rustup_toolchain: stable
               target: 'x86_64-unknown-linux-gnu'
         pool:
