@@ -21,7 +21,7 @@ pub fn build(
             console::warn("The directory you are about build to already exists. Building to this directory will delete files contained within this directory.");
 
             // Prompt the user to ask whether they want to continue.
-            if !ask_bool("Are you you want to continue?", false)? {
+            if !ask_bool("Are you sure you want to continue?", false)? {
                 return Err(Error::msg("Cancelled build process because output directory already exists."));
             }
         }
