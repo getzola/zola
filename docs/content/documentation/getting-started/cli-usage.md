@@ -72,6 +72,10 @@ the interface/port combination to use if you want something different than the d
 
 You can also specify different addresses for the interface and base_url using `--interface` and `-u`/`--base-url`, respectively, if for example you are running Zola in a Docker container.
 
+> By default, devices from the local network **won't** be able to access the served pages. This may be of importance when you want to test page interaction and layout on your mobile device or tablet. If you set the interface to `0.0.0.0` however, devices from your local network will be able to access the served pages by requesting the local ip-address of the machine serving the pages and port used.
+>
+> In order to have everything work correctly, you might also have to alter the `base-url` flag to your local ip.
+
 Use the `--open` flag to automatically open the locally hosted instance in your
 web browser.
 
