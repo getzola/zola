@@ -14,6 +14,12 @@ Zola is available on [Brew](https://brew.sh):
 $ brew install zola
 ```
 
+Zola is also available on [MacPorts](https://www.macports.org):
+
+```sh
+$ sudo port install zola
+```
+
 ### Arch Linux
 
 Zola is available in the official Arch Linux repositories.
