@@ -4,7 +4,9 @@ use errors::{Error, Result};
 use site::Site;
 
 use crate::console;
-use crate::prompt::ask_bool;
+use crate::prompt::ask_bool_timeout;
+
+const BUILD_PROMPT_TIMEOUT_MILLIS: usize = 10_000;
 
 pub fn build(
     root_dir: &Path,
@@ -18,11 +20,21 @@ pub fn build(
         // Check whether output directory exists or not
         // This way we don't replace already existing files.
         if output_dir.exists() {
-            console::warn("The directory you are about build to already exists. Building to this directory will delete files contained within this directory.");
+            console::warn(&format!("The directory '{}' already exists. Building to this directory will delete files contained within this directory.", output_dir.display()));
 
             // Prompt the user to ask whether they want to continue.
-            if !ask_bool("Are you sure you want to continue?", false)? {
-                return Err(Error::msg("Cancelled build process because output directory already exists."));
+            let clear_dir = tokio::runtime::Runtime::new()
+                .expect("Tokio runtime failed to instantiate")
+                .block_on(ask_bool_timeout(
+                    "Are you sure you want to continue?",
+                    false,
+                    std::time::Duration::from_millis(BUILD_PROMPT_TIMEOUT_MILLIS),
+                ))?;
+
+            if !clear_dir {
+                return Err(Error::msg(
+                    "Cancelled build process because output directory already exists.",
+                ));
             }
         }
 
