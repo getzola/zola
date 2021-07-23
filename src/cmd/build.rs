@@ -6,7 +6,7 @@ use site::Site;
 use crate::console;
 use crate::prompt::ask_bool_timeout;
 
-const BUILD_PROMPT_TIMEOUT_MILLIS: usize = 10_000;
+const BUILD_PROMPT_TIMEOUT_MILLIS: u64 = 10_000;
 
 pub fn build(
     root_dir: &Path,

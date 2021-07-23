@@ -4,6 +4,7 @@ use std::time::Duration;
 use url::Url;
 
 use errors::Result;
+use crate::console;
 
 /// Wait for user input and return what they typed
 fn read_line() -> Result<String> {
