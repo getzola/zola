@@ -154,6 +154,7 @@ impl Config {
         Ok(config)
     }
 
+    #[cfg(test)]
     pub fn default_for_test() -> Self {
         let mut config = Config::default();
         config.add_default_language();
