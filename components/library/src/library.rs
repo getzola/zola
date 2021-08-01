@@ -301,7 +301,7 @@ impl Library {
                 SortBy::Title => {
                     let data = get_data(section, &self.pages, |meta| meta.title.as_deref());
 
-                    sort_pages_by_title(data)
+                    sort_pages_by_title(data, section.meta.sort_order)
                 }
                 SortBy::Weight => {
                     let data = get_data(section, &self.pages, |meta| meta.weight);

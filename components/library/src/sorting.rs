@@ -5,6 +5,8 @@ use lexical_sort::natural_lexical_cmp;
 use rayon::prelude::*;
 use slotmap::DefaultKey;
 
+use front_matter::SortOrder;
+
 use crate::content::Page;
 
 /// Used by the feed
@@ -46,14 +48,22 @@ pub fn sort_pages_by_date(
 /// The permalink is used to break ties.
 pub fn sort_pages_by_title(
     pages: Vec<(&DefaultKey, Option<&str>, &str)>,
+    sort_order: SortOrder,
 ) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) =
         pages.into_par_iter().partition(|page| page.1.is_some());
 
     can_be_sorted.par_sort_unstable_by(|a, b| {
-        let ord = natural_lexical_cmp(a.1.unwrap(), b.1.unwrap());
+        let (a_title, a_permalink) = (a.1.unwrap(), a.2);
+        let (b_title, b_permalink) = (b.1.unwrap(), b.2);
+
+        let ord = match sort_order {
+            SortOrder::Lexical => natural_lexical_cmp(a_title, b_title),
+            SortOrder::Standard => a_title.cmp(b_title),
+        };
+
         if ord == Ordering::Equal {
-            a.2.cmp(b.2)
+            a_permalink.cmp(b_permalink)
         } else {
             ord
         }
@@ -116,7 +126,7 @@ mod tests {
 
     use super::{find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight};
     use crate::content::Page;
-    use front_matter::PageFrontMatter;
+    use front_matter::{PageFrontMatter, SortOrder};
 
     fn create_page_with_date(date: &str) -> Page {
         let mut front_matter =
@@ -165,9 +175,11 @@ mod tests {
             "microkernel",
             "métro",
             "BART",
+            "åland",
             "Underground",
             "track_13",
             "μ-kernel",
+            "Österrike",
             "meter",
             "track_1",
         ];
@@ -179,25 +191,50 @@ mod tests {
             .enumerate()
             .map(|(i, page)| (&keys[i], page.meta.title.as_deref(), page.permalink.as_ref()))
             .collect();
-        let (sorted, _) = sort_pages_by_title(input);
         // Should be sorted by title
-        let sorted_titles: Vec<_> = sorted
+        let sorted_titles: Vec<_> = sort_pages_by_title(input.clone(), SortOrder::Lexical)
+            .0
             .iter()
             .map(|key| dense.get(*key).unwrap().meta.title.as_ref().unwrap())
             .collect();
         assert_eq!(
             sorted_titles,
             vec![
+                "åland",
                 "bagel",
                 "BART",
                 "μ-kernel",
                 "meter",
                 "métro",
                 "microkernel",
+                "Österrike",
                 "track_1",
                 "track_3",
                 "track_13",
                 "Underground",
+            ]
+        );
+
+        let sorted_titles: Vec<_> = sort_pages_by_title(input, SortOrder::Standard)
+            .0
+            .iter()
+            .map(|key| dense.get(*key).unwrap().meta.title.as_ref().unwrap())
+            .collect();
+        assert_eq!(
+            sorted_titles,
+            vec![
+                "BART",
+                "Underground",
+                "bagel",
+                "meter",
+                "microkernel",
+                "métro",
+                "track_1",
+                "track_13",
+                "track_3",
+                "Österrike",
+                "åland",
+                "μ-kernel",
             ]
         );
     }

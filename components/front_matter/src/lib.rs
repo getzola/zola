@@ -60,6 +60,15 @@ pub enum SortBy {
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+pub enum SortOrder {
+    /// Lexicographical sorting provided by the crate lexical_sort
+    Lexical,
+    /// Standard byte-order sorting
+    Standard,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum InsertAnchor {
     Left,
     Right,

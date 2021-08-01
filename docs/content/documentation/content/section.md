@@ -51,6 +51,9 @@ draft = false
 # Used to sort pages by "date", "title, "weight", or "none". See below for more information.
 sort_by = "none"
 
+# What sort order to use when sorting by title. "lexical" or "standard".
+sort_order = "lexical"
+
 # Used by the parent section to order its subsections.
 # Lower values have higher priority.
 weight = 0
@@ -164,16 +167,22 @@ get `page.earlier` and `page.later` variables that contain the pages with
 earlier and later dates, respectively.
 
 ### `title`
-This will sort all pages by their `title` field in natural lexical order, as
-defined  by `natural_lexical_cmp` in the [lexical-sort] crate. Each page will
-get `page.title_prev` and `page.title_next` variables that  contain the pages
-with  previous and next titles, respectively.
+This will sort all pages by their `title` field according to the `sort_order`
+in either natural lexical or standard byte order. They are defined by
+`natural_lexical_cmp` in the [lexical-sort] crate or String::cmp in the
+standard library respectively. Each page will get `page.title_prev` and
+`page.title_next` variables that contain the pages with previous and next
+titles, respectively.
 
-For example, here is a natural lexical ordering: "bachata, BART, bolero,
+For example, here is a natural lexical ordering: "åland, bachata, BART, bolero,
 μ-kernel, meter, Métro, Track-2, Track-3, Track-13, underground". Notice how
-special characters and numbers are sorted reasonably. This is better than
-the standard sorting: "BART, Métro, Track-13, Track-2, Track-3, bachata,
-bolero, meter, underground, μ-kernel".
+special characters and numbers are sorted reasonably. This might be preferable
+to the standard sorting: "BART, Métro, Track-13, Track-2, Track-3, bachata,
+bolero, meter, underground, åland, μ-kernel". Natural sorting treats non-ascii
+characters like their closest ascii character. This can lead to unexpected
+results for languages with different character sets. The last three characters
+of the Swedish alphabet, åäö, for example would be considered by the natural
+sort as aao. In that case the standard byte-order sort may be more suitable.
 
 [lexical-sort]: https://docs.rs/lexical-sort
 
