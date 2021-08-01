@@ -491,3 +491,26 @@ fn shortcode_arguments() {
         [HTML_ARG_SHORTCODE]
     );
 }
+
+const MD_BDY_OUTER: ShortCode = ShortCode::new("outer", "*{{ body }}*", true);
+const MD_BDY_INNER: ShortCode = ShortCode::new("inner", "**{{ body }}**", true);
+
+// Originally from PR #1475
+#[test]
+fn body_in_body() {
+    test_scenario!(
+        "{% outer() %}\n\tTest text\n\t{% inner() %}\n\t\tHello World!\n\t{% end %}\n{% end %}",
+        "<p><em>Test text <b>Hello World!</b></em></p>\n",
+        [MD_BDY_OUTER, MD_BDY_INNER]
+    );
+}
+
+// From Issue #1355
+#[test]
+fn list_with_shortcode() {
+    test_scenario!(
+        "* a\n*b\n\t{{ multiline() }}\n*c\n\t{{ multiline() }}\n",
+        "<ul><li>a</li><li>b<div></div></li><li></li></ul>\n",
+        [HTML_TABS_MULTILINE]
+    );
+}
