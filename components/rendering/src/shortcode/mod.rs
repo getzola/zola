@@ -9,6 +9,28 @@ use tera::{to_value, Context, Map, Value};
 use crate::context::RenderContext;
 use errors::{bail, Error, Result};
 
+enum ShortCodeType {
+    Markdown,
+    HTML,
+}
+
+struct Span {
+    start: usize,
+    end: usize,
+}
+
+pub struct ShortCodeContext {
+    shortcode_type: ShortCodeType,
+    block: Span,
+    end_block: Option<Span>,
+    name: String,
+    arguments: HashMap<String, String>,
+}
+
+pub fn locate_shortcodes() -> Result<Vec<ShortCodeContext>> {
+    todo!()
+}
+
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file
 const _GRAMMAR: &str = include_str!("content.pest");
