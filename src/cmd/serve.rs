@@ -294,12 +294,12 @@ pub fn serve(
         return Err(format!("Cannot start server on address {}.", address).into());
     }
 
-    let config_filename = config_file.file_name().unwrap().to_str().unwrap_or("config.toml");
+    let config_path = config_file.to_str().unwrap_or("config.toml");
 
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate
     let watch_this = vec![
-        (config_filename, WatchMode::Required),
+        (config_path, WatchMode::Required),
         ("content", WatchMode::Required),
         ("sass", WatchMode::Condition(site.config.compile_sass)),
         ("static", WatchMode::Optional),
@@ -517,7 +517,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&root_dir, &path, &config_filename) {
+                        match detect_change_kind(&root_dir, &path, &config_path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
 
