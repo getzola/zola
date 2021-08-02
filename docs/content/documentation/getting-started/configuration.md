@@ -9,7 +9,7 @@ It follows the philosophy of paying for only what you need, almost everything is
 To change the configuration, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
-⚠️ If you add keys to your `config.toml`, you must pay attention to which TOML section it belongs to. A TOML section starts with the header, e.g. `[search]`, and ends at the next section or EOF.
+⚠️ If you add keys to your `config.toml`, you must pay attention to which TOML section it belongs to. A TOML section starts with a header, e.g. `[search]`, and ends at the next section or EOF.
 
 Here are the current `config.toml` sections:
 1. main (unnamed)
