@@ -1,138 +1,173 @@
+use super::argvalue::ArgValue;
+use super::inner_tag::{InnerTag, InnerTagParseError};
 use logos::Logos;
+use std::collections::HashMap;
 
-pub enum ArgValue {
-    Text(String),
-    Boolean(bool),
-    FloatingPoint(f32),
-    Integer(f32),
-    Array(Vec<ArgValue>),
+#[derive(Debug, PartialEq)]
+pub enum ShortcodeFetchError {
+    UnusedEndBlock,
+    UnmatchingTags,
+    InnerTagError(InnerTagParseError),
 }
 
+#[derive(PartialEq, Debug)]
+/// Used to represent all the information present in a shortcode
 pub struct Shortcode {
     name: String,
     args: HashMap<String, ArgValue>,
     body: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
-enum SyntaxType {
-    Normal,
+impl Shortcode {
+    #[cfg(test)]
+    fn new(name: &str, args_vec: Vec<(&str, ArgValue)>, body: Option<&str>) -> Shortcode {
+        let InnerTag { name, args } = InnerTag::new(name, args_vec);
+        let body = body.map(|b| b.to_string());
+
+        Shortcode { name, args, body }
+    }
+}
+
+/// Used to keep track of body items when parsing Shortcode. Since multiple can be embedded into
+/// eachother. This needs to be kept track off.
+struct BodiedStackItem {
+    name: String,
+    args: HashMap<String, ArgValue>,
+    body_start: usize,
+}
+
+/// Fetch a [Vec] of all Shortcodes which are present in source string
+pub fn fetch_shortcodes(source: &str) -> Result<Vec<Shortcode>, ShortcodeFetchError> {
+    use ShortcodeFetchError::*;
+
+    let mut lex = Openers::lexer(source);
+    let mut shortcodes = Vec::new();
+
+    let mut body_stack: Vec<BodiedStackItem> = Vec::new();
+
+    // Loop until we run out of potential shortcodes
+    while let Some(open_tag) = lex.next() {
+
+        // Check if the open tag is an endblock
+        if matches!(open_tag, Openers::EndBlock) {
+            if let Some(BodiedStackItem { name, args, body_start }) = body_stack.pop() {
+                let body = Some(source[body_start..lex.span().start].to_string());
+
+                shortcodes.push(Shortcode { name, args, body });
+
+                continue;
+            } else {
+                // No bodied tag was initiated, "{% end %}" is out of place
+                return Err(UnusedEndBlock);
+            }
+        }
+
+        // Parse the inside of the shortcode tag
+        // TODO: Allow for context dependent variables
+        let (inner_tag_lex, InnerTag { name, args }) = InnerTag::lex_parse(lex.morph())
+            .map_err(|inner_tag_error| InnerTagError(inner_tag_error))?;
+        let mut closing = inner_tag_lex.morph();
+
+        if let Some(close_tag) = closing.next() {
+            // Make sure that we have `{{` and `}}` or `{%` and `%}`.
+            match (open_tag, close_tag) {
+                (Openers::Normal, Closers::Normal) => {
+                    shortcodes.push(Shortcode { name, args, body: None })
+                }
+
+                (Openers::Body, Closers::Body) => {
+                    body_stack.push(BodiedStackItem { name, args, body_start: closing.span().end })
+                }
+
+                _ => {
+                    // Tags don't match
+                    return Err(UnmatchingTags);
+                }
+            }
+        }
+
+        lex = closing.morph();
+    }
+
+    Ok(shortcodes)
+}
+
+#[derive(Debug, PartialEq, Clone, Logos)]
+/// Tokens used initial parsing of source strings
+enum Openers {
+    #[regex(r"([{]%)([ \t\n\f]*)[eE][nN][dD]([ \t\n\f]*)(%[}])")]
+    /// The token used to end a bodied shortcode (`{% end %}` with arbitrary whitespace and
+    /// capitalization)
+    EndBlock,
+
+    #[regex(r"[{]%[ \t\n\f]*")]
+    /// The token used to open a bodied shortcode (`{%`)
     Body,
-}
 
-#[derive(Debug, PartialEq)]
-enum FPRepresentationType {
-    Plain,
-    MiddlePoint,
-    StartingPoint,
-}
+    #[regex(r"[{][{][ \t\n\f]*")]
+    /// The token used to open a normal shortcode `{{`)
+    Normal,
 
-#[derive(Debug, PartialEq)]
-enum StringType {
-    DoubleQuoted,
-    SingleQuoted,
-    BackQuoted,
+    #[error]
+    #[regex(r"[^{]+", logos::skip)]
+    Error,
 }
 
 #[derive(Debug, PartialEq, Logos)]
-enum Token {
-    #[token("end")]
-    EndKeyword,
+/// Tokens used for parsing of source strings after the [InnerTag] has been established
+enum Closers {
+    #[regex(r"[ \t\n\f]*%[}]")]
+    /// The token used to close a bodied shortcode (`%}`)
+    Body,
 
-    #[token("{%", |_| SyntaxType::Body)]
-    #[token("{{", |_| SyntaxType::Normal)]
-    OpenShortcode(SyntaxType),
-
-    #[token("%}", |_| SyntaxType::Body)]
-    #[token("}}", |_| SyntaxType::Normal)]
-    CloseShortcode(SyntaxType),
-
-    #[token("(")]
-    OpenParenthesis,
-    #[token(")")]
-    CloseParenthesis,
-
-    #[regex(r#""([^"\\]*(\\.[^"\\]*)*)""#, |_| StringType::DoubleQuoted)]
-    #[regex(r#"'([^'\\]*(\\.[^'\\]*)*)'"#, |_| StringType::SingleQuoted)]
-    #[regex(r#"`([^`\\]*(\\.[^`\\]*)*)`"#, |_| StringType::BackQuoted)]
-    QuotedString(StringType),
-
-    #[regex("(?:true)", |_| true)]
-    #[regex("(?i:false)", |_| false)]
-    Boolean(bool),
-
-    #[regex("[+-]?(0|[1-9][0-9]*)[.]([0-9]+)", |_| FPRepresentationType::MiddlePoint)]
-    #[regex("[+-]?(0|[1-9][0-9]*)[.]", |_| FPRepresentationType::Plain)]
-    #[regex("[+-]?[.]([0-9]+)", |_| FPRepresentationType::StartingPoint)]
-    FloatingPointBase(FPRepresentationType),
-
-    #[regex("(?i:e[0-9]+)?")]
-    FloatingPointExt,
-
-    #[regex("[-]?(0|[1-9][0-9]*)")]
-    Integer,
-
-    #[token("[")]
-    OpenArray,
-    #[token("]")]
-    CloseArray,
-
-    #[token("=")]
-    Equals,
-    #[token(",")]
-    Comma,
-    #[token(".")]
-    Period,
-
-    #[regex("[a-zA-Z][a-zA-Z0-9_-]*")]
-    Identifier,
+    #[regex(r"[ \t\n\f]*[}][}]")]
+    /// The token used to close a normal shortcode (`}}`)
+    Normal,
 
     #[error]
-    #[regex(r"[ \t\n\f]+", logos::skip)]
-    Error
+    #[regex(r"[^%}]+", logos::skip)]
+    Error,
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{FPRepresentationType, Token, SyntaxType, StringType};
+    use super::*;
     use logos::Logos;
 
+    use ShortcodeFetchError::*;
+
     #[test]
-    fn it_lexes() {
-        let test_str = r"{{ abc(wow=true) }}";
+    fn no_shortcodes() {
+        assert_eq!(fetch_shortcodes(""), Ok(vec![]));
+        assert_eq!(fetch_shortcodes("abc"), Ok(vec![]));
+    }
 
-        let mut lex = Token::lexer(test_str);
+    #[test]
+    fn unused_end_blocks() {
+        assert_eq!(fetch_shortcodes("{% end %}"), Err(UnusedEndBlock));
+        assert!(fetch_shortcodes("{% a() %}{% end %}").is_ok());
+        assert_eq!(fetch_shortcodes("{% a() %}{% end %}{% end %}"), Err(UnusedEndBlock));
+    }
 
-        assert_eq!(lex.next(), Some(Token::OpenShortcode(SyntaxType::Normal)));
-        assert_eq!(lex.span(), 0..2);
-        assert_eq!(lex.slice(), "{{");
+    #[test]
+    fn basic() {
+        let test_str = r#"
+# Hello World!
 
-        assert_eq!(lex.next(), Some(Token::Identifier));
-        assert_eq!(lex.span(), 3..6);
-        assert_eq!(lex.slice(), "abc");
+{{ abc(wow=true) }}
 
-        assert_eq!(lex.next(), Some(Token::OpenParenthesis));
-        assert_eq!(lex.span(), 6..7);
-        assert_eq!(lex.slice(), "(");
+{% bodied(def="Hello!") %}The inside of this body{% end %}"#;
 
-        assert_eq!(lex.next(), Some(Token::Identifier));
-        assert_eq!(lex.span(), 7..10);
-        assert_eq!(lex.slice(), "wow");
-
-        assert_eq!(lex.next(), Some(Token::Equals));
-        assert_eq!(lex.span(), 10..11);
-        assert_eq!(lex.slice(), "=");
-
-        assert_eq!(lex.next(), Some(Token::Boolean(true)));
-        assert_eq!(lex.span(), 11..15);
-        assert_eq!(lex.slice(), "true");
-
-        assert_eq!(lex.next(), Some(Token::CloseParenthesis));
-        assert_eq!(lex.span(), 15..16);
-        assert_eq!(lex.slice(), ")");
-
-        assert_eq!(lex.next(), Some(Token::CloseShortcode(SyntaxType::Normal)));
-        assert_eq!(lex.span(), 17..19);
-        assert_eq!(lex.slice(), "}}");
+        assert_eq!(
+            fetch_shortcodes(test_str),
+            Ok(vec![
+                Shortcode::new("abc", vec![("wow", ArgValue::Boolean(true))], None),
+                Shortcode::new(
+                    "bodied",
+                    vec![("def", ArgValue::Text("Hello!".to_string()))],
+                    Some("The inside of this body")
+                )
+            ])
+        );
     }
 }
