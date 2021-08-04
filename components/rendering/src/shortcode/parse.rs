@@ -3,13 +3,6 @@ use super::inner_tag::{InnerTag, InnerTagParseError};
 use logos::Logos;
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
-pub enum ShortcodeFetchError {
-    UnusedEndBlock,
-    UnmatchingTags,
-    InnerTagError(InnerTagParseError),
-}
-
 #[derive(PartialEq, Debug)]
 /// Used to represent all the information present in a shortcode
 pub struct Shortcode {
@@ -37,9 +30,7 @@ struct BodiedStackItem {
 }
 
 /// Fetch a [Vec] of all Shortcodes which are present in source string
-pub fn fetch_shortcodes(source: &str) -> Result<Vec<Shortcode>, ShortcodeFetchError> {
-    use ShortcodeFetchError::*;
-
+pub fn fetch_shortcodes(source: &str) -> Vec<Shortcode> {
     let mut lex = Openers::lexer(source);
     let mut shortcodes = Vec::new();
 
@@ -47,49 +38,50 @@ pub fn fetch_shortcodes(source: &str) -> Result<Vec<Shortcode>, ShortcodeFetchEr
 
     // Loop until we run out of potential shortcodes
     while let Some(open_tag) = lex.next() {
-
         // Check if the open tag is an endblock
         if matches!(open_tag, Openers::EndBlock) {
+            // Check whether a bodied shortcode has already been located
             if let Some(BodiedStackItem { name, args, body_start }) = body_stack.pop() {
                 let body = Some(source[body_start..lex.span().start].to_string());
 
                 shortcodes.push(Shortcode { name, args, body });
-
-                continue;
-            } else {
-                // No bodied tag was initiated, "{% end %}" is out of place
-                return Err(UnusedEndBlock);
             }
+
+            continue;
         }
 
         // Parse the inside of the shortcode tag
-        // TODO: Allow for context dependent variables
-        let (inner_tag_lex, InnerTag { name, args }) = InnerTag::lex_parse(lex.morph())
-            .map_err(|inner_tag_error| InnerTagError(inner_tag_error))?;
-        let mut closing = inner_tag_lex.morph();
+        // TODO: Remove this clone()
+        if let Ok((inner_tag_lex, InnerTag { name, args })) =
+            InnerTag::lex_parse(lex.clone().morph())
+        {
+            let mut closing = inner_tag_lex.morph();
 
-        if let Some(close_tag) = closing.next() {
-            // Make sure that we have `{{` and `}}` or `{%` and `%}`.
-            match (open_tag, close_tag) {
-                (Openers::Normal, Closers::Normal) => {
-                    shortcodes.push(Shortcode { name, args, body: None })
-                }
+            if let Some(close_tag) = closing.next() {
+                // Make sure that we have `{{` and `}}` or `{%` and `%}`.
+                match (open_tag, close_tag) {
+                    (Openers::Normal, Closers::Normal) => {
+                        shortcodes.push(Shortcode { name, args, body: None })
+                    }
 
-                (Openers::Body, Closers::Body) => {
-                    body_stack.push(BodiedStackItem { name, args, body_start: closing.span().end })
-                }
+                    (Openers::Body, Closers::Body) => body_stack.push(BodiedStackItem {
+                        name,
+                        args,
+                        body_start: closing.span().end,
+                    }),
 
-                _ => {
-                    // Tags don't match
-                    return Err(UnmatchingTags);
+                    _ => {
+                        // Tags don't match
+                        continue;
+                    }
                 }
             }
-        }
 
-        lex = closing.morph();
+            lex = closing.morph();
+        }
     }
 
-    Ok(shortcodes)
+    shortcodes
 }
 
 #[derive(Debug, PartialEq, Clone, Logos)]
@@ -134,19 +126,12 @@ mod tests {
     use super::*;
     use logos::Logos;
 
-    use ShortcodeFetchError::*;
-
     #[test]
     fn no_shortcodes() {
-        assert_eq!(fetch_shortcodes(""), Ok(vec![]));
-        assert_eq!(fetch_shortcodes("abc"), Ok(vec![]));
-    }
-
-    #[test]
-    fn unused_end_blocks() {
-        assert_eq!(fetch_shortcodes("{% end %}"), Err(UnusedEndBlock));
-        assert!(fetch_shortcodes("{% a() %}{% end %}").is_ok());
-        assert_eq!(fetch_shortcodes("{% a() %}{% end %}{% end %}"), Err(UnusedEndBlock));
+        assert_eq!(fetch_shortcodes(""), vec![]);
+        assert_eq!(fetch_shortcodes("abc"), vec![]);
+        assert_eq!(fetch_shortcodes("{{ abc }}"), vec![]);
+        assert_eq!(fetch_shortcodes("{{ abc() %}"), vec![]);
     }
 
     #[test]
@@ -160,14 +145,14 @@ mod tests {
 
         assert_eq!(
             fetch_shortcodes(test_str),
-            Ok(vec![
+            vec![
                 Shortcode::new("abc", vec![("wow", ArgValue::Boolean(true))], None),
                 Shortcode::new(
                     "bodied",
                     vec![("def", ArgValue::Text("Hello!".to_string()))],
                     Some("The inside of this body")
                 )
-            ])
+            ]
         );
     }
 }

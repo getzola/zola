@@ -14,6 +14,7 @@ pub enum QuoteType {
 #[derive(Debug, PartialEq)]
 pub enum QuoteParseError {
     ClosingQuoteEncountedEarly(usize),
+
     UnknownError,
 }
 

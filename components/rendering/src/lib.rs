@@ -44,8 +44,7 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
     // 5. Embedded HTML shortcodes
 
     // Locate all shortcodes in the current content.
-    // TODO: REMOVE UNWRAP
-    let shortcodes = fetch_shortcodes(content).unwrap();
+    let shortcodes = fetch_shortcodes(content);
 
     // If no shortcodes are present just render the document.
     if shortcodes.is_empty() {

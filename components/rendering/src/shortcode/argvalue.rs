@@ -1,6 +1,8 @@
 use logos::{Lexer, Logos};
+
 use std::num::{ParseFloatError, ParseIntError};
 use std::str::FromStr;
+use std::fmt;
 
 use super::string_literal::{unescape_quoted_string, QuoteType};
 
@@ -22,7 +24,7 @@ pub enum ArgValue {
     Array(Vec<ArgValue>),
 
     /// A variable from the context
-    // TODO: Add filter notation
+    // TODO: Maybe add filter notation here
     Var(Vec<String>),
 }
 
@@ -30,7 +32,7 @@ pub enum ArgValue {
 /// Error Type which gets triggered with Parsing an [ArgValue]
 pub enum ArgValueParseError {
     /// An [ArgValueToken] which was not expected was encountered
-    UnexpectedToken(ArgValueToken),
+    UnexpectedToken { token: ArgValueToken, slice: String, span: (usize, usize) },
 
     /// The parsing expected another Token but none were encountered
     UnexpectedEnd,
@@ -40,6 +42,32 @@ pub enum ArgValueParseError {
 
     /// Something went wrong when parsing an integer
     IntegerParseError(ParseIntError),
+}
+
+
+impl fmt::Display for ArgValueParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        use ArgValueParseError::*;
+
+        match self {
+            UnexpectedToken { token, slice, span } => {
+                write!(
+                    f,
+                    "Did not expect '{}' at {} to {}. Found token ({:?})",
+                    slice, span.0, span.1, token
+                )
+            }
+            UnexpectedEnd => {
+                write!(f, "Expected more tokens, instead found nothing.")
+            }
+            FloatParseError(err) => {
+                write!(f, "Error whilst parsing float: '{}'", err)
+            }
+            IntegerParseError(err) => {
+                write!(f, "Error whilst parsing integer: '{}'", err)
+            }
+        }
+    }
 }
 
 impl ArgValue {
@@ -83,18 +111,26 @@ impl ArgValue {
                                     lex.next(),
                                     [Identifier => lex.slice().to_string()],
                                     UnexpectedEnd,
-                                    |t| UnexpectedToken(t)
+                                    |token| UnexpectedToken {
+                                        token,
+                                        slice: lex.slice().to_string(),
+                                        span: (lex.span().start, lex.span().end)
+                                    },
                                 )?
                             },
                             Some(BracketOpen) => {
                                 lex = peek_lex;
-                                
+
                                 // We expect a string literal, we take the content and return that
                                 let ident = expect_token!(
                                     lex.next(),
                                     [StrLiteral(content) => content],
                                     UnexpectedEnd,
-                                    |t| UnexpectedToken(t),
+                                    |token| UnexpectedToken {
+                                        token,
+                                        slice: lex.slice().to_string(),
+                                        span: (lex.span().start, lex.span().end)
+                                    },
                                 )?;
 
                                 // Expect a closing bracket
@@ -102,7 +138,11 @@ impl ArgValue {
                                     lex.next(),
                                     [BracketClose => ()],
                                     UnexpectedEnd,
-                                    |t| UnexpectedToken(t),
+                                    |token| UnexpectedToken {
+                                        token,
+                                        slice: lex.slice().to_string(),
+                                        span: (lex.span().start, lex.span().end)
+                                    },
                                 )?;
 
                                 ident
@@ -138,7 +178,11 @@ impl ArgValue {
                             lex.next(),
                             [Comma => false, BracketClose => true],
                             UnexpectedEnd,
-                            |t| UnexpectedToken(t),
+                            |token| UnexpectedToken {
+                                token,
+                                slice: lex.slice().to_string(),
+                                span: (lex.span().start, lex.span().end)
+                            },
                         )? {
                             break;
                         }
@@ -148,7 +192,11 @@ impl ArgValue {
                 }
             ],
             UnexpectedEnd,
-            |t| UnexpectedToken(t)
+            |token| UnexpectedToken {
+                token,
+                slice: lex.slice().to_string(),
+                span: (lex.span().start, lex.span().end)
+            },
         )?;
 
         Ok((lex, arg_value))
@@ -158,6 +206,9 @@ impl ArgValue {
 #[derive(Debug, PartialEq, Clone, Logos)]
 pub enum ArgValueToken {
     // Syntax for `'`, `"` and `\`` enclosed strings, respectively.
+    //
+    // This function has a error which doesn't implement fmt::Display and is never used. This is
+    // fine because both errors should never occur when called from here.
     #[regex(r#"'([^'\\]*(\\.[^'\\]*)*)'"#, |lex| unescape_quoted_string(lex.slice(), QuoteType::Single))]
     #[regex(r#""([^"\\]*(\\.[^"\\]*)*)""#, |lex| unescape_quoted_string(lex.slice(), QuoteType::Double))]
     #[regex(r#"`([^`\\]*(\\.[^`\\]*)*)`"#, |lex| unescape_quoted_string(lex.slice(), QuoteType::Backtick))]
@@ -236,10 +287,26 @@ mod tests {
 
     #[test]
     fn unexpected_token() {
-        lex_assert_err!("*", UnexpectedToken(ArgValueToken::Error));
-        lex_assert_err!("+", UnexpectedToken(ArgValueToken::Error));
-        lex_assert_err!("-", UnexpectedToken(ArgValueToken::Error));
-        lex_assert_err!("]", UnexpectedToken(ArgValueToken::BracketClose));
+        lex_assert_err!(
+            "*",
+            UnexpectedToken { token: ArgValueToken::Error, slice: "*".to_string(), span: (0, 1) }
+        );
+        lex_assert_err!(
+            "+",
+            UnexpectedToken { token: ArgValueToken::Error, slice: "+".to_string(), span: (0, 1) }
+        );
+        lex_assert_err!(
+            "-",
+            UnexpectedToken { token: ArgValueToken::Error, slice: "-".to_string(), span: (0, 1) }
+        );
+        lex_assert_err!(
+            "]",
+            UnexpectedToken {
+                token: ArgValueToken::BracketClose,
+                slice: "]".to_string(),
+                span: (0, 1)
+            }
+        );
     }
 
     #[test]

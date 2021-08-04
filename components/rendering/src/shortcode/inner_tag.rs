@@ -1,6 +1,9 @@
-use super::argvalue::{ArgValue, ArgValueParseError};
 use logos::{Lexer, Logos};
+
 use std::collections::HashMap;
+use std::fmt;
+
+use super::argvalue::{ArgValue, ArgValueParseError};
 
 #[derive(Debug, PartialEq)]
 /// The parsed inside of a shortcode tag (inside of a shortcode tag = what is between `{{` and `}}`
@@ -16,7 +19,7 @@ pub struct InnerTag {
 /// Error Type which gets triggered with Parsing an [InnerTag]
 pub enum InnerTagParseError {
     /// An [InnerTagToken] which was not expected was encountered
-    UnexpectedToken(InnerTagToken),
+    UnexpectedToken { token: InnerTagToken, slice: String, span: (usize, usize) },
 
     /// The parsing expected another Token but none were encountered
     UnexpectedEnd,
@@ -28,9 +31,39 @@ pub enum InnerTagParseError {
     /// An argument is declared twice.
     ReuseOfArgKey(String),
 
-    // TODO: Remove this error type
     /// Something went wrong when parsing an argument value
     ArgValueError(ArgValueParseError),
+}
+
+impl fmt::Display for InnerTagParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        use InnerTagParseError::*;
+
+        match self {
+            UnexpectedToken { token, slice, span } => {
+                write!(
+                    f,
+                    "Did not expect '{}' at {} to {}. Found token ({:?})",
+                    slice, span.0, span.1, token
+                )
+            }
+
+            UnexpectedEnd => {
+                write!(f, "Expected more tokens, instead found nothing.")
+            }
+            NoParentheses => {
+                write!(f, "The parsed is not a shortcode because it has no parentheses.")
+            }
+
+            ReuseOfArgKey(key) => {
+                write!(f, "The key '{}' is defined multiple times.", key)
+            }
+
+            ArgValueError(e) => {
+                write!(f, "{}", e)
+            }
+        }
+    }
 }
 
 impl InnerTag {
@@ -61,13 +94,23 @@ impl InnerTag {
                 lex.next(),
                 [Identifier => lex.slice().to_string()],
                 UnexpectedEnd,
-                |t| UnexpectedToken(t),
+                |token| UnexpectedToken {
+                    token,
+                    slice: lex.slice().to_string(),
+                    span: (lex.span().start, lex.span().end)
+                },
             )?,
             args: {
                 let mut args = HashMap::new();
 
                 // Expect open parenthese (`(`)
-                expect_token!(lex.next(), [ArgsOpen => {}], NoParentheses, |t| UnexpectedToken(t))?;
+                expect_token!(lex.next(), [ArgsOpen => {}], NoParentheses,
+                      |token| UnexpectedToken {
+                          token,
+                          slice: lex.slice().to_string(),
+                          span: (lex.span().start, lex.span().end)
+                      },
+                )?;
 
                 loop {
                     // Handle the `()` situation
@@ -81,7 +124,11 @@ impl InnerTag {
                         lex.next(),
                         [Identifier => lex.slice().to_string()],
                         UnexpectedEnd,
-                        |t| UnexpectedToken(t),
+                        |token| UnexpectedToken {
+                            token,
+                            slice: lex.slice().to_string(),
+                            span: (lex.span().start, lex.span().end)
+                        },
                     )?;
 
                     if args.contains_key(&arg_key) {
@@ -93,12 +140,15 @@ impl InnerTag {
                         lex.next(),
                         [Equals => {}],
                         UnexpectedEnd,
-                        |t| UnexpectedToken(t)
+                        |token| UnexpectedToken {
+                            token,
+                            slice: lex.slice().to_string(),
+                            span: (lex.span().start, lex.span().end)
+                        },
                     )?;
 
                     // This tmp_lex has to be done because otherwise the lifetime of lex is too
                     // short.
-                    // TODO: Make this error cast better
                     let (tmp_lex, arg_value) = ArgValue::lex_parse(lex.morph())
                         .map_err(|arg_value_err| ArgValueError(arg_value_err))?;
                     lex = tmp_lex.morph();
@@ -111,7 +161,11 @@ impl InnerTag {
                         lex.next(),
                         [Comma => false, ArgsClose => true],
                         UnexpectedEnd,
-                        |t| UnexpectedToken(t),
+                        |token| UnexpectedToken {
+                            token,
+                            slice: lex.slice().to_string(),
+                            span: (lex.span().start, lex.span().end)
+                        },
                     )? {
                         break;
                     }
@@ -179,10 +233,26 @@ mod tests {
 
     #[test]
     fn unexpected_token() {
-        lex_assert_err!("*", UnexpectedToken(InnerTagToken::Error));
-        lex_assert_err!("_", UnexpectedToken(InnerTagToken::Error));
-        lex_assert_err!("-", UnexpectedToken(InnerTagToken::Error));
-        lex_assert_err!("=", UnexpectedToken(InnerTagToken::Equals));
+        lex_assert_err!(
+            "*",
+            UnexpectedToken { token: InnerTagToken::Error, slice: "*".to_string(), span: (0, 1) }
+        );
+        lex_assert_err!(
+            "+",
+            UnexpectedToken { token: InnerTagToken::Error, slice: "+".to_string(), span: (0, 1) }
+        );
+        lex_assert_err!(
+            "-",
+            UnexpectedToken { token: InnerTagToken::Error, slice: "-".to_string(), span: (0, 1) }
+        );
+        lex_assert_err!(
+            "=",
+            UnexpectedToken {
+                token: InnerTagToken::Equals,
+                slice: "=".to_string(),
+                span: (0, 1)
+            }
+        );
     }
 
     #[test]
