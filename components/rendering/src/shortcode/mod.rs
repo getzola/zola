@@ -13,6 +13,7 @@ use std::collections::HashMap;
 mod util;
 
 pub mod parse;
+mod string_literal;
 mod argvalue;
 mod inner_tag;
 
