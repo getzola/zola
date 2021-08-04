@@ -22,13 +22,9 @@ pub enum ArgValue {
     Array(Vec<ArgValue>),
 
     /// A variable from the context
-    // TODO: Add square bracket notation
     // TODO: Add filter notation
     Var(Vec<String>),
 }
-
-/// The character used to device into an variable property
-const VARIABLE_SPLITTER: char = '.';
 
 #[derive(Debug, PartialEq)]
 /// Error Type which gets triggered with Parsing an [ArgValue]
@@ -66,17 +62,65 @@ impl ArgValue {
                 FPLiteral => {
                     FloatingPoint(f32::from_str(lex.slice()).map_err(|err| FloatParseError(err))?)
                 },
-                Variable => {
-                    Var(lex.slice().split(VARIABLE_SPLITTER).map(|s| s.to_string()).collect())
+                Identifier => {
+                    let mut idents = Vec::new();
+                    idents.push(lex.slice().to_string());
+
+                    // Loop though all potential idents chained after the original.
+                    loop {
+
+                        // We have to clone here since we are not sure whether we want to actually
+                        // move up the lexer to the next token.
+                        let mut peek_lex = lex.clone();
+
+                        idents.push(match peek_lex.next() {
+                            // For dot notation `abc.def.ghi`
+                            Some(Period) => {
+                                lex = peek_lex;
+
+                                // We expect another identifier, which we will immediately return
+                                expect_token!(
+                                    lex.next(),
+                                    [Identifier => lex.slice().to_string()],
+                                    UnexpectedEnd,
+                                    |t| UnexpectedToken(t)
+                                )?
+                            },
+                            Some(BracketOpen) => {
+                                lex = peek_lex;
+                                
+                                // We expect a string literal, we take the content and return that
+                                let ident = expect_token!(
+                                    lex.next(),
+                                    [StrLiteral(content) => content],
+                                    UnexpectedEnd,
+                                    |t| UnexpectedToken(t),
+                                )?;
+
+                                // Expect a closing bracket
+                                expect_token!(
+                                    lex.next(),
+                                    [BracketClose => ()],
+                                    UnexpectedEnd,
+                                    |t| UnexpectedToken(t),
+                                )?;
+
+                                ident
+                            },
+                            _ => break,
+                        });
+                    }
+
+                    Var(idents)
                 },
-                OpenArray => {
+                BracketOpen => {
                     let mut items = Vec::new();
 
                     // Basically loop collecting ArgValue's delimited by Comma until a CloseArray
                     // token is found.
                     loop {
                         // Handle the `[]` situation
-                        if let Some(CloseArray) = lex.clone().next() {
+                        if let Some(BracketClose) = lex.clone().next() {
                             lex.next();
                             break;
                         }
@@ -92,7 +136,7 @@ impl ArgValue {
                         // putting a break in our expr.
                         if expect_token!(
                             lex.next(),
-                            [Comma => false, CloseArray => true],
+                            [Comma => false, BracketClose => true],
                             UnexpectedEnd,
                             |t| UnexpectedToken(t),
                         )? {
@@ -139,19 +183,24 @@ pub enum ArgValueToken {
     IntLiteral,
 
     #[token("[")]
-    /// The token used to open arrays, which is opening square bracket (`[`)
-    OpenArray,
+    /// The token used to open arrays and for square bracket notation, which is opening square
+    /// bracket (`[`)
+    BracketOpen,
     #[token("]")]
-    /// The token used to close arrays, which is closing square bracket (`]`)
-    CloseArray,
+    /// The token used to close arrays and for square bracket notation, which is closing square
+    /// bracket (`]`)
+    BracketClose,
 
     #[token(",")]
     /// A comma is used to delimit array elements
     Comma,
 
-    #[regex("([a-zA-Z][a-zA-Z0-9_-]*)([.][a-zA-Z][a-zA-Z0-9_-]*)*")]
+    #[regex(r#"([a-zA-Z][a-zA-Z0-9_-]*)"#)]
     /// A context dependent variable
-    Variable,
+    Identifier,
+
+    #[token(".")]
+    Period,
 
     #[error]
     #[regex(r"[ \t\n\f]+", logos::skip)]
@@ -190,7 +239,7 @@ mod tests {
         lex_assert_err!("*", UnexpectedToken(ArgValueToken::Error));
         lex_assert_err!("+", UnexpectedToken(ArgValueToken::Error));
         lex_assert_err!("-", UnexpectedToken(ArgValueToken::Error));
-        lex_assert_err!("]", UnexpectedToken(ArgValueToken::CloseArray));
+        lex_assert_err!("]", UnexpectedToken(ArgValueToken::BracketClose));
     }
 
     #[test]
@@ -242,6 +291,10 @@ mod tests {
     #[test]
     fn variable() {
         lex_assert_ok!("abc.def.ghi", Var(vec_owned!["abc", "def", "ghi"]), "");
+        lex_assert_ok!("abc['def']", Var(vec_owned!["abc", "def"]), "");
+        lex_assert_ok!("abc['def'].ghi", Var(vec_owned!["abc", "def", "ghi"]), "");
+        lex_assert_ok!("abc['def']['ghi']", Var(vec_owned!["abc", "def", "ghi"]), "");
+        lex_assert_ok!("abc['def']['ghi'], xyz", Var(vec_owned!["abc", "def", "ghi"]), ", xyz");
         lex_assert_ok!("abc", Var(vec_owned!["abc"]), "");
         lex_assert_ok!("abc12", Var(vec_owned!["abc12"]), "");
         lex_assert_ok!("abc12.abc", Var(vec_owned!["abc12", "abc"]), "");
