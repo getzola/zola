@@ -1,3 +1,6 @@
+//! This module contains the logic to turn a escaped quoted string literal into an unescaped string
+//! literal.
+
 use logos::Logos;
 
 #[derive(Debug, PartialEq)]

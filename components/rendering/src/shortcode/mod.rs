@@ -1,54 +1,29 @@
-// use lazy_static::lazy_static;
-// use pest::iterators::Pair;
-// use pest::Parser;
-// use pest_derive::Parser;
-// use regex::Regex;
-use std::collections::HashMap;
-// use tera::{to_value, Context, Map, Value};
-// 
-// use crate::context::RenderContext;
-// use errors::{bail, Error, Result};
-
 #[macro_use]
 mod util;
 
-pub mod parse;
+mod parse;
 mod string_literal;
-mod argvalue;
+mod arg_value;
 mod inner_tag;
 
-enum ShortCodeType {
-    Markdown,
-    HTML,
-}
+pub use parse::{ fetch_shortcodes, ShortcodeContext };
 
-struct Span {
-    start: usize,
-    end: usize,
-}
-
-pub struct ShortCodeContext {
-    shortcode_type: ShortCodeType,
-    block: Span,
-    end_block: Option<Span>,
-    name: String,
-    arguments: HashMap<String, String>,
-}
-
-// pub fn locate_shortcodes() -> Result<Vec<ShortCodeContext>> {
-//     todo!()
+// enum ShortCodeType {
+//     Markdown,
+//     HTML,
 // }
 // 
-// // This include forces recompiling this source file if the grammar file changes.
-// // Uncomment it when doing changes to the .pest file
-// const _GRAMMAR: &str = include_str!("content.pest");
+// struct Span {
+//     start: usize,
+//     end: usize,
+// }
 // 
-// #[derive(Parser)]
-// #[grammar = "content.pest"]
-// pub struct ContentParser;
-// 
-// lazy_static! {
-//     static ref OUTER_NEWLINE_RE: Regex = Regex::new(r"^\s*\n|\n\s*$").unwrap();
+// pub struct ShortCodeContext {
+//     shortcode_type: ShortCodeType,
+//     block: Span,
+//     end_block: Option<Span>,
+//     name: String,
+//     arguments: HashMap<String, String>,
 // }
 // 
 // fn replace_string_markers(input: &str) -> String {

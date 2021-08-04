@@ -1,9 +1,12 @@
+//! This module contains the logic to parse the source text between tags (`{{` and `}}` or `{%` and
+//! `%}`. This may look like `abc(arg1=argvalue1, ...)`.
+
 use logos::{Lexer, Logos};
 
 use std::collections::HashMap;
 use std::fmt;
 
-use super::argvalue::{ArgValue, ArgValueParseError};
+use super::arg_value::{ArgValue, ArgValueParseError};
 
 #[derive(Debug, PartialEq)]
 /// The parsed inside of a shortcode tag (inside of a shortcode tag = what is between `{{` and `}}`

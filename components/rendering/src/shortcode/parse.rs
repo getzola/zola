@@ -1,23 +1,29 @@
-use super::argvalue::ArgValue;
-use super::inner_tag::{InnerTag, InnerTagParseError};
+//! This module contains the logic to locate shortcodes in a source string and parses them into a
+//! [ShortCodeContext], which contains a lot of information about that shortcode which is going to
+//! be used later on whilst inserted them. 
+
 use logos::Logos;
+
 use std::collections::HashMap;
+
+use super::arg_value::ArgValue;
+use super::inner_tag::InnerTag;
 
 #[derive(PartialEq, Debug)]
 /// Used to represent all the information present in a shortcode
-pub struct Shortcode {
+pub struct ShortcodeContext {
     name: String,
     args: HashMap<String, ArgValue>,
     body: Option<String>,
 }
 
-impl Shortcode {
+impl ShortcodeContext {
     #[cfg(test)]
-    fn new(name: &str, args_vec: Vec<(&str, ArgValue)>, body: Option<&str>) -> Shortcode {
+    fn new(name: &str, args_vec: Vec<(&str, ArgValue)>, body: Option<&str>) -> ShortcodeContext {
         let InnerTag { name, args } = InnerTag::new(name, args_vec);
         let body = body.map(|b| b.to_string());
 
-        Shortcode { name, args, body }
+        ShortcodeContext { name, args, body }
     }
 }
 
@@ -30,7 +36,7 @@ struct BodiedStackItem {
 }
 
 /// Fetch a [Vec] of all Shortcodes which are present in source string
-pub fn fetch_shortcodes(source: &str) -> Vec<Shortcode> {
+pub fn fetch_shortcodes(source: &str) -> Vec<ShortcodeContext> {
     let mut lex = Openers::lexer(source);
     let mut shortcodes = Vec::new();
 
@@ -44,7 +50,7 @@ pub fn fetch_shortcodes(source: &str) -> Vec<Shortcode> {
             if let Some(BodiedStackItem { name, args, body_start }) = body_stack.pop() {
                 let body = Some(source[body_start..lex.span().start].to_string());
 
-                shortcodes.push(Shortcode { name, args, body });
+                shortcodes.push(ShortcodeContext { name, args, body });
             }
 
             continue;
@@ -61,7 +67,7 @@ pub fn fetch_shortcodes(source: &str) -> Vec<Shortcode> {
                 // Make sure that we have `{{` and `}}` or `{%` and `%}`.
                 match (open_tag, close_tag) {
                     (Openers::Normal, Closers::Normal) => {
-                        shortcodes.push(Shortcode { name, args, body: None })
+                        shortcodes.push(ShortcodeContext { name, args, body: None })
                     }
 
                     (Openers::Body, Closers::Body) => body_stack.push(BodiedStackItem {
@@ -146,8 +152,8 @@ mod tests {
         assert_eq!(
             fetch_shortcodes(test_str),
             vec![
-                Shortcode::new("abc", vec![("wow", ArgValue::Boolean(true))], None),
-                Shortcode::new(
+                ShortcodeContext::new("abc", vec![("wow", ArgValue::Boolean(true))], None),
+                ShortcodeContext::new(
                     "bodied",
                     vec![("def", ArgValue::Text("Hello!".to_string()))],
                     Some("The inside of this body")

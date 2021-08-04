@@ -1,3 +1,5 @@
+//! This module contains the logic to parse the value belonging to an argument.
+
 use logos::{Lexer, Logos};
 
 use std::num::{ParseFloatError, ParseIntError};

@@ -4,7 +4,7 @@ mod markdown;
 mod shortcode;
 mod table_of_contents;
 
-use shortcode::parse::{ fetch_shortcodes, Shortcode };
+use shortcode::{ fetch_shortcodes, ShortcodeContext };
 
 use errors::Result;
 
@@ -12,7 +12,7 @@ pub struct ContentProcessingContext {
 }
 
 impl ContentProcessingContext {
-    fn new(_shortcodes: Vec<Shortcode>) -> Self {
+    fn new(_shortcodes: Vec<ShortcodeContext>) -> Self {
         unimplemented!()
     }
 
