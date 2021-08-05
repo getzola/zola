@@ -4,15 +4,294 @@ mod util;
 mod arg_value;
 mod inner_tag;
 mod parse;
-mod string_literal;
 mod range_relation;
+mod string_literal;
 
+use arg_value::ToJsonConvertError;
 pub use parse::{fetch_shortcodes, ShortcodeContext};
 
-// enum ShortCodeType {
-//     Markdown,
-//     HTML,
-// }
+use std::collections::HashMap;
+use std::ops::Range;
+
+#[derive(Clone)]
+enum ShortcodeFileType {
+    Markdown,
+    HTML,
+}
+
+#[derive(Clone)]
+pub struct ShortcodeDefinition {
+    file_type: ShortcodeFileType,
+    content: String,
+}
+
+const MAX_CALLSTACK_DEPTH: usize = 128;
+
+#[derive(Debug, PartialEq)]
+pub enum RenderMDError {
+    VariableNotFound { complete_var: Vec<String>, specific_part: String },
+    RecursiveReuseOfShortcode(String),
+    MaxRecusionDepthReached,
+    FloatParseError,
+    TeraError,
+}
+
+impl From<ToJsonConvertError> for RenderMDError {
+    fn from(err: ToJsonConvertError) -> Self {
+        match err {
+            ToJsonConvertError::VariableNotFound { complete_var, specific_part } => {
+                RenderMDError::VariableNotFound { complete_var, specific_part }
+            }
+            ToJsonConvertError::FloatParseError => RenderMDError::FloatParseError,
+        }
+    }
+}
+
+/// We will need to update the spans of the contexts which haven't yet been handled because their
+/// spans are still based on the untransformed version.
+#[derive(Debug)]
+struct Transform {
+    span_start: usize,
+    initial_end: usize,
+    after_end: usize,
+}
+
+impl Transform {
+    fn new(original_span: &Range<usize>, new_len: usize) -> Transform {
+        Transform {
+            span_start: original_span.start,
+            initial_end: original_span.end,
+            after_end: new_len + original_span.start,
+        }
+    }
+}
+
+/// Looks through a source string and will replace all md shortcodes taking into account the call
+/// stack, invocation_counts, and the preexisting tera_context.
+fn replace_all_md_shortcodes(
+    source: &str,
+    shortcodes: &HashMap<String, ShortcodeDefinition>,
+    call_stack: &mut Vec<String>,
+    invocation_counts: &mut HashMap<String, usize>,
+    context: &tera::Context,
+) -> Result<String, RenderMDError> {
+    let mut content = source.to_string();
+
+    let mut transforms: Vec<Transform> = Vec::new();
+
+    for mut ctx in fetch_shortcodes(&content).into_iter() {
+        for Transform { span_start, initial_end, after_end } in transforms.iter() {
+            ctx.update_on_source_insert(*span_start, *initial_end, *after_end)
+                .expect("Errors here should never happen");
+        }
+
+        let ctx_span = ctx.span();
+        let res =
+            render_md_shortcode(&content, ctx, shortcodes, call_stack, invocation_counts, context)?;
+        transforms.push(Transform::new(&ctx_span, res.len()));
+        content.replace_range(ctx_span, &res);
+    }
+
+    Ok(content)
+}
+
+fn render_md_shortcode(
+    source: &str,
+    context: ShortcodeContext,
+    shortcodes: &HashMap<String, ShortcodeDefinition>,
+    call_stack: &mut Vec<String>,
+    invocation_counts: &mut HashMap<String, usize>,
+    tera_context: &tera::Context,
+    //tera: &tera::Tera,
+) -> Result<String, RenderMDError> {
+    // TODO: Fix issue where the same shortcode in body will have a lower invocation count.
+
+    // Throw an error if the call stack already contains the current shortcode
+    if call_stack.contains(context.name()) {
+        return Err(RenderMDError::RecursiveReuseOfShortcode(context.name().to_owned()));
+    }
+
+    // Throw an error if the call stack goes over the max limit
+    if call_stack.len() > MAX_CALLSTACK_DEPTH {
+        return Err(RenderMDError::MaxRecusionDepthReached);
+    }
+
+    let body_content = context.body_content(source);
+
+    let mut new_context = tera::Context::new();
+
+    for (key, value) in context.args().iter() {
+        new_context.insert(key, &value.to_tera(&new_context)?);
+    }
+    if let Some(ref body_content) = body_content {
+        // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
+        new_context.insert("body", body_content.trim_end());
+    }
+
+    // We don't have to take into account the call stack, since we know for sure that it will not
+    // contain this shortcode again.
+    let invocation_count = invocation_counts.get(context.name()).unwrap_or(&1).clone();
+    new_context.insert("nth", &invocation_count);
+    invocation_counts.insert(context.name().to_string(), invocation_count + 1);
+
+    new_context.extend(tera_context.clone());
+
+    let shortcode_def = shortcodes.get(context.name());
+    Ok(match shortcode_def {
+        // Filter out where the shortcode definition is unknown and where the shortcode definition
+        // is HTML.
+        None | Some(ShortcodeDefinition { file_type: ShortcodeFileType::HTML, .. }) => {
+            source[context.span()].to_string()
+        }
+        Some(ShortcodeDefinition { content, .. }) => {
+            // Add the current shortcode to the call stack.
+            call_stack.push(context.name().to_string());
+
+            let content = replace_all_md_shortcodes(
+                &content,
+                shortcodes,
+                call_stack,
+                invocation_counts,
+                &tera_context,
+            )?;
+
+            // Remove the current function again from the call start.
+            call_stack.pop();
+
+            // TODO: Properly add tera errors here
+            // TODO: Change this to use builtins
+            tera::Tera::one_off(&content, &new_context, false)
+                .map_err(|_| RenderMDError::TeraError)?
+        }
+    })
+}
+
+/// Inserts markdown shortcodes (recursively) into a source string
+pub fn insert_md_shortcodes(
+    source: &str,
+    shortcodes: HashMap<String, ShortcodeDefinition>,
+) -> Result<String, RenderMDError> {
+    let mut invocation_counts = HashMap::new();
+    let mut call_stack = Vec::new();
+
+    // TODO: This should be handed down in the function arguments so it can include some info about
+    // the page.
+    let tera_context = tera::Context::new();
+
+    replace_all_md_shortcodes(
+        source,
+        &shortcodes,
+        &mut call_stack,
+        &mut invocation_counts,
+        &tera_context,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ShortcodeFileType::*;
+
+    impl ShortcodeDefinition {
+        fn new(file_type: ShortcodeFileType, content: &str) -> ShortcodeDefinition {
+            let content = content.to_string();
+
+            ShortcodeDefinition { file_type, content }
+        }
+    }
+
+    macro_rules! assert_render_md_shortcode {
+        ($source:expr, $context:expr, $defs:expr$(, [$($call_stack:expr),*])?$(,)? => $res:expr) => {
+            let context = tera::Context::new();
+            let mut invocation_counts = HashMap::new();
+            let mut call_stack = vec![ $($($call_stack),*)? ];
+            assert_eq!(
+                render_md_shortcode(
+                    $source,
+                    $context,
+                    &$defs,
+                    &mut call_stack,
+                    &mut invocation_counts,
+                    &context,
+                ),
+                $res
+            );
+        }
+    }
+
+    macro_rules! shortcode_defs {
+        ($($name:expr => $ty:expr, $content:expr),*$(,)?) => {{
+            let mut map = HashMap::new();
+            $(
+                map.insert($name.to_string(), ShortcodeDefinition::new($ty, $content));
+            )*
+            map
+        }}
+    }
+
+    #[test]
+    fn rnder_md_shortcode() {
+        let shortcodes = shortcode_defs![
+            "a" => Markdown, "wow",
+            "calls_b" => Markdown, "Prefix {{ b() }}",
+            "b" => Markdown, "Internal of b",
+            "one_two" => Markdown, "{{ one() }}",
+            "one" => Markdown, "{{ one_two() }}",
+        ];
+
+        assert_render_md_shortcode!(
+            "abc {{ a() }}", ShortcodeContext::new("a", vec![], 4..13, None), shortcodes =>
+                Ok("wow".to_string())
+        );
+        assert_render_md_shortcode!(
+             "abc {{ calls_b() }}", ShortcodeContext::new("calls_b", vec![], 4..19, None), shortcodes =>
+                Ok("Prefix Internal of b".to_string())
+        );
+        assert_render_md_shortcode!(
+            "abc {{ n() }}", ShortcodeContext::new("a", vec![], 4..13, None), shortcodes =>
+                Ok("wow".to_string())
+        );
+        assert_render_md_shortcode!(
+            "{{ one_two() }}", ShortcodeContext::new("one_two", vec![], 0..15, None), shortcodes =>
+                Err(RenderMDError::RecursiveReuseOfShortcode("one_two".to_string()))
+        );
+    }
+
+    #[test]
+    fn insrt_md_shortcodes() {
+        let shortcodes = shortcode_defs![
+            "a" => Markdown, "wow",
+            "calls_b" => Markdown, "Prefix {{ b() }}",
+            "b" => Markdown, "Internal of b",
+            "one_two" => Markdown, "{{ one() }}",
+            "one" => Markdown, "{{ one_two() }}",
+            "inv" => Markdown, "{{ nth }}",
+            "html" => HTML, "{{ wow }}",
+            "bodied" => Markdown, "much {{ body }}",
+        ];
+
+        assert_eq!(
+            insert_md_shortcodes("{{ inv() }}{{ inv() }}", shortcodes.clone()),
+            Ok("12".to_string())
+        );
+        assert_eq!(
+            insert_md_shortcodes("{% bodied() %}{{ a() }}{% end %}", shortcodes.clone()),
+            Ok("much wow".to_string())
+        );
+        assert_eq!(
+            insert_md_shortcodes("Hello {{ html() }}!", shortcodes.clone()),
+            Ok("Hello {{ html() }}!".to_string())
+        );
+        assert_eq!(
+            insert_md_shortcodes(
+                "{% bodied() %}{{ a() }} {{ html() }}{% end %}",
+                shortcodes.clone()
+            ),
+            Ok("much wow {{ html() }}".to_string())
+        );
+    }
+}
+
 //
 //
 // pub struct ShortCodeContext {

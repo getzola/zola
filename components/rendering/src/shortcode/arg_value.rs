@@ -2,9 +2,9 @@
 
 use logos::{Lexer, Logos};
 
+use std::fmt;
 use std::num::{ParseFloatError, ParseIntError};
 use std::str::FromStr;
-use std::fmt;
 
 use super::string_literal::{unescape_quoted_string, QuoteType};
 
@@ -17,7 +17,7 @@ pub enum ArgValue {
     Boolean(bool),
 
     /// A floating point number
-    FloatingPoint(f32),
+    FloatingPoint(f64),
 
     /// An signed integer
     Integer(i32),
@@ -46,7 +46,6 @@ pub enum ArgValueParseError {
     IntegerParseError(ParseIntError),
 }
 
-
 impl fmt::Display for ArgValueParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         use ArgValueParseError::*;
@@ -72,6 +71,12 @@ impl fmt::Display for ArgValueParseError {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum ToJsonConvertError {
+    FloatParseError,
+    VariableNotFound { complete_var: Vec<String>, specific_part: String },
+}
+
 impl ArgValue {
     /// Input a [logos::Lexer] and it will start attempted to parse one [ArgValue]
     pub fn lex_parse<'a>(
@@ -90,7 +95,7 @@ impl ArgValue {
                     Integer(i32::from_str(lex.slice()).map_err(|err| IntegerParseError(err))?)
                 },
                 FPLiteral => {
-                    FloatingPoint(f32::from_str(lex.slice()).map_err(|err| FloatParseError(err))?)
+                    FloatingPoint(f64::from_str(lex.slice()).map_err(|err| FloatParseError(err))?)
                 },
                 Identifier => {
                     let mut idents = Vec::new();
@@ -202,6 +207,47 @@ impl ArgValue {
         )?;
 
         Ok((lex, arg_value))
+    }
+
+    /// Converts [ArgValue] to [tera::Value] using the variables
+    pub fn to_tera(&self, context: &tera::Context) -> Result<tera::Value, ToJsonConvertError> {
+        Ok(match self {
+            ArgValue::Boolean(val) => tera::Value::Bool(val.clone()),
+            ArgValue::Integer(val) => tera::Value::Number(tera::Number::from(val.clone())),
+            ArgValue::FloatingPoint(val) => tera::Value::Number(
+                tera::Number::from_f64(val.clone()).ok_or(ToJsonConvertError::FloatParseError)?,
+            ),
+            ArgValue::Text(val) => tera::Value::String(val.clone()),
+            ArgValue::Array(items) => {
+                let array: Result<Vec<tera::Value>, ToJsonConvertError> =
+                    items.iter().map(|arg_value| arg_value.to_tera(&context)).collect();
+                tera::Value::Array(array?)
+            }
+            ArgValue::Var(idents) => {
+                // We expect for at least one ident to be present
+                debug_assert!(idents.len() > 0);
+
+                let mut idents = idents.clone();
+
+                // This error should never be thrown
+                let first_ident = idents.remove(0);
+
+                let mut value =
+                    context.get(&first_ident).ok_or(ToJsonConvertError::VariableNotFound {
+                        complete_var: idents.clone(),
+                        specific_part: first_ident.clone(),
+                    })?;
+
+                for ident in idents.iter().skip(1) {
+                    value = value.get(ident).ok_or(ToJsonConvertError::VariableNotFound {
+                        complete_var: idents.clone(),
+                        specific_part: ident.clone(),
+                    })?;
+                }
+
+                value.clone()
+            }
+        })
     }
 }
 
