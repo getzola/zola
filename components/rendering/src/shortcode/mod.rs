@@ -1,23 +1,20 @@
 #[macro_use]
 mod util;
 
-mod parse;
-mod string_literal;
 mod arg_value;
 mod inner_tag;
+mod parse;
+mod string_literal;
+mod range_relation;
 
-pub use parse::{ fetch_shortcodes, ShortcodeContext };
+pub use parse::{fetch_shortcodes, ShortcodeContext};
 
 // enum ShortCodeType {
 //     Markdown,
 //     HTML,
 // }
-// 
-// struct Span {
-//     start: usize,
-//     end: usize,
-// }
-// 
+//
+//
 // pub struct ShortCodeContext {
 //     shortcode_type: ShortCodeType,
 //     block: Span,
@@ -25,7 +22,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //     name: String,
 //     arguments: HashMap<String, String>,
 // }
-// 
+//
 // fn replace_string_markers(input: &str) -> String {
 //     match input.chars().next().unwrap() {
 //         '"' => input.replace('"', ""),
@@ -34,7 +31,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         _ => unreachable!("How did you even get there"),
 //     }
 // }
-// 
+//
 // fn parse_literal(pair: Pair<Rule>) -> Value {
 //     let mut val = None;
 //     for p in pair.into_inner() {
@@ -54,15 +51,15 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             _ => unreachable!("Unknown literal: {:?}", p),
 //         };
 //     }
-// 
+//
 //     val.unwrap()
 // }
-// 
+//
 // /// Returns (shortcode_name, kwargs)
 // fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
 //     let mut name = None;
 //     let mut args = Map::new();
-// 
+//
 //     for p in pair.into_inner() {
 //         match p.as_rule() {
 //             Rule::ident => {
@@ -95,7 +92,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //                         _ => unreachable!("Got something unexpected in a kwarg: {:?}", p2),
 //                     }
 //                 }
-// 
+//
 //                 args.insert(arg_name.unwrap(), arg_val.unwrap());
 //             }
 //             _ => unreachable!("Got something unexpected in a shortcode: {:?}", p),
@@ -103,7 +100,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //     }
 //     (name.unwrap(), args)
 // }
-// 
+//
 // fn render_shortcode(
 //     name: &str,
 //     args: &Map<String, Value>,
@@ -121,17 +118,17 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //     }
 //     tera_context.insert("nth", &invocation_count);
 //     tera_context.extend(context.tera_context.clone());
-// 
+//
 //     let mut template_name = format!("shortcodes/{}.md", name);
 //     if !context.tera.templates.contains_key(&template_name) {
 //         template_name = format!("shortcodes/{}.html", name);
 //     }
-// 
+//
 //     let res = utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
 //         .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
-// 
+//
 //     let res = OUTER_NEWLINE_RE.replace_all(&res, "");
-// 
+//
 //     // A blank line will cause the markdown parser to think we're out of HTML and start looking
 //     // at indentation, making the output a code block. To avoid this, newlines are replaced with
 //     // "<!--\n-->" at this stage, which will be undone after markdown rendering in lib.rs. Since
@@ -144,7 +141,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         Ok(res.to_string())
 //     }
 // }
-// 
+//
 // pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
 //     let mut res = String::with_capacity(content.len());
 //     let mut invocation_map: HashMap<String, u32> = HashMap::new();
@@ -153,7 +150,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         *invocation_number += 1;
 //         *invocation_number
 //     };
-// 
+//
 //     let mut pairs = match ContentParser::parse(Rule::page, content) {
 //         Ok(p) => p,
 //         Err(e) => {
@@ -191,7 +188,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             bail!("{}", fancy_e);
 //         }
 //     };
-// 
+//
 //     // We have at least a `page` pair
 //     for p in pairs.next().unwrap().into_inner() {
 //         match p.as_rule() {
@@ -245,19 +242,19 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             _ => unreachable!("unexpected page rule: {:?}", p.as_rule()),
 //         }
 //     }
-// 
+//
 //     Ok(res)
 // }
-// 
+//
 // #[cfg(test)]
 // mod tests {
 //     use std::collections::HashMap;
-// 
+//
 //     use super::*;
 //     use config::Config;
 //     use front_matter::InsertAnchor;
 //     use tera::Tera;
-// 
+//
 //     macro_rules! assert_lex_rule {
 //         ($rule: expr, $input: expr) => {
 //             let res = ContentParser::parse($rule, $input);
@@ -271,7 +268,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_eq!(res.unwrap().last().unwrap().as_span().end(), $input.len());
 //         };
 //     }
-// 
+//
 //     fn render_shortcodes(code: &str, tera: &Tera) -> String {
 //         let config = Config::default_for_test();
 //         let permalinks = HashMap::new();
@@ -285,7 +282,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         );
 //         super::render_shortcodes(code, &context).unwrap()
 //     }
-// 
+//
 //     #[test]
 //     fn lex_text() {
 //         let inputs = vec!["Hello world", "HEllo \n world", "Hello 1 2 true false 'hey'"];
@@ -293,7 +290,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_lex_rule!(Rule::text, i);
 //         }
 //     }
-// 
+//
 //     #[test]
 //     fn lex_inline_shortcode() {
 //         let inputs = vec![
@@ -305,7 +302,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_lex_rule!(Rule::inline_shortcode, i);
 //         }
 //     }
-// 
+//
 //     #[test]
 //     fn lex_inline_ignored_shortcode() {
 //         let inputs = vec![
@@ -317,7 +314,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_lex_rule!(Rule::ignored_inline_shortcode, i);
 //         }
 //     }
-// 
+//
 //     #[test]
 //     fn lex_shortcode_with_body() {
 //         let inputs = vec![
@@ -333,7 +330,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_lex_rule!(Rule::shortcode_with_body, i);
 //         }
 //     }
-// 
+//
 //     #[test]
 //     fn lex_ignored_shortcode_with_body() {
 //         let inputs = vec![
@@ -349,7 +346,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_lex_rule!(Rule::ignored_shortcode_with_body, i);
 //         }
 //     }
-// 
+//
 //     #[test]
 //     fn lex_page() {
 //         let inputs = vec![
@@ -367,19 +364,19 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_lex_rule!(Rule::page, i);
 //         }
 //     }
-// 
+//
 //     #[test]
 //     fn does_nothing_with_no_shortcodes() {
 //         let res = render_shortcodes("Hello World", &Tera::default());
 //         assert_eq!(res, "Hello World");
 //     }
-// 
+//
 //     #[test]
 //     fn can_unignore_inline_shortcode() {
 //         let res = render_shortcodes("Hello World {{/* youtube() */}}", &Tera::default());
 //         assert_eq!(res, "Hello World {{ youtube() }}");
 //     }
-// 
+//
 //     #[test]
 //     fn can_unignore_shortcode_with_body() {
 //         let res = render_shortcodes(
@@ -390,7 +387,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         );
 //         assert_eq!(res, "\nHello World\n{% youtube() %}Some body {{ hello() }}{% end %}");
 //     }
-// 
+//
 //     // https://github.com/Keats/gutenberg/issues/383
 //     #[test]
 //     fn unignore_shortcode_with_body_does_not_swallow_initial_whitespace() {
@@ -403,7 +400,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         );
 //         assert_eq!(res, "\nHello World\n{% youtube() %}\nSome body {{ hello() }}{% end %}");
 //     }
-// 
+//
 //     #[test]
 //     fn can_parse_shortcode_arguments() {
 //         let inputs = vec![
@@ -423,7 +420,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //                 m
 //             }),
 //         ];
-// 
+//
 //         for (i, n, a) in inputs {
 //             let mut res = ContentParser::parse(Rule::inline_shortcode, i).unwrap();
 //             let (name, args) = parse_shortcode_call(res.next().unwrap());
@@ -431,7 +428,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //             assert_eq!(args, a);
 //         }
 //     }
-// 
+//
 //     #[test]
 //     fn can_render_inline_shortcodes() {
 //         let mut tera = Tera::default();
@@ -439,7 +436,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         let res = render_shortcodes("Inline {{ youtube(id=1) }}.", &tera);
 //         assert_eq!(res, "Inline <pre data-shortcode>Hello 1</pre>.");
 //     }
-// 
+//
 //     #[test]
 //     fn can_render_shortcodes_with_body() {
 //         let mut tera = Tera::default();
@@ -447,7 +444,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera);
 //         assert_eq!(res, "Body\n <pre data-shortcode>Hey!</pre>");
 //     }
-// 
+//
 //     // https://github.com/Keats/gutenberg/issues/462
 //     #[test]
 //     fn shortcodes_with_body_do_not_eat_newlines() {
@@ -456,7 +453,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         let res = render_shortcodes("Body\n {% youtube() %}\nHello \n \n\n World{% end %}", &tera);
 //         assert_eq!(res, "Body\n <pre data-shortcode>Hello \n \n\n World</pre>");
 //     }
-// 
+//
 //     #[test]
 //     fn outer_newlines_removed_from_shortcodes_with_body() {
 //         let mut tera = Tera::default();
@@ -464,7 +461,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         let res = render_shortcodes("\n{% youtube() %}  \n  content  \n  {% end %}\n", &tera);
 //         assert_eq!(res, "\n<pre data-shortcode>  content  </pre>\n");
 //     }
-// 
+//
 //     #[test]
 //     fn outer_newlines_removed_from_inline_shortcodes() {
 //         let mut tera = Tera::default();
@@ -472,7 +469,7 @@ pub use parse::{ fetch_shortcodes, ShortcodeContext };
 //         let res = render_shortcodes("\n{{ youtube() }}\n", &tera);
 //         assert_eq!(res, "\n<pre data-shortcode>  Hello, Zola.  </pre>\n");
 //     }
-// 
+//
 //     #[test]
 //     fn shortcodes_that_emit_markdown() {
 //         let mut tera = Tera::default();
