@@ -14,7 +14,7 @@ serde = { version = "1.0", features = ["derive"] }
 slug = "0.1"
 percent-encoding = "2"
 filetime = "0.2.12"
-minify-html = "0.4.2"
+minify-html = "0.5"
 
 errors = { path = "../errors" }
 
