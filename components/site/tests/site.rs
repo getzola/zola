@@ -735,7 +735,7 @@ fn can_build_site_with_html_minified() {
     assert!(file_contains!(
         public,
         "index.html",
-        "<!DOCTYPE html><html lang=en><head><meta charset=UTF-8>"
+        "<!doctype html><html lang=en><head><meta charset=UTF-8>"
     ));
 }
 

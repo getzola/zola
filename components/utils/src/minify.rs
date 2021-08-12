@@ -2,9 +2,7 @@ use errors::{bail, Result};
 use minify_html::{minify, Cfg};
 
 pub fn html(html: String) -> Result<String> {
-    let mut cfg = Cfg::new();
-    cfg.ensure_spec_compliant_unquoted_attribute_values = true;
-    cfg.keep_spaces_between_attributes = true;
+    let mut cfg = Cfg::spec_compliant();
     cfg.keep_html_and_head_opening_tags = true;
 
     let minified = minify(html.as_bytes(), &cfg);

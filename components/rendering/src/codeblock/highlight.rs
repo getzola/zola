@@ -4,7 +4,7 @@ use config::highlighting::{SyntaxAndTheme, CLASS_STYLE};
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Color, Theme};
 use syntect::html::{
-    styled_line_to_highlighted_html, tokens_to_classed_spans, ClassStyle, IncludeBackground,
+    styled_line_to_highlighted_html, line_tokens_to_classed_spans, ClassStyle, IncludeBackground,
 };
 use syntect::parsing::{ParseState, ScopeStack, SyntaxReference, SyntaxSet};
 
@@ -37,7 +37,7 @@ impl<'config> ClassHighlighter<'config> {
     pub fn highlight_line(&mut self, line: &str) -> String {
         debug_assert!(line.ends_with("\n"));
         let parsed_line = self.parse_state.parse_line(line, &self.syntax_set);
-        let (formatted_line, delta) = tokens_to_classed_spans(
+        let (formatted_line, delta) = line_tokens_to_classed_spans(
             line,
             parsed_line.as_slice(),
             CLASS_STYLE,
