@@ -489,7 +489,7 @@ pub fn serve(
             Some(s)
         }
         Err(e) => {
-            console::error(&format!("{}", e));
+            console::unravel_errors("Failed to build the site", &e);
             None
         }
     };
