@@ -31,11 +31,17 @@ pub struct GetUrl {
     base_path: PathBuf,
     config: Config,
     permalinks: HashMap<String, String>,
+    output_path: PathBuf,
 }
 
 impl GetUrl {
-    pub fn new(base_path: PathBuf, config: Config, permalinks: HashMap<String, String>) -> Self {
-        Self { base_path, config, permalinks }
+    pub fn new(
+        base_path: PathBuf,
+        config: Config,
+        permalinks: HashMap<String, String>,
+        output_path: PathBuf,
+    ) -> Self {
+        Self { base_path, config, permalinks, output_path }
     }
 }
 
@@ -111,7 +117,7 @@ impl TeraFn for GetUrl {
             }
 
             if cachebust {
-                match search_for_file(&self.base_path, &path_with_lang, &self.config.theme)
+                match search_for_file(&self.base_path, &path_with_lang, &self.config.theme, Some(&self.output_path))
                     .map_err(|e| format!("`get_url`: {}", e))?
                     .and_then(|(p, _)| fs::File::open(&p).ok())
                     .and_then(|f| compute_file_hash::<Sha256>(f, false).ok())
@@ -169,7 +175,7 @@ impl TeraFn for GetFileHash {
         )
         .unwrap_or(true);
 
-        let file_path = match search_for_file(&self.base_path, &path, &self.theme)
+        let file_path = match search_for_file(&self.base_path, &path, &self.theme, None)
             .map_err(|e| format!("`get_file_hash`: {}", e))?
         {
             Some((f, _)) => f,
@@ -204,6 +210,7 @@ mod tests {
     use super::{GetFileHash, GetUrl};
 
     use std::collections::HashMap;
+    use std::path::PathBuf;
 
     use tempfile::{tempdir, TempDir};
     use tera::{to_value, Function};
@@ -232,7 +239,7 @@ title = "A title"
     #[test]
     fn can_add_cachebust_to_url() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new());
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
@@ -242,7 +249,7 @@ title = "A title"
     #[test]
     fn can_add_trailing_slashes() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new());
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -252,7 +259,7 @@ title = "A title"
     #[test]
     fn can_add_slashes_and_cachebust() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new());
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -263,7 +270,7 @@ title = "A title"
     #[test]
     fn can_link_to_some_static_file() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new());
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
@@ -277,7 +284,7 @@ title = "A title"
     fn error_when_language_not_available() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, HashMap::new());
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
@@ -301,7 +308,7 @@ title = "A title"
         );
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks);
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -324,7 +331,7 @@ title = "A title"
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks);
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
@@ -338,7 +345,7 @@ title = "A title"
     fn can_get_feed_url_with_default_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new());
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -349,7 +356,7 @@ title = "A title"
     fn can_get_feed_url_with_other_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new());
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());

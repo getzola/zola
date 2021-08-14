@@ -95,7 +95,7 @@ impl DataSource {
         }
 
         if let Some(path) = path_arg {
-            return match search_for_file(base_path, &path, theme)
+            return match search_for_file(&base_path, &path, &theme, None)
                 .map_err(|e| format!("`load_data`: {}", e))?
             {
                 Some((f, _)) => Ok(Some(DataSource::Path(f))),

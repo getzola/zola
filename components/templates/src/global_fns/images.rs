@@ -60,7 +60,7 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme)
+        let (file_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, None)
             .map_err(|e| format!("`resize_image`: {}", e))?
         {
             Some(f) => f,
@@ -105,7 +105,7 @@ impl TeraFn for GetImageMetadata {
         )
         .unwrap_or(false);
 
-        let (src_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme)
+        let (src_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, None)
             .map_err(|e| format!("`get_image_metadata`: {}", e))?
         {
             Some((f, p)) => (f, p),
