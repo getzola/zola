@@ -19,12 +19,9 @@ pub fn search_for_file(
     base_path: &Path,
     path: &str,
     theme: &Option<String>,
-    output_dir: Option<&Path>,
+    output_path: &Path,
 ) -> Result<Option<(PathBuf, String)>> {
-    let mut search_paths = vec![base_path.join("static"), base_path.join("content")];
-    if let Some(o) = output_dir {
-        search_paths.push(base_path.join(o));
-    }
+    let mut search_paths = vec![base_path.join("static"), base_path.join("content"), base_path.join(output_path)];
     if let Some(t) = theme {
         search_paths.push(base_path.join("themes").join(t).join("static"));
     }

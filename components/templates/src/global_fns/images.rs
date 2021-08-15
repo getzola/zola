@@ -12,6 +12,7 @@ pub struct ResizeImage {
     base_path: PathBuf,
     theme: Option<String>,
     imageproc: Arc<Mutex<imageproc::Processor>>,
+    output_path: PathBuf,
 }
 
 impl ResizeImage {
@@ -19,8 +20,9 @@ impl ResizeImage {
         base_path: PathBuf,
         imageproc: Arc<Mutex<imageproc::Processor>>,
         theme: Option<String>,
+        output_path: PathBuf,
     ) -> Self {
-        Self { base_path, imageproc, theme }
+        Self { base_path, imageproc, theme, output_path }
     }
 }
 
@@ -60,7 +62,7 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, None)
+        let (file_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
             .map_err(|e| format!("`resize_image`: {}", e))?
         {
             Some(f) => f,
@@ -83,11 +85,12 @@ pub struct GetImageMetadata {
     base_path: PathBuf,
     theme: Option<String>,
     result_cache: Arc<Mutex<HashMap<String, Value>>>,
+    output_path: PathBuf,
 }
 
 impl GetImageMetadata {
-    pub fn new(base_path: PathBuf, theme: Option<String>) -> Self {
-        Self { base_path, result_cache: Arc::new(Mutex::new(HashMap::new())), theme }
+    pub fn new(base_path: PathBuf, theme: Option<String>, output_path: PathBuf) -> Self {
+        Self { base_path, result_cache: Arc::new(Mutex::new(HashMap::new())), theme, output_path }
     }
 }
 
@@ -105,7 +108,7 @@ impl TeraFn for GetImageMetadata {
         )
         .unwrap_or(false);
 
-        let (src_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, None)
+        let (src_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
             .map_err(|e| format!("`get_image_metadata`: {}", e))?
         {
             Some((f, p)) => (f, p),
@@ -139,7 +142,7 @@ mod tests {
     use std::fs::{copy, create_dir_all};
 
     use config::Config;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
     use std::sync::{Arc, Mutex};
     use tempfile::{tempdir, TempDir};
     use tera::{to_value, Function};
@@ -172,6 +175,7 @@ mod tests {
             dir.path().to_path_buf(),
             Arc::new(Mutex::new(imageproc)),
             Some("name".to_owned()),
+            PathBuf::new(),
         );
         let mut args = HashMap::new();
         args.insert("height".to_string(), to_value(40).unwrap());
@@ -246,7 +250,7 @@ mod tests {
     fn can_get_image_metadata() {
         let dir = create_dir_with_image();
 
-        let static_fn = GetImageMetadata::new(dir.path().to_path_buf(), None);
+        let static_fn = GetImageMetadata::new(dir.path().to_path_buf(), None, PathBuf::new());
 
         // Let's test a few scenarii
         let mut args = HashMap::new();
