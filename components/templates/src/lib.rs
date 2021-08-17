@@ -79,7 +79,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
         );
         let mut tera_theme = Tera::parse(&theme_tpl_glob)
             .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
-        rewrite_theme_paths(&mut tera_theme, &theme);
+        rewrite_theme_paths(&mut tera_theme, theme);
 
         if theme_path.join("templates").join("robots.txt").exists() {
             tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;

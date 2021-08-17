@@ -58,12 +58,12 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
             let section = library
                 .get_section(&full_path)
                 .expect("Couldn't find section in check_internal_links_with_anchors");
-            !section.has_anchor(&anchor)
+            !section.has_anchor(anchor)
         } else {
             let page = library
                 .get_page(&full_path)
                 .expect("Couldn't find section in check_internal_links_with_anchors");
-            !page.has_anchor(&anchor)
+            !page.has_anchor(anchor)
         }
     });
 
@@ -96,7 +96,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
 }
 
 fn get_link_domain(link: &str) -> Result<String> {
-    return match Url::parse(&link) {
+    return match Url::parse(link) {
         Ok(url) => match url.host_str().map(String::from) {
             Some(domain_str) => Ok(domain_str),
             None => bail!("could not parse domain `{}` from link", link),
@@ -129,7 +129,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     let mut links_by_domain: HashMap<String, Vec<(PathBuf, String)>> = HashMap::new();
 
     for link in all_links.iter() {
-        links_by_domain.entry(link.2.to_string()).or_insert(Vec::new());
+        links_by_domain.entry(link.2.to_string()).or_default();
         // Insert content path and link under the domain key
         links_by_domain
             .get_mut(&link.2.to_string())
@@ -156,7 +156,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             .map(|(_domain, links)| {
                 let mut links_to_process = links.len();
                 links
-                    .into_iter()
+                    .iter()
                     .filter_map(move |(page_path, link)| {
                         links_to_process -= 1;
 
@@ -170,7 +170,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
                             return None;
                         }
 
-                        let res = link_checker::check_url(&link, &site.config.link_checker);
+                        let res = link_checker::check_url(link, &site.config.link_checker);
 
                         if links_to_process > 0 {
                             // Prevent rate-limiting, wait before next crawl unless we're done with this domain

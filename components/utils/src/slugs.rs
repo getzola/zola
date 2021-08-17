@@ -27,7 +27,7 @@ fn strip_invalid_paths_chars(s: &str) -> String {
     // NTFS forbidden characters : https://gist.github.com/doctaphred/d01d05291546186941e1b7ddc02034d3
     // Also we need to trim whitespaces and `.` from the end of filename
     let trimmed = s.trim_end_matches(|c| c == ' ' || c == '.');
-    strip_chars(&trimmed, r#"<>:"/\|?*"#)
+    strip_chars(trimmed, r#"<>:"/\|?*"#)
 }
 
 pub fn slugify_paths(s: &str, strategy: SlugifyStrategy) -> String {

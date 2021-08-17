@@ -1,7 +1,7 @@
 use filetime::{set_file_mtime, FileTime};
 use std::fs::{copy, create_dir_all, metadata, File};
 use std::io::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::SystemTime;
 use walkdir::WalkDir;
 
@@ -53,7 +53,7 @@ pub fn read_file(path: &Path) -> Result<String> {
         .read_to_string(&mut content)?;
 
     // Remove utf-8 BOM if any.
-    if content.starts_with("\u{feff}") {
+    if content.starts_with('\u{feff}') {
         content.drain(..3);
     }
 
@@ -62,7 +62,7 @@ pub fn read_file(path: &Path) -> Result<String> {
 
 /// Copy a file but takes into account where to start the copy as
 /// there might be folders we need to create on the way.
-pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: bool) -> Result<()> {
+pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> Result<()> {
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
 
@@ -79,7 +79,7 @@ pub fn copy_file(src: &Path, dest: &PathBuf, base_path: &PathBuf, hard_link: boo
 /// 1. A file with the same name already exists in the dest path.
 /// 2. Its modification timestamp is identical to that of the src file.
 /// 3. Its filesize is identical to that of the src file.
-pub fn copy_file_if_needed(src: &Path, dest: &PathBuf, hard_link: bool) -> Result<()> {
+pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
     if let Some(parent_directory) = dest.parent() {
         create_dir_all(parent_directory).map_err(|e| {
             Error::chain(format!("Was not able to create folder {}", parent_directory.display()), e)
@@ -120,7 +120,7 @@ pub fn copy_file_if_needed(src: &Path, dest: &PathBuf, hard_link: bool) -> Resul
     Ok(())
 }
 
-pub fn copy_directory(src: &PathBuf, dest: &PathBuf, hard_link: bool) -> Result<()> {
+pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
     for entry in WalkDir::new(src).into_iter().filter_map(std::result::Result::ok) {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);

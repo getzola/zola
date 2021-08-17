@@ -263,7 +263,7 @@ pub fn find_taxonomies(config: &Config, library: &Library) -> Result<Vec<Taxonom
     let mut all_taxonomies = HashMap::new();
     for (key, page) in library.pages() {
         for (name, taxo_term) in &page.meta.taxonomies {
-            let taxo_slug = slugify_paths(&name, config.slugify.taxonomies);
+            let taxo_slug = slugify_paths(name, config.slugify.taxonomies);
             let taxo_key = format!("{}-{}", &taxo_slug, page.lang);
             if taxonomies_def.contains_key(&taxo_key) {
                 all_taxonomies.entry(taxo_key.clone()).or_insert_with(HashMap::new);
@@ -539,8 +539,7 @@ mod tests {
         page2.lang = config.default_language.clone();
         library.insert_page(page2);
 
-        let mut page3 = Page::default();
-        page3.lang = "fr".to_string();
+        let mut page3 = Page { lang: "fr".to_string(), ..Default::default() };
         let mut taxo_page3 = HashMap::new();
         taxo_page3.insert("tags".to_string(), vec!["rust".to_string()]);
         taxo_page3.insert("auteurs".to_string(), vec!["Vincent Prouillet".to_string()]);
@@ -617,8 +616,7 @@ mod tests {
         };
         config.languages.insert("fr".to_owned(), lang_options);
 
-        let mut page = Page::default();
-        page.lang = "fr".to_string();
+        let mut page = Page { lang: "fr".to_string(), ..Default::default() };
         let mut taxo_page = HashMap::new();
         taxo_page.insert("catégories".to_string(), vec!["Écologie".to_string()]);
         page.meta.taxonomies = taxo_page;
@@ -668,8 +666,7 @@ mod tests {
         page2.lang = config.default_language.clone();
         library.insert_page(page2);
 
-        let mut page3 = Page::default();
-        page3.lang = "fr".to_string();
+        let mut page3 = Page { lang: "fr".to_string(), ..Default::default() };
         let mut taxo_page3 = HashMap::new();
         taxo_page3.insert("tags".to_string(), vec!["rust".to_string()]);
         taxo_page3.insert("auteurs".to_string(), vec!["Vincent Prouillet".to_string()]);
