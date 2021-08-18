@@ -1,6 +1,7 @@
 use std::fmt::Write;
 
 use config::highlighting::{SyntaxAndTheme, CLASS_STYLE};
+use tera::escape_html;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Color, Theme};
 use syntect::html::{
@@ -113,7 +114,7 @@ impl<'config> SyntaxHighlighter<'config> {
         match self {
             Inlined(h) => h.highlight_line(line),
             Classed(h) => h.highlight_line(line),
-            NoHighlight => line.to_owned(),
+            NoHighlight => escape_html(line),
         }
     }
 
@@ -222,5 +223,19 @@ mod tests {
 
         assert!(out.starts_with(r#"<span style="color"#));
         assert!(out.ends_with("</span>"));
+    }
+
+    #[test]
+    fn no_highlight_escapes_html() {
+        let mut config = Config::default();
+        config.markdown.highlight_code = false;
+        let code = "<script>alert('hello')</script>";
+        let syntax_and_theme = resolve_syntax_and_theme(Some("py"), &config);
+        let mut highlighter = SyntaxHighlighter::new(false, syntax_and_theme);
+        let mut out = String::new();
+        for line in LinesWithEndings::from(&code) {
+            out.push_str(&highlighter.highlight_line(line));
+        }
+        assert!(!out.contains("<script>"));
     }
 }
