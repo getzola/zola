@@ -13,8 +13,8 @@ pub use parse::{fetch_shortcodes, ShortcodeContext};
 use std::collections::HashMap;
 use std::ops::Range;
 
-#[derive(Clone)]
-enum ShortcodeFileType {
+#[derive(Clone, PartialEq)]
+pub enum ShortcodeFileType {
     Markdown,
     HTML,
 }
@@ -66,14 +66,15 @@ impl Transform {
     }
 }
 
-/// Looks through a source string and will replace all md shortcodes taking into account the call
+/// Looks through a source string and will replace all shortcodes taking into account the call
 /// stack, invocation_counts, and the preexisting tera_context.
-fn replace_all_md_shortcodes(
+fn replace_all_shortcodes(
     source: &str,
     shortcodes: &HashMap<String, ShortcodeDefinition>,
     call_stack: &mut Vec<String>,
     invocation_counts: &mut HashMap<String, usize>,
     context: &tera::Context,
+    filter_file_type: &ShortcodeFileType,
 ) -> Result<String, RenderMDError> {
     let mut content = source.to_string();
 
@@ -86,8 +87,15 @@ fn replace_all_md_shortcodes(
         }
 
         let ctx_span = ctx.span();
-        let res =
-            render_md_shortcode(&content, ctx, shortcodes, call_stack, invocation_counts, context)?;
+        let res = render_shortcode(
+            &content,
+            ctx,
+            shortcodes,
+            call_stack,
+            invocation_counts,
+            context,
+            filter_file_type,
+        )?;
         transforms.push(Transform::new(&ctx_span, res.len()));
         content.replace_range(ctx_span, &res);
     }
@@ -95,13 +103,15 @@ fn replace_all_md_shortcodes(
     Ok(content)
 }
 
-fn render_md_shortcode(
+/// Take one specific shortcode and attempt to turn it into its resulting replacement string
+fn render_shortcode(
     source: &str,
     context: ShortcodeContext,
     shortcodes: &HashMap<String, ShortcodeDefinition>,
     call_stack: &mut Vec<String>,
     invocation_counts: &mut HashMap<String, usize>,
     tera_context: &tera::Context,
+    filter_file_type: &ShortcodeFileType,
     //tera: &tera::Tera,
 ) -> Result<String, RenderMDError> {
     // TODO: Fix issue where the same shortcode in body will have a lower invocation count.
@@ -140,19 +150,24 @@ fn render_md_shortcode(
     Ok(match shortcode_def {
         // Filter out where the shortcode definition is unknown and where the shortcode definition
         // is HTML.
-        None | Some(ShortcodeDefinition { file_type: ShortcodeFileType::HTML, .. }) => {
-            source[context.span()].to_string()
-        }
-        Some(ShortcodeDefinition { content, .. }) => {
+        None => source[context.span()].to_string(),
+        Some(ShortcodeDefinition { content, ref file_type, .. }) => {
+            // Make sure we are actually matching either a MD or HTML shortcode and not both at the
+            // same time
+            if file_type != filter_file_type {
+                return Ok(source[context.span()].to_string());
+            }
+
             // Add the current shortcode to the call stack.
             call_stack.push(context.name().to_string());
 
-            let content = replace_all_md_shortcodes(
+            let content = replace_all_shortcodes(
                 &content,
                 shortcodes,
                 call_stack,
                 invocation_counts,
                 &tera_context,
+                filter_file_type,
             )?;
 
             // Remove the current function again from the call start.
@@ -166,10 +181,11 @@ fn render_md_shortcode(
     })
 }
 
-/// Inserts markdown shortcodes (recursively) into a source string
-pub fn insert_md_shortcodes(
+/// Inserts shortcodes of file type `filter_file_type` (recursively) into a source string
+pub fn insert_shortcodes(
     source: &str,
     shortcodes: HashMap<String, ShortcodeDefinition>,
+    filter_file_type: ShortcodeFileType,
 ) -> Result<String, RenderMDError> {
     let mut invocation_counts = HashMap::new();
     let mut call_stack = Vec::new();
@@ -178,12 +194,13 @@ pub fn insert_md_shortcodes(
     // the page.
     let tera_context = tera::Context::new();
 
-    replace_all_md_shortcodes(
+    replace_all_shortcodes(
         source,
         &shortcodes,
         &mut call_stack,
         &mut invocation_counts,
         &tera_context,
+        &filter_file_type,
     )
 }
 
@@ -206,13 +223,14 @@ mod tests {
             let mut invocation_counts = HashMap::new();
             let mut call_stack = vec![ $($($call_stack),*)? ];
             assert_eq!(
-                render_md_shortcode(
+                render_shortcode(
                     $source,
                     $context,
                     &$defs,
                     &mut call_stack,
                     &mut invocation_counts,
                     &context,
+                    &ShortcodeFileType::Markdown,
                 ),
                 $res
             );
@@ -230,7 +248,7 @@ mod tests {
     }
 
     #[test]
-    fn rnder_md_shortcode() {
+    fn render_md_shortcode() {
         let shortcodes = shortcode_defs![
             "a" => Markdown, "wow",
             "calls_b" => Markdown, "Prefix {{ b() }}",
@@ -258,7 +276,7 @@ mod tests {
     }
 
     #[test]
-    fn insrt_md_shortcodes() {
+    fn insert_md_shortcodes() {
         let shortcodes = shortcode_defs![
             "a" => Markdown, "wow",
             "calls_b" => Markdown, "Prefix {{ b() }}",
@@ -271,21 +289,81 @@ mod tests {
         ];
 
         assert_eq!(
-            insert_md_shortcodes("{{ inv() }}{{ inv() }}", shortcodes.clone()),
+            insert_shortcodes(
+                "{{ inv() }}{{ inv() }}",
+                shortcodes.clone(),
+                ShortcodeFileType::Markdown
+            ),
             Ok("12".to_string())
         );
         assert_eq!(
-            insert_md_shortcodes("{% bodied() %}{{ a() }}{% end %}", shortcodes.clone()),
+            insert_shortcodes(
+                "{% bodied() %}{{ a() }}{% end %}",
+                shortcodes.clone(),
+                ShortcodeFileType::Markdown
+            ),
             Ok("much wow".to_string())
         );
         assert_eq!(
-            insert_md_shortcodes("Hello {{ html() }}!", shortcodes.clone()),
+            insert_shortcodes(
+                "Hello {{ html() }}!",
+                shortcodes.clone(),
+                ShortcodeFileType::Markdown,
+            ),
             Ok("Hello {{ html() }}!".to_string())
         );
         assert_eq!(
-            insert_md_shortcodes(
+            insert_shortcodes(
                 "{% bodied() %}{{ a() }} {{ html() }}{% end %}",
-                shortcodes.clone()
+                shortcodes.clone(),
+                ShortcodeFileType::Markdown,
+            ),
+            Ok("much wow {{ html() }}".to_string())
+        );
+    }
+
+    #[test]
+    fn insert_html_shortcodes() {
+        let shortcodes = shortcode_defs![
+            "a" => HTML, "wow",
+            "calls_b" => HTML, "Prefix {{ b() }}",
+            "b" => HTML, "Internal of b",
+            "one_two" => HTML, "{{ one() }}",
+            "one" => HTML, "{{ one_two() }}",
+            "inv" => HTML, "{{ nth }}",
+            "html" => Markdown, "{{ wow }}",
+            "bodied" => HTML, "much {{ body }}",
+        ];
+
+        assert_eq!(
+            insert_shortcodes(
+                "{{ inv() }}{{ inv() }}",
+                shortcodes.clone(),
+                ShortcodeFileType::HTML
+            ),
+            Ok("12".to_string())
+        );
+        assert_eq!(
+            insert_shortcodes(
+                "{% bodied() %}{{ a() }}{% end %}",
+                shortcodes.clone(),
+                ShortcodeFileType::HTML
+            ),
+            Ok("much wow".to_string())
+        );
+        assert_eq!(
+            insert_shortcodes(
+                "Hello {{ html() }}!",
+                shortcodes.clone(),
+                ShortcodeFileType::HTML,
+            ),
+            Ok("Hello {{ html() }}!".to_string())
+        );
+        assert_eq!(
+            insert_shortcodes(
+                "{% bodied() %}{{ a() }} {{ html() }}{% end %}",
+                shortcodes.clone(),
+                ShortcodeFileType::HTML,
             ),
             Ok("much wow {{ html() }}".to_string())
         );
