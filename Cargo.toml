@@ -49,6 +49,11 @@ search = { path = "components/search" }
 [dev-dependencies]
 same-file = "1"
 
+[features]
+default = ["rust-tls"]
+rust-tls = ["site/rust-tls"]
+native-tls = ["site/native-tls"]
+
 [workspace]
 members = [
     "components/config",

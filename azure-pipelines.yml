@@ -36,8 +36,10 @@ stages:
                 echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
             displayName: Windows install rust
             condition: eq( variables['Agent.OS'], 'Windows_NT' )
+          - script: cargo build --all --no-default-features --features=native-tls && cargo clean
+            displayName: Cargo build (Native TLS)
           - script: cargo build --all
-            displayName: Cargo build
+            displayName: Cargo build (Rust TLS)
           - script: cargo test --all
             displayName: Cargo test
 
