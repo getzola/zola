@@ -222,6 +222,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn create_new_site(
     root_dir: &Path,
     interface: &str,
@@ -265,6 +266,7 @@ fn create_new_site(
     Ok((site, address))
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn serve(
     root_dir: &Path,
     interface: &str,
@@ -463,12 +465,7 @@ pub fn serve(
         } else {
             rebuild_done_handling(
                 &broadcaster,
-                copy_file(
-                    &path,
-                    &site.output_path,
-                    &site.static_path,
-                    site.config.hard_link_static,
-                ),
+                copy_file(path, &site.output_path, &site.static_path, site.config.hard_link_static),
                 &partial_path.to_string_lossy(),
             );
         }
@@ -521,7 +518,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&root_dir, &path, &config_path) {
+                        match detect_change_kind(root_dir, &path, config_path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
 
@@ -676,9 +673,8 @@ fn detect_change_kind(pwd: &Path, path: &Path, config_filename: &str) -> (Change
 /// Check if the directory at path contains any file
 fn is_folder_empty(dir: &Path) -> bool {
     // Can panic if we don't have the rights I guess?
-    let files: Vec<_> =
-        read_dir(dir).expect("Failed to read a directory to see if it was empty").collect();
-    files.is_empty()
+
+    read_dir(dir).expect("Failed to read a directory to see if it was empty").next().is_none()
 }
 
 #[cfg(test)]
@@ -702,7 +698,7 @@ mod tests {
         ];
 
         for t in test_cases {
-            assert!(is_temp_file(&t));
+            assert!(is_temp_file(t));
         }
     }
 
@@ -754,7 +750,7 @@ mod tests {
         ];
 
         for (expected, pwd, path, config_filename) in test_cases {
-            assert_eq!(expected, detect_change_kind(&pwd, &path, &config_filename));
+            assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
         }
     }
 

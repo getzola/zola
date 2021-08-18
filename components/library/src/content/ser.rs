@@ -25,6 +25,7 @@ impl<'a> TranslatedContent<'a> {
     pub fn find_all_sections(section: &'a Section, library: &'a Library) -> Vec<Self> {
         let mut translations = vec![];
 
+        #[allow(clippy::or_fun_call)]
         for key in library
             .translations
             .get(&section.file.canonical)
@@ -47,6 +48,7 @@ impl<'a> TranslatedContent<'a> {
     pub fn find_all_pages(page: &'a Page, library: &'a Library) -> Vec<Self> {
         let mut translations = vec![];
 
+        #[allow(clippy::or_fun_call)]
         for key in
             library.translations.get(&page.file.canonical).or(Some(&HashSet::new())).unwrap().iter()
         {
@@ -181,7 +183,7 @@ impl<'a> SerializingPage<'a> {
 
     /// currently only used in testing
     pub fn get_title(&'a self) -> &'a Option<String> {
-        &self.title
+        self.title
     }
 
     /// Same as from_page but does not fill sibling pages
@@ -194,7 +196,7 @@ impl<'a> SerializingPage<'a> {
             month = Some(d.1);
             day = Some(d.2);
         }
-        let ancestors = if let Some(ref lib) = library {
+        let ancestors = if let Some(lib) = library {
             page.ancestors
                 .iter()
                 .map(|k| lib.get_section_by_key(*k).file.relative.as_str())
@@ -203,7 +205,7 @@ impl<'a> SerializingPage<'a> {
             vec![]
         };
 
-        let translations = if let Some(ref lib) = library {
+        let translations = if let Some(lib) = library {
             TranslatedContent::find_all_pages(page, lib)
         } else {
             vec![]
@@ -313,7 +315,7 @@ impl<'a> SerializingSection<'a> {
         let mut ancestors = vec![];
         let mut translations = vec![];
         let mut subsections = vec![];
-        if let Some(ref lib) = library {
+        if let Some(lib) = library {
             ancestors = section
                 .ancestors
                 .iter()

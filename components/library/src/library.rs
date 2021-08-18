@@ -84,7 +84,7 @@ impl Library {
         let rel_path = section.path.clone();
 
         let mut entries = vec![rel_path];
-        entries.extend(section.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
+        entries.extend(section.meta.aliases.to_vec());
         self.insert_reverse_aliases(entries, &section.file.relative);
 
         let key = self.sections.insert(section);
@@ -98,7 +98,7 @@ impl Library {
         let rel_path = page.path.clone();
 
         let mut entries = vec![rel_path];
-        entries.extend(page.meta.aliases.iter().map(|a| a.clone()).collect::<Vec<String>>());
+        entries.extend(page.meta.aliases.to_vec());
         self.insert_reverse_aliases(entries, &page.file.relative);
 
         let key = self.pages.insert(page);
@@ -252,7 +252,7 @@ impl Library {
         }
 
         for section in self.sections.values_mut() {
-            if let Some(ref children) = subsections.get(&section.file.path) {
+            if let Some(children) = subsections.get(&section.file.path) {
                 let mut children: Vec<_> = children.iter().map(|p| sections[p]).collect();
                 children.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
                 section.subsections = children;
@@ -446,12 +446,9 @@ mod tests {
     #[test]
     fn can_find_no_collisions() {
         let mut library = Library::new(10, 10, false);
-        let mut page = Page::default();
-        page.path = "hello".to_string();
-        let mut page2 = Page::default();
-        page2.path = "hello-world".to_string();
-        let mut section = Section::default();
-        section.path = "blog".to_string();
+        let page = Page { path: "hello".to_string(), ..Default::default() };
+        let page2 = Page { path: "hello-world".to_string(), ..Default::default() };
+        let section = Section { path: "blog".to_string(), ..Default::default() };
         library.insert_page(page);
         library.insert_page(page2);
         library.insert_section(section);
@@ -463,14 +460,11 @@ mod tests {
     #[test]
     fn can_find_collisions_between_pages() {
         let mut library = Library::new(10, 10, false);
-        let mut page = Page::default();
-        page.path = "hello".to_string();
+        let mut page = Page { path: "hello".to_string(), ..Default::default() };
         page.file.relative = "hello".to_string();
-        let mut page2 = Page::default();
-        page2.path = "hello".to_string();
+        let mut page2 = Page { path: "hello".to_string(), ..Default::default() };
         page2.file.relative = "hello-world".to_string();
-        let mut section = Section::default();
-        section.path = "blog".to_string();
+        let mut section = Section { path: "blog".to_string(), ..Default::default() };
         section.file.relative = "hello-world".to_string();
         library.insert_page(page.clone());
         library.insert_page(page2.clone());
@@ -486,15 +480,12 @@ mod tests {
     #[test]
     fn can_find_collisions_with_an_alias() {
         let mut library = Library::new(10, 10, false);
-        let mut page = Page::default();
-        page.path = "hello".to_string();
+        let mut page = Page { path: "hello".to_string(), ..Default::default() };
         page.file.relative = "hello".to_string();
-        let mut page2 = Page::default();
-        page2.path = "hello-world".to_string();
+        let mut page2 = Page { path: "hello".to_string(), ..Default::default() };
         page2.file.relative = "hello-world".to_string();
         page2.meta.aliases = vec!["hello".to_string()];
-        let mut section = Section::default();
-        section.path = "blog".to_string();
+        let mut section = Section { path: "blog".to_string(), ..Default::default() };
         section.file.relative = "hello-world".to_string();
         library.insert_page(page.clone());
         library.insert_page(page2.clone());

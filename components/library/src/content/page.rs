@@ -97,7 +97,7 @@ pub struct Page {
 }
 
 impl Page {
-    pub fn new<P: AsRef<Path>>(file_path: P, meta: PageFrontMatter, base_path: &PathBuf) -> Page {
+    pub fn new<P: AsRef<Path>>(file_path: P, meta: PageFrontMatter, base_path: &Path) -> Page {
         let file_path = file_path.as_ref();
 
         Page { file: FileInfo::new_page(file_path, base_path), meta, ..Self::default() }
@@ -114,7 +114,7 @@ impl Page {
         file_path: &Path,
         content: &str,
         config: &Config,
-        base_path: &PathBuf,
+        base_path: &Path,
     ) -> Result<Page> {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta, base_path);
@@ -205,11 +205,7 @@ impl Page {
     }
 
     /// Read and parse a .md file into a Page struct
-    pub fn from_file<P: AsRef<Path>>(
-        path: P,
-        config: &Config,
-        base_path: &PathBuf,
-    ) -> Result<Page> {
+    pub fn from_file<P: AsRef<Path>>(path: P, config: &Config, base_path: &Path) -> Result<Page> {
         let path = path.as_ref();
         let content = read_file(path)?;
         let mut page = Page::parse(path, &content, config, base_path)?;
@@ -217,7 +213,7 @@ impl Page {
         if page.file.name == "index" {
             let parent_dir = path.parent().unwrap();
             page.assets = find_related_assets(parent_dir, config);
-            page.serialized_assets = page.serialize_assets(&base_path);
+            page.serialized_assets = page.serialize_assets(base_path);
         } else {
             page.assets = vec![];
         }
@@ -249,11 +245,10 @@ impl Page {
             Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
         })?;
 
-        self.summary = if let Some(s) = res.summary_len.map(|l| &res.body[0..l]) {
-            Some(FOOTNOTES_RE.replace(s, "").into_owned())
-        } else {
-            None
-        };
+        self.summary = res
+            .summary_len
+            .map(|l| &res.body[0..l])
+            .map(|s| FOOTNOTES_RE.replace(s, "").into_owned());
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
@@ -276,13 +271,13 @@ impl Page {
         context.insert("page", &self.to_serialized(library));
         context.insert("lang", &self.lang);
 
-        render_template(&tpl_name, tera, context, &config.theme).map_err(|e| {
+        render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render page '{}'", self.file.path.display()), e)
         })
     }
 
     /// Creates a vectors of asset URLs.
-    fn serialize_assets(&self, base_path: &PathBuf) -> Vec<String> {
+    fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
         self.assets
             .iter()
             .filter_map(|asset| asset.file_name())

@@ -68,7 +68,7 @@ impl Section {
     pub fn new<P: AsRef<Path>>(
         file_path: P,
         meta: SectionFrontMatter,
-        base_path: &PathBuf,
+        base_path: &Path,
     ) -> Section {
         let file_path = file_path.as_ref();
 
@@ -79,7 +79,7 @@ impl Section {
         file_path: &Path,
         content: &str,
         config: &Config,
-        base_path: &PathBuf,
+        base_path: &Path,
     ) -> Result<Section> {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta, base_path);
@@ -115,7 +115,7 @@ impl Section {
     pub fn from_file<P: AsRef<Path>>(
         path: P,
         config: &Config,
-        base_path: &PathBuf,
+        base_path: &Path,
     ) -> Result<Section> {
         let path = path.as_ref();
         let content = read_file(path)?;

@@ -36,8 +36,8 @@ impl<'config> ClassHighlighter<'config> {
     /// *Note:* This function requires `line` to include a newline at the end and
     /// also use of the `load_defaults_newlines` version of the syntaxes.
     pub fn highlight_line(&mut self, line: &str) -> String {
-        debug_assert!(line.ends_with("\n"));
-        let parsed_line = self.parse_state.parse_line(line, &self.syntax_set);
+        debug_assert!(line.ends_with('\n'));
+        let parsed_line = self.parse_state.parse_line(line, self.syntax_set);
         let (formatted_line, delta) = line_tokens_to_classed_spans(
             line,
             parsed_line.as_slice(),
@@ -81,9 +81,12 @@ impl<'config> InlineHighlighter<'config> {
     }
 
     pub fn highlight_line(&mut self, line: &str) -> String {
-        let regions = self.h.highlight(line, &self.syntax_set);
+        let regions = self.h.highlight(line, self.syntax_set);
         // TODO: add a param like `IncludeBackground` for `IncludeForeground` in syntect
-        let highlighted = styled_line_to_highlighted_html(&regions, IncludeBackground::IfDifferent(self.bg_color));
+        let highlighted = styled_line_to_highlighted_html(
+            &regions,
+            IncludeBackground::IfDifferent(self.bg_color),
+        );
         highlighted.replace(&self.fg_color, "")
     }
 }
@@ -172,7 +175,7 @@ impl<'config> SyntaxHighlighter<'config> {
                     &mut styles,
                     h.theme.settings.line_highlight.unwrap_or(Color { r: 255, g: 255, b: 0, a: 0 }),
                 );
-                styles.push_str(";");
+                styles.push(';');
                 Some(styles)
             }
         }
@@ -195,7 +198,7 @@ mod tests {
         let mut highlighter =
             ClassHighlighter::new(syntax_and_theme.syntax, syntax_and_theme.syntax_set);
         let mut out = String::new();
-        for line in LinesWithEndings::from(&code) {
+        for line in LinesWithEndings::from(code) {
             out.push_str(&highlighter.highlight_line(line));
         }
         out.push_str(&highlighter.finalize());
@@ -217,7 +220,7 @@ mod tests {
             syntax_and_theme.theme.unwrap(),
         );
         let mut out = String::new();
-        for line in LinesWithEndings::from(&code) {
+        for line in LinesWithEndings::from(code) {
             out.push_str(&highlighter.highlight_line(line));
         }
 

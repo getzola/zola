@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::Path;
 
 use serde_derive::{Deserialize, Serialize};
 use toml::Value as Toml;
@@ -39,7 +39,7 @@ impl Theme {
     }
 
     /// Parses a theme file from the given path
-    pub fn from_file(path: &PathBuf, theme_name: &str) -> Result<Theme> {
+    pub fn from_file(path: &Path, theme_name: &str) -> Result<Theme> {
         let content = read_file(path)
             .map_err(|e| errors::Error::chain(format!("Failed to load theme {}", theme_name), e))?;
         Theme::parse(&content)
