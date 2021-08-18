@@ -211,6 +211,7 @@ mod tests {
     use super::{GetFileHash, GetUrl};
 
     use std::collections::HashMap;
+    use std::fs::create_dir;
     use std::path::PathBuf;
 
     use tempfile::{tempdir, TempDir};
@@ -279,6 +280,20 @@ title = "A title"
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("/app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
+    }
+
+    #[test]
+    fn can_link_to_file_in_output_path() {
+        let dir = create_temp_dir();
+        let public = dir.path().join("public");
+        create_dir(&public).expect("Failed to create output directory");
+        create_file(&public.join("style.css"), "// Hello world")
+            .expect("Failed to create file in output directory");
+
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), public);
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("style.css").unwrap());
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/style.css");
     }
 
     #[test]
