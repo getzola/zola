@@ -5,11 +5,12 @@ use errors::{bail, Result};
 use utils::fs::is_path_in_directory;
 
 /// This is used by a few Tera functions to search for files on the filesystem.
-/// This does try to find the file in 3 different spots:
+/// This does try to find the file in 5 different spots:
 /// 1. base_path + path
 /// 2. base_path + static + path
 /// 3. base_path + content + path
-/// 4. base_path + themes + {current_theme} + static + path
+/// 4. base_path + {output dir} + path
+/// 5. base_path + themes + {current_theme} + static + path
 /// A path starting with @/ will replace it with `content/` and a path starting with `/` will have
 /// it removed.
 /// It also returns the unified path so it can be used as unique hash for a given file.
@@ -18,8 +19,9 @@ pub fn search_for_file(
     base_path: &Path,
     path: &str,
     theme: &Option<String>,
+    output_path: &Path,
 ) -> Result<Option<(PathBuf, String)>> {
-    let mut search_paths = vec![base_path.join("static"), base_path.join("content")];
+    let mut search_paths = vec![base_path.join("static"), base_path.join("content"), base_path.join(output_path)];
     if let Some(t) = theme {
         search_paths.push(base_path.join("themes").join(t).join("static"));
     }
@@ -37,7 +39,7 @@ pub fn search_for_file(
     }
 
     if !file_exists {
-        // we need to search in both search folders now
+        // we need to search in all search folders now
         for dir in &search_paths {
             let p = dir.join(&*actual_path);
             if p.exists() {
