@@ -7,6 +7,7 @@
 - `zola serve` now properly returns a 404
 - Fix `zola serve` having issues with config files in separate dir
 - Fix code blocks content not being escaped when not using syntax highlighting
+- Add missing `draft` attribute to the `section` variable in templates
 
 ## 0.14.0 (2021-07-19)
 

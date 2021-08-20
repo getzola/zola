@@ -1,13 +1,13 @@
 use std::fmt::Write;
 
 use config::highlighting::{SyntaxAndTheme, CLASS_STYLE};
-use tera::escape_html;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Color, Theme};
 use syntect::html::{
-    styled_line_to_highlighted_html, line_tokens_to_classed_spans, ClassStyle, IncludeBackground,
+    line_tokens_to_classed_spans, styled_line_to_highlighted_html, ClassStyle, IncludeBackground,
 };
 use syntect::parsing::{ParseState, ScopeStack, SyntaxReference, SyntaxSet};
+use tera::escape_html;
 
 /// Not public, but from syntect::html
 fn write_css_color(s: &mut String, c: Color) {

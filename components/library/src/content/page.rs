@@ -103,10 +103,6 @@ impl Page {
         Page { file: FileInfo::new_page(file_path, base_path), meta, ..Self::default() }
     }
 
-    pub fn is_draft(&self) -> bool {
-        self.meta.draft
-    }
-
     /// Parse a page given the content of the .md file
     /// Files without front matter or with invalid front matter are considered
     /// erroneous
