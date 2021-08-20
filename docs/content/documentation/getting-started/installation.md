@@ -91,27 +91,27 @@ Zola is available on [Docker Hub](https://hub.docker.com/r/balthek/zola).
 It has no `latest` tag, you will need to specify a [specific version to pull](https://hub.docker.com/r/balthek/zola/tags).
 
 ```sh
-$ docker pull balthek/zola:0.13.0
-$ docker run balthek/zola:0.13.0 --version
+$ docker pull balthek/zola:0.14.0
+$ docker run balthek/zola:0.14.0 --version
 ```
 
 #### Build
 
 ```sh
-$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app balthek/zola:0.13.0 build
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app balthek/zola:0.14.0 build
 ```
 
 #### Serve
 
 ```sh
-$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 balthek/zola:0.13.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 balthek/zola:0.14.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost
 ```
 
 You can now browse http://localhost:8080.
 
 > To enable live browser reload, you may have to bind to port 1024. Zola searches for an open
 > port between 1024 and 9000 for live reload. The new docker command would be
-> `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 balthek/zola:0.13.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
+> `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 balthek/zola:0.14.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
 
 ## Windows
 
