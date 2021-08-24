@@ -9,16 +9,8 @@ macro_rules! test_scenario {
         #[allow(unused_mut)]
         let mut tera = tera::Tera::default();
 
-        // Add all shortcodes
-        $(
-            tera.add_raw_template(
-                &format!("shortcodes/{}", $shortcodes.filename()),
-                $shortcodes.output
-            ).expect("Failed to add raw template");
-        )*
-
         let permalinks = std::collections::HashMap::new();
-        let context = rendering::RenderContext::new(
+        let mut context = rendering::RenderContext::new(
             &tera,
             &config,
             &config.default_language,
@@ -26,6 +18,11 @@ macro_rules! test_scenario {
             &permalinks,
             front_matter::InsertAnchor::None,
         );
+
+        $(
+            let ShortCode { name, is_md, output } = $shortcodes;
+            context.add_shortcode_def(name, is_md, output);
+        )*
 
         let rendered = rendering::render_content($in_str, &context);
         assert!(rendered.is_ok());
@@ -42,16 +39,8 @@ macro_rules! test_scenario_fail {
         #[allow(unused_mut)]
         let mut tera = tera::Tera::default();
 
-        // Add all shortcodes
-        $(
-            tera.add_raw_template(
-                &format!("shortcodes/{}", $shortcodes.filename()),
-                $shortcodes.output
-            ).expect("Failed to add raw template");
-        )*
-
         let permalinks = std::collections::HashMap::new();
-        let context = rendering::RenderContext::new(
+        let mut context = rendering::RenderContext::new(
             &tera,
             &config,
             &config.default_language,
@@ -59,6 +48,11 @@ macro_rules! test_scenario_fail {
             &permalinks,
             front_matter::InsertAnchor::None,
         );
+
+        $(
+            let ShortCode { name, is_md, output } = $shortcodes;
+            context.add_shortcode_def(name, is_md, output);
+        )*
 
         let rendered = rendering::render_content($in_str, &context);
         assert!(rendered.is_err());

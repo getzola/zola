@@ -12,16 +12,24 @@ use crate::transform::Transform;
 
 use std::collections::HashMap;
 
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ShortcodeFileType {
     Markdown,
     HTML,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ShortcodeDefinition {
     file_type: ShortcodeFileType,
     content: String,
+}
+
+impl ShortcodeDefinition {
+    pub fn new(file_type: ShortcodeFileType, content: &str) -> ShortcodeDefinition {
+        let content = content.to_string();
+
+        ShortcodeDefinition { file_type, content }
+    }
 }
 
 const MAX_CALLSTACK_DEPTH: usize = 128;
@@ -194,14 +202,6 @@ pub fn insert_shortcodes(
 mod tests {
     use super::*;
     use ShortcodeFileType::*;
-
-    impl ShortcodeDefinition {
-        fn new(file_type: ShortcodeFileType, content: &str) -> ShortcodeDefinition {
-            let content = content.to_string();
-
-            ShortcodeDefinition { file_type, content }
-        }
-    }
 
     macro_rules! assert_render_md_shortcode {
         ($source:expr, $context:expr, $defs:expr$(, [$($call_stack:expr),*])?$(,)? => $res:expr) => {

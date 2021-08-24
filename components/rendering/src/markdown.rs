@@ -323,18 +323,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         if markup.contains("<!-- more -->") {
                             has_summary = true;
                             Event::Html(CONTINUE_READING.into())
-                        } else if in_html_block && markup.contains("</pre>") {
-                            in_html_block = false;
-                            Event::Html(markup.replacen("</pre>", "", 1).into())
-                        } else if markup.contains("pre data-shortcode") {
-                            in_html_block = true;
-                            let m = markup.replacen("<pre data-shortcode>", "", 1);
-                            if m.contains("</pre>") {
-                                in_html_block = false;
-                                Event::Html(m.replacen("</pre>", "", 1).into())
-                            } else {
-                                Event::Html(m.into())
-                            }
                         } else {
                             event
                         }

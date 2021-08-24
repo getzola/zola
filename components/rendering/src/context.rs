@@ -5,6 +5,8 @@ use config::Config;
 use front_matter::InsertAnchor;
 use tera::{Context, Tera};
 
+use crate::shortcode::{ShortcodeDefinition, ShortcodeFileType};
+
 /// All the information from the zola site that is needed to render HTML from markdown
 #[derive(Debug)]
 pub struct RenderContext<'a> {
@@ -14,6 +16,7 @@ pub struct RenderContext<'a> {
     pub current_page_permalink: &'a str,
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
+    pub shortcode_definitions: HashMap<String, ShortcodeDefinition>,
 }
 
 impl<'a> RenderContext<'a> {
@@ -34,6 +37,7 @@ impl<'a> RenderContext<'a> {
             permalinks: Cow::Borrowed(permalinks),
             insert_anchor,
             config,
+            shortcode_definitions: HashMap::new(),
         }
     }
 
@@ -46,6 +50,18 @@ impl<'a> RenderContext<'a> {
             permalinks: Cow::Owned(HashMap::new()),
             insert_anchor: InsertAnchor::None,
             config,
+            shortcode_definitions: HashMap::new(),
         }
+    }
+
+    /// Add shortcode definition
+    pub fn add_shortcode_def(&mut self, name: &str, is_md: bool, content: &str) {
+        self.shortcode_definitions.insert(
+            name.to_string(),
+            ShortcodeDefinition::new(
+                if is_md { ShortcodeFileType::Markdown } else { ShortcodeFileType::HTML },
+                content,
+            ),
+        );
     }
 }
