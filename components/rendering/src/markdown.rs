@@ -38,28 +38,27 @@ impl Rendered {
         mut old_rendered: Rendered,
         transforms: Vec<Transform>,
     ) -> Self {
-        // TODO: Add some proper testing for this function.
         // TODO: Figure out what to do about the StartsIn case
 
         old_rendered.body = new_body.to_string();
 
         old_rendered.summary_len = old_rendered.summary_len.map(|mut summary_len| {
             for transform in transforms.iter() {
-                match RangeRelation::new(&transform.initial(), &(0..summary_len)) {
+                match RangeRelation::new(&(0..summary_len), &transform.initial()) {
                     // If the transform is outside of the summary, this should be the most common
                     // situation probably.
-                    RangeRelation::Before => {},
-
-                    // Here the transform is contained within the summary so we adjust the
-                    // summary length accordingly.
-                    RangeRelation::Around => {
-                        summary_len = transform.based_adjust(summary_len).expect("This should never be a problem since we know that the transform.len < summary_len");
-                    },
+                    RangeRelation::After => {},
 
                     // Here the two ranges should match, so the new summary length should just
                     // be the new length.
-                    RangeRelation::Within => {
+                    RangeRelation::Around => {
                         summary_len = transform.after().len();
+                    },
+
+                    // Here the transform is contained within the summary so we adjust the
+                    // summary length accordingly.
+                    RangeRelation::Within => {
+                        summary_len = transform.based_adjust(summary_len).expect("This should never be a problem since we know that the transform.len < summary_len");
                     },
 
                     // This is a weird situation... This would mean that someone probably added a
@@ -70,7 +69,7 @@ impl Rendered {
                     // situations where this might come in.
                     RangeRelation::StartsIn => todo!("Think of a proper solution for this."),
 
-                    RangeRelation::After | RangeRelation::EndsIn => unreachable!("Should be impossible to reach since the summary starts from 0"),
+                    RangeRelation::Before | RangeRelation::EndsIn => unreachable!("Should be impossible to reach since the summary starts from 0"),
                 }
             }
 
@@ -437,6 +436,35 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_new_with_transforms() {
+        macro_rules! assert_creation {
+            ($summary_len:expr, [$($span:expr => $new_end:expr),*], $output_len:expr) => {
+                let old = Rendered {
+                    body: "abc".to_string(),
+                    summary_len: $summary_len,
+                    toc: Vec::new(),
+                    internal_links: Vec::new(),
+                    external_links: Vec::new(),
+                };
+
+                let new = Rendered::new_with_transforms("def", old, vec![$(Transform::new(&$span, $new_end - $span.start)),*]);
+
+                assert_eq!(new.summary_len, $output_len);
+            }
+        }
+
+        assert_creation!(None, [], None);
+        assert_creation!(None, [0..2=>5], None);
+
+        assert_creation!(Some(3), [], Some(3));
+        assert_creation!(Some(3), [0..2=>5], Some(6));
+        assert_creation!(Some(3), [0..2=>1], Some(2));
+
+        assert_creation!(Some(3), [0..2=>6, 4..5=>8], Some(10));
+        assert_creation!(Some(3), [0..2=>6, 4..5=>8, 15..18=>24], Some(10));
+    }
 
     #[test]
     fn test_starts_with_schema() {
