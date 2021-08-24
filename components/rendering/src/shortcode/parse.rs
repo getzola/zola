@@ -86,9 +86,7 @@ impl ShortcodeContext {
 
     /// Get the body content of the shortcode using a source string
     pub fn body_content<'a>(&self, source_str: &'a str) -> Option<&'a str> {
-        self.body
-            .as_ref()
-            .map(|BodyInfo { content_span, .. }| &source_str[content_span.clone()])
+        self.body.as_ref().map(|BodyInfo { content_span, .. }| &source_str[content_span.clone()])
     }
 
     /// Returns the span of the shortcode within source string
@@ -261,12 +259,22 @@ pub fn fetch_shortcodes(source: &str) -> Vec<ShortcodeContext> {
                         shortcodes.push(ShortcodeContext { name, args, openblock_span, body: None })
                     }
 
-                    (Openers::Body, Closers::Body) => body_stack.push(BodiedStackItem {
-                        name,
-                        args,
-                        openblock_span,
-                        body_start: closing.span().end,
-                    }),
+                    (Openers::Body, Closers::Body) => {
+                        // Since we don't want bugs with invocation counts etc. we disable the
+                        // option for embedding the embedding the same shortcode into a body.
+                        if body_stack.iter().any(|BodiedStackItem { name: stack_item_name, .. }| {
+                            stack_item_name == &name
+                        }) {
+                            continue;
+                        }
+
+                        body_stack.push(BodiedStackItem {
+                            name,
+                            args,
+                            openblock_span,
+                            body_start: closing.span().end,
+                        })
+                    }
 
                     _ => {
                         // Tags don't match
@@ -326,11 +334,11 @@ mod tests {
     #[test]
     fn update_spans() {
         let mut ctx = ShortcodeContext::new("a", Vec::new(), 10..20, None);
-        ctx.update_on_source_insert(2, 8, 10).unwrap(); 
+        ctx.update_on_source_insert(2, 8, 10).unwrap();
         assert_eq!(ctx.span(), 12..22);
-        ctx.update_on_source_insert(24, 30, 30).unwrap(); 
+        ctx.update_on_source_insert(24, 30, 30).unwrap();
         assert_eq!(ctx.span(), 12..22);
-        ctx.update_on_source_insert(5, 11, 6).unwrap(); 
+        ctx.update_on_source_insert(5, 11, 6).unwrap();
         assert_eq!(ctx.span(), 7..17);
     }
 
@@ -428,6 +436,28 @@ mod tests {
                     Some(BodyInfo {
                         content_span: end_open_a..end_endblock_b,
                         endblock_span: end_endblock_b..test_str.len()
+                    })
+                )
+            ]
+        );
+    }
+
+    #[test]
+    fn embedding_bodies() {
+        let test_str = "{% a() %}{% a() %}Wow!{% end %}{% end %}";
+        let end_open_a = "{% a() %}".len();
+        let end_open_b = test_str.len() - "{% end %}{% end %}".len();
+
+        assert_eq!(
+            fetch_shortcodes(test_str),
+            vec![
+                ShortcodeContext::new(
+                    "a",
+                    vec![],
+                    0..end_open_a,
+                    Some(BodyInfo {
+                        content_span: end_open_a..end_open_b,
+                        endblock_span: end_open_b..(end_open_b + "{% end %}".len())
                     })
                 )
             ]

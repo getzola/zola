@@ -28,7 +28,7 @@ pub struct ShortcodeDefinition {
 const MAX_CALLSTACK_DEPTH: usize = 128;
 
 #[derive(Debug, PartialEq)]
-pub enum RenderMDError {
+pub enum RenderError {
     VariableNotFound { complete_var: Vec<String>, specific_part: String },
     RecursiveReuseOfShortcode(String),
     MaxRecusionDepthReached,
@@ -36,14 +36,21 @@ pub enum RenderMDError {
     TeraError,
 }
 
-impl From<ToJsonConvertError> for RenderMDError {
+impl From<ToJsonConvertError> for RenderError {
     fn from(err: ToJsonConvertError) -> Self {
         match err {
             ToJsonConvertError::VariableNotFound { complete_var, specific_part } => {
-                RenderMDError::VariableNotFound { complete_var, specific_part }
+                RenderError::VariableNotFound { complete_var, specific_part }
             }
-            ToJsonConvertError::FloatParseError => RenderMDError::FloatParseError,
+            ToJsonConvertError::FloatParseError => RenderError::FloatParseError,
         }
+    }
+}
+
+impl Into<errors::Error> for RenderError {
+    fn into(self) -> errors::Error {
+        // TODO: Improve this conversion
+        errors::Error::msg("Something went wrong whilst rendering shortcodes")
     }
 }
 
@@ -75,7 +82,7 @@ fn replace_all_shortcodes(
     invocation_counts: &mut HashMap<String, usize>,
     context: &tera::Context,
     filter_file_type: &ShortcodeFileType,
-) -> Result<String, RenderMDError> {
+) -> Result<String, RenderError> {
     let mut content = source.to_string();
 
     let mut transforms: Vec<Transform> = Vec::new();
@@ -113,17 +120,15 @@ fn render_shortcode(
     tera_context: &tera::Context,
     filter_file_type: &ShortcodeFileType,
     //tera: &tera::Tera,
-) -> Result<String, RenderMDError> {
-    // TODO: Fix issue where the same shortcode in body will have a lower invocation count.
-
+) -> Result<String, RenderError> {
     // Throw an error if the call stack already contains the current shortcode
     if call_stack.contains(context.name()) {
-        return Err(RenderMDError::RecursiveReuseOfShortcode(context.name().to_owned()));
+        return Err(RenderError::RecursiveReuseOfShortcode(context.name().to_owned()));
     }
 
     // Throw an error if the call stack goes over the max limit
     if call_stack.len() > MAX_CALLSTACK_DEPTH {
-        return Err(RenderMDError::MaxRecusionDepthReached);
+        return Err(RenderError::MaxRecusionDepthReached);
     }
 
     let body_content = context.body_content(source);
@@ -176,7 +181,7 @@ fn render_shortcode(
             // TODO: Properly add tera errors here
             // TODO: Change this to use builtins
             tera::Tera::one_off(&content, &new_context, false)
-                .map_err(|_| RenderMDError::TeraError)?
+                .map_err(|_| RenderError::TeraError)?
         }
     })
 }
@@ -184,9 +189,9 @@ fn render_shortcode(
 /// Inserts shortcodes of file type `filter_file_type` (recursively) into a source string
 pub fn insert_shortcodes(
     source: &str,
-    shortcodes: HashMap<String, ShortcodeDefinition>,
+    shortcodes: &HashMap<String, ShortcodeDefinition>,
     filter_file_type: ShortcodeFileType,
-) -> Result<String, RenderMDError> {
+) -> Result<String, RenderError> {
     let mut invocation_counts = HashMap::new();
     let mut call_stack = Vec::new();
 
@@ -196,7 +201,7 @@ pub fn insert_shortcodes(
 
     replace_all_shortcodes(
         source,
-        &shortcodes,
+        shortcodes,
         &mut call_stack,
         &mut invocation_counts,
         &tera_context,
@@ -271,7 +276,7 @@ mod tests {
         );
         assert_render_md_shortcode!(
             "{{ one_two() }}", ShortcodeContext::new("one_two", vec![], 0..15, None), shortcodes =>
-                Err(RenderMDError::RecursiveReuseOfShortcode("one_two".to_string()))
+                Err(RenderError::RecursiveReuseOfShortcode("one_two".to_string()))
         );
     }
 
@@ -291,7 +296,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "{{ inv() }}{{ inv() }}",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::Markdown
             ),
             Ok("12".to_string())
@@ -299,7 +304,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }}{% end %}",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::Markdown
             ),
             Ok("much wow".to_string())
@@ -307,7 +312,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "Hello {{ html() }}!",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::Markdown,
             ),
             Ok("Hello {{ html() }}!".to_string())
@@ -315,7 +320,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }} {{ html() }}{% end %}",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::Markdown,
             ),
             Ok("much wow {{ html() }}".to_string())
@@ -338,7 +343,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "{{ inv() }}{{ inv() }}",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::HTML
             ),
             Ok("12".to_string())
@@ -346,7 +351,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }}{% end %}",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::HTML
             ),
             Ok("much wow".to_string())
@@ -354,7 +359,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "Hello {{ html() }}!",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::HTML,
             ),
             Ok("Hello {{ html() }}!".to_string())
@@ -362,7 +367,7 @@ mod tests {
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }} {{ html() }}{% end %}",
-                shortcodes.clone(),
+                &shortcodes,
                 ShortcodeFileType::HTML,
             ),
             Ok("much wow {{ html() }}".to_string())
