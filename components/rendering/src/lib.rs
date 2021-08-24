@@ -19,5 +19,5 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
         return Ok(html);
     }
 
-    markdown_to_html(&content, context)
+    markdown_to_html(content, context)
 }

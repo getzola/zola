@@ -25,6 +25,7 @@ impl<'a> TranslatedContent<'a> {
     pub fn find_all_sections(section: &'a Section, library: &'a Library) -> Vec<Self> {
         let mut translations = vec![];
 
+        #[allow(clippy::or_fun_call)]
         for key in library
             .translations
             .get(&section.file.canonical)
@@ -47,6 +48,7 @@ impl<'a> TranslatedContent<'a> {
     pub fn find_all_pages(page: &'a Page, library: &'a Library) -> Vec<Self> {
         let mut translations = vec![];
 
+        #[allow(clippy::or_fun_call)]
         for key in
             library.translations.get(&page.file.canonical).or(Some(&HashSet::new())).unwrap().iter()
         {
@@ -165,7 +167,7 @@ impl<'a> SerializingPage<'a> {
             word_count: page.word_count,
             reading_time: page.reading_time,
             assets: &page.serialized_assets,
-            draft: page.is_draft(),
+            draft: page.meta.draft,
             lang: &page.lang,
             lighter,
             heavier,
@@ -181,7 +183,7 @@ impl<'a> SerializingPage<'a> {
 
     /// currently only used in testing
     pub fn get_title(&'a self) -> &'a Option<String> {
-        &self.title
+        self.title
     }
 
     /// Same as from_page but does not fill sibling pages
@@ -194,7 +196,7 @@ impl<'a> SerializingPage<'a> {
             month = Some(d.1);
             day = Some(d.2);
         }
-        let ancestors = if let Some(ref lib) = library {
+        let ancestors = if let Some(lib) = library {
             page.ancestors
                 .iter()
                 .map(|k| lib.get_section_by_key(*k).file.relative.as_str())
@@ -203,7 +205,7 @@ impl<'a> SerializingPage<'a> {
             vec![]
         };
 
-        let translations = if let Some(ref lib) = library {
+        let translations = if let Some(lib) = library {
             TranslatedContent::find_all_pages(page, lib)
         } else {
             vec![]
@@ -231,7 +233,7 @@ impl<'a> SerializingPage<'a> {
             word_count: page.word_count,
             reading_time: page.reading_time,
             assets: &page.serialized_assets,
-            draft: page.is_draft(),
+            draft: page.meta.draft,
             lang: &page.lang,
             lighter: None,
             heavier: None,
@@ -251,6 +253,7 @@ pub struct SerializingSection<'a> {
     relative_path: &'a str,
     content: &'a str,
     permalink: &'a str,
+    draft: bool,
     ancestors: Vec<&'a str>,
     title: &'a Option<String>,
     description: &'a Option<String>,
@@ -290,6 +293,7 @@ impl<'a> SerializingSection<'a> {
         SerializingSection {
             relative_path: &section.file.relative,
             ancestors,
+            draft: section.meta.draft,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,
@@ -313,7 +317,7 @@ impl<'a> SerializingSection<'a> {
         let mut ancestors = vec![];
         let mut translations = vec![];
         let mut subsections = vec![];
-        if let Some(ref lib) = library {
+        if let Some(lib) = library {
             ancestors = section
                 .ancestors
                 .iter()
@@ -327,6 +331,7 @@ impl<'a> SerializingSection<'a> {
         SerializingSection {
             relative_path: &section.file.relative,
             ancestors,
+            draft: section.meta.draft,
             content: &section.content,
             permalink: &section.permalink,
             title: &section.meta.title,

@@ -192,9 +192,9 @@ fn correct_translations_on_all_pages() {
 
         // Ensure translations expected here match with those in the library
         // TODO: add constructive error message inside the function
-        assert!(ensure_translations_match(&translations, &site, &path));
+        assert!(ensure_translations_match(&translations, &site, path));
 
         // Ensure output file contains all translations URLs
-        assert!(ensure_translations_in_output(&site, &path, &link));
+        assert!(ensure_translations_in_output(&site, path, &link));
     }
 }

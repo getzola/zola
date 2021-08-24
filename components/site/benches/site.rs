@@ -8,7 +8,7 @@ use site::Site;
 use tempfile::tempdir;
 
 fn setup_site(name: &str) -> Site {
-    let mut path = env::current_dir().unwrap().to_path_buf();
+    let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push(name);
     let config_file = path.join("config.toml");
@@ -69,7 +69,7 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     site.set_output_path(&public);
     let library = site.library.read().unwrap();
     let section = library.sections_values()[0];
-    let paginator = Paginator::from_section(&section, &library);
+    let paginator = Paginator::from_section(section, &library);
 
     b.iter(|| site.render_paginated(Vec::new(), &paginator));
 }

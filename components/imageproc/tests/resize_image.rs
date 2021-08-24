@@ -30,6 +30,7 @@ lazy_static! {
     static ref PROCESSED_PREFIX: String = format!("static{0}processed_images{0}", SLASH);
 }
 
+#[allow(clippy::too_many_arguments)]
 fn image_op_test(
     source_img: &str,
     op: &str,
@@ -44,7 +45,7 @@ fn image_op_test(
 ) {
     let source_path = TEST_IMGS.join(source_img);
 
-    let config = Config::parse(&CONFIG).unwrap();
+    let config = Config::parse(CONFIG).unwrap();
     let mut proc = Processor::new(TMPDIR.clone(), &config);
 
     let resp =

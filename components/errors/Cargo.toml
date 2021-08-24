@@ -8,5 +8,4 @@ edition = "2018"
 tera = "1"
 toml = "0.5"
 image = "0.23"
-# TODO: go back to version 4/5 once https://github.com/trishume/syntect/pull/337 is merged
-syntect = { git = "https://github.com/Keats/syntect.git", branch = "scopestack" }
+syntect = "4"

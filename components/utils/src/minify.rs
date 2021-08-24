@@ -1,23 +1,14 @@
 use errors::{bail, Result};
-use minify_html::{with_friendly_error, Cfg};
+use minify_html::{minify, Cfg};
 
 pub fn html(html: String) -> Result<String> {
-    let cfg = &Cfg { minify_js: false, minify_css: false };
-    let mut input_bytes = html.as_bytes().to_vec();
+    let mut cfg = Cfg::spec_compliant();
+    cfg.keep_html_and_head_opening_tags = true;
 
-    match with_friendly_error(&mut input_bytes, cfg) {
-        Ok(len) => match std::str::from_utf8(&input_bytes[..len]) {
-            Ok(result) => Ok(result.to_string()),
-            Err(err) => bail!("Failed to convert bytes to string : {}", err),
-        },
-        Err(minify_error) => {
-            bail!(
-                "Failed to truncate html at character {}: {} \n {}",
-                minify_error.position,
-                minify_error.message,
-                minify_error.code_context
-            );
-        }
+    let minified = minify(html.as_bytes(), &cfg);
+    match std::str::from_utf8(&minified) {
+        Ok(result) => Ok(result.to_string()),
+        Err(err) => bail!("Failed to convert bytes to string : {}", err),
     }
 }
 

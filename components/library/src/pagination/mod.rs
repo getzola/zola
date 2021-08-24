@@ -255,15 +255,17 @@ mod tests {
     use crate::library::Library;
     use crate::taxonomies::{Taxonomy, TaxonomyItem};
     use config::Taxonomy as TaxonomyConfig;
-    use front_matter::SectionFrontMatter;
 
     use super::Paginator;
 
     fn create_section(is_index: bool, paginate_reversed: bool) -> Section {
-        let mut f = SectionFrontMatter::default();
-        f.paginate_by = Some(2);
-        f.paginate_path = "page".to_string();
-        f.paginate_reversed = paginate_reversed;
+        let f = front_matter::SectionFrontMatter {
+            paginate_by: Some(2),
+            paginate_path: "page".to_string(),
+            paginate_reversed,
+            ..Default::default()
+        };
+
         let mut s = Section::new("content/_index.md", f, &PathBuf::new());
         if !is_index {
             s.path = "/posts/".to_string();

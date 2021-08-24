@@ -111,7 +111,10 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     // otherwise `PathBuf` will interpret it as an absolute path
     root.push(&decoded[1..]);
 
-    let metadata = tokio::fs::metadata(root.as_path()).await?;
+    let metadata = match tokio::fs::metadata(root.as_path()).await {
+        Err(err) => return Ok(io_error(err)),
+        Ok(metadata) => metadata,
+    };
     if metadata.is_dir() {
         // if root is a directory, append index.html to try to read that instead
         root.push("index.html");
@@ -120,16 +123,7 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     let result = tokio::fs::read(&root).await;
 
     let contents = match result {
-        Err(err) => match err.kind() {
-            std::io::ErrorKind::NotFound => return Ok(not_found()),
-            std::io::ErrorKind::PermissionDenied => {
-                return Ok(Response::builder()
-                    .status(StatusCode::FORBIDDEN)
-                    .body(Body::empty())
-                    .unwrap())
-            }
-            _ => panic!("{}", err),
-        },
+        Err(err) => return Ok(io_error(err)),
         Ok(contents) => contents,
     };
 
@@ -176,6 +170,16 @@ fn method_not_allowed() -> Response<Body> {
         .expect("Could not build Method Not Allowed response")
 }
 
+fn io_error(err: std::io::Error) -> Response<Body> {
+    match err.kind() {
+        std::io::ErrorKind::NotFound => not_found(),
+        std::io::ErrorKind::PermissionDenied => {
+            Response::builder().status(StatusCode::FORBIDDEN).body(Body::empty()).unwrap()
+        }
+        _ => panic!("{}", err),
+    }
+}
+
 fn not_found() -> Response<Body> {
     let not_found_path = RelativePath::new("404.html");
     let content = SITE_CONTENT.read().unwrap().get(not_found_path).cloned();
@@ -218,6 +222,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn create_new_site(
     root_dir: &Path,
     interface: &str,
@@ -261,6 +266,7 @@ fn create_new_site(
     Ok((site, address))
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn serve(
     root_dir: &Path,
     interface: &str,
@@ -294,12 +300,12 @@ pub fn serve(
         return Err(format!("Cannot start server on address {}.", address).into());
     }
 
-    let config_filename = config_file.file_name().unwrap().to_str().unwrap_or("config.toml");
+    let config_path = config_file.to_str().unwrap_or("config.toml");
 
     // An array of (path, bool, bool) where the path should be watched for changes, and the boolean value
     // indicates whether this file/folder must exist for zola serve to operate
     let watch_this = vec![
-        (config_filename, WatchMode::Required),
+        (config_path, WatchMode::Required),
         ("content", WatchMode::Required),
         ("sass", WatchMode::Condition(site.config.compile_sass)),
         ("static", WatchMode::Optional),
@@ -459,12 +465,7 @@ pub fn serve(
         } else {
             rebuild_done_handling(
                 &broadcaster,
-                copy_file(
-                    &path,
-                    &site.output_path,
-                    &site.static_path,
-                    site.config.hard_link_static,
-                ),
+                copy_file(path, &site.output_path, &site.static_path, site.config.hard_link_static),
                 &partial_path.to_string_lossy(),
             );
         }
@@ -485,7 +486,7 @@ pub fn serve(
             Some(s)
         }
         Err(e) => {
-            console::error(&format!("{}", e));
+            console::unravel_errors("Failed to build the site", &e);
             None
         }
     };
@@ -517,7 +518,7 @@ pub fn serve(
                         );
 
                         let start = Instant::now();
-                        match detect_change_kind(&root_dir, &path, &config_filename) {
+                        match detect_change_kind(root_dir, &path, config_path) {
                             (ChangeKind::Content, _) => {
                                 console::info(&format!("-> Content changed {}", path.display()));
 
@@ -672,9 +673,8 @@ fn detect_change_kind(pwd: &Path, path: &Path, config_filename: &str) -> (Change
 /// Check if the directory at path contains any file
 fn is_folder_empty(dir: &Path) -> bool {
     // Can panic if we don't have the rights I guess?
-    let files: Vec<_> =
-        read_dir(dir).expect("Failed to read a directory to see if it was empty").collect();
-    files.is_empty()
+
+    read_dir(dir).expect("Failed to read a directory to see if it was empty").next().is_none()
 }
 
 #[cfg(test)]
@@ -698,7 +698,7 @@ mod tests {
         ];
 
         for t in test_cases {
-            assert!(is_temp_file(&t));
+            assert!(is_temp_file(t));
         }
     }
 
@@ -750,7 +750,7 @@ mod tests {
         ];
 
         for (expected, pwd, path, config_filename) in test_cases {
-            assert_eq!(expected, detect_change_kind(&pwd, &path, &config_filename));
+            assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
         }
     }
 

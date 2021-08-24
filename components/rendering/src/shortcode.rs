@@ -110,7 +110,7 @@ fn render_shortcode(
     for (key, value) in args.iter() {
         tera_context.insert(key, value);
     }
-    if let Some(ref b) = body {
+    if let Some(b) = body {
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
         tera_context.insert("body", b.trim_end());
     }
@@ -271,7 +271,7 @@ mod tests {
         let config = Config::default_for_test();
         let permalinks = HashMap::new();
         let context = RenderContext::new(
-            &tera,
+            tera,
             &config,
             &config.default_language,
             "",

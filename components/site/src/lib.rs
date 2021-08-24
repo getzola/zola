@@ -78,8 +78,7 @@ impl Site {
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
-            config
-                .merge_with_theme(&path.join("themes").join(&theme).join("theme.toml"), &theme)?;
+            config.merge_with_theme(path.join("themes").join(&theme).join("theme.toml"), &theme)?;
         }
 
         let tera = load_tera(path, &config)?;
@@ -288,10 +287,10 @@ impl Site {
         tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
-        link_checking::check_internal_links_with_anchors(&self)?;
+        link_checking::check_internal_links_with_anchors(self)?;
 
         if self.config.is_in_check_mode() {
-            link_checking::check_external_links(&self)?;
+            link_checking::check_external_links(self)?;
         }
 
         Ok(())
@@ -301,7 +300,7 @@ impl Site {
     /// a _index.md to render the index page at the root of the site
     pub fn create_default_index_sections(&mut self) -> Result<()> {
         for (index_path, lang) in self.index_section_paths() {
-            if let Some(ref index_section) = self.library.read().unwrap().get_section(&index_path) {
+            if let Some(index_section) = self.library.read().unwrap().get_section(&index_path) {
                 if self.config.build_search_index && !index_section.meta.in_search_index {
                     bail!(
                     "You have enabled search in the config but disabled it in the index section: \
@@ -406,7 +405,7 @@ impl Site {
         self.populate_taxonomies()?;
         let library = self.library.read().unwrap();
         let page = library.get_page(&path).unwrap();
-        self.render_page(&page)
+        self.render_page(page)
     }
 
     /// Add a section to the site
@@ -431,14 +430,14 @@ impl Site {
         self.populate_sections();
         let library = self.library.read().unwrap();
         let section = library.get_section(&path).unwrap();
-        self.render_section(&section, true)
+        self.render_section(section, true)
     }
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
     /// Defaults to `AnchorInsert::None` if no parent section found
     pub fn find_parent_section_insert_anchor(
         &self,
-        parent_path: &PathBuf,
+        parent_path: &Path,
         lang: &str,
     ) -> InsertAnchor {
         let parent = if lang != self.config.default_language {
@@ -578,7 +577,7 @@ impl Site {
         Ok(current_path)
     }
 
-    fn copy_asset(&self, src: &Path, dest: &PathBuf) -> Result<()> {
+    fn copy_asset(&self, src: &Path, dest: &Path) -> Result<()> {
         copy_file_if_needed(src, dest, self.config.hard_link_static)
     }
 
@@ -594,7 +593,7 @@ impl Site {
         for asset in &page.assets {
             let asset_path = asset.as_path();
             self.copy_asset(
-                &asset_path,
+                asset_path,
                 &current_path
                     .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
             )?;
@@ -664,7 +663,7 @@ impl Site {
             }
             let pages =
                 library.pages_values().iter().filter(|p| &p.lang == code).cloned().collect();
-            self.render_feed(pages, Some(&PathBuf::from(code)), &code, |c| c)?;
+            self.render_feed(pages, Some(&PathBuf::from(code)), code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
         self.render_themes_css()?;
@@ -723,7 +722,7 @@ impl Site {
                     &self.output_path.join(&format!("search_index.{}.js", &code)),
                     &format!(
                         "window.searchIndex = {};",
-                        search::build_index(&code, &self.library.read().unwrap(), &self.config)?
+                        search::build_index(code, &self.library.read().unwrap(), &self.config)?
                     ),
                 )?;
             }
@@ -748,7 +747,7 @@ impl Site {
             }
             None => "index.html",
         };
-        let content = render_redirect_template(&permalink, &self.tera)?;
+        let content = render_redirect_template(permalink, &self.tera)?;
         self.write_content(&split, page_name, content, false)?;
         Ok(())
     }
@@ -760,12 +759,12 @@ impl Site {
         let library = self.library.read().unwrap();
         for (_, page) in library.pages() {
             for alias in &page.meta.aliases {
-                self.render_alias(&alias, &page.permalink)?;
+                self.render_alias(alias, &page.permalink)?;
             }
         }
         for (_, section) in library.sections() {
             for alias in &section.meta.aliases {
-                self.render_alias(&alias, &section.permalink)?;
+                self.render_alias(alias, &section.permalink)?;
             }
         }
         Ok(())
@@ -832,7 +831,7 @@ impl Site {
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
                         comp.clone(),
-                        &Paginator::from_taxonomy(&taxonomy, item, &library),
+                        &Paginator::from_taxonomy(taxonomy, item, &library),
                     )?;
                 } else {
                     let single_output =
@@ -926,7 +925,7 @@ impl Site {
         };
         let feed_filename = &self.config.feed_filename;
 
-        if let Some(ref base) = base_path {
+        if let Some(base) = base_path {
             let mut components = Vec::new();
             for component in base.components() {
                 // TODO: avoid cloning the paths
@@ -934,12 +933,12 @@ impl Site {
             }
             self.write_content(
                 &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
-                &feed_filename,
+                feed_filename,
                 feed,
                 false,
             )?;
         } else {
-            self.write_content(&[], &feed_filename, feed, false)?;
+            self.write_content(&[], feed_filename, feed, false)?;
         }
         Ok(())
     }
@@ -987,7 +986,7 @@ impl Site {
         for asset in &section.assets {
             let asset_path = asset.as_path();
             self.copy_asset(
-                &asset_path,
+                asset_path,
                 &output_path.join(
                     asset_path.file_name().expect("Failed to get asset filename for section"),
                 ),
@@ -1021,7 +1020,7 @@ impl Site {
         if section.meta.is_paginated() {
             self.render_paginated(
                 components,
-                &Paginator::from_section(&section, &self.library.read().unwrap()),
+                &Paginator::from_section(section, &self.library.read().unwrap()),
             )?;
         } else {
             let output =

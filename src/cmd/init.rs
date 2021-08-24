@@ -76,7 +76,7 @@ pub fn create_new_project(name: &str, force: bool) -> Result<()> {
     let path = Path::new(name);
 
     // Better error message than the rust default
-    if path.exists() && !is_directory_quasi_empty(&path)? && !force {
+    if path.exists() && !is_directory_quasi_empty(path)? && !force {
         if name == "." {
             bail!("The current directory is not an empty folder (hidden files are ignored).");
         } else {
@@ -103,7 +103,7 @@ pub fn create_new_project(name: &str, force: bool) -> Result<()> {
         .replace("%SEARCH%", &format!("{}", search))
         .replace("%HIGHLIGHT%", &format!("{}", highlight));
 
-    populate(&path, compile_sass, &config)?;
+    populate(path, compile_sass, &config)?;
 
     println!();
     console::success(&format!(
@@ -122,7 +122,7 @@ fn populate(path: &Path, compile_sass: bool, config: &str) -> Result<()> {
     if !path.exists() {
         create_dir(path)?;
     }
-    create_file(&path.join("config.toml"), &config)?;
+    create_file(&path.join("config.toml"), config)?;
     create_dir(path.join("content"))?;
     create_dir(path.join("templates"))?;
     create_dir(path.join("static"))?;
@@ -152,7 +152,7 @@ mod tests {
         let allowed = is_directory_quasi_empty(&dir)
             .expect("An error happened reading the directory's contents");
         remove_dir(&dir).unwrap();
-        assert_eq!(true, allowed);
+        assert!(allowed);
     }
 
     #[test]
@@ -170,7 +170,7 @@ mod tests {
             .expect("An error happened reading the directory's contents");
         remove_dir(&content).unwrap();
         remove_dir(&dir).unwrap();
-        assert_eq!(false, allowed);
+        assert!(!allowed);
     }
 
     #[test]
@@ -188,7 +188,7 @@ mod tests {
             .expect("An error happened reading the directory's contents");
         remove_dir(&git).unwrap();
         remove_dir(&dir).unwrap();
-        assert_eq!(true, allowed);
+        assert!(allowed);
     }
 
     #[test]
@@ -201,12 +201,12 @@ mod tests {
         create_dir(&dir).expect("Could not create test directory");
         populate(&dir, true, "").expect("Could not populate zola directories");
 
-        assert_eq!(true, dir.join("config.toml").exists());
-        assert_eq!(true, dir.join("content").exists());
-        assert_eq!(true, dir.join("templates").exists());
-        assert_eq!(true, dir.join("static").exists());
-        assert_eq!(true, dir.join("themes").exists());
-        assert_eq!(true, dir.join("sass").exists());
+        assert!(dir.join("config.toml").exists());
+        assert!(dir.join("content").exists());
+        assert!(dir.join("templates").exists());
+        assert!(dir.join("static").exists());
+        assert!(dir.join("themes").exists());
+        assert!(dir.join("sass").exists());
 
         remove_dir_all(&dir).unwrap();
     }
@@ -220,13 +220,13 @@ mod tests {
         }
         populate(&dir, true, "").expect("Could not populate zola directories");
 
-        assert_eq!(true, dir.exists());
-        assert_eq!(true, dir.join("config.toml").exists());
-        assert_eq!(true, dir.join("content").exists());
-        assert_eq!(true, dir.join("templates").exists());
-        assert_eq!(true, dir.join("static").exists());
-        assert_eq!(true, dir.join("themes").exists());
-        assert_eq!(true, dir.join("sass").exists());
+        assert!(dir.exists());
+        assert!(dir.join("config.toml").exists());
+        assert!(dir.join("content").exists());
+        assert!(dir.join("templates").exists());
+        assert!(dir.join("static").exists());
+        assert!(dir.join("themes").exists());
+        assert!(dir.join("sass").exists());
 
         remove_dir_all(&dir).unwrap();
     }
@@ -241,7 +241,7 @@ mod tests {
         create_dir(&dir).expect("Could not create test directory");
         populate(&dir, false, "").expect("Could not populate zola directories");
 
-        assert_eq!(false, dir.join("sass").exists());
+        assert!(!dir.join("sass").exists());
 
         remove_dir_all(&dir).unwrap();
     }

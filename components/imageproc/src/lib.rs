@@ -140,7 +140,7 @@ impl ResizeOp {
             }
             Fit(w, h) => {
                 if orig_w <= w && orig_h <= h {
-                    return res;  // ie. no-op
+                    return res; // ie. no-op
                 }
 
                 let orig_w_h = orig_w as u64 * h as u64;
@@ -338,7 +338,7 @@ impl ImageOp {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
                 };
-                f.write_all(&memory.as_bytes())?;
+                f.write_all(memory.as_bytes())?;
             }
         }
 
@@ -408,6 +408,7 @@ impl Processor {
         self.img_ops.len() + self.img_ops_collisions.len()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn enqueue(
         &mut self,
         input_src: String,

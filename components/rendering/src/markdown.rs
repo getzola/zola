@@ -102,7 +102,7 @@ fn fix_link(
     // - it could be a link to a co-located asset
     // - it could be a normal link
     let result = if link.starts_with("@/") {
-        match resolve_internal_link(&link, &context.permalinks) {
+        match resolve_internal_link(link, &context.permalinks) {
             Ok(resolved) => {
                 internal_links.push((resolved.md_path, resolved.anchor));
                 resolved.permalink
@@ -111,7 +111,7 @@ fn fix_link(
                 return Err(format!("Relative link {} not found.", link).into());
             }
         }
-    } else if is_colocated_asset_link(&link) {
+    } else if is_colocated_asset_link(link) {
         format!("{}{}", context.current_page_permalink, link)
     } else {
         if is_external_link(link) {
@@ -163,7 +163,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let path = context
         .tera_context
         .get("page")
-        .or(context.tera_context.get("section"))
+        .or_else(|| context.tera_context.get("section"))
         .map(|x| x.as_object().unwrap().get("relative_path").unwrap().as_str().unwrap());
     // the rendered html
     let mut html = String::with_capacity(content.len());
@@ -213,7 +213,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             }
                             _ => FenceSettings::new(""),
                         };
-                        let (block, begin) = CodeBlock::new(fence, &context.config, path);
+                        let (block, begin) = CodeBlock::new(fence, context.config, path);
                         code_block = Some(block);
                         Event::Html(begin.into())
                     }
@@ -344,7 +344,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 c.insert("level", &heading_ref.level);
 
                 let anchor_link = utils::templates::render_template(
-                    &ANCHOR_LINK_TEMPLATE,
+                    ANCHOR_LINK_TEMPLATE,
                     &context.tera,
                     c,
                     &None,

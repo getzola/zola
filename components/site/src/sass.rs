@@ -8,7 +8,7 @@ use errors::{bail, Result};
 use utils::fs::{create_file, ensure_directory_exists};
 
 pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
-    ensure_directory_exists(&output_path)?;
+    ensure_directory_exists(output_path)?;
 
     let sass_path = {
         let mut sass_path = PathBuf::from(base_path);
@@ -16,8 +16,7 @@ pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
         sass_path
     };
 
-    let mut options = Options::default();
-    options.output_style = OutputStyle::Compressed;
+    let mut options = Options { output_style: OutputStyle::Compressed, ..Default::default() };
     let mut compiled_paths = compile_sass_glob(&sass_path, output_path, "scss", &options)?;
 
     options.indented_syntax = true;
@@ -91,7 +90,7 @@ fn test_get_non_partial_scss() {
 
     let result = get_non_partial_scss(&path, "scss");
 
-    assert!(result.len() != 0);
+    assert!(!result.is_empty());
     assert!(result.iter().filter_map(|path| path.file_name()).any(|file| file == "scss.scss"))
 }
 #[test]
@@ -106,6 +105,6 @@ fn test_get_non_partial_scss_underscores() {
 
     let result = get_non_partial_scss(&path, "scss");
 
-    assert!(result.len() != 0);
+    assert!(!result.is_empty());
     assert!(result.iter().filter_map(|path| path.file_name()).any(|file| file == "scss.scss"))
 }

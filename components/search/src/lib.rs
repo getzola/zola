@@ -106,7 +106,7 @@ fn fill_index(
     }
 
     if search_config.include_content {
-        let body = AMMONIA.clean(&content).to_string();
+        let body = AMMONIA.clean(content).to_string();
         if let Some(truncate_len) = search_config.truncate_content_length {
             // Not great for unicode
             // TODO: fix it like the truncate in Tera

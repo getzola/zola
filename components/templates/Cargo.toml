@@ -28,8 +28,12 @@ rendering = { path = "../rendering" }
 [dependencies.reqwest]
 version = "0.11"
 default-features = false
-features = ["blocking", "rustls-tls"]
+features = ["blocking"]
 
 [dev-dependencies]
 mockito = "0.30"
 tempfile = "3"
+
+[features]
+rust-tls = ["reqwest/rustls-tls"]
+native-tls = ["reqwest/default-tls"]

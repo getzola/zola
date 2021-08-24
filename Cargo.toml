@@ -1,6 +1,6 @@
 [package]
 name = "zola"
-version = "0.14.0"
+version = "0.14.1"
 authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
 edition = "2018"
 license = "MIT"
@@ -33,7 +33,7 @@ percent-encoding = "2"
 notify = "4"
 ws = "0.9"
 ctrlc = "3"
-open = "1.2"
+open = "2"
 globset = "0.4"
 relative-path = "1"
 serde_json = "1.0"
@@ -48,6 +48,11 @@ search = { path = "components/search" }
 
 [dev-dependencies]
 same-file = "1"
+
+[features]
+default = ["rust-tls"]
+rust-tls = ["site/rust-tls"]
+native-tls = ["site/native-tls"]
 
 [workspace]
 members = [

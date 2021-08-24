@@ -151,15 +151,15 @@ fn can_build_site_without_live_reload() {
     assert!(file_contains!(public, "posts/tutorials/devops/index.html", "docker"));
 
     // We do have categories
-    assert_eq!(file_exists!(public, "categories/index.html"), true);
-    assert_eq!(file_exists!(public, "categories/a-category/index.html"), true);
-    assert_eq!(file_exists!(public, "categories/a-category/atom.xml"), true);
+    assert!(file_exists!(public, "categories/index.html"));
+    assert!(file_exists!(public, "categories/a-category/index.html"));
+    assert!(file_exists!(public, "categories/a-category/atom.xml"));
     // and podcast_authors (https://github.com/getzola/zola/issues/1177)
-    assert_eq!(file_exists!(public, "podcast-authors/index.html"), true);
-    assert_eq!(file_exists!(public, "podcast-authors/some-person/index.html"), true);
-    assert_eq!(file_exists!(public, "podcast-authors/some-person/atom.xml"), true);
+    assert!(file_exists!(public, "podcast-authors/index.html"));
+    assert!(file_exists!(public, "podcast-authors/some-person/index.html"));
+    assert!(file_exists!(public, "podcast-authors/some-person/atom.xml"));
     // But no tags
-    assert_eq!(file_exists!(public, "tags/index.html"), false);
+    assert!(!file_exists!(public, "tags/index.html"));
 
     // Theme files are there
     assert!(file_exists!(public, "sample.css"));
@@ -181,10 +181,7 @@ fn can_build_site_without_live_reload() {
     assert!(!file_exists!(public, "secret_section/page.html"));
     assert!(!file_exists!(public, "secret_section/secret_sub_section/hello.html"));
     // no live reload code
-    assert_eq!(
-        file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"),
-        false
-    );
+    assert!(!file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"),);
 
     // Both pages and sections are in the sitemap
     assert!(file_contains!(
@@ -238,11 +235,11 @@ fn can_build_site_with_live_reload_and_drafts() {
     // TODO: add assertion for syntax highlighting
 
     // We do have categories
-    assert_eq!(file_exists!(public, "categories/index.html"), true);
-    assert_eq!(file_exists!(public, "categories/a-category/index.html"), true);
-    assert_eq!(file_exists!(public, "categories/a-category/atom.xml"), true);
+    assert!(file_exists!(public, "categories/index.html"));
+    assert!(file_exists!(public, "categories/a-category/index.html"));
+    assert!(file_exists!(public, "categories/a-category/atom.xml"));
     // But no tags
-    assert_eq!(file_exists!(public, "tags/index.html"), false);
+    assert!(!file_exists!(public, "tags/index.html"));
 
     // no live reload code
     assert!(file_contains!(public, "index.html", "/livereload.js"));
@@ -320,7 +317,7 @@ fn can_build_site_with_taxonomies() {
     // Extending from a theme works
     assert!(file_contains!(public, "categories/a/index.html", "EXTENDED"));
     // Tags aren't
-    assert_eq!(file_exists!(public, "tags/index.html"), false);
+    assert!(!file_exists!(public, "tags/index.html"));
 
     // Categories are in the sitemap
     assert!(file_contains!(
@@ -403,7 +400,7 @@ fn can_build_site_with_pagination_for_section() {
         "posts/index.html",
         "Last: https://replace-this-with-your-url.com/posts/page/5/"
     ));
-    assert_eq!(file_contains!(public, "posts/index.html", "has_prev"), false);
+    assert!(!file_contains!(public, "posts/index.html", "has_prev"));
 
     assert!(file_exists!(public, "posts/page/2/index.html"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 5"));
@@ -526,8 +523,8 @@ fn can_build_site_with_pagination_for_index() {
         "index.html",
         "Last: https://replace-this-with-your-url.com/page/2/"
     ));
-    assert_eq!(file_contains!(public, "index.html", "has_prev"), false);
-    assert_eq!(file_contains!(public, "index.html", "has_next"), true);
+    assert!(!file_contains!(public, "index.html", "has_prev"));
+    assert!(file_contains!(public, "index.html", "has_next"));
 
     // sitemap contains the pager pages
     assert!(file_contains!(
@@ -612,7 +609,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
         "tags/a/index.html",
         "Last: https://replace-this-with-your-url.com/tags/a/page/8/"
     ));
-    assert_eq!(file_contains!(public, "tags/a/index.html", "has_prev"), false);
+    assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
 
     // sitemap contains the pager pages
     assert!(file_contains!(
@@ -735,7 +732,7 @@ fn can_build_site_with_html_minified() {
     assert!(file_contains!(
         public,
         "index.html",
-        "<!DOCTYPE html><html lang=en><head><meta charset=UTF-8>"
+        "<!doctype html><html lang=en><head><meta charset=UTF-8>"
     ));
 }
 
