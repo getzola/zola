@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.15.0
+
+
 ## 0.14.1 (2021-08-24)
 
 - HTML minification now respects HTML spec (it still worked before because browsers can handle invalid HTML well and minifiers take advantage of it)
