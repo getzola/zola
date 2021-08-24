@@ -4,14 +4,13 @@ mod util;
 mod arg_value;
 mod inner_tag;
 mod parse;
-mod range_relation;
 mod string_literal;
 
 use arg_value::ToJsonConvertError;
 pub use parse::{fetch_shortcodes, ShortcodeContext};
+use crate::transform::Transform;
 
 use std::collections::HashMap;
-use std::ops::Range;
 
 #[derive(Clone, PartialEq)]
 pub enum ShortcodeFileType {
@@ -54,38 +53,20 @@ impl Into<errors::Error> for RenderError {
     }
 }
 
-/// We will need to update the spans of the contexts which haven't yet been handled because their
-/// spans are still based on the untransformed version.
-#[derive(Debug)]
-struct Transform {
-    span_start: usize,
-    initial_end: usize,
-    after_end: usize,
-}
-
-impl Transform {
-    fn new(original_span: &Range<usize>, new_len: usize) -> Transform {
-        Transform {
-            span_start: original_span.start,
-            initial_end: original_span.end,
-            after_end: new_len + original_span.start,
-        }
-    }
-}
 
 /// Looks through a source string and will replace all shortcodes taking into account the call
 /// stack, invocation_counts, and the preexisting tera_context.
 fn replace_all_shortcodes(
     source: &str,
-    shortcodes: &HashMap<String, ShortcodeDefinition>,
+    shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
     call_stack: &mut Vec<String>,
     invocation_counts: &mut HashMap<String, usize>,
     context: &tera::Context,
     filter_file_type: &ShortcodeFileType,
-) -> Result<String, RenderError> {
+) -> Result<(String, Vec<Transform>), RenderError> {
     let mut content = source.to_string();
 
-    let mut transforms: Vec<Transform> = Vec::new();
+    let mut transforms = Vec::new();
 
     for mut ctx in fetch_shortcodes(&content).into_iter() {
         for Transform { span_start, initial_end, after_end } in transforms.iter() {
@@ -97,24 +78,25 @@ fn replace_all_shortcodes(
         let res = render_shortcode(
             &content,
             ctx,
-            shortcodes,
+            shortcode_definitions,
             call_stack,
             invocation_counts,
             context,
             filter_file_type,
         )?;
+
         transforms.push(Transform::new(&ctx_span, res.len()));
         content.replace_range(ctx_span, &res);
     }
 
-    Ok(content)
+    Ok((content, transforms))
 }
 
 /// Take one specific shortcode and attempt to turn it into its resulting replacement string
 fn render_shortcode(
     source: &str,
     context: ShortcodeContext,
-    shortcodes: &HashMap<String, ShortcodeDefinition>,
+    shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
     call_stack: &mut Vec<String>,
     invocation_counts: &mut HashMap<String, usize>,
     tera_context: &tera::Context,
@@ -151,7 +133,7 @@ fn render_shortcode(
 
     new_context.extend(tera_context.clone());
 
-    let shortcode_def = shortcodes.get(context.name());
+    let shortcode_def = shortcode_definitions.get(context.name());
     Ok(match shortcode_def {
         // Filter out where the shortcode definition is unknown and where the shortcode definition
         // is HTML.
@@ -166,9 +148,11 @@ fn render_shortcode(
             // Add the current shortcode to the call stack.
             call_stack.push(context.name().to_string());
 
-            let content = replace_all_shortcodes(
+            // NOTE: We can ignore transforms here since the overarching transform will capture the
+            // idea anyway.
+            let (content, _) = replace_all_shortcodes(
                 &content,
-                shortcodes,
+                shortcode_definitions,
                 call_stack,
                 invocation_counts,
                 &tera_context,
@@ -189,22 +173,19 @@ fn render_shortcode(
 /// Inserts shortcodes of file type `filter_file_type` (recursively) into a source string
 pub fn insert_shortcodes(
     source: &str,
-    shortcodes: &HashMap<String, ShortcodeDefinition>,
+    shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
     filter_file_type: ShortcodeFileType,
-) -> Result<String, RenderError> {
+    tera_context: &tera::Context,
+) -> Result<(String, Vec<Transform>), RenderError> {
     let mut invocation_counts = HashMap::new();
     let mut call_stack = Vec::new();
 
-    // TODO: This should be handed down in the function arguments so it can include some info about
-    // the page.
-    let tera_context = tera::Context::new();
-
     replace_all_shortcodes(
         source,
-        shortcodes,
+        shortcode_definitions,
         &mut call_stack,
         &mut invocation_counts,
-        &tera_context,
+        tera_context,
         &filter_file_type,
     )
 }
@@ -292,38 +273,44 @@ mod tests {
             "html" => HTML, "{{ wow }}",
             "bodied" => Markdown, "much {{ body }}",
         ];
+        
+        let tera_context = tera::Context::new();
 
         assert_eq!(
             insert_shortcodes(
                 "{{ inv() }}{{ inv() }}",
                 &shortcodes,
-                ShortcodeFileType::Markdown
-            ),
-            Ok("12".to_string())
+                ShortcodeFileType::Markdown,
+                &tera_context
+            ).unwrap().0,
+            "12".to_string()
         );
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }}{% end %}",
                 &shortcodes,
-                ShortcodeFileType::Markdown
-            ),
-            Ok("much wow".to_string())
+                ShortcodeFileType::Markdown,
+                &tera_context
+            ).unwrap().0,
+            "much wow".to_string()
         );
         assert_eq!(
             insert_shortcodes(
                 "Hello {{ html() }}!",
                 &shortcodes,
                 ShortcodeFileType::Markdown,
-            ),
-            Ok("Hello {{ html() }}!".to_string())
+                &tera_context
+            ).unwrap().0,
+            "Hello {{ html() }}!".to_string()
         );
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }} {{ html() }}{% end %}",
                 &shortcodes,
                 ShortcodeFileType::Markdown,
-            ),
-            Ok("much wow {{ html() }}".to_string())
+                &tera_context
+            ).unwrap().0,
+            "much wow {{ html() }}".to_string()
         );
     }
 
@@ -340,37 +327,43 @@ mod tests {
             "bodied" => HTML, "much {{ body }}",
         ];
 
+        let tera_context = tera::Context::new();
+
         assert_eq!(
             insert_shortcodes(
                 "{{ inv() }}{{ inv() }}",
                 &shortcodes,
-                ShortcodeFileType::HTML
-            ),
-            Ok("12".to_string())
+                ShortcodeFileType::HTML,
+                &tera_context
+            ).unwrap().0,
+            "12".to_string()
         );
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }}{% end %}",
                 &shortcodes,
-                ShortcodeFileType::HTML
-            ),
-            Ok("much wow".to_string())
+                ShortcodeFileType::HTML,
+                &tera_context
+            ).unwrap().0,
+            "much wow".to_string()
         );
         assert_eq!(
             insert_shortcodes(
                 "Hello {{ html() }}!",
                 &shortcodes,
                 ShortcodeFileType::HTML,
-            ),
-            Ok("Hello {{ html() }}!".to_string())
+                &tera_context
+            ).unwrap().0,
+            "Hello {{ html() }}!".to_string()
         );
         assert_eq!(
             insert_shortcodes(
                 "{% bodied() %}{{ a() }} {{ html() }}{% end %}",
                 &shortcodes,
                 ShortcodeFileType::HTML,
-            ),
-            Ok("much wow {{ html() }}".to_string())
+                &tera_context
+            ).unwrap().0,
+            "much wow {{ html() }}".to_string()
         );
     }
 }

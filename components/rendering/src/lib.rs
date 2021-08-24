@@ -3,37 +3,18 @@ mod context;
 mod markdown;
 mod shortcode;
 mod table_of_contents;
+mod transform;
+mod range_relation;
 
-use shortcode::{ fetch_shortcodes, ShortcodeContext };
+use shortcode::{insert_shortcodes, ShortcodeFileType};
 
 use errors::Result;
-
-pub struct ContentProcessingContext {
-}
-
-impl ContentProcessingContext {
-    fn new(_shortcodes: Vec<ShortcodeContext>) -> Self {
-        unimplemented!()
-    }
-
-    fn has_shortcodes(&self) -> bool {
-        unimplemented!()
-    }
-}
-
-fn render_md_shortcodes(_context: &RenderContext, _processing_context: &mut ContentProcessingContext) -> Result<markdown::Rendered> {
-    unimplemented!()
-}
-
-fn render_html_shortcodes(_context: &RenderContext, _processing_context: &mut ContentProcessingContext) -> Result<(markdown::Rendered, Vec<String>)> {
-    unimplemented!()
-}
-
-
 
 pub use context::RenderContext;
 use markdown::markdown_to_html;
 pub use table_of_contents::Heading;
+
+use std::collections::HashMap;
 
 pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown::Rendered> {
     // Shortcode render order:
@@ -43,36 +24,25 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
     // 4. HTML shortcodes
     // 5. Embedded HTML shortcodes
 
-    // Locate all shortcodes in the current content.
-    let shortcodes = fetch_shortcodes(content);
-
-    // If no shortcodes are present just render the document.
-    if shortcodes.is_empty() {
-        return markdown_to_html(content, &context);
-    }
-
-    // Declare a context which will keep track of everything.
-    let mut processing_context = ContentProcessingContext::new(shortcodes);
-
+    // Fetch all the defined shortcodes
+    // TODO: Actually fetch these. This should maybe be handed down by the RenderContext?
+    let shortcode_definitions = HashMap::new();
 
     // This will render both top-level and embedded MD shortcodes (Step 1, 2).
-    let content = render_md_shortcodes(&context, &mut processing_context)?;
+    let (content, _) = insert_shortcodes(content, &shortcode_definitions, ShortcodeFileType::Markdown, &context.tera_context)
+        .map_err(Into::<errors::Error>::into)?;
 
     // Turn the MD into HTML (Step 3).
-    let content = markdown_to_html(&content.body, &context)?;
-
-    if !processing_context.has_shortcodes() {
-        return Ok(content);
-    }
+    let html_context = markdown_to_html(&content, &context)?;
 
     // This will render both top-level and embedded HTML shortcodes (Step 4, 5).
-    let (content, _unprocessed_md) =
-        render_html_shortcodes(&context, &mut processing_context)?;
+    let (content, html_transforms) = insert_shortcodes(&html_context.body, &shortcode_definitions, ShortcodeFileType::HTML, &context.tera_context)
+        .map_err(Into::<errors::Error>::into)?;
 
-    // TODO: Implement this
+    // TODO: Here issue #1418 could be implemented
     // if do_warn_about_unprocessed_md {
     //     warn_about_unprocessed_md(unprocessed_md);
     // }
-
-    Ok(content)
+    
+    Ok(markdown::Rendered::new_with_transforms(&content, html_context, html_transforms))
 }

@@ -9,22 +9,23 @@ use std::ops::Range;
 
 use super::arg_value::ArgValue;
 use super::inner_tag::InnerTag;
-use super::range_relation::RangeRelation;
 
-// Ranges have some limitations on adding and subtracting so we use usize's copy behaviour
-// to circumvent that with this macro. Plus we are dealing with usizes so we cannot do easy
-// subtracting by adding negative numbers.
-macro_rules! range_shift {
-    ($range:expr, $translation:expr, $do_shift_right:expr) => {{
-        if !$do_shift_right {
-            // These debugs are in place to check whether we aren't overshifting the range
-            debug_assert!($range.start >= $translation);
+use crate::range_relation::RangeRelation;
 
-            ($range.start - $translation)..($range.end - $translation)
-        } else {
-            ($range.start + $translation)..($range.end + $translation)
+/// Ranges have some limitations on adding and subtracting so we use usize's copy behaviour
+/// to circumvent that with this function. Plus we are dealing with usizes so we cannot do easy
+/// subtracting by adding negative numbers.
+fn range_shift(range: &Range<usize>, translation: usize, do_shift_right: bool) -> Option<Range<usize>> {
+    Some(if !do_shift_right {
+        // If the subtraction is going to be bigger than the range start.
+        if range.start < translation {
+            return None;
         }
-    }};
+
+        (range.start - translation)..(range.end - translation)
+    } else {
+        (range.start + translation)..(range.end + translation)
+    })
 }
 
 #[derive(Debug, PartialEq)]
@@ -100,11 +101,12 @@ impl ShortcodeContext {
     /// Translates/Moves the span by `translation` either to the left or the right depending on
     /// `do_shift_right`.
     fn shift_span(&mut self, translation: usize, do_shift_right: bool) {
-        self.openblock_span = range_shift!(self.openblock_span, translation, do_shift_right);
+        self.openblock_span = range_shift(&self.openblock_span, translation, do_shift_right).unwrap();
 
         if let Some(ref mut body) = self.body {
-            body.content_span = range_shift!(body.content_span, translation, do_shift_right);
-            body.endblock_span = range_shift!(body.endblock_span, translation, do_shift_right);
+            // All the unwraps should be fine.
+            body.content_span = range_shift(&body.content_span, translation, do_shift_right).unwrap();
+            body.endblock_span = range_shift(&body.endblock_span, translation, do_shift_right).unwrap();
 
             // Make sure everything is still properly aligned
             debug_assert_eq!(self.openblock_span.end, body.content_span.start);
@@ -195,7 +197,7 @@ impl ShortcodeContext {
                 } else {
                     body.content_span.end - translation
                 };
-                body.endblock_span = range_shift!(body.endblock_span, translation, do_shift_right);
+                body.endblock_span = range_shift(&body.endblock_span, translation, do_shift_right).unwrap();
             }
         }
 

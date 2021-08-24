@@ -12,6 +12,9 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
+use crate::transform::Transform;
+
+use crate::range_relation::RangeRelation;
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -25,6 +28,57 @@ pub struct Rendered {
     pub internal_links: Vec<(String, Option<String>)>,
     /// Outgoing links to external webpages (i.e. HTTP(S) targets).
     pub external_links: Vec<String>,
+}
+
+impl Rendered {
+    /// Take an old [Rendered] with a *new_body* string and the transforms which turned it into
+    /// this new string and adjust all the properties of [Rendered] to match this new body.
+    pub fn new_with_transforms(
+        new_body: &str,
+        mut old_rendered: Rendered,
+        transforms: Vec<Transform>,
+    ) -> Self {
+        // TODO: Add some proper testing for this function.
+        // TODO: Figure out what to do about the StartsIn case
+
+        old_rendered.body = new_body.to_string();
+
+        old_rendered.summary_len = old_rendered.summary_len.map(|mut summary_len| {
+            for transform in transforms.iter() {
+                match RangeRelation::new(&transform.initial(), &(0..summary_len)) {
+                    // If the transform is outside of the summary, this should be the most common
+                    // situation probably.
+                    RangeRelation::Before => {},
+
+                    // Here the transform is contained within the summary so we adjust the
+                    // summary length accordingly.
+                    RangeRelation::Around => {
+                        summary_len = transform.based_adjust(summary_len).expect("This should never be a problem since we know that the transform.len < summary_len");
+                    },
+
+                    // Here the two ranges should match, so the new summary length should just
+                    // be the new length.
+                    RangeRelation::Within => {
+                        summary_len = transform.after().len();
+                    },
+
+                    // This is a weird situation... This would mean that someone probably added a
+                    // body around the summary marker... Maybe just ignore this one and add a todo
+                    // for now.
+                    // 
+                    // NOTE: Maybe an error should just be thrown, but I can also think of actual
+                    // situations where this might come in.
+                    RangeRelation::StartsIn => todo!("Think of a proper solution for this."),
+
+                    RangeRelation::After | RangeRelation::EndsIn => unreachable!("Should be impossible to reach since the summary starts from 0"),
+                }
+            }
+
+            summary_len
+        });
+
+        old_rendered
+    }
 }
 
 /// Tracks a heading in a slice of pulldown-cmark events
