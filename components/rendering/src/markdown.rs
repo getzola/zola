@@ -12,6 +12,7 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
+use crate::shortcode::ShortcodeContext;
 use crate::transform::Transform;
 
 use crate::range_relation::RangeRelation;
@@ -208,7 +209,11 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
     heading_refs
 }
 
-pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
+pub fn markdown_to_html(
+    content: &str,
+    context: &RenderContext,
+    about_to_be_replaced_shortcodes: &Vec<ShortcodeContext>,
+) -> Result<Rendered> {
     lazy_static! {
         static ref EMOJI_REPLACER: gh_emoji::Replacer = gh_emoji::Replacer::new();
     }
@@ -230,9 +235,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
 
+    let mut expected_paragraph_end: Option<usize> = None;
+    let mut paragraph_iterations = Vec::new();
+
     let mut opts = Options::empty();
     let mut has_summary = false;
-    let mut in_html_block = false;
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_FOOTNOTES);
     opts.insert(Options::ENABLE_STRIKETHROUGH);
@@ -244,7 +251,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
     {
         let mut events = Parser::new_ext(content, opts)
-            .map(|event| {
+            .into_offset_iter()
+            .map(|(event, range)| {
                 match event {
                     Event::Text(text) => {
                         // if we are in the middle of a highlighted code block
@@ -317,6 +325,32 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             )
                         } else {
                             Event::Start(Tag::Link(link_type, fixed_link.into(), title))
+                        }
+                    }
+                    Event::Start(Tag::Paragraph) => {
+                        if let Some(shortcode) = about_to_be_replaced_shortcodes
+                            .iter()
+                            .find(|shortcode| shortcode.span().start == range.end)
+                        {
+                            expected_paragraph_end = Some(shortcode.span().end);
+                            Event::Html(
+                                format!("<p iteration=\"{}\">", paragraph_iterations.len()).into(),
+                            )
+                        } else {
+                            event
+                        }
+                    }
+                    Event::End(Tag::Paragraph) => {
+                        if let Some(expected_end) = expected_paragraph_end {
+                            if expected_end == range.start {
+                                paragraph_iterations.push(true);
+                                Event::Html("".into())
+                            } else {
+                                paragraph_iterations.push(true);
+                                event
+                            }
+                        } else {
+                            event
                         }
                     }
                     Event::Html(ref markup) => {
@@ -406,6 +440,15 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
         }
 
         cmark::html::push_html(&mut html, events.into_iter());
+
+        // Replace all the paragraph iterations on which there was a chance for an paragraphed
+        // shortcode
+        for (index, paragraph_iteration) in paragraph_iterations.into_iter().enumerate() {
+            html = html.replace(
+                &format!("<p iteration=\"{}\">", index),
+                if paragraph_iteration { "" } else { "<p>" },
+            );
+        }
     }
 
     if let Some(e) = error {
