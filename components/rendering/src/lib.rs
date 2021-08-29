@@ -1,12 +1,14 @@
 mod codeblock;
 mod context;
 mod markdown;
+mod range_relation;
 mod shortcode;
 mod table_of_contents;
 mod transform;
-mod range_relation;
 
-use shortcode::{insert_shortcodes, ShortcodeFileType};
+use shortcode::{
+    fetch_shortcodes, insert_shortcodes, ShortcodeContext, ShortcodeDefinition, ShortcodeFileType,
+};
 
 use errors::Result;
 
@@ -29,20 +31,35 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
     let shortcode_definitions = &context.shortcode_definitions;
 
     // This will render both top-level and embedded MD shortcodes (Step 1, 2).
-    let (content, _) = insert_shortcodes(content, shortcode_definitions, ShortcodeFileType::Markdown, &context.tera_context)
-        .map_err(Into::<errors::Error>::into)?;
+    let (content, _) = insert_shortcodes(
+        content,
+        shortcode_definitions,
+        ShortcodeFileType::Markdown,
+        &context.tera_context,
+    )
+    .map_err(Into::<errors::Error>::into)?;
+
+    let replacable_shortcodes = fetch_shortcodes(&content)
+        .into_iter()
+        .filter(|shortcode| shortcode_definitions.contains_key(shortcode.name()))
+        .collect();
 
     // Turn the MD into HTML (Step 3).
-    let html_context = markdown_to_html(&content, &context)?;
+    let html_context = markdown_to_html(&content, &context, &replacable_shortcodes)?;
 
     // This will render both top-level and embedded HTML shortcodes (Step 4, 5).
-    let (content, html_transforms) = insert_shortcodes(&html_context.body, shortcode_definitions, ShortcodeFileType::HTML, &context.tera_context)
-        .map_err(Into::<errors::Error>::into)?;
+    let (content, html_transforms) = insert_shortcodes(
+        &html_context.body,
+        shortcode_definitions,
+        ShortcodeFileType::HTML,
+        &context.tera_context,
+    )
+    .map_err(Into::<errors::Error>::into)?;
 
     // TODO: Here issue #1418 could be implemented
     // if do_warn_about_unprocessed_md {
     //     warn_about_unprocessed_md(unprocessed_md);
     // }
-    
+
     Ok(markdown::Rendered::new_with_transforms(&content, html_context, html_transforms))
 }

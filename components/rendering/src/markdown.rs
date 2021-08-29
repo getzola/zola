@@ -235,8 +235,7 @@ pub fn markdown_to_html(
     let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
 
-    let mut expected_paragraph_end: Option<usize> = None;
-    let mut paragraph_iterations = Vec::new();
+    let mut stop_next_end_p = false;
 
     let mut opts = Options::empty();
     let mut has_summary = false;
@@ -328,27 +327,26 @@ pub fn markdown_to_html(
                         }
                     }
                     Event::Start(Tag::Paragraph) => {
-                        if let Some(shortcode) = about_to_be_replaced_shortcodes
+                        // We have to compare the start and the trimmed length because the content
+                        // will sometimes contain '\n' at the end which we want to avoid.
+                        // 
+                        // NOTE: It could be more efficient to remove this search and just keep
+                        // track of the shortcodes to come and compare it to that.
+                        if about_to_be_replaced_shortcodes
                             .iter()
-                            .find(|shortcode| shortcode.span().start == range.end)
+                            .any(|shortcode| shortcode.span().start == range.start &&
+                                 shortcode.span().len() == content[range.start..range.end].trim().len())
                         {
-                            expected_paragraph_end = Some(shortcode.span().end);
-                            Event::Html(
-                                format!("<p iteration=\"{}\">", paragraph_iterations.len()).into(),
-                            )
+                            stop_next_end_p = true;
+                            Event::Html("".into())
                         } else {
                             event
                         }
                     }
                     Event::End(Tag::Paragraph) => {
-                        if let Some(expected_end) = expected_paragraph_end {
-                            if expected_end == range.start {
-                                paragraph_iterations.push(true);
-                                Event::Html("".into())
-                            } else {
-                                paragraph_iterations.push(true);
-                                event
-                            }
+                        if stop_next_end_p {
+                            stop_next_end_p = false;
+                            Event::Html("".into())
                         } else {
                             event
                         }
@@ -440,15 +438,6 @@ pub fn markdown_to_html(
         }
 
         cmark::html::push_html(&mut html, events.into_iter());
-
-        // Replace all the paragraph iterations on which there was a chance for an paragraphed
-        // shortcode
-        for (index, paragraph_iteration) in paragraph_iterations.into_iter().enumerate() {
-            html = html.replace(
-                &format!("<p iteration=\"{}\">", index),
-                if paragraph_iteration { "" } else { "<p>" },
-            );
-        }
     }
 
     if let Some(e) = error {
