@@ -84,9 +84,6 @@ hard_link_static = false
 #
 taxonomies = []
 
-# A list of directories used to search for additional `.sublime-syntax` files.
-extra_syntaxes = []
-
 # When set to "true", a search index is built from the pages and section
 # content for `default_language`.
 build_search_index = false
@@ -95,6 +92,9 @@ build_search_index = false
 [markdown]
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
+
+# A list of directories used to search for additional `.sublime-syntax` files.
+extra_syntaxes = []
 
 # The theme to use for code highlighting.
 # See below for list of allowed values.
