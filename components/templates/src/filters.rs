@@ -33,6 +33,10 @@ impl MarkdownFilter {
 
 impl TeraFilter for MarkdownFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        // NOTE: RenderContext below is not aware of the current language
+        // However, it should not be a problem because the surrounding tera
+        // template has language context, and will most likely call a piece of
+        // markdown respecting language preferences.
         let mut context = RenderContext::from_config(&self.config);
         context.permalinks = Cow::Borrowed(&self.permalinks);
         context.tera = Cow::Borrowed(&self.tera);

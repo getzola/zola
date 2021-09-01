@@ -115,6 +115,7 @@ fn render_shortcode(
         tera_context.insert("body", b.trim_end());
     }
     tera_context.insert("nth", &invocation_count);
+    tera_context.insert("lang", &context.lang);
     tera_context.extend(context.tera_context.clone());
 
     let mut template_name = format!("shortcodes/{}.md", name);
