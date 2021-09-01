@@ -731,6 +731,28 @@ fn can_insert_anchor_with_other_special_chars() {
 }
 
 #[test]
+fn can_insert_anchor_with_lang() {
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+    tera.add_raw_template("anchor-link.html", "({{ lang }})").unwrap();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default_for_test();
+    let context = RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::Right,
+    );
+    let res = render_content("# Hello", &context).unwrap();
+    assert_eq!(
+        res.body,
+        "<h1 id=\"hello\">Hello(en)</h1>\n"
+    );
+}
+
+#[test]
 fn can_make_toc() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();

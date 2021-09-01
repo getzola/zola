@@ -342,6 +342,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 let mut c = tera::Context::new();
                 c.insert("id", &id);
                 c.insert("level", &heading_ref.level);
+                c.insert("lang", &context.lang);
 
                 let anchor_link = utils::templates::render_template(
                     ANCHOR_LINK_TEMPLATE,
