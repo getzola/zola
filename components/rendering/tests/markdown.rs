@@ -207,7 +207,7 @@ fn can_render_md_shortcode_with_lang() {
     let config = Config::default_for_test();
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
-    tera.add_raw_template("shortcodes/i18nshortcode.md", "{{ lang }}").unwrap();
+    tera.add_raw_template("shortcodes/i18nshortcode.md", "![Book cover in {{ lang }}](cover.{{ lang }}.png)").unwrap();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -217,8 +217,8 @@ fn can_render_md_shortcode_with_lang() {
         InsertAnchor::None,
     );
 
-    let res = render_content("a{{ i18nshortcode() }}a", &context).unwrap();
-    assert_eq!(res.body, "<p>aena</p>\n");
+    let res = render_content("{{ i18nshortcode() }}", &context).unwrap();
+    assert_eq!(res.body, "<p><img src=\"cover.en.png\" alt=\"Book cover in en\" /></p>\n");
 }
 
 

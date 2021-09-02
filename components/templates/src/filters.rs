@@ -128,6 +128,22 @@ mod tests {
     }
 
     #[test]
+    fn markdown_filter_override_lang() {
+        // We're checking that we can use a workaround to explicitly provide `lang` in markdown filter from tera,
+        // because otherwise markdown filter shortcodes are not aware of the current language
+        // NOTE: This should also work for `nth` although i don't see a reason to do that
+        let args = HashMap::new();
+        let config = Config::default();
+        let permalinks = HashMap::new();
+        let mut tera = super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
+        tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
+        let filter = MarkdownFilter { config, permalinks, tera };
+        let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"ajpa").unwrap());
+    }
+
+    #[test]
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
