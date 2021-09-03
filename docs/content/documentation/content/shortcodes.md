@@ -139,7 +139,7 @@ anything else until the closing tag.
 Every shortcode can access some variables, beyond what you explicitly passed as parameter. These variables are explained in the following subsections:
 
 - invocation count (`nth`)
-- current language (`lang`), unless called from the `markdown` template filter (in which case it will always be `en`)
+- current language (`lang`), unless called from the `markdown` template filter (in which case it will always be the same value as `default_language` in configuration, or `en` when it is unset)
 
 When one of these variables conflict with a variable passed as argument, the argument value will be used.
 
