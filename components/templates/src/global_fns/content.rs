@@ -214,8 +214,7 @@ mod tests {
         };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
-        let static_fn =
-            GetTaxonomy::new(&config.default_language, taxonomies.clone(), library.clone());
+        let static_fn = GetTaxonomy::new(&config.default_language, taxonomies, library);
         // can find it correctly
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
@@ -291,7 +290,7 @@ mod tests {
             items: vec![tag_fr],
         };
 
-        let taxonomies = vec![tags.clone(), tags_fr.clone()];
+        let taxonomies = vec![tags, tags_fr];
         let static_fn =
             GetTaxonomyUrl::new(&config.default_language, &taxonomies, config.slugify.taxonomies);
 

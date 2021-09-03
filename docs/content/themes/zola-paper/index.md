@@ -3,11 +3,11 @@
 title = "zola-paper"
 description = "A clean theme inspired from hugo-paper."
 template = "theme.html"
-date = 2021-05-06T18:30:07+02:00
+date = 2021-08-18T01:00:57-07:00
 
 [extra]
-created = 2021-05-06T18:30:07+02:00
-updated = 2021-05-06T18:30:07+02:00
+created = 2021-08-18T01:00:57-07:00
+updated = 2021-08-18T01:00:57-07:00
 repository = "https://github.com/schoenenberg/zola-paper.git"
 homepage = "https://github.com/schoenenberg/zola-paper"
 minimum_version = "0.11.0"

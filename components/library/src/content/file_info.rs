@@ -52,7 +52,7 @@ pub struct FileInfo {
 }
 
 impl FileInfo {
-    pub fn new_page(path: &Path, base_path: &PathBuf) -> FileInfo {
+    pub fn new_page(path: &Path, base_path: &Path) -> FileInfo {
         let file_path = path.to_path_buf();
         let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
@@ -87,7 +87,7 @@ impl FileInfo {
         }
     }
 
-    pub fn new_section(path: &Path, base_path: &PathBuf) -> FileInfo {
+    pub fn new_section(path: &Path, base_path: &Path) -> FileInfo {
         let file_path = path.to_path_buf();
         let parent = path.parent().expect("Get parent of section").to_path_buf();
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn can_find_components_in_page_with_assets() {
         let file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
             &PathBuf::new(),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
@@ -175,7 +175,7 @@ mod tests {
     #[test]
     fn doesnt_fail_with_multiple_content_directories_in_path() {
         let file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/content/site/content/posts/tutorials/python/index.md"),
+            Path::new("/home/vincent/code/content/site/content/posts/tutorials/python/index.md"),
             &PathBuf::from("/home/vincent/code/content/site"),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
@@ -186,7 +186,7 @@ mod tests {
         let mut config = Config::default();
         config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
         );
         let res = file.find_language(&config);
@@ -199,7 +199,7 @@ mod tests {
         let mut config = Config::default();
         config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.en.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python.en.md"),
             &PathBuf::new(),
         );
         let res = file.find_language(&config);
@@ -212,7 +212,7 @@ mod tests {
         let mut config = Config::default();
         config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
@@ -225,7 +225,7 @@ mod tests {
     fn do_nothing_on_unknown_language_in_page_with_i18n_off() {
         let config = Config::default();
         let mut file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
         );
         let res = file.find_language(&config);
@@ -238,7 +238,7 @@ mod tests {
         let mut config = Config::default();
         config.languages.insert("it".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
         );
         let res = file.find_language(&config);
@@ -250,7 +250,7 @@ mod tests {
         let mut config = Config::default();
         config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_section(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
             &PathBuf::new(),
         );
         let res = file.find_language(&config);
@@ -262,7 +262,7 @@ mod tests {
     #[test]
     fn correct_canonical_for_index() {
         let file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
             &PathBuf::new(),
         );
         assert_eq!(
@@ -277,7 +277,7 @@ mod tests {
         let mut config = Config::default();
         config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
-            &Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
+            Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),
         );
         let res = file.find_language(&config);

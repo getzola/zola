@@ -38,7 +38,7 @@ fn main() {
             };
 
             // and then the ones we add
-            let mut extra = base_path.clone();
+            let mut extra = base_path;
             extra.push("extra");
             match builder.add_from_folder(&extra, true) {
                 Ok(_) => (),
@@ -60,7 +60,7 @@ fn main() {
                     .or_insert_with(|| HashSet::from_iter(s.file_extensions.iter().cloned()));
             }
             let mut keys = syntaxes.keys().collect::<Vec<_>>();
-            keys.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+            keys.sort_by_key(|&a| a.to_lowercase());
             for k in keys {
                 if !syntaxes[k].is_empty() {
                     let mut extensions_sorted = syntaxes[k].iter().cloned().collect::<Vec<_>>();

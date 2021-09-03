@@ -9,7 +9,7 @@ It follows the philosophy of paying for only what you need, almost everything is
 To change the configuration, edit the `config.toml` file.
 If you are not familiar with TOML, have a look at [the TOML spec](https://github.com/toml-lang/toml).
 
-⚠️ If you add keys to your `config.toml`, you must pay attention to which TOML section it belongs to.
+⚠️ If you add keys to your `config.toml`, you must pay attention to which TOML section it belongs to. A TOML section starts with a header, e.g. `[search]`, and ends at the next section or EOF.
 
 Here are the current `config.toml` sections:
 1. main (unnamed)
@@ -18,7 +18,8 @@ Here are the current `config.toml` sections:
 4. slugify
 5. search
 6. translations
-7. extra
+7. languages
+8. extra
 
 **Only the `base_url` variable is mandatory**. Everything else is optional. All configuration variables
 used by Zola as well as their default values are listed below:
@@ -72,26 +73,16 @@ feed_filename = "atom.xml"
 # files are always copied, regardless of this setting.
 hard_link_static = false
 
-# The taxonomies to be rendered for the site and their configuration.
+# The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
 #     taxonomies = [
 #       {name = "tags", feed = true}, # each tag will have its own feed
-#       {name = "tags", lang = "fr"}, # you can have taxonomies with the same name in multiple languages
+#       {name = "tags"}, # you can have taxonomies with the same name in multiple languages
 #       {name = "categories", paginate_by = 5},  # 5 items per page for a term
 #       {name = "authors"}, # Basic definition: no feed or pagination
 #     ]
 #
 taxonomies = []
-
-# The additional languages for the site.
-# Example:
-#     languages = [
-#       {code = "fr", feed = true}, # there will be a feed for French content
-#       {code = "fr", search = true}, # there will be a Search Index for French content
-#       {code = "it"}, # there won't be a feed for Italian content
-#     ]
-#
-languages = []
 
 # A list of directories used to search for additional `.sublime-syntax` files.
 extra_syntaxes = []
@@ -159,19 +150,29 @@ include_content = true
 # become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
 
-# Optional translation object. Keys should be language codes.
-# Optional translation object. The key if present should be a language code.
+# Optional translation object for the default language
 # Example:
 #     default_language = "fr"
 #
 #     [translations]
-#     [translations.fr]
 #     title = "Un titre"
 #
-#     [translations.en]
-#     title = "A title"
-#
 [translations]
+
+# Additional languages definition
+# You can define language specific config values and translations: 
+# title, description, generate_feed, feed_filename, taxonomies, build_search_index
+# as well as its own search configuration and translations (see above for details on those)
+[languages]
+# For example
+# [languages.fr]
+# title = "Mon blog"
+# generate_feed = true
+# taxonomies = [
+#    {name = "auteurs"},
+#    {name = "tags"},
+# ]
+# build_search_index = false
 
 # You can put any kind of data here. The data
 # will be accessible in all templates

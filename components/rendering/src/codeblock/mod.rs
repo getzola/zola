@@ -24,8 +24,8 @@ fn opening_html(
 
     if let Some(lang) = language {
         classes.push_str("language-");
-        classes.push_str(&lang);
-        classes.push_str(" ");
+        classes.push_str(lang);
+        classes.push(' ');
 
         html.push_str(" data-lang=\"");
         html.push_str(lang);
@@ -114,7 +114,7 @@ impl<'config> CodeBlock<'config> {
         }
 
         // syntect leaking here in this file
-        for (i, line) in LinesWithEndings::from(&content).enumerate() {
+        for (i, line) in LinesWithEndings::from(content).enumerate() {
             let one_indexed = i + 1;
             // first do we need to skip that line?
             let mut skip = false;
@@ -143,10 +143,10 @@ impl<'config> CodeBlock<'config> {
                     buffer.push_str("<mark");
                     if let Some(ref s) = mark_style {
                         buffer.push_str(" style=\"");
-                        buffer.push_str(&s);
+                        buffer.push_str(s);
                         buffer.push_str("\">");
                     } else {
-                        buffer.push_str(">")
+                        buffer.push('>')
                     }
                     buffer.push_str(&num);
                     buffer.push_str("</mark>");
@@ -161,10 +161,10 @@ impl<'config> CodeBlock<'config> {
                 buffer.push_str("<mark");
                 if let Some(ref s) = mark_style {
                     buffer.push_str(" style=\"");
-                    buffer.push_str(&s);
+                    buffer.push_str(s);
                     buffer.push_str("\">");
                 } else {
-                    buffer.push_str(">")
+                    buffer.push('>')
                 }
                 buffer.push_str(&highlighted_line);
                 buffer.push_str("</mark>");

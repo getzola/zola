@@ -1,7 +1,17 @@
 # Changelog
 
-## 0.14.1 (unreleased)
 
+## 0.15.0
+
+
+## 0.14.1 (2021-08-24)
+
+- HTML minification now respects HTML spec (it still worked before because browsers can handle invalid HTML well and minifiers take advantage of it)
+- Show all errors on `zola serve`
+- `zola serve` now properly returns a 404
+- Fix `zola serve` having issues with config files in separate dir
+- Fix code blocks content not being escaped when not using syntax highlighting
+- Add missing `draft` attribute to the `section` variable in templates
 
 ## 0.14.0 (2021-07-19)
 

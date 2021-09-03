@@ -15,7 +15,7 @@ you can place `{{ __tera_context }}` in the template to print the whole context.
 
 A few variables are available on all templates except feeds and the sitemap:
 
-- `config`: the [configuration](@/documentation/getting-started/configuration.md) without any modifications
+- `config`: the language aware [configuration](@/documentation/getting-started/configuration.md)
 - `current_path`: the path (full URL without `base_url`) of the current page, always starting with a `/`
 - `current_url`: the full URL for the current page
 - `lang`: the language for the current page
@@ -109,11 +109,12 @@ logic applies.
 
 1. The base directory is the Zola root directory, where the `config.toml` is
 2. For the given path: if it starts with `@/`, replace that with `content/` instead and trim any leading `/`
-3. Search in the following 3 or 4 locations in this order, returning the first where the file exists:
-   a. $base_directory + $path
-   b. $base_directory + "static/" + $path
-   c. $base_directory + "content/" + $path
-   d. $base_directory + "themes" + $theme + "static/" + $path only if using a theme
+3. Search in the following locations in this order, returning the first where the file exists:
+   1. $base_directory + $path
+   2. $base_directory + "static/" + $path
+   3. $base_directory + "content/" + $path
+   4. $base_directory + $output_path + $path
+   5. $base_directory + "themes" + $theme + "static/" + $path (only if using a theme)
 
 In practice this means that `@/some/image.jpg`, `/content/some/image.jpg` and `content/some/image.jpg` will point to the
 same thing.

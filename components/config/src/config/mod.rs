@@ -97,6 +97,7 @@ pub struct SerializedConfig<'a> {
     title: &'a Option<String>,
     description: &'a Option<String>,
     languages: HashMap<&'a String, &'a languages::LanguageOptions>,
+    default_language: &'a str,
     generate_feed: bool,
     feed_filename: &'a str,
     taxonomies: &'a [taxonomies::Taxonomy],
@@ -117,18 +118,18 @@ impl Config {
             bail!("A base URL is required in config.toml with key `base_url`");
         }
 
-        if config.markdown.highlight_theme != "css" {
-            if !THEME_SET.themes.contains_key(&config.markdown.highlight_theme) {
-                bail!(
-                    "Highlight theme {} defined in config does not exist.",
-                    config.markdown.highlight_theme
-                );
-            }
+        if config.markdown.highlight_theme != "css"
+            && !THEME_SET.themes.contains_key(&config.markdown.highlight_theme)
+        {
+            bail!(
+                "Highlight theme {} defined in config does not exist.",
+                config.markdown.highlight_theme
+            );
         }
 
         languages::validate_code(&config.default_language)?;
         for code in config.languages.keys() {
-            languages::validate_code(&code)?;
+            languages::validate_code(code)?;
         }
 
         config.add_default_language();
@@ -229,8 +230,8 @@ impl Config {
 
     /// Parse the theme.toml file and merges the extra data from the theme
     /// with the config extra data
-    pub fn merge_with_theme(&mut self, path: &PathBuf, theme_name: &str) -> Result<()> {
-        let theme = Theme::from_file(path, theme_name)?;
+    pub fn merge_with_theme(&mut self, path: PathBuf, theme_name: &str) -> Result<()> {
+        let theme = Theme::from_file(&path, theme_name)?;
         self.add_theme_extra(&theme)
     }
 
@@ -291,6 +292,7 @@ impl Config {
             title: &options.title,
             description: &options.description,
             languages: self.languages.iter().filter(|(k, _)| k.as_str() != lang).collect(),
+            default_language: &self.default_language,
             generate_feed: options.generate_feed,
             feed_filename: &options.feed_filename,
             taxonomies: &options.taxonomies,
@@ -414,44 +416,38 @@ hello = "world"
 
     #[test]
     fn can_make_url_index_page_with_non_trailing_slash_url() {
-        let mut config = Config::default();
-        config.base_url = "http://vincent.is".to_string();
+        let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink(""), "http://vincent.is/");
     }
 
     #[test]
     fn can_make_url_index_page_with_railing_slash_url() {
-        let mut config = Config::default();
-        config.base_url = "http://vincent.is/".to_string();
+        let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink(""), "http://vincent.is/");
     }
 
     #[test]
     fn can_make_url_with_non_trailing_slash_base_url() {
-        let mut config = Config::default();
-        config.base_url = "http://vincent.is".to_string();
+        let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink("hello"), "http://vincent.is/hello/");
     }
 
     #[test]
     fn can_make_url_with_trailing_slash_path() {
-        let mut config = Config::default();
-        config.base_url = "http://vincent.is/".to_string();
+        let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink("/hello"), "http://vincent.is/hello/");
     }
 
     #[test]
     fn can_make_url_with_localhost() {
-        let mut config = Config::default();
-        config.base_url = "http://127.0.0.1:1111".to_string();
+        let config = Config { base_url: "http://127.0.0.1:1111".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink("/tags/rust"), "http://127.0.0.1:1111/tags/rust/");
     }
 
     // https://github.com/Keats/gutenberg/issues/486
     #[test]
     fn doesnt_add_trailing_slash_to_feed() {
-        let mut config = Config::default();
-        config.base_url = "http://vincent.is/".to_string();
+        let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink("atom.xml"), "http://vincent.is/atom.xml");
     }
 
@@ -656,7 +652,7 @@ bar = "baz"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         // We expect an error here
-        assert_eq!(false, config.add_theme_extra(&theme).is_ok());
+        assert!(!config.add_theme_extra(&theme).is_ok());
     }
 
     #[test]

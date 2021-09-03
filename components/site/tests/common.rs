@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use path_slash::PathExt;
 use site::Site;
+use std::ffi::OsStr;
 use tempfile::{tempdir, TempDir};
 
 // 2 helper macros to make all the build testing more bearable
@@ -12,7 +13,7 @@ use tempfile::{tempdir, TempDir};
 macro_rules! file_exists {
     ($root: expr, $path: expr) => {{
         let mut path = $root.clone();
-        for component in $path.split("/") {
+        for component in $path.split('/') {
             path = path.join(component);
         }
         std::path::Path::new(&path).exists()
@@ -24,7 +25,7 @@ macro_rules! file_contains {
     ($root: expr, $path: expr, $text: expr) => {{
         use std::io::prelude::*;
         let mut path = $root.clone();
-        for component in $path.split("/") {
+        for component in $path.split('/') {
             path = path.join(component);
         }
         let mut file = std::fs::File::open(&path).expect(&format!("Failed to open {:?}", $path));
@@ -75,16 +76,13 @@ where
 /// When the path is not a markdown file (.md), None is returned
 /// Strips base_dir from the start of path
 fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String>)> {
-    let ext = entry.extension();
-    if ext.is_none() {
-        // Not a markdown file (no extension), skip
-        return None;
-    }
-    let ext = ext.unwrap();
-    if ext != "md" {
-        // Not a markdown file, skip
-        return None;
-    }
+    // continue if we have md file,
+    // skip otherwise
+    match entry.extension().and_then(OsStr::to_str) {
+        Some("md") => (),
+        _ => return None,
+    };
+
     let mut no_ext = entry.to_path_buf();
     let stem = entry.file_stem().unwrap();
     // Remove .md
@@ -101,7 +99,7 @@ fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String
             Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
             _ => unified_path.to_slash_lossy(),
         };
-        return Some((unified_path_str, Some(lang.to_str().unwrap().into())));
+        Some((unified_path_str, Some(lang.to_str().unwrap().into())))
     } else {
         // No lang, return no_ext directly
         let mut no_ext_string = match no_ext.strip_prefix(base_dir) {
@@ -109,7 +107,7 @@ fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String
             _ => no_ext.to_slash_lossy(),
         };
         no_ext_string.push_str(".md");
-        return Some((no_ext_string, None));
+        Some((no_ext_string, None))
     }
 }
 
@@ -133,17 +131,17 @@ pub fn add_translations_from(
         if let Some((unified_path, lang)) = find_lang_for(&entry, strip) {
             if let Some(index) = expected.get_mut(&unified_path) {
                 // Insert found lang for rel_path, or DEFAULT otherwise
-                index.push(lang.unwrap_or(default.to_string()));
+                index.push(lang.unwrap_or_else(|| default.to_string()));
             } else {
                 // rel_path is not registered yet, insert it in expected
-                expected.insert(unified_path, vec![lang.unwrap_or(default.to_string())]);
+                expected.insert(unified_path, vec![lang.unwrap_or_else(|| default.to_string())]);
             }
         } else {
             // Not a markdown file, skip
             continue;
         }
     }
-    return expected;
+    expected
 }
 
 /// Calculate output path for Markdown files
@@ -302,7 +300,7 @@ pub fn ensure_translations_match(
                 return false;
             }
             // Everything went well
-            return true;
+            true
         } else {
             // Should never happen because even the default language counts as a translation
             // Reaching here means either there is a logic error in the tests themselves,
@@ -329,7 +327,7 @@ pub fn ensure_translations_in_output(site: &Site, path: &str, permalink: &str) -
     let output_path = site.output_path.join(output_path);
 
     let output = std::fs::read_to_string(&output_path)
-        .expect(&format!("Output not found in {}", output_path.display()));
+        .unwrap_or_else(|_| panic!("Output not found in {}", output_path.display()));
 
     for permalink in &translations_permalinks {
         if !output.contains(permalink) {
@@ -338,5 +336,5 @@ pub fn ensure_translations_in_output(site: &Site, path: &str, permalink: &str) -
         }
     }
 
-    return true;
+    true
 }

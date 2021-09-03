@@ -19,8 +19,8 @@ taxonomies = [
 [languages.fr]
 generate_feed = true
 taxonomies = [
-    {name = "auteurs", lang = "fr"},
-    {name = "tags", lang = "fr"},
+    {name = "auteurs"},
+    {name = "tags"},
 ]
 
 [languages.it]

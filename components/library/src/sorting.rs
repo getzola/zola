@@ -31,7 +31,7 @@ pub fn sort_pages_by_date(
     can_be_sorted.par_sort_unstable_by(|a, b| {
         let ord = b.1.unwrap().cmp(&a.1.unwrap());
         if ord == Ordering::Equal {
-            a.2.cmp(&b.2)
+            a.2.cmp(b.2)
         } else {
             ord
         }
@@ -53,7 +53,7 @@ pub fn sort_pages_by_title(
     can_be_sorted.par_sort_unstable_by(|a, b| {
         let ord = natural_lexical_cmp(a.1.unwrap(), b.1.unwrap());
         if ord == Ordering::Equal {
-            a.2.cmp(&b.2)
+            a.2.cmp(b.2)
         } else {
             ord
         }
@@ -74,7 +74,7 @@ pub fn sort_pages_by_weight(
     can_be_sorted.par_sort_unstable_by(|a, b| {
         let ord = a.1.unwrap().cmp(&b.1.unwrap());
         if ord == Ordering::Equal {
-            a.2.cmp(&b.2)
+            a.2.cmp(b.2)
         } else {
             ord
         }
@@ -119,21 +119,19 @@ mod tests {
     use front_matter::PageFrontMatter;
 
     fn create_page_with_date(date: &str) -> Page {
-        let mut front_matter = PageFrontMatter::default();
-        front_matter.date = Some(date.to_string());
+        let mut front_matter =
+            PageFrontMatter { date: Some(date.to_string()), ..Default::default() };
         front_matter.date_to_datetime();
         Page::new("content/hello.md", front_matter, &PathBuf::new())
     }
 
     fn create_page_with_title(title: &str) -> Page {
-        let mut front_matter = PageFrontMatter::default();
-        front_matter.title = Some(title.to_string());
+        let front_matter = PageFrontMatter { title: Some(title.to_string()), ..Default::default() };
         Page::new("content/hello.md", front_matter, &PathBuf::new())
     }
 
     fn create_page_with_weight(weight: usize) -> Page {
-        let mut front_matter = PageFrontMatter::default();
-        front_matter.weight = Some(weight);
+        let front_matter = PageFrontMatter { weight: Some(weight), ..Default::default() };
         Page::new("content/hello.md", front_matter, &PathBuf::new())
     }
 
@@ -251,11 +249,11 @@ mod tests {
     fn can_find_siblings() {
         let mut dense = DenseSlotMap::new();
         let page1 = create_page_with_weight(1);
-        let key1 = dense.insert(page1.clone());
+        let key1 = dense.insert(page1);
         let page2 = create_page_with_weight(2);
-        let key2 = dense.insert(page2.clone());
+        let key2 = dense.insert(page2);
         let page3 = create_page_with_weight(3);
-        let key3 = dense.insert(page3.clone());
+        let key3 = dense.insert(page3);
 
         let input = vec![key1, key2, key3];
 

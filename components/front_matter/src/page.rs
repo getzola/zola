@@ -81,7 +81,7 @@ impl PageFrontMatter {
         let mut f: PageFrontMatter = raw.deserialize()?;
 
         if let Some(ref slug) = f.slug {
-            if slug == "" {
+            if slug.is_empty() {
                 bail!("`slug` can't be empty if present")
             }
         }

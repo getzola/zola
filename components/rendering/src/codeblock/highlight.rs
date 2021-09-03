@@ -4,9 +4,10 @@ use config::highlighting::{SyntaxAndTheme, CLASS_STYLE};
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Color, Theme};
 use syntect::html::{
-    styled_line_to_highlighted_html, tokens_to_classed_spans, ClassStyle, IncludeBackground,
+    line_tokens_to_classed_spans, styled_line_to_highlighted_html, ClassStyle, IncludeBackground,
 };
 use syntect::parsing::{ParseState, ScopeStack, SyntaxReference, SyntaxSet};
+use tera::escape_html;
 
 /// Not public, but from syntect::html
 fn write_css_color(s: &mut String, c: Color) {
@@ -35,9 +36,9 @@ impl<'config> ClassHighlighter<'config> {
     /// *Note:* This function requires `line` to include a newline at the end and
     /// also use of the `load_defaults_newlines` version of the syntaxes.
     pub fn highlight_line(&mut self, line: &str) -> String {
-        debug_assert!(line.ends_with("\n"));
-        let parsed_line = self.parse_state.parse_line(line, &self.syntax_set);
-        let (formatted_line, delta) = tokens_to_classed_spans(
+        debug_assert!(line.ends_with('\n'));
+        let parsed_line = self.parse_state.parse_line(line, self.syntax_set);
+        let (formatted_line, delta) = line_tokens_to_classed_spans(
             line,
             parsed_line.as_slice(),
             CLASS_STYLE,
@@ -80,9 +81,12 @@ impl<'config> InlineHighlighter<'config> {
     }
 
     pub fn highlight_line(&mut self, line: &str) -> String {
-        let regions = self.h.highlight(line, &self.syntax_set);
+        let regions = self.h.highlight(line, self.syntax_set);
         // TODO: add a param like `IncludeBackground` for `IncludeForeground` in syntect
-        let highlighted = styled_line_to_highlighted_html(&regions, IncludeBackground::IfDifferent(self.bg_color));
+        let highlighted = styled_line_to_highlighted_html(
+            &regions,
+            IncludeBackground::IfDifferent(self.bg_color),
+        );
         highlighted.replace(&self.fg_color, "")
     }
 }
@@ -113,7 +117,7 @@ impl<'config> SyntaxHighlighter<'config> {
         match self {
             Inlined(h) => h.highlight_line(line),
             Classed(h) => h.highlight_line(line),
-            NoHighlight => line.to_owned(),
+            NoHighlight => escape_html(line),
         }
     }
 
@@ -171,7 +175,7 @@ impl<'config> SyntaxHighlighter<'config> {
                     &mut styles,
                     h.theme.settings.line_highlight.unwrap_or(Color { r: 255, g: 255, b: 0, a: 0 }),
                 );
-                styles.push_str(";");
+                styles.push(';');
                 Some(styles)
             }
         }
@@ -194,7 +198,7 @@ mod tests {
         let mut highlighter =
             ClassHighlighter::new(syntax_and_theme.syntax, syntax_and_theme.syntax_set);
         let mut out = String::new();
-        for line in LinesWithEndings::from(&code) {
+        for line in LinesWithEndings::from(code) {
             out.push_str(&highlighter.highlight_line(line));
         }
         out.push_str(&highlighter.finalize());
@@ -216,11 +220,25 @@ mod tests {
             syntax_and_theme.theme.unwrap(),
         );
         let mut out = String::new();
-        for line in LinesWithEndings::from(&code) {
+        for line in LinesWithEndings::from(code) {
             out.push_str(&highlighter.highlight_line(line));
         }
 
         assert!(out.starts_with(r#"<span style="color"#));
         assert!(out.ends_with("</span>"));
+    }
+
+    #[test]
+    fn no_highlight_escapes_html() {
+        let mut config = Config::default();
+        config.markdown.highlight_code = false;
+        let code = "<script>alert('hello')</script>";
+        let syntax_and_theme = resolve_syntax_and_theme(Some("py"), &config);
+        let mut highlighter = SyntaxHighlighter::new(false, syntax_and_theme);
+        let mut out = String::new();
+        for line in LinesWithEndings::from(&code) {
+            out.push_str(&highlighter.highlight_line(line));
+        }
+        assert!(!out.contains("<script>"));
     }
 }
