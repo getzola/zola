@@ -1261,6 +1261,7 @@ dependencies = [
  "tera",
  "toml",
  "utils",
+ "walkdir",
 ]
 
 [[package]]

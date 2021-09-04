@@ -595,7 +595,7 @@ impl Site {
             self.copy_asset(
                 asset_path,
                 &current_path
-                    .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
+                    .join(asset_path.strip_prefix(&page.file.path.parent().unwrap()).expect("Couldn't get filename from page asset")),
             )?;
         }
 
@@ -988,7 +988,7 @@ impl Site {
             self.copy_asset(
                 asset_path,
                 &output_path.join(
-                    asset_path.file_name().expect("Failed to get asset filename for section"),
+                    asset_path.strip_prefix(&section.file.path.parent().unwrap()).expect("Failed to get asset filename for section"),
                 ),
             )?;
         }

@@ -276,7 +276,7 @@ impl Page {
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
         self.assets
             .iter()
-            .filter_map(|asset| asset.file_name())
+            .filter_map(|asset| asset.strip_prefix(&self.file.path.parent().unwrap()).ok())
             .filter_map(|filename| filename.to_str())
             .map(|filename| {
                 let mut path = self.file.path.clone();

@@ -74,13 +74,6 @@ fn starts_with_schema(s: &str) -> bool {
     PATTERN.is_match(s)
 }
 
-/// Colocated asset links refers to the files in the same directory,
-/// there it should be a filename only
-fn is_colocated_asset_link(link: &str) -> bool {
-    !link.contains('/')  // http://, ftp://, ../ etc
-        && !starts_with_schema(link)
-}
-
 /// Returns whether a link starts with an HTTP(s) scheme.
 fn is_external_link(link: &str) -> bool {
     link.starts_with("http:") || link.starts_with("https:")
@@ -111,8 +104,6 @@ fn fix_link(
                 return Err(format!("Relative link {} not found.", link).into());
             }
         }
-    } else if is_colocated_asset_link(link) {
-        format!("{}{}", context.current_page_permalink, link)
     } else {
         if is_external_link(link) {
             external_links.push(link.to_owned());
@@ -221,14 +212,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                         // reset highlight and close the code block
                         code_block = None;
                         Event::Html("</code></pre>\n".into())
-                    }
-                    Event::Start(Tag::Image(link_type, src, title)) => {
-                        if is_colocated_asset_link(&src) {
-                            let link = format!("{}{}", context.current_page_permalink, &*src);
-                            return Event::Start(Tag::Image(link_type, link.into(), title));
-                        }
-
-                        Event::Start(Tag::Image(link_type, src, title))
                     }
                     Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
                         error = Some(Error::msg("There is a link that is missing a URL"));

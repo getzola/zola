@@ -998,7 +998,7 @@ fn can_make_permalinks_with_colocated_assets_for_link() {
         InsertAnchor::None,
     );
     let res = render_content("[an image](image.jpg)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"https://vincent.is/about/image.jpg\">an image</a></p>\n");
+    assert_eq!(res.body, "<p><a href=\"image.jpg\">an image</a></p>\n");
 }
 
 #[test]
@@ -1016,7 +1016,7 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
     let res = render_content("![alt text](image.jpg)", &context).unwrap();
     assert_eq!(
         res.body,
-        "<p><img src=\"https://vincent.is/about/image.jpg\" alt=\"alt text\" /></p>\n"
+        "<p><img src=\"image.jpg\" alt=\"alt text\" /></p>\n"
     );
 }
 
