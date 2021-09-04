@@ -156,6 +156,8 @@ the value should be the same as the one in the front matter, not the slugified v
 
 `lang` (optional) default to `config.default_language` in config.toml
 
+`required` (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.
+
 ### `get_taxonomy`
 Gets the whole taxonomy of a specific kind.
 
@@ -171,6 +173,8 @@ items: Array<TaxonomyTerm>;
 ```
 
 `lang` (optional) default to `config.default_language` in config.toml
+
+`required` (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.
 
 See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
 

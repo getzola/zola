@@ -40,10 +40,17 @@ impl TeraFn for GetTaxonomyUrl {
         let lang =
             optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
                 .unwrap_or_else(|| self.default_lang.clone());
+        let required = optional_arg!(
+            bool,
+            args.get("required"),
+            "`get_taxonomy_url`: `required` must be a boolean (true or false)"
+        )
+        .unwrap_or(true);
 
-        let container = match self.taxonomies.get(&format!("{}-{}", kind, lang)) {
-            Some(c) => c,
-            None => {
+        let container = match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
+            (Some(c), _) => c,
+            (None, false) => return Ok(Value::Null),
+            (None, true) => {
                 return Err(format!(
                     "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
                     kind
@@ -154,14 +161,21 @@ impl TeraFn for GetTaxonomy {
             args.get("kind"),
             "`get_taxonomy` requires a `kind` argument with a string value"
         );
+        let required = optional_arg!(
+            bool,
+            args.get("required"),
+            "`get_taxonomy`: `required` must be a boolean (true or false)"
+        )
+        .unwrap_or(true);
 
         let lang =
             optional_arg!(String, args.get("lang"), "`get_taxonomy`: `lang` must be a string")
                 .unwrap_or_else(|| self.default_lang.clone());
 
-        match self.taxonomies.get(&format!("{}-{}", kind, lang)) {
-            Some(t) => Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap()),
-            None => {
+        match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
+            (Some(t), _) => Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap()),
+            (None, false) => Ok(Value::Null),
+            (None, true) => {
                 Err(format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into())
             }
         }
