@@ -39,11 +39,12 @@ This option is set at the section level: the `insert_anchor_links` variable on t
 
 The default template is very basic and will need CSS tweaks in your project to look decent.
 If you want to change the anchor template, it can be easily overwritten by
-creating an `anchor-link.html` file in the `templates` directory.
+creating an `anchor-link.html` file in the `templates` directory. [Here](https://github.com/getzola/zola/blob/master/components/templates/src/builtins/anchor-link.html) you can find the default template.
 
 The anchor link template has the following variables:
 
 - `id`: the heading's id after applying the rules defined by `slugify.anchors`
+- `lang`: the current language, unless called from the `markdown` template filter, in which case it will always be `en`
 - `level`: the heading level (between 1 and 6)
 
 ## Internal links

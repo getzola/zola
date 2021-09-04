@@ -14,6 +14,7 @@ pub struct RenderContext<'a> {
     pub current_page_permalink: &'a str,
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
+    pub lang: &'a str,
 }
 
 impl<'a> RenderContext<'a> {
@@ -34,10 +35,13 @@ impl<'a> RenderContext<'a> {
             permalinks: Cow::Borrowed(permalinks),
             insert_anchor,
             config,
+            lang,
         }
     }
 
     // In use in the markdown filter
+    // NOTE: This RenderContext is not i18n-aware, see MarkdownFilter::filter for details
+    // If this function is ever used outside of MarkdownFilter, take this into consideration
     pub fn from_config(config: &'a Config) -> RenderContext<'a> {
         Self {
             tera: Cow::Owned(Tera::default()),
@@ -46,6 +50,7 @@ impl<'a> RenderContext<'a> {
             permalinks: Cow::Owned(HashMap::new()),
             insert_anchor: InsertAnchor::None,
             config,
+            lang: &config.default_language,
         }
     }
 }

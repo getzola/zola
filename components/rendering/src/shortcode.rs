@@ -107,6 +107,11 @@ fn render_shortcode(
     body: Option<&str>,
 ) -> Result<String> {
     let mut tera_context = Context::new();
+
+    // nth and lang are inserted before passed arguments, so that they can be overriden explicitly
+    tera_context.insert("nth", &invocation_count);
+    tera_context.insert("lang", &context.lang);
+
     for (key, value) in args.iter() {
         tera_context.insert(key, value);
     }
@@ -114,7 +119,7 @@ fn render_shortcode(
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
         tera_context.insert("body", b.trim_end());
     }
-    tera_context.insert("nth", &invocation_count);
+
     tera_context.extend(context.tera_context.clone());
 
     let mut template_name = format!("shortcodes/{}.md", name);
