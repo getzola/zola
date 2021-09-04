@@ -37,3 +37,4 @@
 | [guerinpe.com](https://guerinpe.com)                               | https://github.com/Grelot/blog                           |
 | [uggla.fr](https://uggla.fr)                                       | https://github.com/uggla/blog                            |
 | [NorthCon e.V.](https://verein.northcon.de/)                       |                                                          |
+| [OrgaTalk wiki](https://wiki.orgatalk.de/)                         | https://github.com/orgatalk/wiki                         |
