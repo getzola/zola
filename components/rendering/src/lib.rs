@@ -28,6 +28,7 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
 
     // Fetch all the defined shortcodes
     // TODO: Actually fetch these. This should maybe be handed down by the RenderContext?
+    println!("{:?}", context.shortcode_definitions);
     let shortcode_definitions = &context.shortcode_definitions;
 
     // This will render both top-level and embedded MD shortcodes (Step 1, 2).
@@ -40,6 +41,7 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
     .map_err(Into::<errors::Error>::into)?;
 
     let replacable_shortcodes = fetch_shortcodes(&content)
+        .1
         .into_iter()
         .filter(|shortcode| shortcode_definitions.contains_key(shortcode.name()))
         .collect();

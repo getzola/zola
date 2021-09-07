@@ -15,7 +15,11 @@ use crate::range_relation::RangeRelation;
 /// Ranges have some limitations on adding and subtracting so we use usize's copy behaviour
 /// to circumvent that with this function. Plus we are dealing with usizes so we cannot do easy
 /// subtracting by adding negative numbers.
-fn range_shift(range: &Range<usize>, translation: usize, do_shift_right: bool) -> Option<Range<usize>> {
+fn range_shift(
+    range: &Range<usize>,
+    translation: usize,
+    do_shift_right: bool,
+) -> Option<Range<usize>> {
     Some(if !do_shift_right {
         // If the subtraction is going to be bigger than the range start.
         if range.start < translation {
@@ -29,29 +33,14 @@ fn range_shift(range: &Range<usize>, translation: usize, do_shift_right: bool) -
 }
 
 #[derive(Debug, PartialEq)]
-pub struct BodyInfo {
-    content_span: Range<usize>,
-    endblock_span: Range<usize>,
-}
-
-#[derive(Debug, PartialEq)]
 /// The possible valid relationships two spans of shortcodes can have
-enum RangeToShortcodeRelation {
-    /// A shortcode is before another shortcode
+enum RangeToPositionRelation {
+    /// A position is before another shortcode
     Before,
-    /// A shortcode is within another shortcode
-    InBody,
-    /// A shortcode is after another shortcode
+    /// A position is within another shortcode
+    Within,
+    /// A position is after another shortcode
     After,
-}
-
-#[derive(Debug, PartialEq)]
-/// An invalid state relating to the the relationship between the span of one shortcode and another
-pub struct RangeRelationInvalidState {
-    /// The relation between the `span` of one shortcode and the openblock span of another
-    relation_openblock: RangeRelation,
-    /// The relation between the `span` of one shortcode and the end_block span of another
-    relation_endblock: Option<RangeRelation>,
 }
 
 #[derive(PartialEq, Debug)]
@@ -59,8 +48,8 @@ pub struct RangeRelationInvalidState {
 pub struct ShortcodeContext {
     name: String,
     args: HashMap<String, ArgValue>,
-    openblock_span: Range<usize>,
-    body: Option<BodyInfo>,
+    span: Range<usize>,
+    body: Option<String>,
 }
 
 impl ShortcodeContext {
@@ -68,11 +57,11 @@ impl ShortcodeContext {
     pub fn new(
         name: &str,
         args_vec: Vec<(&str, ArgValue)>,
-        openblock_span: Range<usize>,
-        body: Option<BodyInfo>,
+        span: Range<usize>,
+        body: Option<String>,
     ) -> ShortcodeContext {
         let InnerTag { name, args } = InnerTag::new(name, args_vec);
-        ShortcodeContext { name, args, openblock_span, body }
+        ShortcodeContext { name, args, span, body }
     }
 
     /// Get the name of the shortcode
@@ -86,122 +75,52 @@ impl ShortcodeContext {
     }
 
     /// Get the body content of the shortcode using a source string
-    pub fn body_content<'a>(&self, source_str: &'a str) -> Option<&'a str> {
-        self.body.as_ref().map(|BodyInfo { content_span, .. }| &source_str[content_span.clone()])
+    pub fn body(&self) -> Option<&String> {
+        self.body.as_ref()
     }
 
     /// Returns the span of the shortcode within source string
-    pub fn span(&self) -> Range<usize> {
-        self.openblock_span.start..match &self.body {
-            None => self.openblock_span.end,
-            Some(BodyInfo { endblock_span, .. }) => endblock_span.end,
-        }
+    pub fn span(&self) -> &Range<usize> {
+        &self.span
     }
 
     /// Translates/Moves the span by `translation` either to the left or the right depending on
     /// `do_shift_right`.
     fn shift_span(&mut self, translation: usize, do_shift_right: bool) {
-        self.openblock_span = range_shift(&self.openblock_span, translation, do_shift_right).unwrap();
+        // TODO: Look at removing this unwrap
+        self.span = range_shift(&self.span, translation, do_shift_right).unwrap();
+    }
 
-        if let Some(ref mut body) = self.body {
-            // All the unwraps should be fine.
-            body.content_span = range_shift(&body.content_span, translation, do_shift_right).unwrap();
-            body.endblock_span = range_shift(&body.endblock_span, translation, do_shift_right).unwrap();
-
-            // Make sure everything is still properly aligned
-            debug_assert_eq!(self.openblock_span.end, body.content_span.start);
-            debug_assert_eq!(body.content_span.end, body.endblock_span.start);
+    /// Gets the range relation between a `position` and the span of the current shortcode.
+    fn get_range_relation(&self, position: usize) -> RangeToPositionRelation {
+        match (position < self.span.start, position >= self.span.end) {
+            (false, false) => RangeToPositionRelation::Within,
+            // (true, true) should be impossible since a start <= end
+            (true, _) => RangeToPositionRelation::Before,
+            (_, true) => RangeToPositionRelation::After,
         }
     }
 
-    /// Gets the range relation between a `span` of another shortcode and the span of the current
-    /// shortcode.
-    fn get_range_relation(
-        &self,
-        span: Range<usize>,
-    ) -> Result<RangeToShortcodeRelation, RangeRelationInvalidState> {
-        let relation_openblock = RangeRelation::new(&self.openblock_span, &span);
-
-        if let Some(ref body) = self.body {
-            let relation_endblock = RangeRelation::new(&body.endblock_span, &span);
-
-            match (&relation_openblock, &relation_endblock) {
-                (RangeRelation::Before, _) => Ok(RangeToShortcodeRelation::Before),
-                (_, RangeRelation::After) => Ok(RangeToShortcodeRelation::After),
-
-                // If the `span` falls between the openblock and the end_block, it is in the body
-                // of the shortcode.
-                (RangeRelation::After, RangeRelation::Before) => {
-                    Ok(RangeToShortcodeRelation::InBody)
-                }
-
-                _ => Err(RangeRelationInvalidState {
-                    relation_openblock,
-                    relation_endblock: Some(relation_endblock),
-                }),
-            }
-        } else {
-            match relation_openblock {
-                RangeRelation::Before => Ok(RangeToShortcodeRelation::Before),
-                RangeRelation::After => Ok(RangeToShortcodeRelation::After),
-                _ => Err(RangeRelationInvalidState { relation_openblock, relation_endblock: None }),
-            }
-        }
-    }
-
-    /// Update all the spans when the source string is being altered.
+    /// Update all the spans when the source string is being altered. If the position is within the
+    /// span the translation is ignored.
     pub fn update_on_source_insert(
         &mut self,
-        start_point: usize,
-        original_end: usize,
-        new_end: usize,
-    ) -> Result<(), RangeRelationInvalidState> {
-        use std::cmp::Ordering;
-
-        // We have to take great care of the translation direction because we using usizes and
-        // those cannot become negative.
-        let (translation, do_shift_right) = match new_end.cmp(&original_end) {
-            // If two spans are of equal length we don't have to do anything.
-            Ordering::Equal => return Ok(()),
-
-            Ordering::Less => (original_end - new_end, false),
-            Ordering::Greater => (new_end - original_end, true),
+        position: usize,
+        original_length: usize,
+        new_length: usize,
+    ) {
+        let delta = if original_length < new_length {
+            new_length - original_length
+        } else {
+            original_length - new_length
         };
 
-        match self.get_range_relation(start_point..original_end)? {
-            // If the insertion is after the current shortcode, we don't have to do
-            // anything.
-            RangeToShortcodeRelation::After => {}
-
-            // If the insertion takes place before the shortcode, we shift the entire shortcode
-            // span.
-            RangeToShortcodeRelation::Before => {
-                // Move the spans by the different between the lengths of `original_span` and
-                // `new_span`.
-                self.shift_span(translation, do_shift_right);
+        match self.get_range_relation(position) {
+            RangeToPositionRelation::Before => {
+                self.span = range_shift(&self.span, delta, original_length < new_length).unwrap()
             }
-
-            // If the insertion takes place within the body of the shortcode, we resize the body
-            // content and tranlste the end block span.
-            RangeToShortcodeRelation::InBody => {
-                let body = self.body.as_mut().expect(
-                    "If we get the `RangeToShortcodeRelation::InBody`, there should be a body",
-                );
-
-                // The content span should be able to contain the shortcode we are talking
-                // about.
-                debug_assert!(body.content_span.len() >= translation);
-
-                body.content_span = body.content_span.start..if do_shift_right {
-                    body.content_span.end + translation
-                } else {
-                    body.content_span.end - translation
-                };
-                body.endblock_span = range_shift(&body.endblock_span, translation, do_shift_right).unwrap();
-            }
+            RangeToPositionRelation::After | RangeToPositionRelation::Within => {}
         }
-
-        Ok(())
     }
 }
 
@@ -214,15 +133,20 @@ struct BodiedStackItem {
     body_start: usize,
 }
 
+const SHORTCODE_PLACEHOLDER: &str = "{{SC()}}";
+
 /// Fetch a [Vec] of all Shortcodes which are present in source string
 ///
 /// Will put the shortcodes which are contained within the body of another shortcode before the
 /// shortcode they are contained in. This is very important.
-pub fn fetch_shortcodes(source: &str) -> Vec<ShortcodeContext> {
+pub fn fetch_shortcodes(source: &str) -> (String, Vec<ShortcodeContext>) {
     let mut lex = Openers::lexer(source);
     let mut shortcodes = Vec::new();
 
-    let mut body_stack: Vec<BodiedStackItem> = Vec::new();
+    let mut current_body = None;
+
+    let mut output_str = String::with_capacity(source.len());
+    let mut last_lex_end = 0;
 
     // Loop until we run out of potential shortcodes
     while let Some(open_tag) = lex.next() {
@@ -230,20 +154,30 @@ pub fn fetch_shortcodes(source: &str) -> Vec<ShortcodeContext> {
         if matches!(open_tag, Openers::EndBlock) {
             // Check whether a bodied shortcode has already been located
             if let Some(BodiedStackItem { name, args, openblock_span, body_start }) =
-                body_stack.pop()
+                current_body.take()
             {
-                let body = Some(BodyInfo {
-                    content_span: body_start..lex.span().start,
-                    endblock_span: lex.span().start..lex.span().end,
+                let body = Some(String::from(&source[body_start..lex.span().start]));
+
+                shortcodes.push(ShortcodeContext {
+                    name,
+                    args,
+                    span: output_str.len() - openblock_span.len()..output_str.len(),
+                    body,
                 });
 
-                shortcodes.push(ShortcodeContext { name, args, openblock_span, body });
+                last_lex_end = lex.span().end;
             }
 
             continue;
         }
 
-        let openblock_start = lex.span().start;
+        // Skip over all shortcodes contained within bodies
+        if current_body.is_some() {
+            continue;
+        }
+
+        output_str.push_str(&source[last_lex_end..lex.span().start]);
+        last_lex_end = lex.span().start;
 
         // Parse the inside of the shortcode tag
         // TODO: Remove this clone()
@@ -253,29 +187,33 @@ pub fn fetch_shortcodes(source: &str) -> Vec<ShortcodeContext> {
             let mut closing = inner_tag_lex.morph();
 
             if let Some(close_tag) = closing.next() {
-                let openblock_span = openblock_start..closing.span().end;
+                let openblock_span =
+                    output_str.len()..(output_str.len() + SHORTCODE_PLACEHOLDER.len());
 
                 // Make sure that we have `{{` and `}}` or `{%` and `%}`.
                 match (open_tag, close_tag) {
                     (Openers::Normal, Closers::Normal) => {
-                        shortcodes.push(ShortcodeContext { name, args, openblock_span, body: None })
+                        output_str.push_str(SHORTCODE_PLACEHOLDER);
+                        last_lex_end = closing.span().end;
+
+                        shortcodes.push(ShortcodeContext {
+                            name,
+                            args,
+                            span: openblock_span,
+                            body: None,
+                        });
                     }
 
                     (Openers::Body, Closers::Body) => {
-                        // Since we don't want bugs with invocation counts etc. we disable the
-                        // option for embedding the embedding the same shortcode into a body.
-                        if body_stack.iter().any(|BodiedStackItem { name: stack_item_name, .. }| {
-                            stack_item_name == &name
-                        }) {
-                            continue;
-                        }
+                        output_str.push_str(SHORTCODE_PLACEHOLDER);
+                        last_lex_end = closing.span().end;
 
-                        body_stack.push(BodiedStackItem {
+                        current_body = Some(BodiedStackItem {
                             name,
                             args,
                             openblock_span,
                             body_start: closing.span().end,
-                        })
+                        });
                     }
 
                     _ => {
@@ -289,7 +227,10 @@ pub fn fetch_shortcodes(source: &str) -> Vec<ShortcodeContext> {
         }
     }
 
-    shortcodes
+    // Push last chunk
+    output_str.push_str(&source[last_lex_end..]);
+
+    (output_str, shortcodes)
 }
 
 #[derive(Debug, PartialEq, Clone, Logos)]
@@ -336,20 +277,20 @@ mod tests {
     #[test]
     fn update_spans() {
         let mut ctx = ShortcodeContext::new("a", Vec::new(), 10..20, None);
-        ctx.update_on_source_insert(2, 8, 10).unwrap();
-        assert_eq!(ctx.span(), 12..22);
-        ctx.update_on_source_insert(24, 30, 30).unwrap();
-        assert_eq!(ctx.span(), 12..22);
-        ctx.update_on_source_insert(5, 11, 6).unwrap();
-        assert_eq!(ctx.span(), 7..17);
+        ctx.update_on_source_insert(2, 8, 10);
+        assert_eq!(ctx.span().clone(), 12..22);
+        ctx.update_on_source_insert(24, 30, 30);
+        assert_eq!(ctx.span().clone(), 12..22);
+        ctx.update_on_source_insert(5, 11, 6);
+        assert_eq!(ctx.span().clone(), 7..17);
     }
 
     #[test]
     fn no_shortcodes() {
-        assert_eq!(fetch_shortcodes(""), vec![]);
-        assert_eq!(fetch_shortcodes("abc"), vec![]);
-        assert_eq!(fetch_shortcodes("{{ abc }}"), vec![]);
-        assert_eq!(fetch_shortcodes("{{ abc() %}"), vec![]);
+        assert_eq!(fetch_shortcodes(""), (String::from(""), vec![]));
+        assert_eq!(fetch_shortcodes("abc"), (String::from("abc"), vec![]));
+        assert_eq!(fetch_shortcodes("{{ abc }}"), (String::from("{{ abc }}"), vec![]));
+        assert_eq!(fetch_shortcodes("{{ abc() %}"), (String::from("{{ abc() %}"), vec![]));
     }
 
     #[test]
@@ -362,85 +303,71 @@ mod tests {
 {% bodied(def="Hello!") %}The inside of this body{% end %}"#;
 
         let fst_start = "\n# Hello World!\n\n".len();
-        let fst_end = fst_start + "{{ abc(wow=true) }}".len();
+        let fst_end = fst_start + SHORTCODE_PLACEHOLDER.len();
         let snd_start = fst_end + 2;
-        let snd_end = snd_start + r#"{% bodied(def="Hello!") %}"#.len();
-        let body_end = snd_end + r#"The inside of this body"#.len();
-        let endblock_end = test_str.len();
+        let snd_end = snd_start + SHORTCODE_PLACEHOLDER.len();
 
         assert_eq!(
             fetch_shortcodes(test_str),
-            vec![
-                ShortcodeContext::new(
-                    "abc",
-                    vec![("wow", ArgValue::Boolean(true))],
-                    fst_start..fst_end,
-                    None
+            (
+                format!(
+                    r#"
+# Hello World!
+
+{0}
+
+{0}"#,
+                    SHORTCODE_PLACEHOLDER
                 ),
-                ShortcodeContext::new(
-                    "bodied",
-                    vec![("def", ArgValue::Text("Hello!".to_string()))],
-                    snd_start..snd_end,
-                    Some(BodyInfo {
-                        content_span: snd_end..body_end,
-                        endblock_span: body_end..endblock_end
-                    })
-                )
-            ]
+                vec![
+                    ShortcodeContext::new(
+                        "abc",
+                        vec![("wow", ArgValue::Boolean(true))],
+                        fst_start..fst_end,
+                        None
+                    ),
+                    ShortcodeContext::new(
+                        "bodied",
+                        vec![("def", ArgValue::Text("Hello!".to_string()))],
+                        snd_start..snd_end,
+                        Some(String::from("The inside of this body"))
+                    )
+                ]
+            )
         );
     }
 
     #[test]
     fn shortcode_in_body_requirement() {
         let test_str = "{% a() %}{{ b() }}{% end %}";
-        let end_open_a = "{% a() %}".len();
-        let end_open_b = end_open_a + "{{ b() }}".len();
 
         assert_eq!(
             fetch_shortcodes(test_str),
-            vec![
-                ShortcodeContext::new("b", vec![], end_open_a..end_open_b, None),
-                ShortcodeContext::new(
+            (
+                String::from(SHORTCODE_PLACEHOLDER),
+                vec![ShortcodeContext::new(
                     "a",
                     vec![],
-                    0..end_open_a,
-                    Some(BodyInfo {
-                        content_span: end_open_a..end_open_b,
-                        endblock_span: end_open_b..test_str.len()
-                    })
-                )
-            ]
+                    0..SHORTCODE_PLACEHOLDER.len(),
+                    Some(String::from("{{ b() }}"))
+                )]
+            )
         );
 
         let test_str = "{% a() %}{% b() %}{{ c() }}{% end %}{% end %}";
         let end_open_a = "{% a() %}".len();
-        let end_open_b = end_open_a + "{{ b() }}".len();
-        let end_open_c = end_open_b + "{{ c() }}".len();
-        let end_endblock_b = end_open_c + "{% end %}".len();
 
         assert_eq!(
             fetch_shortcodes(test_str),
-            vec![
-                ShortcodeContext::new("c", vec![], end_open_b..end_open_c, None),
-                ShortcodeContext::new(
-                    "b",
-                    vec![],
-                    end_open_a..end_open_b,
-                    Some(BodyInfo {
-                        content_span: end_open_b..end_open_c,
-                        endblock_span: end_open_c..end_endblock_b
-                    })
-                ),
-                ShortcodeContext::new(
+            (
+                format!("{}{{% end %}}", SHORTCODE_PLACEHOLDER),
+                vec![ShortcodeContext::new(
                     "a",
                     vec![],
-                    0..end_open_a,
-                    Some(BodyInfo {
-                        content_span: end_open_a..end_endblock_b,
-                        endblock_span: end_endblock_b..test_str.len()
-                    })
-                )
-            ]
+                    0..SHORTCODE_PLACEHOLDER.len(),
+                    Some(String::from("{% b() %}{{ c() }}"))
+                )]
+            )
         );
     }
 
@@ -448,21 +375,45 @@ mod tests {
     fn embedding_bodies() {
         let test_str = "{% a() %}{% a() %}Wow!{% end %}{% end %}";
         let end_open_a = "{% a() %}".len();
-        let end_open_b = test_str.len() - "{% end %}{% end %}".len();
 
         assert_eq!(
             fetch_shortcodes(test_str),
-            vec![
-                ShortcodeContext::new(
+            (
+                format!("{}{{% end %}}", SHORTCODE_PLACEHOLDER),
+                vec![ShortcodeContext::new(
                     "a",
                     vec![],
-                    0..end_open_a,
-                    Some(BodyInfo {
-                        content_span: end_open_a..end_open_b,
-                        endblock_span: end_open_b..(end_open_b + "{% end %}".len())
-                    })
-                )
-            ]
+                    0..SHORTCODE_PLACEHOLDER.len(),
+                    Some(String::from("{% a() %}Wow!"))
+                )]
+            )
+        );
+    }
+
+    #[test]
+    fn sequential_bodies() {
+        let test_str = "{% a() %}First body!{% end %}{% a() %}Second body!{% end %}";
+        let end_open_a = "{% a() %}".len();
+
+        assert_eq!(
+            fetch_shortcodes(test_str),
+            (
+                format!("{0}{0}", SHORTCODE_PLACEHOLDER),
+                vec![
+                    ShortcodeContext::new(
+                        "a",
+                        vec![],
+                        0..SHORTCODE_PLACEHOLDER.len(),
+                        Some(String::from("First body!"))
+                    ),
+                    ShortcodeContext::new(
+                        "a",
+                        vec![],
+                        SHORTCODE_PLACEHOLDER.len()..(2 * SHORTCODE_PLACEHOLDER.len()),
+                        Some(String::from("Second body!"))
+                    )
+                ]
+            )
         );
     }
 }
