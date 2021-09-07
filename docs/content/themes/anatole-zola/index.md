@@ -3,16 +3,16 @@
 title = "anatole-zola"
 description = "A port of farbox-theme-Anatole for zola"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2021-09-07T11:12:53+03:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2021-09-07T11:12:53+03:00
+updated = 2021-09-07T11:12:53+03:00
 repository = "https://github.com/longfangsong/anatole-zola.git"
 homepage = "https://github.com/longfangsong/anatole-zola"
 minimum_version = "0.4.0"
 license = "MIT"
-demo = "https://longfangsong.github.io/blog-next"
+demo = "https://longfangsong.github.io"
 
 [extra.author]
 name = "longfangsong"
@@ -94,18 +94,18 @@ Feel free to create a pull request if you want to translate the promotes into ot
 
 Tags and links sections are optional.
 
-- If you want to enable the tags page, add 
+- If you want to enable the tags page, add
   ```toml
   taxonomies = [
     {name = "tags"},
   ]
-  
+
   [extra.show]
   tags = true
   ```
   To your `config.toml`
-  
-- If you want to enable the links page, add 
+
+- If you want to enable the links page, add
 
   ```toml
   [extra.show]
@@ -113,6 +113,13 @@ Tags and links sections are optional.
   ```
 
   and copy `content/links` to your own `content` library. And edit the `_index.md` in it to edit its content.
+
+- If you want to add the author's name on each page, add:
+
+  ```toml
+  [extra]
+  author = "John Doe"
+  ```
 
 ### Sidebar menu
 
@@ -126,6 +133,8 @@ facebook = ""
 instagram = ""
 dribbble = ""
 weibo = ""
+linkedin = ""
+flickr = ""
 ```
 
 Fill in your username if you want! And the logo won't appear if you leave it empty.
@@ -146,12 +155,22 @@ avatar = "mm" # avatar style https://github.com/xCss/Valine/wiki/avatar-setting-
 placeholder = "Say something here"
 ```
 
-And [disqus](https://disqus.com/admin/create/), note disqus does not work in Mainland China:
+[disqus](https://disqus.com/admin/create/), note disqus does not work in Mainland China:
 
 ```toml
 [extra.comment.disqus]
 name = "longfangsong"
 ```
+
+And [utterances](https://utteranc.es/):
+
+```toml
+[extra.comment.utterances]
+repo = "Your repo for comments"
+issue_term = "pathname"
+theme = "github-light"
+```
+
 
 ## Customize
 
@@ -180,4 +199,5 @@ You can add more social links by adding a `templates.html` with some content add
 ```
 
 If you want to use some awsome logos, [font awsome icons](https://fontawesome.com/icons?d=gallery) are already available.
+
         
