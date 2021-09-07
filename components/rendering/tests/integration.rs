@@ -162,7 +162,7 @@ and multiple paragraphs.
 fn complete_page() {
     let config = config::Config::default_for_test();
 
-    let mut tera = tera::Tera::default();
+    let tera = tera::Tera::default();
 
     let shortcodes: Vec<ShortCode> = vec![ShortCode::new("date", "1900-01-01", false), ShortCode::new("quote", 
 r"<blockquote>
@@ -170,17 +170,11 @@ r"<blockquote>
     -- {{ author}}
 </blockquote>", false)];
 
-    // Add all shortcodes
-    shortcodes.into_iter().for_each(|shortcode| {
-        tera.add_raw_template(&format!("shortcodes/{}", shortcode.filename()), shortcode.output)
-            .expect("Failed to add raw template");
-    });
-
     let mut permalinks = std::collections::HashMap::new();
 
     permalinks.insert("".to_string(), "".to_string());
 
-    let context = rendering::RenderContext::new(
+    let mut context = rendering::RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -188,6 +182,11 @@ r"<blockquote>
         &permalinks,
         front_matter::InsertAnchor::None,
     );
+
+    // Add all shortcodes
+    for ShortCode { name, is_md, output } in shortcodes.into_iter() {
+        context.add_shortcode_def(name, is_md, output);
+    }
 
     let rendered = rendering::render_content(COMPLETE_PAGE, &context);
     assert!(rendered.is_ok(), "Rendering failed");
