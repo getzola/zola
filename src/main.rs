@@ -19,7 +19,9 @@ fn main() {
             .unwrap_or_else(|_| panic!("Cannot find root directory: {}", path)),
     };
     let config_file = match matches.value_of("config") {
-        Some(path) => PathBuf::from(path),
+        Some(path) => PathBuf::from(path)
+            .canonicalize()
+            .unwrap_or_else(|_| panic!("Cannot find config file: {}", path)),
         None => root_dir.join("config.toml"),
     };
 

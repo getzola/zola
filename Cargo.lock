@@ -3438,6 +3438,7 @@ dependencies = [
  "mime_guess",
  "notify",
  "open",
+ "pathdiff",
  "percent-encoding",
  "relative-path",
  "same-file",
