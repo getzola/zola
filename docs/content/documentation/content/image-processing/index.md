@@ -121,7 +121,7 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
 ## Using `resize_image` in markdown via shortcodes
 
-`resize_image` is a built-in Tera global function (see the [templates](@/documentation/templates/_index.md) chapter),
+`resize_image` is a Zola built-in Tera function (see the [templates](@/documentation/templates/_index.md) chapter),
 but it can be used in Markdown using [shortcodes](@/documentation/content/shortcodes.md).
 
 The examples above were generated using a shortcode file named `resize_image.html` with this content:
