@@ -35,7 +35,7 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
 
     // Turn the MD into HTML (Step 2).
     // This will also insert the HTML shortcodes (Step 3).
-    let html_context = markdown_to_html(&content, &context, &shortcode_ctxs)?;
+    let html_context = markdown_to_html(&content, &context, shortcode_ctxs)?;
 
     // TODO: Here issue #1418 could be implemented
     // if do_warn_about_unprocessed_md {

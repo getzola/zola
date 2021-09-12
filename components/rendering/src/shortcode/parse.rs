@@ -10,7 +10,7 @@ use std::ops::Range;
 use super::arg_value::ArgValue;
 use super::inner_tag::InnerTag;
 
-use super::{ ShortcodeDefinition, ShortcodeFileType };
+use super::{ShortcodeDefinition, ShortcodeFileType};
 
 /// Ranges have some limitations on adding and subtracting so we use usize's copy behaviour
 /// to circumvent that with this function. Plus we are dealing with usizes so we cannot do easy
@@ -65,7 +65,7 @@ impl ShortcodeContext {
         definition_content: &str,
     ) -> ShortcodeContext {
         let InnerTag { name, args } = InnerTag::new(name, args_vec);
-        let body = body.clone();
+        let body = body.map(|b| b.to_string());
         let definition_content = definition_content.to_string();
 
         ShortcodeContext { name, args, span, body, file_type, definition_content }
@@ -141,7 +141,6 @@ impl ShortcodeContext {
     }
 }
 
-
 const SHORTCODE_PLACEHOLDER: &str = "{{SC()}}";
 
 /// Fetch a [Vec] of all Shortcodes which are present in source string
@@ -176,10 +175,16 @@ pub fn fetch_shortcodes(
         // Check if the open tag is an endblock
         if matches!(open_tag, Openers::EndBlock) {
             // Check whether a bodied shortcode has already been located
-            if let Some(BodiedStackItem { name, args, openblock_span, body_start, file_type, definition_content }) =
-                current_body.take()
+            if let Some(BodiedStackItem {
+                name,
+                args,
+                openblock_span,
+                body_start,
+                file_type,
+                definition_content,
+            }) = current_body.take()
             {
-                let body = Some(String::from(&source[body_start..lex.span().start]));
+                let body = Some(String::from(source[body_start..lex.span().start].trim()));
 
                 shortcodes.push(ShortcodeContext {
                     name,
@@ -187,7 +192,7 @@ pub fn fetch_shortcodes(
                     span: output_str.len() - openblock_span.len()..output_str.len(),
                     body,
                     file_type,
-                    definition_content
+                    definition_content,
                 });
 
                 last_lex_end = lex.span().end;
@@ -211,7 +216,9 @@ pub fn fetch_shortcodes(
         {
             let mut closing = inner_tag_lex.morph();
 
-            if let Some(ShortcodeDefinition { file_type, content: definition_content }) = definitions.get(&name) {
+            if let Some(ShortcodeDefinition { file_type, content: definition_content }) =
+                definitions.get(&name)
+            {
                 if let Some(close_tag) = closing.next() {
                     let openblock_span =
                         output_str.len()..(output_str.len() + SHORTCODE_PLACEHOLDER.len());
@@ -305,9 +312,20 @@ enum Closers {
 mod tests {
     use super::*;
 
+    macro_rules! shortcode_defs {
+        ($($name:expr => $ty:expr, $content:expr),*$(,)?) => {{
+            let mut map = HashMap::new();
+            $(
+                map.insert($name.to_string(), ShortcodeDefinition::new($ty, $content));
+            )*
+            map
+        }}
+    }
+
     #[test]
     fn update_spans() {
-        let mut ctx = ShortcodeContext::new("a", Vec::new(), 10..20, None);
+        let mut ctx =
+            ShortcodeContext::new("a", Vec::new(), 10..20, None, ShortcodeFileType::Markdown, "");
         ctx.update_on_source_insert(2, 8, 10);
         assert_eq!(ctx.span().clone(), 12..22);
         ctx.update_on_source_insert(24, 30, 30);
@@ -318,14 +336,29 @@ mod tests {
 
     #[test]
     fn no_shortcodes() {
-        assert_eq!(fetch_shortcodes(""), (String::from(""), vec![]));
-        assert_eq!(fetch_shortcodes("abc"), (String::from("abc"), vec![]));
-        assert_eq!(fetch_shortcodes("{{ abc }}"), (String::from("{{ abc }}"), vec![]));
-        assert_eq!(fetch_shortcodes("{{ abc() %}"), (String::from("{{ abc() %}"), vec![]));
+        let shortcode_definitions = shortcode_defs!(
+            "abc" => ShortcodeFileType::Markdown, "xyz"
+        );
+
+        assert_eq!(fetch_shortcodes("", &shortcode_definitions), (String::from(""), vec![]));
+        assert_eq!(fetch_shortcodes("abc", &shortcode_definitions), (String::from("abc"), vec![]));
+        assert_eq!(
+            fetch_shortcodes("{{ abc }}", &shortcode_definitions),
+            (String::from("{{ abc }}"), vec![])
+        );
+        assert_eq!(
+            fetch_shortcodes("{{ abc() %}", &shortcode_definitions),
+            (String::from("{{ abc() %}"), vec![])
+        );
     }
 
     #[test]
     fn basic() {
+        let shortcode_definitions = shortcode_defs!(
+            "abc" => ShortcodeFileType::Markdown, "xyz",
+            "bodied" => ShortcodeFileType::Markdown, "{{ body }}"
+        );
+
         let test_str = r#"
 # Hello World!
 
@@ -339,7 +372,7 @@ mod tests {
         let snd_end = snd_start + SHORTCODE_PLACEHOLDER.len();
 
         assert_eq!(
-            fetch_shortcodes(test_str),
+            fetch_shortcodes(test_str, &shortcode_definitions),
             (
                 format!(
                     r#"
@@ -355,13 +388,17 @@ mod tests {
                         "abc",
                         vec![("wow", ArgValue::Boolean(true))],
                         fst_start..fst_end,
-                        None
+                        None,
+                        ShortcodeFileType::Markdown,
+                        "xyz"
                     ),
                     ShortcodeContext::new(
                         "bodied",
                         vec![("def", ArgValue::Text("Hello!".to_string()))],
                         snd_start..snd_end,
-                        Some(String::from("The inside of this body"))
+                        Some("The inside of this body"),
+                        ShortcodeFileType::Markdown,
+                        "{{ body }}"
                     )
                 ]
             )
@@ -369,65 +406,16 @@ mod tests {
     }
 
     #[test]
-    fn shortcode_in_body_requirement() {
-        let test_str = "{% a() %}{{ b() }}{% end %}";
-
-        assert_eq!(
-            fetch_shortcodes(test_str),
-            (
-                String::from(SHORTCODE_PLACEHOLDER),
-                vec![ShortcodeContext::new(
-                    "a",
-                    vec![],
-                    0..SHORTCODE_PLACEHOLDER.len(),
-                    Some(String::from("{{ b() }}"))
-                )]
-            )
-        );
-
-        let test_str = "{% a() %}{% b() %}{{ c() }}{% end %}{% end %}";
-        let end_open_a = "{% a() %}".len();
-
-        assert_eq!(
-            fetch_shortcodes(test_str),
-            (
-                format!("{}{{% end %}}", SHORTCODE_PLACEHOLDER),
-                vec![ShortcodeContext::new(
-                    "a",
-                    vec![],
-                    0..SHORTCODE_PLACEHOLDER.len(),
-                    Some(String::from("{% b() %}{{ c() }}"))
-                )]
-            )
-        );
-    }
-
-    #[test]
-    fn embedding_bodies() {
-        let test_str = "{% a() %}{% a() %}Wow!{% end %}{% end %}";
-        let end_open_a = "{% a() %}".len();
-
-        assert_eq!(
-            fetch_shortcodes(test_str),
-            (
-                format!("{}{{% end %}}", SHORTCODE_PLACEHOLDER),
-                vec![ShortcodeContext::new(
-                    "a",
-                    vec![],
-                    0..SHORTCODE_PLACEHOLDER.len(),
-                    Some(String::from("{% a() %}Wow!"))
-                )]
-            )
-        );
-    }
-
-    #[test]
     fn sequential_bodies() {
+        let shortcode_definitions = shortcode_defs!(
+            "a" => ShortcodeFileType::Markdown, "xyz"
+        );
+
         let test_str = "{% a() %}First body!{% end %}{% a() %}Second body!{% end %}";
         let end_open_a = "{% a() %}".len();
 
         assert_eq!(
-            fetch_shortcodes(test_str),
+            fetch_shortcodes(test_str, &shortcode_definitions),
             (
                 format!("{0}{0}", SHORTCODE_PLACEHOLDER),
                 vec![
@@ -435,13 +423,17 @@ mod tests {
                         "a",
                         vec![],
                         0..SHORTCODE_PLACEHOLDER.len(),
-                        Some(String::from("First body!"))
+                        Some("First body!"),
+                        ShortcodeFileType::Markdown,
+                        "xyz"
                     ),
                     ShortcodeContext::new(
                         "a",
                         vec![],
                         SHORTCODE_PLACEHOLDER.len()..(2 * SHORTCODE_PLACEHOLDER.len()),
-                        Some(String::from("Second body!"))
+                        Some("Second body!"),
+                        ShortcodeFileType::Markdown,
+                        "xyz"
                     )
                 ]
             )

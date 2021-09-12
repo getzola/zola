@@ -105,8 +105,8 @@ console.log(foo(5));
 ## Shortcodes
 
 {% quote(author="John Doe") %}
-    This is a test quote!
-    {{ date() }}
+This is a test quote!
+1900-01-01
 {% end %}
 
 ## Tables
@@ -164,11 +164,14 @@ fn complete_page() {
 
     let tera = tera::Tera::default();
 
-    let shortcodes: Vec<ShortCode> = vec![ShortCode::new("date", "1900-01-01", false), ShortCode::new("quote", 
-r"<blockquote>
-    {{ body }} <br>
-    -- {{ author}}
-</blockquote>", false)];
+    let shortcodes: Vec<ShortCode> = vec![ShortCode::new(
+        "quote",
+        r"<blockquote>
+{{ body }} <br>
+-- {{ author}}
+</blockquote>",
+        false,
+    )];
 
     let mut permalinks = std::collections::HashMap::new();
 
@@ -293,11 +296,10 @@ console.log(foo(5));
 </code></pre>
 <h2 id="shortcodes">Shortcodes</h2>
 <blockquote>
-    This is a test quote!
-    1900-01-01 <br>
-    -- John Doe
-</blockquote>
-<h2 id="tables">Tables</h2>
+This is a test quote!
+1900-01-01 <br>
+-- John Doe
+</blockquote><h2 id="tables">Tables</h2>
 <table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
 <tr><td>data</td><td>path to data files to supply the data that will be passed into templates.</td></tr>
 <tr><td>engine</td><td>engine to be used for processing templates. Handlebars is the default.</td></tr>
@@ -329,5 +331,6 @@ and multiple paragraphs.</p>
 <div class="footnote-definition" id="second"><sup class="footnote-definition-label">2</sup>
 <p>Footnote text.</p>
 </div>
-"##);
+"##
+    );
 }

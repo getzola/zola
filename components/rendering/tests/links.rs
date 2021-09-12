@@ -101,24 +101,3 @@ fn relative_links_no_perma() {
         []
     );
 }
-
-const LINK_SHORTCODE: ShortCode = ShortCode::new("link", "[{{ txt }}]({{ href }})", true);
-
-#[test]
-fn shortcode_links() {
-    test_links!(
-        "{{ link(txt='abc',href='https://google.com/') }}",
-        [],
-        ["https://google.com/"],
-        [],
-        [LINK_SHORTCODE]
-    );
-
-    test_links!(
-        "{{ link(txt='abc',href='@/def/123.md') }}",
-        ["def/123.md" => "https://xyz.com/def/123"],
-        [],
-        ["def/123.md":<Option<&str>>::None],
-        [LINK_SHORTCODE]
-    );
-}

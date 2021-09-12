@@ -62,8 +62,7 @@ impl Into<errors::Error> for RenderError {
 }
 
 /// Take one specific shortcode and attempt to turn it into its resulting replacement string
-fn render_shortcode(
-    source: &str,
+pub fn render_shortcode(
     context: &ShortcodeContext,
     invocation_counts: &mut HashMap<String, usize>,
     tera_context: &tera::Context,
@@ -77,6 +76,7 @@ fn render_shortcode(
         new_context.insert(key, &value.to_tera(&new_context)?);
     }
     if let Some(ref body_content) = body_content {
+        println!("BODYYYYYYYYYYYYYYY: '{}'", body_content);
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
         new_context.insert("body", body_content.trim_end());
     }
@@ -106,7 +106,7 @@ pub fn insert_md_shortcodes(
 
     let mut html_shortcode_ctxs = Vec::with_capacity(shortcode_ctxs.len());
 
-    for ctx in shortcode_ctxs.into_iter() {
+    for mut ctx in shortcode_ctxs.into_iter() {
         for Transform { span_start, initial_end, after_end } in transforms.iter() {
             ctx.update_on_source_insert(*span_start, *initial_end, *after_end);
         }
@@ -117,7 +117,7 @@ pub fn insert_md_shortcodes(
         }
 
         let ctx_span = ctx.span();
-        let res = render_shortcode(&content, &ctx, &mut invocation_counts, tera_context)?;
+        let res = render_shortcode(&ctx, &mut invocation_counts, tera_context)?;
 
         transforms.push(Transform::new(&ctx_span, res.len()));
         content.replace_range(ctx_span.clone(), &res);
@@ -132,81 +132,41 @@ mod tests {
     use ShortcodeFileType::*;
 
     macro_rules! assert_render_md_shortcode {
-        ($source:expr, $context:expr, $defs:expr$(,)? => $res:expr) => {
+        ($source:expr, $context:expr => $res:expr) => {
             let context = tera::Context::new();
             let mut invocation_counts = HashMap::new();
             assert_eq!(
-                render_shortcode(
-                    $source,
-                    &$context,
-                    &$defs,
-                    &mut invocation_counts,
-                    &context,
-                    &ShortcodeFileType::Markdown,
-                ),
-                $res
+                render_shortcode(&$context, &mut invocation_counts, &context,).unwrap(),
+                $res.to_string()
             );
         };
     }
 
-    macro_rules! shortcode_defs {
-        ($($name:expr => $ty:expr, $content:expr),*$(,)?) => {{
-            let mut map = HashMap::new();
-            $(
-                map.insert($name.to_string(), ShortcodeDefinition::new($ty, $content));
-            )*
-            map
-        }}
-    }
-
     #[test]
     fn render_md_shortcode() {
-        let shortcodes = shortcode_defs![
-            "a" => Markdown, "wow",
-            "calls_b" => Markdown, "Prefix {{ b() }}",
-            "b" => Markdown, "Internal of b",
-            "one_two" => Markdown, "{{ one() }}",
-            "one" => Markdown, "{{ one_two() }}",
-        ];
-
         assert_render_md_shortcode!(
-            "abc {{ a() }}", ShortcodeContext::new("a", vec![], 4..13, None), shortcodes =>
-                Ok("wow".to_string())
+            "abc {{SC()}}", ShortcodeContext::new("a", vec![], 4..12, None, Markdown, "wow") => "wow"
         );
         assert_render_md_shortcode!(
-             "abc {{ calls_b() }}", ShortcodeContext::new("calls_b", vec![], 4..19, None), shortcodes =>
-                Ok("Prefix Internal of b".to_string())
+             "abc {{SC()}}", ShortcodeContext::new("calls_b", vec![], 4..12, None, Markdown, "XYZ") =>
+                "XYZ"
         );
         assert_render_md_shortcode!(
-            "abc {{ n() }}", ShortcodeContext::new("a", vec![], 4..13, None), shortcodes =>
-                Ok("wow".to_string())
-        );
-        assert_render_md_shortcode!(
-            "{{ one_two() }}", ShortcodeContext::new("one_two", vec![], 0..15, None), shortcodes =>
-                Err(RenderError::RecursiveReuseOfShortcode("one_two".to_string()))
+            "abc {{SC()}}", ShortcodeContext::new("a", vec![], 4..12, None, Markdown, "{{ nth }}") =>
+                "1"
         );
     }
 
     #[test]
-    fn insert_md_shortcodes() {
-        let shortcodes = shortcode_defs![
-            "a" => Markdown, "wow",
-            "calls_b" => Markdown, "Prefix {{ b() }}",
-            "b" => Markdown, "Internal of b",
-            "one_two" => Markdown, "{{ one() }}",
-            "one" => Markdown, "{{ one_two() }}",
-            "inv" => Markdown, "{{ nth }}",
-            "html" => HTML, "{{ wow }}",
-            "bodied" => Markdown, "much {{ body }}",
-        ];
-
+    fn insrt_md_shortcodes() {
         let tera_context = tera::Context::new();
-
         assert_eq!(
-            insert_shortcodes(
-                "{{ inv() }}{{ inv() }}",
-                &shortcodes,
-                ShortcodeFileType::Markdown,
+            insert_md_shortcodes(
+                "{{SC()}}{{SC()}}".to_string(),
+                vec![
+                    ShortcodeContext::new("", vec![], 0..8, None, Markdown, "{{ nth }}"),
+                    ShortcodeContext::new("", vec![], 8..16, None, Markdown, "{{ nth }}")
+                ],
                 &tera_context
             )
             .unwrap()
@@ -214,98 +174,21 @@ mod tests {
             "12".to_string()
         );
         assert_eq!(
-            insert_shortcodes(
-                "{% bodied() %}wow{% end %}",
-                &shortcodes,
-                ShortcodeFileType::Markdown,
+            insert_md_shortcodes(
+                "Much wow {{SC()}}".to_string(),
+                vec![ShortcodeContext::new(
+                    "",
+                    vec![],
+                    9..17,
+                    Some("Content of the body"),
+                    Markdown,
+                    "{{ body }}"
+                )],
                 &tera_context
             )
             .unwrap()
             .0,
-            "much wow".to_string()
-        );
-        assert_eq!(
-            insert_shortcodes(
-                "Hello {{ html() }}!",
-                &shortcodes,
-                ShortcodeFileType::Markdown,
-                &tera_context
-            )
-            .unwrap()
-            .0,
-            "Hello {{ html() }}!".to_string()
-        );
-        assert_eq!(
-            insert_shortcodes(
-                "{% bodied() %}wow {{ html() }}{% end %}",
-                &shortcodes,
-                ShortcodeFileType::Markdown,
-                &tera_context
-            )
-            .unwrap()
-            .0,
-            "much wow {{ html() }}".to_string()
-        );
-    }
-
-    #[test]
-    fn insert_html_shortcodes() {
-        let shortcodes = shortcode_defs![
-            "a" => HTML, "wow",
-            "calls_b" => HTML, "Prefix {{ b() }}",
-            "b" => HTML, "Internal of b",
-            "one_two" => HTML, "{{ one() }}",
-            "one" => HTML, "{{ one_two() }}",
-            "inv" => HTML, "{{ nth }}",
-            "html" => Markdown, "{{ wow }}",
-            "bodied" => HTML, "much {{ body }}",
-        ];
-
-        let tera_context = tera::Context::new();
-
-        assert_eq!(
-            insert_shortcodes(
-                "{{ inv() }}{{ inv() }}",
-                &shortcodes,
-                ShortcodeFileType::HTML,
-                &tera_context
-            )
-            .unwrap()
-            .0,
-            "12".to_string()
-        );
-        assert_eq!(
-            insert_shortcodes(
-                "{% bodied() %}wow{% end %}",
-                &shortcodes,
-                ShortcodeFileType::HTML,
-                &tera_context
-            )
-            .unwrap()
-            .0,
-            "much wow".to_string()
-        );
-        assert_eq!(
-            insert_shortcodes(
-                "Hello {{ html() }}!",
-                &shortcodes,
-                ShortcodeFileType::HTML,
-                &tera_context
-            )
-            .unwrap()
-            .0,
-            "Hello {{ html() }}!".to_string()
-        );
-        assert_eq!(
-            insert_shortcodes(
-                "{% bodied() %}wow {{ html() }}{% end %}",
-                &shortcodes,
-                ShortcodeFileType::HTML,
-                &tera_context
-            )
-            .unwrap()
-            .0,
-            "much wow {{ html() }}".to_string()
+            "Much wow Content of the body".to_string()
         );
     }
 }
