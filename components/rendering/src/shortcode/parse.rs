@@ -10,7 +10,7 @@ use std::ops::Range;
 use super::arg_value::ArgValue;
 use super::inner_tag::InnerTag;
 
-use crate::range_relation::RangeRelation;
+use super::{ ShortcodeDefinition, ShortcodeFileType };
 
 /// Ranges have some limitations on adding and subtracting so we use usize's copy behaviour
 /// to circumvent that with this function. Plus we are dealing with usizes so we cannot do easy
@@ -50,6 +50,8 @@ pub struct ShortcodeContext {
     args: HashMap<String, ArgValue>,
     span: Range<usize>,
     body: Option<String>,
+    file_type: ShortcodeFileType,
+    definition_content: String,
 }
 
 impl ShortcodeContext {
@@ -58,10 +60,15 @@ impl ShortcodeContext {
         name: &str,
         args_vec: Vec<(&str, ArgValue)>,
         span: Range<usize>,
-        body: Option<String>,
+        body: Option<&str>,
+        file_type: ShortcodeFileType,
+        definition_content: &str,
     ) -> ShortcodeContext {
         let InnerTag { name, args } = InnerTag::new(name, args_vec);
-        ShortcodeContext { name, args, span, body }
+        let body = body.clone();
+        let definition_content = definition_content.to_string();
+
+        ShortcodeContext { name, args, span, body, file_type, definition_content }
     }
 
     /// Get the name of the shortcode
@@ -82,6 +89,16 @@ impl ShortcodeContext {
     /// Returns the span of the shortcode within source string
     pub fn span(&self) -> &Range<usize> {
         &self.span
+    }
+
+    /// Returns the file type of the shortcode context
+    pub fn file_type(&self) -> &ShortcodeFileType {
+        &self.file_type
+    }
+
+    /// Returns the content of the definition of the shortcode
+    pub fn definition_content(&self) -> &String {
+        &self.definition_content
     }
 
     /// Translates/Moves the span by `translation` either to the left or the right depending on
@@ -124,14 +141,6 @@ impl ShortcodeContext {
     }
 }
 
-/// Used to keep track of body items when parsing Shortcode. Since multiple can be embedded into
-/// eachother. This needs to be kept track off.
-struct BodiedStackItem {
-    name: String,
-    args: HashMap<String, ArgValue>,
-    openblock_span: Range<usize>,
-    body_start: usize,
-}
 
 const SHORTCODE_PLACEHOLDER: &str = "{{SC()}}";
 
@@ -139,7 +148,21 @@ const SHORTCODE_PLACEHOLDER: &str = "{{SC()}}";
 ///
 /// Will put the shortcodes which are contained within the body of another shortcode before the
 /// shortcode they are contained in. This is very important.
-pub fn fetch_shortcodes(source: &str) -> (String, Vec<ShortcodeContext>) {
+pub fn fetch_shortcodes(
+    source: &str,
+    definitions: &HashMap<String, ShortcodeDefinition>,
+) -> (String, Vec<ShortcodeContext>) {
+    /// Used to keep track of body items when parsing Shortcode. Since multiple can be embedded into
+    /// eachother. This needs to be kept track off.
+    struct BodiedStackItem {
+        name: String,
+        args: HashMap<String, ArgValue>,
+        openblock_span: Range<usize>,
+        body_start: usize,
+        file_type: ShortcodeFileType,
+        definition_content: String,
+    }
+
     let mut lex = Openers::lexer(source);
     let mut shortcodes = Vec::new();
 
@@ -153,7 +176,7 @@ pub fn fetch_shortcodes(source: &str) -> (String, Vec<ShortcodeContext>) {
         // Check if the open tag is an endblock
         if matches!(open_tag, Openers::EndBlock) {
             // Check whether a bodied shortcode has already been located
-            if let Some(BodiedStackItem { name, args, openblock_span, body_start }) =
+            if let Some(BodiedStackItem { name, args, openblock_span, body_start, file_type, definition_content }) =
                 current_body.take()
             {
                 let body = Some(String::from(&source[body_start..lex.span().start]));
@@ -163,6 +186,8 @@ pub fn fetch_shortcodes(source: &str) -> (String, Vec<ShortcodeContext>) {
                     args,
                     span: output_str.len() - openblock_span.len()..output_str.len(),
                     body,
+                    file_type,
+                    definition_content
                 });
 
                 last_lex_end = lex.span().end;
@@ -186,39 +211,45 @@ pub fn fetch_shortcodes(source: &str) -> (String, Vec<ShortcodeContext>) {
         {
             let mut closing = inner_tag_lex.morph();
 
-            if let Some(close_tag) = closing.next() {
-                let openblock_span =
-                    output_str.len()..(output_str.len() + SHORTCODE_PLACEHOLDER.len());
+            if let Some(ShortcodeDefinition { file_type, content: definition_content }) = definitions.get(&name) {
+                if let Some(close_tag) = closing.next() {
+                    let openblock_span =
+                        output_str.len()..(output_str.len() + SHORTCODE_PLACEHOLDER.len());
 
-                // Make sure that we have `{{` and `}}` or `{%` and `%}`.
-                match (open_tag, close_tag) {
-                    (Openers::Normal, Closers::Normal) => {
-                        output_str.push_str(SHORTCODE_PLACEHOLDER);
-                        last_lex_end = closing.span().end;
+                    // Make sure that we have `{{` and `}}` or `{%` and `%}`.
+                    match (open_tag, close_tag) {
+                        (Openers::Normal, Closers::Normal) => {
+                            output_str.push_str(SHORTCODE_PLACEHOLDER);
+                            last_lex_end = closing.span().end;
 
-                        shortcodes.push(ShortcodeContext {
-                            name,
-                            args,
-                            span: openblock_span,
-                            body: None,
-                        });
-                    }
+                            shortcodes.push(ShortcodeContext {
+                                name,
+                                args,
+                                span: openblock_span,
+                                body: None,
+                                file_type: file_type.clone(),
+                                definition_content: definition_content.clone(),
+                            });
+                        }
 
-                    (Openers::Body, Closers::Body) => {
-                        output_str.push_str(SHORTCODE_PLACEHOLDER);
-                        last_lex_end = closing.span().end;
+                        (Openers::Body, Closers::Body) => {
+                            output_str.push_str(SHORTCODE_PLACEHOLDER);
+                            last_lex_end = closing.span().end;
 
-                        current_body = Some(BodiedStackItem {
-                            name,
-                            args,
-                            openblock_span,
-                            body_start: closing.span().end,
-                        });
-                    }
+                            current_body = Some(BodiedStackItem {
+                                name,
+                                args,
+                                openblock_span,
+                                body_start: closing.span().end,
+                                file_type: file_type.clone(),
+                                definition_content: definition_content.clone(),
+                            });
+                        }
 
-                    _ => {
-                        // Tags don't match
-                        continue;
+                        _ => {
+                            // Tags don't match
+                            continue;
+                        }
                     }
                 }
             }
