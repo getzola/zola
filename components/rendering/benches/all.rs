@@ -106,10 +106,11 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     let mut config = Config::default();
     config.markdown.highlight_code = false;
     let current_page_permalink = "";
+    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        "",
+        lang,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
@@ -117,7 +118,6 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
-#[bench]
 fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     let tera = Tera::default();
     let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
@@ -125,10 +125,11 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     config.markdown.highlight_code = false;
     let permalinks_ctx = HashMap::new();
     let current_page_permalink = "";
+    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        "",
+        lang,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
@@ -144,16 +145,15 @@ fn bench_render_shortcodes_one_present(b: &mut test::Bencher) {
     let config = Config::default();
     let permalinks_ctx = HashMap::new();
     let current_page_permalink = "";
+    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        "",
+        lang,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
     );
-
-    b.iter(|| render_shortcodes(CONTENT, &context));
 }
 
 #[bench]
@@ -165,10 +165,11 @@ fn bench_render_content_no_shortcode_with_emoji(b: &mut test::Bencher) {
     config.markdown.render_emoji = true;
     let permalinks_ctx = HashMap::new();
     let current_page_permalink = "";
+    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        "",
+        lang,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,

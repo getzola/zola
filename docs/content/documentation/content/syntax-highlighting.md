@@ -150,7 +150,7 @@ Here is a full list of supported languages and their short names:
 Note: due to some issues with the JavaScript syntax, the TypeScript syntax will be used instead.
 
 If you want to highlight a language not on this list, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
-Alternatively, the `extra_syntaxes` configuration option can be used to add additional syntax files.
+Alternatively, the `extra_syntaxes_and_themes` configuration option can be used to add additional syntax (and theme) files.
 
 If your site source is laid out as follows:
 
@@ -169,7 +169,7 @@ If your site source is laid out as follows:
     └── ...
 ```
 
-you would set your `extra_syntaxes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
+you would set your `extra_syntaxes_and_themes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
 
 ## Inline VS classed highlighting
 
@@ -347,3 +347,40 @@ Line 2 and 7 are comments that are not shown in the final output.
 
 When line numbers are active, the code block is turned into a table with one row and two cells. The first cell contains the line number and the second cell contains the code.
 Highlights are done via the `<mark>` HTML tag. When a line with line number is highlighted two `<mark>` tags are created: one around the line number(s) and one around the code.
+
+## Custom Highlighting Themes
+
+The default *theme* for syntax highlighting is called `base16-ocean-dark`, you can choose another theme from the built in set of highlight themes using the `highlight_theme` configuration option.
+For example, this documentation site currently uses the `kronuz` theme, which is built in.
+
+```
+[markdown]
+highlight_code = true
+highlight_theme = "kronuz"
+```
+
+Alternatively, the `extra_syntaxes_and_themes` configuration option can be used to add additional theme files.
+You can load your own highlight theme from a TextMate `.tmTheme` file.
+
+It works the same way as adding extra syntaxes. It should contain a list of paths to folders containing the .tmTheme files you want to include.
+You would then set `highlight_theme` to the name of one of these files, without the `.tmTheme` extension.
+
+If your site source is laid out as follows:
+
+```
+.
+├── config.toml
+├── content/
+│   └── ...
+├── static/
+│   └── ...
+├── highlight_themes/
+│   ├── MyGroovyTheme/
+│   │   └── theme1.tmTheme
+│   ├── theme2.tmTheme
+└── templates/
+    └── ...
+```
+
+you would set your `extra_highlight_themes` to `["highlight_themes", "highlight_themes/MyGroovyTheme"]` to load `theme1.tmTheme` and `theme2.tmTheme`.
+Then choose one of them to use, say theme1, by setting `highlight_theme = theme1`.
