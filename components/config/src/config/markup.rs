@@ -71,7 +71,7 @@ impl Markdown {
     }
 
     /// Gets an arbitrary theme from the THEME_SET or the extra_theme_set
-    pub fn get_highlight_theme_by_name<'config>(&'config self, theme_name: &str) -> &'config Theme {
+    pub fn get_highlight_theme_by_name(&self, theme_name: &str) -> &Theme {
         (*self.extra_theme_set)
             .as_ref()
             .and_then(|ts| ts.themes.get(theme_name))
