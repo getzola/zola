@@ -236,7 +236,7 @@ mod tests {
         let syntax_and_theme = resolve_syntax_and_theme(Some("py"), &config);
         let mut highlighter = SyntaxHighlighter::new(false, syntax_and_theme);
         let mut out = String::new();
-        for line in LinesWithEndings::from(&code) {
+        for line in LinesWithEndings::from(code) {
             out.push_str(&highlighter.highlight_line(line));
         }
         assert!(!out.contains("<script>"));
