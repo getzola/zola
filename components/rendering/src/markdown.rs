@@ -359,17 +359,20 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 }
 
 fn strip_pre_data_shortcode(markup: &str, in_html_block: &mut bool) -> Option<Event<'static>> {
+    let start_tag = "<pre data-shortcode>";
+    let end_tag = "</pre>";
+
     let mut markup = String::from(markup);
     let mut made_replacements = false;
 
     loop {
-        if *in_html_block && markup.contains("</pre>") {
+        if *in_html_block && markup.contains(end_tag) {
             *in_html_block = false;
-            markup = markup.replacen("</pre>", "", 1).into();
+            markup = markup.replacen(end_tag, "", 1).into();
             made_replacements = true;
-        } else if markup.contains("pre data-shortcode") {
+        } else if markup.contains(start_tag) {
             *in_html_block = true;
-            markup = markup.replacen("<pre data-shortcode>", "", 1);
+            markup = markup.replacen(start_tag, "", 1);
             made_replacements = true;
         } else {
             break;
