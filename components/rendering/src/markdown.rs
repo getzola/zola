@@ -359,18 +359,25 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 }
 
 fn strip_pre_data_shortcode(markup: &str, in_html_block: &mut bool) -> Option<Event<'static>> {
-    if *in_html_block && markup.contains("</pre>") {
-        *in_html_block = false;
-        Some(Event::Html(markup.replacen("</pre>", "", 1).into()))
-    } else if markup.contains("pre data-shortcode") {
-        *in_html_block = true;
-        let m = markup.replacen("<pre data-shortcode>", "", 1);
-        if m.contains("</pre>") {
+    let mut markup = String::from(markup);
+    let mut made_replacements = false;
+
+    loop {
+        if *in_html_block && markup.contains("</pre>") {
             *in_html_block = false;
-            Some(Event::Html(m.replacen("</pre>", "", 1).into()))
+            markup = markup.replacen("</pre>", "", 1).into();
+            made_replacements = true;
+        } else if markup.contains("pre data-shortcode") {
+            *in_html_block = true;
+            markup = markup.replacen("<pre data-shortcode>", "", 1);
+            made_replacements = true;
         } else {
-            Some(Event::Html(m.into()))
+            break;
         }
+    }
+
+    if made_replacements {
+        Some(Event::Html(markup.into()))
     } else {
         None
     }
@@ -425,6 +432,18 @@ mod tests {
         let input = "1</pre> 2";
         let mut in_html_block = true;
         assert_eq(strip_pre_data_shortcode(input, &mut in_html_block), "1 2");
+        assert_eq!(in_html_block, false);
+
+        // Strip multiple occurrences
+        let input = "1 <pre data-shortcode>2</pre> 3 <pre data-shortcode>4</pre> 5";
+        let mut in_html_block = false;
+        assert_eq(strip_pre_data_shortcode(input, &mut in_html_block), "1 2 3 4 5");
+        assert_eq!(in_html_block, false);
+
+        // Strip end tag and occurrence
+        let input = "1</pre> 2 <pre data-shortcode>3</pre> 4";
+        let mut in_html_block = true;
+        assert_eq(strip_pre_data_shortcode(input, &mut in_html_block), "1 2 3 4");
         assert_eq!(in_html_block, false);
 
         fn assert_eq(actual: Option<Event>, expected: &str) {
