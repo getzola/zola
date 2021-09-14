@@ -412,4 +412,27 @@ mod tests {
 
         assert!(!is_external_link("http.jpg"))
     }
+
+    #[test]
+    fn test_strip_pre_data_shortcode() {
+        // Strip one occurrence
+        let input = "1 <pre data-shortcode>2</pre> 3";
+        let mut in_html_block = false;
+        assert_eq(strip_pre_data_shortcode(input, &mut in_html_block), "1 2 3");
+        assert_eq!(in_html_block, false);
+
+        // Strip end tag
+        let input = "1</pre> 2";
+        let mut in_html_block = true;
+        assert_eq(strip_pre_data_shortcode(input, &mut in_html_block), "1 2");
+        assert_eq!(in_html_block, false);
+
+        fn assert_eq(actual: Option<Event>, expected: &str) {
+            if let Some(Event::Html(actual)) = actual {
+                assert_eq!(actual.as_ref(), expected);
+            } else {
+                unreachable!()
+            }
+        }
+    }
 }
