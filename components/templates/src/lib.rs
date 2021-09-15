@@ -42,6 +42,8 @@ lazy_static! {
         .unwrap();
         tera.register_filter("base64_encode", filters::base64_encode);
         tera.register_filter("base64_decode", filters::base64_decode);
+        tera.register_filter("deflate_compress", filters::deflate_compress);
+        tera.register_filter("deflate_decompress", filters::deflate_decompress);
         tera
     };
 }

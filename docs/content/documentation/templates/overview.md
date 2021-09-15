@@ -101,6 +101,14 @@ To format a number for a specific locale, you can use the `locale` argument and 
 <!-- 10,00,000 -->
 ```
 
+### deflate_compress
+
+Compresses the variable using deflate algorithm and encode the output as base64
+
+### deflate_decompress
+
+Decode the variable using base64 and then decompress using deflate algorithm
+
 ## Built-in functions
 
 Zola adds a few Tera functions to [those built-in in Tera](https://tera.netlify.com/docs#built-in-functions)
