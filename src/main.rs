@@ -15,8 +15,6 @@ fn main() {
     let root_dir = match matches.value_of("root").unwrap() {
         "." => env::current_dir().unwrap(),
         path => PathBuf::from(path)
-            .canonicalize()
-            .unwrap_or_else(|_| panic!("Cannot find root directory: {}", path)),
     };
     let config_file = match matches.value_of("config") {
         Some(path) => PathBuf::from(path),
