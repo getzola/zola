@@ -10,15 +10,24 @@ To get started, you will need to add the languages you want to support
 to your `config.toml`. For example:
 
 ```toml
-languages = [
-    {code = "fr", feed = true}, # there will be a feed for French content
-    {code = "fr", search = true}, # there will be a Search Index for French content
-    {code = "it"}, # there won't be a feed for Italian content
+[languages.fr]
+generate_feed = true # there will be a feed for French content
+build_search_index = true
+taxonomies = [
+    {name = "auteurs"},
+    {name = "tags"},
 ]
-```
 
-If you want to use per-language taxonomies, ensure you set the `lang` field in their
-configuration.
+[languages.fr.translations]
+summary = "Mon blog"
+
+[languages.it]
+# Italian language doesn't have any taxonomies/feed/search index
+
+[languages.it.translations]
+summary = "Mio blog"
+
+```
 
 Note: By default, Chinese and Japanese search indexing is not included. You can include
 the support by building `zola` using `cargo build --features search/indexing-ja --features search/indexing-zh`.

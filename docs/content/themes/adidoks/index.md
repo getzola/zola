@@ -3,11 +3,11 @@
 title = "adidoks"
 description = "AdiDoks is a Zola theme helping you build modern documentation."
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2021-09-07T11:12:53+03:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2021-09-07T11:12:53+03:00
+updated = 2021-09-07T11:12:53+03:00
 repository = "https://github.com/aaranxu/adidoks.git"
 homepage = "https://github.com/aaranxu/adidoks"
 minimum_version = "0.13.0"
@@ -35,10 +35,10 @@ Before using the theme, you need to install the [Zola](https://www.getzola.org/d
 ## Quick Start
 
 ```bash
-git clone git@github.com:aaranxu/adidoks.git
+git clone https://github.com/aaranxu/adidoks.git
 cd adidoks
 zola serve
-# open http://127.0.0.1:1111/
+# open http://127.0.0.1:1111/ in the browser
 ```
 
 Read more from [the document of the AdiDoks](https://adidoks.org/docs/getting-started/introduction/).
@@ -60,7 +60,7 @@ Download this theme to your themes directory:
 
 ```bash
 cd mysite/themes
-git clone git@github.com:aaranxu/adidoks.git
+git clone https://github.com/aaranxu/adidoks.git
 ```
 
 Or install as a submodule:
@@ -68,7 +68,7 @@ Or install as a submodule:
 ```bash
 cd mysite
 git init  # if your project is a git repository already, ignore this command
-git submodule add git@github.com:aaranxu/adidoks.git themes/adidoks
+git submodule add https://github.com/aaranxu/adidoks.git themes/adidoks
 ```
 
 ### Step 3: Configuration
@@ -110,7 +110,9 @@ AdiDoks will start the Zola development web server accessible by default at
 
 ## Customisation
 
-You can customize your configurations, templates and content for yourself. Look at the `config.toml`, `theme.toml`, `content` files and templates files in this repo for an idea.
+You can customize your configurations, templates and content for yourself. Look
+at the `config.toml`, `theme.toml`, `content` files and templates files in this
+repo for an idea.
 
 ### Global Configuration
 
@@ -136,7 +138,7 @@ build_search_index = true
 
 The following options should be under the `[extra]` in `config.toml`
 
-- `alanguage_code` - set HTML file language (default to `en-US`)
+- `language_code` - set HTML file language (default to `en-US`)
 - `theme_color` - your site's HTML color (default to `#fff`)
 - `title_separator` - the separator to your site title, like `|` and `-` (defaults to `|`)
 - `title_addition` - the additon content for the title of the homepage
@@ -150,27 +152,28 @@ The following options should be under the `[extra]` in `config.toml`
 - `[[extra.menu.social]]` - the social links on the header of the page
 - `[extra.footer]` - the footer content on the left
 - `[[extra.footer.nav]]` - the footer navigations on the right
-- `[extra.home]` - the main content of the homepage
-- `[[extra.home.list]]` - the lists' content of the homepage
-
 
 ### Templates
 
-All pages are extend to the `base.html`, and you can customize for as need.
+All pages are extend to the `base.html`, and you can customize them as need.
 
 ### Content
 
 #### Homepage
 
-Go to the `config.toml` to set your own homepage content.
+Go to the *content/_index.md* file to add your own homepage content.
+
+- `[extra]` - the main content of the homepage
+- `[[extra.ist]]` - the lists' content of the homepage
 
 #### Sections
 
-Each section includes a `_index.md`, and you can customize it.
+Each section includes a `_index.md`, and you can customize it or add your new
+section under the `content` folder.
 
 #### Pages
 
-There are three types of pages in the site.
+There are mainly three types of pages in the site.
 
 - `blog` - blog article
 - `docs` - documentation article
