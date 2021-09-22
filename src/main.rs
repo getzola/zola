@@ -12,19 +12,23 @@ mod prompt;
 fn main() {
     let matches = cli::build_cli().get_matches();
 
-    let mut root_dir = match matches.value_of("root").unwrap() {
-        "." => env::current_dir().unwrap(),
-        path => PathBuf::from(path)
-    };
-
-    if root_dir.is_relative() {
-        root_dir = env::current_dir().unwrap().join(root_dir);
+    // Takes a potentially relative path and returns and absolute one from current_dir
+    // Required because relative paths don't always work correctly 
+    fn make_abs_path(path: PathBuf) -> PathBuf {
+        if path.is_relative() {
+            return env::current_dir().unwrap().join(path);
+        } else {
+            return path;
+        }
     }
 
+    let root_dir = match matches.value_of("root").unwrap() {
+        "." => env::current_dir().unwrap(),
+        path => make_abs_path(PathBuf::from(path))
+    };
+
     let config_file = match matches.value_of("config") {
-        Some(path) => PathBuf::from(path)
-            .canonicalize()
-            .unwrap_or_else(|_| panic!("Cannot find config file: {}", path)),
+        Some(path) => make_abs_path(PathBuf::from(path)),
         None => root_dir.join("config.toml"),
     };
 
