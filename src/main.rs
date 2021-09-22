@@ -12,12 +12,15 @@ mod prompt;
 fn main() {
     let matches = cli::build_cli().get_matches();
 
-    let root_dir = match matches.value_of("root").unwrap() {
+    let mut root_dir = match matches.value_of("root").unwrap() {
         "." => env::current_dir().unwrap(),
         path => PathBuf::from(path)
-            .canonicalize()
-            .unwrap_or_else(|_| panic!("Cannot find root directory: {}", path)),
     };
+
+    if root_dir.is_relative() {
+        root_dir = env::current_dir().unwrap().join(root_dir);
+    }
+
     let config_file = match matches.value_of("config") {
         Some(path) => PathBuf::from(path)
             .canonicalize()
