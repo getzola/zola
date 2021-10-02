@@ -96,7 +96,7 @@ impl DataSource {
         }
 
         if let Some(path) = path_arg {
-            return match search_for_file(&base_path, &path, &theme, &output_path)
+            return match search_for_file(base_path, &path, theme, output_path)
                 .map_err(|e| format!("`load_data`: {}", e))?
             {
                 Some((f, _)) => Ok(Some(DataSource::Path(f))),
@@ -226,7 +226,13 @@ impl TeraFn for LoadData {
 
         // If the file doesn't exist, source is None
         let data_source = match (
-            DataSource::from_args(path_arg.clone(), url_arg, &self.base_path, &self.theme, &self.output_path),
+            DataSource::from_args(
+                path_arg.clone(),
+                url_arg,
+                &self.base_path,
+                &self.theme,
+                &self.output_path,
+            ),
             required,
         ) {
             // If the file was not required, return a Null value to the template
