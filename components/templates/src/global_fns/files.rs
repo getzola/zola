@@ -464,7 +464,6 @@ title = "A title"
     }
 
     #[test]
-    #[cfg(target_os = "windows")]
     fn can_resolve_asset_path_to_valid_url() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
