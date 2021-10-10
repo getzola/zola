@@ -162,7 +162,7 @@ and multiple paragraphs.
 fn complete_page() {
     let config = config::Config::default_for_test();
 
-    let tera = tera::Tera::default();
+    let mut tera = tera::Tera::default();
 
     let shortcodes: Vec<ShortCode> = vec![ShortCode::new(
         "quote",
@@ -177,7 +177,15 @@ fn complete_page() {
 
     permalinks.insert("".to_string(), "".to_string());
 
-    let mut context = rendering::RenderContext::new(
+    // Add all shortcodes
+    for ShortCode { name, is_md, output } in shortcodes.into_iter() {
+        tera.add_raw_template(
+            &format!("shortcodes/{}.{}", name, if is_md { "md" } else { "html" }),
+            &output,
+        );
+    }
+
+    let context = rendering::RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -185,11 +193,6 @@ fn complete_page() {
         &permalinks,
         front_matter::InsertAnchor::None,
     );
-
-    // Add all shortcodes
-    for ShortCode { name, is_md, output } in shortcodes.into_iter() {
-        context.add_shortcode_def(name, is_md, output);
-    }
 
     let rendered = rendering::render_content(COMPLETE_PAGE, &context);
     assert!(rendered.is_ok(), "Rendering failed");

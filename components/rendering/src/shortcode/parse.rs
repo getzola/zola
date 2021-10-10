@@ -51,7 +51,7 @@ pub struct ShortcodeContext {
     span: Range<usize>,
     body: Option<String>,
     file_type: ShortcodeFileType,
-    definition_content: String,
+    tera_name: String,
 }
 
 impl ShortcodeContext {
@@ -62,13 +62,13 @@ impl ShortcodeContext {
         span: Range<usize>,
         body: Option<&str>,
         file_type: ShortcodeFileType,
-        definition_content: &str,
+        tera_name: &str,
     ) -> ShortcodeContext {
         let InnerTag { name, args } = InnerTag::new(name, args_vec);
         let body = body.map(|b| b.to_string());
-        let definition_content = definition_content.to_string();
+        let tera_name = tera_name.to_string();
 
-        ShortcodeContext { name, args, span, body, file_type, definition_content }
+        ShortcodeContext { name, args, span, body, file_type, tera_name }
     }
 
     /// Get the name of the shortcode
@@ -97,8 +97,8 @@ impl ShortcodeContext {
     }
 
     /// Returns the content of the definition of the shortcode
-    pub fn definition_content(&self) -> &String {
-        &self.definition_content
+    pub fn tera_name(&self) -> &String {
+        &self.tera_name
     }
 
     /// Translates/Moves the span by `translation` either to the left or the right depending on
@@ -159,7 +159,7 @@ pub fn fetch_shortcodes(
         openblock_span: Range<usize>,
         body_start: usize,
         file_type: ShortcodeFileType,
-        definition_content: String,
+        tera_name: String,
     }
 
     let mut lex = Openers::lexer(source);
@@ -181,7 +181,7 @@ pub fn fetch_shortcodes(
                 openblock_span,
                 body_start,
                 file_type,
-                definition_content,
+                tera_name,
             }) = current_body.take()
             {
                 let body = Some(String::from(source[body_start..lex.span().start].trim()));
@@ -192,7 +192,7 @@ pub fn fetch_shortcodes(
                     span: output_str.len() - openblock_span.len()..output_str.len(),
                     body,
                     file_type,
-                    definition_content,
+                    tera_name,
                 });
 
                 last_lex_end = lex.span().end;
@@ -216,7 +216,7 @@ pub fn fetch_shortcodes(
         {
             let mut closing = inner_tag_lex.morph();
 
-            if let Some(ShortcodeDefinition { file_type, content: definition_content }) =
+            if let Some(ShortcodeDefinition { file_type, tera_name }) =
                 definitions.get(&name)
             {
                 if let Some(close_tag) = closing.next() {
@@ -235,7 +235,7 @@ pub fn fetch_shortcodes(
                                 span: openblock_span,
                                 body: None,
                                 file_type: file_type.clone(),
-                                definition_content: definition_content.clone(),
+                                tera_name: tera_name.clone(),
                             });
                         }
 
@@ -249,7 +249,7 @@ pub fn fetch_shortcodes(
                                 openblock_span,
                                 body_start: closing.span().end,
                                 file_type: file_type.clone(),
-                                definition_content: definition_content.clone(),
+                                tera_name: tera_name.clone(),
                             });
                         }
 

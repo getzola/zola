@@ -6,9 +6,7 @@ mod shortcode;
 mod table_of_contents;
 mod transform;
 
-use shortcode::{
-    fetch_shortcodes, insert_md_shortcodes, ShortcodeContext, ShortcodeDefinition, ShortcodeFileType,
-};
+use shortcode::{fetch_shortcodes, insert_md_shortcodes};
 
 use errors::Result;
 
@@ -23,14 +21,13 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
     // 3. HTML shortcodes
 
     // Fetch all the defined shortcodes
-    // TODO: Actually fetch these. This should maybe be handed down by the RenderContext?
-    println!("{:?}", context.shortcode_definitions);
     let shortcode_definitions = &context.shortcode_definitions;
 
     let (content, shortcode_ctxs) = fetch_shortcodes(content, shortcode_definitions);
 
     // This will render both top-level and embedded MD shortcodes (Step 1).
-    let (content, shortcode_ctxs) = insert_md_shortcodes(content, shortcode_ctxs, &context.tera_context)
+    let (content, shortcode_ctxs) =
+        insert_md_shortcodes(content, shortcode_ctxs, &context.tera_context, &context.tera)
             .map_err(Into::<errors::Error>::into)?;
 
     // Turn the MD into HTML (Step 2).

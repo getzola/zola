@@ -20,25 +20,21 @@ pub enum ShortcodeFileType {
 
 #[derive(Debug, Clone)]
 pub struct ShortcodeDefinition {
-    file_type: ShortcodeFileType,
-    content: String,
+    pub file_type: ShortcodeFileType,
+    pub tera_name: String,
 }
 
 impl ShortcodeDefinition {
-    pub fn new(file_type: ShortcodeFileType, content: &str) -> ShortcodeDefinition {
-        let content = content.to_string();
+    pub fn new(file_type: ShortcodeFileType, tera_name: &str) -> ShortcodeDefinition {
+        let tera_name = tera_name.to_string();
 
-        ShortcodeDefinition { file_type, content }
+        ShortcodeDefinition { file_type, tera_name }
     }
 }
-
-const MAX_CALLSTACK_DEPTH: usize = 128;
 
 #[derive(Debug, PartialEq)]
 pub enum RenderError {
     VariableNotFound { complete_var: Vec<String>, specific_part: String },
-    RecursiveReuseOfShortcode(String),
-    MaxRecusionDepthReached,
     FloatParseError,
     TeraError,
 }
@@ -66,7 +62,7 @@ pub fn render_shortcode(
     context: &ShortcodeContext,
     invocation_counts: &mut HashMap<String, usize>,
     tera_context: &tera::Context,
-    //tera: &tera::Tera,
+    tera: &tera::Tera,
 ) -> Result<String, RenderError> {
     let body_content = context.body();
 
@@ -76,7 +72,6 @@ pub fn render_shortcode(
         new_context.insert(key, &value.to_tera(&new_context)?);
     }
     if let Some(ref body_content) = body_content {
-        println!("BODYYYYYYYYYYYYYYY: '{}'", body_content);
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
         new_context.insert("body", body_content.trim_end());
     }
@@ -89,10 +84,13 @@ pub fn render_shortcode(
 
     new_context.extend(tera_context.clone());
 
-    // TODO: Properly add tera errors here
-    // TODO: Change this to use builtins
-    tera::Tera::one_off(context.definition_content(), &new_context, false)
-        .map_err(|_| RenderError::TeraError)
+    let res = utils::templates::render_template(&context.tera_name(), tera, new_context, &None)
+        .map_err(|e| {
+            errors::Error::chain(format!("Failed to render {} shortcode", context.tera_name()), e)
+        })
+        .map_err(|_| RenderError::TeraError)?;
+
+    Ok(res.to_string())
 }
 
 /// Inserts shortcodes of file type `filter_file_type` (recursively) into a source string
@@ -100,6 +98,7 @@ pub fn insert_md_shortcodes(
     mut content: String,
     shortcode_ctxs: Vec<ShortcodeContext>,
     tera_context: &tera::Context,
+    tera: &tera::Tera,
 ) -> Result<(String, Vec<ShortcodeContext>), RenderError> {
     let mut invocation_counts = HashMap::new();
     let mut transforms = Vec::new();
@@ -117,7 +116,7 @@ pub fn insert_md_shortcodes(
         }
 
         let ctx_span = ctx.span();
-        let res = render_shortcode(&ctx, &mut invocation_counts, tera_context)?;
+        let res = render_shortcode(&ctx, &mut invocation_counts, tera_context, &tera)?;
 
         transforms.push(Transform::new(&ctx_span, res.len()));
         content.replace_range(ctx_span.clone(), &res);
