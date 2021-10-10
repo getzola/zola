@@ -38,3 +38,4 @@
 | [uggla.fr](https://uggla.fr)                                       | https://github.com/uggla/blog                            |
 | [NorthCon e.V.](https://verein.northcon.de/)                       |                                                          |
 | [OrgaTalk wiki](https://wiki.orgatalk.de/)                         | https://github.com/orgatalk/wiki                         |
+| [Der Corona-Effekt](https://corona-effekt.orgatalk.de/)            | https://github.com/orgatalk/corona-effekt                |
