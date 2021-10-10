@@ -17,30 +17,4 @@ impl Transform {
             after_end: new_len + original_span.start,
         }
     }
-
-    pub fn initial(&self) -> Range<usize> {
-        self.span_start..self.initial_end
-    }
-
-    pub fn after(&self) -> Range<usize> {
-        self.span_start..self.after_end
-    }
-
-    /// Based on whether this transform becomes bigger or shorter, either add onto the position or
-    /// subtract from the position.
-    ///
-    /// If the position is smaller than the substraction value this function will return None.
-    pub fn based_adjust(&self, position: usize) -> Option<usize> {
-        if self.initial_end < self.after_end {
-            Some(position + (self.after_end - self.initial_end))
-        } else {
-            let sub_difference = self.initial_end - self.after_end;
-
-            if sub_difference > position {
-                None
-            } else {
-                Some(position - sub_difference)
-            }
-        }
-    }
 }

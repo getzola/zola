@@ -466,35 +466,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_new_with_transforms() {
-        macro_rules! assert_creation {
-            ($summary_len:expr, [$($span:expr => $new_end:expr),*], $output_len:expr) => {
-                let old = Rendered {
-                    body: "abc".to_string(),
-                    summary_len: $summary_len,
-                    toc: Vec::new(),
-                    internal_links: Vec::new(),
-                    external_links: Vec::new(),
-                };
-
-                let new = Rendered::new_with_transforms("def", old, vec![$(Transform::new(&$span, $new_end - $span.start)),*]);
-
-                assert_eq!(new.summary_len, $output_len);
-            }
-        }
-
-        // assert_creation!(None, [], None);
-        // assert_creation!(None, [0..2=>5], None);
-        //
-        // assert_creation!(Some(3), [], Some(3));
-        // assert_creation!(Some(3), [0..2=>5], Some(6));
-        // assert_creation!(Some(3), [0..2=>1], Some(2));
-        //
-        // assert_creation!(Some(3), [0..2=>6, 4..5=>8], Some(10));
-        // assert_creation!(Some(3), [0..2=>6, 4..5=>8, 15..18=>24], Some(10));
-    }
-
-    #[test]
     fn test_starts_with_schema() {
         // registered
         assert!(starts_with_schema("https://example.com/"));

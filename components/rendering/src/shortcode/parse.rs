@@ -101,13 +101,6 @@ impl ShortcodeContext {
         &self.tera_name
     }
 
-    /// Translates/Moves the span by `translation` either to the left or the right depending on
-    /// `do_shift_right`.
-    fn shift_span(&mut self, translation: usize, do_shift_right: bool) {
-        // TODO: Look at removing this unwrap
-        self.span = range_shift(&self.span, translation, do_shift_right).unwrap();
-    }
-
     /// Gets the range relation between a `position` and the span of the current shortcode.
     fn get_range_relation(&self, position: usize) -> RangeToPositionRelation {
         match (position < self.span.start, position >= self.span.end) {
@@ -412,7 +405,6 @@ mod tests {
         );
 
         let test_str = "{% a() %}First body!{% end %}{% a() %}Second body!{% end %}";
-        let end_open_a = "{% a() %}".len();
 
         assert_eq!(
             fetch_shortcodes(test_str, &shortcode_definitions),

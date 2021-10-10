@@ -9,8 +9,18 @@ macro_rules! test_scenario {
         #[allow(unused_mut)]
         let mut tera = tera::Tera::default();
 
-        let permalinks = std::collections::HashMap::new();
-        let mut context = rendering::RenderContext::new(
+        $(
+            let ShortCode { name, is_md, output } = $shortcodes;
+            tera.add_raw_template(
+                &format!("shortcodes/{}.{}", name, if is_md { "md" } else { "html" }),
+                &output,
+            ).unwrap();
+        )*
+
+        let mut permalinks = std::collections::HashMap::new();
+
+        permalinks.insert("".to_string(), "".to_string());
+        let context = rendering::RenderContext::new(
             &tera,
             &config,
             &config.default_language,
@@ -18,44 +28,12 @@ macro_rules! test_scenario {
             &permalinks,
             front_matter::InsertAnchor::None,
         );
-
-        $(
-            let ShortCode { name, is_md, output } = $shortcodes;
-            context.add_shortcode_def(name, is_md, output);
-        )*
 
         let rendered = rendering::render_content($in_str, &context);
         assert!(rendered.is_ok());
 
         let rendered = rendered.unwrap();
         assert_eq!(rendered.body, $out_str.to_string());
-    }
-}
-
-macro_rules! test_scenario_fail {
-    ($in_str:literal, [$($shortcodes:ident),*]) => {
-        let config = config::Config::default_for_test();
-
-        #[allow(unused_mut)]
-        let mut tera = tera::Tera::default();
-
-        let permalinks = std::collections::HashMap::new();
-        let mut context = rendering::RenderContext::new(
-            &tera,
-            &config,
-            &config.default_language,
-            "",
-            &permalinks,
-            front_matter::InsertAnchor::None,
-        );
-
-        $(
-            let ShortCode { name, is_md, output } = $shortcodes;
-            context.add_shortcode_def(name, is_md, output);
-        )*
-
-        let rendered = rendering::render_content($in_str, &context);
-        assert!(rendered.is_err());
     }
 }
 

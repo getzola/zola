@@ -1,7 +1,5 @@
 mod common;
 
-use common::ShortCode;
-
 macro_rules! test_links {
     (
         $in_str:literal,

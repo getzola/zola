@@ -41,3 +41,71 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
 
     Ok(html_context)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use templates::ZOLA_TERA;
+
+    #[test]
+    fn can_unignore_inline_shortcode() {
+        let config = config::Config::default_for_test();
+        let permalinks = std::collections::HashMap::new();
+        let context = RenderContext::new(
+            &ZOLA_TERA,
+            &config,
+            &config.default_language,
+            "",
+            &permalinks,
+            front_matter::InsertAnchor::None,
+        );
+
+        let res = render_content("Hello World {{/* youtube() */}}", &context).unwrap();
+        assert_eq!(res.body, "Hello World {{ youtube() }}");
+    }
+
+    #[test]
+    fn can_unignore_shortcode_with_body() {
+        let config = config::Config::default_for_test();
+        let permalinks = std::collections::HashMap::new();
+        let context = RenderContext::new(
+            &ZOLA_TERA,
+            &config,
+            &config.default_language,
+            "",
+            &permalinks,
+            front_matter::InsertAnchor::None,
+        );
+
+        let res = render_content(
+            r#"
+Hello World
+{%/* youtube() */%}Some body {{ hello() }}{%/* end */%}"#,
+            &context,
+        ).unwrap().body;
+        assert_eq!(res, "\nHello World\n{% youtube() %}Some body {{ hello() }}{% end %}");
+    }
+    // https://github.com/Keats/gutenberg/issues/383
+    #[test]
+    fn unignore_shortcode_with_body_does_not_swallow_initial_whitespace() {
+        let config = config::Config::default_for_test();
+        let permalinks = std::collections::HashMap::new();
+        let context = RenderContext::new(
+            &ZOLA_TERA,
+            &config,
+            &config.default_language,
+            "",
+            &permalinks,
+            front_matter::InsertAnchor::None,
+        );
+
+        let res = render_content(
+            r#"
+Hello World
+{%/* youtube() */%}
+Some body {{ hello() }}{%/* end */%}"#,
+            &context,
+        ).unwrap().body;
+        assert_eq!(res, "\nHello World\n{% youtube() %}\nSome body {{ hello() }}{% end %}");
+    }
+}
