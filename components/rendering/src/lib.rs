@@ -1,6 +1,7 @@
 mod codeblock;
 mod context;
 mod markdown;
+mod shortcode;
 mod range_relation;
 mod table_of_contents;
 mod transform;

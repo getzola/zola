@@ -260,14 +260,6 @@ pub fn markdown_to_html(
                     code_block = None;
                     events.push(Event::Html("</code></pre>\n".into()));
                 }
-                Event::Start(Tag::Image(link_type, src, title)) => {
-                    events.push(if is_colocated_asset_link(&src) {
-                        let link = format!("{}{}", context.current_page_permalink, &*src);
-                        Event::Start(Tag::Image(link_type, link.into(), title))
-                    } else {
-                        Event::Start(Tag::Image(link_type, src, title))
-                    });
-                }
                 Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
                     error = Some(Error::msg("There is a link that is missing a URL"));
                     events.push(Event::Start(Tag::Link(link_type, "#".into(), title)));
