@@ -5,6 +5,8 @@ use config::Config;
 use front_matter::InsertAnchor;
 use tera::{Context, Tera};
 
+use crate::shortcode::{ShortcodeDefinition, ShortcodeFileType};
+
 /// All the information from the zola site that is needed to render HTML from markdown
 #[derive(Debug)]
 pub struct RenderContext<'a> {
@@ -15,6 +17,7 @@ pub struct RenderContext<'a> {
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
     pub lang: &'a str,
+    pub shortcode_definitions: HashMap<String, ShortcodeDefinition>,
 }
 
 impl<'a> RenderContext<'a> {
@@ -28,6 +31,35 @@ impl<'a> RenderContext<'a> {
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
         tera_context.insert("config", &config.serialize(lang));
+
+        let mut shortcode_definitions = HashMap::new();
+
+        for (identifier, template) in tera.templates.iter() {
+            let (file_type, ext_len) = if template.name.ends_with(".md") {
+                (ShortcodeFileType::Markdown, "md".len())
+            } else {
+                (ShortcodeFileType::HTML, "html".len())
+            };
+
+            if template.name.starts_with("shortcodes/") {
+                let head_len = "shortcodes/".len();
+                shortcode_definitions.insert(
+                    identifier[head_len..(identifier.len() - ext_len - 1)].to_string(),
+                    ShortcodeDefinition { file_type, tera_name: template.name.clone() },
+                );
+                continue;
+            }
+
+            if template.name.starts_with("__zola_builtins/shortcodes/") {
+                let head_len = "__zola_builtins/shortcodes/".len();
+                shortcode_definitions.insert(
+                    identifier[head_len..(identifier.len() - ext_len - 1)].to_string(),
+                    ShortcodeDefinition { file_type, tera_name: template.name.clone() },
+                );
+                continue;
+            }
+        }
+
         Self {
             tera: Cow::Borrowed(tera),
             tera_context,
@@ -36,6 +68,7 @@ impl<'a> RenderContext<'a> {
             insert_anchor,
             config,
             lang,
+            shortcode_definitions,
         }
     }
 
@@ -51,6 +84,7 @@ impl<'a> RenderContext<'a> {
             insert_anchor: InsertAnchor::None,
             config,
             lang: &config.default_language,
+            shortcode_definitions: HashMap::new(),
         }
     }
 }
