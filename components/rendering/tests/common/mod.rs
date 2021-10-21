@@ -6,9 +6,7 @@ pub struct ShortCode {
 
 impl ShortCode {
     pub const fn new(name: &'static str, output: &'static str, is_md: bool) -> ShortCode {
-        ShortCode {
-            name, output, is_md,
-        }
+        ShortCode { name, output, is_md }
     }
 
     /// Return filename for shortcode

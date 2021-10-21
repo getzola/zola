@@ -17,10 +17,10 @@ pub enum ArgValue {
     Boolean(bool),
 
     /// A floating point number
-    FloatingPoint(f64),
+    Float(f64),
 
     /// An signed integer
-    Integer(i32),
+    Integer(i64),
 
     /// An array of [ArgValue]'s
     Array(Vec<ArgValue>),
@@ -79,9 +79,9 @@ pub enum ToJsonConvertError {
 
 impl ArgValue {
     /// Input a [logos::Lexer] and it will start attempted to parse one [ArgValue]
-    pub fn lex_parse<'a>(
-        mut lex: Lexer<'a, ArgValueToken>,
-    ) -> Result<(Lexer<'a, ArgValueToken>, ArgValue), ArgValueParseError> {
+    pub fn lex_parse(
+        mut lex: Lexer<ArgValueToken>,
+    ) -> Result<(Lexer<ArgValueToken>, ArgValue), ArgValueParseError> {
         use ArgValue::*;
         use ArgValueParseError::*;
         use ArgValueToken::*;
@@ -92,10 +92,10 @@ impl ArgValue {
                 BoolLiteral(val) => Boolean(val),
                 StrLiteral(unescaped_str) => Text(unescaped_str),
                 IntLiteral => {
-                    Integer(i32::from_str(lex.slice()).map_err(|err| IntegerParseError(err))?)
+                    Integer(i64::from_str(lex.slice()).map_err(|err| IntegerParseError(err))?)
                 },
                 FPLiteral => {
-                    FloatingPoint(f64::from_str(lex.slice()).map_err(|err| FloatParseError(err))?)
+                    Float(f64::from_str(lex.slice()).map_err(|err| FloatParseError(err))?)
                 },
                 Identifier => {
                     let mut idents = Vec::new();
@@ -214,7 +214,7 @@ impl ArgValue {
         Ok(match self {
             ArgValue::Boolean(val) => tera::Value::Bool(val.clone()),
             ArgValue::Integer(val) => tera::Value::Number(tera::Number::from(val.clone())),
-            ArgValue::FloatingPoint(val) => tera::Value::Number(
+            ArgValue::Float(val) => tera::Value::Number(
                 tera::Number::from_f64(val.clone()).ok_or(ToJsonConvertError::FloatParseError)?,
             ),
             ArgValue::Text(val) => tera::Value::String(val.clone()),
@@ -374,19 +374,19 @@ mod tests {
         lex_assert_ok!("-123", Integer(-123), "");
         lex_assert_ok!("-123abc", Integer(-123), "abc");
 
-        let pos_overflow = "9999999999999999";
-        lex_assert_err!(pos_overflow, IntegerParseError(i32::from_str(pos_overflow).unwrap_err()));
+        let pos_overflow = "99999999999999999999999999999999999";
+        lex_assert_err!(pos_overflow, IntegerParseError(i64::from_str(pos_overflow).unwrap_err()));
     }
 
     #[test]
     fn float() {
-        lex_assert_ok!("123.", FloatingPoint(123.), "");
-        lex_assert_ok!("-123.", FloatingPoint(-123.), "");
-        lex_assert_ok!("1.1", FloatingPoint(1.1), "");
-        lex_assert_ok!("-0.1", FloatingPoint(-0.1), "");
-        lex_assert_ok!("0.1abc", FloatingPoint(0.1), "abc");
-        lex_assert_ok!("1e10abc", FloatingPoint(1e10), "abc");
-        lex_assert_ok!("-1e10abc", FloatingPoint(-1e10), "abc");
+        lex_assert_ok!("123.", Float(123.), "");
+        lex_assert_ok!("-123.", Float(-123.), "");
+        lex_assert_ok!("1.1", Float(1.1), "");
+        lex_assert_ok!("-0.1", Float(-0.1), "");
+        lex_assert_ok!("0.1abc", Float(0.1), "abc");
+        lex_assert_ok!("1e10abc", Float(1e10), "abc");
+        lex_assert_ok!("-1e10abc", Float(-1e10), "abc");
     }
 
     #[test]

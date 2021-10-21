@@ -27,10 +27,7 @@ mod lex_test_macros {
         ($token_ty:ty, $ty:ty, $content:expr, $eq:expr) => {
             #[allow(unused_mut)]
             let mut lexer = <$token_ty>::lexer($content);
-            assert_eq!(
-                <$ty>::lex_parse(lexer).map(|_| ()).expect_err("Expected to be Err"),
-                $eq
-            );
+            assert_eq!(<$ty>::lex_parse(lexer).map(|_| ()).expect_err("Expected to be Err"), $eq);
         };
     }
 }

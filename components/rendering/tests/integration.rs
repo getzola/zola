@@ -182,7 +182,8 @@ fn complete_page() {
         tera.add_raw_template(
             &format!("shortcodes/{}.{}", name, if is_md { "md" } else { "html" }),
             &output,
-        ).unwrap();
+        )
+        .unwrap();
     }
 
     let context = rendering::RenderContext::new(

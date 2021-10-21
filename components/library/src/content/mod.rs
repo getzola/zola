@@ -62,7 +62,7 @@ pub fn find_related_assets(path: &Path, config: &Config) -> Vec<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::{File, create_dir};
+    use std::fs::{create_dir, File};
 
     use config::Config;
     use tempfile::tempdir;
@@ -82,10 +82,34 @@ mod tests {
         let assets = find_related_assets(path, &Config::default());
         assert_eq!(assets.len(), 4);
         assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 4);
-        assert_eq!(assets.iter().filter(|p| p.strip_prefix(path).unwrap() == Path::new("example.js")).count(), 1);
-        assert_eq!(assets.iter().filter(|p| p.strip_prefix(path).unwrap() == Path::new("graph.jpg")).count(), 1);
-        assert_eq!(assets.iter().filter(|p| p.strip_prefix(path).unwrap() == Path::new("fail.png")).count(), 1);
-        assert_eq!(assets.iter().filter(|p| p.strip_prefix(path).unwrap() == Path::new("subdir/example.js")).count(), 1);
+        assert_eq!(
+            assets
+                .iter()
+                .filter(|p| p.strip_prefix(path).unwrap() == Path::new("example.js"))
+                .count(),
+            1
+        );
+        assert_eq!(
+            assets
+                .iter()
+                .filter(|p| p.strip_prefix(path).unwrap() == Path::new("graph.jpg"))
+                .count(),
+            1
+        );
+        assert_eq!(
+            assets
+                .iter()
+                .filter(|p| p.strip_prefix(path).unwrap() == Path::new("fail.png"))
+                .count(),
+            1
+        );
+        assert_eq!(
+            assets
+                .iter()
+                .filter(|p| p.strip_prefix(path).unwrap() == Path::new("subdir/example.js"))
+                .count(),
+            1
+        );
     }
 
     #[test]

@@ -135,7 +135,8 @@ mod tests {
         let args = HashMap::new();
         let config = Config::default();
         let permalinks = HashMap::new();
-        let mut tera = super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
+        let mut tera =
+            super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
         tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
         let filter = MarkdownFilter { config, permalinks, tera };
         let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);

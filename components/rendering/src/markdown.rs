@@ -226,7 +226,7 @@ pub fn markdown_to_html(
                                         shortcode,
                                         &mut invocation_counts,
                                         &context.tera_context,
-                                        &context.tera
+                                        &context.tera,
                                     )
                                     .unwrap()
                                     .into(),

@@ -69,19 +69,8 @@ fn basic_toc() {
 fn all_layers() {
     test_toc!(
         "# A\n## B\n### C\n#### D\n##### E\n###### F\n",
-        vec![
-            hh!("A", [
-                hh!("B", [
-                    hh!("C", [
-                        hh!("D", [
-                            hh!("E", [
-                                hh!("F", [])
-                            ])
-                        ])
-                    ])
-                ])
-            ])
-        ], []
+        vec![hh!("A", [hh!("B", [hh!("C", [hh!("D", [hh!("E", [hh!("F", [])])])])])])],
+        []
     );
 }
 
@@ -89,18 +78,8 @@ fn all_layers() {
 fn multiple_on_layer() {
     test_toc!(
         "# A\n## B\n## C\n### D\n## E\n### F\n",
-        vec![
-            hh!("A", [
-                hh!("B", [
-                ]),
-                hh!("C", [
-                    hh!("D", [])
-                ]),
-                hh!("E", [
-                    hh!("F", [])
-                ])
-            ])
-        ], []
+        vec![hh!("A", [hh!("B", []), hh!("C", [hh!("D", [])]), hh!("E", [hh!("F", [])])])],
+        []
     );
 }
 
@@ -111,15 +90,11 @@ const MD_SIMPLE2: ShortCode = ShortCode::new("simple2", "Wow, much cool!", true)
 fn with_shortcode_titles() {
     test_toc!(
         "# {{ simple() }}\n## {{ simple2() }}\n### ABC\n#### {{ simple() }}\n",
-        vec![
-            hh!("Hello World!", [
-                hh!("Wow, much cool!", [
-                    hh!("ABC", [
-                        hh!("Hello World!", [])
-                    ])
-                ])
-            ])
-        ], [MD_SIMPLE1, MD_SIMPLE2]
+        vec![hh!(
+            "Hello World!",
+            [hh!("Wow, much cool!", [hh!("ABC", [hh!("Hello World!", [])])])]
+        )],
+        [MD_SIMPLE1, MD_SIMPLE2]
     );
 }
 
@@ -129,10 +104,7 @@ const MD_MULTILINE: ShortCode = ShortCode::new("multiline", "<div>\n    Wow!\n</
 fn with_multiline_shortcodes() {
     test_toc!(
         "# {{ multiline() }}\n{{ multiline() }}\n## {{ multiline()() }}\n",
-        vec![
-            hh!("Wow!", [
-                hh!("Wow!", [])
-            ])
-        ], [MD_MULTILINE]
+        vec![hh!("Wow!", [hh!("Wow!", [])])],
+        [MD_MULTILINE]
     );
 }

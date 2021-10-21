@@ -250,11 +250,7 @@ mod tests {
         );
         lex_assert_err!(
             "=",
-            UnexpectedToken {
-                token: InnerTagToken::Equals,
-                slice: "=".to_string(),
-                span: (0, 1)
-            }
+            UnexpectedToken { token: InnerTagToken::Equals, slice: "=".to_string(), span: (0, 1) }
         );
     }
 

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use config::Config;
 use front_matter::InsertAnchor;
-use rendering::{render_content, render_shortcodes, RenderContext};
+use rendering::{render_content, RenderContext};
 use tera::Tera;
 
 static CONTENT: &str = r#"
@@ -154,6 +154,7 @@ fn bench_render_shortcodes_one_present(b: &mut test::Bencher) {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
 #[bench]

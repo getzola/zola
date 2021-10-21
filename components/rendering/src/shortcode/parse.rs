@@ -209,9 +209,7 @@ pub fn fetch_shortcodes(
         {
             let mut closing = inner_tag_lex.morph();
 
-            if let Some(ShortcodeDefinition { file_type, tera_name }) =
-                definitions.get(&name)
-            {
+            if let Some(ShortcodeDefinition { file_type, tera_name }) = definitions.get(&name) {
                 if let Some(close_tag) = closing.next() {
                     let openblock_span =
                         output_str.len()..(output_str.len() + SHORTCODE_PLACEHOLDER.len());

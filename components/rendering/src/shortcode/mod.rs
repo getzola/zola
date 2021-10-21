@@ -15,7 +15,7 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, PartialEq)]
 pub enum ShortcodeFileType {
     Markdown,
-    HTML,
+    Html,
 }
 
 #[derive(Debug, Clone)]
@@ -71,26 +71,26 @@ pub fn render_shortcode(
     for (key, value) in context.args().iter() {
         new_context.insert(key, &value.to_tera(&new_context)?);
     }
-    if let Some(ref body_content) = body_content {
+    if let Some(body_content) = body_content {
         // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
         new_context.insert("body", body_content.trim_end());
     }
 
     // We don't have to take into account the call stack, since we know for sure that it will not
     // contain this shortcode again.
-    let invocation_count = invocation_counts.get(context.name()).unwrap_or(&1).clone();
+    let invocation_count = *invocation_counts.get(context.name()).unwrap_or(&1);
     new_context.insert("nth", &invocation_count);
     invocation_counts.insert(context.name().to_string(), invocation_count + 1);
 
     new_context.extend(tera_context.clone());
 
-    let res = utils::templates::render_template(&context.tera_name(), tera, new_context, &None)
+    let res = utils::templates::render_template(context.tera_name(), tera, new_context, &None)
         .map_err(|e| {
             errors::Error::chain(format!("Failed to render {} shortcode", context.tera_name()), e)
         })
         .map_err(|_| RenderError::TeraError)?;
 
-    Ok(res.to_string())
+    Ok(res)
 }
 
 /// Inserts shortcodes of file type `filter_file_type` (recursively) into a source string
@@ -110,15 +110,15 @@ pub fn insert_md_shortcodes(
             ctx.update_on_source_insert(*span_start, *initial_end, *after_end);
         }
 
-        if ctx.file_type() == &ShortcodeFileType::HTML {
+        if ctx.file_type() == &ShortcodeFileType::Html {
             html_shortcode_ctxs.push(ctx);
             continue;
         }
 
         let ctx_span = ctx.span();
-        let res = render_shortcode(&ctx, &mut invocation_counts, tera_context, &tera)?;
+        let res = render_shortcode(&ctx, &mut invocation_counts, tera_context, tera)?;
 
-        transforms.push(Transform::new(&ctx_span, res.len()));
+        transforms.push(Transform::new(ctx_span, res.len()));
         content.replace_range(ctx_span.clone(), &res);
     }
 
@@ -222,14 +222,11 @@ mod tests {
         tera.add_raw_template("shortcodes/bodied.md", "{{ bodied }}").unwrap();
 
         let tera_context = tera::Context::new();
-        assert_eq!(insert_md_shortcodes(
-            "{{SC()}}{{SC()}}".to_string(),
-            vec![],
-            &tera_context,
-            &tera
-        )
-        .unwrap()
-        .0,
-        "{{SC()}}{{SC()}}".to_string());
+        assert_eq!(
+            insert_md_shortcodes("{{SC()}}{{SC()}}".to_string(), vec![], &tera_context, &tera)
+                .unwrap()
+                .0,
+            "{{SC()}}{{SC()}}".to_string()
+        );
     }
 }

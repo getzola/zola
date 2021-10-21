@@ -38,7 +38,7 @@ impl<'a> RenderContext<'a> {
             let (file_type, ext_len) = if template.name.ends_with(".md") {
                 (ShortcodeFileType::Markdown, "md".len())
             } else {
-                (ShortcodeFileType::HTML, "html".len())
+                (ShortcodeFileType::Html, "html".len())
             };
 
             if template.name.starts_with("shortcodes/") {

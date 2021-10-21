@@ -62,14 +62,15 @@ impl TeraFn for ResizeImage {
         }
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
-            .map_err(|e| format!("`resize_image`: {}", e))?
-        {
-            Some(f) => f,
-            None => {
-                return Err(format!("`resize_image`: Cannot find file: {}", path).into());
-            }
-        };
+        let (file_path, unified_path) =
+            match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
+                .map_err(|e| format!("`resize_image`: {}", e))?
+            {
+                Some(f) => f,
+                None => {
+                    return Err(format!("`resize_image`: Cannot find file: {}", path).into());
+                }
+            };
 
         let response = imageproc
             .enqueue(unified_path, file_path, &op, width, height, &format, quality)
@@ -108,17 +109,18 @@ impl TeraFn for GetImageMetadata {
         )
         .unwrap_or(false);
 
-        let (src_path, unified_path) = match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
-            .map_err(|e| format!("`get_image_metadata`: {}", e))?
-        {
-            Some((f, p)) => (f, p),
-            None => {
-                if allow_missing {
-                    return Ok(Value::Null);
+        let (src_path, unified_path) =
+            match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
+                .map_err(|e| format!("`get_image_metadata`: {}", e))?
+            {
+                Some((f, p)) => (f, p),
+                None => {
+                    if allow_missing {
+                        return Ok(Value::Null);
+                    }
+                    return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
                 }
-                return Err(format!("`get_image_metadata`: Cannot find path: {}", path).into());
-            }
-        };
+            };
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
         if let Some(cached_result) = cache.get(&unified_path) {

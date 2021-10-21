@@ -2,7 +2,6 @@ mod codeblock;
 mod context;
 mod markdown;
 mod shortcode;
-mod range_relation;
 mod table_of_contents;
 mod transform;
 
@@ -32,7 +31,7 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
 
     // Turn the MD into HTML (Step 2).
     // This will also insert the HTML shortcodes (Step 3).
-    let html_context = markdown_to_html(&content, &context, shortcode_ctxs)?;
+    let html_context = markdown_to_html(&content, context, shortcode_ctxs)?;
 
     // TODO: Here issue #1418 could be implemented
     // if do_warn_about_unprocessed_md {
@@ -82,7 +81,9 @@ mod tests {
 Hello World
 {%/* youtube() */%}Some body {{ hello() }}{%/* end */%}"#,
             &context,
-        ).unwrap().body;
+        )
+        .unwrap()
+        .body;
         assert_eq!(res, "\nHello World\n{% youtube() %}Some body {{ hello() }}{% end %}");
     }
     // https://github.com/Keats/gutenberg/issues/383
@@ -105,7 +106,9 @@ Hello World
 {%/* youtube() */%}
 Some body {{ hello() }}{%/* end */%}"#,
             &context,
-        ).unwrap().body;
+        )
+        .unwrap()
+        .body;
         assert_eq!(res, "\nHello World\n{% youtube() %}\nSome body {{ hello() }}{% end %}");
     }
 }

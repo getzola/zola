@@ -56,26 +56,13 @@ macro_rules! test_links {
 
 #[test]
 fn basic_internal() {
-    test_links!(
-        "Hello World!",
-        [],
-        [],
-        [],
-        []
-    );
+    test_links!("Hello World!", [], [], [], []);
 }
 
 #[test]
 fn absolute_links() {
-    test_links!(
-        "[abc](https://google.com/)",
-        [],
-        ["https://google.com/"],
-        [],
-        []
-    );
+    test_links!("[abc](https://google.com/)", [], ["https://google.com/"], [], []);
 }
-
 
 #[test]
 fn relative_links() {
@@ -91,11 +78,5 @@ fn relative_links() {
 #[test]
 #[should_panic]
 fn relative_links_no_perma() {
-    test_links!(
-        "[abc](@/def/123.md)",
-        [],
-        [],
-        ["def/123.md":<Option<&str>>::None],
-        []
-    );
+    test_links!("[abc](@/def/123.md)", [], [], ["def/123.md": <Option<&str>>::None], []);
 }

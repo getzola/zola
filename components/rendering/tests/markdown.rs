@@ -207,7 +207,11 @@ fn can_render_md_shortcode_with_lang() {
     let config = Config::default_for_test();
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
-    tera.add_raw_template("shortcodes/i18nshortcode.md", "![Book cover in {{ lang }}](cover.{{ lang }}.png)").unwrap();
+    tera.add_raw_template(
+        "shortcodes/i18nshortcode.md",
+        "![Book cover in {{ lang }}](cover.{{ lang }}.png)",
+    )
+    .unwrap();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -220,7 +224,6 @@ fn can_render_md_shortcode_with_lang() {
     let res = render_content("{{ i18nshortcode() }}", &context).unwrap();
     assert_eq!(res.body, "<p><img src=\"cover.en.png\" alt=\"Book cover in en\" /></p>\n");
 }
-
 
 #[test]
 fn can_render_body_shortcode_with_markdown_char_in_name() {
@@ -746,10 +749,7 @@ fn can_insert_anchor_with_lang() {
         InsertAnchor::Right,
     );
     let res = render_content("# Hello", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<h1 id=\"hello\">Hello(en)</h1>\n"
-    );
+    assert_eq!(res.body, "<h1 id=\"hello\">Hello(en)</h1>\n");
 }
 
 #[test]
@@ -1014,10 +1014,7 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
         InsertAnchor::None,
     );
     let res = render_content("![alt text](image.jpg)", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p><img src=\"image.jpg\" alt=\"alt text\" /></p>\n"
-    );
+    assert_eq!(res.body, "<p><img src=\"image.jpg\" alt=\"alt text\" /></p>\n");
 }
 
 #[test]

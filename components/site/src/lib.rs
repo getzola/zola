@@ -592,8 +592,11 @@ impl Site {
             let asset_path = asset.as_path();
             self.copy_asset(
                 asset_path,
-                &current_path
-                    .join(asset_path.strip_prefix(&page.file.path.parent().unwrap()).expect("Couldn't get filename from page asset")),
+                &current_path.join(
+                    asset_path
+                        .strip_prefix(&page.file.path.parent().unwrap())
+                        .expect("Couldn't get filename from page asset"),
+                ),
             )?;
         }
 
@@ -986,7 +989,9 @@ impl Site {
             self.copy_asset(
                 asset_path,
                 &output_path.join(
-                    asset_path.strip_prefix(&section.file.path.parent().unwrap()).expect("Failed to get asset filename for section"),
+                    asset_path
+                        .strip_prefix(&section.file.path.parent().unwrap())
+                        .expect("Failed to get asset filename for section"),
                 ),
             )?;
         }
