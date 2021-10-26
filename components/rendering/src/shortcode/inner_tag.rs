@@ -274,7 +274,7 @@ mod tests {
             ""
         );
         lex_assert_ok!(
-            "abc(wow_much_cool123='abc\\'def')",
+            "abc(wow_much_cool123=\"abc'def\")",
             InnerTag::new("abc", vec![("wow_much_cool123", ArgValue::Text("abc'def".to_string()))]),
             ""
         );
@@ -283,7 +283,7 @@ mod tests {
     #[test]
     fn multiple_args() {
         lex_assert_ok!(
-            "abc(def=123, wow_much_cool123='abc\\'def')",
+            "abc(def=123, wow_much_cool123=\"abc'def\")",
             InnerTag::new(
                 "abc",
                 vec![

@@ -6,7 +6,12 @@ use std::fmt;
 use std::num::{ParseFloatError, ParseIntError};
 use std::str::FromStr;
 
-use super::string_literal::{unescape_quoted_string, QuoteType};
+// use super::string_literal::{unescape_quoted_string, QuoteType};
+
+
+fn replace_string_markers(input: &str, marker: char) -> String {
+    input.replace(marker, "")
+}
 
 #[derive(Debug, PartialEq)]
 pub enum ArgValue {
@@ -257,9 +262,9 @@ pub enum ArgValueToken {
     //
     // This function has a error which doesn't implement fmt::Display and is never used. This is
     // fine because both errors should never occur when called from here.
-    #[regex(r#"'([^'\\]*(\\.[^'\\]*)*)'"#, |lex| unescape_quoted_string(lex.slice(), QuoteType::Single))]
-    #[regex(r#""([^"\\]*(\\.[^"\\]*)*)""#, |lex| unescape_quoted_string(lex.slice(), QuoteType::Double))]
-    #[regex(r#"`([^`\\]*(\\.[^`\\]*)*)`"#, |lex| unescape_quoted_string(lex.slice(), QuoteType::Backtick))]
+    #[regex(r#"'([^'\\]*(\\.[^'\\]*)*)'"#, |lex| replace_string_markers(lex.slice(), '\''))]
+    #[regex(r#""([^"\\]*(\\.[^"\\]*)*)""#, |lex| replace_string_markers(lex.slice(), '"'))]
+    #[regex(r#"`([^`\\]*(\\.[^`\\]*)*)`"#, |lex| replace_string_markers(lex.slice(), '`'))]
     /// A string literal enclosed by `'`, `"` or `\``
     StrLiteral(String),
 

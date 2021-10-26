@@ -4,7 +4,6 @@ mod util;
 mod arg_value;
 mod inner_tag;
 mod parse;
-mod string_literal;
 
 use crate::transform::Transform;
 use arg_value::ToJsonConvertError;
