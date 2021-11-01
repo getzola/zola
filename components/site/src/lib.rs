@@ -829,7 +829,7 @@ impl Site {
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
                         comp.clone(),
-                        &Paginator::from_taxonomy(taxonomy, item, &library),
+                        &Paginator::from_taxonomy(taxonomy, item, &library, &self.tera, &self.config.theme),
                     )?;
                 } else {
                     let single_output =
