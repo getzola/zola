@@ -677,4 +677,32 @@ output_dir = "docs"
         let config = Config::parse(config).unwrap();
         assert_eq!(config.output_dir, "docs".to_string());
     }
+
+    // TODO: Tests for valid themes; need extra scaffolding (test site) for custom themes.
+
+    #[test]
+    fn invalid_highlight_theme() {
+        let config = r#"
+[markup]
+highlight_code = true
+highlight_theme = "asdf"
+    "#;
+
+        let config = Config::parse(config);
+        assert_eq!(config.is_err(), true);
+    }
+
+    #[test]
+    fn invalid_highlight_theme_css_export() {
+        let config = r#"
+[markup]
+highlight_code = true
+highlight_themes_css = [
+  { theme = "asdf", filename = "asdf.css" },
+]
+    "#;
+
+        let config = Config::parse(config);
+        assert_eq!(config.is_err(), true);
+    }
 }
