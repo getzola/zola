@@ -25,23 +25,8 @@ pub fn render_template(
     context: Context,
     theme: &Option<String>,
 ) -> Result<String> {
-    // check if it is in the templates
-    if tera.templates.contains_key(name) {
-        return tera.render(name, &context).map_err(std::convert::Into::into);
-    }
-
-    // check if it is part of a theme
-    if let Some(ref t) = *theme {
-        let theme_template_name = format!("{}/templates/{}", t, name);
-        if tera.templates.contains_key(&theme_template_name) {
-            return tera.render(&theme_template_name, &context).map_err(std::convert::Into::into);
-        }
-    }
-
-    // check if it is part of ZOLA_TERA defaults
-    let default_name = format!("__zola_builtins/{}", name);
-    if tera.templates.contains_key(&default_name) {
-        return tera.render(&default_name, &context).map_err(std::convert::Into::into);
+    if let Some(template) = check_template_fallbacks(name, tera, theme) {
+        return tera.render(&template, &context).map_err(std::convert::Into::into);
     }
 
     // maybe it's a default one?
@@ -76,6 +61,32 @@ pub fn rewrite_theme_paths(tera_theme: &mut Tera, theme: &str) {
     // Contrary to tera.extend, hashmap.extend does replace existing keys
     // We can safely extend because there's no conflicting paths anymore
     tera_theme.templates.extend(new_templates);
+}
+
+/// Checks for the presence of a given template. If none is found, also looks for a 
+/// fallback in theme and default templates. Returns the path of the most specific
+/// template found, or none if none are present.
+pub fn check_template_fallbacks(name: &str, tera: &Tera, theme: &Option<String>) -> Option<String> {
+    // check if it is in the templates
+    if tera.templates.contains_key(name) {
+        return Some(name.to_string());
+    }
+
+    // check if it is part of a theme
+    if let Some(ref t) = *theme {
+        let theme_template_name = format!("{}/templates/{}", t, name);
+        if tera.templates.contains_key(&theme_template_name) {
+            return Some(theme_template_name);
+        }
+    }
+
+    // check if it is part of ZOLA_TERA defaults
+    let default_name = format!("__zola_builtins/{}", name);
+    if tera.templates.contains_key(&default_name) {
+        return Some(default_name);
+    }
+
+    None
 }
 
 #[cfg(test)]
