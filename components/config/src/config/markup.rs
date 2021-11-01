@@ -139,7 +139,7 @@ impl Markdown {
         // Validate that all exported highlight themes exist as well
         for theme in self.highlight_themes_css.iter() {
             let theme_name = &theme.theme;
-            if !(THEME_SET.themes.contains_key(theme_name)) {
+            if !THEME_SET.themes.contains_key(theme_name) {
                 // Check extra themes
                 if let Some(extra) = &*self.extra_theme_set {
                     if !extra.themes.contains_key(theme_name) {
