@@ -332,7 +332,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
 
 impl Default for Config {
     fn default() -> Config {
-        Config {
+        let mut conf = Config {
             base_url: DEFAULT_BASE_URL.to_string(),
             title: None,
             description: None,
@@ -357,7 +357,9 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
-        }
+        };
+        conf.add_default_language();
+        conf
     }
 }
 

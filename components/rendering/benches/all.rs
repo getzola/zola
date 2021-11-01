@@ -90,7 +90,7 @@ fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
     let context = RenderContext::new(
         &tera,
         &config,
-        "",
+        &config.default_language,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
@@ -106,11 +106,10 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     let mut config = Config::default();
     config.markdown.highlight_code = false;
     let current_page_permalink = "";
-    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        lang,
+        &config.default_language,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
@@ -125,11 +124,10 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     config.markdown.highlight_code = false;
     let permalinks_ctx = HashMap::new();
     let current_page_permalink = "";
-    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        lang,
+        &config.default_language,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
@@ -145,11 +143,10 @@ fn bench_render_shortcodes_one_present(b: &mut test::Bencher) {
     let config = Config::default();
     let permalinks_ctx = HashMap::new();
     let current_page_permalink = "";
-    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        lang,
+        &config.default_language,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
@@ -166,11 +163,10 @@ fn bench_render_content_no_shortcode_with_emoji(b: &mut test::Bencher) {
     config.markdown.render_emoji = true;
     let permalinks_ctx = HashMap::new();
     let current_page_permalink = "";
-    let lang = "";
     let context = RenderContext::new(
         &tera,
         &config,
-        lang,
+        &config.default_language,
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,

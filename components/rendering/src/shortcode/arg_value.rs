@@ -6,9 +6,6 @@ use std::fmt;
 use std::num::{ParseFloatError, ParseIntError};
 use std::str::FromStr;
 
-// use super::string_literal::{unescape_quoted_string, QuoteType};
-
-
 fn replace_string_markers(input: &str, marker: char) -> String {
     input.replace(marker, "")
 }
@@ -17,21 +14,11 @@ fn replace_string_markers(input: &str, marker: char) -> String {
 pub enum ArgValue {
     /// A string originally surrounded with `'`, `"` or `\``
     Text(String),
-
-    /// Boolean 'true' or 'false' (first letter may be captitalized)
     Boolean(bool),
-
-    /// A floating point number
     Float(f64),
-
-    /// An signed integer
     Integer(i64),
-
-    /// An array of [ArgValue]'s
     Array(Vec<ArgValue>),
-
     /// A variable from the context
-    // TODO: Maybe add filter notation here
     Var(Vec<String>),
 }
 

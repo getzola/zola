@@ -85,9 +85,9 @@ impl InnerTag {
     }
 
     /// Input a [logos::Lexer] and it will start attempted to parse one [InnerTag]
-    pub fn lex_parse<'a>(
-        mut lex: Lexer<'a, InnerTagToken>,
-    ) -> Result<(Lexer<'a, InnerTagToken>, InnerTag), InnerTagParseError> {
+    pub fn lex_parse(
+        mut lex: Lexer<InnerTagToken>,
+    ) -> Result<(Lexer<InnerTagToken>, InnerTag), InnerTagParseError> {
         use InnerTagParseError::*;
         use InnerTagToken::*;
 
