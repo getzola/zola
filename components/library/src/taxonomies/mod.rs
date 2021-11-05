@@ -203,13 +203,10 @@ impl Taxonomy {
         context.insert("current_path", &format!("/{}/{}/", self.kind.name, item.slug));
 
         // Check for taxon-specific template, or use generic as fallback.
-        let template = match check_template_fallbacks(
-            &format!("{}/single.html", self.kind.name),
-            tera,
-            &config.theme,
-        ) {
+        let specific_template = format!("{}/single.html", self.kind.name);
+        let template = match check_template_fallbacks(&specific_template, tera, &config.theme) {
             Some(template) => template,
-            None => "taxonomy_single.html".to_string(),
+            None => "taxonomy_single.html",
         };
 
         render_template(&template, tera, context, &config.theme).map_err(|e| {
@@ -234,13 +231,10 @@ impl Taxonomy {
         context.insert("current_path", &format!("/{}/", self.kind.name));
 
         // Check for taxon-specific template, or use generic as fallback.
-        let template = match check_template_fallbacks(
-            &format!("{}/list.html", self.kind.name),
-            tera,
-            &config.theme,
-        ) {
+        let specific_template = format!("{}/list.html", self.kind.name);
+        let template = match check_template_fallbacks(&specific_template, tera, &config.theme) {
             Some(template) => template,
-            None => "taxonomy_list.html".to_string(),
+            None => "taxonomy_list.html",
         };
 
         render_template(&template, tera, context, &config.theme).map_err(|e| {

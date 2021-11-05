@@ -99,13 +99,10 @@ impl<'a> Paginator<'a> {
     ) -> Paginator<'a> {
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
         // Check for taxon-specific template, or use generic as fallback.
-        let template = match check_template_fallbacks(
-            &format!("{}/single.html", taxonomy.kind.name),
-            tera,
-            theme,
-        ) {
+        let specific_template = format!("{}/single.html", taxonomy.kind.name);
+        let template = match check_template_fallbacks(&specific_template, tera, theme) {
             Some(template) => template,
-            None => "taxonomy_single.html".to_string(),
+            None => "taxonomy_single.html",
         };
         let mut paginator = Paginator {
             all_pages: Cow::Borrowed(&item.pages),
@@ -121,7 +118,7 @@ impl<'a> Paginator<'a> {
                 .clone()
                 .unwrap_or_else(|| "page".to_string()),
             is_index: false,
-            template,
+            template: template.to_string(),
         };
 
         // taxonomy paginators have no sorting so we won't have to reverse
