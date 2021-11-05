@@ -22,19 +22,19 @@ in the `docs/content` folder of the repository and the community can use [its fo
 | Themes                          | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Shortcodes                      | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Internal links                  | ![yes] | ![no]  | ![yes] | ![yes]  |
-| Link checker                    | ![yes] | ![no]  | ![no]  | ![yes]  |
+| Link checker                    | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Table of contents               | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Automatic header anchors        | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Aliases                         | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Pagination                      | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Custom taxonomies               | ![yes] | ![no]  | ![yes] | ![no]   |
-| Search                          | ![yes] | ![no]  | ![no]  | ![yes]  |
+| Search                          | ![yes] | ![no]  | ![ehh] | ![yes]  |
 | Data files                      | ![yes] | ![yes] | ![yes] | ![no]   |
 | LiveReload                      | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Netlify support                 | ![yes] | ![no]  | ![yes] | ![no]   |
 | Vercel support                  | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Cloudflare Pages support        | ![yes] | ![no]  | ![yes] | ![yes]  |
-| Breadcrumbs                     | ![yes] | ![no]  | ![no]  | ![yes]  |
+| Breadcrumbs                     | ![yes] | ![no]  | ![yes] | ![yes]  |
 | Custom output formats           | ![no]  | ![no]  | ![yes] | ![no]   |
 
 ### Supported content formats
