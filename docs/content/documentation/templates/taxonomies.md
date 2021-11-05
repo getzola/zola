@@ -9,8 +9,8 @@ Zola will look up the following, taxon-specific files in the `templates` directo
 - `$TAXONOMY_NAME/list.html`
 
 if they are not found, it will attempt to fall back on the following generic template files:
-- `single.html`
-- `list.html`
+- `taxonomy_single.html`
+- `taxonomy_list.html`
 
 First, `TaxonomyTerm` has the following fields:
 

@@ -105,7 +105,7 @@ impl<'a> Paginator<'a> {
             theme,
         ) {
             Some(template) => template,
-            None => "single.html".to_string(),
+            None => "taxonomy_single.html".to_string(),
         };
         let mut paginator = Paginator {
             all_pages: Cow::Borrowed(&item.pages),

@@ -209,7 +209,7 @@ impl Taxonomy {
             &config.theme,
         ) {
             Some(template) => template,
-            None => "single.html".to_string(),
+            None => "taxonomy_single.html".to_string(),
         };
 
         render_template(&template, tera, context, &config.theme).map_err(|e| {
@@ -240,7 +240,7 @@ impl Taxonomy {
             &config.theme,
         ) {
             Some(template) => template,
-            None => "list.html".to_string(),
+            None => "taxonomy_list.html".to_string(),
         };
 
         render_template(&template, tera, context, &config.theme).map_err(|e| {
