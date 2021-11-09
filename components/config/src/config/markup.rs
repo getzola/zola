@@ -121,7 +121,7 @@ impl Markdown {
             self.extra_theme_set = Arc::new(Some(extra_theme_set));
         }
 
-        // validate that the chosen highlight_theme exists in the loaded highlight theme sets
+        // Validate that the chosen highlight_theme exists in the loaded highlight theme sets
         if !THEME_SET.themes.contains_key(&self.highlight_theme) {
             if let Some(extra) = &*self.extra_theme_set {
                 if !extra.themes.contains_key(&self.highlight_theme) {
@@ -133,6 +133,20 @@ impl Markdown {
             } else {
                 bail!("Highlight theme {} not available.\n\
                 You can load custom themes by configuring `extra_syntaxes_and_themes` to include a list of folders containing '.tmTheme' files", self.highlight_theme)
+            }
+        }
+
+        // Validate that all exported highlight themes exist as well
+        for theme in self.highlight_themes_css.iter() {
+            let theme_name = &theme.theme;
+            if !THEME_SET.themes.contains_key(theme_name) {
+                // Check extra themes
+                if let Some(extra) = &*self.extra_theme_set {
+                    if !extra.themes.contains_key(theme_name) {
+                        bail!("Can't export highlight theme {}, as it does not exist.\n\
+                        Make sure it's spelled correctly, or your custom .tmTheme' is defined properly.", theme_name)
+                    }
+                }
             }
         }
 
