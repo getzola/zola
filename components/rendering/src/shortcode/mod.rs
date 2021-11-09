@@ -5,31 +5,13 @@ mod arg_value;
 mod inner_tag;
 mod parse;
 
+use std::collections::HashMap;
+
+use utils::templates::ShortcodeFileType;
+
 use crate::transform::Transform;
 use arg_value::ToJsonConvertError;
 pub use parse::{fetch_shortcodes, ShortcodeContext};
-
-use std::collections::HashMap;
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum ShortcodeFileType {
-    Markdown,
-    Html,
-}
-
-#[derive(Debug, Clone)]
-pub struct ShortcodeDefinition {
-    pub file_type: ShortcodeFileType,
-    pub tera_name: String,
-}
-
-impl ShortcodeDefinition {
-    pub fn new(file_type: ShortcodeFileType, tera_name: &str) -> ShortcodeDefinition {
-        let tera_name = tera_name.to_string();
-
-        ShortcodeDefinition { file_type, tera_name }
-    }
-}
 
 #[derive(Debug, PartialEq)]
 pub enum RenderError {

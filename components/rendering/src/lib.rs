@@ -20,9 +20,8 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
     // 3. HTML shortcodes
 
     // Fetch all the defined shortcodes
-    let shortcode_definitions = &context.shortcode_definitions;
-
-    let (content, shortcode_ctxs) = fetch_shortcodes(content, shortcode_definitions);
+    let (content, shortcode_ctxs) =
+        fetch_shortcodes(content, &context.shortcode_definitions.as_ref());
 
     // This will render both top-level and embedded MD shortcodes (Step 1).
     let (content, shortcode_ctxs) =

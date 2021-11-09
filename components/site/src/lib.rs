@@ -26,7 +26,7 @@ use utils::fs::{
 };
 use utils::minify;
 use utils::net::get_available_port;
-use utils::templates::render_template;
+use utils::templates::{render_template, ShortcodeDefinition};
 
 lazy_static! {
     /// The in-memory rendered map content
@@ -64,6 +64,7 @@ pub struct Site {
     /// Whether to load draft pages
     include_drafts: bool,
     build_mode: BuildMode,
+    shortcode_definitions: HashMap<String, ShortcodeDefinition>,
 }
 
 impl Site {
@@ -80,6 +81,7 @@ impl Site {
         }
 
         let tera = load_tera(path, &config)?;
+        let shortcode_definitions = utils::templates::get_shortcodes(&tera);
 
         let content_path = path.join("content");
         let static_path = path.join("static");
@@ -101,6 +103,7 @@ impl Site {
             // We will allocate it properly later on
             library: Arc::new(RwLock::new(Library::new(0, 0, false))),
             build_mode: BuildMode::Disk,
+            shortcode_definitions,
         };
 
         Ok(site)
@@ -362,7 +365,13 @@ impl Site {
             .par_iter_mut()
             .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
-                page.render_markdown(permalinks, tera, config, insert_anchor)
+                page.render_markdown(
+                    permalinks,
+                    tera,
+                    config,
+                    insert_anchor,
+                    &self.shortcode_definitions,
+                )
             })
             .collect::<Result<()>>()?;
 
@@ -384,7 +393,13 @@ impl Site {
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
+            page.render_markdown(
+                &self.permalinks,
+                &self.tera,
+                &self.config,
+                insert_anchor,
+                &self.shortcode_definitions,
+            )?;
         }
 
         let mut library = self.library.write().expect("Get lock for add_page");

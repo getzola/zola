@@ -10,7 +10,7 @@ use std::ops::Range;
 use super::arg_value::ArgValue;
 use super::inner_tag::InnerTag;
 
-use super::{ShortcodeDefinition, ShortcodeFileType};
+use utils::templates::{ShortcodeDefinition, ShortcodeFileType};
 
 /// Ranges have some limitations on adding and subtracting so we use usize's copy behaviour
 /// to circumvent that with this function. Plus we are dealing with usizes so we cannot do easy
@@ -72,7 +72,7 @@ impl ShortcodeContext {
     }
 
     /// Get the name of the shortcode
-    pub fn name(&self) -> &String {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
@@ -97,7 +97,7 @@ impl ShortcodeContext {
     }
 
     /// Returns the content of the definition of the shortcode
-    pub fn tera_name(&self) -> &String {
+    pub fn tera_name(&self) -> &str {
         &self.tera_name
     }
 
@@ -145,7 +145,7 @@ pub fn fetch_shortcodes(
     definitions: &HashMap<String, ShortcodeDefinition>,
 ) -> (String, Vec<ShortcodeContext>) {
     /// Used to keep track of body items when parsing Shortcode. Since multiple can be embedded into
-    /// eachother. This needs to be kept track off.
+    /// each other. This needs to be kept track off.
     struct BodiedStackItem {
         name: String,
         args: HashMap<String, ArgValue>,
@@ -165,8 +165,7 @@ pub fn fetch_shortcodes(
 
     // Loop until we run out of potential shortcodes
     while let Some(open_tag) = lex.next() {
-        // Check if the open tag is an endblock
-        if matches!(open_tag, Openers::EndBlock) {
+        if open_tag == Openers::EndBlock {
             // Check whether a bodied shortcode has already been located
             if let Some(BodiedStackItem {
                 name,
