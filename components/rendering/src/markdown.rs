@@ -11,9 +11,7 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
-use crate::shortcode::{render_shortcode, ShortcodeContext};
-
-use std::collections::HashMap;
+use crate::shortcode::parser::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -136,7 +134,7 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
 pub fn markdown_to_html(
     content: &str,
     context: &RenderContext,
-    shortcode_ctxs: Vec<ShortcodeContext>,
+    html_shortcodes: Vec<Shortcode>,
 ) -> Result<Rendered> {
     lazy_static! {
         static ref EMOJI_REPLACER: gh_emoji::Replacer = gh_emoji::Replacer::new();
@@ -159,8 +157,6 @@ pub fn markdown_to_html(
     let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
 
-    let mut invocation_counts = HashMap::new();
-
     let mut stop_next_end_p = false;
 
     let mut opts = Options::empty();
@@ -174,8 +170,10 @@ pub fn markdown_to_html(
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
     }
 
-    let mut shortcode_ctxs: Vec<ShortcodeContext> = shortcode_ctxs.into_iter().rev().collect();
-    let mut next_shortcode = shortcode_ctxs.pop();
+    // we reverse their order so we can pop them easily in order
+    let mut html_shortcodes: Vec<_> = html_shortcodes.into_iter().rev().collect();
+    let mut next_shortcode = html_shortcodes.pop();
+    let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
 
     {
         let mut events = Vec::new();
@@ -183,75 +181,67 @@ pub fn markdown_to_html(
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
                 Event::Text(text) => {
-                    // Here we are also inserting the HTML shortcodes. So for every text event we
-                    // are basically asking whether there is a HTML shortcode inside of it. There
-                    // can be multiple so we loop until there aren't anymore. Since currently they
-                    // are sorted. Back to front we keep popping the last element.
-
-                    fn return_text<'a>(
-                        text: String,
-                        code_block: &mut Option<CodeBlock>,
-                        context: &RenderContext,
-                    ) -> Event<'a> {
-                        // if we are in the middle of a highlighted code block
-                        if let Some(ref mut code_block) = code_block {
-                            let html = code_block.highlight(&text);
-                            Event::Html(html.into())
-                        } else if context.config.markdown.render_emoji {
-                            let processed_text = EMOJI_REPLACER.replace_all(&text);
-                            Event::Text(processed_text.to_string().into())
+                    if let Some(ref mut code_block) = code_block {
+                        let html = code_block.highlight(&text);
+                        events.push(Event::Html(html.into()));
+                    } else {
+                        let text = if context.config.markdown.render_emoji {
+                            EMOJI_REPLACER.replace_all(&text).to_string().into()
                         } else {
-                            // Business as usual
-                            Event::Text(text.into())
+                            text
+                        };
+
+                        if !contains_shortcode(text.as_ref()) {
+                            events.push(Event::Text(text));
+                            continue;
                         }
-                    }
 
-                    let mut new_text = text.clone();
+                        // TODO: find a way to share that code with the HTML handler
+                        let mut new_text = text.clone();
+                        loop {
+                            if let Some(ref shortcode) = next_shortcode {
+                                let sc_span = shortcode.span.clone();
+                                if range.contains(&sc_span.start) {
+                                    if range.start != sc_span.start {
+                                        events.push(Event::Text(
+                                            new_text[..(sc_span.start - range.start)]
+                                                .to_string()
+                                                .into(),
+                                        ));
+                                    }
 
-                    loop {
-                        if let Some(ref shortcode) = next_shortcode {
-                            let span = shortcode.span();
-                            if range.contains(&span.start) {
-                                if range.start != span.start {
-                                    events.push(return_text(
-                                        text[..(span.start - range.start)].into(),
-                                        &mut code_block,
-                                        context,
-                                    ));
+                                    let shortcode = next_shortcode.take().unwrap();
+                                    match shortcode.render(&context.tera, &context.tera_context) {
+                                        Ok(s) => {
+                                            events.push(Event::Html(s.into()));
+                                            new_text = new_text[(sc_span.end - range.start)..]
+                                                .to_owned()
+                                                .into();
+                                            range.start = sc_span.end - range.start;
+                                        }
+                                        Err(e) => {
+                                            error = Some(e);
+                                            break;
+                                        }
+                                    }
+
+                                    next_shortcode = html_shortcodes.pop();
+                                    continue;
                                 }
-
-                                //TODO: remove unwrap
-                                events.push(Event::Html(
-                                    render_shortcode(
-                                        shortcode,
-                                        &mut invocation_counts,
-                                        &context.tera_context,
-                                        &context.tera,
-                                    )
-                                    .unwrap()
-                                    .into(),
-                                ));
-
-                                new_text = text[(span.end - range.start)..].into();
-                                range = (span.end - range.start)..range.end;
-
-                                next_shortcode = shortcode_ctxs.pop();
-
-                                continue;
                             }
+
+                            break;
                         }
 
-                        break;
+                        events.push(Event::Text(new_text[..].to_string().into()));
                     }
-
-                    events.push(return_text(new_text[..].to_string(), &mut code_block, context));
                 }
                 Event::Start(Tag::CodeBlock(ref kind)) => {
                     let fence = match kind {
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = CodeBlock::new(fence, &context.config, path);
+                    let (block, begin) = CodeBlock::new(fence, context.config, path);
                     code_block = Some(block);
                     events.push(Event::Html(begin.into()));
                 }
@@ -307,9 +297,8 @@ pub fn markdown_to_html(
                     // NOTE: It could be more efficient to remove this search and just keep
                     // track of the shortcodes to come and compare it to that.
                     if let Some(ref next_shortcode) = next_shortcode {
-                        let sc_span = next_shortcode.span();
-                        if sc_span.start == range.start
-                            && sc_span.len() == content[range].trim().len()
+                        if next_shortcode.span.start == range.start
+                            && next_shortcode.span.len() == content[range].trim().len()
                         {
                             stop_next_end_p = true;
                             events.push(Event::Html("".into()));
@@ -327,17 +316,65 @@ pub fn markdown_to_html(
                         event
                     });
                 }
-                Event::Html(ref markup) => {
-                    events.push(if markup.contains("<!-- more -->") {
+                Event::Html(text) => {
+                    println!("Got text: {:?}", text);
+                    if text.contains("<!-- more -->") {
                         has_summary = true;
-                        Event::Html(CONTINUE_READING.into())
-                    } else {
-                        event
-                    });
+                        events.push(Event::Html(CONTINUE_READING.into()));
+                        continue;
+                    }
+                    if !contains_shortcode(text.as_ref()) {
+                        events.push(Event::Html(text));
+                        continue;
+                    }
+
+                    let mut new_text = text.clone();
+                    loop {
+                        if let Some(ref shortcode) = next_shortcode {
+                            let sc_span = shortcode.span.clone();
+                            if range.contains(&sc_span.start) {
+                                if range.start != sc_span.start {
+                                    events.push(Event::Html(
+                                        new_text[..(sc_span.start - range.start)].to_owned().into(),
+                                    ));
+                                }
+
+                                let shortcode = next_shortcode.take().unwrap();
+                                match shortcode.render(&context.tera, &context.tera_context) {
+                                    Ok(s) => {
+                                        events.push(Event::Html(s.into()));
+                                        new_text = new_text[(sc_span.end - range.start)..]
+                                            .to_owned()
+                                            .into();
+                                        range.start = sc_span.end - range.start;
+                                    }
+                                    Err(e) => {
+                                        error = Some(e);
+                                        break;
+                                    }
+                                }
+
+                                next_shortcode = html_shortcodes.pop();
+                                continue;
+                            }
+                        }
+
+                        break;
+                    }
+                    events.push(Event::Html(new_text[..].to_string().into()));
                 }
                 _ => events.push(event),
             }
         }
+
+        // We remove all the empty things we might have pushed before so we don't get some random \n
+        events = events
+            .into_iter()
+            .filter(|e| match e {
+                Event::Text(text) | Event::Html(text) => !text.is_empty(),
+                _ => true,
+            })
+            .collect();
 
         let mut heading_refs = get_heading_refs(&events);
 

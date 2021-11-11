@@ -137,7 +137,6 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     b.iter(|| render_content(&content2, &context).unwrap());
 }
 
-
 #[bench]
 fn bench_render_content_with_emoji(b: &mut test::Bencher) {
     let tera = Tera::default();

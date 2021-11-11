@@ -161,7 +161,7 @@ impl Config {
         let mut config = Config::parse(&content)?;
         let config_dir = path
             .parent()
-            .ok_or(Error::msg("Failed to find directory containing the config file."))?;
+            .ok_or_else(|| Error::msg("Failed to find directory containing the config file."))?;
 
         // this is the step at which missing extra syntax and highlighting themes are raised as errors
         config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;

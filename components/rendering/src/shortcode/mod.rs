@@ -1,160 +1,68 @@
-#[macro_use]
-mod util;
-
-mod arg_value;
-mod inner_tag;
-mod parse;
-
 use std::collections::HashMap;
 
-use utils::templates::ShortcodeFileType;
+use errors::{Error, Result};
+use utils::templates::{ShortcodeDefinition, ShortcodeFileType};
 
-use crate::transform::Transform;
-use arg_value::ToJsonConvertError;
-pub use parse::{fetch_shortcodes, ShortcodeContext};
+mod lexer;
+pub(crate) mod parser;
 
-#[derive(Debug, PartialEq)]
-pub enum RenderError {
-    VariableNotFound { complete_var: Vec<String>, specific_part: String },
-    FloatParseError,
-    TeraError,
-}
+use parser::{Shortcode, ShortcodeExtractor};
 
-impl From<ToJsonConvertError> for RenderError {
-    fn from(err: ToJsonConvertError) -> Self {
-        match err {
-            ToJsonConvertError::VariableNotFound { complete_var, specific_part } => {
-                RenderError::VariableNotFound { complete_var, specific_part }
-            }
-            ToJsonConvertError::FloatParseError => RenderError::FloatParseError,
+/// Extracts the shortcodes present in the source, check if we know them and errors otherwise
+pub fn extract_shortcodes(
+    source: &str,
+    definitions: &HashMap<String, ShortcodeDefinition>,
+) -> Result<(String, Vec<Shortcode>)> {
+    let (out, mut shortcodes) = ShortcodeExtractor::parse(source)?;
+
+    for sc in &mut shortcodes {
+        if let Some(def) = definitions.get(&sc.name) {
+            sc.tera_name = def.tera_name.clone();
+        } else {
+            return Err(Error::msg(format!("Found usage of a shortcode named `{}` but we do not know about. Make sure it's not a typo and that a field name `{}.{{html,md}} exists in the `templates/shortcodes` directory.", sc.name, sc.name)));
         }
     }
+
+    Ok((out, shortcodes))
 }
 
-impl Into<errors::Error> for RenderError {
-    fn into(self) -> errors::Error {
-        // TODO: Improve this conversion
-        errors::Error::msg("Something went wrong whilst rendering shortcodes")
-    }
-}
-
-/// Take one specific shortcode and attempt to turn it into its resulting replacement string
-pub fn render_shortcode(
-    context: &ShortcodeContext,
-    invocation_counts: &mut HashMap<String, usize>,
-    tera_context: &tera::Context,
-    tera: &tera::Tera,
-) -> Result<String, RenderError> {
-    let body_content = context.body();
-
-    let mut new_context = tera::Context::new();
-
-    for (key, value) in context.args().iter() {
-        new_context.insert(key, &value.to_tera(&new_context)?);
-    }
-    if let Some(body_content) = body_content {
-        // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
-        new_context.insert("body", body_content.trim_end());
-    }
-
-    // We don't have to take into account the call stack, since we know for sure that it will not
-    // contain this shortcode again.
-    let invocation_count = *invocation_counts.get(context.name()).unwrap_or(&1);
-    new_context.insert("nth", &invocation_count);
-    invocation_counts.insert(context.name().to_string(), invocation_count + 1);
-
-    new_context.extend(tera_context.clone());
-
-    let res = utils::templates::render_template(context.tera_name(), tera, new_context, &None)
-        .map_err(|e| {
-            errors::Error::chain(format!("Failed to render {} shortcode", context.tera_name()), e)
-        })
-        .map_err(|_| RenderError::TeraError)?;
-
-    Ok(res)
-}
-
-/// Inserts shortcodes of file type `filter_file_type` (recursively) into a source string
 pub fn insert_md_shortcodes(
     mut content: String,
-    shortcode_ctxs: Vec<ShortcodeContext>,
+    shortcodes: Vec<Shortcode>,
     tera_context: &tera::Context,
     tera: &tera::Tera,
-) -> Result<(String, Vec<ShortcodeContext>), RenderError> {
-    let mut invocation_counts = HashMap::new();
+) -> Result<(String, Vec<Shortcode>)> {
+    // (span, len transformed)
     let mut transforms = Vec::new();
+    let mut html_shortcodes = Vec::with_capacity(shortcodes.len());
 
-    let mut html_shortcode_ctxs = Vec::with_capacity(shortcode_ctxs.len());
-
-    for mut ctx in shortcode_ctxs.into_iter() {
-        for Transform { span_start, initial_end, after_end } in transforms.iter() {
-            ctx.update_on_source_insert(*span_start, *initial_end, *after_end);
+    for mut sc in shortcodes.into_iter() {
+        for (md_sc_span, rendered_length) in &transforms {
+            sc.update_range(md_sc_span, *rendered_length);
         }
-
-        if ctx.file_type() == &ShortcodeFileType::Html {
-            html_shortcode_ctxs.push(ctx);
+        // It has been checked before that this exist
+        if sc.file_type() == ShortcodeFileType::Html {
+            html_shortcodes.push(sc);
             continue;
         }
 
-        let ctx_span = ctx.span();
-        let res = render_shortcode(&ctx, &mut invocation_counts, tera_context, tera)?;
-
-        transforms.push(Transform::new(ctx_span, res.len()));
-        content.replace_range(ctx_span.clone(), &res);
+        let span = sc.span.clone();
+        let res = sc.render(tera, tera_context)?;
+        transforms.push((span.clone(), res.len()));
+        content.replace_range(span, &res);
     }
 
-    Ok((content, html_shortcode_ctxs))
+    Ok((content, html_shortcodes))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ShortcodeFileType::*;
-
-    macro_rules! assert_render_md_shortcode {
-        ($source:expr, ($context:expr, [$($template_name:expr => $template_output:expr),*$(,)?]) => $res:expr) => {
-            let mut tera = templates::ZOLA_TERA.clone();
-            tera.add_raw_templates(vec![$(($template_name, $template_output)),*]).unwrap();
-
-            let context = tera::Context::new();
-            let mut invocation_counts = HashMap::new();
-
-            assert_eq!(
-                render_shortcode(&$context, &mut invocation_counts, &context, &tera).unwrap(),
-                $res.to_string()
-            );
-        };
-    }
+    use crate::shortcode::parser::SHORTCODE_PLACEHOLDER;
+    use tera::to_value;
 
     #[test]
-    fn render_md_shortcode() {
-        assert_render_md_shortcode!(
-            "abc {{SC()}}",
-            (
-                ShortcodeContext::new("a", vec![], 4..12, None, Markdown, "shortcodes/a.md"),
-                [
-                    "shortcodes/a.md" => "wow"
-                ]
-            ) => "wow"
-        );
-        assert_render_md_shortcode!(
-             "abc {{SC()}}",
-             (
-                 ShortcodeContext::new("a", vec![], 4..12, None, Markdown, "shortcodes/a.md"),
-                 ["shortcodes/a.md" => "XYZ"]
-             ) => "XYZ"
-        );
-        assert_render_md_shortcode!(
-             "abc {{SC()}}",
-             (
-                 ShortcodeContext::new("a", vec![], 4..12, None, Markdown, "shortcodes/a.md"),
-                 ["shortcodes/a.md" => "{{ nth }}"]
-             ) => "1"
-        );
-    }
-
-    #[test]
-    fn insrt_md_shortcodes() {
+    fn can_insert_md_shortcodes() {
         let mut tera = templates::ZOLA_TERA.clone();
 
         tera.add_raw_template("shortcodes/a.md", "{{ nth }}").unwrap();
@@ -163,10 +71,24 @@ mod tests {
         let tera_context = tera::Context::new();
         assert_eq!(
             insert_md_shortcodes(
-                "{{SC()}}{{SC()}}".to_string(),
+                format!("{}{}", SHORTCODE_PLACEHOLDER, SHORTCODE_PLACEHOLDER),
                 vec![
-                    ShortcodeContext::new("", vec![], 0..8, None, Markdown, "shortcodes/a.md"),
-                    ShortcodeContext::new("", vec![], 8..16, None, Markdown, "shortcodes/a.md")
+                    Shortcode {
+                        name: "a".to_string(),
+                        args: to_value(&HashMap::<u8, u8>::new()).unwrap(),
+                        span: 0..SHORTCODE_PLACEHOLDER.len(),
+                        body: None,
+                        nth: 1,
+                        tera_name: "shortcodes/a.md".to_owned(),
+                    },
+                    Shortcode {
+                        name: "a".to_string(),
+                        args: to_value(&HashMap::<u8, u8>::new()).unwrap(),
+                        span: SHORTCODE_PLACEHOLDER.len()..(2 * SHORTCODE_PLACEHOLDER.len()),
+                        body: None,
+                        nth: 2,
+                        tera_name: "shortcodes/a.md".to_owned(),
+                    }
                 ],
                 &tera_context,
                 &tera
@@ -175,39 +97,25 @@ mod tests {
             .0,
             "12".to_string()
         );
+
         assert_eq!(
             insert_md_shortcodes(
-                "Much wow {{SC()}}".to_string(),
-                vec![ShortcodeContext::new(
-                    "",
-                    vec![],
-                    9..17,
-                    Some("Content of the body"),
-                    Markdown,
-                    "shortcodes/bodied.md"
-                )],
+                format!("Much wow {}", SHORTCODE_PLACEHOLDER),
+                vec![Shortcode {
+                    name: "bodied".to_string(),
+                    args: to_value(&HashMap::<u8, u8>::new()).unwrap(),
+                    span: 9..(9 + SHORTCODE_PLACEHOLDER.len()),
+                    body: Some("Content of the body".to_owned()),
+                    nth: 1,
+
+                    tera_name: "shortcodes/bodied.md".to_owned(),
+                },],
                 &tera_context,
                 &tera
             )
             .unwrap()
             .0,
             "Much wow Content of the body".to_string()
-        );
-    }
-
-    #[test]
-    fn does_nothing_with_no_shortcodes() {
-        let mut tera = templates::ZOLA_TERA.clone();
-
-        tera.add_raw_template("shortcodes/a.md", "{{ nth }}").unwrap();
-        tera.add_raw_template("shortcodes/bodied.md", "{{ bodied }}").unwrap();
-
-        let tera_context = tera::Context::new();
-        assert_eq!(
-            insert_md_shortcodes("{{SC()}}{{SC()}}".to_string(), vec![], &tera_context, &tera)
-                .unwrap()
-                .0,
-            "{{SC()}}{{SC()}}".to_string()
         );
     }
 }

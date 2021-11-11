@@ -30,6 +30,7 @@ impl<'a> RenderContext<'a> {
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
         tera_context.insert("config", &config.serialize(lang));
+        tera_context.insert("lang", lang);
 
         Self {
             tera: Cow::Borrowed(tera),
