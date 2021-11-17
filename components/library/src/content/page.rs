@@ -338,8 +338,14 @@ Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None, &HashMap::new())
-            .unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -504,8 +510,14 @@ Hello world
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None, &HashMap::new())
-            .unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
     }
 
@@ -528,8 +540,14 @@ And here's another. [^2]
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None, &HashMap::new())
-            .unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
         assert_eq!(
             page.summary,
             Some("<p>This page has footnotes, here\'s one. </p>\n".to_string())
