@@ -1,5 +1,6 @@
 mod common;
 
+use std::path::PathBuf;
 use common::ShortCode;
 
 macro_rules! test_scenario {
@@ -18,8 +19,17 @@ macro_rules! test_scenario {
         )*
 
         let mut permalinks = std::collections::HashMap::new();
-
         permalinks.insert("".to_string(), "".to_string());
+
+        tera.register_filter(
+            "markdown",
+            templates::filters::MarkdownFilter::new(
+                PathBuf::new(),
+                config.clone(),
+                permalinks.clone(),
+            ).unwrap()
+        );
+
         let mut context = rendering::RenderContext::new(
             &tera,
             &config,
@@ -434,5 +444,30 @@ other code here;
 {% end %}"#,
         "<bc-authorizer-example>\n  <code>some code;\nmore code;\n\nother code here;</code>\n</bc-authorizer-example>",
         [WEB_COMPONENT_SHORTCODE]
+    );
+}
+
+const CODE_BLOCK_SHORTCODE: ShortCode = ShortCode::new(
+    "details",
+    r#"<details>
+<summary>{{summary | markdown(inline=true) | safe}}</summary>
+<div class="details-content">
+{{ body | markdown | safe}}
+</div>
+</details>"#,
+    false,
+);
+// https://github.com/getzola/zola/issues/1601
+#[test]
+fn works_with_code_block_in_shortcode() {
+
+    test_scenario!(
+        r#"{% details(summary="hey") %}
+```
+some code
+```
+{% end %}"#,
+        "<details>\n<summary>hey</summary>\n<div class=\"details-content\">\n<pre><code>some code\n</code></pre>\n\n</div>\n</details>",
+        [CODE_BLOCK_SHORTCODE]
     );
 }
