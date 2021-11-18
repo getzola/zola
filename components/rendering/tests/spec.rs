@@ -414,3 +414,25 @@ fn list_with_shortcode() {
         [HTML_TABS_MULTILINE]
     );
 }
+
+const WEB_COMPONENT_SHORTCODE: ShortCode = ShortCode::new(
+    "examplecode",
+    "<bc-authorizer-example>
+  <code>{{ body | safe}}</code>
+</bc-authorizer-example>",
+    false,
+);
+// https://github.com/getzola/zola/issues/1655
+#[test]
+fn shortcodes_do_not_generate_paragraphs() {
+    test_scenario!(
+        r#"{% examplecode() %}
+some code;
+more code;
+
+other code here;
+{% end %}"#,
+        "<bc-authorizer-example>\n  <code>some code;\nmore code;\n\nother code here;</code>\n</bc-authorizer-example>",
+        [WEB_COMPONENT_SHORTCODE]
+    );
+}
