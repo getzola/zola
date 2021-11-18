@@ -376,6 +376,11 @@ mod tests {
                 "with_array",
                 hashmap!("hello".to_owned() => Value::Array(vec![Value::String("true".to_owned()), Value::Bool(false)])),
             ),
+            (
+                "with_array(hello=['true', [true, false]]) }}",
+                "with_array",
+                hashmap!("hello".to_owned() => Value::Array(vec![Value::String("true".to_owned()), Value::Array(vec![Value::Bool(true), Value::Bool(false)])])),
+            ),
         ];
 
         for (txt, expected_name, expected_args) in input {
