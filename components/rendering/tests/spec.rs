@@ -486,3 +486,21 @@ fn shortcodes_work_in_quotes() {
         []
     );
 }
+
+
+const GOOGLE_SHORTCODE: ShortCode = ShortCode::new(
+    "google",
+    r#"<div>
+<a href="https://google.com/search?q={{query}}">Google Search</a>
+</div>"#,
+    false,
+);
+// https://github.com/getzola/zola/issues/1500
+#[test]
+fn can_handle_issue_1500() {
+    test_scenario!(
+        r#"foo {{ google(query="apple") }} bar."#,
+        "<p>foo <div>\n<a href=\"https://google.com/search?q=apple\">Google Search</a>\n</div> bar.</p>\n",
+        [GOOGLE_SHORTCODE]
+    );
+}
