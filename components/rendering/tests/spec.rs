@@ -2,6 +2,7 @@ mod common;
 
 use std::path::PathBuf;
 use common::ShortCode;
+use templates::ZOLA_TERA;
 
 macro_rules! test_scenario {
     ($in_str:literal, $out_str:literal, [$($shortcodes:ident),*]) => {
@@ -9,6 +10,7 @@ macro_rules! test_scenario {
 
         #[allow(unused_mut)]
         let mut tera = tera::Tera::default();
+        tera.extend(&ZOLA_TERA).unwrap();
 
         $(
             let ShortCode { name, is_md, output } = $shortcodes;
@@ -469,5 +471,18 @@ some code
 {% end %}"#,
         "<details>\n<summary>hey</summary>\n<div class=\"details-content\">\n<pre><code>some code\n</code></pre>\n\n</div>\n</details>",
         [CODE_BLOCK_SHORTCODE]
+    );
+}
+
+
+// https://github.com/getzola/zola/issues/1600
+#[test]
+fn shortcodes_work_in_quotes() {
+    test_scenario!(
+        r#"> test quote
+> {{ vimeo(id="124313553") }}
+> test quote"#,
+        "<blockquote>\n<p>test quote\n<div >\n    <iframe src=\"//player.vimeo.com/video/124313553\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>\n</div>\n\ntest quote</p>\n</blockquote>\n",
+        []
     );
 }
