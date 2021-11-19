@@ -161,7 +161,7 @@ impl Config {
         let mut config = Config::parse(&content)?;
         let config_dir = path
             .parent()
-            .ok_or(Error::msg("Failed to find directory containing the config file."))?;
+            .ok_or_else(|| Error::msg("Failed to find directory containing the config file."))?;
 
         // this is the step at which missing extra syntax and highlighting themes are raised as errors
         config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
@@ -332,7 +332,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
 
 impl Default for Config {
     fn default() -> Config {
-        Config {
+        let mut conf = Config {
             base_url: DEFAULT_BASE_URL.to_string(),
             title: None,
             description: None,
@@ -357,7 +357,9 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
-        }
+        };
+        conf.add_default_language();
+        conf
     }
 }
 

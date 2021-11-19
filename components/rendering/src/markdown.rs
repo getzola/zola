@@ -11,6 +11,7 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
+use crate::shortcode::parser::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -130,7 +131,11 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
     heading_refs
 }
 
-pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
+pub fn markdown_to_html(
+    content: &str,
+    context: &RenderContext,
+    html_shortcodes: Vec<Shortcode>,
+) -> Result<Rendered> {
     lazy_static! {
         static ref EMOJI_REPLACER: gh_emoji::Replacer = gh_emoji::Replacer::new();
     }
@@ -152,9 +157,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
 
+    let mut stop_next_end_p = false;
+
     let mut opts = Options::empty();
     let mut has_summary = false;
-    let mut in_html_block = false;
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_FOOTNOTES);
     opts.insert(Options::ENABLE_STRIKETHROUGH);
@@ -164,57 +170,107 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
     }
 
+    // we reverse their order so we can pop them easily in order
+    let mut html_shortcodes: Vec<_> = html_shortcodes.into_iter().rev().collect();
+    let mut next_shortcode = html_shortcodes.pop();
+    let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
+
     {
-        let mut events = Parser::new_ext(content, opts)
-            .map(|event| {
-                match event {
-                    Event::Text(text) => {
-                        // if we are in the middle of a highlighted code block
-                        if let Some(ref mut code_block) = code_block {
-                            let html = code_block.highlight(&text);
-                            Event::Html(html.into())
-                        } else if context.config.markdown.render_emoji {
-                            let processed_text = EMOJI_REPLACER.replace_all(&text);
-                            Event::Text(processed_text.to_string().into())
+        let mut events = Vec::new();
+
+        for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
+            match event {
+                Event::Text(text) => {
+                    if let Some(ref mut code_block) = code_block {
+                        let html = code_block.highlight(&text);
+                        events.push(Event::Html(html.into()));
+                    } else {
+                        let text = if context.config.markdown.render_emoji {
+                            EMOJI_REPLACER.replace_all(&text).to_string().into()
                         } else {
-                            // Business as usual
-                            Event::Text(text)
+                            text
+                        };
+
+                        if !contains_shortcode(text.as_ref()) {
+                            events.push(Event::Text(text));
+                            continue;
                         }
-                    }
-                    Event::Start(Tag::CodeBlock(ref kind)) => {
-                        let fence = match kind {
-                            cmark::CodeBlockKind::Fenced(fence_info) => {
-                                FenceSettings::new(fence_info)
+
+                        // TODO: find a way to share that code with the HTML handler
+                        let mut new_text = text.clone();
+                        loop {
+                            if let Some(ref shortcode) = next_shortcode {
+                                let sc_span = shortcode.span.clone();
+                                if range.contains(&sc_span.start) {
+                                    if range.start != sc_span.start {
+                                        events.push(Event::Text(
+                                            new_text[..(sc_span.start - range.start)]
+                                                .to_string()
+                                                .into(),
+                                        ));
+                                    }
+
+                                    let shortcode = next_shortcode.take().unwrap();
+                                    match shortcode.render(&context.tera, &context.tera_context) {
+                                        Ok(s) => {
+                                            events.push(Event::Html(s.into()));
+                                            new_text = new_text[(sc_span.end - range.start)..]
+                                                .to_owned()
+                                                .into();
+                                            range.start = sc_span.end - range.start;
+                                        }
+                                        Err(e) => {
+                                            error = Some(e);
+                                            break;
+                                        }
+                                    }
+
+                                    next_shortcode = html_shortcodes.pop();
+                                    continue;
+                                }
                             }
-                            _ => FenceSettings::new(""),
-                        };
-                        let (block, begin) = CodeBlock::new(fence, context.config, path);
-                        code_block = Some(block);
-                        Event::Html(begin.into())
+
+                            break;
+                        }
+
+                        events.push(Event::Text(new_text[..].to_string().into()));
                     }
-                    Event::End(Tag::CodeBlock(_)) => {
-                        // reset highlight and close the code block
-                        code_block = None;
-                        Event::Html("</code></pre>\n".into())
-                    }
-                    Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
-                        error = Some(Error::msg("There is a link that is missing a URL"));
-                        Event::Start(Tag::Link(link_type, "#".into(), title))
-                    }
-                    Event::Start(Tag::Link(link_type, link, title)) => {
-                        let fixed_link = match fix_link(
-                            link_type,
-                            &link,
-                            context,
-                            &mut internal_links,
-                            &mut external_links,
-                        ) {
-                            Ok(fixed_link) => fixed_link,
-                            Err(err) => {
-                                error = Some(err);
-                                return Event::Html("".into());
-                            }
-                        };
+                }
+                Event::Start(Tag::CodeBlock(ref kind)) => {
+                    let fence = match kind {
+                        cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
+                        _ => FenceSettings::new(""),
+                    };
+                    let (block, begin) = CodeBlock::new(fence, context.config, path);
+                    code_block = Some(block);
+                    events.push(Event::Html(begin.into()));
+                }
+                Event::End(Tag::CodeBlock(_)) => {
+                    // reset highlight and close the code block
+                    code_block = None;
+                    events.push(Event::Html("</code></pre>\n".into()));
+                }
+                Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
+                    error = Some(Error::msg("There is a link that is missing a URL"));
+                    events.push(Event::Start(Tag::Link(link_type, "#".into(), title)));
+                }
+                Event::Start(Tag::Link(link_type, link, title)) => {
+                    let fixed_link = match fix_link(
+                        link_type,
+                        &link,
+                        context,
+                        &mut internal_links,
+                        &mut external_links,
+                    ) {
+                        Ok(fixed_link) => fixed_link,
+                        Err(err) => {
+                            error = Some(err);
+                            events.push(Event::Html("".into()));
+                            continue;
+                        }
+                    };
+
+                    events.push(
                         if is_external_link(&link)
                             && context.config.markdown.has_external_link_tweaks()
                         {
@@ -231,32 +287,94 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             )
                         } else {
                             Event::Start(Tag::Link(link_type, fixed_link.into(), title))
-                        }
-                    }
-                    Event::Html(ref markup) => {
-                        if markup.contains("<!-- more -->") {
-                            has_summary = true;
-                            Event::Html(CONTINUE_READING.into())
-                        } else if in_html_block && markup.contains("</pre>") {
-                            in_html_block = false;
-                            Event::Html(markup.replacen("</pre>", "", 1).into())
-                        } else if markup.contains("pre data-shortcode") {
-                            in_html_block = true;
-                            let m = markup.replacen("<pre data-shortcode>", "", 1);
-                            if m.contains("</pre>") {
-                                in_html_block = false;
-                                Event::Html(m.replacen("</pre>", "", 1).into())
-                            } else {
-                                Event::Html(m.into())
-                            }
-                        } else {
-                            event
-                        }
-                    }
-                    _ => event,
+                        },
+                    )
                 }
+                Event::Start(Tag::Paragraph) => {
+                    // We have to compare the start and the trimmed length because the content
+                    // will sometimes contain '\n' at the end which we want to avoid.
+                    //
+                    // NOTE: It could be more efficient to remove this search and just keep
+                    // track of the shortcodes to come and compare it to that.
+                    if let Some(ref next_shortcode) = next_shortcode {
+                        if next_shortcode.span.start == range.start
+                            && next_shortcode.span.len() == content[range].trim().len()
+                        {
+                            stop_next_end_p = true;
+                            events.push(Event::Html("".into()));
+                            continue;
+                        }
+                    }
+
+                    events.push(event);
+                }
+                Event::End(Tag::Paragraph) => {
+                    events.push(if stop_next_end_p {
+                        stop_next_end_p = false;
+                        Event::Html("".into())
+                    } else {
+                        event
+                    });
+                }
+                Event::Html(text) => {
+                    println!("Got text: {:?}", text);
+                    if text.contains("<!-- more -->") {
+                        has_summary = true;
+                        events.push(Event::Html(CONTINUE_READING.into()));
+                        continue;
+                    }
+                    if !contains_shortcode(text.as_ref()) {
+                        events.push(Event::Html(text));
+                        continue;
+                    }
+
+                    let mut new_text = text.clone();
+                    loop {
+                        if let Some(ref shortcode) = next_shortcode {
+                            let sc_span = shortcode.span.clone();
+                            if range.contains(&sc_span.start) {
+                                if range.start != sc_span.start {
+                                    events.push(Event::Html(
+                                        new_text[..(sc_span.start - range.start)].to_owned().into(),
+                                    ));
+                                }
+
+                                let shortcode = next_shortcode.take().unwrap();
+                                match shortcode.render(&context.tera, &context.tera_context) {
+                                    Ok(s) => {
+                                        events.push(Event::Html(s.into()));
+                                        new_text = new_text[(sc_span.end - range.start)..]
+                                            .to_owned()
+                                            .into();
+                                        range.start = sc_span.end - range.start;
+                                    }
+                                    Err(e) => {
+                                        error = Some(e);
+                                        break;
+                                    }
+                                }
+
+                                next_shortcode = html_shortcodes.pop();
+                                continue;
+                            }
+                        }
+
+                        break;
+                    }
+                    events.push(Event::Html(new_text[..].to_string().into()));
+                }
+                _ => events.push(event),
+            }
+        }
+
+        // We remove all the empty things we might have pushed before so we don't get some random \n
+        events = events
+            .into_iter()
+            .filter(|e| match e {
+                Event::Text(text) | Event::Html(text) => !text.is_empty(),
+                _ => true,
             })
-            .collect::<Vec<_>>(); // We need to collect the events to make a second pass
+            .collect();
 
         let mut heading_refs = get_heading_refs(&events);
 

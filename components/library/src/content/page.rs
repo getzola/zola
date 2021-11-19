@@ -14,7 +14,7 @@ use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
 use rendering::{render_content, Heading, RenderContext};
 use utils::site::get_reading_analytics;
 use utils::slugs::slugify_paths;
-use utils::templates::render_template;
+use utils::templates::{render_template, ShortcodeDefinition};
 
 use crate::content::file_info::FileInfo;
 use crate::content::ser::SerializingPage;
@@ -225,6 +225,7 @@ impl Page {
         tera: &Tera,
         config: &Config,
         anchor_insert: InsertAnchor,
+        shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
@@ -234,6 +235,7 @@ impl Page {
             permalinks,
             anchor_insert,
         );
+        context.set_shortcode_definitions(shortcode_definitions);
 
         context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
@@ -336,8 +338,14 @@ Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None)
-            .unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -502,8 +510,14 @@ Hello world
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None)
-            .unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
     }
 
@@ -526,8 +540,14 @@ And here's another. [^2]
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(&HashMap::default(), &Tera::default(), &config, InsertAnchor::None)
-            .unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
         assert_eq!(
             page.summary,
             Some("<p>This page has footnotes, here\'s one. </p>\n".to_string())

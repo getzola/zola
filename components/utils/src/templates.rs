@@ -15,6 +15,58 @@ macro_rules! render_default_tpl {
     }};
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum ShortcodeFileType {
+    Markdown,
+    Html,
+}
+
+#[derive(Debug, Clone)]
+pub struct ShortcodeDefinition {
+    pub file_type: ShortcodeFileType,
+    pub tera_name: String,
+}
+impl ShortcodeDefinition {
+    pub fn new(file_type: ShortcodeFileType, tera_name: &str) -> ShortcodeDefinition {
+        let tera_name = tera_name.to_string();
+
+        ShortcodeDefinition { file_type, tera_name }
+    }
+}
+
+/// Fetches all the shortcodes from the Tera instances
+pub fn get_shortcodes(tera: &Tera) -> HashMap<String, ShortcodeDefinition> {
+    let mut shortcode_definitions = HashMap::new();
+
+    for (identifier, template) in tera.templates.iter() {
+        let (file_type, ext_len) = if template.name.ends_with(".md") {
+            (ShortcodeFileType::Markdown, "md".len())
+        } else {
+            (ShortcodeFileType::Html, "html".len())
+        };
+
+        if template.name.starts_with("shortcodes/") {
+            let head_len = "shortcodes/".len();
+            shortcode_definitions.insert(
+                identifier[head_len..(identifier.len() - ext_len - 1)].to_string(),
+                ShortcodeDefinition::new(file_type, &template.name),
+            );
+            continue;
+        }
+
+        if template.name.starts_with("__zola_builtins/shortcodes/") {
+            let head_len = "__zola_builtins/shortcodes/".len();
+            shortcode_definitions.insert(
+                identifier[head_len..(identifier.len() - ext_len - 1)].to_string(),
+                ShortcodeDefinition::new(file_type, &template.name),
+            );
+            continue;
+        }
+    }
+
+    shortcode_definitions
+}
+
 /// Renders the given template with the given context, but also ensures that, if the default file
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string

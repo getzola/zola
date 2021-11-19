@@ -40,6 +40,8 @@ impl TeraFilter for MarkdownFilter {
         let mut context = RenderContext::from_config(&self.config);
         context.permalinks = Cow::Borrowed(&self.permalinks);
         context.tera = Cow::Borrowed(&self.tera);
+        let def = utils::templates::get_shortcodes(&self.tera);
+        context.set_shortcode_definitions(&def);
 
         let s = try_get_value!("markdown", "value", String, value);
         let inline = match args.get("inline") {
@@ -135,10 +137,12 @@ mod tests {
         let args = HashMap::new();
         let config = Config::default();
         let permalinks = HashMap::new();
-        let mut tera = super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
+        let mut tera =
+            super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
         tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
         let filter = MarkdownFilter { config, permalinks, tera };
         let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);
+        println!("{:?}", result);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"ajpa").unwrap());
     }
