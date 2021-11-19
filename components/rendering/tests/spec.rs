@@ -1,7 +1,7 @@
 mod common;
 
-use std::path::PathBuf;
 use common::ShortCode;
+use std::path::PathBuf;
 use templates::ZOLA_TERA;
 
 macro_rules! test_scenario {
@@ -462,7 +462,6 @@ const CODE_BLOCK_SHORTCODE: ShortCode = ShortCode::new(
 // https://github.com/getzola/zola/issues/1601
 #[test]
 fn works_with_code_block_in_shortcode() {
-
     test_scenario!(
         r#"{% details(summary="hey") %}
 ```
@@ -474,19 +473,15 @@ some code
     );
 }
 
-
 // https://github.com/getzola/zola/issues/1600
 #[test]
 fn shortcodes_work_in_quotes() {
     test_scenario!(
-        r#"> test quote
-> {{ vimeo(id="124313553") }}
-> test quote"#,
+        "> test quote\n> {{ vimeo(id=\"124313553\") }}\n> test quote",
         "<blockquote>\n<p>test quote\n<div >\n    <iframe src=\"//player.vimeo.com/video/124313553\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>\n</div>\n\ntest quote</p>\n</blockquote>\n",
         []
     );
 }
-
 
 const GOOGLE_SHORTCODE: ShortCode = ShortCode::new(
     "google",

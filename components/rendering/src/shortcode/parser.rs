@@ -43,7 +43,7 @@ impl Shortcode {
         new_context.extend(context.clone());
 
         let res = utils::templates::render_template(&tpl_name, tera, new_context, &None)
-            .map_err(|e| errors::Error::chain(format!("Failed to render {} shortcode", name), e))?;
+            .map_err(|e| errors::Error::chain(format!("Failed to render {} shortcode", name), e))?.replace("\r\n", "\n");
 
         Ok(res)
     }
