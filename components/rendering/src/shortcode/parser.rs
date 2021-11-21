@@ -1,11 +1,11 @@
-use std::collections::HashMap;
 use std::ops::Range;
 
-use errors::{Error, Result};
-use logos::{Lexer, Logos};
-use tera::{to_value, Context, Tera, Value};
-
-use crate::shortcode::lexer::{Content, InnerShortcode};
+use errors::{bail, Result};
+use pest::iterators::Pair;
+use pest::Parser;
+use pest_derive::Parser;
+use std::collections::HashMap;
+use tera::{to_value, Context, Map, Tera, Value};
 use utils::templates::ShortcodeFileType;
 
 pub const SHORTCODE_PLACEHOLDER: &str = "||ZOLA_SC_PLACEHOLDER||";
@@ -16,9 +16,9 @@ pub struct Shortcode {
     pub(crate) args: Value,
     pub(crate) span: Range<usize>,
     pub(crate) body: Option<String>,
+    pub(crate) nth: usize,
     // set later down the line, for quick access without needing the definitions
     pub(crate) tera_name: String,
-    pub(crate) nth: usize,
 }
 
 impl Shortcode {
@@ -43,7 +43,8 @@ impl Shortcode {
         new_context.extend(context.clone());
 
         let res = utils::templates::render_template(&tpl_name, tera, new_context, &None)
-            .map_err(|e| errors::Error::chain(format!("Failed to render {} shortcode", name), e))?.replace("\r\n", "\n");
+            .map_err(|e| errors::Error::chain(format!("Failed to render {} shortcode", name), e))?
+            .replace("\r\n", "\n");
 
         Ok(res)
     }
@@ -65,276 +66,301 @@ impl Shortcode {
     }
 }
 
-struct InnerShortcodeParser<'a, 'b> {
-    name: String,
-    source: &'a str,
-    lexer: &'b mut Lexer<'a, InnerShortcode>,
+// This include forces recompiling this source file if the grammar file changes.
+// Uncomment it when doing changes to the .pest file
+const _GRAMMAR: &str = include_str!("../content.pest");
+
+#[derive(Parser)]
+#[grammar = "content.pest"]
+pub struct ContentParser;
+
+fn replace_string_markers(input: &str) -> String {
+    match input.chars().next().unwrap() {
+        '"' => input.replace('"', ""),
+        '\'' => input.replace('\'', ""),
+        '`' => input.replace('`', ""),
+        _ => unreachable!("How did you even get there"),
+    }
 }
 
-impl<'a, 'b> InnerShortcodeParser<'a, 'b> {
-    fn next_or_eof(&mut self) -> Result<InnerShortcode> {
-        match self.lexer.next() {
-            None => Err(Error::msg(format!(
-                "Unexpected end of content while parsing shortcode {}",
-                self.name
-            ))),
-            Some(t) => Ok(t),
-        }
-    }
-
-    fn expect_token(&mut self, expected_token: InnerShortcode) -> Result<()> {
-        let token = self.next_or_eof()?;
-        if token != expected_token {
-            Err(Error::msg(format!(
-                "Unexpected token {} while looking for {} of shortcode {}",
-                token, expected_token, self.name
-            )))
-        } else {
-            Ok(())
-        }
-    }
-
-    fn parse_array(&mut self) -> Result<Value> {
-        let mut values = Vec::new();
-        loop {
-            values.push(self.parse_value()?);
-            match self.next_or_eof()? {
-                InnerShortcode::Comma => {
-                    continue;
-                }
-                InnerShortcode::CloseBracket => break,
-                t => {
-                    return Err(Error::msg(format!(
-                        "Unexpected token {} while looking for `,` or `]` in shortcode {}",
-                        t, self.name
-                    )));
-                }
-            };
-        }
-
-        Ok(Value::Array(values))
-    }
-
-    fn parse_value(&mut self) -> Result<Value> {
-        match self.next_or_eof()? {
-            InnerShortcode::Bool(b) => Ok(Value::Bool(b)),
-            InnerShortcode::Str(s) => Ok(Value::String(s)),
-            InnerShortcode::Integer(i) => Ok(to_value(i).expect("valid i64")),
-            InnerShortcode::Float(f) => Ok(to_value(f).expect("valid f64")),
-            InnerShortcode::OpenBracket => self.parse_array(),
-            t => {
-                return Err(Error::msg(format!(
-                    "Unexpected token {} while parsing arguments of shortcode {}",
-                    t, self.name
-                )));
+fn parse_kwarg_value(pair: Pair<Rule>) -> Value {
+    let mut val = None;
+    for p in pair.into_inner() {
+        match p.as_rule() {
+            Rule::boolean => match p.as_str() {
+                "true" => val = Some(Value::Bool(true)),
+                "false" => val = Some(Value::Bool(false)),
+                _ => unreachable!(),
+            },
+            Rule::string => val = Some(Value::String(replace_string_markers(p.as_str()))),
+            Rule::float => {
+                val = Some(to_value(p.as_str().parse::<f64>().unwrap()).unwrap());
             }
-        }
-    }
-
-    pub fn parse(
-        source: &'a str,
-        lexer: &'b mut Lexer<'a, InnerShortcode>,
-    ) -> Result<(String, Value)> {
-        let mut parser = Self { source, lexer, name: String::new() };
-
-        parser.expect_token(InnerShortcode::Ident)?;
-        parser.name = parser.source[parser.lexer.span()].to_string();
-        parser.expect_token(InnerShortcode::OpenParenthesis)?;
-        let mut arguments = HashMap::new();
-
-        loop {
-            match parser.next_or_eof()? {
-                InnerShortcode::CloseParenthesis => {
-                    break;
-                }
-                InnerShortcode::Comma => {
-                    continue;
-                }
-                InnerShortcode::Ident => {
-                    let ident = source[parser.lexer.span()].to_string();
-                    parser.expect_token(InnerShortcode::Equals)?;
-                    let value = parser.parse_value()?;
-                    arguments.insert(ident, value);
-                }
-                t => {
-                    return Err(Error::msg(format!(
-                        "Unexpected token {} while parsing arguments of shortcode {}",
-                        t, parser.name
-                    )));
-                }
+            Rule::int => {
+                val = Some(to_value(p.as_str().parse::<i64>().unwrap()).unwrap());
             }
-        }
-
-        Ok((parser.name, to_value(arguments).unwrap()))
-    }
-}
-
-pub(crate) struct ShortcodeExtractor<'a> {
-    source: &'a str,
-    output: String,
-    last_lex_end: usize,
-    lexer: Lexer<'a, Content>,
-}
-
-impl<'a> ShortcodeExtractor<'a> {
-    /// Only called if there was a `{{` or a `{%` in the source input
-    pub fn parse(source: &'a str) -> Result<(String, Vec<Shortcode>)> {
-        let sc = Self {
-            source,
-            output: String::with_capacity(source.len()),
-            last_lex_end: 0,
-            lexer: Content::lexer(source),
+            Rule::array => {
+                let mut vals = vec![];
+                for p2 in p.into_inner() {
+                    match p2.as_rule() {
+                        Rule::literal => vals.push(parse_kwarg_value(p2)),
+                        _ => unreachable!("Got something other than literal in an array: {:?}", p2),
+                    }
+                }
+                val = Some(Value::Array(vals));
+            }
+            _ => unreachable!("Unknown literal: {:?}", p),
         };
-
-        sc.process()
     }
 
-    fn expect_token(&mut self, expected_token: Content) -> Result<()> {
-        let token = self.next_or_eof()?;
-        if token != expected_token {
-            Err(Error::msg(format!(
-                "Unexpected token {} while looking for {}",
-                token, expected_token
-            )))
-        } else {
-            Ok(())
-        }
-    }
+    val.unwrap()
+}
 
-    fn next_or_eof(&mut self) -> Result<Content> {
-        match self.lexer.next() {
-            None => Err(Error::msg("Unexpected end of content while parsing shortcodes")),
-            Some(t) => Ok(t),
-        }
-    }
+/// Returns (shortcode_name, kwargs)
+fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Value) {
+    let mut name = None;
+    let mut args = Map::new();
 
-    fn parse_until(&mut self, token: Content) -> Result<()> {
-        loop {
-            let tok = self.next_or_eof()?;
-            if tok == token {
-                return Ok(());
+    for p in pair.into_inner() {
+        match p.as_rule() {
+            Rule::ident => {
+                name = Some(p.as_span().as_str().to_string());
             }
+            Rule::kwarg => {
+                let mut arg_name = None;
+                let mut arg_val = None;
+                for p2 in p.into_inner() {
+                    match p2.as_rule() {
+                        Rule::ident => {
+                            arg_name = Some(p2.as_span().as_str().to_string());
+                        }
+                        Rule::literal => {
+                            arg_val = Some(parse_kwarg_value(p2));
+                        }
+                        _ => unreachable!("Got something unexpected in a kwarg: {:?}", p2),
+                    }
+                }
+
+                args.insert(arg_name.unwrap(), arg_val.unwrap());
+            }
+            _ => unreachable!("Got something unexpected in a shortcode: {:?}", p),
         }
     }
+    (name.unwrap(), Value::Object(args))
+}
 
-    fn process(mut self) -> Result<(String, Vec<Shortcode>)> {
-        let mut shortcodes = Vec::new();
-        let mut nths = HashMap::new();
+pub fn parse_for_shortcodes(content: &str) -> Result<(String, Vec<Shortcode>)> {
+    let mut shortcodes = Vec::new();
+    let mut nths = HashMap::new();
+    let mut get_invocation_count = |name: &str| {
+        let nth = nths.entry(String::from(name)).or_insert(0);
+        *nth += 1;
+        *nth
+    };
+    let mut output = String::with_capacity(content.len());
 
-        loop {
-            // TODO: some code duplications here but nothing major
-            match self.lexer.next() {
-                None => {
-                    // We're done, pushing whatever's left
-                    self.output.push_str(&self.source[self.last_lex_end..]);
-                    break;
-                }
-                Some(Content::InlineShortcodeStart) => {
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().start]);
-                    let start = self.output.len();
-                    let mut inner_lexer = self.lexer.morph();
-                    let (name, args) = InnerShortcodeParser::parse(self.source, &mut inner_lexer)?;
-                    self.lexer = inner_lexer.morph();
-                    self.expect_token(Content::InlineShortcodeEnd)?;
-                    self.output.push_str(SHORTCODE_PLACEHOLDER);
-                    self.last_lex_end = self.lexer.span().end;
-                    let nth = *nths.entry(name.to_owned()).and_modify(|e| *e += 1).or_insert(1);
-                    shortcodes.push(Shortcode {
-                        name,
-                        args,
-                        span: start..(start + SHORTCODE_PLACEHOLDER.len()),
-                        body: None,
-                        nth,
-                        tera_name: String::new(),
-                    });
-                }
-                Some(Content::IgnoredInlineShortcodeStart) => {
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().start]);
-                    self.output.push_str("{{");
-                    self.last_lex_end = self.lexer.span().end;
-                    self.parse_until(Content::IgnoredInlineShortcodeEnd)?;
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().start]);
-                    self.output.push_str("}}");
-                    self.last_lex_end = self.lexer.span().end;
-                }
-                Some(Content::ShortcodeWithBodyStart) => {
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().start]);
-                    let start = self.output.len();
-                    let mut inner_lexer = self.lexer.morph();
-                    let (name, args) = InnerShortcodeParser::parse(self.source, &mut inner_lexer)?;
-                    self.lexer = inner_lexer.morph();
-                    self.expect_token(Content::ShortcodeWithBodyEnd)?;
-                    let body_start = self.lexer.span().end;
-                    self.parse_until(Content::ShortcodeWithBodyClosing)?;
-                    // We trim the start to avoid newlines that users would have put to make the shortcode pretty in md, eg
-                    // {% hello() %}
-                    // body
-                    // {% end %}
-                    // it's unlikely that the user wanted/expected a newline before or after "body"
-                    let body = self.source[body_start..self.lexer.span().start].trim().to_owned();
-                    self.last_lex_end = self.lexer.span().end;
-                    self.output.push_str(SHORTCODE_PLACEHOLDER);
-                    let nth = *nths.entry(name.to_owned()).and_modify(|e| *e += 1).or_insert(1);
-                    shortcodes.push(Shortcode {
-                        name,
-                        args,
-                        span: start..(start + SHORTCODE_PLACEHOLDER.len()),
-                        body: Some(body),
-                        nth,
-                        tera_name: String::new(),
-                    });
-                }
-                Some(Content::IgnoredShortcodeWithBodyStart) => {
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().start]);
-                    self.output.push_str("{%");
-                    self.last_lex_end = self.lexer.span().end;
-                    self.parse_until(Content::IgnoredShortcodeWithBodyEnd)?;
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().start]);
-                    self.output.push_str("%}");
-                    self.last_lex_end = self.lexer.span().end;
-                    self.parse_until(Content::IgnoredShortcodeWithBodyClosing)?;
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().start]);
-                    self.output.push_str("{% end %}");
-                    self.last_lex_end = self.lexer.span().end;
-                }
-                Some(Content::Error) => {
-                    // Likely just a `*`, `/`, `{`
-                    self.output.push_str(&self.source[self.last_lex_end..self.lexer.span().end]);
-                    self.last_lex_end = self.lexer.span().end;
-                }
-                Some(c) => {
-                    return Err(Error::msg(format!(
-                        "Unexpected token {} while parsing shortcodes",
-                        c
-                    )));
+    let mut pairs = match ContentParser::parse(Rule::page, content) {
+        Ok(p) => p,
+        Err(e) => {
+            let fancy_e = e.renamed_rules(|rule| match *rule {
+                Rule::int => "an integer".to_string(),
+                Rule::float => "a float".to_string(),
+                Rule::string => "a string".to_string(),
+                Rule::literal => "a literal (int, float, string, bool)".to_string(),
+                Rule::array => "an array".to_string(),
+                Rule::kwarg => "a keyword argument".to_string(),
+                Rule::ident => "an identifier".to_string(),
+                Rule::inline_shortcode => "an inline shortcode".to_string(),
+                Rule::ignored_inline_shortcode => "an ignored inline shortcode".to_string(),
+                Rule::sc_body_start => "the start of a shortcode".to_string(),
+                Rule::ignored_sc_body_start => "the start of an ignored shortcode".to_string(),
+                Rule::text => "some text".to_string(),
+                Rule::EOI => "end of input".to_string(),
+                Rule::double_quoted_string => "double quoted string".to_string(),
+                Rule::single_quoted_string => "single quoted string".to_string(),
+                Rule::backquoted_quoted_string => "backquoted quoted string".to_string(),
+                Rule::boolean => "a boolean (true, false)".to_string(),
+                Rule::all_chars => "a alphanumerical character".to_string(),
+                Rule::kwargs => "a list of keyword arguments".to_string(),
+                Rule::sc_def => "a shortcode definition".to_string(),
+                Rule::shortcode_with_body => "a shortcode with body".to_string(),
+                Rule::ignored_shortcode_with_body => "an ignored shortcode with body".to_string(),
+                Rule::sc_body_end => "{% end %}".to_string(),
+                Rule::ignored_sc_body_end => "{%/* end */%}".to_string(),
+                Rule::text_in_body_sc => "text in a shortcode body".to_string(),
+                Rule::text_in_ignored_body_sc => "text in an ignored shortcode body".to_string(),
+                Rule::content => "some content".to_string(),
+                Rule::page => "a page".to_string(),
+                Rule::WHITESPACE => "whitespace".to_string(),
+            });
+            bail!("{}", fancy_e);
+        }
+    };
+
+    // We have at least a `page` pair
+    for p in pairs.next().unwrap().into_inner() {
+        match p.as_rule() {
+            Rule::text => output.push_str(p.as_span().as_str()),
+            Rule::inline_shortcode => {
+                let start = output.len();
+                let (name, args) = parse_shortcode_call(p);
+                let nth = get_invocation_count(&name);
+                shortcodes.push(Shortcode {
+                    name,
+                    args,
+                    span: start..(start + SHORTCODE_PLACEHOLDER.len()),
+                    body: None,
+                    nth,
+                    tera_name: String::new(),
+                });
+                output.push_str(SHORTCODE_PLACEHOLDER);
+            }
+            Rule::shortcode_with_body => {
+                let start = output.len();
+                let mut inner = p.into_inner();
+                // 3 items in inner: call, body, end
+                // we don't care about the closing tag
+                let (name, args) = parse_shortcode_call(inner.next().unwrap());
+                let body = inner.next().unwrap().as_span().as_str().trim();
+                let nth = get_invocation_count(&name);
+                shortcodes.push(Shortcode {
+                    name,
+                    args,
+                    span: start..(start + SHORTCODE_PLACEHOLDER.len()),
+                    body: Some(body.to_string()),
+                    nth,
+                    tera_name: String::new(),
+                });
+                output.push_str(SHORTCODE_PLACEHOLDER)
+            }
+            Rule::ignored_inline_shortcode => {
+                output.push_str(
+                    &p.as_span().as_str().replacen("{{/*", "{{", 1).replacen("*/}}", "}}", 1),
+                );
+            }
+            Rule::ignored_shortcode_with_body => {
+                for p2 in p.into_inner() {
+                    match p2.as_rule() {
+                        Rule::ignored_sc_body_start | Rule::ignored_sc_body_end => {
+                            output.push_str(
+                                &p2.as_span()
+                                    .as_str()
+                                    .replacen("{%/*", "{%", 1)
+                                    .replacen("*/%}", "%}", 1),
+                            );
+                        }
+                        Rule::text_in_ignored_body_sc => output.push_str(p2.as_span().as_str()),
+                        _ => unreachable!("Got something weird in an ignored shortcode: {:?}", p2),
+                    }
                 }
             }
+            Rule::EOI => (),
+            _ => unreachable!("unexpected page rule: {:?}", p.as_rule()),
         }
-
-        Ok((self.output, shortcodes))
     }
+
+    Ok((output, shortcodes))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // From maplit
-    macro_rules! hashmap {
-    (@single $($x:tt)*) => (());
-        (@count $($rest:expr),*) => (<[()]>::len(&[$(hashmap!(@single $rest)),*]));
-
-        ($($key:expr => $value:expr,)+) => { hashmap!($($key => $value),+) };
-        ($($key:expr => $value:expr),*) => {
-            {
-                let _cap = hashmap!(@count $($key),*);
-                let mut _map = ::std::collections::HashMap::with_capacity(_cap);
-                $(
-                    let _ = _map.insert($key, $value);
-                )*
-                _map
+    macro_rules! assert_lex_rule {
+        ($rule: expr, $input: expr) => {
+            let res = ContentParser::parse($rule, $input);
+            println!("{:?}", $input);
+            println!("{:#?}", res);
+            if res.is_err() {
+                println!("{}", res.unwrap_err());
+                panic!();
             }
+            assert!(res.is_ok());
+            assert_eq!(res.unwrap().last().unwrap().as_span().end(), $input.len());
         };
+    }
+
+    #[test]
+    fn lex_text() {
+        let inputs = vec!["Hello world", "HEllo \n world", "Hello 1 2 true false 'hey'"];
+        for i in inputs {
+            assert_lex_rule!(Rule::text, i);
+        }
+    }
+
+    #[test]
+    fn lex_inline_shortcode() {
+        let inputs = vec![
+            "{{ youtube() }}",
+            "{{ youtube(id=1, autoplay=true, url='hey') }}",
+            "{{ youtube(id=1, \nautoplay=true, url='hey', array=[]) }}",
+            "{{ youtube(id=1, \nautoplay=true, url='hey', multi_aray=[[]]) }}",
+        ];
+        for i in inputs {
+            assert_lex_rule!(Rule::inline_shortcode, i);
+        }
+    }
+
+    #[test]
+    fn lex_inline_ignored_shortcode() {
+        let inputs = vec![
+            "{{/* youtube() */}}",
+            "{{/* youtube(id=1, autoplay=true, url='hey') */}}",
+            "{{/* youtube(id=1, \nautoplay=true, \nurl='hey') */}}",
+        ];
+        for i in inputs {
+            assert_lex_rule!(Rule::ignored_inline_shortcode, i);
+        }
+    }
+
+    #[test]
+    fn lex_shortcode_with_body() {
+        let inputs = vec![
+            r#"{% youtube() %}
+            Some text
+            {% end %}"#,
+            r#"{% youtube(id=1,
+            autoplay=true, url='hey') %}
+            Some text
+            {% end %}"#,
+        ];
+        for i in inputs {
+            assert_lex_rule!(Rule::shortcode_with_body, i);
+        }
+    }
+
+    #[test]
+    fn lex_ignored_shortcode_with_body() {
+        let inputs = vec![
+            r#"{%/* youtube() */%}
+            Some text
+            {%/* end */%}"#,
+            r#"{%/* youtube(id=1,
+            autoplay=true, url='hey') */%}
+            Some text
+            {%/* end */%}"#,
+        ];
+        for i in inputs {
+            assert_lex_rule!(Rule::ignored_shortcode_with_body, i);
+        }
+    }
+
+    #[test]
+    fn lex_page() {
+        let inputs = vec![
+            "Some text and a shortcode `{{/* youtube() */}}`",
+            "{{ youtube(id=1, autoplay=true, url='hey') }}",
+            "{{ youtube(id=1, \nautoplay=true, url='hey') }} that's it",
+            r#"
+            This is a test
+            {% hello() %}
+            Body {{ var }}
+            {% end %}
+            "#,
+        ];
+        for i in inputs {
+            assert_lex_rule!(Rule::page, i);
+        }
     }
 
     #[test]
@@ -356,55 +382,23 @@ mod tests {
     }
 
     #[test]
-    fn can_parse_inner_shortcode() {
-        let input = vec![
-            // txt, name, args
-            ("hello() }}", "hello", HashMap::new()),
-            ("hello_lo1() }}", "hello_lo1", HashMap::new()),
-            (
-                " shortcode(name='bob', age=45) }}",
-                "shortcode",
-                hashmap!("name".to_owned() => Value::String("bob".to_owned()), "age".to_owned() => to_value(45).unwrap()),
-            ),
-            (
-                " shortcode(admin=true, age=45.1) }}",
-                "shortcode",
-                hashmap!("admin".to_owned() => Value::Bool(true), "age".to_owned() => to_value(45.1).unwrap()),
-            ),
-            (
-                "with_array(hello=['true', false]) }}",
-                "with_array",
-                hashmap!("hello".to_owned() => Value::Array(vec![Value::String("true".to_owned()), Value::Bool(false)])),
-            ),
-            (
-                "with_array(hello=['true', [true, false]]) }}",
-                "with_array",
-                hashmap!("hello".to_owned() => Value::Array(vec![Value::String("true".to_owned()), Value::Array(vec![Value::Bool(true), Value::Bool(false)])])),
-            ),
-        ];
-
-        for (txt, expected_name, expected_args) in input {
-            let mut lexer = InnerShortcode::lexer(txt);
-            let (name, args) = InnerShortcodeParser::parse(txt, &mut lexer).unwrap();
-            assert_eq!(&name, expected_name);
-            assert_eq!(args, to_value(expected_args).unwrap());
-        }
-    }
-
-    #[test]
     fn can_extract_basic_inline_shortcode_with_args() {
-        let (out, shortcodes) = ShortcodeExtractor::parse(
-            "Inline shortcode: {{ hello(string='hey', int=1, float=2.1, bool=true) }} hey",
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Inline shortcode: {{ hello(string='hey', int=1, float=2.1, bool=true, array=[true, false]) }} hey",
         )
         .unwrap();
         assert_eq!(out, format!("Inline shortcode: {} hey", SHORTCODE_PLACEHOLDER));
         assert_eq!(shortcodes.len(), 1);
         assert_eq!(shortcodes[0].name, "hello");
-        assert_eq!(shortcodes[0].args.as_object().unwrap().len(), 4);
+        assert_eq!(shortcodes[0].args.as_object().unwrap().len(), 5);
         assert_eq!(shortcodes[0].args["string"], Value::String("hey".to_string()));
         assert_eq!(shortcodes[0].args["bool"], Value::Bool(true));
         assert_eq!(shortcodes[0].args["int"], to_value(1).unwrap());
         assert_eq!(shortcodes[0].args["float"], to_value(2.1).unwrap());
+        assert_eq!(
+            shortcodes[0].args["array"],
+            Value::Array(vec![Value::Bool(true), Value::Bool(false)])
+        );
         assert_eq!(shortcodes[0].span, 18..(18 + SHORTCODE_PLACEHOLDER.len()));
         assert_eq!(shortcodes[0].nth, 1);
     }
@@ -412,22 +406,26 @@ mod tests {
     #[test]
     fn can_unignore_ignored_inline_shortcode() {
         let (out, shortcodes) =
-            ShortcodeExtractor::parse("Hello World {{/* youtube() */}} hey").unwrap();
+            parse_for_shortcodes("Hello World {{/* youtube() */}} hey").unwrap();
         assert_eq!(out, "Hello World {{ youtube() }} hey");
         assert_eq!(shortcodes.len(), 0);
     }
 
     #[test]
     fn can_extract_shortcode_with_body() {
-        let (out, shortcodes) = ShortcodeExtractor::parse(
-            "Body shortcode\n {% quote(author='Bobby') %}DROP TABLES;{% end %} \n hey",
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Body shortcode\n {% quote(author='Bobby', array=[[true]]) %}DROP TABLES;{% end %} \n hey",
         )
         .unwrap();
         assert_eq!(out, format!("Body shortcode\n {} \n hey", SHORTCODE_PLACEHOLDER));
         assert_eq!(shortcodes.len(), 1);
         assert_eq!(shortcodes[0].name, "quote");
-        assert_eq!(shortcodes[0].args.as_object().unwrap().len(), 1);
+        assert_eq!(shortcodes[0].args.as_object().unwrap().len(), 2);
         assert_eq!(shortcodes[0].args["author"], Value::String("Bobby".to_string()));
+        assert_eq!(
+            shortcodes[0].args["array"],
+            Value::Array(vec![Value::Array(vec![Value::Bool(true)])])
+        );
         assert_eq!(shortcodes[0].body, Some("DROP TABLES;".to_owned()));
         assert_eq!(shortcodes[0].span, 16..(16 + SHORTCODE_PLACEHOLDER.len()));
         assert_eq!(shortcodes[0].nth, 1);
@@ -436,7 +434,7 @@ mod tests {
     #[test]
     fn can_unignore_ignored_shortcode_with_body() {
         let (out, shortcodes) =
-            ShortcodeExtractor::parse("Hello World {%/* youtube() */%} Somebody {%/* end */%} hey")
+            parse_for_shortcodes("Hello World {%/* youtube() */%} Somebody {%/* end */%} hey")
                 .unwrap();
         assert_eq!(out, "Hello World {% youtube() %} Somebody {% end %} hey");
         assert_eq!(shortcodes.len(), 0);
@@ -444,7 +442,7 @@ mod tests {
 
     #[test]
     fn can_extract_multiple_shortcodes_and_increment_nth() {
-        let (out, shortcodes) = ShortcodeExtractor::parse(
+        let (out, shortcodes) = parse_for_shortcodes(
             "Hello World {% youtube() %} Somebody {% end %} {{ hello() }}\n {{hello()}}",
         )
         .unwrap();
@@ -463,7 +461,7 @@ mod tests {
 
     #[test]
     fn can_handle_multiple_shortcodes() {
-        let (_, shortcodes) = ShortcodeExtractor::parse(
+        let (_, shortcodes) = parse_for_shortcodes(
             r#"
         {{ youtube(id="ub36ffWAqgQ") }}
         {{ youtube(id="ub36ffWAqgQ", autoplay=true) }}
@@ -473,45 +471,5 @@ mod tests {
         )
         .unwrap();
         assert_eq!(shortcodes.len(), 5);
-    }
-
-    #[test]
-    fn can_provide_good_error_messages() {
-        let tests = vec![
-            ("{{ hey()", "Unexpected end of content while parsing shortcodes"),
-            ("{% hey()", "Unexpected end of content while parsing shortcodes"),
-            ("{{ hey(=", "Unexpected token `=` while parsing arguments of shortcode hey"),
-            ("{{ hey(ho==", "Unexpected token `=` while parsing arguments of shortcode hey"),
-            ("{{ hey(ho=1h", "Unexpected end of content while parsing shortcode hey"),
-            ("{{ hey)", "Unexpected token `)` while looking for `(` of shortcode hey"),
-            ("{{ hey(ho=(", "Unexpected token `(` while parsing arguments of shortcode hey"),
-            ("hello }}", "Unexpected token `}}` while parsing shortcodes"),
-            ("hello %}", "Unexpected token `%}` while parsing shortcodes"),
-            ("hello {% end %}", "Unexpected token `{% end %}` while parsing shortcodes"),
-        ];
-
-        for (t, expected) in tests {
-            println!("Testing: {}", t);
-            let res = ShortcodeExtractor::parse(t);
-            assert!(res.is_err());
-            let err = res.unwrap_err();
-            assert_eq!(expected, err.to_string());
-        }
-    }
-
-    #[test]
-    fn can_parse_ok_with_problematic_chars() {
-        let inputs = vec![
-            ("* a\n* b", "* a\n* b"),
-            ("a regex {a,b}", "a regex {a,b}"),
-            ("a slash //", "a slash //"),
-            ("a slash */", "a slash */"),
-            ("%a percent%", "%a percent%"),
-        ];
-
-        for (input, expected) in inputs {
-            let (out, _) = ShortcodeExtractor::parse(input).unwrap();
-            assert_eq!(out, expected);
-        }
     }
 }

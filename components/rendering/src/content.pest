@@ -25,7 +25,7 @@ string = @{
 
 boolean = { "true" | "false" }
 
-literal = { boolean | string | float | int }
+literal = { boolean | string | float | int | array }
 array = { "[" ~ (literal  ~ ",")* ~ literal? ~ "]"}
 
 /// Idents
@@ -40,7 +40,7 @@ ident = @{
 
 // shortcode is abbreviated to sc to keep things short
 
-kwarg   = { ident ~ "=" ~ (literal | array) }
+kwarg   = { ident ~ "=" ~ literal }
 kwargs  = _{ kwarg ~ ("," ~ kwarg )* }
 sc_def  = _{ ident ~ "(" ~ kwargs* ~ ")" }
 

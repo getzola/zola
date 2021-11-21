@@ -11,7 +11,7 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
-use crate::shortcode::parser::{Shortcode, SHORTCODE_PLACEHOLDER};
+use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -211,6 +211,7 @@ pub fn markdown_to_html(
                                     }
 
                                     let shortcode = next_shortcode.take().unwrap();
+
                                     match shortcode.render(&context.tera, &context.tera_context) {
                                         Ok(s) => {
                                             events.push(Event::Html(s.into()));
@@ -317,7 +318,6 @@ pub fn markdown_to_html(
                     });
                 }
                 Event::Html(text) => {
-                    println!("Got text: {:?}", text);
                     if text.contains("<!-- more -->") {
                         has_summary = true;
                         events.push(Event::Html(CONTINUE_READING.into()));
