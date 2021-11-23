@@ -73,6 +73,7 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Response<Body>> {
+    let original_root = root.clone();
     let mut path = RelativePathBuf::new();
     // https://zola.discourse.group/t/percent-encoding-for-slugs/736
     let decoded = match percent_encoding::percent_decode_str(req.uri().path()).decode_utf8() {
@@ -111,6 +112,11 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     // Remove the first slash from the request path
     // otherwise `PathBuf` will interpret it as an absolute path
     root.push(&decoded[1..]);
+
+    // Ensure we are only looking for things in our public folder
+    if !root.starts_with(original_root) {
+        return Ok(not_found());
+    }
 
     let metadata = match tokio::fs::metadata(root.as_path()).await {
         Err(err) => return Ok(io_error(err)),

@@ -7,8 +7,9 @@
 - Support custom syntax highlighting themes
 - Add a `required` argument to taxonomy template functions to allow them to return empty taxonomies
 - Support colocating subfolders
-- shorcodes and `anchor-link.html` can now access the `lang` context
+- Shorcodes and `anchor-link.html` can now access the `lang` context
 - Add prompt before replacing the output directory with `zola build` if the `output-dir` flag is given
+- Shortcode handling has been completely rewritten, solving many issues
 
 ## 0.14.1 (2021-08-24)
 
