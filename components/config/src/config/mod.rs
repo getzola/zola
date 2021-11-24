@@ -62,6 +62,10 @@ pub struct Config {
     pub compile_sass: bool,
     /// Whether to minify the html output
     pub minify_html: bool,
+	/// Whether to optimize png files
+	pub optimize_png: bool,
+	/// level to optimize png files if applicable
+	pub optimize_png_level: u8,
     /// Whether to build the search index for the content
     pub build_search_index: bool,
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
@@ -346,6 +350,8 @@ impl Default for Config {
             taxonomies: Vec::new(),
             compile_sass: false,
             minify_html: false,
+			optimize_png: false,
+			optimize_png_level: 3,
             mode: Mode::Build,
             build_search_index: false,
             ignored_content: Vec::new(),

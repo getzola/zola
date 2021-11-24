@@ -48,6 +48,15 @@ compile_sass = false
 # When set to "true", the generated HTML files are minified.
 minify_html = false
 
+# When set to "true", all png files in static and content are optimized. 
+# Note: when set png files are only optimized during zola build, never using zola serve, because it is too slow.
+optimize_png = false
+
+# When optimize_png is set to true this value defined the level of optimization of png files. Allowed values 1-6.
+# 1 is the mode with the least amount of optimization, but faster.
+# 6 is the mode with the most optimization but very slow.
+optimize_png_level = 3
+
 # A list of glob patterns specifying asset files to ignore when the content
 # directory is processed. Defaults to none, which means that all asset files are
 # copied over to the `public` directory.
