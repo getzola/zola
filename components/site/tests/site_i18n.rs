@@ -173,6 +173,8 @@ fn can_build_multilingual_site() {
     assert!(file_exists!(public, "search_index.en.js"));
     assert!(file_exists!(public, "search_index.it.js"));
     assert!(!file_exists!(public, "search_index.fr.js"));
+	// explicitly close _tmp_dir to prevent it from being deleted prematurely
+	_tmp_dir.close();
 }
 
 #[test]
@@ -197,4 +199,6 @@ fn correct_translations_on_all_pages() {
         // Ensure output file contains all translations URLs
         assert!(ensure_translations_in_output(&site, path, &link));
     }
+	// explicitly close _tmp_dir to prevent it from being deleted prematurely
+	_tmp_dir.close();
 }
