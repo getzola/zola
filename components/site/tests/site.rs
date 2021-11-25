@@ -4,13 +4,16 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::metadata;
 use std::path::Path;
+use serial_test::serial;
 
 use common::{build_site, build_site_with_setup};
 use config::Taxonomy;
 use site::sitemap;
 use site::Site;
 
+
 #[test]
+#[serial]
 fn can_parse_site() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
@@ -104,6 +107,7 @@ fn can_parse_site() {
 }
 
 #[test]
+#[serial]
 fn can_build_site_without_live_reload() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
@@ -207,9 +211,11 @@ fn can_build_site_without_live_reload() {
         "robots.txt",
         "Sitemap: https://replace-this-with-your-url.com/sitemap.xml"
     ));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_with_live_reload_and_drafts() {
     let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.enable_live_reload(1000);
@@ -264,9 +270,11 @@ fn can_build_site_with_live_reload_and_drafts() {
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
     assert!(file_exists!(public, "secret_section/page/index.html"));
     assert!(file_exists!(public, "secret_section/secret_sub_section/hello/index.html"));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_with_pngoptimizations() {
 	let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
@@ -291,9 +299,11 @@ fn can_build_site_with_pngoptimizations() {
 	assert!(&public.exists());
 	assert!(metadata(&png_path_src).unwrap().len() > metadata(png_path_dest).unwrap().len(), "png from static  was not optimized.");
 	assert!(metadata(&png_path_src).unwrap().len() > metadata(png_path_dest_posts).unwrap().len(), "png from static  was not optimized.");
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_with_taxonomies() {
     let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
@@ -358,9 +368,11 @@ fn can_build_site_with_taxonomies() {
         "sitemap.xml",
         "<loc>https://replace-this-with-your-url.com/categories/a/</loc>"
     ));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_and_insert_anchor_links() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
@@ -371,9 +383,11 @@ fn can_build_site_and_insert_anchor_links() {
         "posts/something-else/index.html",
         "<h1 id=\"title\"><a class=\"zola-anchor\" href=\"#title\""
     ));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_with_pagination_for_section() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
@@ -497,9 +511,11 @@ fn can_build_site_with_pagination_for_section() {
         "posts/tutorials/index.html",
         &current_path("/posts/tutorials/")
     ));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_with_pagination_for_index() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
@@ -565,9 +581,11 @@ fn can_build_site_with_pagination_for_index() {
     assert!(file_contains!(public, "index.html", &current_path("/")));
     assert!(file_contains!(public, "page/2/index.html", &current_path("/page/2/")));
     assert!(file_contains!(public, "paginated/index.html", &current_path("/paginated/")));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_with_pagination_for_taxonomy() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.config.taxonomies.push(Taxonomy {
@@ -650,9 +668,11 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(public, "tags/index.html", &current_path("/tags/")));
     assert!(file_contains!(public, "tags/a/index.html", &current_path("/tags/a/")));
     assert!(file_contains!(public, "tags/a/page/2/index.html", &current_path("/tags/a/page/2/")));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_feeds() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
@@ -670,9 +690,11 @@ fn can_build_feeds() {
     assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Rust"));
     // It doesn't contain articles from other sections
     assert!(!file_contains!(public, "posts/tutorials/programming/atom.xml", "Extra Syntax"));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_search_index() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.config.build_search_index = true;
@@ -682,18 +704,22 @@ fn can_build_search_index() {
     assert!(Path::new(&public).exists());
     assert!(file_exists!(public, "elasticlunr.min.js"));
     assert!(file_exists!(public, "search_index.en.js"));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_with_extra_syntaxes() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
     assert!(&public.exists());
     assert!(file_exists!(public, "posts/extra-syntax/index.html"));
     assert!(file_contains!(public, "posts/extra-syntax/index.html", r#"<span style="color:"#));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_apply_page_templates() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");
@@ -739,6 +765,7 @@ fn can_apply_page_templates() {
 
 // https://github.com/getzola/zola/issues/571
 #[test]
+#[serial]
 fn can_build_site_custom_builtins_from_theme() {
     let (_, _tmp_dir, public) = build_site("test_site");
 
@@ -746,9 +773,11 @@ fn can_build_site_custom_builtins_from_theme() {
     // 404.html is a theme template.
     assert!(file_exists!(public, "404.html"));
     assert!(file_contains!(public, "404.html", "Oops"));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_build_site_with_html_minified() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.config.minify_html = true;
@@ -762,22 +791,28 @@ fn can_build_site_with_html_minified() {
         "index.html",
         "<!doctype html><html lang=en><head><meta charset=UTF-8>"
     ));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_ignore_markdown_content() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(!file_exists!(public, "posts/ignored/index.html"));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_cachebust_static_files() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(file_contains!(public, "index.html",
         "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d0fde18e82b04d7bca1881d10846c769b486640da3de9\" rel=\"stylesheet\">"));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn can_get_hash_for_static_files() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(file_contains!(
@@ -790,9 +825,11 @@ fn can_get_hash_for_static_files() {
         "index.html",
         "integrity=\"sha384-AUIvMeqnIabErIxvoJon3ZJZ4N/PPHWT14ENkSqd5covWC35eFN7zRD3aJbbYfu5\""
     ));
+	_tmp_dir.close();
 }
 
 #[test]
+#[serial]
 fn check_site() {
     let (mut site, _tmp_dir, _public) = build_site("test_site");
 
@@ -804,6 +841,7 @@ fn check_site() {
 
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
+	_tmp_dir.close();
 }
 
 // Follows test_site/themes/sample/templates/current_path.html

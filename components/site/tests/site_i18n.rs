@@ -1,11 +1,13 @@
 mod common;
 
 use std::env;
+use serial_test::serial;
 
 use common::*;
 use site::Site;
 
 #[test]
+#[serial]
 fn can_parse_multilingual_site() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site_i18n");
@@ -56,6 +58,7 @@ fn can_parse_multilingual_site() {
 }
 
 #[test]
+#[serial]
 fn can_build_multilingual_site() {
     let (_, _tmp_dir, public) = build_site("test_site_i18n");
 
@@ -178,6 +181,7 @@ fn can_build_multilingual_site() {
 }
 
 #[test]
+#[serial]
 fn correct_translations_on_all_pages() {
     let (site, _tmp_dir, public) = build_site("test_site_i18n");
 

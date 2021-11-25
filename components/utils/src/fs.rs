@@ -131,15 +131,17 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool, configoptim
 								format!("Was not able to copy file {} to {}", src.display(), dest.display()),
 								e,
 							)})? ;
+							set_file_mtime(&dest, src_mtime)?;
 					}
 					_ => {copy(src, &dest).map_err(|e| {
 							Error::chain(
 								format!("Was not able to copy file {} to {}", src.display(), dest.display()),
 								e,
 							)})?;
+							set_file_mtime(&dest, src_mtime)?;
 						}
 				}			
-				set_file_mtime(&dest, src_mtime)?;
+				
             }
         } else {
 			match src.extension() {
@@ -149,15 +151,17 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool, configoptim
 							format!("Was not able to copy file {} to {}", src.display(), dest.display()),
 							e,
 						)})? ;
+						set_file_mtime(&dest, src_mtime)?;	
 				}
 				_ => {copy(src, &dest).map_err(|e| {
 						Error::chain(
 							format!("Was not able to copy file {} to {}", src.display(), dest.display()),
 							e,
 						)})?;
+						set_file_mtime(&dest, src_mtime)?;	
 					}
 			}
-			set_file_mtime(&dest, src_mtime)?;		
+				
 		}
 	}
     Ok(())
