@@ -225,10 +225,19 @@ mod tests {
     use std::io::Write;
     use std::path::PathBuf;
     use std::str::FromStr;
+    use tempfile::{tempdir_in,TempDir};
 
-    use tempfile::tempdir_in;
+    use super::{copy_file,copy_file_if_needed};
 
-    use super::copy_file;
+	#[test]
+	fn test_copy_file_png_optimization() {
+		let base_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+		let png_path_src = base_path.join("test-files").join("zola-first-serve.png");
+		let tmp_dir = TempDir::new();
+		let png_path_dest = tmp_dir.unwrap().path().join("zola-first-serve.png");
+		copy_file_if_needed(&png_path_src, &png_path_dest, false, Some(2));
+		assert!(metadata(png_path_src).unwrap().len() > metadata(png_path_dest).unwrap().len(), "png was not optimized.");
+	}
 
     #[test]
     fn test_copy_file_timestamp_preserved() {
