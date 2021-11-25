@@ -2,6 +2,7 @@ mod common;
 
 use std::collections::HashMap;
 use std::env;
+use std::fs::metadata;
 use std::path::Path;
 
 use common::{build_site, build_site_with_setup};
@@ -263,6 +264,33 @@ fn can_build_site_with_live_reload_and_drafts() {
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
     assert!(file_exists!(public, "secret_section/page/index.html"));
     assert!(file_exists!(public, "secret_section/secret_sub_section/hello/index.html"));
+}
+
+#[test]
+fn can_build_site_with_pngoptimizations() {
+	let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.load().unwrap();
+        {
+			site.config.optimize_png = true;
+        }
+        site.populate_taxonomies().unwrap();
+        (site, false)
+    });
+	let mut png_path_src = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+	let mut png_path_src_posts = png_path_src.clone();
+    png_path_src.push("test_site");
+	png_path_src.push("static");
+	png_path_src.push("zola-first-serve.png");
+	let png_path_dest = public.join("zola-first-serve.png");
+	
+	png_path_src_posts.push("test_site");
+	png_path_src_posts.push("content");
+	png_path_src_posts.push("posts");
+	png_path_src_posts.push("Jamstack_Logo_DarkBG_Solid.png");
+	let png_path_dest_posts = public.join("posts").join("Jamstack_Logo_DarkBG_Solid.png");
+	assert!(&public.exists());
+	assert!(metadata(&png_path_src).unwrap().len() > metadata(png_path_dest).unwrap().len(), "png from static  was not optimized.");
+	assert!(metadata(&png_path_src).unwrap().len() > metadata(png_path_dest_posts).unwrap().len(), "png from static  was not optimized.");
 }
 
 #[test]
