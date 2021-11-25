@@ -50,6 +50,7 @@ minify_html = false
 
 # When set to "true", all png files in static and content are optimized. 
 # Note: when set png files are only optimized during zola build, never using zola serve, because it is too slow.
+# Warning enabling this option can slow down the build process.
 optimize_png = false
 
 # When optimize_png is set to true this value defined the level of optimization of png files. Allowed values 1-6.
@@ -246,7 +247,7 @@ Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 
 Alternatively you can use the `extra_syntaxes_and_themes` configuration option to load your own custom themes from a .tmTheme file.
-See [Syntax Highlighting](@/syntax-highlighting.md) for more details.
+See [Syntax Highlighting](@/documentation/content/syntax-highlighting.md) for more details.
 
 ## Slugification strategies
 
