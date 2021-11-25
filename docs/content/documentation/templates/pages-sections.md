@@ -19,7 +19,6 @@ content: String;
 title: String?;
 description: String?;
 date: String?;
-// `updated` will be the same as `date` if `date` is specified but `updated` is not in front-matter
 updated: String?;
 slug: String;
 path: String;

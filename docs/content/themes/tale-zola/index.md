@@ -3,11 +3,11 @@
 title = "tale-zola"
 description = "Tala-Zola is a minimal Zola theme helping you to build a nice and seo-ready blog."
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2021-09-07T11:12:53+03:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2021-09-07T11:12:53+03:00
+updated = 2021-09-07T11:12:53+03:00
 repository = "https://github.com/aaranxu/tale-zola.git"
 homepage = "https://github.com/aaranxu/tale-zola"
 minimum_version = "0.13.0"
@@ -198,6 +198,15 @@ Use Google Analytics. Add your own Google Analytics ID.
 google_analytics = "UA—XXXXXXXX-X"
 ```
 
+Whether to use Disqus globally and set to your disqus id name.
+And you can enable the disqus on per post page with `extra.disqus` option
+
+```toml
+[extra]
+disqus = false
+disqus_id = ""
+```
+
 Code syntax highlighting. See also [syntax hightlighting](https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting).
 
 ```toml
@@ -251,6 +260,9 @@ written_by = "Written by"  # Like: Written by Aaran Xu
 on = "on"                  # Like: on May 3, 2021
 top = "Top"                # Go to the top of the page in the post
 tags = "Tags"              # In the page of Tags
+
+# disqus comments block
+disqus_discussion = "Discussion and feedback"
 
 # The contents of the 404 page
 p404 = "404: Page not found"

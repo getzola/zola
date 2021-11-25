@@ -26,6 +26,7 @@ $ git submodule add {THEME_URL} themes/{THEME_NAME}
 ```
 
 For example, this could look like:
+
 ```bash
 $ git submodule add https://github.com/getzola/hyde.git themes/hyde
 ```
