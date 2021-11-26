@@ -95,6 +95,8 @@ pub fn check_template_fallbacks<'a>(
 
 #[cfg(test)]
 mod tests {
+    use crate::templates::check_template_fallbacks;
+
     use super::rewrite_theme_paths;
     use tera::Tera;
 
@@ -118,6 +120,25 @@ mod tests {
         assert_eq!(
             tera.templates["hyde/templates/child.html"].parent,
             Some("index.html".to_string())
+        );
+    }
+
+    #[test]
+    fn template_fallback_is_successful() {
+        let mut tera = Tera::parse("test-templates/*.html").unwrap();
+        tera.add_raw_template(&"hyde/templates/index.html", "Hello").unwrap();
+        tera.add_raw_template(&"hyde/templates/theme-only.html", "Hello").unwrap();
+
+        // Check finding existing template
+        assert_eq!(check_template_fallbacks("index.html", &tera, &None), Some("index.html"));
+
+        // Check trying to find non-existant template
+        assert_eq!(check_template_fallbacks("not-here.html", &tera, &None), None);
+
+        // Check theme fallback
+        assert_eq!(
+            check_template_fallbacks("theme-only.html", &tera, &Some("hyde".to_string())),
+            Some("hyde/templates/theme-only.html")
         );
     }
 }
