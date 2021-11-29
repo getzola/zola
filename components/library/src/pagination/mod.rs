@@ -6,7 +6,7 @@ use tera::{to_value, Context, Tera, Value};
 
 use config::Config;
 use errors::{Error, Result};
-use utils::templates::render_template;
+use utils::templates::{check_template_fallbacks, render_template};
 
 use crate::content::{Section, SerializingPage, SerializingSection};
 use crate::library::Library;
@@ -94,8 +94,16 @@ impl<'a> Paginator<'a> {
         taxonomy: &'a Taxonomy,
         item: &'a TaxonomyItem,
         library: &'a Library,
+        tera: &Tera,
+        theme: &Option<String>,
     ) -> Paginator<'a> {
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
+        // Check for taxon-specific template, or use generic as fallback.
+        let specific_template = format!("{}/single.html", taxonomy.kind.name);
+        let template = match check_template_fallbacks(&specific_template, tera, theme) {
+            Some(template) => template,
+            None => "taxonomy_single.html",
+        };
         let mut paginator = Paginator {
             all_pages: Cow::Borrowed(&item.pages),
             pagers: Vec::with_capacity(item.pages.len() / paginate_by),
@@ -110,7 +118,7 @@ impl<'a> Paginator<'a> {
                 .clone()
                 .unwrap_or_else(|| "page".to_string()),
             is_index: false,
-            template: format!("{}/single.html", taxonomy.kind.name),
+            template: template.to_string(),
         };
 
         // taxonomy paginators have no sorting so we won't have to reverse
@@ -249,7 +257,7 @@ impl<'a> Paginator<'a> {
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
-    use tera::to_value;
+    use tera::{to_value, Tera};
 
     use crate::content::{Page, Section};
     use crate::library::Library;
@@ -408,6 +416,7 @@ mod tests {
     #[test]
     fn test_can_create_paginator_for_taxonomy() {
         let (_, library) = create_library(false, 3, false);
+        let tera = Tera::default();
         let taxonomy_def = TaxonomyConfig {
             name: "tags".to_string(),
             paginate_by: Some(2),
@@ -427,7 +436,7 @@ mod tests {
             permalink: "/tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
-        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
+        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library, &tera, &None);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
@@ -444,6 +453,7 @@ mod tests {
     #[test]
     fn test_can_create_paginator_for_slugified_taxonomy() {
         let (_, library) = create_library(false, 3, false);
+        let tera = Tera::default();
         let taxonomy_def = TaxonomyConfig {
             name: "some tags".to_string(),
             paginate_by: Some(2),
@@ -463,7 +473,7 @@ mod tests {
             permalink: "/some-tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
-        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library);
+        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library, &tera, &None);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
