@@ -23,6 +23,8 @@ A few variables are available on all templates except feeds and the sitemap:
 Config variables can be accessed like `config.variable`, in HTML for example with `{{ config.base_url }}`.
 The 404 template does not get `current_path` and `current_url` (this information cannot be determined).
 
+On top of the `config` attributes mentioned above, it also gets `config.mode` which is whether it's run in `build`, `serve` or `check`.
+
 ## Standard templates
 By default, Zola will look for three templates: `index.html`, which is applied
 to the site homepage; `section.html`, which is applied to all sections (any HTML
