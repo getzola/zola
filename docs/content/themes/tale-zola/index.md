@@ -207,7 +207,7 @@ disqus = false
 disqus_id = ""
 ```
 
-Code syntax highlighting. See also [syntax hightlighting](https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting).
+Code syntax highlighting. See also [syntax highlighting](https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting).
 
 ```toml
 [markdown]
