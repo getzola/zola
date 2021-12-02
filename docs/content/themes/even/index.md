@@ -3,11 +3,11 @@
 title = "even"
 description = "A robust, elegant dark theme"
 template = "theme.html"
-date = 2021-09-07T11:12:53+03:00
+date = 2021-12-02T23:22:24+01:00
 
 [extra]
-created = 2021-09-07T11:12:53+03:00
-updated = 2021-09-07T11:12:53+03:00
+created = 2021-12-02T23:22:24+01:00
+updated = 2021-12-02T23:22:24+01:00
 repository = "https://github.com/getzola/even.git"
 homepage = "https://github.com/getzola/even"
 minimum_version = "0.11.0"
