@@ -1,82 +1,62 @@
+use std::collections::HashMap;
+
+use errors::Result;
+use rendering::Rendered;
+
 mod common;
 
-macro_rules! test_links {
-    (
-        $in_str:literal,
-        [$($id:literal => $perma_link:literal),*],
-        [$($abs_path:literal),*],
-        [$($rel_path:literal:$opt_anchor:expr),*],
-        [$($shortcodes:ident),*]
-    ) => {
-        let config = config::Config::default_for_test();
-
-        #[allow(unused_mut)]
-        let mut tera = tera::Tera::default();
-
-        // Add all shortcodes
-        $(
-            tera.add_raw_template(
-                &format!("shortcodes/{}", $shortcodes.filename()),
-                $shortcodes.output
-            ).expect("Failed to add raw template");
-        )*
-
-        #[allow(unused_mut)]
-        let mut permalinks = std::collections::HashMap::new();
-
-        $(
-            permalinks.insert($id.to_string(), $perma_link.to_string());
-        )*
-
-        let context = rendering::RenderContext::new(
-            &tera,
-            &config,
-            &config.default_language,
-            "",
-            &permalinks,
-            front_matter::InsertAnchor::None,
-        );
-
-        let rendered = rendering::render_content($in_str, &context);
-        assert!(rendered.is_ok(), "Rendering failed");
-
-        let rendered = rendered.unwrap();
-
-        let asserted_int_links = vec![
-            $(
-                ($rel_path.to_string(), $opt_anchor.map(|x| x.to_string()))
-            ),*
-        ];
-        let asserted_ext_links: Vec<&str> = vec![$($abs_path),*];
-
-        assert_eq!(rendered.internal_links, asserted_int_links, "Internal links unequal");
-        assert_eq!(rendered.external_links, asserted_ext_links, "External links unequal");
-    }
-}
-
-#[test]
-fn basic_internal() {
-    test_links!("Hello World!", [], [], [], []);
-}
-
-#[test]
-fn absolute_links() {
-    test_links!("[abc](https://google.com/)", [], ["https://google.com/"], [], []);
-}
-
-#[test]
-fn relative_links() {
-    test_links!(
-        "[abc](@/def/123.md)",
-        ["def/123.md" => "https://xyz.com/def/123"],
-        [],
-        ["def/123.md":<Option<&str>>::None],
-        []
+fn render_content(content: &str, permalinks: HashMap<String, String>) -> Result<Rendered> {
+    let config = config::Config::default_for_test();
+    let tera = tera::Tera::default();
+    let mut context = rendering::RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "http://mypage.com",
+        &permalinks,
+        front_matter::InsertAnchor::None,
     );
+    context.set_current_page_path("mine.md");
+
+    rendering::render_content(content, &context)
 }
 
 #[test]
-#[should_panic]
-fn relative_links_no_perma() {
-    test_links!("[abc](@/def/123.md)", [], [], ["def/123.md": <Option<&str>>::None], []);
+fn can_detect_links() {
+    // no links
+    let rendered = render_content("Hello World!", HashMap::new()).unwrap();
+    assert_eq!(rendered.internal_links.len(), 0);
+    assert_eq!(rendered.external_links.len(), 0);
+
+    // external
+    let rendered = render_content("[abc](https://google.com/)", HashMap::new()).unwrap();
+    assert_eq!(rendered.internal_links.len(), 0);
+    assert_eq!(rendered.external_links.len(), 1);
+    assert_eq!(rendered.external_links[0], "https://google.com/");
+
+    // internal
+    let mut permalinks = HashMap::new();
+    permalinks.insert("def/123.md".to_owned(), "https://xyz.com/def/123".to_owned());
+    let rendered = render_content("[abc](@/def/123.md)", permalinks).unwrap();
+    assert_eq!(rendered.internal_links.len(), 1);
+    assert_eq!(rendered.internal_links[0], ("def/123.md".to_owned(), None));
+    assert_eq!(rendered.external_links.len(), 0);
+
+    // internal with anchors
+    let mut permalinks = HashMap::new();
+    permalinks.insert("def/123.md".to_owned(), "https://xyz.com/def/123".to_owned());
+    let rendered = render_content("[abc](@/def/123.md#hello)", permalinks).unwrap();
+    assert_eq!(rendered.internal_links.len(), 1);
+    assert_eq!(rendered.internal_links[0], ("def/123.md".to_owned(), Some("hello".to_owned())));
+    assert_eq!(rendered.external_links.len(), 0);
+
+    // internal link referring to self
+    let rendered = render_content("[abc](#hello)", HashMap::new()).unwrap();
+    assert_eq!(rendered.internal_links.len(), 1);
+    assert_eq!(rendered.internal_links[0], ("mine.md".to_owned(), Some("hello".to_owned())));
+    assert_eq!(rendered.external_links.len(), 0);
+
+    // Not pointing to anything so that's an error
+    let res = render_content("[abc](@/def/123.md)", HashMap::new());
+    assert!(res.is_err());
 }

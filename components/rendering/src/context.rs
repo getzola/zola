@@ -12,6 +12,7 @@ pub struct RenderContext<'a> {
     pub tera: Cow<'a, Tera>,
     pub config: &'a Config,
     pub tera_context: Context,
+    pub current_page_path: Option<&'a str>,
     pub current_page_permalink: &'a str,
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
@@ -35,6 +36,7 @@ impl<'a> RenderContext<'a> {
         Self {
             tera: Cow::Borrowed(tera),
             tera_context,
+            current_page_path: None,
             current_page_permalink,
             permalinks: Cow::Borrowed(permalinks),
             insert_anchor,
@@ -50,6 +52,11 @@ impl<'a> RenderContext<'a> {
         self.shortcode_definitions = Cow::Borrowed(def);
     }
 
+    /// Same as above
+    pub fn set_current_page_path(&mut self, path: &'a str) {
+        self.current_page_path = Some(path);
+    }
+
     // In use in the markdown filter
     // NOTE: This RenderContext is not i18n-aware, see MarkdownFilter::filter for details
     // If this function is ever used outside of MarkdownFilter, take this into consideration
@@ -57,6 +64,7 @@ impl<'a> RenderContext<'a> {
         Self {
             tera: Cow::Owned(Tera::default()),
             tera_context: Context::new(),
+            current_page_path: None,
             current_page_permalink: "",
             permalinks: Cow::Owned(HashMap::new()),
             insert_anchor: InsertAnchor::None,

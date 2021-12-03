@@ -10,7 +10,7 @@ use front_matter::{split_section_content, SectionFrontMatter};
 use rendering::{render_content, Heading, RenderContext};
 use utils::fs::read_file;
 use utils::site::get_reading_analytics;
-use utils::templates::render_template;
+use utils::templates::{render_template, ShortcodeDefinition};
 
 use crate::content::file_info::FileInfo;
 use crate::content::ser::SerializingSection;
@@ -147,6 +147,7 @@ impl Section {
         permalinks: &HashMap<String, String>,
         tera: &Tera,
         config: &Config,
+        shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
@@ -156,7 +157,8 @@ impl Section {
             permalinks,
             self.meta.insert_anchor_links,
         );
-
+        context.set_shortcode_definitions(shortcode_definitions);
+        context.set_current_page_path(&self.file.relative);
         context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
 
         let res = render_content(&self.raw_content, &context).map_err(|e| {

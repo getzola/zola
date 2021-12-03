@@ -10,6 +10,7 @@ use errors::Result;
 
 pub use context::RenderContext;
 use markdown::markdown_to_html;
+pub use markdown::Rendered;
 pub use table_of_contents::Heading;
 
 pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown::Rendered> {
