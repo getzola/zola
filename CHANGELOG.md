@@ -10,6 +10,7 @@
 - Shorcodes and `anchor-link.html` can now access the `lang` context
 - Add prompt before replacing the output directory with `zola build` if the `output-dir` flag is given
 - Shortcode handling has been completely rewritten, solving many issues
+- Add the `base16-black-metal-bathory` syntax highlight theme
 
 ## 0.14.1 (2021-08-24)
 
