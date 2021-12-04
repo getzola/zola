@@ -122,7 +122,7 @@ impl Section {
         let mut section = Section::parse(path, &content, config, base_path)?;
 
         let parent_dir = path.parent().unwrap();
-        section.assets = find_related_assets(parent_dir, config);
+        section.assets = find_related_assets(parent_dir, config, false);
         section.serialized_assets = section.serialize_assets();
 
         Ok(section)
