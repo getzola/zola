@@ -15,6 +15,58 @@ macro_rules! render_default_tpl {
     }};
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum ShortcodeFileType {
+    Markdown,
+    Html,
+}
+
+#[derive(Debug, Clone)]
+pub struct ShortcodeDefinition {
+    pub file_type: ShortcodeFileType,
+    pub tera_name: String,
+}
+impl ShortcodeDefinition {
+    pub fn new(file_type: ShortcodeFileType, tera_name: &str) -> ShortcodeDefinition {
+        let tera_name = tera_name.to_string();
+
+        ShortcodeDefinition { file_type, tera_name }
+    }
+}
+
+/// Fetches all the shortcodes from the Tera instances
+pub fn get_shortcodes(tera: &Tera) -> HashMap<String, ShortcodeDefinition> {
+    let mut shortcode_definitions = HashMap::new();
+
+    for (identifier, template) in tera.templates.iter() {
+        let (file_type, ext_len) = if template.name.ends_with(".md") {
+            (ShortcodeFileType::Markdown, "md".len())
+        } else {
+            (ShortcodeFileType::Html, "html".len())
+        };
+
+        if template.name.starts_with("shortcodes/") {
+            let head_len = "shortcodes/".len();
+            shortcode_definitions.insert(
+                identifier[head_len..(identifier.len() - ext_len - 1)].to_string(),
+                ShortcodeDefinition::new(file_type, &template.name),
+            );
+            continue;
+        }
+
+        if template.name.starts_with("__zola_builtins/shortcodes/") {
+            let head_len = "__zola_builtins/shortcodes/".len();
+            shortcode_definitions.insert(
+                identifier[head_len..(identifier.len() - ext_len - 1)].to_string(),
+                ShortcodeDefinition::new(file_type, &template.name),
+            );
+            continue;
+        }
+    }
+
+    shortcode_definitions
+}
+
 /// Renders the given template with the given context, but also ensures that, if the default file
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string
@@ -25,23 +77,8 @@ pub fn render_template(
     context: Context,
     theme: &Option<String>,
 ) -> Result<String> {
-    // check if it is in the templates
-    if tera.templates.contains_key(name) {
-        return tera.render(name, &context).map_err(std::convert::Into::into);
-    }
-
-    // check if it is part of a theme
-    if let Some(ref t) = *theme {
-        let theme_template_name = format!("{}/templates/{}", t, name);
-        if tera.templates.contains_key(&theme_template_name) {
-            return tera.render(&theme_template_name, &context).map_err(std::convert::Into::into);
-        }
-    }
-
-    // check if it is part of ZOLA_TERA defaults
-    let default_name = format!("__zola_builtins/{}", name);
-    if tera.templates.contains_key(&default_name) {
-        return tera.render(&default_name, &context).map_err(std::convert::Into::into);
+    if let Some(template) = check_template_fallbacks(name, tera, theme) {
+        return tera.render(&template, &context).map_err(std::convert::Into::into);
     }
 
     // maybe it's a default one?
@@ -78,8 +115,40 @@ pub fn rewrite_theme_paths(tera_theme: &mut Tera, theme: &str) {
     tera_theme.templates.extend(new_templates);
 }
 
+/// Checks for the presence of a given template. If none is found, also looks for a
+/// fallback in theme and default templates. Returns the path of the most specific
+/// template found, or none if none are present.
+pub fn check_template_fallbacks<'a>(
+    name: &'a str,
+    tera: &'a Tera,
+    theme: &Option<String>,
+) -> Option<&'a str> {
+    // check if it is in the templates
+    if tera.templates.contains_key(name) {
+        return Some(name);
+    }
+
+    // check if it is part of a theme
+    if let Some(ref t) = *theme {
+        let theme_template_name = format!("{}/templates/{}", t, name);
+        if let Some((key, _)) = tera.templates.get_key_value(&theme_template_name) {
+            return Some(key);
+        }
+    }
+
+    // check if it is part of ZOLA_TERA defaults
+    let default_name = format!("__zola_builtins/{}", name);
+    if let Some((key, _)) = tera.templates.get_key_value(&default_name) {
+        return Some(key);
+    }
+
+    None
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::templates::check_template_fallbacks;
+
     use super::rewrite_theme_paths;
     use tera::Tera;
 
@@ -103,6 +172,25 @@ mod tests {
         assert_eq!(
             tera.templates["hyde/templates/child.html"].parent,
             Some("index.html".to_string())
+        );
+    }
+
+    #[test]
+    fn template_fallback_is_successful() {
+        let mut tera = Tera::parse("test-templates/*.html").unwrap();
+        tera.add_raw_template(&"hyde/templates/index.html", "Hello").unwrap();
+        tera.add_raw_template(&"hyde/templates/theme-only.html", "Hello").unwrap();
+
+        // Check finding existing template
+        assert_eq!(check_template_fallbacks("index.html", &tera, &None), Some("index.html"));
+
+        // Check trying to find non-existant template
+        assert_eq!(check_template_fallbacks("not-here.html", &tera, &None), None);
+
+        // Check theme fallback
+        assert_eq!(
+            check_template_fallbacks("theme-only.html", &tera, &Some("hyde".to_string())),
+            Some("hyde/templates/theme-only.html")
         );
     }
 }

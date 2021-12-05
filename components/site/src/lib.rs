@@ -14,7 +14,6 @@ use rayon::prelude::*;
 use tera::{Context, Tera};
 use walkdir::{DirEntry, WalkDir};
 
-use config::highlighting::export_theme_css;
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
@@ -27,7 +26,7 @@ use utils::fs::{
 };
 use utils::minify;
 use utils::net::get_available_port;
-use utils::templates::render_template;
+use utils::templates::{render_template, ShortcodeDefinition};
 
 lazy_static! {
     /// The in-memory rendered map content
@@ -65,6 +64,7 @@ pub struct Site {
     /// Whether to load draft pages
     include_drafts: bool,
     build_mode: BuildMode,
+    shortcode_definitions: HashMap<String, ShortcodeDefinition>,
 }
 
 impl Site {
@@ -74,7 +74,6 @@ impl Site {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
         let mut config = get_config(config_file)?;
-        config.markdown.load_extra_syntaxes(path)?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
@@ -82,6 +81,7 @@ impl Site {
         }
 
         let tera = load_tera(path, &config)?;
+        let shortcode_definitions = utils::templates::get_shortcodes(&tera);
 
         let content_path = path.join("content");
         let static_path = path.join("static");
@@ -103,6 +103,7 @@ impl Site {
             // We will allocate it properly later on
             library: Arc::new(RwLock::new(Library::new(0, 0, false))),
             build_mode: BuildMode::Disk,
+            shortcode_definitions,
         };
 
         Ok(site)
@@ -364,7 +365,13 @@ impl Site {
             .par_iter_mut()
             .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
-                page.render_markdown(permalinks, tera, config, insert_anchor)
+                page.render_markdown(
+                    permalinks,
+                    tera,
+                    config,
+                    insert_anchor,
+                    &self.shortcode_definitions,
+                )
             })
             .collect::<Result<()>>()?;
 
@@ -373,7 +380,9 @@ impl Site {
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
-            .map(|section| section.render_markdown(permalinks, tera, config))
+            .map(|section| {
+                section.render_markdown(permalinks, tera, config, &self.shortcode_definitions)
+            })
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -386,7 +395,13 @@ impl Site {
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
+            page.render_markdown(
+                &self.permalinks,
+                &self.tera,
+                &self.config,
+                insert_anchor,
+                &self.shortcode_definitions,
+            )?;
         }
 
         let mut library = self.library.write().expect("Get lock for add_page");
@@ -413,7 +428,12 @@ impl Site {
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render_md {
-            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+            section.render_markdown(
+                &self.permalinks,
+                &self.tera,
+                &self.config,
+                &self.shortcode_definitions,
+            )?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");
         library.remove_section(&section.file.path);
@@ -594,8 +614,11 @@ impl Site {
             let asset_path = asset.as_path();
             self.copy_asset(
                 asset_path,
-                &current_path
-                    .join(asset_path.file_name().expect("Couldn't get filename from page asset")),
+                &current_path.join(
+                    asset_path
+                        .strip_prefix(&page.file.path.parent().unwrap())
+                        .expect("Couldn't get filename from page asset"),
+                ),
             )?;
         }
 
@@ -691,7 +714,7 @@ impl Site {
         for t in &self.config.markdown.highlight_themes_css {
             let p = self.static_path.join(&t.filename);
             if !p.exists() {
-                let content = export_theme_css(&t.theme);
+                let content = &self.config.markdown.export_theme_css(&t.theme);
                 create_file(&p, &content)?;
             }
         }
@@ -831,7 +854,13 @@ impl Site {
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
                         comp.clone(),
-                        &Paginator::from_taxonomy(taxonomy, item, &library),
+                        &Paginator::from_taxonomy(
+                            taxonomy,
+                            item,
+                            &library,
+                            &self.tera,
+                            &self.config.theme,
+                        ),
                     )?;
                 } else {
                     let single_output =
@@ -988,7 +1017,9 @@ impl Site {
             self.copy_asset(
                 asset_path,
                 &output_path.join(
-                    asset_path.file_name().expect("Failed to get asset filename for section"),
+                    asset_path
+                        .strip_prefix(&section.file.path.parent().unwrap())
+                        .expect("Failed to get asset filename for section"),
                 ),
             )?;
         }

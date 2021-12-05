@@ -1,6 +1,5 @@
 use lazy_static::lazy_static;
 use pulldown_cmark as cmark;
-use regex::Regex;
 
 use crate::context::RenderContext;
 use crate::table_of_contents::{make_table_of_contents, Heading};
@@ -12,6 +11,7 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
+use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -59,28 +59,6 @@ fn find_anchor(anchors: &[String], name: String, level: u16) -> String {
     find_anchor(anchors, name, level + 1)
 }
 
-/// Returns whether the given string starts with a schema.
-///
-/// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
-/// private schemes. This function checks if the given string starts with something that just looks
-/// like a scheme, i.e., a case-insensitive identifier followed by a colon.
-///
-/// [uri-schemes]: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
-fn starts_with_schema(s: &str) -> bool {
-    lazy_static! {
-        static ref PATTERN: Regex = Regex::new(r"^[0-9A-Za-z\-]+:").unwrap();
-    }
-
-    PATTERN.is_match(s)
-}
-
-/// Colocated asset links refers to the files in the same directory,
-/// there it should be a filename only
-fn is_colocated_asset_link(link: &str) -> bool {
-    !link.contains('/')  // http://, ftp://, ../ etc
-        && !starts_with_schema(link)
-}
-
 /// Returns whether a link starts with an HTTP(s) scheme.
 fn is_external_link(link: &str) -> bool {
     link.starts_with("http:") || link.starts_with("https:")
@@ -111,14 +89,23 @@ fn fix_link(
                 return Err(format!("Relative link {} not found.", link).into());
             }
         }
-    } else if is_colocated_asset_link(link) {
-        format!("{}{}", context.current_page_permalink, link)
     } else {
         if is_external_link(link) {
             external_links.push(link.to_owned());
+            link.to_owned()
+        } else if link.starts_with("#") {
+            // local anchor without the internal zola path
+            if let Some(current_path) = context.current_page_path {
+                internal_links.push((current_path.to_owned(), Some(link[1..].to_owned())));
+                format!("{}{}", context.current_page_permalink, &link)
+            } else {
+                link.to_string()
+            }
+        } else {
+            link.to_string()
         }
-        link.to_string()
     };
+
     Ok(result)
 }
 
@@ -145,8 +132,7 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
                 heading_refs.push(HeadingRef::new(i, *level));
             }
             Event::End(Tag::Heading(_)) => {
-                let msg = "Heading end before start?";
-                heading_refs.last_mut().expect(msg).end_idx = i;
+                heading_refs.last_mut().expect("Heading end before start?").end_idx = i;
             }
             _ => (),
         }
@@ -155,7 +141,11 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
     heading_refs
 }
 
-pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
+pub fn markdown_to_html(
+    content: &str,
+    context: &RenderContext,
+    html_shortcodes: Vec<Shortcode>,
+) -> Result<Rendered> {
     lazy_static! {
         static ref EMOJI_REPLACER: gh_emoji::Replacer = gh_emoji::Replacer::new();
     }
@@ -177,9 +167,10 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
     let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
 
+    let mut stop_next_end_p = false;
+
     let mut opts = Options::empty();
     let mut has_summary = false;
-    let mut in_html_block = false;
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_FOOTNOTES);
     opts.insert(Options::ENABLE_STRIKETHROUGH);
@@ -189,65 +180,108 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
     }
 
+    // we reverse their order so we can pop them easily in order
+    let mut html_shortcodes: Vec<_> = html_shortcodes.into_iter().rev().collect();
+    let mut next_shortcode = html_shortcodes.pop();
+    let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
+
     {
-        let mut events = Parser::new_ext(content, opts)
-            .map(|event| {
-                match event {
-                    Event::Text(text) => {
-                        // if we are in the middle of a highlighted code block
-                        if let Some(ref mut code_block) = code_block {
-                            let html = code_block.highlight(&text);
-                            Event::Html(html.into())
-                        } else if context.config.markdown.render_emoji {
-                            let processed_text = EMOJI_REPLACER.replace_all(&text);
-                            Event::Text(processed_text.to_string().into())
+        let mut events = Vec::new();
+
+        for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
+            match event {
+                Event::Text(text) => {
+                    if let Some(ref mut code_block) = code_block {
+                        let html = code_block.highlight(&text);
+                        events.push(Event::Html(html.into()));
+                    } else {
+                        let text = if context.config.markdown.render_emoji {
+                            EMOJI_REPLACER.replace_all(&text).to_string().into()
                         } else {
-                            // Business as usual
-                            Event::Text(text)
-                        }
-                    }
-                    Event::Start(Tag::CodeBlock(ref kind)) => {
-                        let fence = match kind {
-                            cmark::CodeBlockKind::Fenced(fence_info) => {
-                                FenceSettings::new(fence_info)
-                            }
-                            _ => FenceSettings::new(""),
+                            text
                         };
-                        let (block, begin) = CodeBlock::new(fence, context.config, path);
-                        code_block = Some(block);
-                        Event::Html(begin.into())
-                    }
-                    Event::End(Tag::CodeBlock(_)) => {
-                        // reset highlight and close the code block
-                        code_block = None;
-                        Event::Html("</code></pre>\n".into())
-                    }
-                    Event::Start(Tag::Image(link_type, src, title)) => {
-                        if is_colocated_asset_link(&src) {
-                            let link = format!("{}{}", context.current_page_permalink, &*src);
-                            return Event::Start(Tag::Image(link_type, link.into(), title));
+
+                        if !contains_shortcode(text.as_ref()) {
+                            events.push(Event::Text(text));
+                            continue;
                         }
 
-                        Event::Start(Tag::Image(link_type, src, title))
-                    }
-                    Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
-                        error = Some(Error::msg("There is a link that is missing a URL"));
-                        Event::Start(Tag::Link(link_type, "#".into(), title))
-                    }
-                    Event::Start(Tag::Link(link_type, link, title)) => {
-                        let fixed_link = match fix_link(
-                            link_type,
-                            &link,
-                            context,
-                            &mut internal_links,
-                            &mut external_links,
-                        ) {
-                            Ok(fixed_link) => fixed_link,
-                            Err(err) => {
-                                error = Some(err);
-                                return Event::Html("".into());
+                        // TODO: find a way to share that code with the HTML handler
+                        let mut new_text = text.clone();
+                        loop {
+                            if let Some(ref shortcode) = next_shortcode {
+                                let sc_span = shortcode.span.clone();
+                                if range.contains(&sc_span.start) {
+                                    if range.start != sc_span.start {
+                                        events.push(Event::Text(
+                                            new_text[..(sc_span.start - range.start)]
+                                                .to_string()
+                                                .into(),
+                                        ));
+                                    }
+
+                                    let shortcode = next_shortcode.take().unwrap();
+
+                                    match shortcode.render(&context.tera, &context.tera_context) {
+                                        Ok(s) => {
+                                            events.push(Event::Html(s.into()));
+                                            new_text = new_text[(sc_span.end - range.start)..]
+                                                .to_owned()
+                                                .into();
+                                            range.start = sc_span.end - range.start;
+                                        }
+                                        Err(e) => {
+                                            error = Some(e);
+                                            break;
+                                        }
+                                    }
+
+                                    next_shortcode = html_shortcodes.pop();
+                                    continue;
+                                }
                             }
-                        };
+
+                            break;
+                        }
+
+                        events.push(Event::Text(new_text[..].to_string().into()));
+                    }
+                }
+                Event::Start(Tag::CodeBlock(ref kind)) => {
+                    let fence = match kind {
+                        cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
+                        _ => FenceSettings::new(""),
+                    };
+                    let (block, begin) = CodeBlock::new(fence, context.config, path);
+                    code_block = Some(block);
+                    events.push(Event::Html(begin.into()));
+                }
+                Event::End(Tag::CodeBlock(_)) => {
+                    // reset highlight and close the code block
+                    code_block = None;
+                    events.push(Event::Html("</code></pre>\n".into()));
+                }
+                Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
+                    error = Some(Error::msg("There is a link that is missing a URL"));
+                    events.push(Event::Start(Tag::Link(link_type, "#".into(), title)));
+                }
+                Event::Start(Tag::Link(link_type, link, title)) => {
+                    let fixed_link = match fix_link(
+                        link_type,
+                        &link,
+                        context,
+                        &mut internal_links,
+                        &mut external_links,
+                    ) {
+                        Ok(fixed_link) => fixed_link,
+                        Err(err) => {
+                            error = Some(err);
+                            events.push(Event::Html("".into()));
+                            continue;
+                        }
+                    };
+
+                    events.push(
                         if is_external_link(&link)
                             && context.config.markdown.has_external_link_tweaks()
                         {
@@ -264,32 +298,93 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                             )
                         } else {
                             Event::Start(Tag::Link(link_type, fixed_link.into(), title))
-                        }
-                    }
-                    Event::Html(ref markup) => {
-                        if markup.contains("<!-- more -->") {
-                            has_summary = true;
-                            Event::Html(CONTINUE_READING.into())
-                        } else if in_html_block && markup.contains("</pre>") {
-                            in_html_block = false;
-                            Event::Html(markup.replacen("</pre>", "", 1).into())
-                        } else if markup.contains("pre data-shortcode") {
-                            in_html_block = true;
-                            let m = markup.replacen("<pre data-shortcode>", "", 1);
-                            if m.contains("</pre>") {
-                                in_html_block = false;
-                                Event::Html(m.replacen("</pre>", "", 1).into())
-                            } else {
-                                Event::Html(m.into())
-                            }
-                        } else {
-                            event
-                        }
-                    }
-                    _ => event,
+                        },
+                    )
                 }
+                Event::Start(Tag::Paragraph) => {
+                    // We have to compare the start and the trimmed length because the content
+                    // will sometimes contain '\n' at the end which we want to avoid.
+                    //
+                    // NOTE: It could be more efficient to remove this search and just keep
+                    // track of the shortcodes to come and compare it to that.
+                    if let Some(ref next_shortcode) = next_shortcode {
+                        if next_shortcode.span.start == range.start
+                            && next_shortcode.span.len() == content[range].trim().len()
+                        {
+                            stop_next_end_p = true;
+                            events.push(Event::Html("".into()));
+                            continue;
+                        }
+                    }
+
+                    events.push(event);
+                }
+                Event::End(Tag::Paragraph) => {
+                    events.push(if stop_next_end_p {
+                        stop_next_end_p = false;
+                        Event::Html("".into())
+                    } else {
+                        event
+                    });
+                }
+                Event::Html(text) => {
+                    if text.contains("<!-- more -->") {
+                        has_summary = true;
+                        events.push(Event::Html(CONTINUE_READING.into()));
+                        continue;
+                    }
+                    if !contains_shortcode(text.as_ref()) {
+                        events.push(Event::Html(text));
+                        continue;
+                    }
+
+                    let mut new_text = text.clone();
+                    loop {
+                        if let Some(ref shortcode) = next_shortcode {
+                            let sc_span = shortcode.span.clone();
+                            if range.contains(&sc_span.start) {
+                                if range.start != sc_span.start {
+                                    events.push(Event::Html(
+                                        new_text[..(sc_span.start - range.start)].to_owned().into(),
+                                    ));
+                                }
+
+                                let shortcode = next_shortcode.take().unwrap();
+                                match shortcode.render(&context.tera, &context.tera_context) {
+                                    Ok(s) => {
+                                        events.push(Event::Html(s.into()));
+                                        new_text = new_text[(sc_span.end - range.start)..]
+                                            .to_owned()
+                                            .into();
+                                        range.start = sc_span.end - range.start;
+                                    }
+                                    Err(e) => {
+                                        error = Some(e);
+                                        break;
+                                    }
+                                }
+
+                                next_shortcode = html_shortcodes.pop();
+                                continue;
+                            }
+                        }
+
+                        break;
+                    }
+                    events.push(Event::Html(new_text[..].to_string().into()));
+                }
+                _ => events.push(event),
+            }
+        }
+
+        // We remove all the empty things we might have pushed before so we don't get some random \n
+        events = events
+            .into_iter()
+            .filter(|e| match e {
+                Event::Text(text) | Event::Html(text) => !text.is_empty(),
+                _ => true,
             })
-            .collect::<Vec<_>>(); // We need to collect the events to make a second pass
+            .collect();
 
         let mut heading_refs = get_heading_refs(&events);
 
@@ -342,6 +437,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 let mut c = tera::Context::new();
                 c.insert("id", &id);
                 c.insert("level", &heading_ref.level);
+                c.insert("lang", &context.lang);
 
                 let anchor_link = utils::templates::render_template(
                     ANCHOR_LINK_TEMPLATE,
@@ -383,25 +479,6 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_starts_with_schema() {
-        // registered
-        assert!(starts_with_schema("https://example.com/"));
-        assert!(starts_with_schema("ftp://example.com/"));
-        assert!(starts_with_schema("mailto:user@example.com"));
-        assert!(starts_with_schema("xmpp:node@example.com"));
-        assert!(starts_with_schema("tel:18008675309"));
-        assert!(starts_with_schema("sms:18008675309"));
-        assert!(starts_with_schema("h323:user@example.com"));
-
-        // arbitrary
-        assert!(starts_with_schema("zola:post?content=hi"));
-
-        // case-insensitive
-        assert!(starts_with_schema("MailTo:user@example.com"));
-        assert!(starts_with_schema("MAILTO:user@example.com"));
-    }
 
     #[test]
     fn test_is_external_link() {

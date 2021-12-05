@@ -134,10 +134,19 @@ If you want to have some content that looks like a shortcode but not have Zola t
 you will need to escape it by using `{%/*` and `*/%}` instead of `{%` and `%}`. You won't need to escape
 anything else until the closing tag.
 
+## Shortcode context
+
+Every shortcode can access some variables, beyond what you explicitly passed as parameter. These variables are explained in the following subsections:
+
+- invocation count (`nth`)
+- current language (`lang`), unless called from the `markdown` template filter (in which case it will always be the same value as `default_language` in configuration, or `en` when it is unset)
+
+When one of these variables conflict with a variable passed as argument, the argument value will be used.
+
 ### Invocation Count
 
 Every shortcode context is passed in a variable named `nth` that tracks how many times a particular shortcode has
-been invoked in a Markdown file. Given a shortcode `true_statement.html` template:
+been invoked in the current Markdown file. Given a shortcode `true_statement.html` template:
 
 ```jinja2
 <p id="number{{ nth }}">{{ value }} is equal to {{ nth }}.</p>
@@ -152,6 +161,18 @@ It could be used in our Markdown as follows:
 
 This is useful when implementing custom markup for features such as sidenotes or end notes.
 
+### Current language
+
+**NOTE:** When calling a shortcode from within the `markdown` template filter, the `lang` variable will always be `en`. If you feel like you need that, please consider using template macros instead. If you really need that, you can rewrite your Markdown content to pass `lang` as argument to the shortcode.
+
+Every shortcode can access the current language in the `lang` variable in the context. This is useful for presenting/filtering information in a shortcode depending in a per-language manner. For example, to display a per-language book cover for the current page in a shortcode called `bookcover.md`:
+
+```jinja2
+![Book cover in {{ lang }}](cover.{{ lang }}.png)
+```
+
+You can then use it in your Markdown like so: `{{/* bookcover() */}}`
+
 ## Built-in shortcodes
 
 Zola comes with a few built-in shortcodes. If you want to override a default shortcode template,
@@ -164,7 +185,7 @@ Embed a responsive player for a YouTube video.
 The arguments are:
 
 - `id`: the video id (mandatory)
-- `playlist: the playlist id (optional)
+- `playlist`: the playlist id (optional)
 - `class`: a class to add to the `<div>` surrounding the iframe
 - `autoplay`: when set to "true", the video autoplays on load
 

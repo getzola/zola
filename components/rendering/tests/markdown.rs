@@ -111,7 +111,7 @@ fn can_higlight_code_block_with_unknown_lang() {
 fn can_render_shortcode() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &ZOLA_TERA,
         &config,
         &config.default_language,
@@ -119,6 +119,8 @@ fn can_render_shortcode() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&ZOLA_TERA);
+    context.set_shortcode_definitions(&shortcode_def);
     let res = render_content(
         r#"
 Hello
@@ -128,6 +130,7 @@ Hello
         &context,
     )
     .unwrap();
+    println!("{:?}", res.body);
     assert!(res.body.contains("<p>Hello</p>\n<div >"));
     assert!(res
         .body
@@ -138,7 +141,7 @@ Hello
 fn can_render_shortcode_with_markdown_char_in_args_name() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &ZOLA_TERA,
         &config,
         &config.default_language,
@@ -146,6 +149,8 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&ZOLA_TERA);
+    context.set_shortcode_definitions(&shortcode_def);
     let input = vec!["name", "na_me", "n_a_me", "n1"];
     for i in input {
         let res =
@@ -158,7 +163,7 @@ fn can_render_shortcode_with_markdown_char_in_args_name() {
 fn can_render_shortcode_with_markdown_char_in_args_value() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &ZOLA_TERA,
         &config,
         &config.default_language,
@@ -166,6 +171,8 @@ fn can_render_shortcode_with_markdown_char_in_args_value() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&ZOLA_TERA);
+    context.set_shortcode_definitions(&shortcode_def);
     let input = vec![
         "ub36ffWAqgQ-hey",
         "ub36ffWAqgQ_hey",
@@ -182,6 +189,54 @@ fn can_render_shortcode_with_markdown_char_in_args_value() {
 }
 
 #[test]
+fn can_render_html_shortcode_with_lang() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default_for_test();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+    tera.add_raw_template("shortcodes/i18nshortcode.html", "{{ lang }}").unwrap();
+    let mut context = RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
+
+    let res = render_content("a{{ i18nshortcode() }}a", &context).unwrap();
+    assert_eq!(res.body, "<p>aena</p>\n");
+}
+
+#[test]
+fn can_render_md_shortcode_with_lang() {
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default_for_test();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+    tera.add_raw_template(
+        "shortcodes/i18nshortcode.md",
+        "![Book cover in {{ lang }}](cover.{{ lang }}.png)",
+    )
+    .unwrap();
+    let mut context = RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
+
+    let res = render_content("{{ i18nshortcode() }}", &context).unwrap();
+    assert_eq!(res.body, "<p><img src=\"cover.en.png\" alt=\"Book cover in en\" /></p>\n");
+}
+
+#[test]
 fn can_render_body_shortcode_with_markdown_char_in_name() {
     let permalinks_ctx = HashMap::new();
     let mut tera = Tera::default();
@@ -195,7 +250,7 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
             "<blockquote>{{ body }} - {{ author}}</blockquote>",
         )
         .unwrap();
-        let context = RenderContext::new(
+        let mut context = RenderContext::new(
             &tera,
             &config,
             &config.default_language,
@@ -203,6 +258,8 @@ fn can_render_body_shortcode_with_markdown_char_in_name() {
             &permalinks_ctx,
             InsertAnchor::None,
         );
+        let shortcode_def = utils::templates::get_shortcodes(&tera);
+        context.set_shortcode_definitions(&shortcode_def);
 
         let res =
             render_content(&format!("{{% {}(author=\"Bob\") %}}\nhey\n{{% end %}}", i), &context)
@@ -233,7 +290,7 @@ Here is another paragraph.
 
     tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -241,6 +298,8 @@ Here is another paragraph.
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
 
@@ -266,14 +325,11 @@ This is a figure caption.
 Here is another paragraph.
 "#;
 
-    let expected = "<p>This is a figure caption.</p>
-<p>This is a figure caption.</p>
-<p>Here is another paragraph.</p>
-";
+    let expected = "<p>This is a figure caption.</p><p>This is a figure caption.</p>\n<p>Here is another paragraph.</p>\n";
 
     tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -281,6 +337,8 @@ Here is another paragraph.
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
 
@@ -291,7 +349,7 @@ Here is another paragraph.
 fn can_render_several_shortcode_in_row() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &ZOLA_TERA,
         &config,
         &config.default_language,
@@ -299,6 +357,8 @@ fn can_render_several_shortcode_in_row() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&ZOLA_TERA);
+    context.set_shortcode_definitions(&shortcode_def);
     let res = render_content(
         r#"
 Hello
@@ -317,6 +377,7 @@ Hello
         &context,
     )
     .unwrap();
+    println!("{:?}", res);
     assert!(res.body.contains("<p>Hello</p>\n<div >"));
     assert!(res
         .body
@@ -356,7 +417,7 @@ fn can_render_shortcode_with_body() {
     .unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -364,6 +425,8 @@ fn can_render_shortcode_with_body() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(
         r#"
@@ -375,7 +438,7 @@ A quote
         &context,
     )
     .unwrap();
-    assert_eq!(res.body, "<p>Hello</p>\n<blockquote>A quote - Keats</blockquote>\n");
+    assert_eq!(res.body, "<p>Hello\n<blockquote>A quote - Keats</blockquote></p>\n");
 }
 
 #[test]
@@ -690,6 +753,25 @@ fn can_insert_anchor_with_other_special_chars() {
 }
 
 #[test]
+fn can_insert_anchor_with_lang() {
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+    tera.add_raw_template("anchor-link.html", "({{ lang }})").unwrap();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default_for_test();
+    let context = RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::Right,
+    );
+    let res = render_content("# Hello", &context).unwrap();
+    assert_eq!(res.body, "<h1 id=\"hello\">Hello(en)</h1>\n");
+}
+
+#[test]
 fn can_make_toc() {
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
@@ -935,7 +1017,7 @@ fn can_make_permalinks_with_colocated_assets_for_link() {
         InsertAnchor::None,
     );
     let res = render_content("[an image](image.jpg)", &context).unwrap();
-    assert_eq!(res.body, "<p><a href=\"https://vincent.is/about/image.jpg\">an image</a></p>\n");
+    assert_eq!(res.body, "<p><a href=\"image.jpg\">an image</a></p>\n");
 }
 
 #[test]
@@ -951,10 +1033,7 @@ fn can_make_permalinks_with_colocated_assets_for_image() {
         InsertAnchor::None,
     );
     let res = render_content("![alt text](image.jpg)", &context).unwrap();
-    assert_eq!(
-        res.body,
-        "<p><img src=\"https://vincent.is/about/image.jpg\" alt=\"alt text\" /></p>\n"
-    );
+    assert_eq!(res.body, "<p><img src=\"image.jpg\" alt=\"alt text\" /></p>\n");
 }
 
 #[test]
@@ -1058,8 +1137,7 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
 
-    let shortcode = r#"
-<figure>
+    let shortcode = r#"<figure>
      {% if width %}
      <img src="/images/{{ src }}" alt="{{ caption }}" width="{{ width }}" />
      {% else %}
@@ -1075,7 +1153,7 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
 
     tera.add_raw_template("shortcodes/figure.html", shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -1083,6 +1161,8 @@ fn doesnt_try_to_highlight_content_from_shortcode() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
@@ -1104,7 +1184,7 @@ fn can_emit_newlines_and_whitespace_with_shortcode() {
 
     tera.add_raw_template(&format!("shortcodes/{}.html", "preformatted"), shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -1112,6 +1192,8 @@ fn can_emit_newlines_and_whitespace_with_shortcode() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
@@ -1238,7 +1320,7 @@ Bla bla"#;
 
     tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -1246,6 +1328,8 @@ Bla bla"#;
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
 
@@ -1259,8 +1343,7 @@ fn can_render_shortcode_body_with_no_invalid_escaping() {
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
 
-    let shortcode = r#"
-<a class="resize-image" href="/tlera-corp-gnat/gnat-with-picoblade-cable.jpg">
+    let shortcode = r#"<a class="resize-image" href="/tlera-corp-gnat/gnat-with-picoblade-cable.jpg">
     <img
         src="https://placekitten.com/200/300"
         alt="{{ alt }}">
@@ -1271,11 +1354,11 @@ fn can_render_shortcode_body_with_no_invalid_escaping() {
 
     let markdown_string = r#"{{ resize_image(path="tlera-corp-gnat/gnat-with-picoblade-cable.jpg", width=600, alt="Some alt") }}"#;
 
-    let expected = "<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>";
+    let expected = "<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>\n";
 
     tera.add_raw_template("shortcodes/resize_image.html", shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -1283,11 +1366,14 @@ fn can_render_shortcode_body_with_no_invalid_escaping() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
 }
 
+// TODO: handle it in the html part of the md renderer
 // https://github.com/getzola/zola/issues/1172
 #[test]
 fn can_render_commented_out_shortcodes_fine() {
@@ -1295,23 +1381,14 @@ fn can_render_commented_out_shortcodes_fine() {
     let mut tera = Tera::default();
     tera.extend(&ZOLA_TERA).unwrap();
 
-    let shortcode = r#"
-<a class="resize-image" href="/tlera-corp-gnat/gnat-with-picoblade-cable.jpg">
-    <img
-        src="https://placekitten.com/200/300"
-        alt="{{ alt }}">
-    </img>
-    <p>(click for full size)</p>
-</a>
-"#;
+    let shortcode = r#"<a width={{width}} class="resize-image" href="/tlera-corp-gnat/gnat-with-picoblade-cable.jpg">{{alt}}</a>"#;
 
-    let markdown_string = r#"<!--{{ resize_image(path="tlera-corp-gnat/gnat-with-picoblade-cable.jpg", width=600, alt="Some alt") }}-->"#;
-
-    let expected = "<!--<a class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">\n    <img\n        src=\"https://placekitten.com/200/300\"\n        alt=\"Some alt\">\n    </img>\n    <p>(click for full size)</p>\n</a>-->";
+    let markdown_string = r#"<!--{{ resize_image(path="gnat-with-picoblade-cable.jpg", width=600, alt="Alt1") }}{{ resize_image(path="gnat-with-picoblade-cable.jpg", width=610, alt="Alt2") }}-->"#;
+    let expected = "<!--<a width=600 class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">Alt1</a><a width=610 class=\"resize-image\" href=\"/tlera-corp-gnat/gnat-with-picoblade-cable.jpg\">Alt2</a>-->";
 
     tera.add_raw_template("shortcodes/resize_image.html", shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -1319,6 +1396,8 @@ fn can_render_commented_out_shortcodes_fine() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
@@ -1332,6 +1411,7 @@ fn can_render_read_more_after_shortcode() {
     tera.extend(&ZOLA_TERA).unwrap();
 
     let shortcode = r#"<p>Quote: {{body}}</p>"#;
+    tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
     let markdown_string = r#"
 # Title
 
@@ -1348,9 +1428,8 @@ Again more text"#;
 <p>Again more text</p>
 "#;
 
-    tera.add_raw_template("shortcodes/quote.md", shortcode).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -1358,6 +1437,8 @@ Again more text"#;
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);
@@ -1411,16 +1492,16 @@ fn invocation_count_increments_in_shortcode() {
 {{ b() }}
 "#;
 
-    let expected = r#"<p>a: 1</p>
+    let expected = r#"<p><p>a: 1</p>
 <p>b: 1</p>
 <p>a: 2</p>
-<p>b: 2</p>
+<p>b: 2</p></p>
 "#;
 
     tera.add_raw_template("shortcodes/a.html", shortcode_template_a).unwrap();
     tera.add_raw_template("shortcodes/b.html", shortcode_template_b).unwrap();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
+    let mut context = RenderContext::new(
         &tera,
         &config,
         &config.default_language,
@@ -1428,6 +1509,8 @@ fn invocation_count_increments_in_shortcode() {
         &permalinks_ctx,
         InsertAnchor::None,
     );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
 
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, expected);

@@ -21,13 +21,13 @@ This guide assumes that your Zola project is located in the root of your reposit
 Depending on how you added your theme, your repository may not contain it. The best way to ensure that the theme will
 be added is to use submodules. When doing this, ensure that you are using the `https` version of the URL.
 
-```sh
+```bash
 $ git submodule add {THEME_URL} themes/{THEME_NAME}
 ```
 
 For example, this could look like:
 
-```sh
+```bash
 $ git submodule add https://github.com/getzola/hyde.git themes/hyde
 ```
 

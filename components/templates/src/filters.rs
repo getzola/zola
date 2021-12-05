@@ -33,9 +33,15 @@ impl MarkdownFilter {
 
 impl TeraFilter for MarkdownFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        // NOTE: RenderContext below is not aware of the current language
+        // However, it should not be a problem because the surrounding tera
+        // template has language context, and will most likely call a piece of
+        // markdown respecting language preferences.
         let mut context = RenderContext::from_config(&self.config);
         context.permalinks = Cow::Borrowed(&self.permalinks);
         context.tera = Cow::Borrowed(&self.tera);
+        let def = utils::templates::get_shortcodes(&self.tera);
+        context.set_shortcode_definitions(&def);
 
         let s = try_get_value!("markdown", "value", String, value);
         let inline = match args.get("inline") {
@@ -121,6 +127,24 @@ mod tests {
             .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
+    }
+
+    #[test]
+    fn markdown_filter_override_lang() {
+        // We're checking that we can use a workaround to explicitly provide `lang` in markdown filter from tera,
+        // because otherwise markdown filter shortcodes are not aware of the current language
+        // NOTE: This should also work for `nth` although i don't see a reason to do that
+        let args = HashMap::new();
+        let config = Config::default();
+        let permalinks = HashMap::new();
+        let mut tera =
+            super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
+        tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
+        let filter = MarkdownFilter { config, permalinks, tera };
+        let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);
+        println!("{:?}", result);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(&"ajpa").unwrap());
     }
 
     #[test]

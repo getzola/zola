@@ -1,5 +1,17 @@
 # Changelog
 
+
+## 0.15.0 (2021-12-05)
+
+- Fix config file watching
+- Support custom syntax highlighting themes
+- Add a `required` argument to taxonomy template functions to allow them to return empty taxonomies
+- Support colocating subfolders
+- Shortcodes and `anchor-link.html` can now access the `lang` context
+- Add prompt before replacing the output directory with `zola build` if the `output-dir` flag is given
+- Shortcode handling has been completely rewritten, solving many issues
+- Also add internal links starting with `#` without any internal Zola link
+
 ## 0.14.1 (2021-08-24)
 
 - HTML minification now respects HTML spec (it still worked before because browsers can handle invalid HTML well and minifiers take advantage of it)

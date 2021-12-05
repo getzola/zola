@@ -117,10 +117,15 @@ impl TeraFn for GetUrl {
             }
 
             if cachebust {
-                match search_for_file(&self.base_path, &path_with_lang, &self.config.theme, &self.output_path)
-                    .map_err(|e| format!("`get_url`: {}", e))?
-                    .and_then(|(p, _)| fs::File::open(&p).ok())
-                    .and_then(|f| compute_file_hash::<Sha256>(f, false).ok())
+                match search_for_file(
+                    &self.base_path,
+                    &path_with_lang,
+                    &self.config.theme,
+                    &self.output_path,
+                )
+                .map_err(|e| format!("`get_url`: {}", e))?
+                .and_then(|(p, _)| fs::File::open(&p).ok())
+                .and_then(|f| compute_file_hash::<Sha256>(f, false).ok())
                 {
                     Some(hash) => {
                         permalink = format!("{}?h={}", permalink, hash);
@@ -129,6 +134,19 @@ impl TeraFn for GetUrl {
                         return Err(format!(
                             "`get_url`: Could not find or open file {}",
                             path_with_lang
+                        )
+                        .into())
+                    }
+                };
+            }
+
+            if cfg!(target_os = "windows") {
+                permalink = match url::Url::parse(&permalink) {
+                    Ok(parsed) => parsed.into(),
+                    Err(_) => {
+                        return Err(format!(
+                            "`get_url`: Could not parse link `{}` as a valid URL",
+                            permalink
                         )
                         .into())
                     }
@@ -176,14 +194,15 @@ impl TeraFn for GetFileHash {
         )
         .unwrap_or(true);
 
-        let file_path = match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
-            .map_err(|e| format!("`get_file_hash`: {}", e))?
-        {
-            Some((f, _)) => f,
-            None => {
-                return Err(format!("`get_file_hash`: Cannot find file: {}", path).into());
-            }
-        };
+        let file_path =
+            match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
+                .map_err(|e| format!("`get_file_hash`: {}", e))?
+            {
+                Some((f, _)) => f,
+                None => {
+                    return Err(format!("`get_file_hash`: Cannot find file: {}", path).into());
+                }
+            };
 
         let f = match std::fs::File::open(file_path) {
             Ok(f) => f,
@@ -241,7 +260,12 @@ title = "A title"
     #[test]
     fn can_add_cachebust_to_url() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            Config::default(),
+            HashMap::new(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
@@ -251,7 +275,12 @@ title = "A title"
     #[test]
     fn can_add_trailing_slashes() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            Config::default(),
+            HashMap::new(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -261,7 +290,12 @@ title = "A title"
     #[test]
     fn can_add_slashes_and_cachebust() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            Config::default(),
+            HashMap::new(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -272,7 +306,12 @@ title = "A title"
     #[test]
     fn can_link_to_some_static_file() {
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            Config::default(),
+            HashMap::new(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
@@ -290,7 +329,8 @@ title = "A title"
         create_file(&public.join("style.css"), "// Hello world")
             .expect("Failed to create file in output directory");
 
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), public);
+        let static_fn =
+            GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), public);
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("style.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/style.css");
@@ -300,7 +340,8 @@ title = "A title"
     fn error_when_language_not_available() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
+        let static_fn =
+            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
@@ -361,7 +402,8 @@ title = "A title"
     fn can_get_feed_url_with_default_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
+        let static_fn =
+            GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -372,7 +414,8 @@ title = "A title"
     fn can_get_feed_url_with_other_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
+        let static_fn =
+            GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
@@ -454,6 +497,27 @@ title = "A title"
             static_fn.call(&args).unwrap(),
             "N536s1EjuRWdnk6S3JDivkTPPC9/CbLi34Chshm0Yd41Vsk+GpzrMAjpmeLWpUtPHWXum+m+Y/pF7IiTFiM3Lw=="
         );
+    }
+
+    #[test]
+    fn can_resolve_asset_path_to_valid_url() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let dir = create_temp_dir();
+        let static_fn =
+            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert(
+            "path".to_string(),
+            to_value(dir.path().join("app.css").strip_prefix(std::env::temp_dir()).unwrap())
+                .unwrap(),
+        );
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            format!(
+                "https://remplace-par-ton-url.fr/{}/app.css",
+                dir.path().file_stem().unwrap().to_string_lossy()
+            )
+        )
     }
 
     #[test]

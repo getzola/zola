@@ -35,7 +35,7 @@ in the configuration file is `simple-blog`. Also make sure to place the variable
 Any file from the theme can be overridden by creating a file with the same path and name in your `templates` or `static`
 directory. Here are a few examples of that, assuming that the theme name is `simple-blog`:
 
-```txt
+```
 templates/pages/post.html -> replace themes/simple-blog/templates/pages/post.html
 templates/macros.html -> replace themes/simple-blog/templates/macros.html
 static/js/site.js -> replace themes/simple-blog/static/js/site.js

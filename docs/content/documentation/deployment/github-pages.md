@@ -18,7 +18,7 @@ We can use any continuous integration (CI) server to build and deploy our site. 
 
 In either case, it seems to work best if you use `git submodule` to include your theme, e.g.:
 
-```sh
+```bash
 git submodule add https://github.com/getzola/after-dark.git themes/after-dark
 ```
 
@@ -110,7 +110,7 @@ Depending on how you added your theme, Travis may not know how to access
 it. The best way to ensure that it will have full access to the theme is to use git
 submodules. When doing this, ensure that you are using the `https` version of the URL.
 
-```sh
+```bash
 $ git submodule add {THEME_URL} themes/{THEME_NAME}
 ```
 

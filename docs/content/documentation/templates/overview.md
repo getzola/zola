@@ -23,6 +23,8 @@ A few variables are available on all templates except feeds and the sitemap:
 Config variables can be accessed like `config.variable`, in HTML for example with `{{ config.base_url }}`.
 The 404 template does not get `current_path` and `current_url` (this information cannot be determined).
 
+On top of the `config` attributes mentioned above, it also gets `config.mode` which is whether it's run in `build`, `serve` or `check`.
+
 ## Standard templates
 By default, Zola will look for three templates: `index.html`, which is applied
 to the site homepage; `section.html`, which is applied to all sections (any HTML
@@ -64,7 +66,10 @@ Zola adds a few filters in addition to [those](https://tera.netlify.com/docs/#fi
 in Tera.
 
 ### markdown
-Converts the given variable to HTML using Markdown. Please note that shortcodes evaluated by this filter cannot access the current rendering context. `config` will be available, but accessing `section` or `page` (among others) from a shortcode called within the `markdown` filter will prevent your site from building. See [this discussion](https://github.com/getzola/zola/pull/1358).
+Converts the given variable to HTML using Markdown. There are a few differences compared to page/section Markdown rendering:
+
+- shortcodes evaluated by this filter cannot access the current rendering context: `config` will be available, but accessing `section` or `page` (among others) from a shortcode called within the `markdown` filter will prevent your site from building (see [this discussion](https://github.com/getzola/zola/pull/1358))
+- `lang` in shortcodes will always be equal to the site's `default_lang` (or `en` otherwise) ; it should not be a problem, but if it is in most cases, but if you need to use language-aware shortcodes in this filter, please refer to the [Shortcode context](@/documentation/content/shortcodes.md#shortcode-context) section of the docs.
 
 By default, the filter will wrap all text in a paragraph. To disable this behaviour, you can
 pass `true` to the inline argument:
@@ -153,6 +158,8 @@ the value should be the same as the one in the front matter, not the slugified v
 
 `lang` (optional) default to `config.default_language` in config.toml
 
+`required` (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.
+
 ### `get_taxonomy`
 Gets the whole taxonomy of a specific kind.
 
@@ -168,6 +175,8 @@ items: Array<TaxonomyTerm>;
 ```
 
 `lang` (optional) default to `config.default_language` in config.toml
+
+`required` (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.
 
 See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
 
@@ -194,14 +203,14 @@ This can also be used to get the permalinks for static assets, for example if
 we want to link to the file that is located at `static/css/app.css`:
 
 ```jinja2
-{{/* get_url(path="static/css/app.css") */}}
+{{/* get_url(path="css/app.css") */}}
 ```
 
 By default, assets will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
 An example is:
 
 ```jinja2
-{{/* get_url(path="static/css/app.css", trailing_slash=true) */}}
+{{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
 In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL

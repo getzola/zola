@@ -1,25 +1,78 @@
-use lazy_static::lazy_static;
+use std::ops::Range;
+
+use errors::{bail, Result};
 use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::Parser;
-use regex::Regex;
 use std::collections::HashMap;
-use tera::{to_value, Context, Map, Value};
+use tera::{to_value, Context, Map, Tera, Value};
+use utils::templates::ShortcodeFileType;
 
-use crate::context::RenderContext;
-use errors::{bail, Error, Result};
+pub const SHORTCODE_PLACEHOLDER: &str = "||ZOLA_SC_PLACEHOLDER||";
+
+#[derive(PartialEq, Debug)]
+pub struct Shortcode {
+    pub(crate) name: String,
+    pub(crate) args: Value,
+    pub(crate) span: Range<usize>,
+    pub(crate) body: Option<String>,
+    pub(crate) nth: usize,
+    // set later down the line, for quick access without needing the definitions
+    pub(crate) tera_name: String,
+}
+
+impl Shortcode {
+    pub fn file_type(&self) -> ShortcodeFileType {
+        if self.tera_name.ends_with("md") {
+            ShortcodeFileType::Markdown
+        } else {
+            ShortcodeFileType::Html
+        }
+    }
+
+    pub fn render(self, tera: &Tera, context: &Context) -> Result<String> {
+        let name = self.name;
+        let tpl_name = self.tera_name;
+        let mut new_context = Context::from_value(self.args)?;
+
+        if let Some(body_content) = self.body {
+            // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
+            new_context.insert("body", body_content.trim_end());
+        }
+        new_context.insert("nth", &self.nth);
+        new_context.extend(context.clone());
+
+        let res = utils::templates::render_template(&tpl_name, tera, new_context, &None)
+            .map_err(|e| errors::Error::chain(format!("Failed to render {} shortcode", name), e))?
+            .replace("\r\n", "\n");
+
+        Ok(res)
+    }
+
+    pub fn update_range(&mut self, sc_span: &Range<usize>, rendered_length: usize) {
+        if self.span.start > sc_span.start {
+            let delta = if sc_span.end < rendered_length {
+                rendered_length - sc_span.end
+            } else {
+                sc_span.end - rendered_length
+            };
+
+            if sc_span.end < rendered_length {
+                self.span = (self.span.start + delta)..(self.span.end + delta);
+            } else {
+                self.span = (self.span.start - delta)..(self.span.end - delta);
+            }
+        }
+    }
+}
 
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file
-const _GRAMMAR: &str = include_str!("content.pest");
+const _GRAMMAR: &str = include_str!("../content.pest");
 
 #[derive(Parser)]
 #[grammar = "content.pest"]
 pub struct ContentParser;
-
-lazy_static! {
-    static ref OUTER_NEWLINE_RE: Regex = Regex::new(r"^\s*\n|\n\s*$").unwrap();
-}
 
 fn replace_string_markers(input: &str) -> String {
     match input.chars().next().unwrap() {
@@ -30,7 +83,7 @@ fn replace_string_markers(input: &str) -> String {
     }
 }
 
-fn parse_literal(pair: Pair<Rule>) -> Value {
+fn parse_kwarg_value(pair: Pair<Rule>) -> Value {
     let mut val = None;
     for p in pair.into_inner() {
         match p.as_rule() {
@@ -46,6 +99,16 @@ fn parse_literal(pair: Pair<Rule>) -> Value {
             Rule::int => {
                 val = Some(to_value(p.as_str().parse::<i64>().unwrap()).unwrap());
             }
+            Rule::array => {
+                let mut vals = vec![];
+                for p2 in p.into_inner() {
+                    match p2.as_rule() {
+                        Rule::literal => vals.push(parse_kwarg_value(p2)),
+                        _ => unreachable!("Got something other than literal in an array: {:?}", p2),
+                    }
+                }
+                val = Some(Value::Array(vals));
+            }
             _ => unreachable!("Unknown literal: {:?}", p),
         };
     }
@@ -54,7 +117,7 @@ fn parse_literal(pair: Pair<Rule>) -> Value {
 }
 
 /// Returns (shortcode_name, kwargs)
-fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
+fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Value) {
     let mut name = None;
     let mut args = Map::new();
 
@@ -72,20 +135,7 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
                             arg_name = Some(p2.as_span().as_str().to_string());
                         }
                         Rule::literal => {
-                            arg_val = Some(parse_literal(p2));
-                        }
-                        Rule::array => {
-                            let mut vals = vec![];
-                            for p3 in p2.into_inner() {
-                                match p3.as_rule() {
-                                    Rule::literal => vals.push(parse_literal(p3)),
-                                    _ => unreachable!(
-                                        "Got something other than literal in an array: {:?}",
-                                        p3
-                                    ),
-                                }
-                            }
-                            arg_val = Some(Value::Array(vals));
+                            arg_val = Some(parse_kwarg_value(p2));
                         }
                         _ => unreachable!("Got something unexpected in a kwarg: {:?}", p2),
                     }
@@ -96,58 +146,18 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Map<String, Value>) {
             _ => unreachable!("Got something unexpected in a shortcode: {:?}", p),
         }
     }
-    (name.unwrap(), args)
+    (name.unwrap(), Value::Object(args))
 }
 
-fn render_shortcode(
-    name: &str,
-    args: &Map<String, Value>,
-    context: &RenderContext,
-    invocation_count: u32,
-    body: Option<&str>,
-) -> Result<String> {
-    let mut tera_context = Context::new();
-    for (key, value) in args.iter() {
-        tera_context.insert(key, value);
-    }
-    if let Some(b) = body {
-        // Trimming right to avoid most shortcodes with bodies ending up with a HTML new line
-        tera_context.insert("body", b.trim_end());
-    }
-    tera_context.insert("nth", &invocation_count);
-    tera_context.extend(context.tera_context.clone());
-
-    let mut template_name = format!("shortcodes/{}.md", name);
-    if !context.tera.templates.contains_key(&template_name) {
-        template_name = format!("shortcodes/{}.html", name);
-    }
-
-    let res = utils::templates::render_template(&template_name, &context.tera, tera_context, &None)
-        .map_err(|e| Error::chain(format!("Failed to render {} shortcode", name), e))?;
-
-    let res = OUTER_NEWLINE_RE.replace_all(&res, "");
-
-    // A blank line will cause the markdown parser to think we're out of HTML and start looking
-    // at indentation, making the output a code block. To avoid this, newlines are replaced with
-    // "<!--\n-->" at this stage, which will be undone after markdown rendering in lib.rs. Since
-    // that is an HTML comment, it shouldn't be rendered anyway. and not cause problems unless
-    // someone wants to include that comment in their content. This behaviour is unwanted in when
-    // rendering markdown shortcodes.
-    if template_name.ends_with(".html") {
-        Ok(format!("<pre data-shortcode>{}</pre>", res))
-    } else {
-        Ok(res.to_string())
-    }
-}
-
-pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<String> {
-    let mut res = String::with_capacity(content.len());
-    let mut invocation_map: HashMap<String, u32> = HashMap::new();
+pub fn parse_for_shortcodes(content: &str) -> Result<(String, Vec<Shortcode>)> {
+    let mut shortcodes = Vec::new();
+    let mut nths = HashMap::new();
     let mut get_invocation_count = |name: &str| {
-        let invocation_number = invocation_map.entry(String::from(name)).or_insert(0);
-        *invocation_number += 1;
-        *invocation_number
+        let nth = nths.entry(String::from(name)).or_insert(0);
+        *nth += 1;
+        *nth
     };
+    let mut output = String::with_capacity(content.len());
 
     let mut pairs = match ContentParser::parse(Rule::page, content) {
         Ok(p) => p,
@@ -190,33 +200,41 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
     // We have at least a `page` pair
     for p in pairs.next().unwrap().into_inner() {
         match p.as_rule() {
-            Rule::text => res.push_str(p.as_span().as_str()),
+            Rule::text => output.push_str(p.as_span().as_str()),
             Rule::inline_shortcode => {
+                let start = output.len();
                 let (name, args) = parse_shortcode_call(p);
-                res.push_str(&render_shortcode(
-                    &name,
-                    &args,
-                    context,
-                    get_invocation_count(&name),
-                    None,
-                )?);
+                let nth = get_invocation_count(&name);
+                shortcodes.push(Shortcode {
+                    name,
+                    args,
+                    span: start..(start + SHORTCODE_PLACEHOLDER.len()),
+                    body: None,
+                    nth,
+                    tera_name: String::new(),
+                });
+                output.push_str(SHORTCODE_PLACEHOLDER);
             }
             Rule::shortcode_with_body => {
+                let start = output.len();
                 let mut inner = p.into_inner();
                 // 3 items in inner: call, body, end
                 // we don't care about the closing tag
                 let (name, args) = parse_shortcode_call(inner.next().unwrap());
-                let body = inner.next().unwrap().as_span().as_str();
-                res.push_str(&render_shortcode(
-                    &name,
-                    &args,
-                    context,
-                    get_invocation_count(&name),
-                    Some(body),
-                )?);
+                let body = inner.next().unwrap().as_span().as_str().trim();
+                let nth = get_invocation_count(&name);
+                shortcodes.push(Shortcode {
+                    name,
+                    args,
+                    span: start..(start + SHORTCODE_PLACEHOLDER.len()),
+                    body: Some(body.to_string()),
+                    nth,
+                    tera_name: String::new(),
+                });
+                output.push_str(SHORTCODE_PLACEHOLDER)
             }
             Rule::ignored_inline_shortcode => {
-                res.push_str(
+                output.push_str(
                     &p.as_span().as_str().replacen("{{/*", "{{", 1).replacen("*/}}", "}}", 1),
                 );
             }
@@ -224,14 +242,14 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
                 for p2 in p.into_inner() {
                     match p2.as_rule() {
                         Rule::ignored_sc_body_start | Rule::ignored_sc_body_end => {
-                            res.push_str(
+                            output.push_str(
                                 &p2.as_span()
                                     .as_str()
                                     .replacen("{%/*", "{%", 1)
                                     .replacen("*/%}", "%}", 1),
                             );
                         }
-                        Rule::text_in_ignored_body_sc => res.push_str(p2.as_span().as_str()),
+                        Rule::text_in_ignored_body_sc => output.push_str(p2.as_span().as_str()),
                         _ => unreachable!("Got something weird in an ignored shortcode: {:?}", p2),
                     }
                 }
@@ -241,17 +259,12 @@ pub fn render_shortcodes(content: &str, context: &RenderContext) -> Result<Strin
         }
     }
 
-    Ok(res)
+    Ok((output, shortcodes))
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use super::*;
-    use config::Config;
-    use front_matter::InsertAnchor;
-    use tera::Tera;
 
     macro_rules! assert_lex_rule {
         ($rule: expr, $input: expr) => {
@@ -267,20 +280,6 @@ mod tests {
         };
     }
 
-    fn render_shortcodes(code: &str, tera: &Tera) -> String {
-        let config = Config::default_for_test();
-        let permalinks = HashMap::new();
-        let context = RenderContext::new(
-            tera,
-            &config,
-            &config.default_language,
-            "",
-            &permalinks,
-            InsertAnchor::None,
-        );
-        super::render_shortcodes(code, &context).unwrap()
-    }
-
     #[test]
     fn lex_text() {
         let inputs = vec!["Hello world", "HEllo \n world", "Hello 1 2 true false 'hey'"];
@@ -294,7 +293,8 @@ mod tests {
         let inputs = vec![
             "{{ youtube() }}",
             "{{ youtube(id=1, autoplay=true, url='hey') }}",
-            "{{ youtube(id=1, \nautoplay=true, url='hey') }}",
+            "{{ youtube(id=1, \nautoplay=true, url='hey', array=[]) }}",
+            "{{ youtube(id=1, \nautoplay=true, url='hey', multi_aray=[[]]) }}",
         ];
         for i in inputs {
             assert_lex_rule!(Rule::inline_shortcode, i);
@@ -364,119 +364,112 @@ mod tests {
     }
 
     #[test]
-    fn does_nothing_with_no_shortcodes() {
-        let res = render_shortcodes("Hello World", &Tera::default());
-        assert_eq!(res, "Hello World");
+    fn can_update_ranges() {
+        let mut sc = Shortcode {
+            name: "a".to_string(),
+            args: Value::Null,
+            span: 10..20,
+            body: None,
+            nth: 0,
+            tera_name: String::new(),
+        };
+        sc.update_range(&(2..8), 10);
+        assert_eq!(sc.span, 12..22);
+        sc.update_range(&(24..30), 30);
+        assert_eq!(sc.span, 12..22);
+        sc.update_range(&(5..11), 6);
+        assert_eq!(sc.span, 7..17);
     }
 
     #[test]
-    fn can_unignore_inline_shortcode() {
-        let res = render_shortcodes("Hello World {{/* youtube() */}}", &Tera::default());
-        assert_eq!(res, "Hello World {{ youtube() }}");
-    }
-
-    #[test]
-    fn can_unignore_shortcode_with_body() {
-        let res = render_shortcodes(
-            r#"
-Hello World
-{%/* youtube() */%}Some body {{ hello() }}{%/* end */%}"#,
-            &Tera::default(),
-        );
-        assert_eq!(res, "\nHello World\n{% youtube() %}Some body {{ hello() }}{% end %}");
-    }
-
-    // https://github.com/Keats/gutenberg/issues/383
-    #[test]
-    fn unignore_shortcode_with_body_does_not_swallow_initial_whitespace() {
-        let res = render_shortcodes(
-            r#"
-Hello World
-{%/* youtube() */%}
-Some body {{ hello() }}{%/* end */%}"#,
-            &Tera::default(),
-        );
-        assert_eq!(res, "\nHello World\n{% youtube() %}\nSome body {{ hello() }}{% end %}");
-    }
-
-    #[test]
-    fn can_parse_shortcode_arguments() {
-        let inputs = vec![
-            ("{{ youtube() }}", "youtube", Map::new()),
-            ("{{ youtube(id=1, autoplay=true, hello='salut', float=1.2) }}", "youtube", {
-                let mut m = Map::new();
-                m.insert("id".to_string(), to_value(1).unwrap());
-                m.insert("autoplay".to_string(), to_value(true).unwrap());
-                m.insert("hello".to_string(), to_value("salut").unwrap());
-                m.insert("float".to_string(), to_value(1.2).unwrap());
-                m
-            }),
-            ("{{ gallery(photos=['something', 'else'], fullscreen=true) }}", "gallery", {
-                let mut m = Map::new();
-                m.insert("photos".to_string(), to_value(["something", "else"]).unwrap());
-                m.insert("fullscreen".to_string(), to_value(true).unwrap());
-                m
-            }),
-        ];
-
-        for (i, n, a) in inputs {
-            let mut res = ContentParser::parse(Rule::inline_shortcode, i).unwrap();
-            let (name, args) = parse_shortcode_call(res.next().unwrap());
-            assert_eq!(name, n);
-            assert_eq!(args, a);
-        }
-    }
-
-    #[test]
-    fn can_render_inline_shortcodes() {
-        let mut tera = Tera::default();
-        tera.add_raw_template("shortcodes/youtube.html", "Hello {{id}}").unwrap();
-        let res = render_shortcodes("Inline {{ youtube(id=1) }}.", &tera);
-        assert_eq!(res, "Inline <pre data-shortcode>Hello 1</pre>.");
-    }
-
-    #[test]
-    fn can_render_shortcodes_with_body() {
-        let mut tera = Tera::default();
-        tera.add_raw_template("shortcodes/youtube.html", "{{body}}").unwrap();
-        let res = render_shortcodes("Body\n {% youtube() %}Hey!{% end %}", &tera);
-        assert_eq!(res, "Body\n <pre data-shortcode>Hey!</pre>");
-    }
-
-    // https://github.com/Keats/gutenberg/issues/462
-    #[test]
-    fn shortcodes_with_body_do_not_eat_newlines() {
-        let mut tera = Tera::default();
-        tera.add_raw_template("shortcodes/youtube.html", "{{body | safe}}").unwrap();
-        let res = render_shortcodes("Body\n {% youtube() %}\nHello \n \n\n World{% end %}", &tera);
-        assert_eq!(res, "Body\n <pre data-shortcode>Hello \n \n\n World</pre>");
-    }
-
-    #[test]
-    fn outer_newlines_removed_from_shortcodes_with_body() {
-        let mut tera = Tera::default();
-        tera.add_raw_template("shortcodes/youtube.html", "  \n  {{body}}  \n  ").unwrap();
-        let res = render_shortcodes("\n{% youtube() %}  \n  content  \n  {% end %}\n", &tera);
-        assert_eq!(res, "\n<pre data-shortcode>  content  </pre>\n");
-    }
-
-    #[test]
-    fn outer_newlines_removed_from_inline_shortcodes() {
-        let mut tera = Tera::default();
-        tera.add_raw_template("shortcodes/youtube.html", "  \n  Hello, Zola.  \n  ").unwrap();
-        let res = render_shortcodes("\n{{ youtube() }}\n", &tera);
-        assert_eq!(res, "\n<pre data-shortcode>  Hello, Zola.  </pre>\n");
-    }
-
-    #[test]
-    fn shortcodes_that_emit_markdown() {
-        let mut tera = Tera::default();
-        tera.add_raw_template(
-            "shortcodes/youtube.md",
-            "{% for i in [1,2,3] %}\n* {{ i }}\n{%- endfor %}",
+    fn can_extract_basic_inline_shortcode_with_args() {
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Inline shortcode: {{ hello(string='hey', int=1, float=2.1, bool=true, array=[true, false]) }} hey",
         )
         .unwrap();
-        let res = render_shortcodes("{{ youtube() }}", &tera);
-        assert_eq!(res, "* 1\n* 2\n* 3");
+        assert_eq!(out, format!("Inline shortcode: {} hey", SHORTCODE_PLACEHOLDER));
+        assert_eq!(shortcodes.len(), 1);
+        assert_eq!(shortcodes[0].name, "hello");
+        assert_eq!(shortcodes[0].args.as_object().unwrap().len(), 5);
+        assert_eq!(shortcodes[0].args["string"], Value::String("hey".to_string()));
+        assert_eq!(shortcodes[0].args["bool"], Value::Bool(true));
+        assert_eq!(shortcodes[0].args["int"], to_value(1).unwrap());
+        assert_eq!(shortcodes[0].args["float"], to_value(2.1).unwrap());
+        assert_eq!(
+            shortcodes[0].args["array"],
+            Value::Array(vec![Value::Bool(true), Value::Bool(false)])
+        );
+        assert_eq!(shortcodes[0].span, 18..(18 + SHORTCODE_PLACEHOLDER.len()));
+        assert_eq!(shortcodes[0].nth, 1);
+    }
+
+    #[test]
+    fn can_unignore_ignored_inline_shortcode() {
+        let (out, shortcodes) =
+            parse_for_shortcodes("Hello World {{/* youtube() */}} hey").unwrap();
+        assert_eq!(out, "Hello World {{ youtube() }} hey");
+        assert_eq!(shortcodes.len(), 0);
+    }
+
+    #[test]
+    fn can_extract_shortcode_with_body() {
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Body shortcode\n {% quote(author='Bobby', array=[[true]]) %}DROP TABLES;{% end %} \n hey",
+        )
+        .unwrap();
+        assert_eq!(out, format!("Body shortcode\n {} \n hey", SHORTCODE_PLACEHOLDER));
+        assert_eq!(shortcodes.len(), 1);
+        assert_eq!(shortcodes[0].name, "quote");
+        assert_eq!(shortcodes[0].args.as_object().unwrap().len(), 2);
+        assert_eq!(shortcodes[0].args["author"], Value::String("Bobby".to_string()));
+        assert_eq!(
+            shortcodes[0].args["array"],
+            Value::Array(vec![Value::Array(vec![Value::Bool(true)])])
+        );
+        assert_eq!(shortcodes[0].body, Some("DROP TABLES;".to_owned()));
+        assert_eq!(shortcodes[0].span, 16..(16 + SHORTCODE_PLACEHOLDER.len()));
+        assert_eq!(shortcodes[0].nth, 1);
+    }
+
+    #[test]
+    fn can_unignore_ignored_shortcode_with_body() {
+        let (out, shortcodes) =
+            parse_for_shortcodes("Hello World {%/* youtube() */%} Somebody {%/* end */%} hey")
+                .unwrap();
+        assert_eq!(out, "Hello World {% youtube() %} Somebody {% end %} hey");
+        assert_eq!(shortcodes.len(), 0);
+    }
+
+    #[test]
+    fn can_extract_multiple_shortcodes_and_increment_nth() {
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Hello World {% youtube() %} Somebody {% end %} {{ hello() }}\n {{hello()}}",
+        )
+        .unwrap();
+        assert_eq!(
+            out,
+            format!(
+                "Hello World {} {}\n {}",
+                SHORTCODE_PLACEHOLDER, SHORTCODE_PLACEHOLDER, SHORTCODE_PLACEHOLDER
+            )
+        );
+        assert_eq!(shortcodes.len(), 3);
+        assert_eq!(shortcodes[0].nth, 1);
+        assert_eq!(shortcodes[1].nth, 1);
+        assert_eq!(shortcodes[2].nth, 2);
+    }
+
+    #[test]
+    fn can_handle_multiple_shortcodes() {
+        let (_, shortcodes) = parse_for_shortcodes(
+            r#"
+        {{ youtube(id="ub36ffWAqgQ") }}
+        {{ youtube(id="ub36ffWAqgQ", autoplay=true) }}
+        {{ vimeo(id="210073083") }}
+        {{ streamable(id="c0ic") }}
+        {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}"#,
+        )
+        .unwrap();
+        assert_eq!(shortcodes.len(), 5);
     }
 }

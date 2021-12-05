@@ -3,8 +3,9 @@ mod page;
 mod section;
 mod ser;
 
-use std::fs::read_dir;
 use std::path::{Path, PathBuf};
+
+use walkdir::WalkDir;
 
 pub use self::file_info::FileInfo;
 pub use self::page::Page;
@@ -29,10 +30,17 @@ pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
 
 /// Looks into the current folder for the path and see if there's anything that is not a .md
 /// file. Those will be copied next to the rendered .html file
-pub fn find_related_assets(path: &Path, config: &Config) -> Vec<PathBuf> {
+/// If `recursive` is set to `true`, it will add all subdirectories assets as well. This should
+/// only be set when finding page assets currently.
+/// TODO: remove this flag once sections with assets behave the same as pages with assets
+pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec<PathBuf> {
     let mut assets = vec![];
 
-    for entry in read_dir(path).unwrap().filter_map(std::result::Result::ok) {
+    let mut builder = WalkDir::new(path);
+    if !recursive {
+        builder = builder.max_depth(1);
+    }
+    for entry in builder.into_iter().filter_map(std::result::Result::ok) {
         let entry_path = entry.path();
         if entry_path.is_file() {
             match entry_path.extension() {
@@ -46,18 +54,11 @@ pub fn find_related_assets(path: &Path, config: &Config) -> Vec<PathBuf> {
     }
 
     if let Some(ref globset) = config.ignored_content_globset {
-        // `find_related_assets` only scans the immediate directory (it is not recursive) so our
-        // filtering only needs to work against the file_name component, not the full suffix. If
-        // `find_related_assets` was changed to also return files in subdirectories, we could
-        // use `PathBuf.strip_prefix` to remove the parent directory and then glob-filter
-        // against the remaining path. Note that the current behaviour effectively means that
-        // the `ignored_content` setting in the config file is limited to single-file glob
-        // patterns (no "**" patterns).
         assets = assets
             .into_iter()
-            .filter(|path| match path.file_name() {
-                None => false,
-                Some(file) => !globset.is_match(file),
+            .filter(|p| match p.strip_prefix(path) {
+                Err(_) => false,
+                Ok(file) => !globset.is_match(file),
             })
             .collect();
     }
@@ -68,27 +69,58 @@ pub fn find_related_assets(path: &Path, config: &Config) -> Vec<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::File;
+    use std::fs::{create_dir, File};
 
     use config::Config;
     use tempfile::tempdir;
 
     #[test]
-    fn can_find_related_assets() {
+    fn can_find_related_assets_recursive() {
         let tmp_dir = tempdir().expect("create temp dir");
-        File::create(tmp_dir.path().join("index.md")).unwrap();
-        File::create(tmp_dir.path().join("example.js")).unwrap();
-        File::create(tmp_dir.path().join("graph.jpg")).unwrap();
-        File::create(tmp_dir.path().join("fail.png")).unwrap();
+        let path = tmp_dir.path();
+        File::create(path.join("index.md")).unwrap();
+        File::create(path.join("example.js")).unwrap();
+        File::create(path.join("graph.jpg")).unwrap();
+        File::create(path.join("fail.png")).unwrap();
+        create_dir(path.join("subdir")).expect("create subdir temp dir");
+        File::create(path.join("subdir").join("index.md")).unwrap();
+        File::create(path.join("subdir").join("example.js")).unwrap();
 
-        let assets = find_related_assets(tmp_dir.path(), &Config::default());
-        assert_eq!(assets.len(), 3);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 3);
-        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "example.js").count(), 1);
-        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "graph.jpg").count(), 1);
-        assert_eq!(assets.iter().filter(|p| p.file_name().unwrap() == "fail.png").count(), 1);
+        let assets = find_related_assets(path, &Config::default(), true);
+        assert_eq!(assets.len(), 4);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 4);
+
+        for asset in vec!["example.js", "graph.jpg", "fail.png", "subdir/example.js"] {
+            assert!(assets
+                .iter()
+                .find(|p| p.strip_prefix(path).unwrap() == Path::new(asset))
+                .is_some())
+        }
     }
 
+    #[test]
+    fn can_find_related_assets_non_recursive() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        File::create(path.join("index.md")).unwrap();
+        File::create(path.join("example.js")).unwrap();
+        File::create(path.join("graph.jpg")).unwrap();
+        File::create(path.join("fail.png")).unwrap();
+        create_dir(path.join("subdir")).expect("create subdir temp dir");
+        File::create(path.join("subdir").join("index.md")).unwrap();
+        File::create(path.join("subdir").join("example.js")).unwrap();
+
+        let assets = find_related_assets(path, &Config::default(), false);
+        assert_eq!(assets.len(), 3);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 3);
+
+        for asset in vec!["example.js", "graph.jpg", "fail.png"] {
+            assert!(assets
+                .iter()
+                .find(|p| p.strip_prefix(path).unwrap() == Path::new(asset))
+                .is_some())
+        }
+    }
     #[test]
     fn can_find_anchor_at_root() {
         let input = vec![

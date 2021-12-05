@@ -26,7 +26,7 @@ pub(crate) struct ClassHighlighter<'config> {
 }
 
 impl<'config> ClassHighlighter<'config> {
-    pub fn new(syntax: &'config SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
+    pub fn new(syntax: &SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
         let parse_state = ParseState::new(syntax);
         Self { syntax_set, open_spans: 0, parse_state, scope_stack: ScopeStack::new() }
     }
@@ -236,7 +236,7 @@ mod tests {
         let syntax_and_theme = resolve_syntax_and_theme(Some("py"), &config);
         let mut highlighter = SyntaxHighlighter::new(false, syntax_and_theme);
         let mut out = String::new();
-        for line in LinesWithEndings::from(&code) {
+        for line in LinesWithEndings::from(code) {
             out.push_str(&highlighter.highlight_line(line));
         }
         assert!(!out.contains("<script>"));

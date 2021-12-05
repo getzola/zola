@@ -14,6 +14,7 @@ serde_derive = "1"
 regex = "1"
 lazy_static = "1"
 lexical-sort = "0.3"
+walkdir = "2"
 
 front_matter = { path = "../front_matter" }
 config = { path = "../config" }

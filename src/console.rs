@@ -48,15 +48,14 @@ fn colorize(message: &str, color: &ColorSpec) {
     writeln!(&mut stdout).unwrap();
 }
 
-/// Display in the console the number of pages/sections in the site, and number of images to process
+/// Display in the console the number of pages/sections in the site
 pub fn notify_site_size(site: &Site) {
     let library = site.library.read().unwrap();
     println!(
-        "-> Creating {} pages ({} orphan), {} sections, and processing {} images",
+        "-> Creating {} pages ({} orphan) and {} sections",
         library.pages().len(),
         library.get_all_orphan_pages().len(),
         library.sections().len() - 1, // -1 since we do not count the index as a section there
-        site.num_img_ops(),
     );
 }
 
