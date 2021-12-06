@@ -14,7 +14,7 @@ stages:
               imageName: 'vs2017-win2016'
               rustup_toolchain: stable
             mac-stable:
-              imageName: 'macos-10.15'
+              imageName: 'macos-11'
               rustup_toolchain: stable
             linux-stable:
               imageName: 'ubuntu-20.04'
