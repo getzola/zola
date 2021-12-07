@@ -3,6 +3,7 @@
 ## 0.15.1 (unreleased)
 
 - Fix markdown shortcodes not being rendered correctly
+- Fix config data not getting to the templates
 
 ## 0.15.0 (2021-12-05)
 
