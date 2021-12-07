@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.16.0 (unreleased)
+## 0.15.1 (unreleased)
 
+- Fix markdown shortcodes not being rendered correctly
 
 ## 0.15.0 (2021-12-05)
 
