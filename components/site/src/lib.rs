@@ -512,11 +512,12 @@ impl Site {
                 &self.base_path.join("themes").join(theme).join("static"),
                 &self.output_path,
                 false,
+				self.get_png_optimizationconfig()
             )?;
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
-            copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static)?;
+            copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static,self.get_png_optimizationconfig())?;
         }
 
         Ok(())
@@ -598,7 +599,7 @@ impl Site {
     }
 
     fn copy_asset(&self, src: &Path, dest: &Path) -> Result<()> {
-        copy_file_if_needed(src, dest, self.config.hard_link_static)
+        copy_file_if_needed(src, dest, self.config.hard_link_static,self.get_png_optimizationconfig())
     }
 
     /// Renders a single content page
@@ -1127,6 +1128,18 @@ impl Site {
             })
             .collect::<Result<()>>()
     }
+	
+	/*
+		when running serve we do not want png optimizations, because that's too slow.
+		when running build it depends upon the configuration
+	*/
+	fn get_png_optimizationconfig(&self) -> Option<u8> {
+		if self.config.optimize_png && self.build_mode == BuildMode::Disk {
+			Some(self.config.optimize_png_level)
+		} else {
+			None
+		}
+	}
 }
 
 fn log_time(start: Instant, message: &str) -> Instant {

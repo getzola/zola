@@ -1,9 +1,12 @@
+extern crate oxipng;
+
 use filetime::{set_file_mtime, FileTime};
 use std::fs::{copy, create_dir_all, metadata, File};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
 use walkdir::WalkDir;
+use oxipng::{InFile,OutFile,Options,optimize,AlphaOptim,Headers};
 
 use errors::{Error, Result};
 
@@ -62,7 +65,7 @@ pub fn read_file(path: &Path) -> Result<String> {
 
 /// Copy a file but takes into account where to start the copy as
 /// there might be folders we need to create on the way.
-pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> Result<()> {
+pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool, configoptimize: Option<u8>) -> Result<()> {
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
 
@@ -72,14 +75,40 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
         })?;
     }
 
-    copy_file_if_needed(src, &target_path, hard_link)
+    copy_file_if_needed(src, &target_path, hard_link,configoptimize)
+}
+
+fn get_png_optimzation_options(configoptimize: Option<u8>) -> Options {
+	let mut oxipngoptions = match configoptimize {
+		Some(level) => {
+			let mut opts = Options::from_preset(level);
+			if level > 4 {
+				opts.alphas.insert(AlphaOptim::NoOp);
+				opts.alphas.insert(AlphaOptim::Black);
+				opts.alphas.insert(AlphaOptim::White);
+				opts.alphas.insert(AlphaOptim::Up);
+				opts.alphas.insert(AlphaOptim::Right);
+				opts.alphas.insert(AlphaOptim::Down);
+				opts.alphas.insert(AlphaOptim::Left);
+			}
+			opts
+		}
+		_ => {Options::from_preset(2)}
+	};
+	oxipngoptions.preserve_attrs = true;
+	oxipngoptions.force = true;
+	oxipngoptions.strip = Headers::Safe;
+	oxipngoptions
 }
 
 /// No copy occurs if all of the following conditions are satisfied:
 /// 1. A file with the same name already exists in the dest path.
 /// 2. Its modification timestamp is identical to that of the src file.
 /// 3. Its filesize is identical to that of the src file.
-pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
+/// Note in case of optimized png's the filesize may differ. But this does not matter because png's are only optimized in build mode, never in serve mode.
+pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool, configoptimize: Option<u8>) -> Result<()> {
+	let oxipngoptions = get_png_optimzation_options(configoptimize);
+	
     if let Some(parent_directory) = dest.parent() {
         create_dir_all(parent_directory).map_err(|e| {
             Error::chain(format!("Was not able to create folder {}", parent_directory.display()), e)
@@ -94,33 +123,47 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
         if Path::new(&dest).is_file() {
             let target_metadata = metadata(&dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
-            if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                copy(src, &dest).map_err(|e| {
-                    Error::chain(
-                        format!(
-                            "Was not able to copy file {} to {}",
-                            src.display(),
-                            dest.display()
-                        ),
-                        e,
-                    )
-                })?;
-                set_file_mtime(&dest, src_mtime)?;
+			if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
+				match src.extension() {
+					Some(ext) if configoptimize.is_some() && ext.to_str().unwrap().to_lowercase() == "png"  => {					
+						optimize( &InFile::Path( (&src).to_path_buf()), &OutFile::Path( Some((&dest).to_path_buf())) , &oxipngoptions).map_err(|e| {
+							Error::chain(
+								format!("Was not able to copy file {} to {}", src.display(), dest.display()),
+								e,
+							)})? ;
+					}
+					_ => {copy(src, &dest).map_err(|e| {
+							Error::chain(
+								format!("Was not able to copy file {} to {}", src.display(), dest.display()),
+								e,
+							)})?;
+						}
+				}			
+				set_file_mtime(&dest, src_mtime)?;
             }
         } else {
-            copy(src, &dest).map_err(|e| {
-                Error::chain(
-                    format!("Was not able to copy file {} to {}", src.display(), dest.display()),
-                    e,
-                )
-            })?;
-            set_file_mtime(&dest, src_mtime)?;
-        }
-    }
+			match src.extension() {
+				Some(ext) if configoptimize.is_some() && ext.to_str().unwrap().to_lowercase() == "png"  => {		
+					optimize( &InFile::Path( (&src).to_path_buf()), &OutFile::Path( Some((&dest).to_path_buf())) , &oxipngoptions).map_err(|e| {
+						Error::chain(
+							format!("Was not able to copy file {} to {}", src.display(), dest.display()),
+							e,
+						)})? ;
+				}
+				_ => {copy(src, &dest).map_err(|e| {
+						Error::chain(
+							format!("Was not able to copy file {} to {}", src.display(), dest.display()),
+							e,
+						)})?;
+					}
+			}
+			set_file_mtime(&dest, src_mtime)?;		
+		}
+	}
     Ok(())
 }
 
-pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
+pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool,configoptimize:Option<u8>) -> Result<()> {
     for entry in WalkDir::new(src).into_iter().filter_map(std::result::Result::ok) {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
@@ -130,7 +173,7 @@ pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
                 create_directory(&target_path)?;
             }
         } else {
-            copy_file(entry.path(), dest, src, hard_link).map_err(|e| {
+            copy_file(entry.path(), dest, src, hard_link,configoptimize).map_err(|e| {
                 Error::chain(
                     format!(
                         "Was not able to copy file {} to {}",
@@ -182,10 +225,19 @@ mod tests {
     use std::io::Write;
     use std::path::PathBuf;
     use std::str::FromStr;
+    use tempfile::{tempdir_in,TempDir};
 
-    use tempfile::tempdir_in;
+    use super::{copy_file,copy_file_if_needed};
 
-    use super::copy_file;
+	#[test]
+	fn test_copy_file_png_optimization() {
+		let base_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+		let png_path_src = base_path.join("test-files").join("zola-first-serve.png");
+		let tmp_dir = TempDir::new();
+		let png_path_dest = tmp_dir.unwrap().path().join("zola-first-serve.png");
+		copy_file_if_needed(&png_path_src, &png_path_dest, false, Some(2));
+		assert!(metadata(png_path_src).unwrap().len() > metadata(png_path_dest).unwrap().len(), "png was not optimized.");
+	}
 
     #[test]
     fn test_copy_file_timestamp_preserved() {
@@ -197,7 +249,7 @@ mod tests {
         let src_file_path = src_dir.path().join("test.txt");
         let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
         File::create(&src_file_path).unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false, None).unwrap();
 
         assert_eq!(
             metadata(&src_file_path).and_then(|m| m.modified()).unwrap(),
@@ -218,7 +270,7 @@ mod tests {
             let mut src_file = File::create(&src_file_path).unwrap();
             src_file.write_all(b"file1").unwrap();
         }
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false, None).unwrap();
         {
             let mut dest_file = File::create(&dest_file_path).unwrap();
             dest_file.write_all(b"file2").unwrap();
@@ -228,14 +280,14 @@ mod tests {
         filetime::set_file_mtime(&src_file_path, filetime::FileTime::from_unix_time(0, 0)).unwrap();
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false, None).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file2");
 
         // Copy occurs if the timestamps are different while the filesizes are same.
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(42, 42))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false, None).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
 
@@ -246,7 +298,7 @@ mod tests {
         }
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false, None).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
     }
