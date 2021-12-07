@@ -332,7 +332,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
 
 impl Default for Config {
     fn default() -> Config {
-        let mut conf = Config {
+        Config {
             base_url: DEFAULT_BASE_URL.to_string(),
             title: None,
             description: None,
@@ -357,9 +357,7 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
-        };
-        conf.add_default_language();
-        conf
+        }
     }
 }
 
@@ -706,5 +704,18 @@ highlight_themes_css = [
 
         let config = Config::parse(config);
         assert_eq!(config.is_err(), true);
+    }
+
+    // https://github.com/getzola/zola/issues/1687
+    #[test]
+    fn regression_config_default_lang_data() {
+        let config = r#"
+base_url = "https://www.getzola.org/"
+title = "Zola"
+    "#;
+
+        let config = Config::parse(config).unwrap();
+        let serialised = config.serialize(&config.default_language);
+        assert_eq!(serialised.title, &config.title);
     }
 }
