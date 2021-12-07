@@ -3,17 +3,16 @@ use std::collections::HashMap;
 use errors::{Error, Result};
 use utils::templates::{ShortcodeDefinition, ShortcodeFileType};
 
-mod lexer;
-pub(crate) mod parser;
+mod parser;
 
-use parser::{Shortcode, ShortcodeExtractor};
+pub(crate) use parser::{parse_for_shortcodes, Shortcode, SHORTCODE_PLACEHOLDER};
 
 /// Extracts the shortcodes present in the source, check if we know them and errors otherwise
 pub fn extract_shortcodes(
     source: &str,
     definitions: &HashMap<String, ShortcodeDefinition>,
 ) -> Result<(String, Vec<Shortcode>)> {
-    let (out, mut shortcodes) = ShortcodeExtractor::parse(source)?;
+    let (out, mut shortcodes) = parse_for_shortcodes(source)?;
 
     for sc in &mut shortcodes {
         if let Some(def) = definitions.get(&sc.name) {
@@ -58,7 +57,7 @@ pub fn insert_md_shortcodes(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::shortcode::parser::SHORTCODE_PLACEHOLDER;
+    use crate::shortcode::SHORTCODE_PLACEHOLDER;
     use tera::to_value;
 
     #[test]

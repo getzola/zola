@@ -208,7 +208,7 @@ impl Page {
 
         if page.file.name == "index" {
             let parent_dir = path.parent().unwrap();
-            page.assets = find_related_assets(parent_dir, config);
+            page.assets = find_related_assets(parent_dir, config, true);
             page.serialized_assets = page.serialize_assets(base_path);
         } else {
             page.assets = vec![];
@@ -236,7 +236,7 @@ impl Page {
             anchor_insert,
         );
         context.set_shortcode_definitions(shortcode_definitions);
-
+        context.set_current_page_path(&self.file.relative);
         context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
         let res = render_content(&self.raw_content, &context).map_err(|e| {

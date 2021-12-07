@@ -7,7 +7,7 @@ use tera::{Context, Tera};
 
 use config::{Config, Taxonomy as TaxonomyConfig};
 use errors::{bail, Error, Result};
-use utils::templates::render_template;
+use utils::templates::{check_template_fallbacks, render_template};
 
 use crate::content::SerializingPage;
 use crate::library::Library;
@@ -202,10 +202,16 @@ impl Taxonomy {
         );
         context.insert("current_path", &format!("/{}/{}/", self.kind.name, item.slug));
 
-        render_template(&format!("{}/single.html", self.kind.name), tera, context, &config.theme)
-            .map_err(|e| {
-                Error::chain(format!("Failed to render single term {} page.", self.kind.name), e)
-            })
+        // Check for taxon-specific template, or use generic as fallback.
+        let specific_template = format!("{}/single.html", self.kind.name);
+        let template = match check_template_fallbacks(&specific_template, tera, &config.theme) {
+            Some(template) => template,
+            None => "taxonomy_single.html",
+        };
+
+        render_template(&template, tera, context, &config.theme).map_err(|e| {
+            Error::chain(format!("Failed to render single term {} page.", self.kind.name), e)
+        })
     }
 
     pub fn render_all_terms(
@@ -224,10 +230,16 @@ impl Taxonomy {
         context.insert("current_url", &config.make_permalink(&self.kind.name));
         context.insert("current_path", &format!("/{}/", self.kind.name));
 
-        render_template(&format!("{}/list.html", self.kind.name), tera, context, &config.theme)
-            .map_err(|e| {
-                Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e)
-            })
+        // Check for taxon-specific template, or use generic as fallback.
+        let specific_template = format!("{}/list.html", self.kind.name);
+        let template = match check_template_fallbacks(&specific_template, tera, &config.theme) {
+            Some(template) => template,
+            None => "taxonomy_list.html",
+        };
+
+        render_template(&template, tera, context, &config.theme).map_err(|e| {
+            Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e)
+        })
     }
 
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializedTaxonomy<'a> {

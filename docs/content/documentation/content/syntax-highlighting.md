@@ -269,7 +269,7 @@ highlight(code);
 ````
 
 - `hl_lines` to highlight lines. You must specify a list of inclusive ranges of lines to highlight,
-separated by whitespaces. Ranges are 1-indexed and `linenostart` doesn't influence the values, it always refers to the codeblock line number.
+separated by ` ` (whitespace). Ranges are 1-indexed and `linenostart` doesn't influence the values, it always refers to the codeblock line number.
   
 ````
 ```rust,hl_lines=1 3-5 9
@@ -280,7 +280,7 @@ highlight(code);
 ````
 
 - `hide_lines` to hide lines. You must specify a list of inclusive ranges of lines to hide,
-separated by ` `. Ranges are 1-indexed.
+separated by ` ` (whitespace). Ranges are 1-indexed.
   
 ````
 ```rust,hide_lines=1-2

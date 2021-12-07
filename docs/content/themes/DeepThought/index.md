@@ -3,11 +3,11 @@
 title = "DeepThought"
 description = "A simple blog theme focused on writing powered by Bulma and Zola."
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2021-12-02T23:22:24+01:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2021-12-02T23:22:24+01:00
+updated = 2021-12-02T23:22:24+01:00
 repository = "https://github.com/RatanShreshtha/DeepThought.git"
 homepage = "https://github.com/RatanShreshtha/DeepThought"
 minimum_version = "0.9.0"
@@ -19,38 +19,121 @@ name = "Ratan Kulshreshtha"
 homepage = "https://ratanshreshtha.dev"
 +++        
 
-# DeepThought
-A simple blog theme focused on writing powered by Bulma and Zola.
+<p align="center">
+  <a href="https://github.com/RatanShreshtha/DeepThought">
+    <img src="static/images/avatar.png" alt="Logo" width="80" height="80">
+  </a>
 
-![DeepThought](./screenshot.png)
+  <h3 align="center">DeepThought</h3>
 
-## Live Demo
-Live version of the website is available at [here](https://deepthought-theme.netlify.app/)
+  <p align="center">
+    A simple blog theme focused on writing powered by Bulma and Zola.
+    <br />
+    <a href="https://deepthought-theme.netlify.app/docs/"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/RatanShreshtha/DeepThought">Code Repository</a>
+    ·
+    <a href="https://github.com/RatanShreshtha/DeepThought/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/RatanShreshtha/DeepThought/issues">Request Feature</a>
+  </p>
+</p>
 
-## Installation
-Get [Zola](https://www.getzola.org/) and follow their guide on [installing a theme](https://www.getzola.org/documentation/themes/installing-and-using-themes/).
+<details open="open">
+  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgements">Acknowledgements</a></li>
+  </ol>
+</details>
+
+
+
+## About The Project
+
+[![DeepThought](./screenshot.png)](https://deepthought-theme.netlify.app/)
+
+> A simple blog theme focused on writing powered by Bulma and Zola.
+
+### Features
+- [x] Dark Mode
+- [x] Pagination
+- [x] Search
+- [x] Charts
+- [x] Maps
+- [x] Diagrams
+- [x] Galleria
+- [x] Analytics
+- [x] Comments
+- [x] Categories
+- [x] Social Links
+- [x] Multilingual Navbar
+- [x] Katex
+
+
+### Built With
+
+* [Zola](https://www.getzola.org/)
+* [Bulma](https://bulma.io/)
+
+
+
+## Getting Started
+
+To get a local copy up and running follow these simple steps.
+
+### Prerequisites
+
+You need static site generator (SSG) [Zola](https://www.getzola.org/documentation/getting-started/installation/) installed in your machine to use this theme follow their guide on [getting started](https://www.getzola.org/documentation/getting-started/overview/).
+
+### Installation
+
+Follow zola's guide on [installing a theme](https://www.getzola.org/documentation/themes/installing-and-using-themes/).
 Make sure to add `theme = "DeepThought"` to your `config.toml`
 
 **Check zola version (only 0.9.0+)**
 Just to double-check to make sure you have the right version. It is not supported to use this theme with a version under 0.9.0.
 
-## How to serve?
-Go into your sites directory, and type `zola serve`. You should see your new site at `localhost:1111`.
+
+
+## Usage
+
+### How to serve?
+Go into your sites directory and type `zola serve`. You should see your new site at `localhost:1111`.
 
  **NOTE**: you must provide the theme options variables in `config.toml` to serve a functioning site
 
-## Deployment
+### Deployment
 [Zola](https://www.getzola.org) already has great documentation for deploying to [Netlify](https://www.getzola.org/documentation/deployment/netlify/) or [Github Pages](https://www.getzola.org/documentation/deployment/github-pages/). I won't bore you with a regurgitated explanation.
 
-## Theme Options
+### Theme Options
 ```toml
-
 navbar_items = [
-	{ url = "$BASE_URL/", name = "Home" },
-	{ url = "$BASE_URL/posts", name = "Posts" },
-	{ url = "$BASE_URL/docs", name = "Docs" },
-	{ url = "$BASE_URL/tags", name = "Tags" },
-	{ url = "$BASE_URL/categories", name = "Categories" },
+ { code = "en", nav_items = [
+  { url = "$BASE_URL/", name = "Home" },
+  { url = "$BASE_URL/posts", name = "Posts" },
+  { url = "$BASE_URL/docs", name = "Docs" },
+  { url = "$BASE_URL/tags", name = "Tags" },
+  { url = "$BASE_URL/categories", name = "Categories" },
+ ]},
 ]
 
 # Add links to favicon, you can use https://realfavicongenerator.net/ to generate favicon for your site
@@ -76,32 +159,138 @@ keybase = "<keybase_username>"
 linkedin = "<linkedin_username>"
 stackoverflow = "<stackoverflow_userid>"
 twitter = "<twitter_username>"
+instagram = "<instagram_usernaem>"
+behance = "<behance_username>"
+
 
 # To add google analytics
 [extra.analytics]
 google = "<your_gtag>"
 
-# To add hyvor comments
+# To add disqus comments
 [extra.commenting]
-hyvor = "<your_hyvor_website_id>"
+disqus = "<your_disqus_shortname>"
 
 # To enable mapbox maps
 [extra.mapbox]
 access_token = "<your_access_token>"
 ```
 
-## Features
-- [x] Dark Mode
-- [x] Pagination
-- [x] Search
-- [x] Charts
-- [x] Maps
-- [x] Diagrams
-- [x] Galleria
-- [x] Analytics
-- [x] Comments
-- [x] Categories
-- [x] Social Links
-- [x] Post Sharing
+#### Multilingual Navbar
+
+If you want to have a multilingual navbar on your blog, you must add your new code language in the [languages](https://www.getzola.org/documentation/content/multilingual/#configuration) array in the `config.toml` file.
+
+**NOTE**: Don't add you default language to this array
+
+```toml
+languages = [
+    {code = "fr"}, 
+    {code = "es"},
+]
+```
+
+And then create and array of nav item for each language:
+
+**NOTE**: Include your default language in this array
+
+```toml
+navbar_items = [
+ { code = "en", nav_items = [
+  { url = "$BASE_URL/", name = "Home" },
+  { url = "$BASE_URL/posts", name = "Posts" },
+  { url = "$BASE_URL/docs", name = "Docs" },
+  { url = "$BASE_URL/tags", name = "Tags" },
+  { url = "$BASE_URL/categories", name = "Categories" },
+ ]},
+ { code = "fr", nav_items = [
+  { url = "$BASE_URL/", name = "Connexion" },
+ ]},
+ { code = "es", nav_items = [
+  { url = "$BASE_URL/", name = "Publicationes" },
+  { url = "$BASE_URL/", name = "Registrar" },
+ ]}
+]
+```
+
+en:
+
+![DeepThought](./screenshot_navbar_en.png)
+
+fr:
+
+![DeepThought](./screenshot_navbar_fr.png)
+
+es: 
+
+![DeepThought](./screenshot_navbar_es.png)
+
+
+### KaTeX math formula support
+
+This theme contains math formula support using [KaTeX](https://katex.org/),
+which can be enabled by setting `katex.enabled = true` in the `extra` section
++of `config.toml`:
+
+```toml
+[extra]
+katex.enabled = true
+katex.auto_render = true
+```
+
+After enabling this extension, the `katex` short code can be used in documents:
+* `{{/* katex(body="\KaTeX") */}}` to typeset a math formula inlined into a text,
+  similar to `$...$` in LaTeX
+* `{%/* katex(block=true) */%}\KaTeX{%/* end */%}` to typeset a block of math formulas,
+  similar to `$$...$$` in LaTeX
+
+#### Automatic rendering without short codes
+
+Optionally, `\\( \KaTeX \\)` / `$ \KaTeX $` inline and `\\[ \KaTeX \\]` / `$$ \KaTeX $$`
+block-style automatic rendering is also supported, if enabled in the config:
+
+```toml
+[extra]
+katex.enabled = true
+katex.auto_render = true
+```
+
+## Roadmap
+
+See the [open issues](https://github.com/RatanShreshtha/DeepThought/issues) for a list of proposed features (and known issues).
+
+
+
+## Contributing
+
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+
+
+## Contact
+
+Ratan Kulshreshtha - [@RatanShreshtha](https://twitter.com/RatanShreshtha)>
+
+
+Project Link: [https://github.com/RatanShreshtha/DeepThought](https://github.com/RatanShreshtha/DeepThought)
+
+## Acknowledgements
+
+* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
+* [Choose an Open Source License](https://choosealicense.com)
+* [Slick Carousel](https://kenwheeler.github.io/slick)
+* [Font Awesome](https://fontawesome.com)
+* [Unsplash](https://unsplash.com/)
 
         

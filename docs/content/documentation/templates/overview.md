@@ -23,6 +23,8 @@ A few variables are available on all templates except feeds and the sitemap:
 Config variables can be accessed like `config.variable`, in HTML for example with `{{ config.base_url }}`.
 The 404 template does not get `current_path` and `current_url` (this information cannot be determined).
 
+On top of the `config` attributes mentioned above, it also gets `config.mode` which is whether it's run in `build`, `serve` or `check`.
+
 ## Standard templates
 By default, Zola will look for three templates: `index.html`, which is applied
 to the site homepage; `section.html`, which is applied to all sections (any HTML
@@ -201,14 +203,14 @@ This can also be used to get the permalinks for static assets, for example if
 we want to link to the file that is located at `static/css/app.css`:
 
 ```jinja2
-{{/* get_url(path="static/css/app.css") */}}
+{{/* get_url(path="css/app.css") */}}
 ```
 
 By default, assets will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
 An example is:
 
 ```jinja2
-{{/* get_url(path="static/css/app.css", trailing_slash=true) */}}
+{{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
 In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL

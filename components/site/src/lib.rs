@@ -380,7 +380,9 @@ impl Site {
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
-            .map(|section| section.render_markdown(permalinks, tera, config))
+            .map(|section| {
+                section.render_markdown(permalinks, tera, config, &self.shortcode_definitions)
+            })
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -426,7 +428,12 @@ impl Site {
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render_md {
-            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+            section.render_markdown(
+                &self.permalinks,
+                &self.tera,
+                &self.config,
+                &self.shortcode_definitions,
+            )?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");
         library.remove_section(&section.file.path);
@@ -848,7 +855,13 @@ impl Site {
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
                         comp.clone(),
-                        &Paginator::from_taxonomy(taxonomy, item, &library),
+                        &Paginator::from_taxonomy(
+                            taxonomy,
+                            item,
+                            &library,
+                            &self.tera,
+                            &self.config.theme,
+                        ),
                     )?;
                 } else {
                     let single_output =

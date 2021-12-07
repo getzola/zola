@@ -1,18 +1,18 @@
 
 +++
 title = "Papaya"
-description = "A clean blogging theme with projects"
+description = "A clean Zola theme for blogging and projects"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2021-12-02T23:22:24+01:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2021-12-02T23:22:24+01:00
+updated = 2021-12-02T23:22:24+01:00
 repository = "https://github.com/justint/papaya.git"
 homepage = "https://github.com/justint/papaya"
 minimum_version = "0.14.0"
 license = "MIT"
-demo = ""
+demo = "https://justintennant.me/papaya"
 
 [extra.author]
 name = "Justin Tennant"
@@ -23,7 +23,7 @@ homepage = "https://justintennant.me"
 
 A clean [Zola](https://getzola.org) theme for blogging and projects, forked from [Anpu](https://github.com/zbrox/anpu-zola-theme).
 
-**Demo site**: https://justintennant.me/papaya/
+**Demo site**: [https://justintennant.me/papaya/](https://justintennant.me/papaya/)
 
 ![index](pics/index.png)
 

@@ -11,7 +11,7 @@ use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
-use crate::shortcode::parser::{Shortcode, SHORTCODE_PLACEHOLDER};
+use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
@@ -92,9 +92,20 @@ fn fix_link(
     } else {
         if is_external_link(link) {
             external_links.push(link.to_owned());
+            link.to_owned()
+        } else if link.starts_with("#") {
+            // local anchor without the internal zola path
+            if let Some(current_path) = context.current_page_path {
+                internal_links.push((current_path.to_owned(), Some(link[1..].to_owned())));
+                format!("{}{}", context.current_page_permalink, &link)
+            } else {
+                link.to_string()
+            }
+        } else {
+            link.to_string()
         }
-        link.to_string()
     };
+
     Ok(result)
 }
 
@@ -121,8 +132,7 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
                 heading_refs.push(HeadingRef::new(i, *level));
             }
             Event::End(Tag::Heading(_)) => {
-                let msg = "Heading end before start?";
-                heading_refs.last_mut().expect(msg).end_idx = i;
+                heading_refs.last_mut().expect("Heading end before start?").end_idx = i;
             }
             _ => (),
         }
@@ -211,6 +221,7 @@ pub fn markdown_to_html(
                                     }
 
                                     let shortcode = next_shortcode.take().unwrap();
+
                                     match shortcode.render(&context.tera, &context.tera_context) {
                                         Ok(s) => {
                                             events.push(Event::Html(s.into()));
@@ -317,7 +328,6 @@ pub fn markdown_to_html(
                     });
                 }
                 Event::Html(text) => {
-                    println!("Got text: {:?}", text);
                     if text.contains("<!-- more -->") {
                         has_summary = true;
                         events.push(Event::Html(CONTINUE_READING.into()));
