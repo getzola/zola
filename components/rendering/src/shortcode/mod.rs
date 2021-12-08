@@ -39,7 +39,7 @@ pub fn insert_md_shortcodes(
         for (md_sc_span, rendered_length) in &transforms {
             sc.update_range(md_sc_span, *rendered_length);
         }
-        // It has been checked before that this exist
+
         if sc.file_type() == ShortcodeFileType::Html {
             html_shortcodes.push(sc);
             continue;

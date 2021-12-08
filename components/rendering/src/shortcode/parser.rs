@@ -50,18 +50,21 @@ impl Shortcode {
     }
 
     pub fn update_range(&mut self, sc_span: &Range<usize>, rendered_length: usize) {
-        if self.span.start > sc_span.start {
-            let delta = if sc_span.end < rendered_length {
-                rendered_length - sc_span.end
-            } else {
-                sc_span.end - rendered_length
-            };
+        if self.span.start < sc_span.start {
+            return;
+        }
 
-            if sc_span.end < rendered_length {
-                self.span = (self.span.start + delta)..(self.span.end + delta);
-            } else {
-                self.span = (self.span.start - delta)..(self.span.end - delta);
-            }
+        let rendered_end = sc_span.start + rendered_length;
+        let delta = if sc_span.end < rendered_end {
+            rendered_end - sc_span.end
+        } else {
+            sc_span.end - rendered_end
+        };
+
+        if sc_span.end < rendered_end {
+            self.span = (self.span.start + delta)..(self.span.end + delta);
+        } else {
+            self.span = (self.span.start - delta)..(self.span.end - delta);
         }
     }
 }
@@ -373,12 +376,27 @@ mod tests {
             nth: 0,
             tera_name: String::new(),
         };
+        // 6 -> 10 in length so +4 on both sides of the range
         sc.update_range(&(2..8), 10);
-        assert_eq!(sc.span, 12..22);
-        sc.update_range(&(24..30), 30);
-        assert_eq!(sc.span, 12..22);
-        sc.update_range(&(5..11), 6);
-        assert_eq!(sc.span, 7..17);
+        assert_eq!(sc.span, 14..24);
+        // After the shortcode so no impact
+        sc.update_range(&(25..30), 30);
+        assert_eq!(sc.span, 14..24);
+        // +4 again
+        sc.update_range(&(5..11), 10);
+        assert_eq!(sc.span, 18..28);
+
+        // buggy case from https://zola.discourse.group/t/zola-0-15-md-shortcode-stopped-working/1099/3
+        let mut sc = Shortcode {
+            name: "a".to_string(),
+            args: Value::Null,
+            span: 42..65,
+            body: None,
+            nth: 0,
+            tera_name: String::new(),
+        };
+        sc.update_range(&(9..32), 3);
+        assert_eq!(sc.span, 22..45);
     }
 
     #[test]

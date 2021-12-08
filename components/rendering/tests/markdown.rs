@@ -1625,3 +1625,34 @@ fn can_use_smart_punctuation() {
     let res = render_content(r#"This -- is "it"..."#, &context).unwrap();
     assert_eq!(res.body, "<p>This – is “it”…</p>\n");
 }
+
+// https://zola.discourse.group/t/zola-0-15-md-shortcode-stopped-working/1099/2
+#[test]
+fn md_shortcode_regression() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+    tera.add_raw_template("shortcodes/code.md", "123").unwrap();
+    let config = Config::default_for_test();
+    let mut context = RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
+
+    let markdown_string = r#"
+ttest1
+
+{{ code(path = "content/software/supercollider/pakt-februari/pakt29.scd", syntax = "supercollider") }}
+
+ttest2
+
+{{ code(path = "content/software/supercollider/pakt-februari/pakt29.scd", syntax = "supercollider") }}"#;
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, "<p>ttest1</p>\n<p>123</p>\n<p>ttest2</p>\n<p>123</p>\n");
+}

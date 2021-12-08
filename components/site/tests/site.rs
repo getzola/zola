@@ -111,6 +111,8 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "sitemap.xml"));
     assert!(file_exists!(public, "robots.txt"));
     assert!(file_exists!(public, "a-fixed-url/index.html"));
+    // the config.title is there
+    assert!(file_contains!(public, "index.html", "My Integration Testing site"));
 
     assert!(file_exists!(public, "posts/python/index.html"));
     // Shortcodes work

@@ -1,4 +1,4 @@
-title = "My site"
+title = "My Integration Testing site"
 base_url = "https://replace-this-with-your-url.com"
 compile_sass = true
 generate_feed = true
