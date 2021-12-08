@@ -56,7 +56,7 @@ stages:
               rustup_toolchain: stable
               target: 'x86_64-pc-windows-msvc'
             mac-stable:
-              imageName: 'macos-10.14'
+              imageName: 'macos-11'
               rustup_toolchain: stable
               target: 'x86_64-apple-darwin'
             linux-stable:
