@@ -87,24 +87,23 @@ $ snap install --edge zola
 
 ### Docker
 
-Zola is available on [Docker Hub](https://hub.docker.com/r/balthek/zola).
+Zola is available on [the GitHub registry](https://github.com/getzola/zola/pkgs/container/zola).
 It has no `latest` tag, you will need to specify a [specific version to pull](https://hub.docker.com/r/balthek/zola/tags).
 
 ```sh
-$ docker pull balthek/zola:0.14.0
-$ docker run balthek/zola:0.14.0 --version
+$ docker pull ghcr.io/getzola/zola:v0.15.1
 ```
 
 #### Build
 
 ```sh
-$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app balthek/zola:0.14.0 build
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app ghcr.io/getzola/zola:v0.15.1 build
 ```
 
 #### Serve
 
 ```sh
-$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 balthek/zola:0.14.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 ghcr.io/getzola/zola:v0.15.1 serve --interface 0.0.0.0 --port 8080 --base-url localhost
 ```
 
 You can now browse http://localhost:8080.
