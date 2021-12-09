@@ -41,8 +41,7 @@ pub fn insert_md_shortcodes(
         }
 
         if sc.file_type() == ShortcodeFileType::Html {
-            html_shortcodes.push(sc);
-            continue;
+            html_shortcodes.push(sc.clone());
         }
 
         let span = sc.span.clone();
