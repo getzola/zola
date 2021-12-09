@@ -187,6 +187,56 @@ pub fn markdown_to_html(
 
     {
         let mut events = Vec::new();
+        macro_rules! render_shortcodes {
+            ($is_text:expr, $text:expr, $range:expr) => {
+                let orig_range_start = $range.start;
+                loop {
+                    if let Some(ref shortcode) = next_shortcode {
+                        if !$range.contains(&shortcode.span.start) {
+                            break;
+                        }
+                        let sc_span = shortcode.span.clone();
+
+                        // we have some text before the shortcode, push that first
+                        if $range.start != sc_span.start {
+                            let content = $text[($range.start - orig_range_start)
+                                ..(sc_span.start - orig_range_start)]
+                                .to_string()
+                                .into();
+                            events.push(if $is_text {
+                                Event::Text(content)
+                            } else {
+                                Event::Html(content)
+                            });
+                            $range.start = sc_span.start;
+                        }
+
+                        // Now we should be at the same idx as the shortcode
+                        let shortcode = next_shortcode.take().unwrap();
+                        match shortcode.render(&context.tera, &context.tera_context) {
+                            Ok(s) => {
+                                events.push(Event::Html(s.into()));
+                                $range.start += SHORTCODE_PLACEHOLDER.len();
+                            }
+                            Err(e) => {
+                                error = Some(e);
+                                break;
+                            }
+                        }
+                        next_shortcode = html_shortcodes.pop();
+                        continue;
+                    }
+
+                    break;
+                }
+
+                if !$range.is_empty() {
+                    // The $range value is for the whole document, not for this slice of text
+                    let content = $text[($range.start - orig_range_start)..].to_string().into();
+                    events.push(if $is_text { Event::Text(content) } else { Event::Html(content) });
+                }
+            };
+        }
 
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
@@ -206,45 +256,7 @@ pub fn markdown_to_html(
                             continue;
                         }
 
-                        // TODO: find a way to share that code with the HTML handler
-                        let mut new_text = text.clone();
-                        loop {
-                            if let Some(ref shortcode) = next_shortcode {
-                                let sc_span = shortcode.span.clone();
-                                if range.contains(&sc_span.start) {
-                                    if range.start != sc_span.start {
-                                        events.push(Event::Text(
-                                            new_text[..(sc_span.start - range.start)]
-                                                .to_string()
-                                                .into(),
-                                        ));
-                                    }
-
-                                    let shortcode = next_shortcode.take().unwrap();
-
-                                    match shortcode.render(&context.tera, &context.tera_context) {
-                                        Ok(s) => {
-                                            events.push(Event::Html(s.into()));
-                                            new_text = new_text[(sc_span.end - range.start)..]
-                                                .to_owned()
-                                                .into();
-                                            range.start = sc_span.end - range.start;
-                                        }
-                                        Err(e) => {
-                                            error = Some(e);
-                                            break;
-                                        }
-                                    }
-
-                                    next_shortcode = html_shortcodes.pop();
-                                    continue;
-                                }
-                            }
-
-                            break;
-                        }
-
-                        events.push(Event::Text(new_text[..].to_string().into()));
+                        render_shortcodes!(true, text, range);
                     }
                 }
                 Event::Start(Tag::CodeBlock(ref kind)) => {
@@ -338,40 +350,7 @@ pub fn markdown_to_html(
                         continue;
                     }
 
-                    let mut new_text = text.clone();
-                    loop {
-                        if let Some(ref shortcode) = next_shortcode {
-                            let sc_span = shortcode.span.clone();
-                            if range.contains(&sc_span.start) {
-                                if range.start != sc_span.start {
-                                    events.push(Event::Html(
-                                        new_text[..(sc_span.start - range.start)].to_owned().into(),
-                                    ));
-                                }
-
-                                let shortcode = next_shortcode.take().unwrap();
-                                match shortcode.render(&context.tera, &context.tera_context) {
-                                    Ok(s) => {
-                                        events.push(Event::Html(s.into()));
-                                        new_text = new_text[(sc_span.end - range.start)..]
-                                            .to_owned()
-                                            .into();
-                                        range.start = sc_span.end - range.start;
-                                    }
-                                    Err(e) => {
-                                        error = Some(e);
-                                        break;
-                                    }
-                                }
-
-                                next_shortcode = html_shortcodes.pop();
-                                continue;
-                            }
-                        }
-
-                        break;
-                    }
-                    events.push(Event::Html(new_text[..].to_string().into()));
+                    render_shortcodes!(false, text, range);
                 }
                 _ => events.push(event),
             }

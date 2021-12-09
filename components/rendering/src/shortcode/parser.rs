@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use tera::{to_value, Context, Map, Tera, Value};
 use utils::templates::ShortcodeFileType;
 
-pub const SHORTCODE_PLACEHOLDER: &str = "||ZOLA_SC_PLACEHOLDER||";
+pub const SHORTCODE_PLACEHOLDER: &str = "@@ZOLA_SC_PLACEHOLDER@@";
 
 #[derive(PartialEq, Debug)]
 pub struct Shortcode {
