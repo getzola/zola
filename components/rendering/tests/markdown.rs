@@ -1656,3 +1656,49 @@ ttest2
     let res = render_content(markdown_string, &context).unwrap();
     assert_eq!(res.body, "<p>ttest1</p>\n<p>123</p>\n<p>ttest2</p>\n<p>123</p>\n");
 }
+
+// https://github.com/getzola/zola/issues/1689
+#[test]
+fn html_shortcode_regression() {
+    let permalinks_ctx = HashMap::new();
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+    tera.add_raw_template("shortcodes/ex.html", "1").unwrap();
+    tera.add_raw_template("shortcodes/book.html", "2").unwrap();
+    tera.add_raw_template("shortcodes/std.html", "3").unwrap();
+    let config = Config::default_for_test();
+    let mut context = RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::None,
+    );
+    let shortcode_def = utils::templates::get_shortcodes(&tera);
+    context.set_shortcode_definitions(&shortcode_def);
+
+    let markdown_string = r#"{{ book(page="") }} {{ ex(page="") }} {{ std(page="std") }}"#;
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, "<p>2 1 3</p>\n");
+
+    // And in html
+    let markdown_string = r#"<p>{{ book(page="") }} {{ ex(page="") }} {{ std(page="std") }}</p>"#;
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, "<p>2 1 3</p>");
+
+    // Another one with newlines
+    let markdown_string = "<p>\n{{ book(page='') }}\n</p>";
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, "<p>\n2\n</p>");
+
+    // And another one
+    let markdown_string = "<span>{{ book(page='') }}</span>\n**The Book** {{ book(page='') }}";
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, "<p><span>2</span>\n<strong>The Book</strong> 2</p>\n");
+
+    // with some text in between
+    let markdown_string = r#"a.{{ book(page="") }} b.{{ ex(page="") }} c.{{ std(page="std") }}"#;
+    let res = render_content(markdown_string, &context).unwrap();
+    assert_eq!(res.body, "<p>a.2 b.1 c.3</p>\n");
+}
