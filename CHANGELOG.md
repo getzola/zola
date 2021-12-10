@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.15.2 (unreleased)
+## 0.15.2 (2021-12-10)
+
+- Fix HTML shortcodes
 
 ## 0.15.1 (2021-12-08)
 
