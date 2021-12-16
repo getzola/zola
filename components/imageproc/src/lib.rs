@@ -377,8 +377,6 @@ impl EnqueueResponse {
 /// taking care of file stale status based on timestamps and possible hash collisions.
 #[derive(Debug)]
 pub struct Processor {
-    /// The base path of the Zola site
-    base_path: PathBuf,
     base_url: String,
     output_dir: PathBuf,
     /// A map of a ImageOps by their stored hash.
@@ -394,7 +392,6 @@ impl Processor {
         Processor {
             output_dir: base_path.join("static").join(RESIZED_SUBDIR),
             base_url: config.make_permalink(RESIZED_SUBDIR),
-            base_path,
             img_ops: HashMap::new(),
             img_ops_collisions: Vec::new(),
         }
