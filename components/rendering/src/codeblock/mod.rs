@@ -136,41 +136,32 @@ impl<'config> CodeBlock<'config> {
                 }
             }
 
-            if self.line_numbers {
-                buffer.push_str("<tr><td>");
-                let num = format!("{}", self.line_number_start + i);
+            let maybe_mark = |buffer: &mut String, s: &str| {
                 if is_higlighted {
                     buffer.push_str("<mark");
-                    if let Some(ref s) = mark_style {
+                    if let Some(ref style) = mark_style {
                         buffer.push_str(" style=\"");
-                        buffer.push_str(s);
+                        buffer.push_str(style);
                         buffer.push_str("\">");
                     } else {
                         buffer.push('>')
                     }
-                    buffer.push_str(&num);
+                    buffer.push_str(s);
                     buffer.push_str("</mark>");
                 } else {
-                    buffer.push_str(&num);
+                    buffer.push_str(s);
                 }
+            };
+
+            if self.line_numbers {
+                buffer.push_str("<tr><td>");
+                let num = format!("{}", self.line_number_start + i);
+                maybe_mark(&mut buffer, &num);
                 buffer.push_str("</td><td>");
             }
 
             let highlighted_line = self.highlighter.highlight_line(line);
-            if is_higlighted {
-                buffer.push_str("<mark");
-                if let Some(ref s) = mark_style {
-                    buffer.push_str(" style=\"");
-                    buffer.push_str(s);
-                    buffer.push_str("\">");
-                } else {
-                    buffer.push('>')
-                }
-                buffer.push_str(&highlighted_line);
-                buffer.push_str("</mark>");
-            } else {
-                buffer.push_str(&highlighted_line);
-            }
+            maybe_mark(&mut buffer, &highlighted_line);
         }
 
         if let Some(rest) = self.highlighter.finalize() {
