@@ -12,7 +12,7 @@ generate an index for the `default_language` set for all pages not excluded from
 It is very important to set the `default_language` in your `config.toml` if you are writing a site not in
 English; the index building pipelines are very different depending on the language.
 
-After `zola build` or `zola serve`, you should see two files in your static directory:
+After `zola build` or `zola serve`, you should see two files in your public directory:
 
 - `search_index.${default_language}.js`: so `search_index.en.js` for a default setup
 - `elasticlunr.min.js`
