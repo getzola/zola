@@ -3,9 +3,6 @@ title = "Netlify"
 weight = 20
 +++
 
-Netlify provides best practices like SSL, CDN distribution, caching and continuous deployment
-with no effort. This site is hosted by Netlify and automatically deployed on commits.
-
 If you don't have an account with Netlify, you can [sign up](https://app.netlify.com) for one.
 
 

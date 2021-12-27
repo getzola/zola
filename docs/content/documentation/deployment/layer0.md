@@ -3,8 +3,6 @@ title = "Layer0"
 weight = 50
 +++
 
-[Layer0](https://www.layer0.co) is an all-in-one platform to develop, deploy, preview, experiment on, monitor, and run your headless frontend. It is focused on large, dynamic websites and best-in-class performance through EdgeJS (a JavaScript-based Content Delivery Network), predictive prefetching, and performance monitoring. Layer0 offers a free tier.
-
 If you don't have an account with Layer0, you can sign up [here](https://app.layer0.co/signup).
 
 ## Manual deploys
