@@ -12,7 +12,7 @@ If you don't have an account with Vercel, you can sign up [here](https://vercel.
 ## Automatic deploys
 
 Once you sign up you can import your site from a Git provider (Github, GitLab or Bitbucket). 
-When you import your repository, Vercel will try to find out what frmaework your site is using.
+When you import your repository, Vercel will try to find out what framework your site is using.
 
 If it doesn't default to Zola:
 - Set Framework Preset as **Zola**.
