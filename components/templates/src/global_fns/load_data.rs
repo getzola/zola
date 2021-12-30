@@ -120,12 +120,14 @@ impl DataSource {
         method: Method,
         post_body: &Option<String>,
         post_content_type: &Option<String>,
+        headers: &Option<Vec<String>>,
     ) -> u64 {
         let mut hasher = DefaultHasher::new();
         format.hash(&mut hasher);
         method.hash(&mut hasher);
         post_body.hash(&mut hasher);
         post_content_type.hash(&mut hasher);
+        headers.hash(&mut hasher);
         self.hash(&mut hasher);
         hasher.finish()
     }
@@ -285,8 +287,13 @@ impl TeraFn for LoadData {
         };
 
         let file_format = get_output_format_from_args(format_arg, &data_source)?;
-        let cache_key =
-            data_source.get_cache_key(&file_format, method, &post_body_arg, &post_content_type);
+        let cache_key = data_source.get_cache_key(
+            &file_format,
+            method,
+            &post_body_arg,
+            &post_content_type,
+            &headers,
+        );
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
         if let Some(cached_result) = cache.get(&cache_key) {
@@ -692,12 +699,14 @@ mod tests {
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         let cache_key_2 = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         assert_eq!(cache_key, cache_key_2);
     }
@@ -709,12 +718,14 @@ mod tests {
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         let json_cache_key = DataSource::Path(get_test_file("test.json")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         assert_ne!(toml_cache_key, json_cache_key);
     }
@@ -726,14 +737,35 @@ mod tests {
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         let json_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Json,
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         assert_ne!(toml_cache_key, json_cache_key);
+    }
+
+    #[test]
+    fn different_cache_key_per_headers() {
+        let header1_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Json,
+            Method::Get,
+            &None,
+            &None,
+            &Some(vec!["a=b".to_string()]),
+        );
+        let header2_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Json,
+            Method::Get,
+            &None,
+            &None,
+            &Some(vec![]),
+        );
+        assert_ne!(header1_cache_key, header2_cache_key);
     }
 
     #[test]
@@ -1095,6 +1127,29 @@ mod tests {
         );
         let result = static_fn.call(&args);
         assert!(result.is_ok());
+
+        _mjson.assert();
+    }
+
+    #[test]
+    fn fails_when_specifying_invalid_headers() {
+        let _mjson = mock("GET", "/kr1zdgbm4y6").with_status(204).expect(0).create();
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y6");
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("headers".to_string(), to_value(["bad-entry::bad-header"]).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_err());
+
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("headers".to_string(), to_value(["\n=\r"]).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_err());
 
         _mjson.assert();
     }
