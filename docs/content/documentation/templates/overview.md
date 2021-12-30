@@ -432,6 +432,21 @@ environment variable to the access token you have obtained.
 {{postdata|safe}}
 ```
 
+In case you need to specify multiple headers with the same name, you can specify them like this:
+
+```
+headers=["accept=application/json,text/html"]
+```
+
+Which is equivalent to two `Accept` headers with `application/json` and `text/html`.
+
+In rare cases where the target resource backend is not implemented correctly, you can instead specify
+the headers multiple times to achieve the same effect:
+
+```
+headers=["accept=application/json", "accept=text/html"]
+```
+
 #### Data caching
 
 Data file loading and remote requests are cached in memory during the build, so multiple requests aren't made
