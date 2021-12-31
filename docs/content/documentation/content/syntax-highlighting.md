@@ -227,7 +227,7 @@ you get CSS class definitions, instead.
 </pre>
 ```
 
-Zola can output a css file for a theme in the `static` directory using the `highlighting_themes_css` option.
+Zola can output a css file for a theme in the `static` directory using the `highlight_themes_css` option.
 
 ```toml
 highlight_themes_css = [
