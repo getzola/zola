@@ -65,7 +65,7 @@ Finally we need to check the *Github Pages* section of the repository settings. 
 There you can also configure a *custom domain* and *Enforce HTTPS* mode. Before configuring a *custom domains*, please check out [this](https://github.com/shalzz/zola-deploy-action/blob/master/README.md#custom-domain).
 
 If you want to keep the source of your site in a private repository (including, for example, draft
-posts), adapt the following `.github/workflows/main.yml` (making sure to update the branches as requried):
+posts), adapt the following `.github/workflows/main.yml` (making sure to update the branches as required):
 
 ```yaml
 on: push
