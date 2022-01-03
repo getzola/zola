@@ -43,6 +43,7 @@ name: Build and deploy GH Pages
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: checkout
         uses: actions/checkout@v2
