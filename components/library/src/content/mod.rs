@@ -14,6 +14,7 @@ pub use self::ser::{SerializingPage, SerializingSection};
 
 use config::Config;
 use rendering::Heading;
+use utils::links::anchor_id_checks;
 
 pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
     for heading in headings {
@@ -26,6 +27,12 @@ pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
     }
 
     false
+}
+
+
+pub fn has_anchor_id(content: &str, anchor: &str) -> bool {
+    let checks = anchor_id_checks(anchor);
+    checks.is_match(content)
 }
 
 /// Looks into the current folder for the path and see if there's anything that is not a .md

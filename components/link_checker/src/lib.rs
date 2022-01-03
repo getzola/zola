@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 use reqwest::header::{HeaderMap, ACCEPT};
 use reqwest::{blocking::Client, StatusCode};
 
+use utils::links::anchor_id_checks;
 use config::LinkChecker;
 
 use std::collections::HashMap;
@@ -104,22 +105,9 @@ fn has_anchor(url: &str) -> bool {
 fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks = [
-        format!(" id={}", anchor),
-        format!(" ID={}", anchor),
-        format!(" id='{}'", anchor),
-        format!(" ID='{}'", anchor),
-        format!(r#" id="{}""#, anchor),
-        format!(r#" ID="{}""#, anchor),
-        format!(" name={}", anchor),
-        format!(" NAME={}", anchor),
-        format!(" name='{}'", anchor),
-        format!(" NAME='{}'", anchor),
-        format!(r#" name="{}""#, anchor),
-        format!(r#" NAME="{}""#, anchor),
-    ];
+    let checks = anchor_id_checks(anchor);
 
-    if checks.iter().any(|check| body[..].contains(&check[..])) {
+    if checks.is_match(&body){
         Ok(())
     } else {
         Err(errors::Error::from(format!("Anchor `#{}` not found on page", anchor)))
@@ -338,7 +326,7 @@ mod tests {
     #[test]
     fn skip_anchor_prefixes() {
         let ignore_url = format!("{}{}", mockito::server_url(), "/ignore/");
-        let config = LinkChecker { skip_prefixes: vec![], skip_anchor_prefixes: vec![ignore_url] };
+        let config = LinkChecker { skip_anchor_prefixes: vec![ignore_url], ..Default::default() };
 
         let _m1 = mock("GET", "/ignore/i30hobj1cy")
             .with_header("Content-Type", "text/html")
