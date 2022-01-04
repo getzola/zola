@@ -5,7 +5,7 @@ weight = 30
 
 By default, GitHub Pages uses Jekyll (a ruby based static site generator),
 but you can also publish any generated files provided you have an `index.html` file in the root of a branch called
-`gh-pages` or `master`. In addition you can publish from a `docs` directory in your repository. That branch name can
+`gh-pages`, `main` or `master`. In addition you can publish from a `docs` directory in your repository. That branch name can
 also be manually changed in the settings of a repository. To serve a site at `<username>.github.io` or
 `<organization>.github.io`, you must name the repository `<username>.github.io` or
 `<organization>.github.io` (otherwise GitHub will append the repository name to the URL, e.g.:
@@ -34,7 +34,7 @@ Let's start with the token.
 
 For creating the token either click on [here](https://github.com/settings/tokens) or go to Settings > Developer Settings > Personal access tokens. Under the *Select Scopes* section, give it *repo* permissions and click *Generate token*. Then copy the token, navigate to your repository and add in the Settings tab the *Secret* `TOKEN` and paste your token in it.
 
-Next we need to create the *Github Action*. Here we can make use of the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action). Go to the *Actions* tab of your repository, click on *set up a workflow yourself* to get a blank workflow file. Copy the following script into it and commit it afterwards.
+Next we need to create the *Github Action*. Here we can make use of the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action). Go to the *Actions* tab of your repository, click on *set up a workflow yourself* to get a blank workflow file. Copy the following script into it and commit it afterwards; note that you may need to change the `github.ref` branch from `main` to `master` or similar, as the action will only run for the branch you choose.
 
 ```yaml
 # On every push this script is executed
@@ -43,6 +43,7 @@ name: Build and deploy GH Pages
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -64,7 +65,7 @@ Finally we need to check the *Github Pages* section of the repository settings. 
 There you can also configure a *custom domain* and *Enforce HTTPS* mode. Before configuring a *custom domains*, please check out [this](https://github.com/shalzz/zola-deploy-action/blob/master/README.md#custom-domain).
 
 If you want to keep the source of your site in a private repository (including, for example, draft
-posts), adapt the following `.github/workflows/main.yml`:
+posts), adapt the following `.github/workflows/main.yml` (making sure to update the branches as required):
 
 ```yaml
 on: push
