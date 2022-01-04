@@ -25,13 +25,12 @@ fn main() {
         .unwrap_or_else(|| root_dir.join("config.toml"));
 
     match cli.command {
-        Command::Init { name, force } => match cmd::create_new_project(&name, force) {
-            Ok(()) => (),
-            Err(e) => {
+        Command::Init { name, force } => {
+            if let Err(e) = cmd::create_new_project(&name, force) {
                 console::unravel_errors("Failed to create the proejct", &e);
                 std::process::exit(1);
             }
-        },
+        }
         Command::Build { base_url, output_dir, drafts } => {
             console::info("Building site...");
             let start = Instant::now();
@@ -63,7 +62,7 @@ fn main() {
             }
 
             console::info("Building site...");
-            match cmd::serve(
+            if let Err(e) = cmd::serve(
                 &root_dir,
                 &interface,
                 port,
@@ -74,11 +73,8 @@ fn main() {
                 drafts,
                 fast,
             ) {
-                Ok(()) => (),
-                Err(e) => {
-                    console::unravel_errors("Failed to serve the site", &e);
-                    std::process::exit(1);
-                }
+                console::unravel_errors("Failed to serve the site", &e);
+                std::process::exit(1);
             }
         }
         Command::Check { drafts } => {
