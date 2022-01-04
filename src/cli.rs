@@ -6,11 +6,11 @@ use clap::{Parser, Subcommand};
 #[clap(version, author, about)]
 pub struct Cli {
     /// Directory to use as root of project
-    #[clap(short, long, default_value = ".")]
+    #[clap(short = 'r', long, default_value = ".")]
     pub root: PathBuf,
 
     /// Path to a config file other than config.toml in the root of project
-    #[clap(short, long)]
+    #[clap(short = 'c', long)]
     pub config: Option<PathBuf>,
 
     #[clap(subcommand)]
@@ -26,7 +26,7 @@ pub enum Command {
         name: String,
 
         /// Force creation of project even if directory is non-empty
-        #[clap(short, long)]
+        #[clap(short = 'f', long)]
         force: bool,
     },
 
@@ -37,7 +37,7 @@ pub enum Command {
         base_url: Option<String>,
 
         /// Outputs the generated site in the given path (by default 'public' dir in project root)
-        #[clap(short, long)]
+        #[clap(short = 'o', long)]
         output_dir: Option<PathBuf>,
 
         /// Include drafts when loading the site
@@ -48,16 +48,16 @@ pub enum Command {
     /// Serve the site. Rebuild and reload on change automatically
     Serve {
         /// Interface to bind on
-        #[clap(short, long, default_value = "127.0.0.1")]
+        #[clap(short = 'i', long, default_value = "127.0.0.1")]
         interface: String,
 
         /// Which port to use
-        #[clap(short, long, default_value = "1111")]
+        #[clap(short = 'p', long, default_value_t = 1111)]
         port: u16,
 
         /// Outputs assets of the generated site in the given path (by default 'public' dir in project root).
         /// HTML/XML will be stored in memory.
-        #[clap(short, long)]
+        #[clap(short = 'o', long)]
         output_dir: Option<PathBuf>,
 
         /// Changes the base_url
@@ -73,7 +73,7 @@ pub enum Command {
         open: bool,
 
         /// Only rebuild the minimum on change - useful when working on a specific page/section
-        #[clap(short, long)]
+        #[clap(short = 'f', long)]
         fast: bool,
     },
 
