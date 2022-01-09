@@ -20,8 +20,7 @@ use crate::content::file_info::FileInfo;
 use crate::content::ser::SerializingPage;
 use crate::content::{find_related_assets, has_anchor};
 use utils::fs::read_file;
-
-use super::has_anchor_id;
+use utils::links::has_anchor_id;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests

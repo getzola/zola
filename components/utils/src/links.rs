@@ -1,9 +1,14 @@
 use regex::Regex;
 
 
-pub fn anchor_id_checks(anchor:&str) -> Regex {
+pub fn has_anchor_id(content: &str, anchor: &str) -> bool {
+    let checks = anchor_id_checks(anchor);
+    checks.is_match(content)
+}
+
+fn anchor_id_checks(anchor:&str) -> Regex {
     Regex::new(
-        &format!(r#" (?i)(id|ID|name|NAME) *= *("|')*{}("|'| |>)+"#, anchor)
+        &format!(r#" (?i)(id|name) *= *("|')*{}("|'| |>)+"#, anchor)
     ).unwrap()
 }
 

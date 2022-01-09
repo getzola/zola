@@ -2,12 +2,12 @@ use lazy_static::lazy_static;
 use reqwest::header::{HeaderMap, ACCEPT};
 use reqwest::{blocking::Client, StatusCode};
 
-use utils::links::anchor_id_checks;
 use config::LinkChecker;
 
 use std::collections::HashMap;
 use std::result;
 use std::sync::{Arc, RwLock};
+use utils::links::has_anchor_id;
 
 pub type Result = result::Result<StatusCode, String>;
 
@@ -105,9 +105,9 @@ fn has_anchor(url: &str) -> bool {
 fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks = anchor_id_checks(anchor);
 
-    if checks.is_match(&body){
+
+    if has_anchor_id(&body, &anchor){
         Ok(())
     } else {
         Err(errors::Error::from(format!("Anchor `#{}` not found on page", anchor)))
