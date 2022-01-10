@@ -44,7 +44,12 @@ export default new Router().static('public', ({ cache }) => {
 })
 ```
 
-5. Deploy!
+5. Build your zola app:
+```bash
+zola build
+```
+
+6. Deploy!
 ```bash
 0 deploy
 ```
