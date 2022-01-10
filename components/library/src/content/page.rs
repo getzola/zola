@@ -20,6 +20,7 @@ use crate::content::file_info::FileInfo;
 use crate::content::ser::SerializingPage;
 use crate::content::{find_related_assets, has_anchor};
 use utils::fs::read_file;
+use utils::links::has_anchor_id;
 
 lazy_static! {
     // Based on https://regex101.com/r/H2n38Z/1/tests
@@ -298,6 +299,10 @@ impl Page {
 
     pub fn has_anchor(&self, anchor: &str) -> bool {
         has_anchor(&self.toc, anchor)
+    }
+
+    pub fn has_anchor_id(&self, id: &str) -> bool {
+        has_anchor_id(&self.content, id)
     }
 
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {

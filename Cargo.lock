@@ -1367,6 +1367,7 @@ dependencies = [
  "lazy_static",
  "mockito",
  "reqwest",
+ "utils",
 ]
 
 [[package]]
@@ -3264,6 +3265,7 @@ dependencies = [
  "filetime",
  "minify-html",
  "percent-encoding",
+ "regex",
  "serde",
  "slug",
  "tempfile",
