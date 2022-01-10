@@ -4,7 +4,7 @@ use tera::{Map, Value};
 /// Used as an attribute when we want to convert from TOML to a string date
 /// If a TOML datetime isn't present, it will accept a string and push it through
 /// TOML's date time parser to ensure only valid dates are accepted.
-/// Inspired by this proposal: https://github.com/alexcrichton/toml-rs/issues/269
+/// Inspired by this proposal: <https://github.com/alexcrichton/toml-rs/issues/269>
 pub fn from_toml_datetime<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
     D: Deserializer<'de>,
