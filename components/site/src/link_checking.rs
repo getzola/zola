@@ -63,7 +63,8 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
             let page = library
                 .get_page(&full_path)
                 .expect("Couldn't find section in check_internal_links_with_anchors");
-            !page.has_anchor(anchor)
+
+            !(page.has_anchor(anchor)||page.has_anchor_id(anchor))
         }
     });
 
