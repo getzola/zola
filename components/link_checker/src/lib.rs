@@ -7,6 +7,7 @@ use config::LinkChecker;
 use std::collections::HashMap;
 use std::result;
 use std::sync::{Arc, RwLock};
+use utils::links::has_anchor_id;
 
 pub type Result = result::Result<StatusCode, String>;
 
@@ -104,22 +105,9 @@ fn has_anchor(url: &str) -> bool {
 fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
-    let checks = [
-        format!(" id={}", anchor),
-        format!(" ID={}", anchor),
-        format!(" id='{}'", anchor),
-        format!(" ID='{}'", anchor),
-        format!(r#" id="{}""#, anchor),
-        format!(r#" ID="{}""#, anchor),
-        format!(" name={}", anchor),
-        format!(" NAME={}", anchor),
-        format!(" name='{}'", anchor),
-        format!(" NAME='{}'", anchor),
-        format!(r#" name="{}""#, anchor),
-        format!(r#" NAME="{}""#, anchor),
-    ];
 
-    if checks.iter().any(|check| body[..].contains(&check[..])) {
+
+    if has_anchor_id(&body, &anchor){
         Ok(())
     } else {
         Err(errors::Error::from(format!("Anchor `#{}` not found on page", anchor)))
@@ -338,7 +326,7 @@ mod tests {
     #[test]
     fn skip_anchor_prefixes() {
         let ignore_url = format!("{}{}", mockito::server_url(), "/ignore/");
-        let config = LinkChecker { skip_prefixes: vec![], skip_anchor_prefixes: vec![ignore_url] };
+        let config = LinkChecker { skip_anchor_prefixes: vec![ignore_url], ..Default::default() };
 
         let _m1 = mock("GET", "/ignore/i30hobj1cy")
             .with_header("Content-Type", "text/html")

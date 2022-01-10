@@ -1,5 +1,6 @@
 pub mod de;
 pub mod fs;
+pub mod links;
 pub mod minify;
 pub mod net;
 pub mod site;
