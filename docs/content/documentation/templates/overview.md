@@ -440,8 +440,7 @@ headers=["accept=application/json,text/html"]
 
 Which is equivalent to two `Accept` headers with `application/json` and `text/html`.
 
-In rare cases where the target resource backend is not implemented correctly, you can instead specify
-the headers multiple times to achieve the same effect:
+If it doesn't work, you can instead specify the headers multiple times to achieve a similar effect:
 
 ```
 headers=["accept=application/json", "accept=text/html"]
