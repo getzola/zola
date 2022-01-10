@@ -85,7 +85,7 @@ pub struct Config {
     pub search: search::Search,
     /// The config for the Markdown rendering: syntax highlighting and everything
     pub markdown: markup::Markdown,
-    /// All user params set in [extra] in the config
+    /// All user params set in `[extra]` in the config
     pub extra: HashMap<String, Toml>,
 }
 
