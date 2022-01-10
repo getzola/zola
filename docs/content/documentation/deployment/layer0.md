@@ -14,19 +14,8 @@ npm i -g @layer0/cli
 ```
 
 2. Create a package.json at the root of your project with the following:
-```js
-{
-  "name": "zola",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "zola build",
-    "layer0:dev": "0 dev",
-    "layer0:buid": "0 build",
-    "layer0:deploy": "0 deploy"
-  },
-  "dependencies": {},
-  "devDependencies": {}
-}
+```bash
+npm init
 ```
 
 3. Initialize your project with:
@@ -55,7 +44,12 @@ export default new Router().static('public', ({ cache }) => {
 })
 ```
 
-5. Deploy with:
+5. Build your zola app:
+```bash
+zola build
+```
+
+6. Deploy!
 ```bash
 0 deploy
 ```
