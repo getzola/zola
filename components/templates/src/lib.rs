@@ -81,8 +81,12 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
             .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
         rewrite_theme_paths(&mut tera_theme, theme);
 
+        // TODO: add tests for theme-provided robots.txt (https://github.com/getzola/zola/pull/1722)
         if theme_path.join("templates").join("robots.txt").exists() {
-            tera_theme.add_template_file(theme_path.join("templates").join("robots.txt"), None)?;
+            tera_theme.add_template_file(
+                theme_path.join("templates").join("robots.txt"),
+                Some("robots.txt"),
+            )?;
         }
         tera.extend(&tera_theme)?;
     }
