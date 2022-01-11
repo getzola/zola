@@ -409,6 +409,43 @@ This example will make a POST request to the kroki service to generate a SVG.
 {{postdata|safe}}
 ```
 
+If you need additional handling for the HTTP headers, you can use the `headers` parameter.
+You might need this parameter when the resource requires authentication or require passing additional
+parameters via special headers.
+Please note that the headers will be appended to the default headers set by Zola itself instead of replacing them.
+
+This example will make a POST request to the GitHub markdown rendering service.
+
+```jinja2
+{% set postdata = load_data(url="https://api.github.com/markdown", format="plain", method="POST", content_type="application/json", headers=["accept=application/vnd.github.v3+json"], body='{"text":"headers support added in #1710, commit before it: b3918f124d13ec1bedad4860c15a060dd3751368","context":"getzola/zola","mode":"gfm"}')%}
+{{postdata|safe}}
+```
+
+The following example shows how to send a GraphQL query to GitHub (requires authentication).
+If you want to try this example on your own machine, you need to provide a GitHub PAT (Personal Access Token),
+you can acquire the access token at this link: https://github.com/settings/tokens and then set `GITHUB_TOKEN`
+environment variable to the access token you have obtained.
+
+```jinja2
+{% set token = get_env(name="GITHUB_TOKEN") %}
+{% set postdata = load_data(url="https://api.github.com/graphql", format="json", method="POST" ,content_type="application/json", headers=["accept=application/vnd.github.v4.idl", "authentication=Bearer " ~ token], body='{"query":"query { viewer { login }}"}')%}
+{{postdata|safe}}
+```
+
+In case you need to specify multiple headers with the same name, you can specify them like this:
+
+```
+headers=["accept=application/json,text/html"]
+```
+
+Which is equivalent to two `Accept` headers with `application/json` and `text/html`.
+
+If it doesn't work, you can instead specify the headers multiple times to achieve a similar effect:
+
+```
+headers=["accept=application/json", "accept=text/html"]
+```
+
 #### Data caching
 
 Data file loading and remote requests are cached in memory during the build, so multiple requests aren't made
