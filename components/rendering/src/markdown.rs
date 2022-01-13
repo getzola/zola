@@ -242,7 +242,32 @@ pub fn markdown_to_html(
             match event {
                 Event::Text(text) => {
                     if let Some(ref mut code_block) = code_block {
-                        let html = code_block.highlight(&text);
+                        let html;
+                        if contains_shortcode(text.as_ref()) {
+                            let mut accumulated_block = String::new();
+                            // mark the start of the code block events
+                            let stack_start = events.len();
+                            render_shortcodes!(true, text, range);
+                            // after rendering the shortcodes we will collect all the text events
+                            // and re-render them as code blocks
+                            for event in events[stack_start..].iter() {
+                                match event {
+                                    Event::Html(t) | Event::Text(t) => accumulated_block += t,
+                                    _ => {
+                                        error = Some(Error::msg(format!(
+                                            "Unexpected event while expanding the code block: {:?}",
+                                            event
+                                        )));
+                                        break;
+                                    }
+                                }
+                            }
+                            html = code_block.highlight(&accumulated_block);
+                            // remove all the original events from shortcode rendering
+                            events.truncate(stack_start);
+                        } else {
+                            html = code_block.highlight(&text);
+                        }
                         events.push(Event::Html(html.into()));
                     } else {
                         let text = if context.config.markdown.render_emoji {
