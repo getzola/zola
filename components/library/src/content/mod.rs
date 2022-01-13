@@ -48,7 +48,7 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
                     Some("md") => continue,
                     _ => assets.push(entry_path.to_path_buf()),
                 },
-                None => continue,
+                None => assets.push(entry_path.to_path_buf()),
             }
         }
     }
@@ -82,15 +82,16 @@ mod tests {
         File::create(path.join("example.js")).unwrap();
         File::create(path.join("graph.jpg")).unwrap();
         File::create(path.join("fail.png")).unwrap();
+        File::create(path.join("extensionless")).unwrap();
         create_dir(path.join("subdir")).expect("create subdir temp dir");
         File::create(path.join("subdir").join("index.md")).unwrap();
         File::create(path.join("subdir").join("example.js")).unwrap();
 
         let assets = find_related_assets(path, &Config::default(), true);
-        assert_eq!(assets.len(), 4);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 4);
+        assert_eq!(assets.len(), 5);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or("".as_ref()) != "md").count(), 5);
 
-        for asset in vec!["example.js", "graph.jpg", "fail.png", "subdir/example.js"] {
+        for asset in vec!["example.js", "graph.jpg", "fail.png", "subdir/example.js", "extensionless"] {
             assert!(assets
                 .iter()
                 .find(|p| p.strip_prefix(path).unwrap() == Path::new(asset))
@@ -106,15 +107,15 @@ mod tests {
         File::create(path.join("example.js")).unwrap();
         File::create(path.join("graph.jpg")).unwrap();
         File::create(path.join("fail.png")).unwrap();
+        File::create(path.join("extensionless")).unwrap();
         create_dir(path.join("subdir")).expect("create subdir temp dir");
         File::create(path.join("subdir").join("index.md")).unwrap();
         File::create(path.join("subdir").join("example.js")).unwrap();
-
         let assets = find_related_assets(path, &Config::default(), false);
-        assert_eq!(assets.len(), 3);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap() != "md").count(), 3);
+        assert_eq!(assets.len(), 4);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or("".as_ref()) != "md").count(), 4);
 
-        for asset in vec!["example.js", "graph.jpg", "fail.png"] {
+        for asset in vec!["example.js", "graph.jpg", "fail.png", "extensionless"] {
             assert!(assets
                 .iter()
                 .find(|p| p.strip_prefix(path).unwrap() == Path::new(asset))
