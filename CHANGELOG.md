@@ -1,7 +1,13 @@
 # Changelog
 
-## 0.16.0 (unreleased)
+## 0.15.3 (unreleased)
 
+- Fix shortcodes not being rendered in code blocks
+- Fix colocated assets with no extensions being ignored
+- Add `headers` parameters to `load_data`
+- Fix themes `robots.txt` not being rendered
+- Check for local internal anchors in HTML content of markdown files
+- Fix issues loading custom syntaxes if highlight_theme = css
 
 ## 0.15.2 (2021-12-10)
 
