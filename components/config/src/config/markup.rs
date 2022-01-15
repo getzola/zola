@@ -107,16 +107,17 @@ impl Markdown {
     }
 
     pub fn init_extra_syntaxes_and_highlight_themes(&mut self, path: &Path) -> Result<()> {
-        if self.highlight_theme == "css" {
-            return Ok(());
-        }
-
         let (loaded_extra_syntaxes, loaded_extra_highlight_themes) =
             self.load_extra_syntaxes_and_highlight_themes(path)?;
 
         if let Some(extra_syntax_set) = loaded_extra_syntaxes {
             self.extra_syntax_set = Some(extra_syntax_set);
         }
+
+        if self.highlight_theme == "css" {
+            return Ok(());
+        }
+
         if let Some(extra_theme_set) = loaded_extra_highlight_themes {
             self.extra_theme_set = Arc::new(Some(extra_theme_set));
         }
