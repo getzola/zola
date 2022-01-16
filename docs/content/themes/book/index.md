@@ -3,11 +3,11 @@
 title = "book"
 description = "A book theme inspired from GitBook/mdBook"
 template = "theme.html"
-date = 2022-01-10T21:31:30+01:00
+date = 2022-01-17T03:13:30+08:00
 
 [extra]
-created = 2022-01-10T21:31:30+01:00
-updated = 2022-01-10T21:31:30+01:00
+created = 2022-01-17T03:13:30+08:00
+updated = 2022-01-17T03:13:30+08:00
 repository = "https://github.com/getzola/book.git"
 homepage = "https://github.com/getzola/book"
 minimum_version = "0.5.0"
