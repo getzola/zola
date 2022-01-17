@@ -561,21 +561,24 @@ ignored_content = []
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
-ignored_content = ["*.{graphml,iso}", "*.py?"]
+ignored_content = ["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]
         "#;
 
         let config = Config::parse(config_str).unwrap();
         let v = config.ignored_content;
-        assert_eq!(v, vec!["*.{graphml,iso}", "*.py?"]);
+        assert_eq!(v, vec!["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]);
 
         let g = config.ignored_content_globset.unwrap();
-        assert_eq!(g.len(), 2);
+        assert_eq!(g.len(), 3);
         assert!(g.is_match("foo.graphml"));
         assert!(g.is_match("foo.iso"));
         assert!(!g.is_match("foo.png"));
         assert!(g.is_match("foo.py2"));
         assert!(g.is_match("foo.py3"));
         assert!(!g.is_match("foo.py"));
+        assert!(g.is_match("foo/bar/target"));
+        assert!(g.is_match("foo/bar/baz/temp_folder"));
+        assert!(g.is_match("temp_folder"));
     }
 
     #[test]
