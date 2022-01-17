@@ -19,4 +19,4 @@ Cloudflare is a cloud solutions provider with a huge proprietary content deliver
 Your website is now built and deployed to Cloudflare's network! You can add a custom domain or modify settings in the Pages dashboard.
 
 You may find documentation and guides like [Getting started with Cloudflare Pages](https://developers.cloudflare.com/pages/getting-started) and
-[Deloying Zola with Cloudflare Pages](https://developers.cloudflare.com/pages/how-to/deploy-a-zola-site#deploying-with-cloudflare-pages) in the Developers portal. 
+[Deploying Zola with Cloudflare Pages](https://developers.cloudflare.com/pages/how-to/deploy-a-zola-site#deploying-with-cloudflare-pages) in the Developers portal. 
