@@ -3,11 +3,11 @@
 title = "anatole-zola"
 description = "A port of farbox-theme-Anatole for zola"
 template = "theme.html"
-date = 2022-01-10T21:31:30+01:00
+date = 2022-01-17T03:13:30+08:00
 
 [extra]
-created = 2022-01-10T21:31:30+01:00
-updated = 2022-01-10T21:31:30+01:00
+created = 2022-01-17T03:13:30+08:00
+updated = 2022-01-17T03:13:30+08:00
 repository = "https://github.com/longfangsong/anatole-zola.git"
 homepage = "https://github.com/longfangsong/anatole-zola"
 minimum_version = "0.4.0"

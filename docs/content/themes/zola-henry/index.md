@@ -3,11 +3,11 @@
 title = "henry"
 description = "A timeless blog theme"
 template = "theme.html"
-date = 2022-01-10T21:31:30+01:00
+date = 2022-01-17T03:13:30+08:00
 
 [extra]
-created = 2022-01-10T21:31:30+01:00
-updated = 2022-01-10T21:31:30+01:00
+created = 2022-01-17T03:13:30+08:00
+updated = 2022-01-17T03:13:30+08:00
 repository = "https://github.com/sirodoht/zola-henry"
 homepage = "https://github.com/sirodoht/zola-henry"
 minimum_version = "0.4.0"
