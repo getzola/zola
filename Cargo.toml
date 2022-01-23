@@ -13,14 +13,15 @@ keywords = ["static", "site", "generator", "blog"]
 include = ["src/**/*", "LICENSE", "README.md"]
 
 [build-dependencies]
-clap = "2"
+clap = "3"
+clap_complete = "3"
 
 [[bin]]
 name = "zola"
 
 [dependencies]
 atty = "0.2.11"
-clap = { version = "2", default-features = false }
+clap = { version = "3", features = ["derive"] }
 chrono = "0.4"
 lazy_static = "1.1"
 termcolor = "1.0.4"
