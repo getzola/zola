@@ -3,11 +3,11 @@
 title = "Clean Blog"
 description = "A port of Start Bootstrap Clean Blog for Zola"
 template = "theme.html"
-date = 2022-01-17T03:13:30+08:00
+date = 2022-01-23T23:20:14+01:00
 
 [extra]
-created = 2022-01-17T03:13:30+08:00
-updated = 2022-01-17T03:13:30+08:00
+created = 2022-01-23T23:20:14+01:00
+updated = 2022-01-23T23:20:14+01:00
 repository = "https://github.com/dave-tucker/zola-clean-blog"
 homepage = "https://github.com/dave-tucker/zola-clean-blog"
 minimum_version = "0.4.0"
@@ -56,7 +56,7 @@ taxonomies = [
 
 - To replace the copyright field, create your own `templates/index.html` to extend the template and add a `copyright` block:
 ```
-{%/* extends "themes/zola-clean-blog/templates/index.html" */%}
+{%/* extends "zola-clean-blog/templates/index.html" */%}
 {%/* block copyright */%}
 Copyright %copy; Example, Inc. 2016-2019
 {%/* endblock copyright */%}
@@ -68,11 +68,12 @@ Copyright %copy; Example, Inc. 2016-2019
 
 - To add Google Analytics, you may add your script to the `extrascripts` block using your own `index.html`
 ```
-{%/* extends "themes/zola-clean-blog/templates/index.html" */%}
+{%/* extends "zola-clean-blog/templates/index.html" */%}
 {%/* block analytics */%}
 <script>
 ...
 </script>
 {%/* endblock analytics */%}
 ```
+
         
