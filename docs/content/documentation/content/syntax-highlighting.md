@@ -171,6 +171,9 @@ If your site source is laid out as follows:
 
 you would set your `extra_syntaxes_and_themes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
 
+You can see the list of available themes on the [configuration page](@/documentation/getting-started/configuration.md#syntax-highlighting).
+
+
 ## Inline VS classed highlighting
 
 If you use a highlighting scheme like
