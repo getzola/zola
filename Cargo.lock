@@ -3586,7 +3586,7 @@ dependencies = [
 
 [[package]]
 name = "zola"
-version = "0.15.3"
+version = "0.16.0"
 dependencies = [
  "atty",
  "chrono",
