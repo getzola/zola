@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.15.3 (unreleased)
+## 0.15.3 (2022-01-23)
 
 - Fix shortcodes not being rendered in code blocks
 - Fix colocated assets with no extensions being ignored
