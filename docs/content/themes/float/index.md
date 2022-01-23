@@ -3,11 +3,11 @@
 title = "Float"
 description = "An elegant blog theme"
 template = "theme.html"
-date = 2022-01-17T03:13:30+08:00
+date = 2022-01-23T23:20:14+01:00
 
 [extra]
-created = 2022-01-17T03:13:30+08:00
-updated = 2022-01-17T03:13:30+08:00
+created = 2022-01-23T23:20:14+01:00
+updated = 2022-01-23T23:20:14+01:00
 repository = "https://gitlab.com/float-theme/float.git"
 homepage = "https://float-theme.netlify.app/"
 minimum_version = "0.11.0"
@@ -47,7 +47,7 @@ Float 是一款為 [Zola](https://www.getzola.org/) 設計的佈景主題。
 
 把 Float 以 Git 子模組的方式加入專案內：
 ```shell
-git submodule add https://gitlab.com/float-theme/float.git theme/float
+git submodule add https://gitlab.com/float-theme/float.git themes/float
 ```
 
 編輯您的 config.toml，指定 Float 作為佈景主題：

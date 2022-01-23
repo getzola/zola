@@ -3,13 +3,13 @@
 title = "karzok"
 description = "A theme for your documentation. Fast and secure"
 template = "theme.html"
-date = 2022-01-17T03:13:30+08:00
+date = 2022-01-23T23:20:14+01:00
 
 [extra]
-created = 2022-01-17T03:13:30+08:00
-updated = 2022-01-17T03:13:30+08:00
+created = 2022-01-23T23:20:14+01:00
+updated = 2022-01-23T23:20:14+01:00
 repository = "https://github.com/kogeletey/karzok"
-homepage = "https://fmatch.org/karzok"
+homepage = "https://github.com/kogeletey/karzok"
 minimum_version = "0.0.14"
 license = "Apache-2.0"
 demo = "https://fmatch.org/karzok"
@@ -19,12 +19,19 @@ name = "Konrad Geletey"
 homepage = ""
 +++        
 
-[![builds.sr.ht status](https://builds.sr.ht/~kogeletey/karzok.svg)](https://builds.sr.ht/~kogeletey/karzok?)
+<p align="center">
+  <a href="https://builds.sr.ht/~kogeletey/karzok"><img src="https://builds.sr.ht/~kogeletey/karzok.svg"  alt="builds.sr.ht status" /></a>
+  <a href="https://design.penpot.app/#/view/b4a9c170-5cb6-11ec-826f-e949c75b760d?page-id=ef8611e1-7c24-11eb-89c7-03f8ac143bbf&index=0&share-id=d81024f0-5cb7-11ec-826f-e949c75b760d"><img alt="designed with penpot" src="https://badgen.net/badge/designed%20with/penpot/31EFB8" /></a>
+</p>
+
 # Karzok
+
 A theme for your documentation. Fast and secure
 
 ![screenshot](./screenshot.png)
+
 ## Demo
+
 [Fmatch Karzok](https://fmatch.org/karzok)
 
 ## Requirements
@@ -41,11 +48,11 @@ for your platform.
 ### Optional
 
 1. [yj](https://github.com/sclevine/yj)
-    > for transfer toml file in yaml
+   > for transfer toml file in yaml
 2. [docker](https://docs.docker.com/engine/install/)
-    > for packaging container
+   > for packaging container
 3. [rsync](https://rsync.samba.org/)
-    > A better copy and move
+   > A better copy and move
 
 ## Get Started
 
@@ -82,20 +89,13 @@ See more in [Karzok Configuration](#configuration)
 
 ```zsh
     cp ./themes/content/_index.md content/_index.md
-    cp ./thems/content/tmpl.md content/filename.md
+    # a template will appear with which you can quickly start writing
+    # cp ./themes/content/tmpl.md content/filename.md
 ```
 
 how you can give freedom to your creativity
 
 ### 5. Run the project
-
-#### With [docker-compose](https://docs.docker.com/compose) and [cargo make](https://sagiegurari.github.io/cargo-make/)
-
-```zsh
-cargo make --makefile make.toml dockerup
-```
-
-#### Without
 
 i. development enviroment
 
@@ -116,7 +116,7 @@ changes live reolad.
 
 ii. production enviroment
 
--   with docker
+- with docker
 
 1. Build docker image
 
@@ -150,10 +150,15 @@ Open in favorite browser [https://localhost](http://localhost)
 
 1. `math` - rendering math formulas throught [katex](https://katex.org)
 2. `favicon` - set path to favicon icon import(default `favicon`)
-3. `localcdn`- if you want to store all assets on your domain, then enable this setting
-4. `cdnurl` - you can customize your url to store assets,default use [jsdelivr](https://www.jsdelivr.com)
-5. `[[extra.menu]]` - the main navigation on the site
-6. `[[extra.header]]` - the header navigantion for the site
+3. `localcdn`- if you want to store all assets on your domain, then enable this
+   setting
+4. `cdnurl` - you can customize your url to store assets,default use
+   [jsdelivr](https://www.jsdelivr.com)
+5. `show_word_count` - allowing you to show number of words
+6. `show_reading_time`- allowing you to show reading time
+7. `children`- for header nesting to work
+8. `[[extra.menu]]` - the main navigation on the site
+9. `[[extra.header]]` - the header navigantion for the site
 
 ### Templates
 
@@ -164,26 +169,21 @@ All pages are extend to the base.html, and you can customize them as need.
 This program is Free Software: You can use, study share and improve it at your
 will. Specifically you can redistribute and/or modify it under the terms of the
 [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
 # Contribute
+
 Make sure to read the [Code of Conduct](/meta/code-of-conduct)
 
 ## Find bugs and come up with features
-On the [todo.sr.ht](https://todo.sr.ht/~kogeletey/karzok) or [github issues](https://github.com/kogeletey/karzok/issues)
+
+On the [todo.sr.ht](https://todo.sr.ht/~kogeletey/karzok) or
+[github issues](https://github.com/kogeletey/karzok/issues)
 
 ## Improve Code
-The Karzok is stored in the repository at [sr.ht](https://sr.ht/~kogeletey/karzok) and mirror [github](https://github.com/kogeletey/karzok)
-### TODOs:
--   [ ] readme contrubutions
--   [x] configure loading from cdn
--   [x] choose code_of_conduct
--   [x] proceed subpages
--   [ ] create mobile version
--   [x] choose license
--   [ ] adding full path article in the page
--   [ ] make dark theme
--   [ ] continue author rendering
--   [ ] adding word count
--   [x] refactor home.scss
+
+The Karzok is stored in the repository at
+[sr.ht](https://sr.ht/~kogeletey/karzok) and mirror
+[github](https://github.com/kogeletey/karzok)
 
 > Thank you so much for any help
 

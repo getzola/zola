@@ -3,11 +3,11 @@
 title = "serene"
 description = "A blog theme for zola, simple and clean."
 template = "theme.html"
-date = 2022-01-17T03:13:30+08:00
+date = 2022-01-23T23:20:14+01:00
 
 [extra]
-created = 2022-01-17T03:13:30+08:00
-updated = 2022-01-17T03:13:30+08:00
+created = 2022-01-23T23:20:14+01:00
+updated = 2022-01-23T23:20:14+01:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
 minimum_version = "0.9.0"
@@ -19,7 +19,7 @@ name = "isunjn"
 homepage = "https://github.com/isunjn"
 +++        
 
-English | [简体中文](README-cn.md)
+English | [简体中文](https://github.com/isunjn/serene/blob/main/README-cn.md)
 
 # Serene - A blog theme for zola
 
@@ -32,13 +32,13 @@ Serene is a simple and clean blog theme for Static-Site-Generator [Zola](https:/
 <details>
   <summary>Click to see screenshots</summary>
   
-  ![](screenshots/1.png)
-  ![](screenshots/2.png)
-  ![](screenshots/3.png)
-  ![](screenshots/4.png)
-  ![](screenshots/5.png)
-  ![](screenshots/6.png)
-  ![](screenshots/7.png)
+  ![](https://github.com/isunjn/serene/blob/main/screenshots/1.png?raw=true)
+  ![](https://github.com/isunjn/serene/blob/main/screenshots/2.png?raw=true)
+  ![](https://github.com/isunjn/serene/blob/main/screenshots/3.png?raw=true)
+  ![](https://github.com/isunjn/serene/blob/main/screenshots/4.png?raw=true)
+  ![](https://github.com/isunjn/serene/blob/main/screenshots/5.png?raw=true)
+  ![](https://github.com/isunjn/serene/blob/main/screenshots/6.png?raw=true)
+  ![](https://github.com/isunjn/serene/blob/main/screenshots/7.png?raw=true)
 </details>
 
 ## Features
@@ -80,6 +80,6 @@ Be noticed that to keep serene simple, some needs may not be considered. You can
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/isunjn/serene/blob/main/LICENSE)
 
         

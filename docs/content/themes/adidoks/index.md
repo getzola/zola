@@ -3,11 +3,11 @@
 title = "adidoks"
 description = "AdiDoks is a Zola theme helping you build modern documentation."
 template = "theme.html"
-date = 2022-01-17T03:13:30+08:00
+date = 2022-01-23T23:20:14+01:00
 
 [extra]
-created = 2022-01-17T03:13:30+08:00
-updated = 2022-01-17T03:13:30+08:00
+created = 2022-01-23T23:20:14+01:00
+updated = 2022-01-23T23:20:14+01:00
 repository = "https://github.com/aaranxu/adidoks.git"
 homepage = "https://github.com/aaranxu/adidoks"
 minimum_version = "0.13.0"
@@ -21,7 +21,7 @@ homepage = "https://github.com/aaranxu"
 
 # Zola Theme AdiDoks
 
-AdiDoks is a mordern documentation theme, which is a port of the Hugo
+AdiDoks is a modern documentation theme, which is a port of the Hugo
 theme [Doks](https://github.com/h-enk/doks) for Zola.
 
 ## Demo
@@ -73,7 +73,7 @@ git submodule add https://github.com/aaranxu/adidoks.git themes/adidoks
 
 ### Step 3: Configuration
 
-Enable the theme in your `config.toml` in the site derectory:
+Enable the theme in your `config.toml` in the site directory:
 
 ```toml
 theme = "adidoks"

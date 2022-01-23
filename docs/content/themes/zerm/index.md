@@ -3,11 +3,11 @@
 title = "zerm"
 description = "A minimalistic and dark theme based on Radek Kozieł's theme for Hugo"
 template = "theme.html"
-date = 2022-01-17T03:13:30+08:00
+date = 2022-01-23T23:20:14+01:00
 
 [extra]
-created = 2022-01-17T03:13:30+08:00
-updated = 2022-01-17T03:13:30+08:00
+created = 2022-01-23T23:20:14+01:00
+updated = 2022-01-23T23:20:14+01:00
 repository = "https://github.com/ejmg/zerm.git"
 homepage = "https://github.com/ejmg/zerm"
 minimum_version = "0.8.0"
@@ -55,6 +55,27 @@ theme](https://www.getzola.org/documentation/themes/installing-and-using-themes/
 
 In `config.toml`, you will find all values for customization that are supported
 thus far have documentation explaining how they are used. If there is any confusion or something is not working as intended, [please open an issue](https://github.com/ejmg/zerm/issues)!
+
+## math
+You can use KaTeX for mathematical typesetting.
+Assets are only available if you opt-in on a per-page level through
+a single line (`math=true`) on the extra section of the page frontmatter.
+
+``` md
+# index.md
++++
+title="this page title"
+...
+
+[extra]
+math=true
++++
+
+Content
+```
+
+Pages wich doesn't opt-in are not affected in any way, so you doesn't have
+to worry about any performance hit.
 
 ## license
 

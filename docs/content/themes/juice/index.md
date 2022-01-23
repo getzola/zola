@@ -3,11 +3,11 @@
 title = "juice"
 description = "An intuitive, elegant, and lightweight Zola theme for product sites."
 template = "theme.html"
-date = 2022-01-17T03:13:30+08:00
+date = 2022-01-23T23:20:14+01:00
 
 [extra]
-created = 2022-01-17T03:13:30+08:00
-updated = 2022-01-17T03:13:30+08:00
+created = 2022-01-23T23:20:14+01:00
+updated = 2022-01-23T23:20:14+01:00
 repository = "https://github.com/huhu/juice"
 homepage = "https://github.com/huhu/juice"
 minimum_version = "0.11.0"
@@ -104,6 +104,15 @@ You can override theme variable by creating a file named `_variables.html` in yo
         --toc-highlight-text-color: #d46e13;
     }
 </style>
+```
+
+### Favicon
+
+```html
+{%/* extends "juice/templates/index.html" */%}
+{%/* block favicon */%}
+    <link rel="icon" type="image/png" href="/favicon.ico">
+{%/* endblock favicon */%}
 ```
 
 # Configuration
