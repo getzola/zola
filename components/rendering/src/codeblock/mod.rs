@@ -3,7 +3,7 @@ mod highlight;
 
 use std::ops::RangeInclusive;
 
-use syntect::util::LinesWithEndings;
+use libs::syntect::util::LinesWithEndings;
 
 use crate::codeblock::highlight::SyntaxHighlighter;
 use config::highlighting::{resolve_syntax_and_theme, HighlightSource};

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use chrono::prelude::*;
-use serde_derive::Deserialize;
-use tera::{Map, Value};
+use libs::chrono::prelude::*;
+use libs::tera::{Map, Value};
+use serde::Deserialize;
 
 use errors::{bail, Result};
 use utils::de::{fix_toml_dates, from_toml_datetime};
@@ -152,7 +152,7 @@ impl Default for PageFrontMatter {
 mod tests {
     use super::PageFrontMatter;
     use super::RawFrontMatter;
-    use tera::to_value;
+    use libs::tera::to_value;
     use test_case::test_case;
 
     #[test_case(&RawFrontMatter::Toml(r#"  "#); "toml")]

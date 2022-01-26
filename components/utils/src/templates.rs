@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use tera::{Context, Tera};
+use libs::tera::{Context, Tera};
 
 use errors::{bail, Result};
 
@@ -150,7 +150,7 @@ mod tests {
     use crate::templates::check_template_fallbacks;
 
     use super::rewrite_theme_paths;
-    use tera::Tera;
+    use libs::tera::Tera;
 
     #[test]
     fn can_rewrite_all_paths_of_theme() {

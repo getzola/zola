@@ -1,7 +1,7 @@
 use std::io::{self, BufRead, Write};
 use std::time::Duration;
 
-use url::Url;
+use libs::url::Url;
 
 use crate::console;
 use errors::Result;

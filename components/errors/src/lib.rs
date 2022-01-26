@@ -2,6 +2,8 @@ use std::convert::Into;
 use std::error::Error as StdError;
 use std::fmt;
 
+use libs::{image, syntect, tera, toml};
+
 #[derive(Debug)]
 pub enum ErrorKind {
     Msg(String),

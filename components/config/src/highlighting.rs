@@ -1,13 +1,14 @@
 use lazy_static::lazy_static;
-use syntect::dumps::from_binary;
-use syntect::highlighting::{Theme, ThemeSet};
-use syntect::html::ClassStyle;
-use syntect::parsing::{SyntaxReference, SyntaxSet};
+use libs::syntect::dumps::from_binary;
+use libs::syntect::highlighting::{Theme, ThemeSet};
+use libs::syntect::html::ClassStyle;
+use libs::syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use crate::config::Config;
 
 pub const CLASS_STYLE: ClassStyle = ClassStyle::SpacedPrefixed { prefix: "z-" };
 
+// TODO: replace with once_cell. I was getting malloc error with sync::Lazy
 lazy_static! {
     pub static ref SYNTAX_SET: SyntaxSet = {
         let ss: SyntaxSet =

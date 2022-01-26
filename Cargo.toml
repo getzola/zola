@@ -22,23 +22,16 @@ name = "zola"
 [dependencies]
 atty = "0.2.11"
 clap = { version = "3", features = ["derive"] }
-chrono = "0.4"
 lazy_static = "1.1"
 termcolor = "1.0.4"
-# Used in init to ensure the url given as base_url is a valid one
-url = "2"
 # Below is for the serve cmd
 hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }
 tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time"] }
-percent-encoding = "2"
 notify = "4"
 ws = "0.9"
 ctrlc = "3"
 open = "2"
-globset = "0.4"
-relative-path = "1"
 pathdiff = "0.2"
-serde_json = "1.0"
 # For mimetype detection in serve mode
 mime_guess = "2.0"
 
@@ -47,29 +40,21 @@ errors = { path = "components/errors" }
 front_matter = { path = "components/front_matter" }
 utils = { path = "components/utils" }
 search = { path = "components/search" }
+libs = { path = "components/libs" }
+
 
 [dev-dependencies]
 same-file = "1"
 
 [features]
 default = ["rust-tls"]
-rust-tls = ["site/rust-tls"]
-native-tls = ["site/native-tls"]
+rust-tls = ["libs/rust-tls"]
+native-tls = ["libs/native-tls"]
+indexing-zh = ["libs/indexing-zh"]
+indexing-ja = ["libs/indexing-ja"]
 
 [workspace]
-members = [
-    "components/config",
-    "components/errors",
-    "components/front_matter",
-    "components/rendering",
-    "components/site",
-    "components/templates",
-    "components/utils",
-    "components/search",
-    "components/imageproc",
-    "components/link_checker",
-    "components/library",
-]
+members = ["components/*"]
 
 [profile.release]
 lto = true

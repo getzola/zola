@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 use std::path::PathBuf;
 
-use base64::{decode, encode};
 use config::Config;
-use rendering::{render_content, RenderContext};
-use tera::{
+use libs::base64::{decode, encode};
+use libs::tera::{
     to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
     Value,
 };
+use rendering::{render_content, RenderContext};
 
 use crate::load_tera;
 
@@ -26,7 +26,7 @@ impl MarkdownFilter {
         config: Config,
         permalinks: HashMap<String, String>,
     ) -> TeraResult<Self> {
-        let tera = load_tera(&path, &config).map_err(tera::Error::msg)?;
+        let tera = load_tera(&path, &config).map_err(TeraError::msg)?;
         Ok(Self { config, permalinks, tera })
     }
 }
@@ -94,7 +94,7 @@ impl NumFormatFilter {
 
 impl TeraFilter for NumFormatFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-        use num_format::{Locale, ToFormattedString};
+        use libs::num_format::{Locale, ToFormattedString};
 
         let num = try_get_value!("num_format", "value", i64, value);
         let locale = match args.get("locale") {
@@ -115,7 +115,7 @@ impl TeraFilter for NumFormatFilter {
 mod tests {
     use std::{collections::HashMap, path::PathBuf};
 
-    use tera::{to_value, Filter};
+    use libs::tera::{to_value, Error as TeraError, Filter};
 
     use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
     use config::Config;
@@ -137,8 +137,7 @@ mod tests {
         let args = HashMap::new();
         let config = Config::default();
         let permalinks = HashMap::new();
-        let mut tera =
-            super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
+        let mut tera = super::load_tera(&PathBuf::new(), &config).map_err(TeraError::msg).unwrap();
         tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
         let filter = MarkdownFilter { config, permalinks, tera };
         let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);

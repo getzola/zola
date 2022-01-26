@@ -4,7 +4,7 @@ mod pagination;
 mod sorting;
 mod taxonomies;
 
-pub use slotmap::{DenseSlotMap, Key};
+pub use libs::slotmap::{DenseSlotMap, Key};
 
 pub use crate::library::Library;
 pub use content::{Page, Section, SerializingPage, SerializingSection};

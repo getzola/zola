@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use config::Config;
 use front_matter::InsertAnchor;
-use templates::ZOLA_TERA;
 use rendering::{render_content, RenderContext};
+use templates::ZOLA_TERA;
 
 #[test]
 fn can_render_shortcode_in_codeblock() {
@@ -130,7 +130,7 @@ text 3
     .unwrap();
     assert_eq!(
         res.body,
-r#"<pre data-linenos data-lang="html" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td>&lt;span&gt;text 1&lt;&#x2F;span&gt;
+        r#"<pre data-linenos data-lang="html" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td>&lt;span&gt;text 1&lt;&#x2F;span&gt;
 <tr><td>2</td><td>&lt;div &gt;
 <tr><td>3</td><td>    &lt;iframe src=&quot;https:&#x2F;&#x2F;www.youtube-nocookie.com&#x2F;embed&#x2F;dQw4w9WgXcQ&quot; webkitallowfullscreen mozallowfullscreen allowfullscreen&gt;&lt;&#x2F;iframe&gt;
 <tr><td>4</td><td>&lt;&#x2F;div&gt;
@@ -193,7 +193,7 @@ fn is_highlighting_linenos_still_working() {
     .unwrap();
     assert_eq!(
         res.body,
-r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 1&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
+        r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 1&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
 </span><tr><td>2</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span>&gt;
 </span><tr><td>3</td><td><span>    &lt;</span><span style="color:#bf616a;">iframe </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ</span><span>&quot; </span><span style="color:#d08770;">webkitallowfullscreen mozallowfullscreen allowfullscreen</span><span>&gt;&lt;/</span><span style="color:#bf616a;">iframe</span><span>&gt;
 </span><tr><td>4</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
@@ -247,7 +247,7 @@ A quote
     .unwrap();
     assert_eq!(
         res.body,
-r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">a </span><span style="color:#d08770;">href</span><span>=&quot;</span><span style="color:#a3be8c;">javascript:void(0);</span><span>&quot;&gt;{{ before(texts=&quot;1&quot;) }}&lt;/</span><span style="color:#bf616a;">a</span><span>&gt;
+        r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">a </span><span style="color:#d08770;">href</span><span>=&quot;</span><span style="color:#a3be8c;">javascript:void(0);</span><span>&quot;&gt;{{ before(texts=&quot;1&quot;) }}&lt;/</span><span style="color:#bf616a;">a</span><span>&gt;
 </span><tr><td>2</td><td><span>Normally people would not write something &amp; like </span><span style="background-color:#bf616a;color:#2b303b;">&lt;&gt;</span><span> this：
 </span><tr><td>3</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#8fa1b3;">id</span><span>=&quot;</span><span style="color:#a3be8c;">custom-attr</span><span>&quot;&gt;
 </span><tr><td>4</td><td><span>An inline &lt;</span><span style="color:#bf616a;">div </span><span style="color:#d08770;">class</span><span>=&quot;</span><span style="color:#a3be8c;">youtube</span><span>&quot;&gt;

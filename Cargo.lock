@@ -299,9 +299,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.0.12"
+version = "3.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2afefa54b5c7dd40918dc1e09f213a171ab5937aadccab45e804780b238f9f43"
+checksum = "08799f92c961c7a1cf0cc398a9073da99e21ce388b46372c37f3191f2f3eed3e"
 dependencies = [
  "atty",
  "bitflags",
@@ -320,7 +320,7 @@ version = "3.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be4dabb7e2f006497e1da045feaa512acf0686f76b68d94925da2d9422dcb521"
 dependencies = [
- "clap 3.0.12",
+ "clap 3.0.13",
 ]
 
 [[package]]
@@ -357,15 +357,10 @@ dependencies = [
 name = "config"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "errors",
- "globset",
  "lazy_static",
+ "libs",
  "serde",
- "serde_derive",
- "syntect",
- "toml",
- "unic-langid",
  "utils",
 ]
 
@@ -638,10 +633,7 @@ dependencies = [
 name = "errors"
 version = "0.1.0"
 dependencies = [
- "image",
- "syntect",
- "tera",
- "toml",
+ "libs",
 ]
 
 [[package]]
@@ -718,16 +710,10 @@ dependencies = [
 name = "front_matter"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "errors",
- "lazy_static",
- "regex",
+ "libs",
  "serde",
- "serde_derive",
- "serde_yaml",
- "tera",
  "test-case",
- "toml",
  "utils",
 ]
 
@@ -1131,17 +1117,10 @@ version = "0.1.0"
 dependencies = [
  "config",
  "errors",
- "image",
- "lazy_static",
- "rayon",
- "regex",
+ "libs",
  "serde",
- "serde_json",
- "site",
- "svg_metadata",
- "tera",
+ "tempfile",
  "utils",
- "webp",
 ]
 
 [[package]]
@@ -1306,24 +1285,57 @@ checksum = "b0005d08a8f7b65fb8073cb697aa0b12b631ed251ce73d862ce50eeb52ce3b50"
 name = "library"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "config",
  "errors",
  "front_matter",
- "globset",
- "lazy_static",
- "lexical-sort",
- "rayon",
- "regex",
+ "libs",
  "rendering",
  "serde",
- "serde_derive",
- "slotmap",
  "tempfile",
+ "utils",
+]
+
+[[package]]
+name = "libs"
+version = "0.1.0"
+dependencies = [
+ "ammonia",
+ "base64",
+ "chrono",
+ "csv",
+ "elasticlunr-rs",
+ "filetime",
+ "gh-emoji",
+ "glob",
+ "globset",
+ "image",
+ "lexical-sort",
+ "minify-html",
+ "mockito",
+ "nom-bibtex",
+ "num-format",
+ "once_cell",
+ "percent-encoding",
+ "pulldown-cmark",
+ "rayon",
+ "regex",
+ "relative-path",
+ "reqwest",
+ "sass-rs",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "slotmap",
+ "slug",
+ "svg_metadata",
+ "syntect",
  "tera",
  "toml",
- "utils",
+ "unic-langid",
+ "unicode-segmentation",
+ "url",
  "walkdir",
+ "webp",
 ]
 
 [[package]]
@@ -1429,9 +1441,8 @@ version = "0.1.0"
 dependencies = [
  "config",
  "errors",
- "lazy_static",
+ "libs",
  "mockito",
- "reqwest",
  "utils",
 ]
 
@@ -2408,18 +2419,12 @@ dependencies = [
  "config",
  "errors",
  "front_matter",
- "gh-emoji",
- "lazy_static",
+ "libs",
  "link_checker",
  "pest",
  "pest_derive",
- "pulldown-cmark",
- "regex",
  "serde",
- "serde_derive",
- "syntect",
  "templates",
- "tera",
  "utils",
 ]
 
@@ -2598,12 +2603,10 @@ dependencies = [
 name = "search"
 version = "0.1.0"
 dependencies = [
- "ammonia",
  "config",
- "elasticlunr-rs",
  "errors",
- "lazy_static",
  "library",
+ "libs",
 ]
 
 [[package]]
@@ -2730,25 +2733,16 @@ dependencies = [
  "config",
  "errors",
  "front_matter",
- "glob",
  "imageproc",
- "lazy_static",
  "library",
+ "libs",
  "link_checker",
  "path-slash",
- "rayon",
- "relative-path",
- "sass-rs",
  "search",
  "serde",
- "serde_derive",
- "slotmap",
  "tempfile",
  "templates",
- "tera",
- "url",
  "utils",
- "walkdir",
 ]
 
 [[package]]
@@ -2933,26 +2927,15 @@ dependencies = [
 name = "templates"
 version = "0.1.0"
 dependencies = [
- "base64",
  "config",
- "csv",
  "errors",
  "imageproc",
- "lazy_static",
  "library",
+ "libs",
  "mockito",
- "nom-bibtex",
- "num-format",
  "rendering",
- "reqwest",
  "serde",
- "serde_derive",
- "serde_json",
- "sha2",
  "tempfile",
- "tera",
- "toml",
- "url",
  "utils",
 ]
 
@@ -3374,17 +3357,9 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "errors",
- "filetime",
- "minify-html",
- "percent-encoding",
- "regex",
+ "libs",
  "serde",
- "slug",
  "tempfile",
- "tera",
- "toml",
- "unicode-segmentation",
- "walkdir",
 ]
 
 [[package]]
@@ -3682,28 +3657,23 @@ name = "zola"
 version = "0.16.0"
 dependencies = [
  "atty",
- "chrono",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "ctrlc",
  "errors",
  "front_matter",
- "globset",
  "hyper",
  "lazy_static",
+ "libs",
  "mime_guess",
  "notify",
  "open",
  "pathdiff",
- "percent-encoding",
- "relative-path",
  "same-file",
  "search",
- "serde_json",
  "site",
  "termcolor",
  "tokio",
- "url",
  "utils",
  "ws",
 ]

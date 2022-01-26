@@ -1,8 +1,8 @@
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
-use glob::glob;
-use sass_rs::{compile_file, Options, OutputStyle};
+use libs::glob::glob;
+use libs::sass_rs::{compile_file, Options, OutputStyle};
 
 use errors::{bail, Result};
 use utils::fs::{create_file, ensure_directory_exists};
