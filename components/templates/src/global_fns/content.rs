@@ -1,8 +1,8 @@
 use library::{Library, Taxonomy};
+use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-use tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use utils::slugs::{slugify_paths, SlugifyStrategy};
 
 #[derive(Debug)]

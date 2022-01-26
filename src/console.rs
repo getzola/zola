@@ -1,27 +1,20 @@
-use lazy_static::lazy_static;
-
 use std::env;
 use std::error::Error as StdError;
 use std::io::Write;
 use std::time::Instant;
 
-use chrono::Duration;
+use libs::chrono::Duration;
+use libs::once_cell::sync::Lazy;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use errors::Error;
 use site::Site;
 
-lazy_static! {
-    /// Termcolor color choice.
-    /// We do not rely on ColorChoice::Auto behavior
-    /// as the check is already performed by has_color.
-    static ref COLOR_CHOICE: ColorChoice =
-        if has_color() {
-            ColorChoice::Always
-        } else {
-            ColorChoice::Never
-        };
-}
+/// Termcolor color choice.
+/// We do not rely on ColorChoice::Auto behavior
+/// as the check is already performed by has_color.
+static COLOR_CHOICE: Lazy<ColorChoice> =
+    Lazy::new(|| if has_color() { ColorChoice::Always } else { ColorChoice::Never });
 
 pub fn info(message: &str) {
     colorize(message, ColorSpec::new().set_bold(true));

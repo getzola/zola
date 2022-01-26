@@ -1,6 +1,7 @@
 mod common;
 
 use common::ShortCode;
+use libs::tera;
 use rendering::Heading;
 
 #[derive(PartialEq, Debug)]

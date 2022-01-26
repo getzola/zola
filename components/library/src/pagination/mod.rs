@@ -1,8 +1,9 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
-use serde_derive::Serialize;
-use slotmap::DefaultKey;
-use tera::{to_value, Context, Tera, Value};
+use libs::slotmap::DefaultKey;
+use libs::tera::{to_value, Context, Tera, Value};
+use serde::Serialize;
 
 use config::Config;
 use errors::{Error, Result};
@@ -11,8 +12,6 @@ use utils::templates::{check_template_fallbacks, render_template};
 use crate::content::{Section, SerializingPage, SerializingSection};
 use crate::library::Library;
 use crate::taxonomies::{Taxonomy, TaxonomyItem};
-
-use std::borrow::Cow;
 
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
@@ -256,8 +255,8 @@ impl<'a> Paginator<'a> {
 
 #[cfg(test)]
 mod tests {
+    use libs::tera::{to_value, Tera};
     use std::path::PathBuf;
-    use tera::{to_value, Tera};
 
     use crate::content::{Page, Section};
     use crate::library::Library;

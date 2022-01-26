@@ -1,0 +1,54 @@
+[package]
+name = "libs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tera = { version = "1", features = ["preserve_order"] }
+toml = "0.5"
+csv = "1"
+base64 = "0.13"
+serde_json = "1"
+serde_yaml = "0.8"
+url = "2"
+syntect = "4"
+once_cell = "1"
+globset = "0.4"
+unic-langid = "0.9"
+image = "0.23"
+regex = "1"
+# TODO: replace chrono with time
+chrono = { version = "0.4", features = ["serde"] }
+rayon = "1"
+webp = "0.2"
+svg_metadata = "0.4"
+slotmap = "1"
+lexical-sort = "0.3"
+walkdir = "2"
+pulldown-cmark = { version = "0.8", default-features = false }
+gh-emoji = "1"
+elasticlunr-rs = {version = "2", default-features = false, features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
+ammonia = "3"
+nom-bibtex = "0.3"
+num-format = "0.4"
+sha2 = "0.10"
+unicode-segmentation = "1.2"
+slug = "0.1"
+percent-encoding = "2"
+filetime = "0.2"
+minify-html = "0.8"
+reqwest = {version = "0.11", default-features = false, features = ["blocking"]}
+sass-rs = "0.2"
+relative-path = "1"
+glob = "0.3"
+
+
+[dev-dependencies]
+mockito = "0.30"
+
+
+[features]
+rust-tls = ["reqwest/rustls-tls"]
+native-tls = ["reqwest/default-tls"]
+indexing-zh = ["elasticlunr-rs/zh"]
+indexing-ja = ["elasticlunr-rs/ja"]

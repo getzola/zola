@@ -1,9 +1,9 @@
-use filetime::{set_file_mtime, FileTime};
+use libs::filetime::{set_file_mtime, FileTime};
+use libs::walkdir::WalkDir;
 use std::fs::{copy, create_dir_all, metadata, File};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
-use walkdir::WalkDir;
 
 use errors::{Error, Result};
 
@@ -183,6 +183,7 @@ mod tests {
     use std::path::PathBuf;
     use std::str::FromStr;
 
+    use libs::filetime;
     use tempfile::tempdir_in;
 
     use super::copy_file;

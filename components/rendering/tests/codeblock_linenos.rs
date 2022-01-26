@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use tera::Tera;
+use libs::tera::Tera;
 
 use config::Config;
 use front_matter::InsertAnchor;
