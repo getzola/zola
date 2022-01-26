@@ -333,7 +333,7 @@ impl ImageOp {
                 img.write_to(&mut f, ImageOutputFormat::Jpeg(q))?;
             }
             Format::WebP(q) => {
-                let encoder = webp::Encoder::from_image(&img);
+                let encoder = webp::Encoder::from_image(&img)?;
                 let memory = match q {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
