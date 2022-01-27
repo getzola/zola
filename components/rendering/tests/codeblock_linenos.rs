@@ -32,7 +32,7 @@ bar
     .unwrap();
     assert_eq!(
         res.body,
-        "<pre data-linenos style=\"background-color:#2b303b;color:#c0c5ce;\"><code><table><tbody><tr><td>1</td><td><span>foo\n</span><tr><td>2</td><td><span>bar\n</span></tr></tbody></table></code></pre>\n"
+        "<pre data-linenos style=\"background-color:#2b303b;color:#c0c5ce;\"><code><table><tbody><tr><td>1</td><td><span>foo\n</span></td></tr><tr><td>2</td><td><span>bar\n</span></td></tr></tbody></table></code></pre>\n"
     );
 }
 
@@ -62,7 +62,7 @@ bar
     .unwrap();
     assert_eq!(
         res.body,
-        "<pre data-linenos style=\"background-color:#2b303b;color:#c0c5ce;\"><code><table><tbody><tr><td>40</td><td><span>foo\n</span><tr><td>41</td><td><span>bar\n</span></tr></tbody></table></code></pre>\n"
+        "<pre data-linenos style=\"background-color:#2b303b;color:#c0c5ce;\"><code><table><tbody><tr><td>40</td><td><span>foo\n</span></td></tr><tr><td>41</td><td><span>bar\n</span></td></tr></tbody></table></code></pre>\n"
     );
 }
 
@@ -92,6 +92,6 @@ bar
     .unwrap();
     assert_eq!(
         res.body,
-        "<pre data-linenos style=\"background-color:#2b303b;color:#c0c5ce;\"><code><table><tbody><tr><td>1</td><td><span>foo\n</span><tr><td><mark style=\"background-color:#65737e30;\">2</mark></td><td><mark style=\"background-color:#65737e30;\"><span>bar\n</span></mark></tr></tbody></table></code></pre>\n"
+        "<pre data-linenos style=\"background-color:#2b303b;color:#c0c5ce;\"><code><table><tbody><tr><td>1</td><td><span>foo\n</span></td></tr><tr><td><mark style=\"background-color:#65737e30;\">2</mark></td><td><mark style=\"background-color:#65737e30;\"><span>bar\n</span></mark></td></tr></tbody></table></code></pre>\n"
     );
 }
