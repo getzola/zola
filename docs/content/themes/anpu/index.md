@@ -81,6 +81,6 @@ Example:
 anpu_date_format = "%e %B %Y"
 ```
 
-The formatting uses the standart `date` filter in Tera. The date format options you can use are listed in the [chrono crate documentation](https://tera.netlify.app/docs/#date).
+The formatting uses the standard `date` filter in Tera. The date format options you can use are listed in the [chrono crate documentation](https://tera.netlify.app/docs/#date).
 
         
