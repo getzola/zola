@@ -63,7 +63,7 @@ fn can_render_shortcode_in_codeblock() {
     .unwrap();
     assert_eq!(
         res.body,
-        "<pre data-linenos data-lang=\"html\" class=\"language-html \"><code class=\"language-html\" data-lang=\"html\"><table><tbody><tr><td>1</td><td>&lt;div id=&quot;custom-attr&quot;&gt;\n<tr><td>2</td><td>&lt;div &gt;\n<tr><td>3</td><td>    &lt;iframe src=&quot;https:&#x2F;&#x2F;www.youtube-nocookie.com&#x2F;embed&#x2F;dQw4w9WgXcQ&quot; webkitallowfullscreen mozallowfullscreen allowfullscreen&gt;&lt;&#x2F;iframe&gt;\n<tr><td>4</td><td>&lt;&#x2F;div&gt;\n<tr><td>5</td><td>\n<tr><td>6</td><td>&lt;&#x2F;div&gt;\n</tr></tbody></table></code></pre>\n"
+        "<pre data-linenos data-lang=\"html\" class=\"language-html \"><code class=\"language-html\" data-lang=\"html\"><table><tbody><tr><td>1</td><td>&lt;div id=&quot;custom-attr&quot;&gt;\n</td></tr><tr><td>2</td><td>&lt;div &gt;\n</td></tr><tr><td>3</td><td>    &lt;iframe src=&quot;https:&#x2F;&#x2F;www.youtube-nocookie.com&#x2F;embed&#x2F;dQw4w9WgXcQ&quot; webkitallowfullscreen mozallowfullscreen allowfullscreen&gt;&lt;&#x2F;iframe&gt;\n</td></tr><tr><td>4</td><td>&lt;&#x2F;div&gt;\n</td></tr><tr><td>5</td><td>\n</td></tr><tr><td>6</td><td>&lt;&#x2F;div&gt;\n</td></tr></tbody></table></code></pre>\n"
     );
 }
 
@@ -130,18 +130,18 @@ text 3
     .unwrap();
     assert_eq!(
         res.body,
-r#"<pre data-linenos data-lang="html" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td>&lt;span&gt;text 1&lt;&#x2F;span&gt;
-<tr><td>2</td><td>&lt;div &gt;
-<tr><td>3</td><td>    &lt;iframe src=&quot;https:&#x2F;&#x2F;www.youtube-nocookie.com&#x2F;embed&#x2F;dQw4w9WgXcQ&quot; webkitallowfullscreen mozallowfullscreen allowfullscreen&gt;&lt;&#x2F;iframe&gt;
-<tr><td>4</td><td>&lt;&#x2F;div&gt;
-<tr><td>5</td><td>
-<tr><td>6</td><td>&lt;span&gt;text 2&lt;&#x2F;span&gt;
-<tr><td>7</td><td>&lt;div class=&quot;gist&quot;&gt;
-<tr><td>8</td><td>    &lt;script src=&quot;https:&amp;#x2F;&amp;#x2F;gist.github.com&amp;#x2F;Keats&amp;#x2F;e5fb6aad409f28721c0ba14161644c57.js&quot;&gt;&lt;&#x2F;script&gt;
-<tr><td>9</td><td>&lt;&#x2F;div&gt;
-<tr><td>10</td><td>
-<tr><td>11</td><td>&lt;span&gt;text 3&lt;&#x2F;span&gt;
-</tr></tbody></table></code></pre>
+        r#"<pre data-linenos data-lang="html" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td>&lt;span&gt;text 1&lt;&#x2F;span&gt;
+</td></tr><tr><td>2</td><td>&lt;div &gt;
+</td></tr><tr><td>3</td><td>    &lt;iframe src=&quot;https:&#x2F;&#x2F;www.youtube-nocookie.com&#x2F;embed&#x2F;dQw4w9WgXcQ&quot; webkitallowfullscreen mozallowfullscreen allowfullscreen&gt;&lt;&#x2F;iframe&gt;
+</td></tr><tr><td>4</td><td>&lt;&#x2F;div&gt;
+</td></tr><tr><td>5</td><td>
+</td></tr><tr><td>6</td><td>&lt;span&gt;text 2&lt;&#x2F;span&gt;
+</td></tr><tr><td>7</td><td>&lt;div class=&quot;gist&quot;&gt;
+</td></tr><tr><td>8</td><td>    &lt;script src=&quot;https:&amp;#x2F;&amp;#x2F;gist.github.com&amp;#x2F;Keats&amp;#x2F;e5fb6aad409f28721c0ba14161644c57.js&quot;&gt;&lt;&#x2F;script&gt;
+</td></tr><tr><td>9</td><td>&lt;&#x2F;div&gt;
+</td></tr><tr><td>10</td><td>
+</td></tr><tr><td>11</td><td>&lt;span&gt;text 3&lt;&#x2F;span&gt;
+</td></tr></tbody></table></code></pre>
 "#
     );
 }
@@ -175,7 +175,7 @@ fn is_highlighting_linenos_still_working() {
     .unwrap();
     assert_eq!(
         res.body,
-        "<pre data-linenos data-lang=\"html\" style=\"background-color:#2b303b;color:#c0c5ce;\" class=\"language-html \"><code class=\"language-html\" data-lang=\"html\"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style=\"color:#bf616a;\">div </span><span style=\"color:#8fa1b3;\">id</span><span>=&quot;</span><span style=\"color:#a3be8c;\">custom-attr</span><span>&quot;&gt;\n</span><tr><td>2</td><td><span>&lt;</span><span style=\"color:#bf616a;\">div </span><span>&gt;\n</span><tr><td>3</td><td><span>    &lt;</span><span style=\"color:#bf616a;\">iframe </span><span style=\"color:#d08770;\">src</span><span>=&quot;</span><span style=\"color:#a3be8c;\">https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ</span><span>&quot; </span><span style=\"color:#d08770;\">webkitallowfullscreen mozallowfullscreen allowfullscreen</span><span>&gt;&lt;/</span><span style=\"color:#bf616a;\">iframe</span><span>&gt;\n</span><tr><td>4</td><td><span>&lt;/</span><span style=\"color:#bf616a;\">div</span><span>&gt;\n</span><tr><td>5</td><td><span>\n</span><tr><td>6</td><td><span>&lt;/</span><span style=\"color:#bf616a;\">div</span><span>&gt;\n</span></tr></tbody></table></code></pre>\n"
+        "<pre data-linenos data-lang=\"html\" style=\"background-color:#2b303b;color:#c0c5ce;\" class=\"language-html \"><code class=\"language-html\" data-lang=\"html\"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style=\"color:#bf616a;\">div </span><span style=\"color:#8fa1b3;\">id</span><span>=&quot;</span><span style=\"color:#a3be8c;\">custom-attr</span><span>&quot;&gt;\n</span></td></tr><tr><td>2</td><td><span>&lt;</span><span style=\"color:#bf616a;\">div </span><span>&gt;\n</span></td></tr><tr><td>3</td><td><span>    &lt;</span><span style=\"color:#bf616a;\">iframe </span><span style=\"color:#d08770;\">src</span><span>=&quot;</span><span style=\"color:#a3be8c;\">https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ</span><span>&quot; </span><span style=\"color:#d08770;\">webkitallowfullscreen mozallowfullscreen allowfullscreen</span><span>&gt;&lt;/</span><span style=\"color:#bf616a;\">iframe</span><span>&gt;\n</span></td></tr><tr><td>4</td><td><span>&lt;/</span><span style=\"color:#bf616a;\">div</span><span>&gt;\n</span></td></tr><tr><td>5</td><td><span>\n</span></td></tr><tr><td>6</td><td><span>&lt;/</span><span style=\"color:#bf616a;\">div</span><span>&gt;\n</span></td></tr></tbody></table></code></pre>\n"
     );
     // multiple shortcode mixed with syntax and line numbers
     let res = render_content(
@@ -193,18 +193,18 @@ fn is_highlighting_linenos_still_working() {
     .unwrap();
     assert_eq!(
         res.body,
-r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 1&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
-</span><tr><td>2</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span>&gt;
-</span><tr><td>3</td><td><span>    &lt;</span><span style="color:#bf616a;">iframe </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ</span><span>&quot; </span><span style="color:#d08770;">webkitallowfullscreen mozallowfullscreen allowfullscreen</span><span>&gt;&lt;/</span><span style="color:#bf616a;">iframe</span><span>&gt;
-</span><tr><td>4</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
-</span><tr><td>5</td><td><span>
-</span><tr><td>6</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 2&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
-</span><tr><td>7</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#d08770;">class</span><span>=&quot;</span><span style="color:#a3be8c;">gist</span><span>&quot;&gt;
-</span><tr><td>8</td><td><span>    &lt;</span><span style="color:#bf616a;">script </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https:</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">gist.github.com</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">Keats</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">e5fb6aad409f28721c0ba14161644c57.js</span><span>&quot;&gt;&lt;/</span><span style="color:#bf616a;">script</span><span>&gt;
-</span><tr><td>9</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
-</span><tr><td>10</td><td><span>
-</span><tr><td>11</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 3&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
-</span></tr></tbody></table></code></pre>
+        r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 1&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
+</span></td></tr><tr><td>2</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span>&gt;
+</span></td></tr><tr><td>3</td><td><span>    &lt;</span><span style="color:#bf616a;">iframe </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ</span><span>&quot; </span><span style="color:#d08770;">webkitallowfullscreen mozallowfullscreen allowfullscreen</span><span>&gt;&lt;/</span><span style="color:#bf616a;">iframe</span><span>&gt;
+</span></td></tr><tr><td>4</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
+</span></td></tr><tr><td>5</td><td><span>
+</span></td></tr><tr><td>6</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 2&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
+</span></td></tr><tr><td>7</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#d08770;">class</span><span>=&quot;</span><span style="color:#a3be8c;">gist</span><span>&quot;&gt;
+</span></td></tr><tr><td>8</td><td><span>    &lt;</span><span style="color:#bf616a;">script </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https:</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">gist.github.com</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">Keats</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">e5fb6aad409f28721c0ba14161644c57.js</span><span>&quot;&gt;&lt;/</span><span style="color:#bf616a;">script</span><span>&gt;
+</span></td></tr><tr><td>9</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
+</span></td></tr><tr><td>10</td><td><span>
+</span></td></tr><tr><td>11</td><td><span>&lt;</span><span style="color:#bf616a;">span</span><span>&gt;text 3&lt;/</span><span style="color:#bf616a;">span</span><span>&gt;
+</span></td></tr></tbody></table></code></pre>
 "#
     );
 }
@@ -247,25 +247,25 @@ A quote
     .unwrap();
     assert_eq!(
         res.body,
-r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">a </span><span style="color:#d08770;">href</span><span>=&quot;</span><span style="color:#a3be8c;">javascript:void(0);</span><span>&quot;&gt;{{ before(texts=&quot;1&quot;) }}&lt;/</span><span style="color:#bf616a;">a</span><span>&gt;
-</span><tr><td>2</td><td><span>Normally people would not write something &amp; like </span><span style="background-color:#bf616a;color:#2b303b;">&lt;&gt;</span><span> this：
-</span><tr><td>3</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#8fa1b3;">id</span><span>=&quot;</span><span style="color:#a3be8c;">custom-attr</span><span>&quot;&gt;
-</span><tr><td>4</td><td><span>An inline &lt;</span><span style="color:#bf616a;">div </span><span style="color:#d08770;">class</span><span>=&quot;</span><span style="color:#a3be8c;">youtube</span><span>&quot;&gt;
-</span><tr><td>5</td><td><span>    &lt;</span><span style="color:#bf616a;">iframe </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1</span><span>&quot; </span><span style="color:#d08770;">webkitallowfullscreen mozallowfullscreen allowfullscreen</span><span>&gt;&lt;/</span><span style="color:#bf616a;">iframe</span><span>&gt;
-</span><tr><td>6</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
-</span><tr><td>7</td><td><span> shortcode
-</span><tr><td>8</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
-</span><tr><td>9</td><td><span>Plain text in-between
-</span><tr><td>10</td><td><span>{% quote(author=&quot;Vincent&quot;) %}
-</span><tr><td>11</td><td><span>A quote
-</span><tr><td>12</td><td><span>{% end %}
-</span><tr><td>13</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#d08770;">class</span><span>=&quot;</span><span style="color:#a3be8c;">gist</span><span>&quot;&gt;
-</span><tr><td>14</td><td><span>    &lt;</span><span style="color:#bf616a;">script </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https:</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">gist.github.com</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">Keats</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">e5fb6aad409f28721c0ba14161644c57.js</span><span>&quot;&gt;&lt;/</span><span style="color:#bf616a;">script</span><span>&gt;
-</span><tr><td>15</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
-</span><tr><td>16</td><td><span>
-</span><tr><td>17</td><td><span>{# A Tera comment, you should see it #}
-</span><tr><td>18</td><td><span style="color:#65737e;">&lt;!-- end text goes here --&gt;
-</span></tr></tbody></table></code></pre>
+        r#"<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">a </span><span style="color:#d08770;">href</span><span>=&quot;</span><span style="color:#a3be8c;">javascript:void(0);</span><span>&quot;&gt;{{ before(texts=&quot;1&quot;) }}&lt;/</span><span style="color:#bf616a;">a</span><span>&gt;
+</span></td></tr><tr><td>2</td><td><span>Normally people would not write something &amp; like </span><span style="background-color:#bf616a;color:#2b303b;">&lt;&gt;</span><span> this：
+</span></td></tr><tr><td>3</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#8fa1b3;">id</span><span>=&quot;</span><span style="color:#a3be8c;">custom-attr</span><span>&quot;&gt;
+</span></td></tr><tr><td>4</td><td><span>An inline &lt;</span><span style="color:#bf616a;">div </span><span style="color:#d08770;">class</span><span>=&quot;</span><span style="color:#a3be8c;">youtube</span><span>&quot;&gt;
+</span></td></tr><tr><td>5</td><td><span>    &lt;</span><span style="color:#bf616a;">iframe </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1</span><span>&quot; </span><span style="color:#d08770;">webkitallowfullscreen mozallowfullscreen allowfullscreen</span><span>&gt;&lt;/</span><span style="color:#bf616a;">iframe</span><span>&gt;
+</span></td></tr><tr><td>6</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
+</span></td></tr><tr><td>7</td><td><span> shortcode
+</span></td></tr><tr><td>8</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
+</span></td></tr><tr><td>9</td><td><span>Plain text in-between
+</span></td></tr><tr><td>10</td><td><span>{% quote(author=&quot;Vincent&quot;) %}
+</span></td></tr><tr><td>11</td><td><span>A quote
+</span></td></tr><tr><td>12</td><td><span>{% end %}
+</span></td></tr><tr><td>13</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#d08770;">class</span><span>=&quot;</span><span style="color:#a3be8c;">gist</span><span>&quot;&gt;
+</span></td></tr><tr><td>14</td><td><span>    &lt;</span><span style="color:#bf616a;">script </span><span style="color:#d08770;">src</span><span>=&quot;</span><span style="color:#a3be8c;">https:</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">gist.github.com</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">Keats</span><span style="color:#8fa1b3;">&amp;#x</span><span style="color:#d08770;">2F;</span><span style="color:#a3be8c;">e5fb6aad409f28721c0ba14161644c57.js</span><span>&quot;&gt;&lt;/</span><span style="color:#bf616a;">script</span><span>&gt;
+</span></td></tr><tr><td>15</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
+</span></td></tr><tr><td>16</td><td><span>
+</span></td></tr><tr><td>17</td><td><span>{# A Tera comment, you should see it #}
+</span></td></tr><tr><td>18</td><td><span style="color:#65737e;">&lt;!-- end text goes here --&gt;
+</span></td></tr></tbody></table></code></pre>
 "#
     );
 }
