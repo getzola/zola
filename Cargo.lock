@@ -358,7 +358,6 @@ name = "config"
 version = "0.1.0"
 dependencies = [
  "errors",
- "lazy_static",
  "libs",
  "serde",
  "utils",

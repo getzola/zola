@@ -6,8 +6,6 @@ include = ["src/**/*"]
 
 [dependencies]
 serde = {version = "1.0", features = ["derive"] }
-# TODO: remove me if we can get highlight to work with once_cell
-lazy_static = "1"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
