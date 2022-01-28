@@ -6,7 +6,6 @@
 
 pub use ammonia;
 pub use base64;
-pub use chrono;
 pub use csv;
 pub use elasticlunr;
 pub use filetime;
@@ -34,6 +33,7 @@ pub use slug;
 pub use svg_metadata;
 pub use syntect;
 pub use tera;
+pub use time;
 pub use toml;
 pub use unic_langid;
 pub use unicode_segmentation;

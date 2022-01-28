@@ -34,7 +34,7 @@ use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
 use mime_guess::from_path as mimetype_from_path;
 
-use libs::chrono::prelude::*;
+use libs::time::{OffsetDateTime, format_description};
 use libs::percent_encoding;
 use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -523,9 +523,10 @@ pub fn serve(
                         if path.is_dir() && is_folder_empty(&path) {
                             continue;
                         }
+                        let format = format_description::parse("[year]-[month]-[day] [hour]:[minute]:[second]").unwrap();
                         println!(
                             "Change detected @ {}",
-                            Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+                            OffsetDateTime::now_local().unwrap().format(&format).unwrap().to_string()
                         );
 
                         let start = Instant::now();

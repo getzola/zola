@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 
-use libs::chrono::NaiveDateTime;
 use libs::lexical_sort::natural_lexical_cmp;
 use libs::rayon::prelude::*;
 use libs::slotmap::DefaultKey;
+use libs::time::OffsetDateTime;
 
 use crate::content::Page;
 
@@ -23,7 +23,7 @@ pub fn sort_actual_pages_by_date(a: &&Page, b: &&Page) -> Ordering {
 /// Pages without date will be put in the unsortable bucket
 /// The permalink is used to break ties
 pub fn sort_pages_by_date(
-    pages: Vec<(&DefaultKey, Option<NaiveDateTime>, &str)>,
+    pages: Vec<(&DefaultKey, Option<OffsetDateTime>, &str)>,
 ) -> (Vec<DefaultKey>, Vec<DefaultKey>) {
     let (mut can_be_sorted, cannot_be_sorted): (Vec<_>, Vec<_>) =
         pages.into_par_iter().partition(|page| page.1.is_some());
