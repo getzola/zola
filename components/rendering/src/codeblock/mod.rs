@@ -162,6 +162,10 @@ impl<'config> CodeBlock<'config> {
 
             let highlighted_line = self.highlighter.highlight_line(line);
             maybe_mark(&mut buffer, &highlighted_line);
+
+            if self.line_numbers {
+                buffer.push_str("</td></tr>");
+            }
         }
 
         if let Some(rest) = self.highlighter.finalize() {
@@ -169,7 +173,7 @@ impl<'config> CodeBlock<'config> {
         }
 
         if self.line_numbers {
-            buffer.push_str("</tr></tbody></table>");
+            buffer.push_str("</tbody></table>");
         }
 
         buffer
