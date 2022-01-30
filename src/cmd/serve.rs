@@ -23,7 +23,7 @@
 
 use std::fs::{read_dir, remove_dir_all};
 use std::net::{SocketAddrV4, TcpListener};
-use std::path::{Path, PathBuf};
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -419,7 +419,12 @@ pub fn serve(
         broadcaster
     };
 
-    println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(", "));
+    println!(
+        "Listening for changes in {}{}{{{}}}",
+        root_dir.display(),
+        MAIN_SEPARATOR,
+        watchers.join(", ")
+    );
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
