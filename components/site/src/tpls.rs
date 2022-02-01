@@ -1,6 +1,6 @@
 use crate::Site;
+use libs::tera::Result as TeraResult;
 use templates::{filters, global_fns};
-use tera::Result as TeraResult;
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {

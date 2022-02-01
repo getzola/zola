@@ -1,4 +1,4 @@
-use serde_derive::Serialize;
+use serde::Serialize;
 
 /// Populated while receiving events from the markdown parser
 #[derive(Debug, Default, PartialEq, Clone, Serialize)]

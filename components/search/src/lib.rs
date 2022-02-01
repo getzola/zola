@@ -1,9 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
-use elasticlunr::pipeline;
-use elasticlunr::pipeline::TokenizerFn;
-use elasticlunr::{Index, Language};
-use lazy_static::lazy_static;
+use libs::ammonia;
+use libs::elasticlunr::pipeline;
+use libs::elasticlunr::pipeline::TokenizerFn;
+use libs::elasticlunr::{Index, Language};
+use libs::once_cell::sync::Lazy;
 
 use config::{Config, Search};
 use errors::{bail, Result};
@@ -11,22 +12,20 @@ use library::{Library, Section};
 
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
 
-lazy_static! {
-    static ref AMMONIA: ammonia::Builder<'static> = {
-        let mut clean_content = HashSet::new();
-        clean_content.insert("script");
-        clean_content.insert("style");
-        let mut builder = ammonia::Builder::new();
-        builder
-            .tags(HashSet::new())
-            .tag_attributes(HashMap::new())
-            .generic_attributes(HashSet::new())
-            .link_rel(None)
-            .allowed_classes(HashMap::new())
-            .clean_content_tags(clean_content);
-        builder
-    };
-}
+static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
+    let mut clean_content = HashSet::new();
+    clean_content.insert("script");
+    clean_content.insert("style");
+    let mut builder = ammonia::Builder::new();
+    builder
+        .tags(HashSet::new())
+        .tag_attributes(HashMap::new())
+        .generic_attributes(HashSet::new())
+        .link_rel(None)
+        .allowed_classes(HashMap::new())
+        .clean_content_tags(clean_content);
+    builder
+});
 
 fn build_fields(search_config: &Search) -> Vec<String> {
     let mut fields = vec![];

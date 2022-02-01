@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use rayon::prelude::*;
-use serde_derive::Serialize;
-use tera::Context;
+use libs::rayon::prelude::*;
+use libs::tera::Context;
+use serde::Serialize;
 
 use crate::Site;
 use errors::Result;

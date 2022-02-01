@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use serde_derive::{Deserialize, Serialize};
-use toml::Value as Toml;
+use libs::toml::Value as Toml;
+use serde::{Deserialize, Serialize};
 
 use errors::{bail, Result};
 use utils::fs::read_file;

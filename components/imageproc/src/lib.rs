@@ -11,7 +11,8 @@ use image::error::ImageResult;
 use image::io::Reader as ImgReader;
 use image::{imageops::FilterType, EncodableLayout};
 use image::{ImageFormat, ImageOutputFormat};
-use lazy_static::lazy_static;
+use libs::{image, once_cell, rayon, regex, svg_metadata, webp};
+use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -24,10 +25,8 @@ use utils::fs as ufs;
 static RESIZED_SUBDIR: &str = "processed_images";
 const DEFAULT_Q_JPG: u8 = 75;
 
-lazy_static! {
-    pub static ref RESIZED_FILENAME: Regex =
-        Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png|webp)"#).unwrap();
-}
+static RESIZED_FILENAME: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png|webp)"#).unwrap());
 
 /// Size and format read cheaply with `image`'s `Reader`.
 #[derive(Debug)]

@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use config::Config;
 use front_matter::InsertAnchor;
-use templates::ZOLA_TERA;
 use rendering::{render_content, RenderContext};
+use templates::ZOLA_TERA;
 
 #[test]
 fn can_render_shortcode_in_codeblock() {

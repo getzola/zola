@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 
 use crate::global_fns::helpers::search_for_file;
 
@@ -144,10 +144,10 @@ mod tests {
     use std::fs::{copy, create_dir_all};
 
     use config::Config;
+    use libs::tera::{to_value, Function};
     use std::path::{Path, PathBuf};
     use std::sync::{Arc, Mutex};
     use tempfile::{tempdir, TempDir};
-    use tera::{to_value, Function};
 
     fn create_dir_with_image() -> TempDir {
         let dir = tempdir().unwrap();

@@ -1,5 +1,7 @@
-use lazy_static::lazy_static;
-use pulldown_cmark as cmark;
+use libs::gh_emoji::Replacer as EmojiReplacer;
+use libs::once_cell::sync::Lazy;
+use libs::pulldown_cmark as cmark;
+use libs::tera;
 
 use crate::context::RenderContext;
 use crate::table_of_contents::{make_table_of_contents, Heading};
@@ -15,6 +17,7 @@ use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
+static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(|| EmojiReplacer::new());
 
 #[derive(Debug)]
 pub struct Rendered {
@@ -146,10 +149,6 @@ pub fn markdown_to_html(
     context: &RenderContext,
     html_shortcodes: Vec<Shortcode>,
 ) -> Result<Rendered> {
-    lazy_static! {
-        static ref EMOJI_REPLACER: gh_emoji::Replacer = gh_emoji::Replacer::new();
-    }
-
     let path = context
         .tera_context
         .get("page")

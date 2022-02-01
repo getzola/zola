@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use slotmap::DefaultKey;
-use tera::{Context as TeraContext, Tera};
+use libs::slotmap::DefaultKey;
+use libs::tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Error, Result};
@@ -232,7 +232,7 @@ mod tests {
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
-    use globset::{Glob, GlobSetBuilder};
+    use libs::globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
 
     use super::Section;

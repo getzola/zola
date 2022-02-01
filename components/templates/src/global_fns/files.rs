@@ -3,10 +3,11 @@ use std::path::PathBuf;
 use std::{fs, io, result};
 
 use crate::global_fns::helpers::search_for_file;
-use base64::encode as encode_b64;
 use config::Config;
-use sha2::{digest, Sha256, Sha384, Sha512};
-use tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use libs::base64::encode as encode_b64;
+use libs::sha2::{digest, Sha256, Sha384, Sha512};
+use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use libs::url;
 use utils::site::resolve_internal_link;
 
 fn compute_file_hash<D: digest::Digest>(
@@ -233,8 +234,8 @@ mod tests {
     use std::fs::create_dir;
     use std::path::PathBuf;
 
+    use libs::tera::{to_value, Function};
     use tempfile::{tempdir, TempDir};
-    use tera::{to_value, Function};
 
     use config::Config;
     use utils::fs::create_file;

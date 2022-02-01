@@ -1,6 +1,7 @@
 mod common;
 
 use common::ShortCode;
+use libs::tera;
 
 macro_rules! test_scenario_summary {
     ($in_str:literal, $summary:literal, [$($shortcodes:ident),*]) => {

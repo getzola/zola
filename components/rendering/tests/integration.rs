@@ -1,6 +1,7 @@
 mod common;
 
 use common::ShortCode;
+use libs::tera;
 
 const COMPLETE_PAGE: &str = r#"
 <!-- Adapted from https://markdown-it.github.io/ -->

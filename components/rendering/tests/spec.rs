@@ -1,6 +1,7 @@
 mod common;
 
 use common::ShortCode;
+use libs::tera;
 use std::path::PathBuf;
 use templates::ZOLA_TERA;
 

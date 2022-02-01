@@ -4,6 +4,7 @@ use tera::Tera;
 
 use config::Config;
 use front_matter::InsertAnchor;
+use libs::tera;
 use rendering::{render_content, RenderContext};
 use templates::ZOLA_TERA;
 use utils::slugs::SlugifyStrategy;
