@@ -7,5 +7,5 @@ edition = "2018"
 [dependencies]
 tera = "1"
 toml = "0.5"
-image = "0.23"
+image = "0.24"
 syntect = "4"
