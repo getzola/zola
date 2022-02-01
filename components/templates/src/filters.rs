@@ -1,10 +1,12 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
+use std::io::prelude::*;
 use std::path::PathBuf;
 
-use base64::{decode, encode};
+use base64::{decode, decode_config, encode, encode_config, URL_SAFE};
 use config::Config;
+use flate2::{read::ZlibDecoder, write::ZlibEncoder, Compression};
 use rendering::{render_content, RenderContext};
 use tera::{
     to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
@@ -111,13 +113,39 @@ impl TeraFilter for NumFormatFilter {
     }
 }
 
+pub fn deflate_compress<S: BuildHasher>(
+    value: &Value,
+    _: &HashMap<String, Value, S>,
+) -> TeraResult<Value> {
+    let s = try_get_value!("deflate_compress", "value", String, value);
+    let mut e = ZlibEncoder::new(Vec::new(), Compression::new(9));
+    e.write_all(s.as_bytes())?;
+    let result = e.finish()?;
+    Ok(to_value(&encode_config(result, URL_SAFE))?)
+}
+
+pub fn deflate_decompress<S: BuildHasher>(
+    value: &Value,
+    _: &HashMap<String, Value, S>,
+) -> TeraResult<Value> {
+    let base64 = try_get_value!("deflate_decompress", "value", String, value);
+    let s = decode_config(base64, URL_SAFE).unwrap();
+    let mut d = ZlibDecoder::new(s.as_slice());
+    let mut result = String::new();
+    d.read_to_string(&mut result)?;
+    Ok(to_value(result)?)
+}
+
 #[cfg(test)]
 mod tests {
     use std::{collections::HashMap, path::PathBuf};
 
     use tera::{to_value, Filter};
 
-    use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
+    use super::{
+        base64_decode, base64_encode, deflate_compress, deflate_decompress, MarkdownFilter,
+        NumFormatFilter,
+    };
     use config::Config;
 
     #[test]
@@ -294,6 +322,45 @@ mod tests {
             args.insert("locale".to_string(), to_value(locale).unwrap());
             let result = NumFormatFilter::new("en").filter(&to_value(input).unwrap(), &args);
             let result = dbg!(result);
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), to_value(expected).unwrap());
+        }
+    }
+
+    #[test]
+    fn deflate_compress_filter() {
+        let tests = vec![
+            ("", "eNoDAAAAAAE="),
+            ("f", "eNpLAwAAZwBn"),
+            ("fo", "eNpLywcAAT0A1g=="),
+            ("foo", "eNpLy88HAAKCAUU="),
+            ("foob", "eNpLy89PAgAEKQGn"),
+            ("fooba", "eNpLy89PSgQABjECCA=="),
+            ("foobar", "eNpLy89PSiwCAAirAno="),
+        ];
+        for (input, expected) in tests {
+            let args = HashMap::new();
+            let result = deflate_compress(&to_value(input).unwrap(), &args);
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), to_value(expected).unwrap());
+        }
+    }
+
+    #[test]
+    fn deflate_decompress_filter() {
+        let tests = vec![
+            ("eNoDAAAAAAE=", ""),
+            ("eNpLAwAAZwBn", "f"),
+            ("eNpLywcAAT0A1g==", "fo"),
+            ("eNpLy88HAAKCAUU=", "foo"),
+            ("eNpLy89PAgAEKQGn", "foob"),
+            ("eNpLy89PSgQABjECCA==", "fooba"),
+            ("eNpLy89PSiwCAAirAno=", "foobar"),
+            ("eNpLyUwvSizIUHBXqPZIzcnJ17ULzy_KSanlAgB1EAjQ", "digraph G {Hello->World}\n"),
+        ];
+        for (input, expected) in tests {
+            let args = HashMap::new();
+            let result = deflate_decompress(&to_value(input).unwrap(), &args);
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), to_value(expected).unwrap());
         }

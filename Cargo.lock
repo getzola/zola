@@ -2937,6 +2937,7 @@ dependencies = [
  "config",
  "csv",
  "errors",
+ "flate2",
  "imageproc",
  "lazy_static",
  "library",
