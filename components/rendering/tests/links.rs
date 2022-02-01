@@ -4,6 +4,7 @@ use errors::Result;
 use rendering::Rendered;
 
 mod common;
+use libs::tera;
 
 fn render_content(content: &str, permalinks: HashMap<String, String>) -> Result<Rendered> {
     let config = config::Config::default_for_test();

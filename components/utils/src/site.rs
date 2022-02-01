@@ -1,7 +1,7 @@
-use percent_encoding::percent_decode;
+use libs::percent_encoding::percent_decode;
+use libs::unicode_segmentation::UnicodeSegmentation;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
-use unicode_segmentation::UnicodeSegmentation;
 
 use errors::Result;
 

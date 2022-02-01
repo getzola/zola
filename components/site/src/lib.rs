@@ -9,16 +9,17 @@ use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use lazy_static::lazy_static;
-use rayon::prelude::*;
-use tera::{Context, Tera};
-use walkdir::{DirEntry, WalkDir};
+// use lazy_static::lazy_static;
+use libs::once_cell::sync::Lazy;
+use libs::rayon::prelude::*;
+use libs::tera::{Context, Tera};
+use libs::walkdir::{DirEntry, WalkDir};
 
 use config::{get_config, Config};
 use errors::{bail, Error, Result};
 use front_matter::InsertAnchor;
 use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
-use relative_path::RelativePathBuf;
+use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
@@ -28,10 +29,8 @@ use utils::minify;
 use utils::net::get_available_port;
 use utils::templates::{render_template, ShortcodeDefinition};
 
-lazy_static! {
-    /// The in-memory rendered map content
-    pub static ref SITE_CONTENT: Arc<RwLock<HashMap<RelativePathBuf, String>>> = Arc::new(RwLock::new(HashMap::new()));
-}
+pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
+    Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
 
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]

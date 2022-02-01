@@ -1,9 +1,11 @@
-use lazy_static::lazy_static;
-use serde_derive::{Deserialize, Serialize};
+use std::path::Path;
+
+use libs::once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
 
 use errors::{bail, Error, Result};
-use regex::Regex;
-use std::path::Path;
+use libs::regex::Regex;
+use libs::{serde_yaml, toml};
 
 mod page;
 mod section;
@@ -11,16 +13,17 @@ mod section;
 pub use page::PageFrontMatter;
 pub use section::SectionFrontMatter;
 
-lazy_static! {
-    static ref TOML_RE: Regex = Regex::new(
-        r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))"
+static TOML_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))",
     )
-    .unwrap();
-    static ref YAML_RE: Regex = Regex::new(
-        r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))"
-    )
-    .unwrap();
-}
+    .unwrap()
+});
+
+static YAML_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))")
+        .unwrap()
+});
 
 pub enum RawFrontMatter<'a> {
     Toml(&'a str),

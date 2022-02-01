@@ -1,11 +1,9 @@
 use std::env;
 use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
 
-use lazy_static::lazy_static;
-
 use config::Config;
 use imageproc::{assert_processed_path_matches, ImageMetaResponse, Processor};
-use utils::fs as ufs;
+use libs::once_cell::sync::Lazy;
 
 static CONFIG: &str = r#"
 title = "imageproc integration tests"
@@ -17,18 +15,10 @@ build_search_index = false
 highlight_code = false
 "#;
 
-lazy_static! {
-    static ref TEST_IMGS: PathBuf =
-        [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect();
-    static ref TMPDIR: PathBuf = {
-        let tmpdir = option_env!("CARGO_TARGET_TMPDIR").map(PathBuf::from).unwrap_or_else(|| {
-            env::current_exe().unwrap().parent().unwrap().parent().unwrap().join("tmpdir")
-        });
-        ufs::ensure_directory_exists(&tmpdir).unwrap();
-        tmpdir
-    };
-    static ref PROCESSED_PREFIX: String = format!("static{0}processed_images{0}", SLASH);
-}
+static TEST_IMGS: Lazy<PathBuf> =
+    Lazy::new(|| [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect());
+static PROCESSED_PREFIX: Lazy<String> =
+    Lazy::new(|| format!("static{0}processed_images{0}", SLASH));
 
 #[allow(clippy::too_many_arguments)]
 fn image_op_test(
@@ -44,9 +34,9 @@ fn image_op_test(
     orig_height: u32,
 ) {
     let source_path = TEST_IMGS.join(source_img);
-
+    let tmpdir = tempfile::tempdir().unwrap().into_path();
     let config = Config::parse(CONFIG).unwrap();
-    let mut proc = Processor::new(TMPDIR.clone(), &config);
+    let mut proc = Processor::new(tmpdir.clone(), &config);
 
     let resp =
         proc.enqueue(source_img.into(), source_path, op, width, height, format, None).unwrap();
@@ -60,7 +50,7 @@ fn image_op_test(
     proc.do_process().unwrap();
 
     let processed_path = PathBuf::from(&resp.static_path);
-    let processed_size = imageproc::read_image_metadata(&TMPDIR.join(processed_path))
+    let processed_size = imageproc::read_image_metadata(&tmpdir.join(processed_path))
         .map(|meta| (meta.width, meta.height))
         .unwrap();
     assert_eq!(processed_size, (expect_width, expect_height));

@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 
-use chrono::NaiveDateTime;
-use lexical_sort::natural_lexical_cmp;
-use rayon::prelude::*;
-use slotmap::DefaultKey;
+use libs::chrono::NaiveDateTime;
+use libs::lexical_sort::natural_lexical_cmp;
+use libs::rayon::prelude::*;
+use libs::slotmap::DefaultKey;
 
 use crate::content::Page;
 
@@ -111,7 +111,7 @@ pub fn find_siblings(
 
 #[cfg(test)]
 mod tests {
-    use slotmap::DenseSlotMap;
+    use libs::slotmap::DenseSlotMap;
     use std::path::PathBuf;
 
     use super::{find_siblings, sort_pages_by_date, sort_pages_by_title, sort_pages_by_weight};

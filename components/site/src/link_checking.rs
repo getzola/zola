@@ -1,11 +1,12 @@
-use rayon::prelude::*;
+use libs::rayon::prelude::*;
 
 use crate::Site;
 use core::time;
 use errors::{bail, Result};
 use errors::{Error, ErrorKind};
+use libs::rayon;
+use libs::url::Url;
 use std::{collections::HashMap, path::PathBuf, thread};
-use url::Url;
 
 /// Check whether all internal links pointing to explicit anchor fragments are valid.
 ///
@@ -64,7 +65,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
                 .get_page(&full_path)
                 .expect("Couldn't find section in check_internal_links_with_anchors");
 
-            !(page.has_anchor(anchor)||page.has_anchor_id(anchor))
+            !(page.has_anchor(anchor) || page.has_anchor_id(anchor))
         }
     });
 

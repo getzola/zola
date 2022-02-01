@@ -2,10 +2,10 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use lazy_static::lazy_static;
-use regex::Regex;
-use slotmap::DefaultKey;
-use tera::{Context as TeraContext, Tera};
+use libs::once_cell::sync::Lazy;
+use libs::regex::Regex;
+use libs::slotmap::DefaultKey;
+use libs::tera::{Context as TeraContext, Tera};
 
 use crate::library::Library;
 use config::Config;
@@ -22,15 +22,15 @@ use crate::content::{find_related_assets, has_anchor};
 use utils::fs::read_file;
 use utils::links::has_anchor_id;
 
-lazy_static! {
-    // Based on https://regex101.com/r/H2n38Z/1/tests
-    // A regex parsing RFC3339 date followed by {_,-}, some characters and ended by .md
-    static ref RFC3339_DATE: Regex = Regex::new(
+// Based on https://regex101.com/r/H2n38Z/1/tests
+// A regex parsing RFC3339 date followed by {_,-}, some characters and ended by .md
+static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
         r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)\s?(_|-)(?P<slug>.+$)"
-    ).unwrap();
+    ).unwrap()
+});
 
-    static ref FOOTNOTES_RE: Regex = Regex::new(r"<sup\s*.*?>\s*.*?</sup>").unwrap();
-}
+static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"<sup\s*.*?>\s*.*?</sup>").unwrap());
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Page {
@@ -321,9 +321,9 @@ mod tests {
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
-    use globset::{Glob, GlobSetBuilder};
+    use libs::globset::{Glob, GlobSetBuilder};
+    use libs::tera::Tera;
     use tempfile::tempdir;
-    use tera::Tera;
 
     use super::Page;
     use config::{Config, LanguageOptions};

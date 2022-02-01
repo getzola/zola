@@ -1,11 +1,11 @@
 use std::ops::Range;
 
 use errors::{bail, Result};
+use libs::tera::{to_value, Context, Map, Tera, Value};
 use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::Parser;
 use std::collections::HashMap;
-use tera::{to_value, Context, Map, Tera, Value};
 use utils::templates::ShortcodeFileType;
 
 pub const SHORTCODE_PLACEHOLDER: &str = "@@ZOLA_SC_PLACEHOLDER@@";

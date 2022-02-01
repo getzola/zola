@@ -1,5 +1,5 @@
 use errors::{bail, Result};
-use minify_html::{minify, Cfg};
+use libs::minify_html::{minify, Cfg};
 
 pub fn html(html: String) -> Result<String> {
     let mut cfg = Cfg::spec_compliant();

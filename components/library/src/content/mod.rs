@@ -1,11 +1,11 @@
+use std::path::{Path, PathBuf};
+
+use libs::walkdir::WalkDir;
+
 mod file_info;
 mod page;
 mod section;
 mod ser;
-
-use std::path::{Path, PathBuf};
-
-use walkdir::WalkDir;
 
 pub use self::file_info::FileInfo;
 pub use self::page::Page;
@@ -89,9 +89,14 @@ mod tests {
 
         let assets = find_related_assets(path, &Config::default(), true);
         assert_eq!(assets.len(), 5);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or("".as_ref()) != "md").count(), 5);
+        assert_eq!(
+            assets.iter().filter(|p| p.extension().unwrap_or("".as_ref()) != "md").count(),
+            5
+        );
 
-        for asset in vec!["example.js", "graph.jpg", "fail.png", "subdir/example.js", "extensionless"] {
+        for asset in
+            vec!["example.js", "graph.jpg", "fail.png", "subdir/example.js", "extensionless"]
+        {
             assert!(assets
                 .iter()
                 .find(|p| p.strip_prefix(path).unwrap() == Path::new(asset))
@@ -113,7 +118,10 @@ mod tests {
         File::create(path.join("subdir").join("example.js")).unwrap();
         let assets = find_related_assets(path, &Config::default(), false);
         assert_eq!(assets.len(), 4);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or("".as_ref()) != "md").count(), 4);
+        assert_eq!(
+            assets.iter().filter(|p| p.extension().unwrap_or("".as_ref()) != "md").count(),
+            4
+        );
 
         for asset in vec!["example.js", "graph.jpg", "fail.png", "extensionless"] {
             assert!(assets

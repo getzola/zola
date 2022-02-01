@@ -2,12 +2,12 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
-use serde_derive::Serialize;
+use serde::Serialize;
 
 use config::Config;
 use library::{Library, Taxonomy};
+use libs::tera::{Map, Value};
 use std::cmp::Ordering;
-use tera::{Map, Value};
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that

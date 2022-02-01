@@ -1,29 +1,25 @@
-use regex::Regex;
-
+use libs::regex::Regex;
 
 pub fn has_anchor_id(content: &str, anchor: &str) -> bool {
     let checks = anchor_id_checks(anchor);
     checks.is_match(content)
 }
 
-fn anchor_id_checks(anchor:&str) -> Regex {
-    Regex::new(
-        &format!(r#" (?i)(id|name) *= *("|')*{}("|'| |>)+"#, anchor)
-    ).unwrap()
+fn anchor_id_checks(anchor: &str) -> Regex {
+    Regex::new(&format!(r#" (?i)(id|name) *= *("|')*{}("|'| |>)+"#, anchor)).unwrap()
 }
 
-
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::anchor_id_checks;
 
-    fn check(anchor:&str, content:&str) -> bool {
+    fn check(anchor: &str, content: &str) -> bool {
         anchor_id_checks(anchor).is_match(content)
     }
 
     #[test]
-    fn matchers () {
-        let m = |content| {check("fred", content)};
+    fn matchers() {
+        let m = |content| check("fred", content);
 
         // Canonical match/non match
         assert!(m(r#"<a name="fred">"#));

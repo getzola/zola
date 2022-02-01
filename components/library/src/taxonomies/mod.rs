@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use serde_derive::Serialize;
-use slotmap::DefaultKey;
-use tera::{Context, Tera};
+use libs::slotmap::DefaultKey;
+use libs::tera::{Context, Tera};
+use serde::Serialize;
 
 use config::{Config, Taxonomy as TaxonomyConfig};
 use errors::{bail, Error, Result};

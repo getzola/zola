@@ -1,10 +1,9 @@
 //! What we are sending to the templates when rendering them
-use std::collections::HashMap;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-use serde_derive::Serialize;
-use tera::{Map, Value};
+use libs::tera::{Map, Value};
+use serde::Serialize;
 
 use crate::content::{Page, Section};
 use crate::library::Library;
