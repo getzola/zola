@@ -52,7 +52,7 @@ minify_html = false
 # directory is processed. Defaults to none, which means that all asset files are
 # copied over to the `public` directory.
 # Example:
-#     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
+#     ignored_content = ["*.{graphml,xlsx}", "temp.*", "**/build_folder"]
 ignored_content = []
 
 # When set to "true", a feed is automatically generated.
