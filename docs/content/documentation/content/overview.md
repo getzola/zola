@@ -70,13 +70,13 @@ By default, this page's slug will be the directory name and thus its permalink w
 
 It is possible to ignore selected asset files using the
 [ignored_content](@/documentation/getting-started/configuration.md) setting in the config file.
-For example, say that you have an Excel spreadsheet from which you are taking several screenshots and
-then linking to these image files on your website. For maintainability, you want to keep
-the spreadsheet in the same directory as the Markdown file, but you don't want to copy the spreadsheet to
-the public web site. You can achieve this by setting `ignored_content` in the config file:
+For example, say that you have several code files which you are linking to on your website.
+For maintainability, you want to keep your code in the same directory as the Markdown file,
+but you don't want to copy the build folders to the public web site. You can achieve this by setting `ignored_content` in the config file:
 
+(Note of caution: `{Cargo.lock,target}` is _not_ the same as `{Cargo.lock, target}`)
 ```
-ignored_content = ["*.xlsx"]
+ignored_content = ["code_articles/**/{Cargo.lock,target}, *.rs"]
 ```
 
 ## Static assets

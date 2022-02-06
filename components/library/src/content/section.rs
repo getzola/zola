@@ -228,7 +228,7 @@ impl Section {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{create_dir, File};
+    use std::fs::{create_dir, File, create_dir_all};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
@@ -268,23 +268,26 @@ mod tests {
     fn section_with_ignored_assets_filters_out_correct_files() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
-        let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("_index.md")).unwrap();
+        let article_path = path.join("content/posts/with-assets");
+        create_dir_all(path.join(&article_path).join("foo/bar/baz/quux")).expect("create nested temp dir");
+        create_dir_all(path.join(&article_path).join("foo/baz/quux")).expect("create nested temp dir");
+        let mut f = File::create(article_path.join("_index.md")).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        File::create(article_path.join("example.js")).unwrap();
+        File::create(article_path.join("graph.jpg")).unwrap();
+        File::create(article_path.join("fail.png")).unwrap();
+        File::create(article_path.join("foo/bar/baz/quux/quo.xlsx")).unwrap();
+        File::create(article_path.join("foo/bar/baz/quux/quo.docx")).unwrap();
+        
 
         let mut gsb = GlobSetBuilder::new();
         gsb.add(Glob::new("*.{js,png}").unwrap());
+        gsb.add(Glob::new("foo/**/baz").unwrap());
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
         let res =
-            Section::from_file(nested_path.join("_index.md").as_path(), &config, &PathBuf::new());
+            Section::from_file(article_path.join("_index.md").as_path(), &config, &PathBuf::new());
 
         assert!(res.is_ok());
         let page = res.unwrap();
