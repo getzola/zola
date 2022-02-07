@@ -15,6 +15,8 @@ include = ["src/**/*", "LICENSE", "README.md"]
 [build-dependencies]
 clap = "3"
 clap_complete = "3"
+winres = "0.1"
+time = "0.3"
 
 [[bin]]
 name = "zola"
@@ -64,3 +66,7 @@ codegen-units = 1
 # Disabling debug info speeds up builds a bunch,
 # and we don't rely on it for debugging that much.
 debug = 0
+
+[package.metadata.winres]
+OriginalFilename = "zola.exe"
+InternalName = "zola"
