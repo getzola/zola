@@ -3,11 +3,11 @@
 title = "Slim"
 description = "Slim is a minimal, clean and beautiful theme for Zola."
 template = "theme.html"
-date = 2022-01-23T23:20:14+01:00
+date = 2022-02-09T00:41:54+05:30
 
 [extra]
-created = 2022-01-23T23:20:14+01:00
-updated = 2022-01-23T23:20:14+01:00
+created = 2022-02-09T00:41:54+05:30
+updated = 2022-02-09T00:41:54+05:30
 repository = "https://github.com/jameshclrk/zola-slim"
 homepage = "https://github.com/jameshclrk/zola-slim"
 minimum_version = "0.8.0"
