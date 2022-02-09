@@ -96,6 +96,8 @@ fn fix_link(
         if is_external_link(link) {
             external_links.push(link.to_owned());
             link.to_owned()
+        } else if link == "#" {
+            link.to_string()
         } else if link.starts_with("#") {
             // local anchor without the internal zola path
             if let Some(current_path) = context.current_page_path {
