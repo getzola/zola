@@ -261,10 +261,16 @@ The method returns a map containing `width`, `height` and `format` (the lowercas
 Loads data from a file or URL. Supported file types include *toml*, *json*, *csv* and *bibtex* and only supports UTF-8 encoding.
 Any other file type will be loaded as plain text.
 
-The `path` argument specifies the path to the data file, according to the [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic).
+The `path` argument specifies the path to a local data file, according to the [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic).
 
 ```jinja2
 {% set data = load_data(path="content/blog/story/data.toml") %}
+```
+
+Alternatively, the `url` argument specifies the location of a remote URL to load.
+
+```jinja2
+{% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris") %}
 ```
 
 The optional `required` boolean argument can be set to false so that missing data (HTTP error or local file not found) does not produce an error, but returns a null value instead. However, permission issues with a local file and invalid data that could not be parsed to the requested data format will still produce an error even with `required=false`.
@@ -272,12 +278,12 @@ The optional `required` boolean argument can be set to false so that missing dat
 The snippet below outputs the HTML from a Wikipedia page, or "No data found" if the page was not reachable, or did not return a successful HTTP code:
 
 ```jinja2
-{% set data = load_data(path="https://en.wikipedia.org/wiki/Commune_of_Paris", required=false) %}
+{% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris", required=false) %}
 {% if data %}{{ data | safe }}{% else %}No data found{% endif %}
 ```
 
 The optional `format` argument allows you to specify and override which data type is contained
-within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`, `bibtex`
+within the specified file or URL. Valid entries are `toml`, `json`, `csv`, `bibtex`
 or `plain`. If the `format` argument isn't specified, then the path extension is used.
 
 
