@@ -14,7 +14,7 @@ fn generate_pe_header() {
     }
     res.set_icon("docs/static/favicon.ico");
     res.set("LegalCopyright", &copyright);
-    res.compile().expect("Failed to compile Windows resources!");
+        res.compile().expect("Failed to compile Windows resources!");
 }
 
 fn main() {
@@ -29,5 +29,7 @@ fn main() {
     {
         return;
     }
-    generate_pe_header();
+    if cfg!(windows){
+        generate_pe_header();
+    }
 }
