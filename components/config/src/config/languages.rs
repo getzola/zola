@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::search;
 use crate::config::taxonomies;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct LanguageOptions {
     /// Title of the site. Defaults to None
@@ -29,21 +29,6 @@ pub struct LanguageOptions {
     ///
     /// Use `get_translation()` method for translating key into different languages.
     pub translations: HashMap<String, String>,
-}
-
-impl Default for LanguageOptions {
-    fn default() -> Self {
-        LanguageOptions {
-            title: None,
-            description: None,
-            generate_feed: false,
-            feed_filename: String::new(),
-            build_search_index: false,
-            taxonomies: Vec::new(),
-            search: search::Search::default(),
-            translations: HashMap::new(),
-        }
-    }
 }
 
 /// We want to ensure the language codes are valid ones

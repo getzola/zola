@@ -310,7 +310,8 @@ pub fn serve(
     }
 
     let config_path = PathBuf::from(config_file);
-    let config_path_rel = diff_paths(&config_path, &root_dir).unwrap_or(config_path.clone());
+    let config_path_rel =
+        diff_paths(&config_path, &root_dir).unwrap_or_else(|| config_path.clone());
 
     // An array of (path, WatchMode) where the path should be watched for changes,
     // and the WatchMode value indicates whether this file/folder must exist for
@@ -528,10 +529,7 @@ pub fn serve(
                         if path.is_dir() && is_folder_empty(&path) {
                             continue;
                         }
-                        println!(
-                            "Change detected @ {}",
-                            Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
-                        );
+                        println!("Change detected @ {}", Local::now().format("%Y-%m-%d %H:%M:%S"));
 
                         let start = Instant::now();
                         match detect_change_kind(root_dir, &path, &config_path) {

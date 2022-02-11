@@ -228,7 +228,7 @@ impl Section {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{create_dir, File, create_dir_all};
+    use std::fs::{create_dir, create_dir_all, File};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
@@ -269,8 +269,10 @@ mod tests {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         let article_path = path.join("content/posts/with-assets");
-        create_dir_all(path.join(&article_path).join("foo/bar/baz/quux")).expect("create nested temp dir");
-        create_dir_all(path.join(&article_path).join("foo/baz/quux")).expect("create nested temp dir");
+        create_dir_all(path.join(&article_path).join("foo/bar/baz/quux"))
+            .expect("create nested temp dir");
+        create_dir_all(path.join(&article_path).join("foo/baz/quux"))
+            .expect("create nested temp dir");
         let mut f = File::create(article_path.join("_index.md")).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
         File::create(article_path.join("example.js")).unwrap();
@@ -278,7 +280,6 @@ mod tests {
         File::create(article_path.join("fail.png")).unwrap();
         File::create(article_path.join("foo/bar/baz/quux/quo.xlsx")).unwrap();
         File::create(article_path.join("foo/bar/baz/quux/quo.docx")).unwrap();
-        
 
         let mut gsb = GlobSetBuilder::new();
         gsb.add(Glob::new("*.{js,png}").unwrap());

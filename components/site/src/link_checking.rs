@@ -17,22 +17,14 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     let library = site.library.write().expect("Get lock for check_internal_links_with_anchors");
 
     // Chain all internal links, from both sections and pages.
-    let page_links = library
-        .pages()
-        .values()
-        .map(|p| {
-            let path = &p.file.path;
-            p.internal_links.iter().map(move |l| (path.clone(), l))
-        })
-        .flatten();
-    let section_links = library
-        .sections()
-        .values()
-        .map(|p| {
-            let path = &p.file.path;
-            p.internal_links.iter().map(move |l| (path.clone(), l))
-        })
-        .flatten();
+    let page_links = library.pages().values().flat_map(|p| {
+        let path = &p.file.path;
+        p.internal_links.iter().map(move |l| (path.clone(), l))
+    });
+    let section_links = library.sections().values().flat_map(|p| {
+        let path = &p.file.path;
+        p.internal_links.iter().map(move |l| (path.clone(), l))
+    });
     let all_links = page_links.chain(section_links);
 
     // Only keep links with anchor fragments, and count them too.

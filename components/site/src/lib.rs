@@ -163,7 +163,7 @@ impl Site {
     /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
     pub fn load(&mut self) -> Result<()> {
-        let base_path = self.base_path.to_string_lossy().replace("\\", "/");
+        let base_path = self.base_path.to_string_lossy().replace('\\', "/");
 
         self.library = Arc::new(RwLock::new(Library::new(0, 0, self.config.is_multilingual())));
         let mut pages_insert_anchors = HashMap::new();
@@ -714,7 +714,7 @@ impl Site {
             let p = self.static_path.join(&t.filename);
             if !p.exists() {
                 let content = &self.config.markdown.export_theme_css(&t.theme);
-                create_file(&p, &content)?;
+                create_file(&p, content)?;
             }
         }
 

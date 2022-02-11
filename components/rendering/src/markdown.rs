@@ -17,7 +17,7 @@ use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
-static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(|| EmojiReplacer::new());
+static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
 
 #[derive(Debug)]
 pub struct Rendered {
@@ -92,23 +92,21 @@ fn fix_link(
                 return Err(format!("Relative link {} not found.", link).into());
             }
         }
-    } else {
-        if is_external_link(link) {
-            external_links.push(link.to_owned());
-            link.to_owned()
-        } else if link == "#" {
-            link.to_string()
-        } else if link.starts_with("#") {
-            // local anchor without the internal zola path
-            if let Some(current_path) = context.current_page_path {
-                internal_links.push((current_path.to_owned(), Some(link[1..].to_owned())));
-                format!("{}{}", context.current_page_permalink, &link)
-            } else {
-                link.to_string()
-            }
+    } else if is_external_link(link) {
+        external_links.push(link.to_owned());
+        link.to_owned()
+    } else if link == "#" {
+        link.to_string()
+    } else if let Some(stripped_link) = link.strip_prefix('#') {
+        // local anchor without the internal zola path
+        if let Some(current_path) = context.current_page_path {
+            internal_links.push((current_path.to_owned(), Some(stripped_link.to_owned())));
+            format!("{}{}", context.current_page_permalink, &link)
         } else {
             link.to_string()
         }
+    } else {
+        link.to_string()
     };
 
     Ok(result)

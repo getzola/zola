@@ -36,9 +36,9 @@ pub fn error(message: &str) {
 fn colorize(message: &str, color: &ColorSpec) {
     let mut stdout = StandardStream::stdout(*COLOR_CHOICE);
     stdout.set_color(color).unwrap();
-    write!(&mut stdout, "{}", message).unwrap();
+    write!(stdout, "{}", message).unwrap();
     stdout.set_color(&ColorSpec::new()).unwrap();
-    writeln!(&mut stdout).unwrap();
+    writeln!(stdout).unwrap();
 }
 
 /// Display in the console the number of pages/sections in the site

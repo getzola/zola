@@ -1,8 +1,8 @@
+use libs::once_cell::sync::Lazy;
 use libs::syntect::dumps::from_binary;
 use libs::syntect::highlighting::{Theme, ThemeSet};
 use libs::syntect::html::ClassStyle;
 use libs::syntect::parsing::{SyntaxReference, SyntaxSet};
-use libs::once_cell::sync::Lazy;
 
 use crate::config::Config;
 

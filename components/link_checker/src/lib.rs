@@ -106,7 +106,7 @@ fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
 
-    if has_anchor_id(&body, &anchor) {
+    if has_anchor_id(&body, anchor) {
         Ok(())
     } else {
         Err(errors::Error::from(format!("Anchor `#{}` not found on page", anchor)))

@@ -203,8 +203,7 @@ impl Library {
                     section.pages.push(key);
                     parent_is_transparent = section.meta.transparent;
                 }
-                page.ancestors =
-                    ancestors.get(&parent_section_path).cloned().unwrap_or_else(Vec::new);
+                page.ancestors = ancestors.get(&parent_section_path).cloned().unwrap_or_default();
                 // Don't forget to push the actual parent
                 page.ancestors.push(*section_key);
 
@@ -257,7 +256,7 @@ impl Library {
                 children.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
                 section.subsections = children;
             }
-            section.ancestors = ancestors.get(&section.file.path).cloned().unwrap_or_else(Vec::new);
+            section.ancestors = ancestors.get(&section.file.path).cloned().unwrap_or_default();
         }
     }
 

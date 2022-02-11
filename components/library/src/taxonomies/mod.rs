@@ -204,12 +204,15 @@ impl Taxonomy {
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/single.html", self.kind.name);
-        let template = match check_template_fallbacks(&specific_template, tera, &config.theme) {
-            Some(template) => template,
-            None => "taxonomy_single.html",
+        let template = if let Some(template) =
+            check_template_fallbacks(&specific_template, tera, &config.theme)
+        {
+            template
+        } else {
+            "taxonomy_single.html"
         };
 
-        render_template(&template, tera, context, &config.theme).map_err(|e| {
+        render_template(template, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render single term {} page.", self.kind.name), e)
         })
     }
@@ -232,12 +235,15 @@ impl Taxonomy {
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/list.html", self.kind.name);
-        let template = match check_template_fallbacks(&specific_template, tera, &config.theme) {
-            Some(template) => template,
-            None => "taxonomy_list.html",
+        let template = if let Some(template) =
+            check_template_fallbacks(&specific_template, tera, &config.theme)
+        {
+            template
+        } else {
+            "taxonomy_list.html"
         };
 
-        render_template(&template, tera, context, &config.theme).map_err(|e| {
+        render_template(template, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e)
         })
     }
