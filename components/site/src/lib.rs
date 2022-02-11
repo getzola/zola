@@ -72,7 +72,7 @@ impl Site {
     pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
-        let mut config = get_config(config_file)?;
+        let mut config = get_config(&path.join(config_file))?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme

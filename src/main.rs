@@ -1,4 +1,5 @@
 use std::time::Instant;
+use std::path::PathBuf;
 
 use cli::{Cli, Command};
 use utils::net::{get_available_port, port_is_available};
@@ -12,17 +13,19 @@ mod prompt;
 
 fn main() {
     let cli = Cli::parse();
-    let root_dir = cli
+    let cli_dir: PathBuf = cli
         .root
-        .canonicalize()
-        .unwrap_or_else(|_| panic!("Cannot find root directory: {}", cli.root.display()));
-    let config_file = cli
-        .config
-        .map(|path| {
-            path.canonicalize()
-                .unwrap_or_else(|_| panic!("Cannot find config file: {}", path.display()))
-        })
-        .unwrap_or_else(|| root_dir.join("config.toml"));
+        .canonicalize().unwrap_or_else(|_| panic!("Could not find canonical root dir"));
+
+    let root_dir = cli_dir
+    .ancestors()
+    .find_map(|a| 
+        if a.join(&cli.config).exists() 
+            {Some(a)} 
+        else 
+            {None}
+        )
+    .unwrap_or_else(|| panic!("could not find directory containing config file"));
 
     match cli.command {
         Command::Init { name, force } => {
@@ -36,7 +39,7 @@ fn main() {
             let start = Instant::now();
             match cmd::build(
                 &root_dir,
-                &config_file,
+                &cli.config,
                 base_url.as_deref(),
                 output_dir.as_deref(),
                 drafts,
@@ -68,7 +71,7 @@ fn main() {
                 port,
                 output_dir.as_deref(),
                 &base_url,
-                &config_file,
+                &cli.config,
                 open,
                 drafts,
                 fast,
@@ -80,7 +83,7 @@ fn main() {
         Command::Check { drafts } => {
             console::info("Checking site...");
             let start = Instant::now();
-            match cmd::check(&root_dir, &config_file, None, None, drafts) {
+            match cmd::check(&root_dir, &cli.config, None, None, drafts) {
                 Ok(()) => console::report_elapsed_time(start),
                 Err(e) => {
                     console::unravel_errors("Failed to check the site", &e);
