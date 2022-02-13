@@ -36,7 +36,7 @@ unicode-segmentation = "1.2"
 slug = "0.1"
 percent-encoding = "2"
 filetime = "0.2"
-minify-html = "0.8"
+minify-html = { version = "0.8", features = ["js-esbuild"] }
 reqwest = {version = "0.11", default-features = false, features = ["blocking"]}
 sass-rs = "0.2"
 relative-path = "1"
