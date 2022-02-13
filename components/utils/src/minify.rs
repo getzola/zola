@@ -84,7 +84,7 @@ mod tests {
         assert_eq!(res, expected);
     }
 
-    // https://github.com/getzola/zola/issues/1764
+    // https://github.com/getzola/zola/issues/1765
     #[test]
     fn can_minify_css() {
         let input = r#"
@@ -113,7 +113,7 @@ mod tests {
         assert_eq!(res, expected);
     }
 
-    // https://github.com/getzola/zola/issues/1764
+    // https://github.com/getzola/zola/issues/1765
     #[test]
     fn can_minify_js() {
         let input = r#"
