@@ -235,13 +235,8 @@ impl Taxonomy {
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/list.html", self.kind.name);
-        let template = if let Some(template) =
-            check_template_fallbacks(&specific_template, tera, &config.theme)
-        {
-            template
-        } else {
-            "taxonomy_list.html"
-        };
+        let template = check_template_fallbacks(&specific_template, tera, &config.theme)
+            .unwrap_or("taxonomy_list.html");
 
         render_template(template, tera, context, &config.theme).map_err(|e| {
             Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e)
