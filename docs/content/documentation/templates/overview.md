@@ -258,7 +258,7 @@ The method returns a map containing `width`, `height` and `format` (the lowercas
 ```
 
 ### `load_data`
-Loads data from a file or URL. Supported file types include *toml*, *json*, *csv* and *bibtex* and only supports UTF-8 encoding.
+Loads data from a file or URL. Supported file types include *toml*, *json*, *csv*, *bibtex* and *xml* and only supports UTF-8 encoding.
 Any other file type will be loaded as plain text.
 
 The `path` argument specifies the path to a local data file, according to the [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic).
@@ -283,7 +283,7 @@ The snippet below outputs the HTML from a Wikipedia page, or "No data found" if 
 ```
 
 The optional `format` argument allows you to specify and override which data type is contained
-within the specified file or URL. Valid entries are `toml`, `json`, `csv`, `bibtex`
+within the specified file or URL. Valid entries are `toml`, `json`, `csv`, `bibtex`, `xml`
 or `plain`. If the `format` argument isn't specified, then the path extension is used.
 
 
@@ -291,9 +291,9 @@ or `plain`. If the `format` argument isn't specified, then the path extension is
 {% set data = load_data(path="content/blog/story/data.txt", format="json") %}
 ```
 
-Use the `plain` format for when your file has a toml/json/csv extension but you want to load it as plain text.
+Use the `plain` format for when your file has a formattable extension but you want to load it as plain text.
 
-For *toml* and *json*, the data is loaded into a structure matching the original data file;
+For *toml*, *json* and *xml*, the data is loaded into a structure matching the original data file;
 however, for *csv* there is no native notion of such a structure. Instead, the data is separated
 into a data structure containing *headers* and *records*. See the example below to see
 how this works.

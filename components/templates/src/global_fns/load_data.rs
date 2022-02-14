@@ -43,6 +43,7 @@ enum OutputFormat {
     Csv,
     Bibtex,
     Plain,
+    Xml,
 }
 
 impl FromStr for OutputFormat {
@@ -55,6 +56,7 @@ impl FromStr for OutputFormat {
             "json" => Ok(OutputFormat::Json),
             "bibtex" => Ok(OutputFormat::Bibtex),
             "plain" => Ok(OutputFormat::Plain),
+            "xml" => Ok(OutputFormat::Xml),
             format => Err(format!("Unknown output format {}", format).into()),
         }
     }
@@ -68,6 +70,7 @@ impl OutputFormat {
             OutputFormat::Toml => "application/toml",
             OutputFormat::Bibtex => "application/x-bibtex",
             OutputFormat::Plain => "text/plain",
+            OutputFormat::Xml => "text/xml",
         })
     }
 }
@@ -221,7 +224,7 @@ impl TeraFn for LoadData {
         let format_arg = optional_arg!(
             String,
             args.get("format"),
-            "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, bibtex, plain)"
+            "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, bibtex, plain, xml)"
         );
         let required = optional_arg!(
             bool,
@@ -366,6 +369,7 @@ impl TeraFn for LoadData {
             OutputFormat::Json => load_json(data),
             OutputFormat::Bibtex => load_bibtex(data),
             OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
+            OutputFormat::Xml => load_xml(data),
         };
 
         if let Ok(data_result) = &result_value {
@@ -497,6 +501,39 @@ fn load_csv(csv_data: String) -> Result<Value> {
 
     let csv_value: Value = Value::Object(csv_map);
     to_value(csv_value).map_err(|err| err.into())
+}
+
+/// Parse an XML string and convert it to a Tera Value
+///
+/// An example XML file `example.xml` could be:
+/// ```xml
+/// <root>
+///   <headers>Number</headers>
+///   <headers>Title</headers>
+///   <records>
+///     <item>1</item>
+///     <item>Gutenberg</item>
+///   </records>
+///   <records>
+///     <item>2</item>
+///     <item>Printing</item>
+///   </records>
+/// </root>
+/// ```
+/// The json value output would be:
+/// ```json
+/// {
+///     "headers": ["Number", "Title"],
+///     "records": [
+///                     ["1", "Gutenberg"],
+///                     ["2", "Printing"]
+///                ],
+/// }
+/// ```
+fn load_xml(xml_data: String) -> Result<Value> {
+    let xml_content: Value = quickxml_to_serde::xml_string_to_json(xml_data, &Default::default())
+        .map_err(|e| format!("{:?}", e))?;
+    Ok(xml_content)
 }
 
 #[cfg(test)]
@@ -999,6 +1036,27 @@ mod tests {
                 "array": [1, 2, 3],
                 "subpackage": {
                     "subkey": 5
+                }
+            })
+        )
+    }
+
+    #[test]
+    fn can_load_xml() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.xml").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "root": {
+                    "key": "value",
+                    "array": [1, 2, 3],
+                    "subpackage": {
+                        "subkey": 5
+                    }
                 }
             })
         )

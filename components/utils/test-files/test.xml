@@ -1,0 +1,9 @@
+<root>
+  <key>value</key>
+  <array>1</array>
+  <array>2</array>
+  <array>3</array>
+  <subpackage>
+    <subkey>5</subkey>
+  </subpackage>
+</root>
