@@ -2,4 +2,4 @@
 title = "Accueil"
 +++
 
-Page d'accueil
+Page d'accueil. [Notre blog](@/blog/_index.fr.md)
