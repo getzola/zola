@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/markdown.rs
+assertion_line: 144
+expression: body
+
+---
+<p><a href="https://google.com">https://google.com</a></p>
+

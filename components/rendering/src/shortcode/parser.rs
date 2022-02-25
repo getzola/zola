@@ -481,10 +481,10 @@ mod tests {
     fn can_handle_multiple_shortcodes() {
         let (_, shortcodes) = parse_for_shortcodes(
             r#"
-        {{ youtube(id="ub36ffWAqgQ") }}
+        {{ youtube(id="ub36ffWAqgQ_hey_") }}
         {{ youtube(id="ub36ffWAqgQ", autoplay=true) }}
-        {{ vimeo(id="210073083") }}
-        {{ streamable(id="c0ic") }}
+        {{ vimeo(id="210073083#hello", n_a_me="hello") }}
+        {{ streamable(id="c0ic", n1=true) }}
         {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}"#,
         )
         .unwrap();

@@ -13,8 +13,9 @@ mod prompt;
 
 fn main() {
     let cli = Cli::parse();
-    let cli_dir: PathBuf =
-        cli.root.canonicalize().unwrap_or_else(|_| panic!("Could not find canonical path of root dir: {}", cli.root.display()));
+    let cli_dir: PathBuf = cli.root.canonicalize().unwrap_or_else(|_| {
+        panic!("Could not find canonical path of root dir: {}", cli.root.display())
+    });
 
     let root_dir = cli_dir
         .ancestors()

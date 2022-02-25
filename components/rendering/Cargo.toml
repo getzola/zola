@@ -18,4 +18,4 @@ libs = { path = "../libs" }
 
 [dev-dependencies]
 templates = { path = "../templates" }
-
+insta = "1.12.0"

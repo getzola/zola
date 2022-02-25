@@ -1,0 +1,15 @@
+---
+source: components/rendering/tests/markdown.rs
+assertion_line: 29
+expression: body
+
+---
+<p>Hello world</p>
+<h1 id="hello-world">Hello world</h1>
+<p>Hello <em>world</em>
+Hello
+world
+Non rendered emoji :smile:
+<a href="image.jpg">a link</a>
+<img src="image.jpg" alt="alt text" /></p>
+<h1>some html</h1>

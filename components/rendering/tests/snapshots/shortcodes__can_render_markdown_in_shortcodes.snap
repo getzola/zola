@@ -1,0 +1,9 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 371
+expression: body
+
+---
+<div><pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>some code;
+</span></code></pre>
+</div>

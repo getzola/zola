@@ -1,0 +1,12 @@
+---
+source: components/rendering/tests/codeblocks.rs
+assertion_line: 83
+expression: body
+
+---
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><mark style="background-color:#65737e30;"><span>foo
+</span></mark><mark style="background-color:#65737e30;"><span>bar
+</span></mark><mark style="background-color:#65737e30;"><span>bar
+</span></mark><mark style="background-color:#65737e30;"><span>baz
+</span></mark></code></pre>
+

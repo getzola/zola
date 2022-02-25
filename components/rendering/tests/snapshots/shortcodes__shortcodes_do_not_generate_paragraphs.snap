@@ -1,0 +1,10 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 362
+expression: body
+
+---
+<bc-authorizer-example><code>some code;
+more code;
+
+other code here;</code></bc-authorizer-example>

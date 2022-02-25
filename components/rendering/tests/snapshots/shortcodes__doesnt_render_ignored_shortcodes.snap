@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 104
+expression: body
+
+---
+<p>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</p>
+
