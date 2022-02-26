@@ -56,9 +56,9 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
             full_path.push(part);
         }
         // NOTE: This will also match _index.foobar.md where foobar is not a language
-        // I don't think this is supported by zola so nothing should be broken
-        // Will also prevent having a section like content/_index.foobar/_index.md
-        if md_path.contains("/_index.") {
+        // as well as any other sring containing "_index." which is now referenced as
+        // unsupported page path in the docs.
+        if md_path.contains("_index.") {
             let section = library
                 .get_section(&full_path)
                 .expect(&format!("Couldn't find section {} in check_internal_links_with_anchors from page {:?}", md_path, page.strip_prefix(&site.base_path).unwrap()));
