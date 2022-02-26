@@ -47,7 +47,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
 
     // Check for targets existence (including anchors), then keep only the faulty
     // entries for error reporting purposes.
-    let missing_targets = links_with_anchors.filter(|(_, md_path, anchor)| {
+    let missing_targets = links_with_anchors.filter(|(page, md_path, anchor)| {
         // There are a few `expect` here since the presence of the .md file will
         // already have been checked in the markdown rendering
         let mut full_path = site.base_path.clone();
@@ -55,15 +55,18 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
         for part in md_path.split('/') {
             full_path.push(part);
         }
-        if md_path.contains("_index.md") {
+        // NOTE: This will also match _index.foobar.md where foobar is not a language
+        // as well as any other sring containing "_index." which is now referenced as
+        // unsupported page path in the docs.
+        if md_path.contains("_index.") {
             let section = library
                 .get_section(&full_path)
-                .expect("Couldn't find section in check_internal_links_with_anchors");
+                .expect(&format!("Couldn't find section {} in check_internal_links_with_anchors from page {:?}", md_path, page.strip_prefix(&site.base_path).unwrap()));
             !section.has_anchor(anchor)
         } else {
             let page = library
                 .get_page(&full_path)
-                .expect("Couldn't find section in check_internal_links_with_anchors");
+                .expect(&format!("Couldn't find page {} in check_internal_links_with_anchors from page {:?}", md_path, page.strip_prefix(&site.base_path).unwrap()));
 
             !(page.has_anchor(anchor) || page.has_anchor_id(anchor))
         }

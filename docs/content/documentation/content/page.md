@@ -4,7 +4,7 @@ weight = 30
 +++
 
 A page is any file ending with `.md` in the `content` directory, except files
-named `_index.md`.
+named `_index.md`. **Note:** page file names must not contain `_index.` [at all](https://github.com/getzola/zola/pull/1694).
 
 If a file ending with `.md` is named `index.md`, it will generate a page
 with the name of its directory (for example, `/content/about/index.md` would
