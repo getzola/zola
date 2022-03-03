@@ -1,6 +1,6 @@
 ---
 source: components/rendering/tests/markdown.rs
-assertion_line: 84
+assertion_line: 79
 expression: body
 
 ---
@@ -11,7 +11,7 @@ expression: body
 <h1 id="hello">Hello</h1>
 <h1 id="Something_else">Hello</h1>
 <h1 id="workaround-for-literal">Workaround for literal {#…}</h1>
-<h1 id="auto-matic">Auto {#<em>matic</em>}</h1>
+<h1 id="*matic*">Auto</h1>
 <h1 id=""></h1>
 <h1 id="-1"></h1>
 <h1 id="about"><a href="https://getzola.org/about/">About</a></h1>
@@ -22,5 +22,6 @@ expression: body
 <h1 id="text-there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p>footnote</p>
+<h1 id="classes" class="bold another">Classes</h1>
 </div>
 

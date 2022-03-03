@@ -2,6 +2,15 @@
 
 ## 0.16.0 (unreleased)
 
+### Breaking
+
+- Switch to pulldown-cmark anchor rather than ours, some (very niche) edge cases are not supported anymore, you can
+also specify classes on headers now
+
+### Other
+- Fix markup for fenced code with linenos
+- Make `ignored_content` work with nested paths and directories
+- `zola serve/build` can now run from anywhere in a zola directory
 
 ## 0.15.3 (2022-01-23)
 

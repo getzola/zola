@@ -101,10 +101,10 @@ console.log(foo(5));
 <tr><td>ext</td><td>extension to be used for dest files.</td></tr>
 </tbody></table>
 <p>Right aligned columns</p>
-<table><thead><tr><th align="right">Option</th><th align="right">Description</th></tr></thead><tbody>
-<tr><td align="right">data</td><td align="right">path to data files to supply the data that will be passed into templates.</td></tr>
-<tr><td align="right">engine</td><td align="right">engine to be used for processing templates. Handlebars is the default.</td></tr>
-<tr><td align="right">ext</td><td align="right">extension to be used for dest files.</td></tr>
+<table><thead><tr><th style="text-align: right">Option</th><th style="text-align: right">Description</th></tr></thead><tbody>
+<tr><td style="text-align: right">data</td><td style="text-align: right">path to data files to supply the data that will be passed into templates.</td></tr>
+<tr><td style="text-align: right">engine</td><td style="text-align: right">engine to be used for processing templates. Handlebars is the default.</td></tr>
+<tr><td style="text-align: right">ext</td><td style="text-align: right">extension to be used for dest files.</td></tr>
 </tbody></table>
 <h2 id="links">Links</h2>
 <p><a href="http://duckduckgo.com">link text</a></p>

@@ -1,12 +1,10 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use libs::tera::Tera;
 
 use config::Config;
-use errors::Result;
 use front_matter::InsertAnchor;
-use rendering::{render_content, RenderContext, Rendered};
+use rendering::{render_content, RenderContext};
 use templates::ZOLA_TERA;
 use utils::slugs::SlugifyStrategy;
 
@@ -47,11 +45,6 @@ fn can_make_zola_internal_links() {
 fn can_handle_heading_ids() {
     let mut config = Config::default_for_test();
 
-    // Tested things: manual IDs; whitespace flexibility; that automatic IDs avoid collision with
-    // manual IDs; that duplicates are in fact permitted among manual IDs; that any non-plain-text
-    // in the middle of `{#…}` will disrupt it from being acknowledged as a manual ID (that last
-    // one could reasonably be considered a bug rather than a feature, but test it either way); one
-    // workaround for the improbable case where you actually want `{#…}` at the end of a heading.
     let cases = vec![
         // Basic
         "# Hello",
@@ -79,6 +72,8 @@ fn can_handle_heading_ids() {
         "# **hi**",
         // See https://github.com/getzola/zola/issues/569
         "# text [^1] there\n[^1]: footnote",
+        // Chosen slug that already exists with space
+        "# Classes {#classes .bold .another}",
     ];
     let body = common::render_with_config(&cases.join("\n"), config.clone()).unwrap().body;
     insta::assert_snapshot!(body);

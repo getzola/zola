@@ -2,11 +2,13 @@ use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
 use libs::pulldown_cmark as cmark;
 use libs::tera;
+use std::fmt::Write;
 
 use crate::context::RenderContext;
 use crate::table_of_contents::{make_table_of_contents, Heading};
 use errors::{Error, Result};
 use front_matter::InsertAnchor;
+use libs::pulldown_cmark::escape::escape_html;
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
 use utils::vec::InsertMany;
@@ -37,11 +39,39 @@ struct HeadingRef {
     end_idx: usize,
     level: u32,
     id: Option<String>,
+    classes: Vec<String>,
 }
 
 impl HeadingRef {
-    fn new(start: usize, level: u32) -> HeadingRef {
-        HeadingRef { start_idx: start, end_idx: 0, level, id: None }
+    fn new(start: usize, level: u32, anchor: Option<String>, classes: &[String]) -> HeadingRef {
+        HeadingRef { start_idx: start, end_idx: 0, level, id: anchor, classes: classes.to_vec() }
+    }
+
+    fn to_html(&self, id: &str) -> String {
+        let mut buffer = String::with_capacity(100);
+        buffer.write_str("<h").unwrap();
+        buffer.write_str(&format!("{}", self.level)).unwrap();
+
+        buffer.write_str(" id=\"").unwrap();
+        escape_html(&mut buffer, id).unwrap();
+        buffer.write_str("\"").unwrap();
+
+        if !self.classes.is_empty() {
+            buffer.write_str(" class=\"").unwrap();
+            let num_classes = self.classes.len();
+
+            for (i, class) in self.classes.iter().enumerate() {
+                escape_html(&mut buffer, class).unwrap();
+                if i < num_classes - 1 {
+                    buffer.write_str(" ").unwrap();
+                }
+            }
+
+            buffer.write_str("\"").unwrap();
+        }
+
+        buffer.write_str(">").unwrap();
+        buffer
     }
 }
 
@@ -131,10 +161,15 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
 
     for (i, event) in events.iter().enumerate() {
         match event {
-            Event::Start(Tag::Heading(level)) => {
-                heading_refs.push(HeadingRef::new(i, *level));
+            Event::Start(Tag::Heading(level, anchor, classes)) => {
+                heading_refs.push(HeadingRef::new(
+                    i,
+                    *level as u32,
+                    anchor.map(|a| a.to_owned()),
+                    &classes.iter().map(|x| x.to_string()).collect::<Vec<_>>(),
+                ));
             }
-            Event::End(Tag::Heading(_)) => {
+            Event::End(Tag::Heading(_, _, _)) => {
                 heading_refs.last_mut().expect("Heading end before start?").end_idx = i;
             }
             _ => (),
@@ -161,7 +196,6 @@ pub fn markdown_to_html(
 
     let mut code_block: Option<CodeBlock> = None;
 
-    let mut inserted_anchors: Vec<String> = vec![];
     let mut headings: Vec<Heading> = vec![];
     let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
@@ -174,6 +208,7 @@ pub fn markdown_to_html(
     opts.insert(Options::ENABLE_FOOTNOTES);
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     opts.insert(Options::ENABLE_TASKLISTS);
+    opts.insert(Options::ENABLE_HEADING_ATTRIBUTES);
 
     if context.config.markdown.smart_punctuation {
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
@@ -389,45 +424,34 @@ pub fn markdown_to_html(
             })
             .collect();
 
-        let mut heading_refs = get_heading_refs(&events);
+        let heading_refs = get_heading_refs(&events);
 
         let mut anchors_to_insert = vec![];
-
-        // First heading pass: look for a manually-specified IDs, e.g. `# Heading text {#hash}`
-        // (This is a separate first pass so that auto IDs can avoid collisions with manual IDs.)
-        for heading_ref in heading_refs.iter_mut() {
-            let end_idx = heading_ref.end_idx;
-            if let Event::Text(ref mut text) = events[end_idx - 1] {
-                if text.as_bytes().last() == Some(&b'}') {
-                    if let Some(mut i) = text.find("{#") {
-                        let id = text[i + 2..text.len() - 1].to_owned();
-                        inserted_anchors.push(id.clone());
-                        while i > 0 && text.as_bytes()[i - 1] == b' ' {
-                            i -= 1;
-                        }
-                        heading_ref.id = Some(id);
-                        *text = text[..i].to_owned().into();
-                    }
-                }
+        let mut inserted_anchors = vec![];
+        for heading in &heading_refs {
+            if let Some(s) = &heading.id {
+                inserted_anchors.push(s.to_owned());
             }
         }
 
         // Second heading pass: auto-generate remaining IDs, and emit HTML
-        for heading_ref in heading_refs {
+        for mut heading_ref in heading_refs {
             let start_idx = heading_ref.start_idx;
             let end_idx = heading_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
-            let id = heading_ref.id.unwrap_or_else(|| {
-                find_anchor(
+
+            if heading_ref.id.is_none() {
+                heading_ref.id = Some(find_anchor(
                     &inserted_anchors,
                     slugify_anchors(&title, context.config.slugify.anchors),
                     0,
-                )
-            });
-            inserted_anchors.push(id.clone());
+                ));
+            }
 
-            // insert `id` to the tag
-            let html = format!("<h{lvl} id=\"{id}\">", lvl = heading_ref.level, id = id);
+            inserted_anchors.push(heading_ref.id.clone().unwrap());
+            let id = inserted_anchors.last().unwrap();
+
+            let html = heading_ref.to_html(&id);
             events[start_idx] = Event::Html(html.into());
 
             // generate anchors and places to insert them
@@ -454,8 +478,13 @@ pub fn markdown_to_html(
 
             // record heading to make table of contents
             let permalink = format!("{}#{}", context.current_page_permalink, id);
-            let h =
-                Heading { level: heading_ref.level, id, permalink, title, children: Vec::new() };
+            let h = Heading {
+                level: heading_ref.level,
+                id: id.to_owned(),
+                permalink,
+                title,
+                children: Vec::new(),
+            };
             headings.push(h);
         }
 

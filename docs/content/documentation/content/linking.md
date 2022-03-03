@@ -19,10 +19,10 @@ For example:
 ## Example code <- example-code-1
 ```
 
-You can also manually specify an id with a `{#…}` suffix on the heading line:
+You can also manually specify an id with a `{#…}` suffix on the heading line as well as CSS classes:
 
 ```md
-# Something manual! {#manual}
+# Something manual! {#manual .header .bold}
 ```
 
 This is useful for making deep links robust, either proactively (so that you can later change the text of a heading

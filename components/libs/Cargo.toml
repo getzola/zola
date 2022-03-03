@@ -25,7 +25,7 @@ svg_metadata = "0.4"
 slotmap = "1"
 lexical-sort = "0.3"
 walkdir = "2"
-pulldown-cmark = { version = "0.8", default-features = false }
+pulldown-cmark = { version = "0.9", default-features = false, features = ["simd"]  }
 gh-emoji = "1"
 elasticlunr-rs = {version = "2", default-features = false, features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
 ammonia = "3"
