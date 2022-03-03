@@ -5,8 +5,8 @@ use std::collections::HashMap;
 
 use config::Config;
 use front_matter::InsertAnchor;
+use libs::tera::Tera;
 use rendering::{render_content, RenderContext};
-use tera::Tera;
 
 static CONTENT: &str = r#"
 # Modus cognitius profanam ne duae virtutis mundi
@@ -118,6 +118,7 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
+#[bench]
 fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
     let tera = Tera::default();
     let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");

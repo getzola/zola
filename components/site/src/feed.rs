@@ -54,7 +54,7 @@ pub fn render_feed(
     );
     let library = site.library.read().unwrap();
     // limit to the last n elements if the limit is set; otherwise use all.
-    let num_entries = site.config.feed_limit.unwrap_or_else(|| pages.len());
+    let num_entries = site.config.feed_limit.unwrap_or(pages.len());
     let p =
         pages.iter().take(num_entries).map(|x| x.to_serialized_basic(&library)).collect::<Vec<_>>();
 

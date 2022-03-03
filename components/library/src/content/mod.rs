@@ -54,10 +54,7 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     }
 
     if let Some(ref globset) = config.ignored_content_globset {
-        assets = assets
-            .into_iter()
-            .filter(|p| !globset.is_match(p))
-            .collect();
+        assets = assets.into_iter().filter(|p| !globset.is_match(p)).collect();
     }
 
     assets

@@ -72,7 +72,7 @@ impl Site {
     pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
-        let mut config = get_config(config_file)?;
+        let mut config = get_config(&path.join(config_file))?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
@@ -163,7 +163,7 @@ impl Site {
     /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
     pub fn load(&mut self) -> Result<()> {
-        let base_path = self.base_path.to_string_lossy().replace("\\", "/");
+        let base_path = self.base_path.to_string_lossy().replace('\\', "/");
 
         self.library = Arc::new(RwLock::new(Library::new(0, 0, self.config.is_multilingual())));
         let mut pages_insert_anchors = HashMap::new();
@@ -714,7 +714,7 @@ impl Site {
             let p = self.static_path.join(&t.filename);
             if !p.exists() {
                 let content = &self.config.markdown.export_theme_css(&t.theme);
-                create_file(&p, &content)?;
+                create_file(&p, content)?;
             }
         }
 

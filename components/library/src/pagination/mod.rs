@@ -99,10 +99,8 @@ impl<'a> Paginator<'a> {
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/single.html", taxonomy.kind.name);
-        let template = match check_template_fallbacks(&specific_template, tera, theme) {
-            Some(template) => template,
-            None => "taxonomy_single.html",
-        };
+        let template = check_template_fallbacks(&specific_template, tera, theme)
+            .unwrap_or("taxonomy_single.html");
         let mut paginator = Paginator {
             all_pages: Cow::Borrowed(&item.pages),
             pagers: Vec::with_capacity(item.pages.len() / paginate_by),

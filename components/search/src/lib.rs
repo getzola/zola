@@ -111,7 +111,7 @@ fn fill_index(
             // TODO: fix it like the truncate in Tera
             match body.char_indices().nth(truncate_len) {
                 None => row.push(body),
-                Some((idx, _)) => row.push((&body[..idx]).to_string()),
+                Some((idx, _)) => row.push((body[..idx]).to_string()),
             };
         } else {
             row.push(body);

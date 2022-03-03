@@ -78,7 +78,7 @@ pub fn render_template(
     theme: &Option<String>,
 ) -> Result<String> {
     if let Some(template) = check_template_fallbacks(name, tera, theme) {
-        return tera.render(&template, &context).map_err(std::convert::Into::into);
+        return tera.render(template, &context).map_err(std::convert::Into::into);
     }
 
     // maybe it's a default one?

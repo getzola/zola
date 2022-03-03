@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub struct ShortCode {
     pub name: &'static str,
     pub output: &'static str,
