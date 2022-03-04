@@ -44,10 +44,6 @@ relative-path = "1"
 glob = "0.3"
 
 
-[dev-dependencies]
-mockito = "0.30"
-
-
 [features]
 rust-tls = ["reqwest/rustls-tls"]
 native-tls = ["reqwest/default-tls"]

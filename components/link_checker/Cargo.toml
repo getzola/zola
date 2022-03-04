@@ -10,4 +10,4 @@ utils = { path = "../utils" }
 libs = { path = "../libs" }
 
 [dev-dependencies]
-mockito = "0.30"
+mockito = "0.31"

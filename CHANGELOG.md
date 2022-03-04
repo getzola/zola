@@ -11,6 +11,7 @@ also specify classes on headers now
 - Fix markup for fenced code with linenos
 - Make `ignored_content` work with nested paths and directories
 - `zola serve/build` can now run from anywhere in a zola directory
+- Add XML support to `load_data`
 
 ## 0.15.3 (2022-01-23)
 

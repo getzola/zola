@@ -451,7 +451,7 @@ pub fn markdown_to_html(
             inserted_anchors.push(heading_ref.id.clone().unwrap());
             let id = inserted_anchors.last().unwrap();
 
-            let html = heading_ref.to_html(&id);
+            let html = heading_ref.to_html(id);
             events[start_idx] = Event::Html(html.into());
 
             // generate anchors and places to insert them
