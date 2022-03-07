@@ -3263,7 +3263,6 @@ dependencies = [
  "itoa 1.0.1",
  "libc",
  "num_threads",
- "serde",
  "time-macros",
 ]
 

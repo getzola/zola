@@ -18,7 +18,7 @@ globset = "0.4"
 unic-langid = "0.9"
 image = "0.24"
 regex = "1"
-time = { version = "0.3", features = ["serde", "parsing", "local-offset", "formatting", "std", "macros"] }
+time = { version = "0.3" }
 rayon = "1"
 webp = "0.2"
 svg_metadata = "0.4"
