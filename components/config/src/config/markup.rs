@@ -108,12 +108,12 @@ impl Markdown {
             self.extra_syntax_set = Some(extra_syntax_set);
         }
 
-        if self.highlight_theme == "css" {
-            return Ok(());
-        }
-
         if let Some(extra_theme_set) = loaded_extra_highlight_themes {
             self.extra_theme_set = Arc::new(Some(extra_theme_set));
+        }
+
+        if self.highlight_theme == "css" {
+            return Ok(());
         }
 
         // Validate that the chosen highlight_theme exists in the loaded highlight theme sets
