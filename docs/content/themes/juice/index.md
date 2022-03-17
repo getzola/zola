@@ -3,11 +3,11 @@
 title = "juice"
 description = "An intuitive, elegant, and lightweight Zola theme for product sites."
 template = "theme.html"
-date = 2022-02-23T12:51:45-03:00
+date = 2022-03-17T09:10:12+01:00
 
 [extra]
-created = 2022-02-23T12:51:45-03:00
-updated = 2022-02-23T12:51:45-03:00
+created = 2022-03-17T09:10:12+01:00
+updated = 2022-03-17T09:10:12+01:00
 repository = "https://github.com/huhu/juice"
 homepage = "https://github.com/huhu/juice"
 minimum_version = "0.11.0"
