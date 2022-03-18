@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use cli::{Cli, Command};
@@ -11,19 +11,23 @@ mod cmd;
 mod console;
 mod prompt;
 
+
+fn get_config_file_path(dir: &PathBuf, config_path: &Path) -> (PathBuf, PathBuf) {
+    let root_dir = dir
+        .ancestors()
+        .find_map(|a| if a.join(&config_path).exists() { Some(a) } else { None })
+        .unwrap_or_else(|| panic!("could not find directory containing config file"));
+
+    // if we got here we found root_dir so config file should exist so we can unwrap safely
+    let config_file = root_dir.join(&config_path).canonicalize().unwrap_or_else(|_| panic!("could not find directory containing config file"));
+    (root_dir.to_path_buf(), config_file)
+}
+
 fn main() {
     let cli = Cli::parse();
     let cli_dir: PathBuf = cli.root.canonicalize().unwrap_or_else(|_| {
         panic!("Could not find canonical path of root dir: {}", cli.root.display())
     });
-
-    let root_dir = cli_dir
-        .ancestors()
-        .find_map(|a| if a.join(&cli.config).exists() { Some(a) } else { None })
-        .unwrap_or_else(|| panic!("could not find directory containing config file"));
-
-    // if we got here we found root_dir so config file should exist so we can unwrap safely
-    let config_file = root_dir.join(&cli.config).canonicalize().unwrap();
 
     match cli.command {
         Command::Init { name, force } => {
@@ -35,8 +39,9 @@ fn main() {
         Command::Build { base_url, output_dir, drafts } => {
             console::info("Building site...");
             let start = Instant::now();
+            let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
             match cmd::build(
-                root_dir,
+                &root_dir,
                 &config_file,
                 base_url.as_deref(),
                 output_dir.as_deref(),
@@ -62,9 +67,10 @@ fn main() {
                 });
             }
 
+            let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
             console::info("Building site...");
             if let Err(e) = cmd::serve(
-                root_dir,
+                &root_dir,
                 &interface,
                 port,
                 output_dir.as_deref(),
@@ -81,7 +87,8 @@ fn main() {
         Command::Check { drafts } => {
             console::info("Checking site...");
             let start = Instant::now();
-            match cmd::check(root_dir, &config_file, None, None, drafts) {
+            let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
+            match cmd::check(&root_dir, &config_file, None, None, drafts) {
                 Ok(()) => console::report_elapsed_time(start),
                 Err(e) => {
                     console::unravel_errors("Failed to check the site", &e);
