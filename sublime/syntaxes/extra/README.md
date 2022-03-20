@@ -15,5 +15,8 @@ are converted from the following repos at the following commit:
 - Stylus: https://github.com/billymoon/Stylus/tree/30908e3b5757d6cab4bf2ce660ef89b0c614cf62
 - Racket: https://gist.githubusercontent.com/sliminality/3f1527f8e910c36b3303346422b03409/raw/9ce1ddd463c9bc97439726fd5f63b1fb3a36419b/Racket.tmLanguage
 - TypeScript: https://github.com/microsoft/TypeScript-Sublime-Plugin/commit/a607ddfec90648c1c2f33f8306733f6aec5d2b78
+- Solidity: https://github.com/davidhq/SublimeEthereum/commit/65d3905dcc384e1eeb8bc3fe460c12336505edcb
+- Vyper: https://github.com/davidhq/SublimeEthereum/commit/65d3905dcc384e1eeb8bc3fe460c12336505edcb
+- Cairo: https://github.com/davidhq/SublimeEthereum/commit/65d3905dcc384e1eeb8bc3fe460c12336505edcb
 
 The others, I haven't kept track of the repo/commit.
