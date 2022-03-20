@@ -1,7 +1,9 @@
 %YAML 1.2
 ---
 name: Solidity
-file_extensions: [sol]
+file_extensions:
+  - sol
+  - solidity
 scope: source.solidity
 
 variables:

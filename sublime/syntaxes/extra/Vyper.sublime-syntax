@@ -4,6 +4,7 @@
 name: Vyper
 file_extensions:
   - vy
+  - vyper
 scope: source.vyper
 contexts:
   main:
