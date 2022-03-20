@@ -1,0 +1,78 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: Vyper
+file_extensions:
+  - vy
+scope: source.vyper
+contexts:
+  main:
+    - match: \#.*
+      comment: Comments
+      scope: comment
+    - match: (\"\"\")
+      comment: Multiline comments
+      push:
+        - meta_scope: comment
+        - match: (\"\"\")
+          pop: true
+    - match: \b(event|indexed)\b
+      comment: Events
+      scope: keyword.control
+    - match: '\b(contract|interface|library|using|struct|constructor|modifier)(\s+[A-Za-z_]\w*)?(?:\s+is\s+((?:[A-Za-z_][\,\s]*)*))?\b'
+      comment: Structures, event definitions
+      scope: keyword.control
+      captures:
+        2: entity.name.function
+        3: entity.name.function
+    - match: '\b(def)(\s+[A-Za-z_]\w*)?\b'
+      comment: function
+      scope: keyword.declaration.function
+      captures:
+        2: entity.name.function
+        3: entity.name.function
+    - match: \b(True|False)\b
+      comment: True and false keywords
+      scope: constant.language
+    - match: \bself\b
+      comment: self variable
+      scope: storage.type.function
+    - match: \b(address(?:\s+payable)?|string|bytes?\d*|int\d*|uint\d*|bool|u?fixed\d+x\d+)\b
+      comment: Types
+      captures:
+        1: constant.language
+        2: constant.numeric
+        3: constant.numeric
+        4: keyword.control
+    - match: \b(constant|map|raise|payable|storage|memory|calldata|if|else|for|while|do|break|continue|return|private|public|immutable|pure|view|internal|external|this|suicide|selfdestruct|delegatecall|emit|new|is|throw|revert|assert|require|\_)\b
+      comment: Langauge keywords
+      scope: keyword.control
+    - match: \b(not|and|or|pass|from|import|as)\b
+      comment: Vyper specific keywords
+      scope: keyword
+    - match: '(@[A-Za-z_]\w*)\b'
+      comment: Vyper decorators
+      scope: keyword
+    - match: (=|!|>|<|\||&|\?|\^|~|\*|\+|\-|\/|\%|\bhex\b)
+      comment: Operators
+      scope: keyword.operator
+    - match: '\b(msg|block|tx)\.([A-Za-z_]\w*)\b'
+      comment: msg and block special usage
+      captures:
+        1: storage.type
+        2: storage.type
+    - match: '\b([A-Za-z_]\w*)(?:\[(\d*)\])?(?:\[(\d*)\])?\('
+      comment: 'Function call, also for example - uint[] memory a = new uint[332](7); or uint[2][] memory arrayOfPairs = new uint[2][](size);'
+      captures:
+        1: support.function
+        2: constant.numeric
+        3: constant.numeric
+    - match: '([\"\''].*?[\"\''])'
+      comment: Strings
+      scope: string.quoted
+    - match: '\b(?:[+-]?\.?\d[\d_eE]*)(?:\.\d+[\deE]*)?\b'
+      comment: Numbers, possibly with scientific notation
+      scope: constant.numeric
+    - match: '\b(0[xX][a-fA-F0-9]+)\b'
+      comment: Hexadecimal
+      scope: constant.numeric

@@ -1,0 +1,166 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: Cairo
+file_extensions:
+  - cairo
+scope: source.cairo
+contexts:
+  main:
+    - include: directives
+    - include: statements
+  comment:
+    - match: '#'
+      captures:
+        0: punctuation.definition.comment
+      push:
+        - meta_scope: comment.line.number-sign
+        - match: $
+          pop: true
+        - match: TODO
+          scope: comment.line.number-sign
+  class-instance:
+    - match: '[[:upper:]][_$[:alnum:]]+[[:lower:]]+[_$[:alnum:]]+'
+      scope: support.class.cairo
+  declaration:
+    - include: import
+  directives:
+    - match: (?<!\w)\s*(%builtins|%lang)\s+
+      captures:
+        1: keyword.directive.cairo
+  expression:
+    - include: expression-without-identifiers
+    - include: identifiers
+    - include: expression-punctuations
+  expression-operators:
+    - match: '\%\{|\%\}'
+      scope: keyword.brackets.python-hints.cairo
+    - match: (=|!|>|<|\||&|\?|\^|~|\*|\+|\-|\/|\%)
+      scope: keyword.operator
+    - match: '(?<![\w$])(cast)(?![\w$])'
+      scope: keyword.operator.cast.cairo
+  expression-punctuations:
+    - include: punctuation-accessor
+  expression-without-identifiers:
+    - include: string
+    - include: comment
+    - include: literal
+    - include: function-expression
+    - include: storages
+    - include: keywords
+    - include: parameters
+    - include: expression-operators
+    - include: function-call
+    - include: support-objects
+  function-call:
+    - match: '([_$[:alpha:]][_$[:alnum:]]+)\s*(?=\()'
+      captures:
+        1: entity.name.function.cairo
+      push:
+        - match: (?<=\))
+          pop: true
+        - include: string
+        - include: comment
+        - include: literal
+        - include: identifiers
+        - include: expression-operators
+  function-expression:
+    - match: '\s*(func)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*'
+      captures:
+        1: storage.type.function.cairo
+        2: entity.name.function.cairo
+      push:
+        - meta_scope: meta.function.expression.cairo
+        - match: (?<=:)
+          pop: true
+        - include: comment
+        - include: function-implicit
+        - include: function-params
+        - match: '->'
+          scope: keyword.function.return.cairo
+  function-implicit:
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: parameters
+  function-params:
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: parameters
+  identifiers:
+    - match: '(?<!\w)([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])'
+      scope: variable.other.constant.cairo
+  import:
+    - match: (?<!\w)\s*(from)\s
+      captures:
+        1: keyword.declaration.cairo
+      push:
+        - match: \s*(import)\s
+          captures:
+            1: keyword.declaration.cairo
+          pop: true
+        - include: string
+        - include: comment
+        - include: punctuation-accessor
+        - match: '[_$[:alpha:]][_$[:alnum:]]+'
+          scope: meta.import.from.location.cairo
+  keywords:
+    - match: \b(else|if|in|return|end|assert)\b
+      scope: keyword.controls.cairo
+    - match: \b(from|import|func|namespace)\b
+      scope: keyword.declaration.cairo
+    - match: ^\s*@(constructor|storage_var|view|external|contract_interface|known_ap_change|event)\s+
+      scope: keyword.others.cairo
+  literal:
+    - include: numeric-literal
+  numeric-literal:
+    - match: '\b(?:([0-9]+)|(0x[0-9a-fA-F]+))\b'
+      scope: constant.numeric.decimal.cairo
+  parameters:
+    - include: comment
+    - include: punctuation-accessor
+    - match: '(:)\s*([_$[:alpha:]][_$[:alnum:]]+)'
+      captures:
+        1: punctuation.separator
+        2: support.type.cairo
+  punctuation-accessor:
+    - match: (\.)|(\*)
+      captures:
+        1: punctuation.separator.dot-accessor.cairo
+        2: keyword.operator
+  punctuation-semicolon:
+    - match: ;
+      scope: punctuation.terminator.statement.cairo
+  statements:
+    - include: string
+    - include: comment
+    - include: declaration
+    - include: expression
+    - include: punctuation-semicolon
+  storages:
+    - match: \b(let|const|local|struct|member|alloc_locals)\b
+      scope: storage.type.cairo
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.cairo
+      push:
+        - meta_scope: string.quoted.double.cairo
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.cairo
+          pop: true
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.cairo
+      push:
+        - meta_scope: string.quoted.single.cairo
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.cairo
+          pop: true
+  support-objects:
+    - include: class-instance
