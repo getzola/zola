@@ -18,8 +18,7 @@ globset = "0.4"
 unic-langid = "0.9"
 image = "0.24"
 regex = "1"
-# TODO: replace chrono with time
-chrono = { version = "0.4", features = ["serde"] }
+time = { version = "0.3" }
 rayon = "1"
 webp = "0.2"
 svg_metadata = "0.4"

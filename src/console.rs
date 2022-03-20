@@ -1,10 +1,10 @@
-use std::env;
 use std::error::Error as StdError;
 use std::io::Write;
 use std::time::Instant;
+use std::{convert::TryInto, env};
 
-use libs::chrono::Duration;
 use libs::once_cell::sync::Lazy;
+use libs::time::Duration;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use errors::Error;
@@ -90,7 +90,8 @@ pub fn warn_about_ignored_pages(site: &Site) {
 
 /// Print the time elapsed rounded to 1 decimal
 pub fn report_elapsed_time(instant: Instant) {
-    let duration_ms = Duration::from_std(instant.elapsed()).unwrap().num_milliseconds() as f64;
+    let duration: Duration = instant.elapsed().try_into().unwrap();
+    let duration_ms = duration.whole_milliseconds() as f64;
 
     if duration_ms < 1000.0 {
         success(&format!("Done in {}ms.\n", duration_ms));

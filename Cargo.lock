@@ -260,8 +260,6 @@ dependencies = [
  "libc",
  "num-integer",
  "num-traits",
- "serde",
- "time 0.1.43",
  "winapi 0.3.9",
 ]
 
@@ -759,6 +757,7 @@ dependencies = [
  "libs",
  "serde",
  "test-case",
+ "time 0.3.7",
  "utils",
 ]
 
@@ -1390,7 +1389,6 @@ version = "0.1.0"
 dependencies = [
  "ammonia",
  "base64",
- "chrono",
  "csv",
  "elasticlunr-rs",
  "filetime",
@@ -1419,6 +1417,7 @@ dependencies = [
  "svg_metadata",
  "syntect",
  "tera",
+ "time 0.3.7",
  "toml",
  "unic-langid",
  "unicode-segmentation",
@@ -3264,7 +3263,14 @@ dependencies = [
  "itoa 1.0.1",
  "libc",
  "num_threads",
+ "time-macros",
 ]
+
+[[package]]
+name = "time-macros"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25eb0ca3468fc0acc11828786797f6ef9aa1555e4a211a60d64cc8e4d1be47d6"
 
 [[package]]
 name = "tinystr"

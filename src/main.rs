@@ -5,6 +5,7 @@ use cli::{Cli, Command};
 use utils::net::{get_available_port, port_is_available};
 
 use clap::Parser;
+use time::UtcOffset;
 
 mod cli;
 mod cmd;
@@ -79,6 +80,7 @@ fn main() {
                 open,
                 drafts,
                 fast,
+                UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
             ) {
                 console::unravel_errors("Failed to serve the site", &e);
                 std::process::exit(1);

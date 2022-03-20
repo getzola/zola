@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
-use libs::chrono::prelude::*;
 use libs::tera::{Map, Value};
 use serde::Deserialize;
+use time::format_description::well_known::Rfc3339;
+use time::macros::{format_description, time};
+use time::{Date, OffsetDateTime, PrimitiveDateTime};
 
 use errors::{bail, Result};
 use utils::de::{fix_toml_dates, from_toml_datetime};
@@ -20,21 +22,21 @@ pub struct PageFrontMatter {
     /// Updated date
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub updated: Option<String>,
-    /// Chrono converted update datatime
+    /// Datetime content was last updated
     #[serde(default, skip_deserializing)]
-    pub updated_datetime: Option<NaiveDateTime>,
+    pub updated_datetime: Option<OffsetDateTime>,
     /// The converted update datetime into a (year, month, day) tuple
     #[serde(default, skip_deserializing)]
-    pub updated_datetime_tuple: Option<(i32, u32, u32)>,
+    pub updated_datetime_tuple: Option<(i32, u8, u8)>,
     /// Date if we want to order pages (ie blog post)
     #[serde(default, deserialize_with = "from_toml_datetime")]
     pub date: Option<String>,
-    /// Chrono converted datetime
+    /// Datetime content was created
     #[serde(default, skip_deserializing)]
-    pub datetime: Option<NaiveDateTime>,
+    pub datetime: Option<OffsetDateTime>,
     /// The converted date into a (year, month, day) tuple
     #[serde(default, skip_deserializing)]
-    pub datetime_tuple: Option<(i32, u32, u32)>,
+    pub datetime_tuple: Option<(i32, u8, u8)>,
     /// Whether this page is a draft
     pub draft: bool,
     /// The page slug. Will be used instead of the filename if present
@@ -68,11 +70,13 @@ pub struct PageFrontMatter {
 /// 2. a local datetime (RFC3339 with timezone omitted)
 /// 3. a local date (YYYY-MM-DD).
 /// This tries each in order.
-fn parse_datetime(d: &str) -> Option<NaiveDateTime> {
-    DateTime::parse_from_rfc3339(d)
-        .or_else(|_| DateTime::parse_from_rfc3339(format!("{}Z", d).as_ref()))
-        .map(|s| s.naive_local())
-        .or_else(|_| NaiveDate::parse_from_str(d, "%Y-%m-%d").map(|s| s.and_hms(0, 0, 0)))
+fn parse_datetime(d: &str) -> Option<OffsetDateTime> {
+    OffsetDateTime::parse(d, &Rfc3339)
+        .or_else(|_| OffsetDateTime::parse(format!("{}Z", d).as_ref(), &Rfc3339))
+        .or_else(|_| match Date::parse(d, &format_description!("[year]-[month]-[day]")) {
+            Ok(date) => Ok(PrimitiveDateTime::new(date, time!(0:00)).assume_utc()),
+            Err(e) => Err(e),
+        })
         .ok()
 }
 
@@ -108,15 +112,15 @@ impl PageFrontMatter {
         Ok(f)
     }
 
-    /// Converts the TOML datetime to a Chrono naive datetime
+    /// Converts the TOML datetime to a time::OffsetDateTime
     /// Also grabs the year/month/day tuple that will be used in serialization
     pub fn date_to_datetime(&mut self) {
         self.datetime = self.date.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
-        self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
+        self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month().into(), dt.day()));
 
         self.updated_datetime = self.updated.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
         self.updated_datetime_tuple =
-            self.updated_datetime.map(|dt| (dt.year(), dt.month(), dt.day()));
+            self.updated_datetime.map(|dt| (dt.year(), dt.month().into(), dt.day()));
     }
 
     pub fn weight(&self) -> usize {
@@ -154,6 +158,7 @@ mod tests {
     use super::RawFrontMatter;
     use libs::tera::to_value;
     use test_case::test_case;
+    use time::macros::datetime;
 
     #[test_case(&RawFrontMatter::Toml(r#"  "#); "toml")]
     #[test_case(&RawFrontMatter::Toml(r#"  "#); "yaml")]
@@ -229,6 +234,7 @@ date: 2016-10-10
     fn can_parse_date_yyyy_mm_dd(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
+        assert_eq!(res.datetime.unwrap(), datetime!(2016 - 10 - 10 0:00 UTC));
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -244,6 +250,7 @@ date: 2002-10-02T15:00:00Z
     fn can_parse_date_rfc3339(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
+        assert_eq!(res.datetime.unwrap(), datetime!(2002 - 10 - 02 15:00:00 UTC));
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -259,6 +266,7 @@ date: 2002-10-02T15:00:00
     fn can_parse_date_rfc3339_without_timezone(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
+        assert_eq!(res.datetime.unwrap(), datetime!(2002 - 10 - 02 15:00:00 UTC));
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -274,6 +282,7 @@ date: 2002-10-02 15:00:00+02:00
     fn can_parse_date_rfc3339_with_space(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
+        assert_eq!(res.datetime.unwrap(), datetime!(2002 - 10 - 02 15:00:00+02:00));
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -289,6 +298,7 @@ date: 2002-10-02 15:00:00
     fn can_parse_date_rfc3339_with_space_without_timezone(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
+        assert_eq!(res.datetime.unwrap(), datetime!(2002 - 10 - 02 15:00:00 UTC));
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -304,6 +314,7 @@ date: 2002-10-02T15:00:00.123456Z
     fn can_parse_date_rfc3339_with_microseconds(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.datetime.is_some());
+        assert_eq!(res.datetime.unwrap(), datetime!(2002 - 10 - 02 15:00:00.123456 UTC));
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -349,6 +360,8 @@ date: "2016-10-10"
     fn can_parse_valid_date_as_string(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
         assert!(res.date.is_some());
+        assert!(res.datetime.is_some());
+        assert_eq!(res.datetime.unwrap(), datetime!(2016 - 10 - 10 0:00 UTC));
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
