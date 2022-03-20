@@ -33,9 +33,9 @@ use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
 use time::macros::format_description;
+use time::{OffsetDateTime, UtcOffset};
 use mime_guess::from_path as mimetype_from_path;
 
-use libs::time::OffsetDateTime;
 use libs::percent_encoding;
 use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -287,6 +287,7 @@ pub fn serve(
     open: bool,
     include_drafts: bool,
     fast_rebuild: bool,
+    utc_offset: UtcOffset
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(
@@ -531,11 +532,14 @@ pub fn serve(
                             continue;
                         }
 
-                        let format = format_description!("[year]-[month]-[day] [hour]:[minute]:[second] UTC");
-                        println!(
-                            "Change detected @ {}",
-                            OffsetDateTime::now_utc().format(&format).unwrap().to_string()
-                        );
+                        let format = format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+                        let current_time = OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
+                        if let Ok(time_str) = current_time {
+                            println!("Change detected @ {}", time_str);
+                        } else {
+                            // if formatting fails for some reason
+                            println!("Change detected");
+                        };
 
                         let start = Instant::now();
                         match detect_change_kind(root_dir, &path, &config_path) {
