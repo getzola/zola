@@ -19,7 +19,7 @@ use utils::fs::{get_file_time, read_file};
 use crate::global_fns::helpers::search_for_file;
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
-    "`load_data`: requires EITHER a `path` or `url` argument";
+    "`load_data`: requires EITHER a `path`, `url`, or `literal` argument";
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash)]
 enum Method {
@@ -82,6 +82,7 @@ impl OutputFormat {
 enum DataSource {
     Url(Url),
     Path(PathBuf),
+    Literal(String),
 }
 
 impl DataSource {
@@ -93,11 +94,16 @@ impl DataSource {
     fn from_args(
         path_arg: Option<String>,
         url_arg: Option<String>,
+        literal_arg: Option<String>,
         base_path: &Path,
         theme: &Option<String>,
         output_path: &Path,
     ) -> Result<Option<Self>> {
-        if path_arg.is_some() && url_arg.is_some() {
+        // only one of `path`, `url`, or `literal` can be specified
+        if (path_arg.is_some() && url_arg.is_some())
+            || (path_arg.is_some() && literal_arg.is_some())
+            || (url_arg.is_some() && literal_arg.is_some())
+        {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
         }
 
@@ -115,6 +121,10 @@ impl DataSource {
                 .map(DataSource::Url)
                 .map(Some)
                 .map_err(|e| format!("`load_data`: Failed to parse {} as url: {}", url, e).into());
+        }
+
+        if let Some(string_literal) = literal_arg {
+            return Ok(Some(DataSource::Literal(string_literal)));
         }
 
         Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
@@ -147,6 +157,8 @@ impl Hash for DataSource {
                 path.hash(state);
                 get_file_time(path).expect("get file time").hash(state);
             }
+            // TODO: double check expectations here
+            DataSource::Literal(string_literal) => string_literal.hash(state),
         };
     }
 }
@@ -223,6 +235,8 @@ impl TeraFn for LoadData {
         // Either a local path or a URL
         let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let literal_arg =
+            optional_arg!(String, args.get("literal"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         // Optional general params
         let format_arg = optional_arg!(
             String,
@@ -267,6 +281,7 @@ impl TeraFn for LoadData {
             DataSource::from_args(
                 path_arg.clone(),
                 url_arg,
+                literal_arg,
                 &self.base_path,
                 &self.theme,
                 &self.output_path,
@@ -364,6 +379,7 @@ impl TeraFn for LoadData {
                     }
                 }
             }
+            DataSource::Literal(string_literal) => Ok(string_literal),
         }?;
 
         let result_value: Result<Value> = match file_format {
@@ -1216,5 +1232,97 @@ mod tests {
         assert!(result.is_err());
 
         _mjson.assert();
+    }
+
+    #[test]
+    fn can_load_plain_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let plain_str = "abc 123";
+        args.insert("literal".to_string(), to_value(plain_str).unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(result, plain_str);
+    }
+
+    #[test]
+    fn can_load_json_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let json_str = r#"{
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            }"#;
+        args.insert("literal".to_string(), to_value(json_str).unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            })
+        );
+    }
+
+    #[test]
+    fn can_load_toml_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let toml_str = r#"
+        [category]
+        key = "value"
+        date = 1979-05-27T07:32:00Z
+        lt1 = 07:32:00
+        "#;
+        args.insert("literal".to_string(), to_value(toml_str).unwrap());
+        args.insert("format".to_string(), to_value("toml").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        // TOML does not load in order
+        assert_eq!(
+            result,
+            json!({
+                "category": {
+                    "date": "1979-05-27T07:32:00Z",
+                    "lt1": "07:32:00",
+                    "key": "value"
+                },
+            })
+        );
+    }
+
+    #[test]
+    fn can_load_csv_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let csv_str = r#"Number,Title
+1,Gutenberg
+2,Printing"#;
+        args.insert("literal".to_string(), to_value(csv_str).unwrap());
+        args.insert("format".to_string(), to_value("csv").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "headers": ["Number", "Title"],
+                "records": [
+                    ["1", "Gutenberg"],
+                    ["2", "Printing"]
+                ],
+            })
+        )
     }
 }
