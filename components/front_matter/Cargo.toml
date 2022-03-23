@@ -11,4 +11,4 @@ utils = { path = "../utils" }
 libs = { path = "../libs" }
 
 [dev-dependencies]
-test-case = "1"  # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
+test-case = "2"  # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
