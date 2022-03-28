@@ -219,7 +219,7 @@ The `index.html` file inside the `templates` directory should be:
 <h1 class="title">
   This is my blog made with Zola.
 </h1>
-<p>Click <a href="/blog/">here</a> to see my posts.</p>
+<p>Click <a href="{{ config.base_url }}/blog/">here</a> to see my posts.</p>
 {% endblock content %}
 ```  
 
