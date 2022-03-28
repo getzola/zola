@@ -79,6 +79,14 @@ Zola is available in the official package repository.
 $ doas pkg_add zola
 ```
 
+### pkgsrc
+
+Zola is available in the official package repository, with [pkgin](https://pkgin.net/).
+
+```sh
+$ pkgin install zola
+```
+
 ### Snapcraft
 
 Zola is available on snapcraft:
