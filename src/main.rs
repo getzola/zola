@@ -12,7 +12,6 @@ mod cmd;
 mod console;
 mod prompt;
 
-
 fn get_config_file_path(dir: &PathBuf, config_path: &Path) -> (PathBuf, PathBuf) {
     let root_dir = dir
         .ancestors()
@@ -20,7 +19,10 @@ fn get_config_file_path(dir: &PathBuf, config_path: &Path) -> (PathBuf, PathBuf)
         .unwrap_or_else(|| panic!("could not find directory containing config file"));
 
     // if we got here we found root_dir so config file should exist so we can unwrap safely
-    let config_file = root_dir.join(&config_path).canonicalize().unwrap_or_else(|_| panic!("could not find directory containing config file"));
+    let config_file = root_dir
+        .join(&config_path)
+        .canonicalize()
+        .unwrap_or_else(|_| panic!("could not find directory containing config file"));
     (root_dir.to_path_buf(), config_file)
 }
 

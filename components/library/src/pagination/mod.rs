@@ -6,7 +6,7 @@ use libs::tera::{to_value, Context, Tera, Value};
 use serde::Serialize;
 
 use config::Config;
-use errors::{Error, Result};
+use errors::{Context as ErrorContext, Result};
 use utils::templates::{check_template_fallbacks, render_template};
 
 use crate::content::{Section, SerializingPage, SerializingSection};
@@ -247,7 +247,7 @@ impl<'a> Paginator<'a> {
         context.insert("paginator", &self.build_paginator_context(pager));
 
         render_template(&self.template, tera, context, &config.theme)
-            .map_err(|e| Error::chain(format!("Failed to render pager {}", pager.index), e))
+            .with_context(|| format!("Failed to render pager {}", pager.index))
     }
 }
 

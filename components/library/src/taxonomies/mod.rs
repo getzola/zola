@@ -6,7 +6,7 @@ use libs::tera::{Context, Tera};
 use serde::Serialize;
 
 use config::{Config, Taxonomy as TaxonomyConfig};
-use errors::{bail, Error, Result};
+use errors::{bail, Context as ErrorContext, Result};
 use utils::templates::{check_template_fallbacks, render_template};
 
 use crate::content::SerializingPage;
@@ -207,9 +207,8 @@ impl Taxonomy {
         let template = check_template_fallbacks(&specific_template, tera, &config.theme)
             .unwrap_or("taxonomy_single.html");
 
-        render_template(template, tera, context, &config.theme).map_err(|e| {
-            Error::chain(format!("Failed to render single term {} page.", self.kind.name), e)
-        })
+        render_template(template, tera, context, &config.theme)
+            .with_context(|| format!("Failed to render single term {} page.", self.kind.name))
     }
 
     pub fn render_all_terms(
@@ -233,9 +232,8 @@ impl Taxonomy {
         let template = check_template_fallbacks(&specific_template, tera, &config.theme)
             .unwrap_or("taxonomy_list.html");
 
-        render_template(template, tera, context, &config.theme).map_err(|e| {
-            Error::chain(format!("Failed to render a list of {} page.", self.kind.name), e)
-        })
+        render_template(template, tera, context, &config.theme)
+            .with_context(|| format!("Failed to render a list of {} page.", self.kind.name))
     }
 
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializedTaxonomy<'a> {

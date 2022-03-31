@@ -16,7 +16,7 @@ use libs::tera::{Context, Tera};
 use libs::walkdir::{DirEntry, WalkDir};
 
 use config::{get_config, Config};
-use errors::{bail, Error, Result};
+use errors::{anyhow, bail, Context as ErrorContext, Result};
 use front_matter::InsertAnchor;
 use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
 use libs::relative_path::RelativePathBuf;
@@ -274,7 +274,12 @@ impl Site {
             let library = self.library.read().unwrap();
             let collisions = library.check_for_path_collisions();
             if !collisions.is_empty() {
-                return Err(Error::from_collisions(collisions));
+                let mut msg = String::from("Found path collisions:\n");
+                for (path, filepaths) in collisions {
+                    let row = format!("- `{}` from files {:?}\n", path, filepaths);
+                    msg.push_str(&row);
+                }
+                return Err(anyhow!(msg));
             }
         }
 
@@ -537,8 +542,7 @@ impl Site {
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
             // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path)
-                .map_err(|e| Error::chain("Couldn't delete output directory", e))?;
+            remove_dir_all(&self.output_path).context("Couldn't delete output directory")?;
         }
 
         Ok(())

@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use errors::{bail, Result};
+use errors::{bail, Context as ErrorContext, Result};
 use libs::tera::{to_value, Context, Map, Tera, Value};
 use pest::iterators::Pair;
 use pest::Parser;
@@ -43,7 +43,7 @@ impl Shortcode {
         new_context.extend(context.clone());
 
         let res = utils::templates::render_template(&tpl_name, tera, new_context, &None)
-            .map_err(|e| errors::Error::chain(format!("Failed to render {} shortcode", name), e))?
+            .with_context(|| format!("Failed to render {} shortcode", name))?
             .replace("\r\n", "\n");
 
         Ok(res)

@@ -7,6 +7,7 @@ use libs::reqwest::header::{HeaderMap, ACCEPT};
 use libs::reqwest::{blocking::Client, StatusCode};
 
 use config::LinkChecker;
+use errors::anyhow;
 
 use utils::links::has_anchor_id;
 
@@ -109,7 +110,7 @@ fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     if has_anchor_id(&body, anchor) {
         Ok(())
     } else {
-        Err(errors::Error::from(format!("Anchor `#{}` not found on page", anchor)))
+        Err(anyhow!("Anchor `#{}` not found on page", anchor))
     }
 }
 
