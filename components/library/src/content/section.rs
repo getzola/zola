@@ -5,7 +5,7 @@ use libs::slotmap::DefaultKey;
 use libs::tera::{Context as TeraContext, Tera};
 
 use config::Config;
-use errors::{Error, Result};
+use errors::{Context, Result};
 use front_matter::{split_section_content, SectionFrontMatter};
 use rendering::{render_content, Heading, RenderContext};
 use utils::fs::read_file;
@@ -161,9 +161,8 @@ impl Section {
         context.set_current_page_path(&self.file.relative);
         context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
 
-        let res = render_content(&self.raw_content, &context).map_err(|e| {
-            Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
-        })?;
+        let res = render_content(&self.raw_content, &context)
+            .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
@@ -183,9 +182,8 @@ impl Section {
         context.insert("section", &self.to_serialized(library));
         context.insert("lang", &self.lang);
 
-        render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
-            Error::chain(format!("Failed to render section '{}'", self.file.path.display()), e)
-        })
+        render_template(tpl_name, tera, context, &config.theme)
+            .with_context(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 
     /// Is this the index section?

@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use libs::glob::glob;
 use libs::sass_rs::{compile_file, Options, OutputStyle};
 
+use crate::anyhow;
 use errors::{bail, Result};
 use utils::fs::{create_file, ensure_directory_exists};
 
@@ -47,7 +48,7 @@ fn compile_sass_glob(
 
     let mut compiled_paths = Vec::new();
     for file in files {
-        let css = compile_file(&file, options.clone())?;
+        let css = compile_file(&file, options.clone()).map_err(|e| anyhow!(e))?;
 
         let path_inside_sass = file.strip_prefix(&sass_path).unwrap();
         let parent_inside_sass = path_inside_sass.parent();

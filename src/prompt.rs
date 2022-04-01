@@ -4,7 +4,7 @@ use std::time::Duration;
 use libs::url::Url;
 
 use crate::console;
-use errors::Result;
+use errors::{anyhow, Result};
 
 /// Wait for user input and return what they typed
 fn read_line() -> Result<String> {
@@ -14,7 +14,7 @@ fn read_line() -> Result<String> {
     lines
         .next()
         .and_then(|l| l.ok())
-        .ok_or_else(|| "unable to read from stdin for confirmation".into())
+        .ok_or_else(|| anyhow!("unable to read from stdin for confirmation"))
 }
 
 /// Ask a yes/no question to the user

@@ -1,12 +1,13 @@
+use std::fmt::Write;
+
 use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
 use libs::pulldown_cmark as cmark;
 use libs::tera;
-use std::fmt::Write;
 
 use crate::context::RenderContext;
 use crate::table_of_contents::{make_table_of_contents, Heading};
-use errors::{Error, Result};
+use errors::{anyhow, Context, Error, Result};
 use front_matter::InsertAnchor;
 use libs::pulldown_cmark::escape::escape_html;
 use utils::site::resolve_internal_link;
@@ -119,7 +120,7 @@ fn fix_link(
                 resolved.permalink
             }
             Err(_) => {
-                return Err(format!("Relative link {} not found.", link).into());
+                return Err(anyhow!("Relative link {} not found.", link));
             }
         }
     } else if is_external_link(link) {
@@ -472,7 +473,7 @@ pub fn markdown_to_html(
                     c,
                     &None,
                 )
-                .map_err(|e| Error::chain("Failed to render anchor link template", e))?;
+                .context("Failed to render anchor link template")?;
                 anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
             }
 

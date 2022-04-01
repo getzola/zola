@@ -1,12 +1,12 @@
+use core::time;
+use std::{collections::HashMap, path::PathBuf, thread};
+
 use libs::rayon::prelude::*;
 
-use crate::Site;
-use core::time;
+use crate::{anyhow, Site};
 use errors::{bail, Result};
-use errors::{Error, ErrorKind};
 use libs::rayon;
 use libs::url::Url;
-use std::{collections::HashMap, path::PathBuf, thread};
 
 /// Check whether all internal links pointing to explicit anchor fragments are valid.
 ///
@@ -91,7 +91,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
                 "> Checked {} internal link(s) with anchors: {} target(s) missing.",
                 anchors_total, errors_total,
             );
-            Err(Error { kind: ErrorKind::Msg(errors.join("\n")), source: None })
+            Err(anyhow!(errors.join("\n")))
         }
     }
 }
@@ -146,10 +146,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     // (almost) all pages simultaneously, limiting all links for a single
     // domain to one thread to avoid rate-limiting
     let threads = std::cmp::min(links_by_domain.len(), 8);
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(threads)
-        .build()
-        .map_err(|e| Error { kind: ErrorKind::Msg(e.to_string()), source: None })?;
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(threads).build()?;
 
     let errors = pool.install(|| {
         links_by_domain
@@ -209,5 +206,5 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         .collect::<Vec<_>>()
         .join("\n");
 
-    Err(Error { kind: ErrorKind::Msg(msg), source: None })
+    Err(anyhow!(msg))
 }

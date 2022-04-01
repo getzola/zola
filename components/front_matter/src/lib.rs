@@ -3,7 +3,7 @@ use std::path::Path;
 use libs::once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-use errors::{bail, Error, Result};
+use errors::{bail, Context, Result};
 use libs::regex::Regex;
 use libs::{serde_yaml, toml};
 
@@ -39,7 +39,7 @@ impl RawFrontMatter<'_> {
             RawFrontMatter::Toml(s) => toml::from_str(s)?,
             RawFrontMatter::Yaml(s) => match serde_yaml::from_str(s) {
                 Ok(d) => d,
-                Err(e) => bail!(format!("YAML deserialize error: {:?}", e)),
+                Err(e) => bail!("YAML deserialize error: {:?}", e),
             },
         };
         Ok(f)
@@ -105,12 +105,10 @@ pub fn split_section_content<'c>(
     content: &'c str,
 ) -> Result<(SectionFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = SectionFrontMatter::parse(&front_matter).map_err(|e| {
-        Error::chain(
-            format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy()),
-            e,
-        )
+    let meta = SectionFrontMatter::parse(&front_matter).with_context(|| {
+        format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy())
     })?;
+
     Ok((meta, content))
 }
 
@@ -121,11 +119,8 @@ pub fn split_page_content<'c>(
     content: &'c str,
 ) -> Result<(PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = PageFrontMatter::parse(&front_matter).map_err(|e| {
-        Error::chain(
-            format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy()),
-            e,
-        )
+    let meta = PageFrontMatter::parse(&front_matter).with_context(|| {
+        format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy())
     })?;
     Ok((meta, content))
 }

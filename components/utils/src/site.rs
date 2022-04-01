@@ -3,7 +3,7 @@ use libs::unicode_segmentation::UnicodeSegmentation;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
 
-use errors::Result;
+use errors::{anyhow, Result};
 
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
@@ -41,7 +41,7 @@ pub fn resolve_internal_link<S: BuildHasher>(
     // to decode them first
     let decoded = percent_decode(parts[0].as_bytes()).decode_utf8_lossy().to_string();
     let target =
-        permalinks.get(&decoded).ok_or_else(|| format!("Relative link {} not found.", link))?;
+        permalinks.get(&decoded).ok_or_else(|| anyhow!("Relative link {} not found.", link))?;
     if parts.len() > 1 {
         Ok(ResolvedInternalLink {
             permalink: format!("{}#{}", target, parts[1]),

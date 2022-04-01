@@ -32,16 +32,16 @@ use hyper::header;
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
+use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
-use mime_guess::from_path as mimetype_from_path;
 
 use libs::percent_encoding;
 use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{Error as ZolaError, Result};
+use errors::{anyhow, Context, Result};
 use libs::globset::GlobSet;
 use libs::relative_path::{RelativePath, RelativePathBuf};
 use pathdiff::diff_paths;
@@ -287,7 +287,7 @@ pub fn serve(
     open: bool,
     include_drafts: bool,
     fast_rebuild: bool,
-    utc_offset: UtcOffset
+    utc_offset: UtcOffset,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(
@@ -305,10 +305,10 @@ pub fn serve(
     // Stop right there if we can't bind to the address
     let bind_address: SocketAddrV4 = match address.parse() {
         Ok(a) => a,
-        Err(_) => return Err(format!("Invalid address: {}.", address).into()),
+        Err(_) => return Err(anyhow!("Invalid address: {}.", address)),
     };
     if (TcpListener::bind(&bind_address)).is_err() {
-        return Err(format!("Cannot start server on address {}.", address).into());
+        return Err(anyhow!("Cannot start server on address {}.", address));
     }
 
     let config_path = PathBuf::from(config_file);
@@ -347,7 +347,7 @@ pub fn serve(
         if should_watch {
             watcher
                 .watch(root_dir.join(entry), RecursiveMode::Recursive)
-                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()), e))?;
+                .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());
         }
     }
@@ -415,7 +415,7 @@ pub fn serve(
 
         let ws_server = ws_server
             .bind(&*ws_address)
-            .map_err(|_| format!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
+            .map_err(|_| anyhow!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
 
         thread::spawn(move || {
             ws_server.run().unwrap();
@@ -532,8 +532,10 @@ pub fn serve(
                             continue;
                         }
 
-                        let format = format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
-                        let current_time = OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
+                        let format =
+                            format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+                        let current_time =
+                            OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
                         if let Ok(time_str) = current_time {
                             println!("Change detected @ {}", time_str);
                         } else {
@@ -559,7 +561,7 @@ pub fn serve(
                                         } else {
                                             // an asset changed? a folder renamed?
                                             // should we make it smarter so it doesn't reload the whole site?
-                                            Err("dummy".into())
+                                            Err(anyhow!("dummy"))
                                         };
 
                                         if res.is_err() {

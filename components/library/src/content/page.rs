@@ -9,7 +9,7 @@ use libs::tera::{Context as TeraContext, Tera};
 
 use crate::library::Library;
 use config::Config;
-use errors::{Error, Result};
+use errors::{Context, Result};
 use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
 use rendering::{render_content, Heading, RenderContext};
 use utils::site::get_reading_analytics;
@@ -240,9 +240,8 @@ impl Page {
         context.set_current_page_path(&self.file.relative);
         context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
 
-        let res = render_content(&self.raw_content, &context).map_err(|e| {
-            Error::chain(format!("Failed to render content of {}", self.file.path.display()), e)
-        })?;
+        let res = render_content(&self.raw_content, &context)
+            .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
 
         self.summary = res
             .summary_len
@@ -270,9 +269,8 @@ impl Page {
         context.insert("page", &self.to_serialized(library));
         context.insert("lang", &self.lang);
 
-        render_template(tpl_name, tera, context, &config.theme).map_err(|e| {
-            Error::chain(format!("Failed to render page '{}'", self.file.path.display()), e)
-        })
+        render_template(tpl_name, tera, context, &config.theme)
+            .with_context(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 
     /// Creates a vectors of asset URLs.

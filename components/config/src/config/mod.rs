@@ -13,7 +13,7 @@ use libs::toml::Value as Toml;
 use serde::{Deserialize, Serialize};
 
 use crate::theme::Theme;
-use errors::{bail, Error, Result};
+use errors::{anyhow, bail, Result};
 use utils::fs::read_file;
 
 // We want a default base url for tests
@@ -155,13 +155,12 @@ impl Config {
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let path = path.as_ref();
-        let content =
-            read_file(path).map_err(|e| errors::Error::chain("Failed to load config", e))?;
+        let content = read_file(path)?;
 
         let mut config = Config::parse(&content)?;
         let config_dir = path
             .parent()
-            .ok_or_else(|| Error::msg("Failed to find directory containing the config file."))?;
+            .ok_or_else(|| anyhow!("Failed to find directory containing the config file."))?;
 
         // this is the step at which missing extra syntax and highlighting themes are raised as errors
         config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
@@ -272,10 +271,7 @@ impl Config {
                 .translations
                 .get(key)
                 .ok_or_else(|| {
-                    Error::msg(format!(
-                        "Translation key '{}' for language '{}' is missing",
-                        key, lang
-                    ))
+                    anyhow!("Translation key '{}' for language '{}' is missing", key, lang)
                 })
                 .map(|term| term.to_string())
         } else {
@@ -325,7 +321,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
         }
         _ => {
             // Trying to merge a table with something else
-            Err(Error::msg(&format!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from)))
+            Err(anyhow!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from))
         }
     }
 }

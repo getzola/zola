@@ -24,7 +24,6 @@ name = "zola"
 [dependencies]
 atty = "0.2.11"
 clap = { version = "3", features = ["derive"] }
-lazy_static = "1.1"
 termcolor = "1.0.4"
 # Below is for the serve cmd
 hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }

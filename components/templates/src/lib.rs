@@ -7,7 +7,7 @@ use config::Config;
 use libs::once_cell::sync::Lazy;
 use libs::tera::{Context, Tera};
 
-use errors::{bail, Error, Result};
+use errors::{bail, Context as ErrorContext, Result};
 use utils::templates::rewrite_theme_paths;
 
 pub static ZOLA_TERA: Lazy<Tera> = Lazy::new(|| {
@@ -48,7 +48,7 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
     context.insert("url", &url);
 
     tera.render("internal/alias.html", &context)
-        .map_err(|e| Error::chain(format!("Failed to render alias for '{}'", url), e))
+        .with_context(|| format!("Failed to render alias for '{}'", url))
 }
 
 pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
@@ -58,7 +58,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     // Only parsing as we might be extending templates from themes and that would error
     // as we haven't loaded them yet
     let mut tera =
-        Tera::parse(&tpl_glob).map_err(|e| Error::chain("Error parsing templates", e))?;
+        Tera::parse(&tpl_glob).context("Error parsing templates from the /templates directory")?;
 
     if let Some(ref theme) = config.theme {
         // Test that the templates folder exist for that theme
@@ -72,8 +72,8 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
             path.to_string_lossy().replace('\\', "/"),
             theme
         );
-        let mut tera_theme = Tera::parse(&theme_tpl_glob)
-            .map_err(|e| Error::chain("Error parsing templates from themes", e))?;
+        let mut tera_theme =
+            Tera::parse(&theme_tpl_glob).context("Error parsing templates from themes")?;
         rewrite_theme_paths(&mut tera_theme, theme);
 
         // TODO: add tests for theme-provided robots.txt (https://github.com/getzola/zola/pull/1722)
