@@ -15,6 +15,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aae1277d39aeec15cb388266ecc24b11c80469deae6067e17a1a7aa9e5c1f234"
 
 [[package]]
+name = "ahash"
+version = "0.7.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
+dependencies = [
+ "getrandom 0.2.5",
+ "once_cell",
+ "version_check",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -377,6 +388,21 @@ dependencies = [
  "once_cell",
  "terminal_size",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "content"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "errors",
+ "libs",
+ "markdown",
+ "serde",
+ "tempfile",
+ "test-case",
+ "time 0.3.9",
+ "utils",
 ]
 
 [[package]]
@@ -749,18 +775,6 @@ checksum = "5fc25a87fa4fd2094bffb06925852034d90a17f0d1e05197d4956d3555752191"
 dependencies = [
  "matches",
  "percent-encoding",
-]
-
-[[package]]
-name = "front_matter"
-version = "0.1.0"
-dependencies = [
- "errors",
- "libs",
- "serde",
- "test-case",
- "time 0.3.9",
- "utils",
 ]
 
 [[package]]
@@ -1372,23 +1386,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "efaa7b300f3b5fe8eb6bf21ce3895e1751d9665086af2d64b42f19701015ff4f"
 
 [[package]]
-name = "library"
-version = "0.1.0"
-dependencies = [
- "config",
- "errors",
- "front_matter",
- "libs",
- "rendering",
- "serde",
- "tempfile",
- "utils",
-]
-
-[[package]]
 name = "libs"
 version = "0.1.0"
 dependencies = [
+ "ahash",
  "ammonia",
  "base64",
  "csv",
@@ -1414,7 +1415,6 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha2",
- "slotmap",
  "slug",
  "svg_metadata",
  "syntect",
@@ -1571,6 +1571,22 @@ name = "maplit"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
+
+[[package]]
+name = "markdown"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "errors",
+ "insta",
+ "libs",
+ "link_checker",
+ "pest",
+ "pest_derive",
+ "serde",
+ "templates",
+ "utils",
+]
 
 [[package]]
 name = "markup5ever"
@@ -2576,23 +2592,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rendering"
-version = "0.1.0"
-dependencies = [
- "config",
- "errors",
- "front_matter",
- "insta",
- "libs",
- "link_checker",
- "pest",
- "pest_derive",
- "serde",
- "templates",
- "utils",
-]
-
-[[package]]
 name = "reqwest"
 version = "0.11.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2768,8 +2767,8 @@ name = "search"
 version = "0.1.0"
 dependencies = [
  "config",
+ "content",
  "errors",
- "library",
  "libs",
 ]
 
@@ -2901,10 +2900,9 @@ name = "site"
 version = "0.1.0"
 dependencies = [
  "config",
+ "content",
  "errors",
- "front_matter",
  "imageproc",
- "library",
  "libs",
  "link_checker",
  "path-slash",
@@ -2920,15 +2918,6 @@ name = "slab"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9def91fd1e018fe007022791f865d0ccc9b3a0d5001e01aabb8b40e46000afb5"
-
-[[package]]
-name = "slotmap"
-version = "1.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1e08e261d0e8f5c43123b7adf3e4ca1690d655377ac93a03b2c9d3e98de1342"
-dependencies = [
- "version_check",
-]
 
 [[package]]
 name = "slug"
@@ -3107,12 +3096,12 @@ name = "templates"
 version = "0.1.0"
 dependencies = [
  "config",
+ "content",
  "errors",
  "imageproc",
- "library",
  "libs",
+ "markdown",
  "mockito",
- "rendering",
  "serde",
  "tempfile",
  "utils",
@@ -3923,9 +3912,9 @@ dependencies = [
  "atty",
  "clap 3.1.6",
  "clap_complete",
+ "content",
  "ctrlc",
  "errors",
- "front_matter",
  "hyper",
  "libs",
  "mime_guess",

@@ -3,7 +3,7 @@ extern crate test;
 
 use std::env;
 
-use library::Paginator;
+use content::Paginator;
 use site::Site;
 use tempfile::tempdir;
 
@@ -43,7 +43,7 @@ fn bench_render_feed(b: &mut test::Bencher) {
     site.set_output_path(&public);
     b.iter(|| {
         site.render_feed(
-            site.library.read().unwrap().pages_values(),
+            site.library.read().unwrap().pages.values().collect(),
             None,
             &site.config.default_language,
             |c| c,
@@ -68,7 +68,7 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     let library = site.library.read().unwrap();
-    let section = library.sections_values()[0];
+    let section = library.sections.values().collect::<Vec<_>>()[0];
     let paginator = Paginator::from_section(section, &library);
 
     b.iter(|| site.render_paginated(Vec::new(), &paginator));

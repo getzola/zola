@@ -5,6 +5,7 @@ use std::hash::BuildHasher;
 
 use errors::{anyhow, Result};
 
+// TODO: move to content
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
     let word_count: usize = content.unicode_words().count();
@@ -22,7 +23,7 @@ pub struct ResolvedInternalLink {
     /// Internal path to the .md file, without the leading `@/`.
     pub md_path: String,
     /// Optional anchor target.
-    /// We can check whether it exists only after all the markdown rendering is done.
+    /// We can check whether it exists only after all the markdown markdown is done.
     pub anchor: Option<String>,
 }
 

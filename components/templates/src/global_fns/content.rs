@@ -1,4 +1,4 @@
-use library::{Library, Taxonomy};
+use content::{Library, Taxonomy};
 use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -90,8 +90,8 @@ impl TeraFn for GetPage {
         );
         let full_path = self.base_path.join(&path);
         let library = self.library.read().unwrap();
-        match library.get_page(&full_path) {
-            Some(p) => Ok(to_value(p.to_serialized(&library)).unwrap()),
+        match library.pages.get(&full_path) {
+            Some(p) => Ok(to_value(p.serialize(&library)).unwrap()),
             None => Err(format!("Page `{}` not found.", path).into()),
         }
     }
@@ -122,12 +122,12 @@ impl TeraFn for GetSection {
         let full_path = self.base_path.join(&path);
         let library = self.library.read().unwrap();
 
-        match library.get_section(&full_path) {
+        match library.sections.get(&full_path) {
             Some(s) => {
                 if metadata_only {
-                    Ok(to_value(s.to_serialized_basic(&library)).unwrap())
+                    Ok(to_value(s.serialize_basic(&library)).unwrap())
                 } else {
-                    Ok(to_value(s.to_serialized(&library)).unwrap())
+                    Ok(to_value(s.serialize(&library)).unwrap())
                 }
             }
             None => Err(format!("Section `{}` not found.", path).into()),
@@ -185,8 +185,8 @@ impl TeraFn for GetTaxonomy {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use config::{Config, Taxonomy as TaxonomyConfig};
-    use library::TaxonomyItem;
+    use config::{Config, TaxonomyConfig};
+    use content::TaxonomyItem;
 
     #[test]
     fn can_get_taxonomy() {
@@ -195,23 +195,9 @@ mod tests {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
-        let tag = TaxonomyItem::new(
-            "Programming",
-            &config.default_language,
-            "tags",
-            &config,
-            vec![],
-            &library.read().unwrap(),
-        );
-        let tag_fr = TaxonomyItem::new(
-            "Programmation",
-            "fr",
-            "tags",
-            &config,
-            vec![],
-            &library.read().unwrap(),
-        );
+        let library = Arc::new(RwLock::new(Library::new()));
+        let tag = TaxonomyItem::new("Programming", &config.default_language, "tags", &[], &config);
+        let tag_fr = TaxonomyItem::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
@@ -279,16 +265,8 @@ mod tests {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new(
-            "Programming",
-            &config.default_language,
-            "tags",
-            &config,
-            vec![],
-            &library,
-        );
-        let tag_fr = TaxonomyItem::new("Programmation", "fr", "tags", &config, vec![], &library);
+        let tag = TaxonomyItem::new("Programming", &config.default_language, "tags", &[], &config);
+        let tag_fr = TaxonomyItem::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),

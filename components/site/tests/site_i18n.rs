@@ -14,43 +14,38 @@ fn can_parse_multilingual_site() {
     site.load().unwrap();
 
     let library = site.library.read().unwrap();
-    assert_eq!(library.pages().len(), 11);
-    assert_eq!(library.sections().len(), 6);
+    assert_eq!(library.pages.len(), 11);
+    assert_eq!(library.sections.len(), 6);
 
     // default index sections
     let default_index_section =
-        library.get_section(&path.join("content").join("_index.md")).unwrap();
+        library.sections.get(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(default_index_section.pages.len(), 1);
     assert!(default_index_section.ancestors.is_empty());
 
-    let fr_index_section = library.get_section(&path.join("content").join("_index.fr.md")).unwrap();
+    let fr_index_section =
+        library.sections.get(&path.join("content").join("_index.fr.md")).unwrap();
     assert_eq!(fr_index_section.pages.len(), 1);
     assert!(fr_index_section.ancestors.is_empty());
 
     // blog sections get only their own language pages
     let blog_path = path.join("content").join("blog");
 
-    let default_blog = library.get_section(&blog_path.join("_index.md")).unwrap();
+    let default_blog = library.sections.get(&blog_path.join("_index.md")).unwrap();
     assert_eq!(default_blog.subsections.len(), 0);
     assert_eq!(default_blog.pages.len(), 4);
-    assert_eq!(
-        default_blog.ancestors,
-        vec![*library.get_section_key(&default_index_section.file.path).unwrap()]
-    );
+    assert_eq!(default_blog.ancestors, vec![default_index_section.file.relative.clone()]);
     for key in &default_blog.pages {
-        let page = library.get_page_by_key(*key);
+        let page = &library.pages[key];
         assert_eq!(page.lang, "en");
     }
 
-    let fr_blog = library.get_section(&blog_path.join("_index.fr.md")).unwrap();
+    let fr_blog = library.sections.get(&blog_path.join("_index.fr.md")).unwrap();
     assert_eq!(fr_blog.subsections.len(), 0);
-    assert_eq!(fr_blog.pages.len(), 3);
-    assert_eq!(
-        fr_blog.ancestors,
-        vec![*library.get_section_key(&fr_index_section.file.path).unwrap()]
-    );
+    assert_eq!(fr_blog.pages.len(), 4);
+    assert_eq!(fr_blog.ancestors, vec![fr_index_section.file.relative.clone()]);
     for key in &fr_blog.pages {
-        let page = library.get_page_by_key(*key);
+        let page = &library.pages[key];
         assert_eq!(page.lang, "fr");
     }
 }
@@ -188,6 +183,7 @@ fn correct_translations_on_all_pages() {
         let link = format!("{}index.html", link);
 
         // Ensure every permalink has produced a HTML page
+        println!("{:?}", link);
         assert!(ensure_output_exists(&public, &site.config.base_url, &link));
 
         // Ensure translations expected here match with those in the library

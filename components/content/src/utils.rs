@@ -1,19 +1,10 @@
 use std::path::{Path, PathBuf};
 
+use libs::unicode_segmentation::UnicodeSegmentation;
 use libs::walkdir::WalkDir;
 
-mod file_info;
-mod page;
-mod section;
-mod ser;
-
-pub use self::file_info::FileInfo;
-pub use self::page::Page;
-pub use self::section::Section;
-pub use self::ser::{SerializingPage, SerializingSection};
-
 use config::Config;
-use rendering::Heading;
+use utils::table_of_contents::Heading;
 
 pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
     for heading in headings {
@@ -58,6 +49,15 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     }
 
     assets
+}
+
+/// Get word count and estimated reading time
+pub fn get_reading_analytics(content: &str) -> (usize, usize) {
+    let word_count: usize = content.unicode_words().count();
+
+    // https://help.medium.com/hc/en-us/articles/214991667-Read-time
+    // 275 seems a bit too high though
+    (word_count, ((word_count + 199) / 200))
 }
 
 #[cfg(test)]
@@ -193,5 +193,30 @@ mod tests {
         }];
 
         assert!(has_anchor(&input, "1-2"));
+    }
+
+    #[test]
+    fn reading_analytics_empty_text() {
+        let (word_count, reading_time) = get_reading_analytics("  ");
+        assert_eq!(word_count, 0);
+        assert_eq!(reading_time, 0);
+    }
+
+    #[test]
+    fn reading_analytics_short_text() {
+        let (word_count, reading_time) = get_reading_analytics("Hello World");
+        assert_eq!(word_count, 2);
+        assert_eq!(reading_time, 1);
+    }
+
+    #[test]
+    fn reading_analytics_long_text() {
+        let mut content = String::new();
+        for _ in 0..1000 {
+            content.push_str(" Hello world");
+        }
+        let (word_count, reading_time) = get_reading_analytics(&content);
+        assert_eq!(word_count, 2000);
+        assert_eq!(reading_time, 10);
     }
 }

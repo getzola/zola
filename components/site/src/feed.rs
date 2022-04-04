@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::path::PathBuf;
 
 use libs::rayon::prelude::*;
@@ -5,8 +6,8 @@ use libs::tera::Context;
 use serde::Serialize;
 
 use crate::Site;
+use content::{Page, TaxonomyItem};
 use errors::Result;
-use library::{sort_actual_pages_by_date, Page, TaxonomyItem};
 use utils::templates::render_template;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -40,7 +41,14 @@ pub fn render_feed(
         return Ok(None);
     }
 
-    pages.par_sort_unstable_by(sort_actual_pages_by_date);
+    pages.par_sort_unstable_by(|a, b| {
+        let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
+        if ord == Ordering::Equal {
+            a.permalink.cmp(&b.permalink)
+        } else {
+            ord
+        }
+    });
 
     let mut context = Context::new();
     context.insert(
@@ -55,8 +63,11 @@ pub fn render_feed(
     let library = site.library.read().unwrap();
     // limit to the last n elements if the limit is set; otherwise use all.
     let num_entries = site.config.feed_limit.unwrap_or(pages.len());
-    let p =
-        pages.iter().take(num_entries).map(|x| x.to_serialized_basic(&library)).collect::<Vec<_>>();
+    let p = pages
+        .iter()
+        .take(num_entries)
+        .map(|x| x.serialize_without_siblings(&library))
+        .collect::<Vec<_>>();
 
     context.insert("pages", &p);
     context.insert("config", &site.config.serialize(lang));

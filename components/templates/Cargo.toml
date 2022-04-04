@@ -8,10 +8,10 @@ serde = {version = "1.0", features = ["derive"] }
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
-library = { path = "../library" }
+content = { path = "../content" }
 config = { path = "../config" }
 imageproc = { path = "../imageproc" }
-rendering = { path = "../rendering" }
+markdown = { path = "../markdown" }
 libs = { path = "../libs" }
 
 

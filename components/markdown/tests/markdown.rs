@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use libs::tera::Tera;
 
 use config::Config;
-use front_matter::InsertAnchor;
-use rendering::{render_content, RenderContext};
+use markdown::{render_content, RenderContext};
 use templates::ZOLA_TERA;
 use utils::slugs::SlugifyStrategy;
+use utils::types::InsertAnchor;
 
 mod common;
 

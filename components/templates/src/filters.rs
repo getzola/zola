@@ -9,7 +9,7 @@ use libs::tera::{
     to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
     Value,
 };
-use rendering::{render_content, RenderContext};
+use markdown::{render_content, RenderContext};
 
 use crate::load_tera;
 

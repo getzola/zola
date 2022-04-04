@@ -12,12 +12,11 @@ errors = { path = "../errors" }
 config = { path = "../config" }
 utils = { path = "../utils" }
 templates = { path = "../templates" }
-front_matter = { path = "../front_matter" }
 search = { path = "../search" }
 imageproc = { path = "../imageproc" }
-library = { path = "../library" }
 link_checker = { path = "../link_checker" }
 libs = { path = "../libs" }
+content = { path = "../content" }
 
 [dev-dependencies]
 tempfile = "3"

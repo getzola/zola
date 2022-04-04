@@ -7,8 +7,8 @@ use libs::elasticlunr::{Index, Language};
 use libs::once_cell::sync::Lazy;
 
 use config::{Config, Search};
+use content::{Library, Section};
 use errors::{bail, Result};
-use library::{Library, Section};
 
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
 
@@ -137,7 +137,7 @@ pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<Str
 
     let tokenizers = build_tokenizers(&language_options.search, language);
 
-    for section in library.sections_values() {
+    for (_, section) in &library.sections {
         if section.lang == lang {
             add_section_to_index(
                 &mut index,
@@ -179,7 +179,7 @@ fn add_section_to_index(
     }
 
     for key in &section.pages {
-        let page = library.get_page_by_key(*key);
+        let page = &library.pages[key];
         if !page.meta.in_search_index {
             continue;
         }

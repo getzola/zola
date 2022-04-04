@@ -19,7 +19,7 @@ pub struct LanguageOptions {
     /// The filename to use for feeds. Used to find the template, too.
     /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
     pub feed_filename: String,
-    pub taxonomies: Vec<taxonomies::Taxonomy>,
+    pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
     /// Whether to generate search index for that language, defaults to `false`
     pub build_search_index: bool,
     /// The search config, telling what to include in the search index for that language

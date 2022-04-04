@@ -5,7 +5,7 @@ use std::hash::{Hash, Hasher};
 use serde::Serialize;
 
 use config::Config;
-use library::{Library, Taxonomy};
+use content::{Library, Taxonomy};
 use libs::tera::{Map, Value};
 use std::cmp::Ordering;
 
@@ -62,8 +62,8 @@ pub fn find_entries<'a>(
     config: &'a Config,
 ) -> Vec<SitemapEntry<'a>> {
     let pages = library
-        .pages_values()
-        .iter()
+        .pages
+        .values()
         .map(|p| {
             let mut entry = SitemapEntry::new(
                 Cow::Borrowed(&p.permalink),
@@ -75,8 +75,8 @@ pub fn find_entries<'a>(
         .collect::<Vec<_>>();
 
     let mut sections = library
-        .sections_values()
-        .iter()
+        .sections
+        .values()
         .filter(|s| s.meta.render)
         .map(|s| {
             let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), None);
@@ -85,7 +85,7 @@ pub fn find_entries<'a>(
         })
         .collect::<Vec<_>>();
 
-    for section in library.sections_values().iter() {
+    for section in library.sections.values() {
         if let Some(paginate_by) = section.paginate_by() {
             let number_pagers = (section.pages.len() as f64 / paginate_by as f64).ceil() as isize;
             for i in 1..=number_pagers {

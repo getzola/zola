@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 
-use config::Config;
 use errors::{bail, Result};
 
 /// Takes a full path to a file and returns only the components after the first `content` directory
@@ -115,14 +114,18 @@ impl FileInfo {
     /// Look for a language in the filename.
     /// If a language has been found, update the name of the file in this struct to
     /// remove it and return the language code
-    pub fn find_language(&mut self, config: &Config) -> Result<String> {
+    pub fn find_language(
+        &mut self,
+        default_language: &str,
+        other_languages: &[&str],
+    ) -> Result<String> {
         // No languages? Nothing to do
-        if !config.is_multilingual() {
-            return Ok(config.default_language.clone());
+        if other_languages.is_empty() {
+            return Ok(default_language.to_owned());
         }
 
         if !self.name.contains('.') {
-            return Ok(config.default_language.clone());
+            return Ok(default_language.to_owned());
         }
 
         // Go with the assumption that no one is using `.` in filenames when using i18n
@@ -130,13 +133,13 @@ impl FileInfo {
         let mut parts: Vec<String> = self.name.splitn(2, '.').map(|s| s.to_string()).collect();
 
         // If language code is same as default language, go for default
-        if config.default_language == parts[1].as_str() {
-            return Ok(config.default_language.clone());
+        if default_language == parts[1].as_str() {
+            return Ok(default_language.to_owned());
         }
 
         // The language code is not present in the config: typo or the user forgot to add it to the
         // config
-        if !config.other_languages().contains_key(&parts[1].as_ref()) {
+        if !other_languages.contains(&parts[1].as_ref()) {
             bail!("File {:?} has a language code of {} which isn't present in the config.toml `languages`", self.path, parts[1]);
         }
 
@@ -151,8 +154,6 @@ impl FileInfo {
 #[cfg(test)]
 mod tests {
     use std::path::{Path, PathBuf};
-
-    use config::{Config, LanguageOptions};
 
     use super::{find_content_components, FileInfo};
 
@@ -183,77 +184,66 @@ mod tests {
 
     #[test]
     fn can_find_valid_language_in_page() {
-        let mut config = Config::default();
-        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
         );
-        let res = file.find_language(&config);
+        let res = file.find_language("en", &["fr"]);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");
     }
 
     #[test]
     fn can_find_valid_language_with_default_locale() {
-        let mut config = Config::default();
-        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             Path::new("/home/vincent/code/site/content/posts/tutorials/python.en.md"),
             &PathBuf::new(),
         );
-        let res = file.find_language(&config);
+        let res = file.find_language("en", &["fr"]);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), config.default_language);
+        assert_eq!(res.unwrap(), "en");
     }
 
     #[test]
     fn can_find_valid_language_in_page_with_assets() {
-        let mut config = Config::default();
-        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
-        let res = file.find_language(&config);
+        let res = file.find_language("en", &["fr"]);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");
     }
 
     #[test]
     fn do_nothing_on_unknown_language_in_page_with_i18n_off() {
-        let config = Config::default();
         let mut file = FileInfo::new_page(
             Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
         );
-        let res = file.find_language(&config);
+        let res = file.find_language("en", &[]);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), config.default_language);
+        assert_eq!(res.unwrap(), "en");
     }
 
     #[test]
     fn errors_on_unknown_language_in_page_with_i18n_on() {
-        let mut config = Config::default();
-        config.languages.insert("it".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             Path::new("/home/vincent/code/site/content/posts/tutorials/python.fr.md"),
             &PathBuf::new(),
         );
-        let res = file.find_language(&config);
+        let res = file.find_language("en", &["it"]);
         assert!(res.is_err());
     }
 
     #[test]
     fn can_find_valid_language_in_section() {
-        let mut config = Config::default();
-        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_section(
             Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
             &PathBuf::new(),
         );
-        let res = file.find_language(&config);
+        let res = file.find_language("en", &["fr"]);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");
     }
@@ -274,13 +264,11 @@ mod tests {
     /// Regression test for https://github.com/getzola/zola/issues/854
     #[test]
     fn correct_canonical_after_find_language() {
-        let mut config = Config::default();
-        config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut file = FileInfo::new_page(
             Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.fr.md"),
             &PathBuf::new(),
         );
-        let res = file.find_language(&config);
+        let res = file.find_language("en", &["fr"]);
         assert!(res.is_ok());
         assert_eq!(
             file.canonical,

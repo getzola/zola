@@ -6,7 +6,7 @@ use std::path::Path;
 
 pub use crate::config::{
     languages::LanguageOptions, link_checker::LinkChecker, search::Search, slugify::Slugify,
-    taxonomies::Taxonomy, Config,
+    taxonomies::TaxonomyConfig, Config,
 };
 use errors::Result;
 

@@ -17,11 +17,11 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     let library = site.library.write().expect("Get lock for check_internal_links_with_anchors");
 
     // Chain all internal links, from both sections and pages.
-    let page_links = library.pages().values().flat_map(|p| {
+    let page_links = library.pages.values().flat_map(|p| {
         let path = &p.file.path;
         p.internal_links.iter().map(move |l| (path.clone(), l))
     });
-    let section_links = library.sections().values().flat_map(|p| {
+    let section_links = library.sections.values().flat_map(|p| {
         let path = &p.file.path;
         p.internal_links.iter().map(move |l| (path.clone(), l))
     });
@@ -51,14 +51,14 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
         // as well as any other sring containing "_index." which is now referenced as
         // unsupported page path in the docs.
         if md_path.contains("_index.") {
-            let section = library.get_section(&full_path).expect(&format!(
+            let section = library.sections.get(&full_path).expect(&format!(
                 "Couldn't find section {} in check_internal_links_with_anchors from page {:?}",
                 md_path,
                 page.strip_prefix(&site.base_path).unwrap()
             ));
             !section.has_anchor(anchor)
         } else {
-            let page = library.get_page(&full_path).expect(&format!(
+            let page = library.pages.get(&full_path).expect(&format!(
                 "Couldn't find page {} in check_internal_links_with_anchors from page {:?}",
                 md_path,
                 page.strip_prefix(&site.base_path).unwrap()
@@ -128,7 +128,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     let mut checked_links: Vec<LinkDef> = vec![];
     let mut skipped_link_count: u32 = 0;
 
-    for p in library.pages_values().into_iter() {
+    for p in library.pages.values() {
         for external_link in p.clone().external_links.into_iter() {
             if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
                 skipped_link_count += 1;
@@ -139,7 +139,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         }
     }
 
-    for s in library.sections_values().into_iter() {
+    for s in library.sections.values() {
         for external_link in s.clone().external_links.into_iter() {
             if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
                 skipped_link_count += 1;

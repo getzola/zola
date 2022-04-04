@@ -1,21 +1,20 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use libs::slotmap::DefaultKey;
 use libs::tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Context, Result};
-use front_matter::{split_section_content, SectionFrontMatter};
-use rendering::{render_content, Heading, RenderContext};
+use markdown::{render_content, RenderContext};
 use utils::fs::read_file;
-use utils::site::get_reading_analytics;
+use utils::table_of_contents::Heading;
 use utils::templates::{render_template, ShortcodeDefinition};
 
-use crate::content::file_info::FileInfo;
-use crate::content::ser::SerializingSection;
-use crate::content::{find_related_assets, has_anchor};
+use crate::file_info::FileInfo;
+use crate::front_matter::{split_section_content, SectionFrontMatter};
 use crate::library::Library;
+use crate::ser::{SectionSerMode, SerializingSection};
+use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -39,13 +38,13 @@ pub struct Section {
     /// All the non-md files we found next to the .md file as string
     pub serialized_assets: Vec<String>,
     /// All direct pages of that section
-    pub pages: Vec<DefaultKey>,
+    pub pages: Vec<PathBuf>,
     /// All pages that cannot be sorted in this section
-    pub ignored_pages: Vec<DefaultKey>,
-    /// The list of parent sections
-    pub ancestors: Vec<DefaultKey>,
+    pub ignored_pages: Vec<PathBuf>,
+    /// The list of parent sections relative paths
+    pub ancestors: Vec<String>,
     /// All direct subsections
-    pub subsections: Vec<DefaultKey>,
+    pub subsections: Vec<PathBuf>,
     /// Toc made from the headings of the markdown file
     pub toc: Vec<Heading>,
     /// How many words in the raw content
@@ -83,7 +82,9 @@ impl Section {
     ) -> Result<Section> {
         let (meta, content) = split_section_content(file_path, content)?;
         let mut section = Section::new(file_path, meta, base_path);
-        section.lang = section.file.find_language(config)?;
+        section.lang = section
+            .file
+            .find_language(&config.default_language, &config.other_languages_codes())?;
         section.raw_content = content.to_string();
         let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
         section.word_count = Some(word_count);
@@ -159,7 +160,9 @@ impl Section {
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
-        context.tera_context.insert("section", &SerializingSection::from_section_basic(self, None));
+        context
+            .tera_context
+            .insert("section", &SerializingSection::new(self, SectionSerMode::ForMarkdown));
 
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -179,7 +182,7 @@ impl Section {
         context.insert("config", &config.serialize(&self.lang));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
-        context.insert("section", &self.to_serialized(library));
+        context.insert("section", &SerializingSection::new(&self, SectionSerMode::Full(library)));
         context.insert("lang", &self.lang);
 
         render_template(tpl_name, tera, context, &config.theme)
@@ -205,14 +208,6 @@ impl Section {
         has_anchor(&self.toc, anchor)
     }
 
-    pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
-        SerializingSection::from_section(self, library)
-    }
-
-    pub fn to_serialized_basic<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
-        SerializingSection::from_section_basic(self, Some(library))
-    }
-
     pub fn paginate_by(&self) -> Option<usize> {
         match self.meta.paginate_by {
             None => None,
@@ -221,6 +216,14 @@ impl Section {
                 _ => Some(x),
             },
         }
+    }
+
+    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
+        SerializingSection::new(self, SectionSerMode::Full(library))
+    }
+
+    pub fn serialize_basic<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
+        SerializingSection::new(self, SectionSerMode::MetadataOnly(library))
     }
 }
 
