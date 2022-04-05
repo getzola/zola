@@ -3,12 +3,12 @@
 title = "Hikari"
 description = "Fluid, responsive blog theme for Zola"
 template = "theme.html"
-date = 2022-03-29T03:40:07-07:00
+date = 2022-04-05T02:23:02-07:00
 
 [extra]
-created = 2022-03-29T03:40:07-07:00
-updated = 2022-03-29T03:40:07-07:00
-repository = "https://github.com/waynee95/zola-theme-hikari"
+created = 2022-04-05T02:23:02-07:00
+updated = 2022-04-05T02:23:02-07:00
+repository = "https://github.com/waynee95/zola-theme-hikari.git"
 homepage = "https://github.com/waynee95/zola-theme-hikari"
 minimum_version = "0.5.1"
 license = "MIT"
