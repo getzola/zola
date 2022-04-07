@@ -3,12 +3,12 @@
 title = "kodama"
 description = "Theme insipired by wowchemy academic."
 template = "theme.html"
-date = 2022-03-29T03:40:07-07:00
+date = 2022-04-06T19:00:39-07:00
 
 [extra]
-created = 2022-03-29T03:40:07-07:00
-updated = 2022-03-29T03:40:07-07:00
-repository = "https://github.com/adfaure/kodama-theme"
+created = 2022-04-06T19:00:39-07:00
+updated = 2022-04-06T19:00:39-07:00
+repository = "https://github.com/adfaure/kodama-theme.git"
 homepage = "https://github.com/adfaure/kodama-theme"
 minimum_version = "0.15"
 license = "MIT"
