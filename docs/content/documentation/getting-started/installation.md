@@ -88,7 +88,7 @@ $ snap install --edge zola
 ### Docker
 
 Zola is available on [the GitHub registry](https://github.com/getzola/zola/pkgs/container/zola).
-It has no `latest` tag, you will need to specify a [specific version to pull](https://hub.docker.com/r/balthek/zola/tags).
+It has no `latest` tag, you will need to specify a [specific version to pull](https://github.com/getzola/zola/pkgs/container/zola/versions).
 
 ```sh
 $ docker pull ghcr.io/getzola/zola:v0.15.1
