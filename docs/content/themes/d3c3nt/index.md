@@ -3,11 +3,11 @@
 title = "d3c3nt"
 description = "A simple, clean, and flexible theme for personal sites."
 template = "theme.html"
-date = 2022-04-11T13:14:44+08:00
+date = 2022-04-23T22:39:45+02:00
 
 [extra]
-created = 2022-04-11T13:14:44+08:00
-updated = 2022-04-11T13:14:44+08:00
+created = 2022-04-23T22:39:45+02:00
+updated = 2022-04-23T22:39:45+02:00
 repository = "https://git.figbert.com/FIGBERT/d3c3nt.git"
 homepage = "https://github.com/figbert/d3c3nt"
 minimum_version = "0.15.0"
