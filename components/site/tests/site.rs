@@ -19,7 +19,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages().len(), 32);
+    assert_eq!(library.pages().len(), 33);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -596,7 +596,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
         "tags/a/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/tags/a/\""
     ));
-    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 8"));
+    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 9"));
     assert!(file_contains!(public, "tags/a/index.html", "Page size: 2"));
     assert!(file_contains!(public, "tags/a/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
@@ -609,7 +609,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "tags/a/index.html",
-        "Last: https://replace-this-with-your-url.com/tags/a/page/8/"
+        "Last: https://replace-this-with-your-url.com/tags/a/page/9/"
     ));
     assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
 
@@ -774,8 +774,35 @@ fn check_site() {
         site.config.link_checker.skip_anchor_prefixes,
         vec!["https://github.com/rust-lang/rust/blob/"]
     );
+    assert_eq!(
+        site.config.link_checker.skip_prefixes,
+        vec!["http://[2001:db8::]/", "http://invaliddomain"]
+    );
+
+    site.config.enable_check_mode();
+    site.load().expect("link check test_site");
+}
+
+#[test]
+#[should_panic]
+fn panics_on_invalid_external_domain() {
+    let (mut site, _tmp_dir, _public) = build_site("test_site");
+
+    // remove the invalid domain skip prefix
+    let i = site
+        .config
+        .link_checker
+        .skip_prefixes
+        .iter()
+        .position(|prefix| prefix == "http://invaliddomain")
+        .unwrap();
+    site.config.link_checker.skip_prefixes.remove(i);
+
+    // confirm the invalid domain skip prefix was removed
     assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
 
+    // check the test site, this time without the invalid domain skip prefix, which should cause a
+    // panic
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
 }
