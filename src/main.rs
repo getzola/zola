@@ -35,7 +35,7 @@ fn main() {
     match cli.command {
         Command::Init { name, force } => {
             if let Err(e) = cmd::create_new_project(&name, force) {
-                console::unravel_errors("Failed to create the proejct", &e);
+                console::unravel_errors("Failed to create the project", &e);
                 std::process::exit(1);
             }
         }
