@@ -56,9 +56,9 @@ pub fn notify_site_size(site: &Site) {
     let library = site.library.read().unwrap();
     println!(
         "-> Creating {} pages ({} orphan) and {} sections",
-        library.pages().len(),
+        library.pages.len(),
         library.get_all_orphan_pages().len(),
-        library.sections().len() - 1, // -1 since we do not count the index as a section there
+        library.sections.len() - 1, // -1 since we do not count the index as a section there
     );
 }
 
@@ -68,9 +68,9 @@ pub fn check_site_summary(site: &Site) {
     let orphans = library.get_all_orphan_pages();
     println!(
         "-> Site content: {} pages ({} orphan), {} sections",
-        library.pages().len(),
+        library.pages.len(),
         orphans.len(),
-        library.sections().len() - 1, // -1 since we do not count the index as a section there
+        library.sections.len() - 1, // -1 since we do not count the index as a section there
     );
 
     for orphan in orphans {
@@ -82,9 +82,9 @@ pub fn check_site_summary(site: &Site) {
 pub fn warn_about_ignored_pages(site: &Site) {
     let library = site.library.read().unwrap();
     let ignored_pages: Vec<_> = library
-        .sections_values()
-        .iter()
-        .flat_map(|s| s.ignored_pages.iter().map(|k| library.get_page_by_key(*k).file.path.clone()))
+        .sections
+        .values()
+        .flat_map(|s| s.ignored_pages.iter().map(|k| library.pages[k].file.path.clone()))
         .collect();
 
     if !ignored_pages.is_empty() {

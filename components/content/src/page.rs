@@ -4,21 +4,22 @@ use std::path::{Path, PathBuf};
 
 use libs::once_cell::sync::Lazy;
 use libs::regex::Regex;
-use libs::slotmap::DefaultKey;
 use libs::tera::{Context as TeraContext, Tera};
 
-use crate::library::Library;
 use config::Config;
 use errors::{Context, Result};
-use front_matter::{split_page_content, InsertAnchor, PageFrontMatter};
-use rendering::{render_content, Heading, RenderContext};
-use utils::site::get_reading_analytics;
+use markdown::{render_content, RenderContext};
 use utils::slugs::slugify_paths;
+use utils::table_of_contents::Heading;
 use utils::templates::{render_template, ShortcodeDefinition};
+use utils::types::InsertAnchor;
 
-use crate::content::file_info::FileInfo;
-use crate::content::ser::SerializingPage;
-use crate::content::{find_related_assets, has_anchor};
+use crate::file_info::FileInfo;
+use crate::front_matter::{split_page_content, PageFrontMatter};
+use crate::library::Library;
+use crate::ser::SerializingPage;
+use crate::utils::get_reading_analytics;
+use crate::utils::{find_related_assets, has_anchor};
 use utils::fs::read_file;
 use utils::links::has_anchor_id;
 
@@ -38,8 +39,8 @@ pub struct Page {
     pub file: FileInfo,
     /// The front matter meta-data
     pub meta: PageFrontMatter,
-    /// The list of parent sections
-    pub ancestors: Vec<DefaultKey>,
+    /// The list of parent sections relative paths
+    pub ancestors: Vec<String>,
     /// The actual content of the page, in markdown
     pub raw_content: String,
     /// All the non-md files we found next to the .md file
@@ -61,22 +62,10 @@ pub struct Page {
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
     pub summary: Option<String>,
-    /// The earlier updated page, for pages sorted by updated date
-    pub earlier_updated: Option<DefaultKey>,
-    /// The later updated page, for pages sorted by updated date
-    pub later_updated: Option<DefaultKey>,
-    /// The earlier page, for pages sorted by date
-    pub earlier: Option<DefaultKey>,
-    /// The later page, for pages sorted by date
-    pub later: Option<DefaultKey>,
-    /// The previous page, for pages sorted by title
-    pub title_prev: Option<DefaultKey>,
-    /// The next page, for pages sorted by title
-    pub title_next: Option<DefaultKey>,
-    /// The lighter page, for pages sorted by weight
-    pub lighter: Option<DefaultKey>,
-    /// The heavier page, for pages sorted by weight
-    pub heavier: Option<DefaultKey>,
+    /// The previous page when sorting: earlier/earlier_updated/lighter/prev
+    pub lower: Option<PathBuf>,
+    /// The next page when sorting: later/later_updated/heavier/next
+    pub higher: Option<PathBuf>,
     /// Toc made from the headings of the markdown file
     pub toc: Vec<Heading>,
     /// How many words in the raw content
@@ -88,7 +77,7 @@ pub struct Page {
     /// Corresponds to the lang in the {slug}.{lang}.md file scheme
     pub lang: String,
     /// Contains all the translated version of that page
-    pub translations: Vec<DefaultKey>,
+    pub translations: Vec<PathBuf>,
     /// The list of all internal links (as path to markdown file), with optional anchor fragments.
     /// We can only check the anchor after all pages have been built and their ToC compiled.
     /// The page itself should exist otherwise it would have errored before getting there.
@@ -116,7 +105,8 @@ impl Page {
         let (meta, content) = split_page_content(file_path, content)?;
         let mut page = Page::new(file_path, meta, base_path);
 
-        page.lang = page.file.find_language(config)?;
+        page.lang =
+            page.file.find_language(&config.default_language, &config.other_languages_codes())?;
 
         page.raw_content = content.to_string();
         let (word_count, reading_time) = get_reading_analytics(&page.raw_content);
@@ -201,6 +191,8 @@ impl Page {
         Ok(page)
     }
 
+    pub fn find_language(&mut self) {}
+
     /// Read and parse a .md file into a Page struct
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config, base_path: &Path) -> Result<Page> {
         let path = path.as_ref();
@@ -238,7 +230,7 @@ impl Page {
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
-        context.tera_context.insert("page", &SerializingPage::from_page_basic(self, None));
+        context.tera_context.insert("page", &SerializingPage::new(self, None, false));
 
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
@@ -266,7 +258,7 @@ impl Page {
         context.insert("config", &config.serialize(&self.lang));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
-        context.insert("page", &self.to_serialized(library));
+        context.insert("page", &self.serialize(library));
         context.insert("lang", &self.lang);
 
         render_template(tpl_name, tera, context, &config.theme)
@@ -303,12 +295,12 @@ impl Page {
         has_anchor_id(&self.content, id)
     }
 
-    pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
-        SerializingPage::from_page(self, library)
+    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
+        SerializingPage::new(self, Some(library), true)
     }
 
-    pub fn to_serialized_basic<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
-        SerializingPage::from_page_basic(self, Some(library))
+    pub fn serialize_without_siblings<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
+        SerializingPage::new(self, Some(library), false)
     }
 }
 
@@ -323,10 +315,10 @@ mod tests {
     use libs::tera::Tera;
     use tempfile::tempdir;
 
-    use super::Page;
+    use crate::Page;
     use config::{Config, LanguageOptions};
-    use front_matter::InsertAnchor;
     use utils::slugs::SlugifyStrategy;
+    use utils::types::InsertAnchor;
 
     #[test]
     fn can_parse_a_valid_page() {

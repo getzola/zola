@@ -1,17 +1,17 @@
+use config::Config;
+use serde::Serialize;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
-use libs::slotmap::DefaultKey;
-use libs::tera::{to_value, Context, Tera, Value};
-use serde::Serialize;
-
-use config::Config;
 use errors::{Context as ErrorContext, Result};
+use libs::tera::{to_value, Context, Tera, Value};
 use utils::templates::{check_template_fallbacks, render_template};
 
-use crate::content::{Section, SerializingPage, SerializingSection};
 use crate::library::Library;
+use crate::ser::{SectionSerMode, SerializingPage, SerializingSection};
 use crate::taxonomies::{Taxonomy, TaxonomyItem};
+use crate::Section;
 
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
@@ -25,11 +25,11 @@ pub struct Pager<'a> {
     /// The page number in the paginator (1-indexed)
     pub index: usize,
     /// Permalink to that page
-    permalink: String,
+    pub permalink: String,
     /// Path to that page
-    path: String,
+    pub path: String,
     /// All pages for the pager
-    pages: Vec<SerializingPage<'a>>,
+    pub pages: Vec<SerializingPage<'a>>,
 }
 
 impl<'a> Pager<'a> {
@@ -46,7 +46,7 @@ impl<'a> Pager<'a> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Paginator<'a> {
     /// All pages in the section/taxonomy
-    all_pages: Cow<'a, [DefaultKey]>,
+    all_pages: Cow<'a, [PathBuf]>,
     /// Pages split in chunks of `paginate_by`
     pub pagers: Vec<Pager<'a>>,
     /// How many content pages on a paginated page at max
@@ -69,12 +69,11 @@ impl<'a> Paginator<'a> {
     /// It will always at least create one pager (the first) even if there are not enough pages to paginate
     pub fn from_section(section: &'a Section, library: &'a Library) -> Paginator<'a> {
         let paginate_by = section.meta.paginate_by.unwrap();
-        let paginate_reversed = section.meta.paginate_reversed;
         let mut paginator = Paginator {
             all_pages: Cow::from(&section.pages[..]),
             pagers: Vec::with_capacity(section.pages.len() / paginate_by),
             paginate_by,
-            paginate_reversed,
+            paginate_reversed: section.meta.paginate_reversed,
             root: PaginationRoot::Section(section),
             permalink: section.permalink.clone(),
             path: section.path.clone(),
@@ -133,9 +132,9 @@ impl<'a> Paginator<'a> {
             self.all_pages.to_mut().reverse();
         }
 
-        for key in self.all_pages.to_mut().iter_mut() {
-            let page = library.get_page_by_key(*key);
-            current_page.push(page.to_serialized_basic(library));
+        for p in &*self.all_pages {
+            let page = &library.pages[p];
+            current_page.push(SerializingPage::new(page, Some(library), false));
 
             if current_page.len() == self.paginate_by {
                 pages.push(current_page);
@@ -230,8 +229,10 @@ impl<'a> Paginator<'a> {
         let mut context = Context::new();
         match self.root {
             PaginationRoot::Section(s) => {
-                context
-                    .insert("section", &SerializingSection::from_section_basic(s, Some(library)));
+                context.insert(
+                    "section",
+                    &SerializingSection::new(s, SectionSerMode::MetadataOnly(library)),
+                );
                 context.insert("lang", &s.lang);
                 context.insert("config", &config.serialize(&s.lang));
             }
@@ -253,18 +254,12 @@ impl<'a> Paginator<'a> {
 
 #[cfg(test)]
 mod tests {
-    use libs::tera::{to_value, Tera};
-    use std::path::PathBuf;
-
-    use crate::content::{Page, Section};
-    use crate::library::Library;
-    use crate::taxonomies::{Taxonomy, TaxonomyItem};
-    use config::Taxonomy as TaxonomyConfig;
-
-    use super::Paginator;
+    use super::*;
+    use crate::{Page, SectionFrontMatter};
+    use config::TaxonomyConfig;
 
     fn create_section(is_index: bool, paginate_reversed: bool) -> Section {
-        let f = front_matter::SectionFrontMatter {
+        let f = SectionFrontMatter {
             paginate_by: Some(2),
             paginate_path: "page".to_string(),
             paginate_reversed,
@@ -275,9 +270,11 @@ mod tests {
         if !is_index {
             s.path = "/posts/".to_string();
             s.permalink = "https://vincent.is/posts/".to_string();
+            s.file.path = PathBuf::from("posts/_index.md");
             s.file.components = vec!["posts".to_string()];
         } else {
             s.path = "/".into();
+            s.file.path = PathBuf::from("_index.md");
             s.permalink = "https://vincent.is/".to_string();
         }
         s
@@ -288,89 +285,64 @@ mod tests {
         num_pages: usize,
         paginate_reversed: bool,
     ) -> (Section, Library) {
-        let mut library = Library::new(num_pages, 0, false);
+        let mut library = Library::new();
         for i in 1..=num_pages {
             let mut page = Page::default();
             page.meta.title = Some(i.to_string());
+            page.file.path = PathBuf::from(&format!("{}.md", i));
             library.insert_page(page);
         }
 
-        let mut draft = Page::default();
-        draft.meta.draft = true;
-        library.insert_page(draft);
         let mut section = create_section(is_index, paginate_reversed);
-        section.pages = library.pages().keys().collect();
+        section.pages = library.pages.keys().cloned().collect();
+        section.pages.sort();
         library.insert_section(section.clone());
 
         (section, library)
     }
 
     #[test]
-    fn test_can_create_paginator() {
+    fn test_can_create_section_paginator() {
         let (section, library) = create_library(false, 3, false);
         let paginator = Paginator::from_section(&section, &library);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
+        assert_eq!(paginator.pagers[0].pages[0].title.clone().unwrap(), "1");
+        assert_eq!(paginator.pagers[0].pages[1].title.clone().unwrap(), "2");
         assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts/");
         assert_eq!(paginator.pagers[0].path, "/posts/");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages[0].title.clone().unwrap(), "3");
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2/");
         assert_eq!(paginator.pagers[1].path, "/posts/page/2/");
     }
 
     #[test]
-    fn test_can_create_reversed_paginator() {
-        // 6 pages, 5 normal and 1 draft
-        let (section, library) = create_library(false, 5, true);
+    fn test_can_create_reversed_section_paginator() {
+        let (section, library) = create_library(false, 3, true);
         let paginator = Paginator::from_section(&section, &library);
-        assert_eq!(paginator.pagers.len(), 3);
+        assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);
         assert_eq!(paginator.pagers[0].pages.len(), 2);
+        assert_eq!(paginator.pagers[0].pages[0].title.clone().unwrap(), "3");
+        assert_eq!(paginator.pagers[0].pages[1].title.clone().unwrap(), "2");
         assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/posts/");
         assert_eq!(paginator.pagers[0].path, "/posts/");
-        assert_eq!(
-            vec!["".to_string(), "5".to_string()],
-            paginator.pagers[0]
-                .pages
-                .iter()
-                .map(|p| p.get_title().as_ref().unwrap_or(&"".to_string()).to_string())
-                .collect::<Vec<String>>()
-        );
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 1);
+        assert_eq!(paginator.pagers[1].pages[0].title.clone().unwrap(), "1");
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/page/2/");
         assert_eq!(paginator.pagers[1].path, "/posts/page/2/");
-        assert_eq!(
-            vec!["4".to_string(), "3".to_string()],
-            paginator.pagers[1]
-                .pages
-                .iter()
-                .map(|p| p.get_title().as_ref().unwrap_or(&"".to_string()).to_string())
-                .collect::<Vec<String>>()
-        );
-
-        assert_eq!(paginator.pagers[2].index, 3);
-        assert_eq!(paginator.pagers[2].pages.len(), 2);
-        assert_eq!(paginator.pagers[2].permalink, "https://vincent.is/posts/page/3/");
-        assert_eq!(paginator.pagers[2].path, "/posts/page/3/");
-        assert_eq!(
-            vec!["2".to_string(), "1".to_string()],
-            paginator.pagers[2]
-                .pages
-                .iter()
-                .map(|p| p.get_title().as_ref().unwrap_or(&"".to_string()).to_string())
-                .collect::<Vec<String>>()
-        );
     }
 
     #[test]
-    fn test_can_create_paginator_for_index() {
+    fn can_create_paginator_for_index() {
         let (section, library) = create_library(true, 3, false);
         let paginator = Paginator::from_section(&section, &library);
         assert_eq!(paginator.pagers.len(), 2);
@@ -381,7 +353,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "/");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 1);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/page/2/");
         assert_eq!(paginator.pagers[1].path, "/page/2/");
     }
@@ -399,6 +371,7 @@ mod tests {
         assert_eq!(context["previous"], to_value::<Option<()>>(None).unwrap());
         assert_eq!(context["next"], to_value("https://vincent.is/posts/page/2/").unwrap());
         assert_eq!(context["current_index"], to_value(1).unwrap());
+        assert_eq!(context["pages"].as_array().unwrap().len(), 2);
 
         let context = paginator.build_paginator_context(&paginator.pagers[1]);
         assert_eq!(context["paginate_by"], to_value(2).unwrap());
@@ -407,48 +380,12 @@ mod tests {
         assert_eq!(context["next"], to_value::<Option<()>>(None).unwrap());
         assert_eq!(context["previous"], to_value("https://vincent.is/posts/").unwrap());
         assert_eq!(context["current_index"], to_value(2).unwrap());
-        assert_eq!(context["total_pages"], to_value(4).unwrap());
+        assert_eq!(context["total_pages"], to_value(3).unwrap());
+        assert_eq!(context["pages"].as_array().unwrap().len(), 1);
     }
 
     #[test]
     fn test_can_create_paginator_for_taxonomy() {
-        let (_, library) = create_library(false, 3, false);
-        let tera = Tera::default();
-        let taxonomy_def = TaxonomyConfig {
-            name: "tags".to_string(),
-            paginate_by: Some(2),
-            ..TaxonomyConfig::default()
-        };
-        let taxonomy_item = TaxonomyItem {
-            name: "Something".to_string(),
-            slug: "something".to_string(),
-            path: "/tags/something".to_string(),
-            permalink: "https://vincent.is/tags/something/".to_string(),
-            pages: library.pages().keys().collect(),
-        };
-        let taxonomy = Taxonomy {
-            kind: taxonomy_def,
-            lang: "en".to_owned(),
-            slug: "tags".to_string(),
-            permalink: "/tags/".to_string(),
-            items: vec![taxonomy_item.clone()],
-        };
-        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library, &tera, &None);
-        assert_eq!(paginator.pagers.len(), 2);
-
-        assert_eq!(paginator.pagers[0].index, 1);
-        assert_eq!(paginator.pagers[0].pages.len(), 2);
-        assert_eq!(paginator.pagers[0].permalink, "https://vincent.is/tags/something/");
-        assert_eq!(paginator.pagers[0].path, "/tags/something/");
-
-        assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 2);
-        assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/tags/something/page/2/");
-        assert_eq!(paginator.pagers[1].path, "/tags/something/page/2/");
-    }
-
-    #[test]
-    fn test_can_create_paginator_for_slugified_taxonomy() {
         let (_, library) = create_library(false, 3, false);
         let tera = Tera::default();
         let taxonomy_def = TaxonomyConfig {
@@ -461,7 +398,7 @@ mod tests {
             slug: "something".to_string(),
             path: "/some-tags/something/".to_string(),
             permalink: "https://vincent.is/some-tags/something/".to_string(),
-            pages: library.pages().keys().collect(),
+            pages: library.pages.keys().cloned().collect(),
         };
         let taxonomy = Taxonomy {
             kind: taxonomy_def,
@@ -479,7 +416,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "/some-tags/something/");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 1);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/some-tags/something/page/2/");
         assert_eq!(paginator.pagers[1].path, "/some-tags/something/page/2/");
     }
@@ -498,7 +435,7 @@ mod tests {
         assert_eq!(paginator.pagers[0].path, "/posts/");
 
         assert_eq!(paginator.pagers[1].index, 2);
-        assert_eq!(paginator.pagers[1].pages.len(), 2);
+        assert_eq!(paginator.pagers[1].pages.len(), 1);
         assert_eq!(paginator.pagers[1].permalink, "https://vincent.is/posts/2/");
         assert_eq!(paginator.pagers[1].path, "/posts/2/");
 

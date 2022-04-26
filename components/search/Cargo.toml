@@ -5,6 +5,6 @@ edition = "2021"
 
 [dependencies]
 errors = { path = "../errors" }
-library = { path = "../library" }
+content = { path = "../content" }
 config = { path = "../config" }
 libs = { path = "../libs" }

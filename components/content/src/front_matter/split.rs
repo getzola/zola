@@ -1,17 +1,12 @@
 use std::path::Path;
 
-use libs::once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
-
 use errors::{bail, Context, Result};
+use libs::once_cell::sync::Lazy;
 use libs::regex::Regex;
 use libs::{serde_yaml, toml};
 
-mod page;
-mod section;
-
-pub use page::PageFrontMatter;
-pub use section::SectionFrontMatter;
+use crate::front_matter::page::PageFrontMatter;
+use crate::front_matter::section::SectionFrontMatter;
 
 static TOML_RE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
@@ -31,7 +26,7 @@ pub enum RawFrontMatter<'a> {
 }
 
 impl RawFrontMatter<'_> {
-    fn deserialize<T>(&self) -> Result<T>
+    pub(crate) fn deserialize<T>(&self) -> Result<T>
     where
         T: serde::de::DeserializeOwned,
     {
@@ -44,29 +39,6 @@ impl RawFrontMatter<'_> {
         };
         Ok(f)
     }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum SortBy {
-    /// Most recent to oldest
-    Date,
-    /// Most recent to oldest
-    UpdateDate,
-    /// Sort by title
-    Title,
-    /// Lower weight comes first
-    Weight,
-    /// No sorting
-    None,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum InsertAnchor {
-    Left,
-    Right,
-    None,
 }
 
 /// Split a file between the front matter and its content

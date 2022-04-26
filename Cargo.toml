@@ -39,7 +39,7 @@ mime_guess = "2.0"
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }
-front_matter = { path = "components/front_matter" }
+content = { path = "components/content" }
 utils = { path = "components/utils" }
 search = { path = "components/search" }
 libs = { path = "components/libs" }

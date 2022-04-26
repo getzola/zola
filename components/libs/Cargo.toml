@@ -4,46 +4,48 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tera = { version = "1", features = ["preserve_order"] }
-toml = "0.5"
-csv = "1"
-base64 = "0.13"
-serde_json = "1"
-serde_yaml = "0.8"
-quickxml_to_serde = "0.5"
-url = "2"
-syntect = "4"
-once_cell = "1"
-globset = "0.4"
-unic-langid = "0.9"
-image = "0.24"
-regex = "1"
-time = { version = "0.3" }
-rayon = "1"
-webp = "0.2"
-svg_metadata = "0.4"
-slotmap = "1"
-lexical-sort = "0.3"
-walkdir = "2"
-pulldown-cmark = { version = "0.9", default-features = false, features = ["simd"]  }
-gh-emoji = "1"
-elasticlunr-rs = {version = "2", default-features = false, features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
+ahash = "0.7.6"
 ammonia = "3"
+base64 = "0.13"
+csv = "1"
+elasticlunr-rs = {version = "2", default-features = false, features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
+filetime = "0.2"
+gh-emoji = "1"
+glob = "0.3"
+globset = "0.4"
+image = "0.24"
+lexical-sort = "0.3"
+minify-html = "0.8"
 nom-bibtex = "0.3"
 num-format = "0.4"
-sha2 = "0.10"
-unicode-segmentation = "1.2"
-slug = "0.1"
+once_cell = "1"
 percent-encoding = "2"
-filetime = "0.2"
-minify-html = "0.8"
-reqwest = {version = "0.11", default-features = false, features = ["blocking"]}
-sass-rs = "0.2"
+pulldown-cmark = { version = "0.9", default-features = false, features = ["simd"]  }
+quickxml_to_serde = "0.5"
+rayon = "1"
+regex = "1"
 relative-path = "1"
-glob = "0.3"
+reqwest = { version = "0.11", default-features = false, features = ["blocking"] }
+sass-rs = "0.2"
+serde_json = "1"
+serde_yaml = "0.8"
+sha2 = "0.10"
+slug = "0.1"
+svg_metadata = "0.4"
+syntect = "4"
+tera = { version = "1", features = ["preserve_order"] }
+time = "0.3"
+toml = "0.5"
+unic-langid = "0.9"
+unicode-segmentation = "1.2"
+url = "2"
+walkdir = "2"
+webp = "0.2"
 
 
 [features]
+# TODO: fix me, it doesn't pick up the reqwuest feature if not set as default
+default = ["rust-tls"]
 rust-tls = ["reqwest/rustls-tls"]
 native-tls = ["reqwest/default-tls"]
 indexing-zh = ["elasticlunr-rs/zh"]

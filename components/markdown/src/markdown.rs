@@ -6,12 +6,12 @@ use libs::pulldown_cmark as cmark;
 use libs::tera;
 
 use crate::context::RenderContext;
-use crate::table_of_contents::{make_table_of_contents, Heading};
 use errors::{anyhow, Context, Error, Result};
-use front_matter::InsertAnchor;
 use libs::pulldown_cmark::escape::escape_html;
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
+use utils::table_of_contents::{make_table_of_contents, Heading};
+use utils::types::InsertAnchor;
 use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};

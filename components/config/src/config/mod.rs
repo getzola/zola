@@ -56,7 +56,7 @@ pub struct Config {
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
 
-    pub taxonomies: Vec<taxonomies::Taxonomy>,
+    pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
@@ -99,7 +99,7 @@ pub struct SerializedConfig<'a> {
     default_language: &'a str,
     generate_feed: bool,
     feed_filename: &'a str,
-    taxonomies: &'a [taxonomies::Taxonomy],
+    taxonomies: &'a [taxonomies::TaxonomyConfig],
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
 }
@@ -244,6 +244,10 @@ impl Config {
             others.insert(k.as_str(), v);
         }
         others
+    }
+
+    pub fn other_languages_codes(&self) -> Vec<&str> {
+        self.languages.keys().filter(|k| *k != &self.default_language).map(|k| k.as_str()).collect()
     }
 
     /// Is this site using i18n?

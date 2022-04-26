@@ -43,6 +43,7 @@ pub fn check_url(url: &str, config: &LinkChecker) -> Result {
     headers.insert(ACCEPT, "text/html".parse().unwrap());
     headers.append(ACCEPT, "*/*".parse().unwrap());
 
+    // TODO: pass the client to the check_url, do not pass the config
     let client = Client::builder()
         .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
         .build()

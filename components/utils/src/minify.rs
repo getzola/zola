@@ -1,6 +1,8 @@
 use errors::{bail, Result};
 use libs::minify_html::{minify, Cfg};
 
+// TODO: move to site
+
 pub fn html(html: String) -> Result<String> {
     let mut cfg = Cfg::spec_compliant();
     cfg.keep_html_and_head_opening_tags = true;

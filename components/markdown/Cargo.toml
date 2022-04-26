@@ -1,14 +1,20 @@
 [package]
-name = "front_matter"
+name = "markdown"
 version = "0.1.0"
 edition = "2021"
+include = ["src/**/*"]
 
 [dependencies]
 serde = {version = "1.0", features = ["derive"] }
-time = { version = "0.3", features = ["macros"] }
+pest = "2"
+pest_derive = "2"
+
 errors = { path = "../errors" }
 utils = { path = "../utils" }
+config = { path = "../config" }
+link_checker = { path = "../link_checker" }
 libs = { path = "../libs" }
 
 [dev-dependencies]
-test-case = "2"  # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
+templates = { path = "../templates" }
+insta = "1.12.0"

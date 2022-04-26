@@ -4,6 +4,7 @@
 //! to define features, it is done in a single place.
 //! It doesn't work for crates exporting macros like `serde` or dev deps but that's ok for most.
 
+pub use ahash;
 pub use ammonia;
 pub use base64;
 pub use csv;
@@ -29,7 +30,6 @@ pub use sass_rs;
 pub use serde_json;
 pub use serde_yaml;
 pub use sha2;
-pub use slotmap;
 pub use slug;
 pub use svg_metadata;
 pub use syntect;

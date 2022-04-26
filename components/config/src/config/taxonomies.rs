@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
-pub struct Taxonomy {
+pub struct TaxonomyConfig {
     /// The name used in the URL, usually the plural
     pub name: String,
     /// If this is set, the list of individual taxonomy term page will be paginated
@@ -13,7 +13,7 @@ pub struct Taxonomy {
     pub feed: bool,
 }
 
-impl Taxonomy {
+impl TaxonomyConfig {
     pub fn is_paginated(&self) -> bool {
         if let Some(paginate_by) = self.paginate_by {
             paginate_by > 0

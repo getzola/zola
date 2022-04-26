@@ -2,16 +2,14 @@ mod codeblock;
 mod context;
 mod markdown;
 mod shortcode;
-mod table_of_contents;
 
 use shortcode::{extract_shortcodes, insert_md_shortcodes};
 
 use errors::Result;
 
+use crate::markdown::markdown_to_html;
+pub use crate::markdown::Rendered;
 pub use context::RenderContext;
-use markdown::markdown_to_html;
-pub use markdown::Rendered;
-pub use table_of_contents::Heading;
 
 pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown::Rendered> {
     // avoid parsing the content if needed

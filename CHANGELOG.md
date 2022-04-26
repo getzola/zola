@@ -6,6 +6,7 @@
 
 - Switch to pulldown-cmark anchor rather than ours, some (very niche) edge cases are not supported anymore, you can
 also specify classes on headers now
+- Now outputs empty taxonomies instead of ignoring them
 
 ### Other
 - Fix markup for fenced code with linenos

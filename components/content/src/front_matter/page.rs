@@ -9,7 +9,7 @@ use time::{Date, OffsetDateTime, PrimitiveDateTime};
 use errors::{bail, Result};
 use utils::de::{fix_toml_dates, from_toml_datetime};
 
-use crate::RawFrontMatter;
+use crate::front_matter::split::RawFrontMatter;
 
 /// The front matter of every page
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -131,6 +131,7 @@ impl PageFrontMatter {
 impl Default for PageFrontMatter {
     fn default() -> PageFrontMatter {
         PageFrontMatter {
+            in_search_index: true,
             title: None,
             description: None,
             updated: None,
@@ -145,7 +146,6 @@ impl Default for PageFrontMatter {
             taxonomies: HashMap::new(),
             weight: None,
             aliases: Vec::new(),
-            in_search_index: true,
             template: None,
             extra: Map::new(),
         }
@@ -154,8 +154,8 @@ impl Default for PageFrontMatter {
 
 #[cfg(test)]
 mod tests {
-    use super::PageFrontMatter;
-    use super::RawFrontMatter;
+    use crate::front_matter::page::PageFrontMatter;
+    use crate::front_matter::split::RawFrontMatter;
     use libs::tera::to_value;
     use test_case::test_case;
     use time::macros::datetime;
