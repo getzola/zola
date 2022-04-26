@@ -1,6 +1,7 @@
 use core::time;
 use std::{collections::HashMap, path::PathBuf, thread};
 
+use config::LinkCheckerLevel;
 use libs::rayon::prelude::*;
 
 use crate::{anyhow, Site};
@@ -95,7 +96,19 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
                 "> Checked {} internal link(s) with anchors: {} target(s) missing.",
                 anchors_total, errors_total,
             );
-            Err(anyhow!(errors.join("\n")))
+
+            match site.config.link_checker.internal_level {
+                LinkCheckerLevel::ErrorLevel => Err(anyhow!(errors
+                    .join(format!("\n{}", LinkCheckerLevel::ErrorLevel.log_prefix()).as_str()))),
+                LinkCheckerLevel::WarnLevel => {
+                    for err in errors {
+                        console::warn(
+                            format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), err).as_str(),
+                        );
+                    }
+                    Ok(())
+                }
+            }
         }
     }
 }
@@ -104,27 +117,32 @@ fn should_skip_by_prefix(link: &str, skip_prefixes: &[String]) -> bool {
     skip_prefixes.iter().any(|prefix| link.starts_with(prefix))
 }
 
-fn get_link_domain(link: &str) -> Result<String> {
+fn get_link_domain(link: &str) -> Result<String, String> {
     return match Url::parse(link) {
         Ok(url) => match url.host_str().map(String::from) {
             Some(domain_str) => Ok(domain_str),
-            None => bail!("could not parse domain `{}` from link", link),
+            None => Err(format!("could not parse domain `{}` from link", link)),
         },
-        Err(err) => bail!("could not parse domain `{}` from link: `{}`", link, err),
+        Err(err) => Err(format!("could not parse domain `{}` from link: `{}`", link, err)),
     };
 }
 
 pub fn check_external_links(site: &Site) -> Result<()> {
     let library = site.library.write().expect("Get lock for check_external_links");
 
+    #[derive(Debug)]
     struct LinkDef {
         file_path: PathBuf,
         external_link: String,
-        domain: String,
+        domain: Result<String, String>,
     }
 
     impl LinkDef {
-        pub fn new(file_path: PathBuf, external_link: String, domain: String) -> Self {
+        pub fn new(
+            file_path: PathBuf,
+            external_link: String,
+            domain: Result<String, String>,
+        ) -> Self {
             Self { file_path, external_link, domain }
         }
     }
@@ -137,7 +155,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
                 skipped_link_count += 1;
             } else {
-                let domain = get_link_domain(&external_link)?;
+                let domain = get_link_domain(&external_link);
                 checked_links.push(LinkDef::new(p.file.path.clone(), external_link, domain));
             }
         }
@@ -148,24 +166,61 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
                 skipped_link_count += 1;
             } else {
-                let domain = get_link_domain(&external_link)?;
+                let domain = get_link_domain(&external_link);
                 checked_links.push(LinkDef::new(s.file.path.clone(), external_link, domain));
             }
         }
     }
 
+    // separate the links with valid domains from the links with invalid domains
+    let (checked_links, invalid_url_links): (Vec<&LinkDef>, Vec<&LinkDef>) =
+        checked_links.iter().partition(|link| link.domain.is_ok());
+
+    // get any domains that failed to parse and log them at the configured log level
+    let invalid_link_errs: Vec<String> = invalid_url_links
+        .iter()
+        .map(|link: &&LinkDef| link.domain.as_ref().unwrap_err().clone())
+        .collect();
+
     println!(
-        "Checking {} external link(s).  Skipping {} external link(s).",
+        "Checking {} external link(s). Skipping {} external link(s).{}",
         checked_links.len(),
-        skipped_link_count
+        skipped_link_count,
+        if invalid_link_errs.is_empty() {
+            "".to_string()
+        } else {
+            format!(" {} link(s) had unparseable URLs.", invalid_link_errs.len())
+        }
     );
+
+    if !invalid_link_errs.is_empty() {
+        match site.config.link_checker.external_level {
+            // panic if the link checker level is set to error.  bail! can only take one error
+            // message, and it prefixes "Error: ", but we may have accumulated many errors, and it
+            // loos weird if only the first line says "Error: ", so we use join() here to add the
+            // ErrorLevel's log_prefix to each line.
+            LinkCheckerLevel::ErrorLevel => bail!(
+                "{}",
+                invalid_link_errs
+                    .join(format!("\n{}", LinkCheckerLevel::ErrorLevel.log_prefix()).as_str())
+            ),
+            LinkCheckerLevel::WarnLevel => {
+                for err in invalid_link_errs {
+                    console::warn(
+                        format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), err).as_str(),
+                    )
+                }
+            }
+        }
+    }
 
     let mut links_by_domain: HashMap<String, Vec<&LinkDef>> = HashMap::new();
 
     for link in checked_links.iter() {
-        links_by_domain.entry(link.domain.to_string()).or_default();
+        let domain = link.domain.as_ref().unwrap();
+        links_by_domain.entry(domain.to_string()).or_default();
         // Insert content path and link under the domain key
-        links_by_domain.get_mut(&link.domain).unwrap().push(link);
+        links_by_domain.get_mut(domain).unwrap().push(link);
     }
 
     if checked_links.is_empty() {
@@ -231,7 +286,13 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             )
         })
         .collect::<Vec<_>>()
-        .join("\n");
+        .join(format!("\n{}", site.config.link_checker.external_level.log_prefix()).as_str());
 
-    Err(anyhow!(msg))
+    match site.config.link_checker.external_level {
+        LinkCheckerLevel::ErrorLevel => Err(anyhow!(msg)),
+        LinkCheckerLevel::WarnLevel => {
+            console::warn(format!("Warning: {}", msg).as_str());
+            Ok(())
+        }
+    }
 }

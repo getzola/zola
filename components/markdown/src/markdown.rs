@@ -139,7 +139,27 @@ fn fix_link(
                 resolved.permalink
             }
             Err(_) => {
-                return Err(anyhow!("Relative link {} not found.", link));
+                match context.config.link_checker.internal_level {
+                    config::LinkCheckerLevel::ErrorLevel => {
+                        return Err(anyhow!(
+                            "Dead relative link `{}` in {}",
+                            link,
+                            context.current_page_path.unwrap_or("unknown"),
+                        ))
+                    }
+                    config::LinkCheckerLevel::WarnLevel => {
+                        console::warn(
+                            format!(
+                                "{}Dead relative link `{}` in {}",
+                                config::LinkCheckerLevel::WarnLevel.log_prefix(),
+                                link,
+                                context.current_page_path.unwrap_or("unknown"),
+                            )
+                            .as_str(),
+                        );
+                        link.to_string() // TODO rendering the broken internal relative link may not be optimal, what href should be rendered to HTML when relative links are invalid but we're in warn mode?
+                    }
+                }
             }
         }
     } else if is_external_link(link) {

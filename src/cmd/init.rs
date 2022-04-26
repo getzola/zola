@@ -4,7 +4,6 @@ use std::path::Path;
 use errors::{bail, Result};
 use utils::fs::create_file;
 
-use crate::console;
 use crate::prompt::{ask_bool, ask_url};
 
 const CONFIG: &str = r#"

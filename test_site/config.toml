@@ -22,6 +22,8 @@ taxonomies = "on"
 anchors = "on"
 
 [link_checker]
+internal_level = "error"
+external_level = "error"
 skip_prefixes = [
     "http://[2001:db8::]/",
     "http://invaliddomain",

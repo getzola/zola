@@ -11,6 +11,7 @@ pest_derive = "2"
 errors = { path = "../errors" }
 utils = { path = "../utils" }
 config = { path = "../config" }
+console = { path = "../console" }
 libs = { path = "../libs" }
 
 [dev-dependencies]

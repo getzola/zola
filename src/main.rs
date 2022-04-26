@@ -9,7 +9,7 @@ use time::UtcOffset;
 
 mod cli;
 mod cmd;
-mod console;
+mod messages;
 mod prompt;
 
 fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
@@ -35,7 +35,7 @@ fn main() {
     match cli.command {
         Command::Init { name, force } => {
             if let Err(e) = cmd::create_new_project(&name, force) {
-                console::unravel_errors("Failed to create the project", &e);
+                messages::unravel_errors("Failed to create the project", &e);
                 std::process::exit(1);
             }
         }
@@ -50,9 +50,9 @@ fn main() {
                 output_dir.as_deref(),
                 drafts,
             ) {
-                Ok(()) => console::report_elapsed_time(start),
+                Ok(()) => messages::report_elapsed_time(start),
                 Err(e) => {
-                    console::unravel_errors("Failed to build the site", &e);
+                    messages::unravel_errors("Failed to build the site", &e);
                     std::process::exit(1);
                 }
             }
@@ -84,7 +84,7 @@ fn main() {
                 fast,
                 UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
             ) {
-                console::unravel_errors("Failed to serve the site", &e);
+                messages::unravel_errors("Failed to serve the site", &e);
                 std::process::exit(1);
             }
         }
@@ -93,9 +93,9 @@ fn main() {
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
             match cmd::check(&root_dir, &config_file, None, None, drafts) {
-                Ok(()) => console::report_elapsed_time(start),
+                Ok(()) => messages::report_elapsed_time(start),
                 Err(e) => {
-                    console::unravel_errors("Failed to check the site", &e);
+                    messages::unravel_errors("Failed to check the site", &e);
                     std::process::exit(1);
                 }
             }

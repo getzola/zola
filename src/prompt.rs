@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use libs::url::Url;
 
-use crate::console;
 use errors::{anyhow, Result};
 
 /// Wait for user input and return what they typed
