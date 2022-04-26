@@ -12,7 +12,7 @@ mod cmd;
 mod console;
 mod prompt;
 
-fn get_config_file_path(dir: &PathBuf, config_path: &Path) -> (PathBuf, PathBuf) {
+fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
     let root_dir = dir
         .ancestors()
         .find_map(|a| if a.join(&config_path).exists() { Some(a) } else { None })

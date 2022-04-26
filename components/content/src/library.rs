@@ -9,7 +9,7 @@ use crate::sorting::sort_pages;
 use crate::taxonomies::{find_taxonomies, Taxonomy};
 use crate::{Page, Section, SortBy};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Library {
     pub pages: AHashMap<PathBuf, Page>,
     pub sections: AHashMap<PathBuf, Section>,
@@ -21,13 +21,7 @@ pub struct Library {
 
 impl Library {
     pub fn new() -> Self {
-        Self {
-            pages: AHashMap::new(),
-            sections: AHashMap::new(),
-            taxonomies: Vec::new(),
-            reverse_aliases: AHashMap::new(),
-            translations: AHashMap::new(),
-        }
+        Self::default()
     }
 
     fn insert_reverse_aliases(&mut self, file_path: &Path, entries: Vec<String>) {

@@ -12,7 +12,6 @@ use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
 use utils::table_of_contents::{make_table_of_contents, Heading};
 use utils::types::InsertAnchor;
-use utils::vec::InsertMany;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag};
 use crate::codeblock::{CodeBlock, FenceSettings};
@@ -21,6 +20,27 @@ use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
+
+
+/// Efficiently insert multiple element in their specified index.
+/// The elements should sorted in ascending order by their index.
+///
+/// This is done in O(n) time.
+fn insert_many<T>(input: &mut Vec<T>, elem_to_insert: Vec<(usize, T)>) {
+    let mut inserted = vec![];
+    let mut last_idx = 0;
+
+    for (idx, elem) in elem_to_insert.into_iter() {
+        let head_len = idx - last_idx;
+        inserted.extend(input.splice(0..head_len, std::iter::empty()));
+        inserted.push(elem);
+        last_idx = idx;
+    }
+    let len = input.len();
+    inserted.extend(input.drain(0..len));
+
+    *input = inserted;
+}
 
 #[derive(Debug)]
 pub struct Rendered {
@@ -490,7 +510,7 @@ pub fn markdown_to_html(
         }
 
         if context.insert_anchor != InsertAnchor::None {
-            events.insert_many(anchors_to_insert);
+            insert_many(&mut events, anchors_to_insert);
         }
 
         cmark::html::push_html(&mut html, events.into_iter());
@@ -512,6 +532,17 @@ pub fn markdown_to_html(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+
+    fn insert_many_works() {
+        let mut v = vec![1, 2, 3, 4, 5];
+        insert_many(&mut v, vec![(0, 0), (2, -1), (5, 6)]);
+        assert_eq!(v, &[0, 1, 2, -1, 3, 4, 5, 6]);
+
+        let mut v2 = vec![1, 2, 3, 4, 5];
+        insert_many(&mut v2, vec![(0, 0), (2, -1)]);
+        assert_eq!(v2, &[0, 1, 2, -1, 3, 4, 5]);
+    }
 
     #[test]
     fn test_is_external_link() {

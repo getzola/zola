@@ -96,7 +96,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     }
 }
 
-fn should_skip_by_prefix(link: &String, skip_prefixes: &Vec<String>) -> bool {
+fn should_skip_by_prefix(link: &str, skip_prefixes: &[String]) -> bool {
     skip_prefixes.iter().any(|prefix| link.starts_with(prefix))
 }
 
@@ -161,7 +161,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     for link in checked_links.iter() {
         links_by_domain.entry(link.domain.to_string()).or_default();
         // Insert content path and link under the domain key
-        links_by_domain.get_mut(&link.domain).unwrap().push(&link);
+        links_by_domain.get_mut(&link.domain).unwrap().push(link);
     }
 
     if checked_links.is_empty() {

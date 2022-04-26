@@ -182,7 +182,7 @@ impl Section {
         context.insert("config", &config.serialize(&self.lang));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
-        context.insert("section", &SerializingSection::new(&self, SectionSerMode::Full(library)));
+        context.insert("section", &SerializingSection::new(self, SectionSerMode::Full(library)));
         context.insert("lang", &self.lang);
 
         render_template(tpl_name, tera, context, &config.theme)
