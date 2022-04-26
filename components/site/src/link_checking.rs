@@ -125,41 +125,46 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         }
     }
 
-    let mut all_links: Vec<LinkDef> = vec![];
+    let mut checked_links: Vec<LinkDef> = vec![];
+    let mut skipped_link_count: u32 = 0;
 
     for p in library.pages_values().into_iter() {
         for external_link in p.clone().external_links.into_iter() {
             if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
-                continue;
+                skipped_link_count += 1;
+            } else {
+                let domain = get_link_domain(&external_link)?;
+                checked_links.push(LinkDef::new(p.file.path.clone(), external_link, domain));
             }
-
-            let domain = get_link_domain(&external_link)?;
-            all_links.push(LinkDef::new(p.file.path.clone(), external_link, domain));
         }
     }
 
     for s in library.sections_values().into_iter() {
         for external_link in s.clone().external_links.into_iter() {
             if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
-                continue;
+                skipped_link_count += 1;
+            } else {
+                let domain = get_link_domain(&external_link)?;
+                checked_links.push(LinkDef::new(s.file.path.clone(), external_link, domain));
             }
-
-            let domain = get_link_domain(&external_link)?;
-            all_links.push(LinkDef::new(s.file.path.clone(), external_link, domain));
         }
     }
 
-    println!("Checking {} external link(s).", all_links.len());
+    println!(
+        "Checking {} external link(s).  Skipping {} external link(s).",
+        checked_links.len(),
+        skipped_link_count
+    );
 
     let mut links_by_domain: HashMap<String, Vec<&LinkDef>> = HashMap::new();
 
-    for link in all_links.iter() {
+    for link in checked_links.iter() {
         links_by_domain.entry(link.domain.to_string()).or_default();
         // Insert content path and link under the domain key
         links_by_domain.get_mut(&link.domain).unwrap().push(&link);
     }
 
-    if all_links.is_empty() {
+    if checked_links.is_empty() {
         return Ok(());
     }
 
@@ -201,7 +206,11 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             .collect::<Vec<_>>()
     });
 
-    println!("> Checked {} external link(s): {} error(s) found.", all_links.len(), errors.len());
+    println!(
+        "> Checked {} external link(s): {} error(s) found.",
+        checked_links.len(),
+        errors.len()
+    );
 
     if errors.is_empty() {
         return Ok(());
