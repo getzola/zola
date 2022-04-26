@@ -88,7 +88,9 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
     if hard_link {
         std::fs::hard_link(src, dest)?
     } else {
-        let src_metadata = metadata(src)?;
+        let src_metadata = metadata(src).with_context(|| {
+            format!("Failed to get metadata of {}", src.display())
+        })?;
         let src_mtime = FileTime::from_last_modification_time(&src_metadata);
         if Path::new(&dest).is_file() {
             let target_metadata = metadata(&dest)?;
