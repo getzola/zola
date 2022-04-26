@@ -19,6 +19,3 @@ pub use pagination::Paginator;
 pub use section::Section;
 pub use taxonomies::{Taxonomy, TaxonomyItem};
 pub use types::*;
-
-// TODO
-// 3. add more tests
