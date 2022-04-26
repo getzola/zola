@@ -96,6 +96,10 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     }
 }
 
+fn should_skip_by_prefix(link: &String, skip_prefixes: &Vec<String>) -> bool {
+    skip_prefixes.iter().any(|prefix| link.starts_with(prefix))
+}
+
 fn get_link_domain(link: &str) -> Result<String> {
     return match Url::parse(link) {
         Ok(url) => match url.host_str().map(String::from) {
@@ -109,36 +113,58 @@ fn get_link_domain(link: &str) -> Result<String> {
 pub fn check_external_links(site: &Site) -> Result<()> {
     let library = site.library.write().expect("Get lock for check_external_links");
 
-    let mut all_links: Vec<(PathBuf, String, String)> = vec![];
+    struct LinkDef {
+        file_path: PathBuf,
+        external_link: String,
+        domain: String,
+    }
+
+    impl LinkDef {
+        pub fn new(file_path: PathBuf, external_link: String, domain: String) -> Self {
+            Self { file_path, external_link, domain }
+        }
+    }
+
+    let mut checked_links: Vec<LinkDef> = vec![];
+    let mut skipped_link_count: u32 = 0;
 
     for p in library.pages_values().into_iter() {
         for external_link in p.clone().external_links.into_iter() {
-            let domain = get_link_domain(&external_link)?;
-            all_links.push((p.file.path.clone(), external_link, domain));
+            if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
+                skipped_link_count += 1;
+            } else {
+                let domain = get_link_domain(&external_link)?;
+                checked_links.push(LinkDef::new(p.file.path.clone(), external_link, domain));
+            }
         }
     }
 
     for s in library.sections_values().into_iter() {
         for external_link in s.clone().external_links.into_iter() {
-            let domain = get_link_domain(&external_link)?;
-            all_links.push((s.file.path.clone(), external_link, domain));
+            if should_skip_by_prefix(&external_link, &site.config.link_checker.skip_prefixes) {
+                skipped_link_count += 1;
+            } else {
+                let domain = get_link_domain(&external_link)?;
+                checked_links.push(LinkDef::new(s.file.path.clone(), external_link, domain));
+            }
         }
     }
 
-    println!("Checking {} external link(s).", all_links.len());
+    println!(
+        "Checking {} external link(s).  Skipping {} external link(s).",
+        checked_links.len(),
+        skipped_link_count
+    );
 
-    let mut links_by_domain: HashMap<String, Vec<(PathBuf, String)>> = HashMap::new();
+    let mut links_by_domain: HashMap<String, Vec<&LinkDef>> = HashMap::new();
 
-    for link in all_links.iter() {
-        links_by_domain.entry(link.2.to_string()).or_default();
+    for link in checked_links.iter() {
+        links_by_domain.entry(link.domain.to_string()).or_default();
         // Insert content path and link under the domain key
-        links_by_domain
-            .get_mut(&link.2.to_string())
-            .unwrap()
-            .push((link.0.clone(), link.1.clone()));
+        links_by_domain.get_mut(&link.domain).unwrap().push(&link);
     }
 
-    if all_links.is_empty() {
+    if checked_links.is_empty() {
         return Ok(());
     }
 
@@ -155,20 +181,13 @@ pub fn check_external_links(site: &Site) -> Result<()> {
                 let mut links_to_process = links.len();
                 links
                     .iter()
-                    .filter_map(move |(page_path, link)| {
+                    .filter_map(move |link_def| {
                         links_to_process -= 1;
 
-                        if site
-                            .config
-                            .link_checker
-                            .skip_prefixes
-                            .iter()
-                            .any(|prefix| link.starts_with(prefix))
-                        {
-                            return None;
-                        }
-
-                        let res = link_checker::check_url(link, &site.config.link_checker);
+                        let res = link_checker::check_url(
+                            &link_def.external_link,
+                            &site.config.link_checker,
+                        );
 
                         if links_to_process > 0 {
                             // Prevent rate-limiting, wait before next crawl unless we're done with this domain
@@ -178,7 +197,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
                         if link_checker::is_valid(&res) {
                             None
                         } else {
-                            Some((page_path, link, res))
+                            Some((&link_def.file_path, &link_def.external_link, res))
                         }
                     })
                     .collect::<Vec<_>>()
@@ -187,7 +206,11 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             .collect::<Vec<_>>()
     });
 
-    println!("> Checked {} external link(s): {} error(s) found.", all_links.len(), errors.len());
+    println!(
+        "> Checked {} external link(s): {} error(s) found.",
+        checked_links.len(),
+        errors.len()
+    );
 
     if errors.is_empty() {
         return Ok(());

@@ -24,6 +24,7 @@ anchors = "on"
 [link_checker]
 skip_prefixes = [
     "http://[2001:db8::]/",
+    "http://invaliddomain",
 ]
 
 skip_anchor_prefixes = [
