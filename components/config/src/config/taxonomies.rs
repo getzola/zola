@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct TaxonomyConfig {
     /// The name used in the URL, usually the plural
@@ -9,8 +9,22 @@ pub struct TaxonomyConfig {
     /// by this much
     pub paginate_by: Option<usize>,
     pub paginate_path: Option<String>,
-    /// Whether to generate a feed only for each taxonomy term, defaults to false
+    /// Whether the taxonomy will be rendered, defaults to `true`
+    pub render: bool,
+    /// Whether to generate a feed only for each taxonomy term, defaults to `false`
     pub feed: bool,
+}
+
+impl Default for TaxonomyConfig {
+    fn default() -> Self {
+        Self {
+            name: String::new(),
+            paginate_by: None,
+            paginate_path: None,
+            render: true,
+            feed: false,
+        }
+    }
 }
 
 impl TaxonomyConfig {

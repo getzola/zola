@@ -545,6 +545,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
             name: "tags".to_string(),
             paginate_by: Some(2),
             paginate_path: None,
+            render: true,
             feed: true,
         });
         site.load().unwrap();

@@ -3,7 +3,6 @@ use std::collections::HashMap;
 
 use errors::{anyhow, Result};
 
-
 /// Result of a successful resolution of an internal link.
 #[derive(Debug, PartialEq, Clone)]
 pub struct ResolvedInternalLink {
@@ -47,7 +46,7 @@ pub fn resolve_internal_link(
 mod tests {
     use std::collections::HashMap;
 
-    use super::{resolve_internal_link};
+    use super::resolve_internal_link;
 
     #[test]
     fn can_resolve_valid_internal_link() {

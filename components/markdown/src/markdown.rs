@@ -21,7 +21,6 @@ const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
 
-
 /// Efficiently insert multiple element in their specified index.
 /// The elements should sorted in ascending order by their index.
 ///

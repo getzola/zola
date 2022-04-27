@@ -1,9 +1,9 @@
 pub mod feed;
 pub mod link_checking;
+mod minify;
 pub mod sass;
 pub mod sitemap;
 pub mod tpls;
-mod minify;
 
 use std::collections::HashMap;
 use std::fs::remove_dir_all;
@@ -817,6 +817,9 @@ impl Site {
     /// Renders all taxonomies
     pub fn render_taxonomies(&self) -> Result<()> {
         for taxonomy in &self.taxonomies {
+            if !taxonomy.kind.render {
+                continue;
+            }
             self.render_taxonomy(taxonomy)?;
         }
 

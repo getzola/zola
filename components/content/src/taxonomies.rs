@@ -17,7 +17,7 @@ use crate::{Page, SortBy};
 use crate::sorting::sort_pages;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct SerializedTaxonomyItem<'a> {
+pub struct SerializedTaxonomyTerm<'a> {
     name: &'a str,
     slug: &'a str,
     path: &'a str,
@@ -25,15 +25,15 @@ pub struct SerializedTaxonomyItem<'a> {
     pages: Vec<SerializingPage<'a>>,
 }
 
-impl<'a> SerializedTaxonomyItem<'a> {
-    pub fn from_item(item: &'a TaxonomyItem, library: &'a Library) -> Self {
+impl<'a> SerializedTaxonomyTerm<'a> {
+    pub fn from_item(item: &'a TaxonomyTerm, library: &'a Library) -> Self {
         let mut pages = vec![];
 
         for p in &item.pages {
             pages.push(SerializingPage::new(&library.pages[p], Some(library), false));
         }
 
-        SerializedTaxonomyItem {
+        SerializedTaxonomyTerm {
             name: &item.name,
             slug: &item.slug,
             path: &item.path,
@@ -45,7 +45,7 @@ impl<'a> SerializedTaxonomyItem<'a> {
 
 /// A taxonomy with all its pages
 #[derive(Debug, Clone)]
-pub struct TaxonomyItem {
+pub struct TaxonomyTerm {
     pub name: String,
     pub slug: String,
     pub path: String,
@@ -53,7 +53,7 @@ pub struct TaxonomyItem {
     pub pages: Vec<PathBuf>,
 }
 
-impl TaxonomyItem {
+impl TaxonomyTerm {
     pub fn new(
         name: &str,
         lang: &str,
@@ -75,11 +75,11 @@ impl TaxonomyItem {
         let (mut pages, ignored_pages) = sort_pages(taxo_pages, SortBy::Date);
         // We still append pages without dates at the end
         pages.extend(ignored_pages);
-        TaxonomyItem { name: name.to_string(), permalink, path, slug: item_slug, pages }
+        TaxonomyTerm { name: name.to_string(), permalink, path, slug: item_slug, pages }
     }
 
-    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyItem<'a> {
-        SerializedTaxonomyItem::from_item(self, library)
+    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyTerm<'a> {
+        SerializedTaxonomyTerm::from_item(self, library)
     }
 
     pub fn merge(&mut self, other: Self) {
@@ -87,7 +87,7 @@ impl TaxonomyItem {
     }
 }
 
-impl PartialEq for TaxonomyItem {
+impl PartialEq for TaxonomyTerm {
     fn eq(&self, other: &Self) -> bool {
         self.permalink == other.permalink
     }
@@ -98,13 +98,13 @@ pub struct SerializedTaxonomy<'a> {
     kind: &'a TaxonomyConfig,
     lang: &'a str,
     permalink: &'a str,
-    items: Vec<SerializedTaxonomyItem<'a>>,
+    items: Vec<SerializedTaxonomyTerm<'a>>,
 }
 
 impl<'a> SerializedTaxonomy<'a> {
     pub fn from_taxonomy(taxonomy: &'a Taxonomy, library: &'a Library) -> Self {
-        let items: Vec<SerializedTaxonomyItem> =
-            taxonomy.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
+        let items: Vec<SerializedTaxonomyTerm> =
+            taxonomy.items.iter().map(|i| SerializedTaxonomyTerm::from_item(i, library)).collect();
         SerializedTaxonomy {
             kind: &taxonomy.kind,
             lang: &taxonomy.lang,
@@ -121,7 +121,7 @@ pub struct Taxonomy {
     pub slug: String,
     pub permalink: String,
     // this vec is sorted by the count of item
-    pub items: Vec<TaxonomyItem>,
+    pub items: Vec<TaxonomyTerm>,
 }
 
 impl Taxonomy {
@@ -129,7 +129,7 @@ impl Taxonomy {
         let mut sorted_items = vec![];
         let slug = tax_found.slug;
         for (name, pages) in tax_found.terms {
-            sorted_items.push(TaxonomyItem::new(name, tax_found.lang, &slug, &pages, config));
+            sorted_items.push(TaxonomyTerm::new(name, tax_found.lang, &slug, &pages, config));
         }
 
         sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
@@ -166,7 +166,7 @@ impl Taxonomy {
 
     pub fn render_term(
         &self,
-        item: &TaxonomyItem,
+        item: &TaxonomyTerm,
         tera: &Tera,
         config: &Config,
         library: &Library,
@@ -174,7 +174,7 @@ impl Taxonomy {
         let mut context = Context::new();
         context.insert("config", &config.serialize(&self.lang));
         context.insert("lang", &self.lang);
-        context.insert("term", &SerializedTaxonomyItem::from_item(item, library));
+        context.insert("term", &SerializedTaxonomyTerm::from_item(item, library));
         context.insert("taxonomy", &self.kind);
         context.insert(
             "current_url",
@@ -199,8 +199,8 @@ impl Taxonomy {
     ) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", &config.serialize(&self.lang));
-        let terms: Vec<SerializedTaxonomyItem> =
-            self.items.iter().map(|i| SerializedTaxonomyItem::from_item(i, library)).collect();
+        let terms: Vec<SerializedTaxonomyTerm> =
+            self.items.iter().map(|i| SerializedTaxonomyTerm::from_item(i, library)).collect();
         context.insert("terms", &terms);
         context.insert("lang", &self.lang);
         context.insert("taxonomy", &self.kind);
@@ -245,7 +245,6 @@ impl<'a> TaxonomyFound<'a> {
 }
 
 pub fn find_taxonomies(config: &Config, pages: &AHashMap<PathBuf, Page>) -> Result<Vec<Taxonomy>> {
-    // lang -> tax names -> def
     let mut taxonomies_def = AHashMap::new();
     let mut taxonomies_slug = AHashMap::new();
 

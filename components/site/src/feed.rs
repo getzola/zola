@@ -6,7 +6,7 @@ use libs::tera::Context;
 use serde::Serialize;
 
 use crate::Site;
-use content::{Page, TaxonomyItem};
+use content::{Page, TaxonomyTerm};
 use errors::Result;
 use utils::templates::render_template;
 
@@ -18,7 +18,7 @@ pub struct SerializedFeedTaxonomyItem<'a> {
 }
 
 impl<'a> SerializedFeedTaxonomyItem<'a> {
-    pub fn from_item(item: &'a TaxonomyItem) -> Self {
+    pub fn from_item(item: &'a TaxonomyTerm) -> Self {
         SerializedFeedTaxonomyItem {
             name: &item.name,
             slug: &item.slug,

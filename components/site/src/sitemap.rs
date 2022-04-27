@@ -98,6 +98,9 @@ pub fn find_entries<'a>(
 
     let mut taxonomies_entries = vec![];
     for taxonomy in taxonomies {
+        if !taxonomy.kind.render {
+            continue;
+        }
         let name = &taxonomy.kind.name;
         let mut terms = vec![SitemapEntry::new(Cow::Owned(config.make_permalink(name)), None)];
         for item in &taxonomy.items {

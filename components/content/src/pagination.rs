@@ -10,13 +10,13 @@ use utils::templates::{check_template_fallbacks, render_template};
 
 use crate::library::Library;
 use crate::ser::{SectionSerMode, SerializingPage, SerializingSection};
-use crate::taxonomies::{Taxonomy, TaxonomyItem};
+use crate::taxonomies::{Taxonomy, TaxonomyTerm};
 use crate::Section;
 
 #[derive(Clone, Debug, PartialEq)]
 enum PaginationRoot<'a> {
     Section(&'a Section),
-    Taxonomy(&'a Taxonomy, &'a TaxonomyItem),
+    Taxonomy(&'a Taxonomy, &'a TaxonomyTerm),
 }
 
 /// A list of all the pages in the paginator with their index and links
@@ -90,7 +90,7 @@ impl<'a> Paginator<'a> {
     /// It will always at least create one pager (the first) even if there are not enough pages to paginate
     pub fn from_taxonomy(
         taxonomy: &'a Taxonomy,
-        item: &'a TaxonomyItem,
+        item: &'a TaxonomyTerm,
         library: &'a Library,
         tera: &Tera,
         theme: &Option<String>,
@@ -393,7 +393,7 @@ mod tests {
             paginate_by: Some(2),
             ..TaxonomyConfig::default()
         };
-        let taxonomy_item = TaxonomyItem {
+        let taxonomy_item = TaxonomyTerm {
             name: "Something".to_string(),
             slug: "something".to_string(),
             path: "/some-tags/something/".to_string(),

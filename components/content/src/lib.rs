@@ -17,5 +17,5 @@ pub use library::Library;
 pub use page::Page;
 pub use pagination::Paginator;
 pub use section::Section;
-pub use taxonomies::{Taxonomy, TaxonomyItem};
+pub use taxonomies::{Taxonomy, TaxonomyTerm};
 pub use types::*;

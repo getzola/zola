@@ -186,7 +186,7 @@ impl TeraFn for GetTaxonomy {
 mod tests {
     use super::*;
     use config::{Config, TaxonomyConfig};
-    use content::TaxonomyItem;
+    use content::TaxonomyTerm;
 
     #[test]
     fn can_get_taxonomy() {
@@ -196,8 +196,8 @@ mod tests {
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let library = Arc::new(RwLock::new(Library::new()));
-        let tag = TaxonomyItem::new("Programming", &config.default_language, "tags", &[], &config);
-        let tag_fr = TaxonomyItem::new("Programmation", "fr", "tags", &[], &config);
+        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
@@ -265,8 +265,8 @@ mod tests {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let tag = TaxonomyItem::new("Programming", &config.default_language, "tags", &[], &config);
-        let tag_fr = TaxonomyItem::new("Programmation", "fr", "tags", &[], &config);
+        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
