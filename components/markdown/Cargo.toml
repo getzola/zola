@@ -5,14 +5,12 @@ edition = "2021"
 include = ["src/**/*"]
 
 [dependencies]
-serde = {version = "1.0", features = ["derive"] }
 pest = "2"
 pest_derive = "2"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
 config = { path = "../config" }
-link_checker = { path = "../link_checker" }
 libs = { path = "../libs" }
 
 [dev-dependencies]

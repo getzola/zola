@@ -675,7 +675,6 @@ name = "errors"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "libs",
 ]
 
 [[package]]
@@ -1580,10 +1579,8 @@ dependencies = [
  "errors",
  "insta",
  "libs",
- "link_checker",
  "pest",
  "pest_derive",
- "serde",
  "templates",
  "utils",
 ]
@@ -3912,7 +3909,6 @@ dependencies = [
  "atty",
  "clap 3.1.6",
  "clap_complete",
- "content",
  "ctrlc",
  "errors",
  "hyper",
@@ -3922,7 +3918,6 @@ dependencies = [
  "open",
  "pathdiff",
  "same-file",
- "search",
  "site",
  "termcolor",
  "time 0.3.9",
