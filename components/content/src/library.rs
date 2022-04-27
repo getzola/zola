@@ -118,7 +118,7 @@ impl Library {
 
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
-    pub fn populate_sections(&mut self, config: &Config) {
+    pub fn populate_sections(&mut self, config: &Config, content_path: &Path) {
         let mut add_translation = |entry: &Path, path: &Path| {
             if config.is_multilingual() {
                 self.translations
@@ -134,8 +134,6 @@ impl Library {
             }
         };
 
-        let root_path =
-            self.sections.values().find(|s| s.is_index()).map(|s| s.file.parent.clone()).unwrap();
         let mut ancestors = AHashMap::new();
         let mut subsections = AHashMap::new();
         let mut sections_weight = AHashMap::new();
@@ -161,7 +159,7 @@ impl Library {
             }
 
             // Index section is the first ancestor of every single section
-            let mut cur_path = root_path.clone();
+            let mut cur_path = content_path.to_path_buf();
             let mut parents = vec![section.file.filename.clone()];
             for component in &section.file.components {
                 cur_path = cur_path.join(component);
@@ -223,7 +221,7 @@ impl Library {
                 // is [index, ..., parent] so we need to reverse it first
                 if page.meta.template.is_none() {
                     for ancestor in page.ancestors.iter().rev() {
-                        let s = self.sections.get(&root_path.join(ancestor)).unwrap();
+                        let s = self.sections.get(&content_path.join(ancestor)).unwrap();
                         if let Some(ref tpl) = s.meta.page_template {
                             page.meta.template = Some(tpl.clone());
                             break;
@@ -425,7 +423,7 @@ mod tests {
         for (p, l, s) in pages.clone() {
             library.insert_page(create_page(p, l, s));
         }
-        library.populate_sections(&config);
+        library.populate_sections(&config, Path::new("content"));
         assert_eq!(library.sections.len(), sections.len());
         assert_eq!(library.pages.len(), pages.len());
         let blog_section = &library.sections[&PathBuf::from("content/blog/_index.md")];
