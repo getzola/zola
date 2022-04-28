@@ -190,12 +190,13 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy() {
-        let mut config = Config::default();
+        let mut config = Config::default_for_test();
         config.slugify.taxonomies = SlugifyStrategy::On;
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Arc::new(RwLock::new(Library::new()));
+        config.slugify_taxonomies();
+        let library = Arc::new(RwLock::new(Library::new(&config)));
         let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
         let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {

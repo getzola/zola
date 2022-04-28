@@ -99,7 +99,7 @@ impl Site {
             permalinks: HashMap::new(),
             include_drafts: false,
             // We will allocate it properly later on
-            library: Arc::new(RwLock::new(Library::new())),
+            library: Arc::new(RwLock::new(Library::default())),
             build_mode: BuildMode::Disk,
             shortcode_definitions,
         };
@@ -164,7 +164,7 @@ impl Site {
     pub fn load(&mut self) -> Result<()> {
         let base_path = self.base_path.to_string_lossy().replace('\\', "/");
 
-        self.library = Arc::new(RwLock::new(Library::new()));
+        self.library = Arc::new(RwLock::new(Library::new(&self.config)));
         let mut pages_insert_anchors = HashMap::new();
 
         // not the most elegant loop, but this is necessary to use skip_current_dir
@@ -397,6 +397,16 @@ impl Site {
     /// Add a page to the site
     /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_page(&mut self, mut page: Page, render_md: bool) -> Result<()> {
+        for (taxa_name, _) in &page.meta.taxonomies {
+            if !self.config.has_taxonomy(taxa_name, &page.lang) {
+                bail!(
+                    "Page `{}` has taxonomy `{}` which is not defined in config.toml",
+                    page.file.path.display(),
+                    taxa_name
+                );
+            }
+        }
+
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render_md {
             let insert_anchor =
@@ -490,7 +500,7 @@ impl Site {
             return Ok(());
         }
 
-        self.taxonomies = self.library.read().unwrap().find_taxonomies(&self.config)?;
+        self.taxonomies = self.library.read().unwrap().find_taxonomies(&self.config);
 
         Ok(())
     }

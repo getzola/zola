@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use serde::Serialize;
 
 use config::{Config, TaxonomyConfig};
-use errors::{bail, Context as ErrorContext, Result};
+use errors::{Context as ErrorContext, Result};
 use libs::ahash::AHashMap;
 use libs::tera::{Context, Tera};
 use utils::slugs::slugify_paths;
@@ -125,7 +125,7 @@ pub struct Taxonomy {
 }
 
 impl Taxonomy {
-    fn new(tax_found: TaxonomyFound, config: &Config) -> Self {
+    pub(crate) fn new(tax_found: TaxonomyFound, config: &Config) -> Self {
         let mut sorted_items = vec![];
         let slug = tax_found.slug;
         for (name, pages) in tax_found.terms {
@@ -231,7 +231,7 @@ impl Taxonomy {
 
 /// Only used while building the taxonomies
 #[derive(Debug, PartialEq)]
-struct TaxonomyFound<'a> {
+pub(crate) struct TaxonomyFound<'a> {
     pub lang: &'a str,
     pub slug: String,
     pub config: &'a TaxonomyConfig,
@@ -241,222 +241,5 @@ struct TaxonomyFound<'a> {
 impl<'a> TaxonomyFound<'a> {
     pub fn new(slug: String, lang: &'a str, config: &'a TaxonomyConfig) -> Self {
         Self { slug, lang, config, terms: AHashMap::new() }
-    }
-}
-
-pub fn find_taxonomies(config: &Config, pages: &AHashMap<PathBuf, Page>) -> Result<Vec<Taxonomy>> {
-    let mut taxonomies_def = AHashMap::new();
-    let mut taxonomies_slug = AHashMap::new();
-
-    for (code, options) in &config.languages {
-        let mut taxo_lang_def = AHashMap::new();
-        for t in &options.taxonomies {
-            let slug = slugify_paths(&t.name, config.slugify.taxonomies);
-            taxonomies_slug.insert(&t.name, slug.clone());
-            taxo_lang_def.insert(slug.clone(), TaxonomyFound::new(slug, code, t));
-        }
-        taxonomies_def.insert(code, taxo_lang_def);
-    }
-
-    for (_, page) in pages {
-        for (name, terms) in &page.meta.taxonomies {
-            let slug = taxonomies_slug.get(name);
-            let mut exists = slug.is_some();
-            if let Some(s) = slug {
-                if !taxonomies_def[&page.lang].contains_key(s) {
-                    exists = false;
-                }
-            }
-            if !exists {
-                bail!(
-                    "Page `{}` has taxonomy `{}` which is not defined in config.toml",
-                    page.file.path.display(),
-                    name
-                );
-            }
-            let slug = slug.unwrap();
-
-            let taxonomy_found = taxonomies_def.get_mut(&page.lang).unwrap().get_mut(slug).unwrap();
-            for term in terms {
-                taxonomy_found.terms.entry(term).or_insert_with(Vec::new).push(page);
-            }
-        }
-    }
-
-    // And now generates the actual taxonomies
-    let mut taxonomies = vec![];
-    for (_, vals) in taxonomies_def {
-        for (_, tax_found) in vals {
-            taxonomies.push(Taxonomy::new(tax_found, config));
-        }
-    }
-
-    Ok(taxonomies)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use config::LanguageOptions;
-    use std::collections::HashMap;
-    use utils::slugs::SlugifyStrategy;
-
-    macro_rules! taxonomies {
-        ($config:expr, [$($page:expr),+]) => {{
-            let mut pages = AHashMap::new();
-            $(
-                pages.insert($page.file.path.clone(), $page.clone());
-            )+
-            find_taxonomies(&$config, &pages).unwrap()
-        }};
-    }
-
-    fn create_page(path: &str, lang: &str, taxo: Vec<(&str, Vec<&str>)>) -> Page {
-        let mut page = Page::default();
-        page.file.path = PathBuf::from(path);
-        page.lang = lang.to_owned();
-        let mut taxonomies = HashMap::new();
-        for (name, terms) in taxo {
-            taxonomies.insert(name.to_owned(), terms.iter().map(|t| t.to_string()).collect());
-        }
-        page.meta.taxonomies = taxonomies;
-        page
-    }
-
-    #[test]
-    fn errors_on_unknown_taxonomy() {
-        let config = Config::default_for_test();
-        let page1 = create_page("unknown/taxo.md", "en", vec![("tags", vec!["rust", "db"])]);
-        let mut pages = AHashMap::new();
-        pages.insert(page1.file.path.clone(), page1);
-        let taxonomies = find_taxonomies(&config, &pages);
-        assert!(taxonomies.is_err());
-        let err = taxonomies.unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "Page `unknown/taxo.md` has taxonomy `tags` which is not defined in config.toml"
-        );
-    }
-
-    #[test]
-    fn can_make_taxonomies() {
-        let mut config = Config::default_for_test();
-        config.languages.get_mut("en").unwrap().taxonomies = vec![
-            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() },
-        ];
-
-        let page1 = create_page(
-            "a.md",
-            "en",
-            vec![("tags", vec!["rust", "db"]), ("categories", vec!["tutorials"])],
-        );
-        let page2 = create_page(
-            "b.md",
-            "en",
-            vec![("tags", vec!["rust", "js"]), ("categories", vec!["others"])],
-        );
-        let page3 = create_page(
-            "c.md",
-            "en",
-            vec![("tags", vec!["js"]), ("authors", vec!["Vincent Prouillet"])],
-        );
-        let taxonomies = taxonomies!(config, [page1, page2, page3]);
-
-        let tags = taxonomies.iter().find(|t| t.kind.name == "tags").unwrap();
-        assert_eq!(tags.len(), 3);
-        assert_eq!(tags.items[0].name, "db");
-        assert_eq!(tags.items[0].permalink, "http://a-website.com/tags/db/");
-        assert_eq!(tags.items[0].pages.len(), 1);
-        assert_eq!(tags.items[1].name, "js");
-        assert_eq!(tags.items[1].permalink, "http://a-website.com/tags/js/");
-        assert_eq!(tags.items[1].pages.len(), 2);
-        assert_eq!(tags.items[2].name, "rust");
-        assert_eq!(tags.items[2].permalink, "http://a-website.com/tags/rust/");
-        assert_eq!(tags.items[2].pages.len(), 2);
-
-        let categories = taxonomies.iter().find(|t| t.kind.name == "categories").unwrap();
-        assert_eq!(categories.items.len(), 2);
-        assert_eq!(categories.items[0].name, "others");
-        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/others/");
-        assert_eq!(categories.items[0].pages.len(), 1);
-
-        let authors = taxonomies.iter().find(|t| t.kind.name == "authors").unwrap();
-        assert_eq!(authors.items.len(), 1);
-        assert_eq!(authors.items[0].permalink, "http://a-website.com/authors/vincent-prouillet/");
-    }
-
-    #[test]
-    fn can_make_multiple_language_taxonomies() {
-        let mut config = Config::default_for_test();
-        config.slugify.taxonomies = SlugifyStrategy::Safe;
-        config.languages.insert("fr".to_owned(), LanguageOptions::default());
-        config.languages.get_mut("en").unwrap().taxonomies = vec![
-            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
-        ];
-        config.languages.get_mut("fr").unwrap().taxonomies = vec![
-            TaxonomyConfig { name: "catégories".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
-        ];
-
-        let page1 = create_page("a.md", "en", vec![("categories", vec!["rust"])]);
-        let page2 = create_page("b.md", "en", vec![("tags", vec!["rust"])]);
-        let page3 = create_page("c.md", "fr", vec![("catégories", vec!["rust"])]);
-        let taxonomies = taxonomies!(config, [page1, page2, page3]);
-
-        let categories = taxonomies.iter().find(|t| t.kind.name == "categories").unwrap();
-        assert_eq!(categories.len(), 1);
-        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/rust/");
-        let tags = taxonomies.iter().find(|t| t.kind.name == "tags" && t.lang == "en").unwrap();
-        assert_eq!(tags.len(), 1);
-        assert_eq!(tags.items[0].permalink, "http://a-website.com/tags/rust/");
-        let fr_categories = taxonomies.iter().find(|t| t.kind.name == "catégories").unwrap();
-        assert_eq!(fr_categories.len(), 1);
-        assert_eq!(fr_categories.items[0].permalink, "http://a-website.com/fr/catégories/rust/");
-    }
-
-    #[test]
-    fn taxonomies_with_unic_are_grouped_with_default_slugify_strategy() {
-        let mut config = Config::default_for_test();
-        config.languages.get_mut("en").unwrap().taxonomies = vec![
-            TaxonomyConfig { name: "test-taxonomy".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "test taxonomy".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "test-taxonomy ".to_string(), ..TaxonomyConfig::default() },
-            TaxonomyConfig { name: "Test-Taxonomy ".to_string(), ..TaxonomyConfig::default() },
-        ];
-        let page1 = create_page("a.md", "en", vec![("test-taxonomy", vec!["Ecole"])]);
-        let page2 = create_page("b.md", "en", vec![("test taxonomy", vec!["École"])]);
-        let page3 = create_page("c.md", "en", vec![("test-taxonomy ", vec!["ecole"])]);
-        let page4 = create_page("d.md", "en", vec![("Test-Taxonomy ", vec!["école"])]);
-        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]);
-        assert_eq!(taxonomies.len(), 1);
-
-        let tax = &taxonomies[0];
-        // under the default slugify strategy all of the provided terms should be the same
-        assert_eq!(tax.items.len(), 1);
-        let term1 = &tax.items[0];
-        assert_eq!(term1.name, "Ecole");
-        assert_eq!(term1.slug, "ecole");
-        assert_eq!(term1.permalink, "http://a-website.com/test-taxonomy/ecole/");
-        assert_eq!(term1.pages.len(), 4);
-    }
-
-    #[test]
-    fn taxonomies_with_unic_are_not_grouped_with_safe_slugify_strategy() {
-        let mut config = Config::default_for_test();
-        config.slugify.taxonomies = SlugifyStrategy::Safe;
-        config.languages.get_mut("en").unwrap().taxonomies =
-            vec![TaxonomyConfig { name: "test".to_string(), ..TaxonomyConfig::default() }];
-        let page1 = create_page("a.md", "en", vec![("test", vec!["Ecole"])]);
-        let page2 = create_page("b.md", "en", vec![("test", vec!["École"])]);
-        let page3 = create_page("c.md", "en", vec![("test", vec!["ecole"])]);
-        let page4 = create_page("d.md", "en", vec![("test", vec!["école"])]);
-        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]);
-        assert_eq!(taxonomies.len(), 1);
-        let tax = &taxonomies[0];
-        // under the safe slugify strategy all terms should be distinct
-        assert_eq!(tax.items.len(), 4);
     }
 }

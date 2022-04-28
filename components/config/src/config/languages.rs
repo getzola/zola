@@ -26,7 +26,6 @@ pub struct LanguageOptions {
     pub search: search::Search,
     /// A toml crate `Table` with String key representing term and value
     /// another `String` representing its translation.
-    ///
     /// Use `get_translation()` method for translating key into different languages.
     pub translations: HashMap<String, String>,
 }

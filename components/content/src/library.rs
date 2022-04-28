@@ -1,27 +1,40 @@
 use std::path::{Path, PathBuf};
 
 use config::Config;
-use errors::Result;
 use libs::ahash::{AHashMap, AHashSet};
 
 use crate::ser::TranslatedContent;
 use crate::sorting::sort_pages;
-use crate::taxonomies::{find_taxonomies, Taxonomy};
+use crate::taxonomies::{Taxonomy, TaxonomyFound};
 use crate::{Page, Section, SortBy};
 
 #[derive(Debug, Default)]
 pub struct Library {
     pub pages: AHashMap<PathBuf, Page>,
     pub sections: AHashMap<PathBuf, Section>,
-    pub taxonomies: Vec<Taxonomy>,
     // aliases -> files, so we can easily check for conflicts
     pub reverse_aliases: AHashMap<String, AHashSet<PathBuf>>,
     pub translations: AHashMap<PathBuf, AHashSet<PathBuf>>,
+    // A mapping of {lang -> <slug, {term -> vec<paths>}>>}
+    taxonomies_def: AHashMap<String, AHashMap<String, AHashMap<String, Vec<PathBuf>>>>,
+    // So we don't need to pass the Config when adding a page to know how to slugify and we only
+    // slugify once
+    taxo_name_to_slug: AHashMap<String, String>,
 }
 
 impl Library {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(config: &Config) -> Self {
+        let mut lib = Self::default();
+
+        for (lang, options) in &config.languages {
+            let mut taxas = AHashMap::new();
+            for tax_def in &options.taxonomies {
+                taxas.insert(tax_def.slug.clone(), AHashMap::new());
+                lib.taxo_name_to_slug.insert(tax_def.name.clone(), tax_def.slug.clone());
+            }
+            lib.taxonomies_def.insert(lang.to_string(), taxas);
+        }
+        lib
     }
 
     fn insert_reverse_aliases(&mut self, file_path: &Path, entries: Vec<String>) {
@@ -60,6 +73,25 @@ impl Library {
         let mut entries = vec![page.path.clone()];
         entries.extend(page.meta.aliases.to_vec());
         self.insert_reverse_aliases(&file_path, entries);
+
+        for (taxa_name, terms) in &page.meta.taxonomies {
+            for term in terms {
+                // Safe unwraps as we create all lang/taxa and we validated that they are correct
+                // before getting there
+                let taxa_def = self
+                    .taxonomies_def
+                    .get_mut(&page.lang)
+                    .expect("lang not found")
+                    .get_mut(&self.taxo_name_to_slug[taxa_name])
+                    .expect("taxa not found");
+
+                if !taxa_def.contains_key(term) {
+                    taxa_def.insert(term.to_string(), Vec::new());
+                }
+                taxa_def.get_mut(term).unwrap().push(page.file.path.clone());
+            }
+        }
+
         self.pages.insert(file_path, page);
     }
 
@@ -71,10 +103,29 @@ impl Library {
         self.sections.insert(file_path, section);
     }
 
-    /// Separate from `populate_sections` as it's called _before_ markdown the pages/sections
-    pub fn populate_taxonomies(&mut self, config: &Config) -> Result<()> {
-        self.taxonomies = find_taxonomies(config, &self.pages)?;
-        Ok(())
+    /// This is called _before_ rendering the markdown the pages/sections
+    pub fn find_taxonomies(&self, config: &Config) -> Vec<Taxonomy> {
+        let mut taxonomies = Vec::new();
+
+        for (lang, taxonomies_data) in &self.taxonomies_def {
+            for (taxa_slug, terms_pages) in taxonomies_data {
+                let taxo_config = &config.languages[lang]
+                    .taxonomies
+                    .iter()
+                    .find(|t| &t.slug == taxa_slug)
+                    .expect("taxo should exist");
+                let mut taxo_found = TaxonomyFound::new(taxa_slug.to_string(), lang, taxo_config);
+                for (term, page_path) in terms_pages {
+                    taxo_found
+                        .terms
+                        .insert(term, page_path.iter().map(|p| &self.pages[p]).collect());
+                }
+
+                taxonomies.push(Taxonomy::new(taxo_found, config));
+            }
+        }
+
+        taxonomies
     }
 
     /// Sort all sections pages according to sorting method given
@@ -280,21 +331,19 @@ impl Library {
     pub fn find_sections_by_path(&self, paths: &[PathBuf]) -> Vec<&Section> {
         paths.iter().map(|p| &self.sections[p]).collect()
     }
-
-    pub fn find_taxonomies(&self, config: &Config) -> Result<Vec<Taxonomy>> {
-        find_taxonomies(config, &self.pages)
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::FileInfo;
-    use config::LanguageOptions;
+    use config::{LanguageOptions, TaxonomyConfig};
+    use std::collections::HashMap;
+    use utils::slugs::SlugifyStrategy;
 
     #[test]
     fn can_find_collisions_with_paths() {
-        let mut library = Library::new();
+        let mut library = Library::default();
         let mut section = Section { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
         library.insert_section(section.clone());
@@ -311,7 +360,7 @@ mod tests {
 
     #[test]
     fn can_find_collisions_with_aliases() {
-        let mut library = Library::new();
+        let mut library = Library::default();
         let mut section = Section { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
         library.insert_section(section.clone());
@@ -378,7 +427,7 @@ mod tests {
     fn can_populate_sections() {
         let mut config = Config::default_for_test();
         config.languages.insert("fr".to_owned(), LanguageOptions::default());
-        let mut library = Library::new();
+        let mut library = Library::default();
         let sections = vec![
             ("content/_index.md", "en", 0, false, SortBy::None),
             ("content/_index.fr.md", "fr", 0, false, SortBy::None),
@@ -513,5 +562,153 @@ mod tests {
         assert_eq!(translations.len(), 2);
         assert!(translations[0].title.is_some());
         assert!(translations[1].title.is_some());
+    }
+
+    macro_rules! taxonomies {
+        ($config:expr, [$($page:expr),+]) => {{
+            let mut library = Library::new(&$config);
+            $(
+                library.insert_page($page);
+            )+
+            library.find_taxonomies(&$config)
+        }};
+    }
+
+    fn create_page_w_taxa(path: &str, lang: &str, taxo: Vec<(&str, Vec<&str>)>) -> Page {
+        let mut page = Page::default();
+        page.file.path = PathBuf::from(path);
+        page.lang = lang.to_owned();
+        let mut taxonomies = HashMap::new();
+        for (name, terms) in taxo {
+            taxonomies.insert(name.to_owned(), terms.iter().map(|t| t.to_string()).collect());
+        }
+        page.meta.taxonomies = taxonomies;
+        page
+    }
+
+    #[test]
+    fn can_make_taxonomies() {
+        let mut config = Config::default_for_test();
+        config.languages.get_mut("en").unwrap().taxonomies = vec![
+            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "authors".to_string(), ..TaxonomyConfig::default() },
+        ];
+        config.slugify_taxonomies();
+
+        let page1 = create_page_w_taxa(
+            "a.md",
+            "en",
+            vec![("tags", vec!["rust", "db"]), ("categories", vec!["tutorials"])],
+        );
+        let page2 = create_page_w_taxa(
+            "b.md",
+            "en",
+            vec![("tags", vec!["rust", "js"]), ("categories", vec!["others"])],
+        );
+        let page3 = create_page_w_taxa(
+            "c.md",
+            "en",
+            vec![("tags", vec!["js"]), ("authors", vec!["Vincent Prouillet"])],
+        );
+        let taxonomies = taxonomies!(config, [page1, page2, page3]);
+
+        let tags = taxonomies.iter().find(|t| t.kind.name == "tags").unwrap();
+        assert_eq!(tags.len(), 3);
+        assert_eq!(tags.items[0].name, "db");
+        assert_eq!(tags.items[0].permalink, "http://a-website.com/tags/db/");
+        assert_eq!(tags.items[0].pages.len(), 1);
+        assert_eq!(tags.items[1].name, "js");
+        assert_eq!(tags.items[1].permalink, "http://a-website.com/tags/js/");
+        assert_eq!(tags.items[1].pages.len(), 2);
+        assert_eq!(tags.items[2].name, "rust");
+        assert_eq!(tags.items[2].permalink, "http://a-website.com/tags/rust/");
+        assert_eq!(tags.items[2].pages.len(), 2);
+
+        let categories = taxonomies.iter().find(|t| t.kind.name == "categories").unwrap();
+        assert_eq!(categories.items.len(), 2);
+        assert_eq!(categories.items[0].name, "others");
+        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/others/");
+        assert_eq!(categories.items[0].pages.len(), 1);
+
+        let authors = taxonomies.iter().find(|t| t.kind.name == "authors").unwrap();
+        assert_eq!(authors.items.len(), 1);
+        assert_eq!(authors.items[0].permalink, "http://a-website.com/authors/vincent-prouillet/");
+    }
+
+    #[test]
+    fn can_make_multiple_language_taxonomies() {
+        let mut config = Config::default_for_test();
+        config.slugify.taxonomies = SlugifyStrategy::Safe;
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
+        config.languages.get_mut("en").unwrap().taxonomies = vec![
+            TaxonomyConfig { name: "categories".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
+        ];
+        config.languages.get_mut("fr").unwrap().taxonomies = vec![
+            TaxonomyConfig { name: "catégories".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() },
+        ];
+        config.slugify_taxonomies();
+
+        let page1 = create_page_w_taxa("a.md", "en", vec![("categories", vec!["rust"])]);
+        let page2 = create_page_w_taxa("b.md", "en", vec![("tags", vec!["rust"])]);
+        let page3 = create_page_w_taxa("c.md", "fr", vec![("catégories", vec!["rust"])]);
+        let taxonomies = taxonomies!(config, [page1, page2, page3]);
+
+        let categories = taxonomies.iter().find(|t| t.kind.name == "categories").unwrap();
+        assert_eq!(categories.len(), 1);
+        assert_eq!(categories.items[0].permalink, "http://a-website.com/categories/rust/");
+        let tags = taxonomies.iter().find(|t| t.kind.name == "tags" && t.lang == "en").unwrap();
+        assert_eq!(tags.len(), 1);
+        assert_eq!(tags.items[0].permalink, "http://a-website.com/tags/rust/");
+        let fr_categories = taxonomies.iter().find(|t| t.kind.name == "catégories").unwrap();
+        assert_eq!(fr_categories.len(), 1);
+        assert_eq!(fr_categories.items[0].permalink, "http://a-website.com/fr/catégories/rust/");
+    }
+
+    #[test]
+    fn taxonomies_with_unic_are_grouped_with_default_slugify_strategy() {
+        let mut config = Config::default_for_test();
+        config.languages.get_mut("en").unwrap().taxonomies = vec![
+            TaxonomyConfig { name: "test-taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test taxonomy".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "test-taxonomy ".to_string(), ..TaxonomyConfig::default() },
+            TaxonomyConfig { name: "Test-Taxonomy ".to_string(), ..TaxonomyConfig::default() },
+        ];
+        config.slugify_taxonomies();
+        let page1 = create_page_w_taxa("a.md", "en", vec![("test-taxonomy", vec!["Ecole"])]);
+        let page2 = create_page_w_taxa("b.md", "en", vec![("test taxonomy", vec!["École"])]);
+        let page3 = create_page_w_taxa("c.md", "en", vec![("test-taxonomy ", vec!["ecole"])]);
+        let page4 = create_page_w_taxa("d.md", "en", vec![("Test-Taxonomy ", vec!["école"])]);
+        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]);
+        assert_eq!(taxonomies.len(), 1);
+
+        let tax = &taxonomies[0];
+        // under the default slugify strategy all of the provided terms should be the same
+        assert_eq!(tax.items.len(), 1);
+        let term1 = &tax.items[0];
+        assert_eq!(term1.name, "Ecole");
+        assert_eq!(term1.slug, "ecole");
+        assert_eq!(term1.permalink, "http://a-website.com/test-taxonomy/ecole/");
+        assert_eq!(term1.pages.len(), 4);
+    }
+
+    #[test]
+    fn taxonomies_with_unic_are_not_grouped_with_safe_slugify_strategy() {
+        let mut config = Config::default_for_test();
+        config.slugify.taxonomies = SlugifyStrategy::Safe;
+        config.languages.get_mut("en").unwrap().taxonomies =
+            vec![TaxonomyConfig { name: "test".to_string(), ..TaxonomyConfig::default() }];
+        config.slugify_taxonomies();
+        let page1 = create_page_w_taxa("a.md", "en", vec![("test", vec!["Ecole"])]);
+        let page2 = create_page_w_taxa("b.md", "en", vec![("test", vec!["École"])]);
+        let page3 = create_page_w_taxa("c.md", "en", vec![("test", vec!["ecole"])]);
+        let page4 = create_page_w_taxa("d.md", "en", vec![("test", vec!["école"])]);
+        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]);
+        assert_eq!(taxonomies.len(), 1);
+        let tax = &taxonomies[0];
+        // under the safe slugify strategy all terms should be distinct
+        assert_eq!(tax.items.len(), 4);
     }
 }
