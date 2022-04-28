@@ -1,3 +1,4 @@
+use libs::serde_yaml;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -47,6 +48,7 @@ enum OutputFormat {
     Bibtex,
     Plain,
     Xml,
+    Yaml,
 }
 
 impl FromStr for OutputFormat {
@@ -60,6 +62,7 @@ impl FromStr for OutputFormat {
             "bibtex" => Ok(OutputFormat::Bibtex),
             "xml" => Ok(OutputFormat::Xml),
             "plain" => Ok(OutputFormat::Plain),
+            "yaml" => Ok(OutputFormat::Yaml),
             format => Err(format!("Unknown output format {}", format).into()),
         }
     }
@@ -74,6 +77,7 @@ impl OutputFormat {
             OutputFormat::Bibtex => "application/x-bibtex",
             OutputFormat::Xml => "text/xml",
             OutputFormat::Plain => "text/plain",
+            OutputFormat::Yaml => "application/yaml",
         })
     }
 }
@@ -388,6 +392,7 @@ impl TeraFn for LoadData {
             OutputFormat::Json => load_json(data),
             OutputFormat::Bibtex => load_bibtex(data),
             OutputFormat::Xml => load_xml(data),
+            OutputFormat::Yaml => load_yaml(data),
             OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
         };
 
@@ -404,6 +409,13 @@ fn load_json(json_data: String) -> Result<Value> {
     let json_content: Value =
         serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
     Ok(json_content)
+}
+
+/// Parse a YAML string and convert it to a Tera Value
+fn load_yaml(yaml_data: String) -> Result<Value> {
+    let yaml_content: Value =
+        serde_yaml::from_str(yaml_data.as_str()).map_err(|e| format!("{:?}", e))?;
+    Ok(yaml_content)
 }
 
 /// Parse a TOML string and convert it to a Tera Value
@@ -1079,6 +1091,25 @@ mod tests {
                     "subpackage": {
                         "subkey": 5
                     }
+                }
+            })
+        )
+    }
+
+    #[test]
+    fn can_load_yaml() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.yaml").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
                 }
             })
         )
