@@ -1,4 +1,3 @@
-use libs::serde_yaml;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -13,7 +12,7 @@ use libs::tera::{
     from_value, to_value, Error, Error as TeraError, Function as TeraFn, Map, Result, Value,
 };
 use libs::url::Url;
-use libs::{nom_bibtex, serde_json, toml};
+use libs::{nom_bibtex, serde_json, serde_yaml, toml};
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, read_file};
 
@@ -212,7 +211,7 @@ fn add_headers_from_args(header_args: Option<Vec<String>>) -> Result<HeaderMap> 
 }
 
 /// A Tera function to load data from a file or from a URL
-/// Currently the supported formats are json, toml, csv, bibtex and plain text
+/// Currently the supported formats are json, toml, csv, yaml, bibtex and plain text
 #[derive(Debug)]
 pub struct LoadData {
     base_path: PathBuf,
