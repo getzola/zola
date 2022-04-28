@@ -77,7 +77,7 @@ impl OutputFormat {
             OutputFormat::Bibtex => "application/x-bibtex",
             OutputFormat::Xml => "text/xml",
             OutputFormat::Plain => "text/plain",
-            OutputFormat::Yaml => "application/yaml",
+            OutputFormat::Yaml => "application/x-yaml",
         })
     }
 }
