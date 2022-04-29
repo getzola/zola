@@ -259,7 +259,8 @@ The method returns a map containing `width`, `height` and `format` (the lowercas
 
 ### `load_data`
 
-Loads data from a file, URL, or string literal. Supported file types include *toml*, *json*, *csv*, *bibtex* and *xml* and only supports UTF-8 encoding.
+Loads data from a file, URL, or string literal. Supported file types include *toml*, *json*, *csv*, *bibtex*, *yaml* 
+and *xml* and only supports UTF-8 encoding.
 
 Any other file type will be loaded as plain text.
 
@@ -293,7 +294,9 @@ The snippet below outputs the HTML from a Wikipedia page, or "No data found" if 
 {% if data %}{{ data | safe }}{% else %}No data found{% endif %}
 ```
 
-The optional `format` argument allows you to specify and override which data type is contained within the specified file or URL. Valid entries are `toml`, `json`, `csv`, `bibtex`, `xml` or `plain`. If the `format` argument isn't specified, then the path extension is used. In the case of a literal, `plain` is assumed if `format` is unspecified. 
+The optional `format` argument allows you to specify and override which data type is contained within the specified file or URL.
+Valid entries are `toml`, `json`, `csv`, `bibtex`, `yaml`, `xml` or `plain`. If the `format` argument isn't specified, then the 
+path extension is used. In the case of a literal, `plain` is assumed if `format` is unspecified.
 
 
 ```jinja2
@@ -302,7 +305,7 @@ The optional `format` argument allows you to specify and override which data typ
 
 Use the `plain` format for when your file has a supported extension but you want to load it as plain text.
 
-For *toml*, *json* and *xml*, the data is loaded into a structure matching the original data file;
+For *toml*, *json*, *yaml* and *xml*, the data is loaded into a structure matching the original data file;
 however, for *csv* there is no native notion of such a structure. Instead, the data is separated
 into a data structure containing *headers* and *records*. See the example below to see
 how this works.

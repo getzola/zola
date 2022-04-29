@@ -13,6 +13,7 @@ also specify classes on headers now
 - Make `ignored_content` work with nested paths and directories
 - `zola serve/build` can now run from anywhere in a zola directory
 - Add XML support to `load_data`
+- Add YAML support to `load_data`
 - `skip_prefixes` is now checked before parsing external link URLs
 - Add `render` attribute to taxonomies configuration in `config.toml`, for when you don't want to render
 any pages related to that taxonomy
