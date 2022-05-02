@@ -397,7 +397,7 @@ impl Site {
     /// Add a page to the site
     /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_page(&mut self, mut page: Page, render_md: bool) -> Result<()> {
-        for (taxa_name, _) in &page.meta.taxonomies {
+        for taxa_name in page.meta.taxonomies.keys() {
             if !self.config.has_taxonomy(taxa_name, &page.lang) {
                 bail!(
                     "Page `{}` has taxonomy `{}` which is not defined in config.toml",

@@ -51,18 +51,22 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
         // as well as any other sring containing "_index." which is now referenced as
         // unsupported page path in the docs.
         if md_path.contains("_index.") {
-            let section = library.sections.get(&full_path).expect(&format!(
-                "Couldn't find section {} in check_internal_links_with_anchors from page {:?}",
-                md_path,
-                page.strip_prefix(&site.base_path).unwrap()
-            ));
+            let section = library.sections.get(&full_path).unwrap_or_else(|| {
+                panic!(
+                    "Couldn't find section {} in check_internal_links_with_anchors from page {:?}",
+                    md_path,
+                    page.strip_prefix(&site.base_path).unwrap()
+                )
+            });
             !section.has_anchor(anchor)
         } else {
-            let page = library.pages.get(&full_path).expect(&format!(
-                "Couldn't find page {} in check_internal_links_with_anchors from page {:?}",
-                md_path,
-                page.strip_prefix(&site.base_path).unwrap()
-            ));
+            let page = library.pages.get(&full_path).unwrap_or_else(|| {
+                panic!(
+                    "Couldn't find page {} in check_internal_links_with_anchors from page {:?}",
+                    md_path,
+                    page.strip_prefix(&site.base_path).unwrap()
+                )
+            });
 
             !(page.has_anchor(anchor) || page.has_anchor_id(anchor))
         }
