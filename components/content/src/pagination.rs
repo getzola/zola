@@ -285,7 +285,7 @@ mod tests {
         num_pages: usize,
         paginate_reversed: bool,
     ) -> (Section, Library) {
-        let mut library = Library::new();
+        let mut library = Library::default();
         for i in 1..=num_pages {
             let mut page = Page::default();
             page.meta.title = Some(i.to_string());

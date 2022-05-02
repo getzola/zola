@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::theme::Theme;
 use errors::{anyhow, bail, Result};
 use utils::fs::read_file;
+use utils::slugs::slugify_paths;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
@@ -55,7 +56,6 @@ pub struct Config {
     pub feed_filename: String,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
-
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
@@ -124,6 +124,7 @@ impl Config {
         }
 
         config.add_default_language();
+        config.slugify_taxonomies();
 
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
@@ -149,6 +150,7 @@ impl Config {
     pub fn default_for_test() -> Self {
         let mut config = Config::default();
         config.add_default_language();
+        config.slugify_taxonomies();
         config
     }
 
@@ -166,6 +168,14 @@ impl Config {
         config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
 
         Ok(config)
+    }
+
+    pub fn slugify_taxonomies(&mut self) {
+        for (_, lang_options) in self.languages.iter_mut() {
+            for tax_def in lang_options.taxonomies.iter_mut() {
+                tax_def.slug = slugify_paths(&tax_def.name, self.slugify.taxonomies);
+            }
+        }
     }
 
     /// Makes a url, taking into account that the base url might have a trailing slash
@@ -280,6 +290,14 @@ impl Config {
                 .map(|term| term.to_string())
         } else {
             bail!("Language '{}' not found.", lang)
+        }
+    }
+
+    pub fn has_taxonomy(&self, name: &str, lang: &str) -> bool {
+        if let Some(lang_options) = self.languages.get(lang) {
+            lang_options.taxonomies.iter().any(|t| t.name == name)
+        } else {
+            false
         }
     }
 

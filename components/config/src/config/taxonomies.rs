@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct TaxonomyConfig {
     /// The name used in the URL, usually the plural
     pub name: String,
+    /// The slug according to the config slugification strategy
+    pub slug: String,
     /// If this is set, the list of individual taxonomy term page will be paginated
     /// by this much
     pub paginate_by: Option<usize>,
@@ -19,6 +21,7 @@ impl Default for TaxonomyConfig {
     fn default() -> Self {
         Self {
             name: String::new(),
+            slug: String::new(),
             paginate_by: None,
             paginate_path: None,
             render: true,

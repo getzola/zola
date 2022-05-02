@@ -2,10 +2,12 @@ mod common;
 
 use std::collections::HashMap;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use common::{build_site, build_site_with_setup};
 use config::TaxonomyConfig;
+use content::Page;
+use libs::ahash::AHashMap;
 use site::sitemap;
 use site::Site;
 
@@ -96,6 +98,21 @@ fn can_parse_site() {
         .find(|e| e.permalink.ends_with("tutorials/programming/"))
         .expect("expected to find programming section in sitemap");
     assert_eq!(Some(&prog_section.meta.extra), sitemap_entry.extra);
+}
+
+#[test]
+fn errors_on_unknown_taxonomies() {
+    let (mut site, _, _) = build_site("test_site");
+    let mut page = Page::default();
+    page.file.path = PathBuf::from("unknown/taxo.md");
+    page.meta.taxonomies.insert("wrong".to_string(), vec![]);
+    let res = site.add_page(page, false);
+    assert!(res.is_err());
+    let err = res.unwrap_err();
+    assert_eq!(
+        err.to_string(),
+        "Page `unknown/taxo.md` has taxonomy `wrong` which is not defined in config.toml"
+    );
 }
 
 #[test]
@@ -268,8 +285,11 @@ fn can_build_site_with_taxonomies() {
     let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
         {
-            let mut library = site.library.write().unwrap();
-            for (i, (_, page)) in library.pages.iter_mut().enumerate() {
+            let library = &mut *site.library.write().unwrap();
+            let mut pages = vec![];
+
+            let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
+            for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
                 page.meta.taxonomies = {
                     let mut taxonomies = HashMap::new();
                     taxonomies.insert(
@@ -278,6 +298,10 @@ fn can_build_site_with_taxonomies() {
                     );
                     taxonomies
                 };
+                pages.push(page);
+            }
+            for p in pages {
+                library.insert_page(p);
             }
         }
         site.populate_taxonomies().unwrap();
@@ -543,6 +567,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.config.languages.get_mut("en").unwrap().taxonomies.push(TaxonomyConfig {
             name: "tags".to_string(),
+            slug: "tags".to_string(),
             paginate_by: Some(2),
             paginate_path: None,
             render: true,
@@ -550,9 +575,11 @@ fn can_build_site_with_pagination_for_taxonomy() {
         });
         site.load().unwrap();
         {
-            let mut library = site.library.write().unwrap();
+            let library = &mut *site.library.write().unwrap();
+            let mut pages = vec![];
 
-            for (i, (_, page)) in library.pages.iter_mut().enumerate() {
+            let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
+            for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
                 page.meta.taxonomies = {
                     let mut taxonomies = HashMap::new();
                     taxonomies.insert(
@@ -561,6 +588,10 @@ fn can_build_site_with_pagination_for_taxonomy() {
                     );
                     taxonomies
                 };
+                pages.push(page);
+            }
+            for p in pages {
+                library.insert_page(p);
             }
         }
         site.populate_taxonomies().unwrap();
