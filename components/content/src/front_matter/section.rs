@@ -59,7 +59,6 @@ pub struct SectionFrontMatter {
     /// Whether the section should pass its pages on to the parent section. Defaults to `false`.
     /// Useful when the section shouldn't split up the parent section, like
     /// sections for each year under a posts section.
-    #[serde(skip_serializing)]
     pub transparent: bool,
     /// Optional template for all pages in this section (including the pages of children section)
     #[serde(skip_serializing)]
