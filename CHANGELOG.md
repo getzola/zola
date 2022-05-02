@@ -17,6 +17,7 @@ also specify classes on headers now
 - `skip_prefixes` is now checked before parsing external link URLs
 - Add `render` attribute to taxonomies configuration in `config.toml`, for when you don't want to render
 any pages related to that taxonomy
+- Serialize `transparent` field from front-matter of sections
 
 ## 0.15.3 (2022-01-23)
 
