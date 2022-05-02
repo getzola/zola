@@ -969,8 +969,7 @@ impl Site {
         if let Some(base) = base_path {
             let mut components = Vec::new();
             for component in base.components() {
-                // TODO: avoid cloning the paths
-                components.push(component.as_os_str().to_string_lossy().as_ref().to_string());
+                components.push(component.as_os_str().to_string_lossy());
             }
             self.write_content(
                 &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
