@@ -9,7 +9,7 @@ use libs::reqwest::{blocking::Client, StatusCode};
 use config::LinkChecker;
 use errors::anyhow;
 
-use utils::links::has_anchor_id;
+use utils::anchors::has_anchor_id;
 
 pub type Result = result::Result<StatusCode, String>;
 

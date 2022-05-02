@@ -20,8 +20,8 @@ use crate::library::Library;
 use crate::ser::SerializingPage;
 use crate::utils::get_reading_analytics;
 use crate::utils::{find_related_assets, has_anchor};
+use utils::anchors::has_anchor_id;
 use utils::fs::read_file;
-use utils::links::has_anchor_id;
 
 // Based on https://regex101.com/r/H2n38Z/1/tests
 // A regex parsing RFC3339 date followed by {_,-}, some characters and ended by .md

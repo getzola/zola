@@ -1,6 +1,6 @@
+pub mod anchors;
 pub mod de;
 pub mod fs;
-pub mod links;
 pub mod net;
 pub mod site;
 pub mod slugs;
