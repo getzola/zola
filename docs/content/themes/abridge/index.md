@@ -3,11 +3,11 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, abridge.css class-light CSS, and No JS."
 template = "theme.html"
-date = 2022-04-23T22:39:45+02:00
+date = 2022-05-02T15:40:10-07:00
 
 [extra]
-created = 2022-04-23T22:39:45+02:00
-updated = 2022-04-23T22:39:45+02:00
+created = 2022-05-02T15:40:10-07:00
+updated = 2022-05-02T15:40:10-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.14.1"
@@ -21,7 +21,9 @@ homepage = "https://github.com/jieiku"
 
 # Abridge Zola Theme
 
-Abridge is a fast and lightweight Zola theme using semantic html, class-light [abridge.css](https://github.com/jieiku/abridge-css), and No JS.
+Abridge is a fast and lightweight Zola theme using semantic html, class-light [abridge.css](https://github.com/jieiku/abridge.css), and No JS.
+
+![abridge](screenshot.png)
 
 ## Demo
 
@@ -110,6 +112,14 @@ You can customize your configurations, templates and content for yourself. Look
 at the `config.toml`, `content` files, and templates files in this
 repo for an idea.
 
+### Colors and Styles
+
+Colors and style are handled by the sass files of [abridge.css](https://github.com/jieiku/abridge.css)
+
+To change colors of this theme all you need to do is edit `/themes/abridge/sass/themes/_auto.scss`
+then in the root of your site type `zola build` which will regenerate your site, this is similar to what zola serve does, except it does not facilitate serving the site.
+This is also the way you should generate your site to serve it by a real webserver such as nginx.
+
 ### Global Configuration
 
 There are some configuration options that you can customize in `config.toml`.
@@ -130,10 +140,11 @@ Use search function for the content.
 build_search_index = true
 ```
 
-Currently this theme has not yet implemented a search, there are however several themes that have.
-For the moment you can look at how those other themes have implemented their search.
-I plan to implement a search field eventually, but am still weighing my options.
-I would prefer a self hosted search method that works even if javascript is disabled in the browser. (open an issue report if you know of one.)
+​The search is the only thing that requires javascript in this this theme.
+
+If you set `build_search_index` to false then the javascript files will no longer be loaded.
+
+The default elasticlunr search is currently used, I may eventually switch this out for something else.
 
 #### Configuration options under the `extra`
 

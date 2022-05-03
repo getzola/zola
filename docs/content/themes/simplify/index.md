@@ -3,11 +3,11 @@
 title = "simplify"
 description = "A minimal blog theme built with simple.css"
 template = "theme.html"
-date = 2022-04-23T22:39:45+02:00
+date = 2022-05-02T15:40:10-07:00
 
 [extra]
-created = 2022-04-23T22:39:45+02:00
-updated = 2022-04-23T22:39:45+02:00
+created = 2022-05-02T15:40:10-07:00
+updated = 2022-05-02T15:40:10-07:00
 repository = "https://github.com/tarunjana/simplify.git"
 homepage = "https://github.com/tarunjana/simplify"
 minimum_version = "0.15.3"
