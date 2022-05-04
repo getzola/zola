@@ -99,17 +99,22 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
                 anchors_total, errors_total,
             );
 
-            match site.config.link_checker.internal_level {
-                LinkCheckerLevel::ErrorLevel => Err(anyhow!(errors
-                    .join(format!("\n{}", LinkCheckerLevel::ErrorLevel.log_prefix()).as_str()))),
-                LinkCheckerLevel::WarnLevel => {
-                    for err in errors {
-                        console::warn(
-                            format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), err).as_str(),
-                        );
-                    }
-                    Ok(())
+            for err in errors.iter() {
+                match site.config.link_checker.internal_level {
+                    LinkCheckerLevel::ErrorLevel => console::error(
+                        format!("{}{}", LinkCheckerLevel::ErrorLevel.log_prefix(), err).as_str(),
+                    ),
+                    LinkCheckerLevel::WarnLevel => console::warn(
+                        format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), err).as_str(),
+                    ),
                 }
+            }
+
+            match site.config.link_checker.internal_level {
+                LinkCheckerLevel::ErrorLevel => {
+                    Err(anyhow!("broken internal anchor links were found"))
+                }
+                LinkCheckerLevel::WarnLevel => Ok(()),
             }
         }
     }
@@ -177,40 +182,27 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     let (checked_links, invalid_url_links): (Vec<&LinkDef>, Vec<&LinkDef>) =
         checked_links.iter().partition(|link| link.domain.is_ok());
 
-    // get any domains that failed to parse and log them at the configured log level
-    let invalid_link_errs: Vec<String> = invalid_url_links
-        .iter()
-        .map(|link: &&LinkDef| link.domain.as_ref().unwrap_err().clone())
-        .collect();
-
     println!(
         "Checking {} external link(s). Skipping {} external link(s).{}",
         checked_links.len(),
         skipped_link_count,
-        if invalid_link_errs.is_empty() {
+        if invalid_url_links.is_empty() {
             "".to_string()
         } else {
-            format!(" {} link(s) had unparseable URLs.", invalid_link_errs.len())
+            format!(" {} link(s) had unparseable URLs.", invalid_url_links.len())
         }
     );
 
-    if !invalid_link_errs.is_empty() {
-        match site.config.link_checker.external_level {
-            // panic if the link checker level is set to error.  bail! can only take one error
-            // message, and it prefixes "Error: ", but we may have accumulated many errors, and it
-            // loos weird if only the first line says "Error: ", so we use join() here to add the
-            // ErrorLevel's log_prefix to each line.
-            LinkCheckerLevel::ErrorLevel => bail!(
-                "{}",
-                invalid_link_errs
-                    .join(format!("\n{}", LinkCheckerLevel::ErrorLevel.log_prefix()).as_str())
-            ),
-            LinkCheckerLevel::WarnLevel => {
-                for err in invalid_link_errs {
-                    console::warn(
-                        format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), err).as_str(),
-                    )
-                }
+    if !invalid_url_links.is_empty() {
+        for err in invalid_url_links {
+            let msg = err.domain.as_ref().unwrap_err();
+            match site.config.link_checker.external_level {
+                LinkCheckerLevel::ErrorLevel => console::error(
+                    format!("{}{}", LinkCheckerLevel::ErrorLevel.log_prefix(), msg).as_str(),
+                ),
+                LinkCheckerLevel::WarnLevel => console::warn(
+                    format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), msg).as_str(),
+                ),
             }
         }
     }
