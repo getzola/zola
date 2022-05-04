@@ -130,7 +130,6 @@ fn get_link_domain(link: &str) -> Result<String, String> {
 pub fn check_external_links(site: &Site) -> Result<()> {
     let library = site.library.write().expect("Get lock for check_external_links");
 
-    #[derive(Debug)]
     struct LinkDef {
         file_path: PathBuf,
         external_link: String,
