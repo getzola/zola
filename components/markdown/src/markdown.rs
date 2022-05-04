@@ -139,19 +139,24 @@ fn fix_link(
                 resolved.permalink
             }
             Err(_) => {
+                context.config.link_checker.internal_level.log(format!(
+                    "Dead relative link `{}` in {}",
+                    link,
+                    context.current_page_path.unwrap_or("unknown"),
+                ));
                 match context.config.link_checker.internal_level {
-                    config::LinkCheckerLevel::ErrorLevel => {
+                    config::LinkCheckerLevel::Error => {
                         return Err(anyhow!(
                             "Dead relative link `{}` in {}",
                             link,
                             context.current_page_path.unwrap_or("unknown"),
                         ))
                     }
-                    config::LinkCheckerLevel::WarnLevel => {
+                    config::LinkCheckerLevel::Warn => {
                         console::warn(
                             format!(
                                 "{}Dead relative link `{}` in {}",
-                                config::LinkCheckerLevel::WarnLevel.log_prefix(),
+                                config::LinkCheckerLevel::Warn.log_prefix(),
                                 link,
                                 context.current_page_path.unwrap_or("unknown"),
                             )

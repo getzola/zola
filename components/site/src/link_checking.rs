@@ -5,7 +5,7 @@ use config::LinkCheckerLevel;
 use libs::rayon::prelude::*;
 
 use crate::{anyhow, Site};
-use errors::{bail, Result};
+use errors::Result;
 use libs::rayon;
 use libs::url::Url;
 
@@ -99,22 +99,13 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
                 anchors_total, errors_total,
             );
 
-            for err in errors.iter() {
-                match site.config.link_checker.internal_level {
-                    LinkCheckerLevel::ErrorLevel => console::error(
-                        format!("{}{}", LinkCheckerLevel::ErrorLevel.log_prefix(), err).as_str(),
-                    ),
-                    LinkCheckerLevel::WarnLevel => console::warn(
-                        format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), err).as_str(),
-                    ),
-                }
+            for err in errors.into_iter() {
+                site.config.link_checker.internal_level.log(err);
             }
 
             match site.config.link_checker.internal_level {
-                LinkCheckerLevel::ErrorLevel => {
-                    Err(anyhow!("broken internal anchor links were found"))
-                }
-                LinkCheckerLevel::WarnLevel => Ok(()),
+                LinkCheckerLevel::Error => Err(anyhow!("broken internal anchor links were found")),
+                LinkCheckerLevel::Warn => Ok(()),
             }
         }
     }
@@ -194,16 +185,9 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     );
 
     if !invalid_url_links.is_empty() {
-        for err in invalid_url_links {
-            let msg = err.domain.as_ref().unwrap_err();
-            match site.config.link_checker.external_level {
-                LinkCheckerLevel::ErrorLevel => console::error(
-                    format!("{}{}", LinkCheckerLevel::ErrorLevel.log_prefix(), msg).as_str(),
-                ),
-                LinkCheckerLevel::WarnLevel => console::warn(
-                    format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), msg).as_str(),
-                ),
-            }
+        for err in invalid_url_links.into_iter() {
+            let msg = err.domain.to_owned().unwrap_err();
+            site.config.link_checker.external_level.log(msg);
         }
     }
 
@@ -268,24 +252,17 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         return Ok(());
     }
 
-    let msg = errors
-        .into_iter()
-        .map(|(page_path, link, check_res)| {
-            format!(
-                "Dead link in {} to {}: {}",
-                page_path.to_string_lossy(),
-                link,
-                link_checker::message(&check_res)
-            )
-        })
-        .collect::<Vec<_>>()
-        .join(format!("\n{}", site.config.link_checker.external_level.log_prefix()).as_str());
+    for (page_path, link, check_res) in errors.iter() {
+        site.config.link_checker.external_level.log(format!(
+            "Dead link in {} to {}: {}",
+            page_path.to_string_lossy(),
+            link,
+            link_checker::message(&check_res)
+        ));
+    }
 
     match site.config.link_checker.external_level {
-        LinkCheckerLevel::ErrorLevel => Err(anyhow!(msg)),
-        LinkCheckerLevel::WarnLevel => {
-            console::warn(format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), msg).as_str());
-            Ok(())
-        }
+        LinkCheckerLevel::Error => Err(anyhow!("Dead links found")),
+        LinkCheckerLevel::Warn => Ok(()),
     }
 }
