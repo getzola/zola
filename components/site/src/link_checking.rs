@@ -284,7 +284,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     match site.config.link_checker.external_level {
         LinkCheckerLevel::ErrorLevel => Err(anyhow!(msg)),
         LinkCheckerLevel::WarnLevel => {
-            console::warn(format!("Warning: {}", msg).as_str());
+            console::warn(format!("{}{}", LinkCheckerLevel::WarnLevel.log_prefix(), msg).as_str());
             Ok(())
         }
     }
