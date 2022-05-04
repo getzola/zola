@@ -12,7 +12,9 @@ use libs::url::Url;
 /// Check whether all internal links pointing to explicit anchor fragments are valid.
 ///
 /// This is very similar to `check_external_links`, although internal links checking
-/// is always performed (while external ones only conditionally in `zola check`).
+/// is always performed (while external ones only conditionally in `zola check`).  If broken links
+/// are encountered, the `internal_level` setting in config.toml will determine whether they are
+/// treated as warnings or errors.
 pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     println!("Checking all internal links with anchors.");
     let library = site.library.write().expect("Get lock for check_internal_links_with_anchors");
