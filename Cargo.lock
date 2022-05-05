@@ -390,10 +390,8 @@ dependencies = [
 name = "console"
 version = "0.1.0"
 dependencies = [
- "atty",
  "errors",
  "libs",
- "termcolor",
 ]
 
 [[package]]
@@ -1403,6 +1401,7 @@ version = "0.1.0"
 dependencies = [
  "ahash",
  "ammonia",
+ "atty",
  "base64",
  "csv",
  "elasticlunr-rs",
@@ -1431,6 +1430,7 @@ dependencies = [
  "svg_metadata",
  "syntect",
  "tera",
+ "termcolor",
  "time",
  "toml",
  "unic-langid",

@@ -6,6 +6,7 @@
 
 pub use ahash;
 pub use ammonia;
+pub use atty;
 pub use base64;
 pub use csv;
 pub use elasticlunr;
@@ -34,6 +35,7 @@ pub use slug;
 pub use svg_metadata;
 pub use syntect;
 pub use tera;
+pub use termcolor;
 pub use time;
 pub use toml;
 pub use unic_langid;

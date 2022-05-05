@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 ahash = "0.7.6"
 ammonia = "3"
+atty = "0.2.11"
 base64 = "0.13"
 csv = "1"
 elasticlunr-rs = {version = "2", default-features = false, features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
@@ -34,6 +35,7 @@ slug = "0.1"
 svg_metadata = "0.4"
 syntect = "5"
 tera = { version = "1", features = ["preserve_order"] }
+termcolor = "1.0.4"
 time = "0.3"
 toml = "0.5"
 unic-langid = "0.9"

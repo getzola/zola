@@ -1,8 +1,9 @@
 use std::env;
 use std::io::Write;
 
+use libs::atty;
 use libs::once_cell::sync::Lazy;
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use libs::termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// Termcolor color choice.
 /// We do not rely on ColorChoice::Auto behavior
