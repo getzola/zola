@@ -5,7 +5,7 @@ use config::LinkCheckerLevel;
 use libs::rayon::prelude::*;
 
 use crate::{anyhow, Site};
-use errors::Result;
+use errors::{bail, Result};
 use libs::rayon;
 use libs::url::Url;
 
@@ -115,13 +115,13 @@ fn should_skip_by_prefix(link: &str, skip_prefixes: &[String]) -> bool {
     skip_prefixes.iter().any(|prefix| link.starts_with(prefix))
 }
 
-fn get_link_domain(link: &str) -> Result<String, String> {
+fn get_link_domain(link: &str) -> Result<String> {
     return match Url::parse(link) {
         Ok(url) => match url.host_str().map(String::from) {
             Some(domain_str) => Ok(domain_str),
-            None => Err(format!("could not parse domain `{}` from link", link)),
+            None => bail!("could not parse domain `{}` from link", link),
         },
-        Err(err) => Err(format!("could not parse domain `{}` from link: `{}`", link, err)),
+        Err(err) => bail!("could not parse domain `{}` from link: `{}`", link, err),
     };
 }
 
@@ -131,15 +131,11 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     struct LinkDef {
         file_path: PathBuf,
         external_link: String,
-        domain: Result<String, String>,
+        domain: Result<String>,
     }
 
     impl LinkDef {
-        pub fn new(
-            file_path: PathBuf,
-            external_link: String,
-            domain: Result<String, String>,
-        ) -> Self {
+        pub fn new(file_path: PathBuf, external_link: String, domain: Result<String>) -> Self {
             Self { file_path, external_link, domain }
         }
     }
@@ -186,8 +182,8 @@ pub fn check_external_links(site: &Site) -> Result<()> {
 
     if !invalid_url_links.is_empty() {
         for err in invalid_url_links.into_iter() {
-            let msg = err.domain.to_owned().unwrap_err();
-            site.config.link_checker.external_level.log(msg);
+            let msg = err.domain.as_ref().unwrap_err();
+            site.config.link_checker.external_level.log(msg.to_string());
         }
     }
 
