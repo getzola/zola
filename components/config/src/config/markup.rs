@@ -97,7 +97,7 @@ impl Markdown {
 
     pub fn export_theme_css(&self, theme_name: &str) -> String {
         let theme = self.get_highlight_theme_by_name(theme_name);
-        css_for_theme_with_class_style(theme, CLASS_STYLE)
+        css_for_theme_with_class_style(theme, CLASS_STYLE).expect("the function can't even error?")
     }
 
     pub fn init_extra_syntaxes_and_highlight_themes(&mut self, path: &Path) -> Result<()> {

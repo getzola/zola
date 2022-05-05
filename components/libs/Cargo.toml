@@ -32,7 +32,7 @@ serde_yaml = "0.8"
 sha2 = "0.10"
 slug = "0.1"
 svg_metadata = "0.4"
-syntect = "4"
+syntect = "5"
 tera = { version = "1", features = ["preserve_order"] }
 time = "0.3"
 toml = "0.5"
