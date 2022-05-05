@@ -253,7 +253,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
             "Dead link in {} to {}: {}",
             page_path.to_string_lossy(),
             link,
-            link_checker::message(&check_res)
+            link_checker::message(check_res)
         ));
     }
 
