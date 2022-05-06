@@ -19,6 +19,7 @@ also specify classes on headers now
 any pages related to that taxonomy
 - Serialize `transparent` field from front-matter of sections
 - Use Zola Tera instance for markdown filter: this means you have access to the same Tera functions as in shortcodes
+- Ignore sections with `render=false` when looking for path collisions
 
 ## 0.15.3 (2022-01-23)
 

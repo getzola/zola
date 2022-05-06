@@ -97,9 +97,11 @@ impl Library {
 
     pub fn insert_section(&mut self, section: Section) {
         let file_path = section.file.path.clone();
-        let mut entries = vec![section.path.clone()];
-        entries.extend(section.meta.aliases.to_vec());
-        self.insert_reverse_aliases(&file_path, entries);
+        if section.meta.render {
+            let mut entries = vec![section.path.clone()];
+            entries.extend(section.meta.aliases.to_vec());
+            self.insert_reverse_aliases(&file_path, entries);
+        }
         self.sections.insert(file_path, section);
     }
 
@@ -366,8 +368,15 @@ mod tests {
         library.insert_section(section.clone());
         let mut section2 = Section { path: "world".to_owned(), ..Default::default() };
         section2.file.path = PathBuf::from("bonjour.md");
-        section2.meta.aliases = vec!["hello".to_owned()];
+        section2.meta.aliases = vec!["hello".to_owned(), "hola".to_owned()];
         library.insert_section(section2.clone());
+        // Sections with render=false do not collide with anything
+        // https://github.com/getzola/zola/issues/1656
+        let mut section3 = Section { path: "world2".to_owned(), ..Default::default() };
+        section3.meta.render = false;
+        section3.file.path = PathBuf::from("bonjour2.md");
+        section3.meta.aliases = vec!["hola".to_owned()];
+        library.insert_section(section3);
 
         let collisions = library.find_path_collisions();
         assert_eq!(collisions.len(), 1);
