@@ -5,14 +5,6 @@ use templates::{filters, global_fns};
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     site.tera.register_filter(
-        "markdown",
-        filters::MarkdownFilter::new(
-            site.base_path.clone(),
-            site.config.clone(),
-            site.permalinks.clone(),
-        )?,
-    );
-    site.tera.register_filter(
         "num_format",
         filters::NumFormatFilter::new(&site.config.default_language),
     );
@@ -66,6 +58,15 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.base_path.clone(),
             site.config.theme.clone(),
             site.output_path.clone(),
+        ),
+    );
+
+    site.tera.register_filter(
+        "markdown",
+        filters::MarkdownFilter::new(
+            site.config.clone(),
+            site.permalinks.clone(),
+            site.tera.clone(),
         ),
     );
 

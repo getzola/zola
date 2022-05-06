@@ -18,6 +18,7 @@ also specify classes on headers now
 - Add `render` attribute to taxonomies configuration in `config.toml`, for when you don't want to render
 any pages related to that taxonomy
 - Serialize `transparent` field from front-matter of sections
+- Use Zola Tera instance for markdown filter: this means you have access to the same Tera functions as in shortcodes
 
 ## 0.15.3 (2022-01-23)
 

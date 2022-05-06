@@ -1,7 +1,6 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
-use std::path::PathBuf;
 
 use config::Config;
 use libs::base64::{decode, encode};
@@ -11,7 +10,6 @@ use libs::tera::{
 };
 use markdown::{render_content, RenderContext};
 
-use crate::load_tera;
 
 #[derive(Debug)]
 pub struct MarkdownFilter {
@@ -22,12 +20,11 @@ pub struct MarkdownFilter {
 
 impl MarkdownFilter {
     pub fn new(
-        path: PathBuf,
         config: Config,
         permalinks: HashMap<String, String>,
-    ) -> TeraResult<Self> {
-        let tera = load_tera(&path, &config).map_err(TeraError::msg)?;
-        Ok(Self { config, permalinks, tera })
+        tera: Tera,
+    ) -> Self {
+        Self { config, permalinks, tera }
     }
 }
 
@@ -113,17 +110,16 @@ impl TeraFilter for NumFormatFilter {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, path::PathBuf};
+    use std::{collections::HashMap};
 
-    use libs::tera::{to_value, Error as TeraError, Filter};
+    use libs::tera::{to_value, Tera, Filter};
 
     use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
     use config::Config;
 
     #[test]
     fn markdown_filter() {
-        let result = MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new())
-            .unwrap()
+        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
             .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
@@ -137,7 +133,7 @@ mod tests {
         let args = HashMap::new();
         let config = Config::default();
         let permalinks = HashMap::new();
-        let mut tera = super::load_tera(&PathBuf::new(), &config).map_err(TeraError::msg).unwrap();
+        let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
         let filter = MarkdownFilter { config, permalinks, tera };
         let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);
@@ -151,7 +147,7 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
         let result =
-            MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).unwrap().filter(
+            MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default()).filter(
                 &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
                 &args,
             );
@@ -165,7 +161,7 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
         let result =
-            MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).unwrap().filter(
+            MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default()).filter(
                 &to_value(
                     &r#"
 |id|author_id|       timestamp_created|title                 |content           |
@@ -190,15 +186,13 @@ mod tests {
         config.markdown.external_links_target_blank = true;
 
         let md = "Hello <https://google.com> :smile: ...";
-        let result = MarkdownFilter::new(PathBuf::new(), config.clone(), HashMap::new())
-            .unwrap()
+        let result = MarkdownFilter::new(config.clone(), HashMap::new(), Tera::default())
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
-        let result = MarkdownFilter::new(PathBuf::new(), config, HashMap::new())
-            .unwrap()
+        let result = MarkdownFilter::new(config, HashMap::new(), Tera::default())
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("style"));
@@ -209,8 +203,7 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
-        let result = MarkdownFilter::new(PathBuf::new(), Config::default(), permalinks)
-            .unwrap()
+        let result = MarkdownFilter::new(Config::default(), permalinks, Tera::default())
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(
