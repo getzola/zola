@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use libs::tera::Tera;
 
@@ -58,8 +57,7 @@ fn configurable_render(
 
     tera.register_filter(
         "markdown",
-        templates::filters::MarkdownFilter::new(PathBuf::new(), config.clone(), permalinks.clone())
-            .unwrap(),
+        templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), tera.clone())
     );
     let mut context = RenderContext::new(
         &tera,

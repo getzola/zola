@@ -312,9 +312,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.1.15"
+version = "3.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85a35a599b11c089a7f49105658d089b8f2cf0882993c17daf6de15285c2c35d"
+checksum = "47582c09be7c8b32c0ab3a6181825ababb713fde6fff20fc573a3870dd45c6a0"
 dependencies = [
  "atty",
  "bitflags",
@@ -329,11 +329,11 @@ dependencies = [
 
 [[package]]
 name = "clap_complete"
-version = "3.1.3"
+version = "3.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d7ca9141e27e6ebc52e3c378b0c07f3cea52db46ed1cc5861735fb697b56356"
+checksum = "da92e6facd8d73c22745a5d3cbb59bdf8e46e3235c923e516527d8e81eec14a4"
 dependencies = [
- "clap 3.1.15",
+ "clap 3.1.17",
 ]
 
 [[package]]
@@ -2306,9 +2306,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.37"
+version = "1.0.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec757218438d5fda206afc041538b2f6d889286160d649a86a24d37e1235afd1"
+checksum = "9027b48e9d4c9175fa2218adf3557f91c1137021739951d4932f5f8268ac48aa"
 dependencies = [
  "unicode-xid",
 ]
@@ -3812,7 +3812,7 @@ name = "zola"
 version = "0.16.0"
 dependencies = [
  "atty",
- "clap 3.1.15",
+ "clap 3.1.17",
  "clap_complete",
  "ctrlc",
  "errors",
