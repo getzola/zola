@@ -8,6 +8,20 @@ use crate::sorting::sort_pages;
 use crate::taxonomies::{Taxonomy, TaxonomyFound};
 use crate::{Page, Section, SortBy};
 
+macro_rules! set {
+    ($($key:expr,)+) => (set!($($key),+));
+
+    ( $($key:expr),* ) => {
+        {
+            let mut _set = AHashSet::new();
+            $(
+                _set.insert($key);
+            )*
+            _set
+        }
+    };
+}
+
 #[derive(Debug, Default)]
 pub struct Library {
     pub pages: AHashMap<PathBuf, Page>,
@@ -15,8 +29,10 @@ pub struct Library {
     // aliases -> files, so we can easily check for conflicts
     pub reverse_aliases: AHashMap<String, AHashSet<PathBuf>>,
     pub translations: AHashMap<PathBuf, AHashSet<PathBuf>>,
+    pub backlinks: AHashMap<String, AHashSet<PathBuf>>,
     // A mapping of {lang -> <slug, {term -> vec<paths>}>>}
     taxonomies_def: AHashMap<String, AHashMap<String, AHashMap<String, Vec<PathBuf>>>>,
+    // All the taxonomies from config.toml in their slugifiedv ersion
     // So we don't need to pass the Config when adding a page to know how to slugify and we only
     // slugify once
     taxo_name_to_slug: AHashMap<String, String>,
@@ -44,11 +60,7 @@ impl Library {
                 .and_modify(|s| {
                     s.insert(file_path.to_path_buf());
                 })
-                .or_insert_with(|| {
-                    let mut s = AHashSet::new();
-                    s.insert(file_path.to_path_buf());
-                    s
-                });
+                .or_insert_with(|| set! {file_path.to_path_buf()});
         }
     }
 
@@ -103,6 +115,33 @@ impl Library {
             self.insert_reverse_aliases(&file_path, entries);
         }
         self.sections.insert(file_path, section);
+    }
+
+    /// Fills a map of target -> {content mentioning it}
+    /// This can only be called _after_ rendering markdown as we need to have accumulated all
+    /// the links first
+    pub fn fill_backlinks(&mut self) {
+        self.backlinks.clear();
+
+        let mut add_backlink = |target: &str, source: &Path| {
+            self.backlinks
+                .entry(target.to_owned())
+                .and_modify(|s| {
+                    s.insert(source.to_path_buf());
+                })
+                .or_insert(set! {source.to_path_buf()});
+        };
+
+        for (_, page) in &self.pages {
+            for (internal_link, _) in &page.internal_links {
+                add_backlink(internal_link, &page.file.path);
+            }
+        }
+        for (_, section) in &self.sections {
+            for (internal_link, _) in &section.internal_links {
+                add_backlink(internal_link, &section.file.path);
+            }
+        }
     }
 
     /// This is called _before_ rendering the markdown the pages/sections
@@ -179,11 +218,7 @@ impl Library {
                     .and_modify(|trans| {
                         trans.insert(path.to_path_buf());
                     })
-                    .or_insert({
-                        let mut s = AHashSet::new();
-                        s.insert(path.to_path_buf());
-                        s
-                    });
+                    .or_insert(set! {path.to_path_buf()});
             }
         };
 
@@ -719,5 +754,29 @@ mod tests {
         let tax = &taxonomies[0];
         // under the safe slugify strategy all terms should be distinct
         assert_eq!(tax.items.len(), 4);
+    }
+
+    #[test]
+    fn can_fill_backlinks() {
+        let mut page1 = create_page("page1.md", "en", PageSort::None);
+        page1.internal_links.push(("page2.md".to_owned(), None));
+        let mut page2 = create_page("page2.md", "en", PageSort::None);
+        page2.internal_links.push(("_index.md".to_owned(), None));
+        let mut section1 = create_section("_index.md", "en", 10, false, SortBy::None);
+        section1.internal_links.push(("page1.md".to_owned(), None));
+        section1.internal_links.push(("page2.md".to_owned(), None));
+        let mut library = Library::default();
+        library.insert_page(page1);
+        library.insert_page(page2);
+        library.insert_section(section1);
+        library.fill_backlinks();
+
+        assert_eq!(library.backlinks.len(), 3);
+        assert_eq!(library.backlinks["page1.md"], set! {"_index.md".to_owned()});
+        assert_eq!(
+            library.backlinks["page2.md"],
+            set! {"page1.md".to_owned(), "_index.md".to_owned()}
+        );
+        assert_eq!(library.backlinks["_index.md"], set! {"page2.md".to_owned()});
     }
 }

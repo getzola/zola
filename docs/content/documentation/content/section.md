@@ -159,14 +159,14 @@ The `sort_by` front-matter variable can have the following values:
 
 ### `date`
 This will sort all pages by their `date` field, from the most recent (at the
-top of the list) to the oldest (at the bottom of the list).  Each page will
-get `page.earlier` and `page.later` variables that contain the pages with
+top of the list) to the oldest (at the bottom of the list). Each page will
+get `page.lower` and `page.higher` variables that contain the pages with
 earlier and later dates, respectively.
 
 ### `title`
 This will sort all pages by their `title` field in natural lexical order, as
 defined  by `natural_lexical_cmp` in the [lexical-sort] crate. Each page will
-get `page.title_prev` and `page.title_next` variables that  contain the pages
+get `page.lower` and `page.higher` variables that contain the pages
 with  previous and next titles, respectively.
 
 For example, here is a natural lexical ordering: "bachata, BART, bolero,
@@ -180,7 +180,7 @@ bolero, meter, underground, μ-kernel".
 ### `weight`
 This will be sort all pages by their `weight` field, from lightest weight
 (at the top of the list) to heaviest (at the bottom of the list).  Each
-page gets `page.lighter` and `page.heavier` variables that contain the
+page gets `page.lower` and `page.higher` variables that contain the
 pages with lighter and heavier weights, respectively.
 
 ### Reversed sorting
@@ -190,11 +190,7 @@ pages sorted by weight will be sorted from lightest (at the top) to heaviest
 (at the bottom); pages sorted by date will be sorted from oldest (at the top)
 to newest (at the bottom).
 
-`reverse` has no effect on:
-
-* `page.later` / `page.earlier`,
-* `page.title_prev` / `page.title_next`, or
-* `page.heavier` / `page.lighter`.
+`reverse` has no effect on `page.lower` / `page.higher`.
 
 If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
 

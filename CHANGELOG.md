@@ -7,6 +7,8 @@
 - Switch to pulldown-cmark anchor rather than ours, some (very niche) edge cases are not supported anymore, you can
 also specify classes on headers now
 - Now outputs empty taxonomies instead of ignoring them
+- Unify all sorting variable names in templates to `lower`/`higher` in order to make it easy to re-use templates and it
+was becoming hard to come up with names
 
 ### Other
 - Fix markup for fenced code with linenos
@@ -20,6 +22,7 @@ any pages related to that taxonomy
 - Serialize `transparent` field from front-matter of sections
 - Use Zola Tera instance for markdown filter: this means you have access to the same Tera functions as in shortcodes
 - Ignore sections with `render=false` when looking for path collisions
+- Add support for backlinks
 
 ## 0.15.3 (2022-01-23)
 

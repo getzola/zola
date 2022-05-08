@@ -57,7 +57,7 @@ fn configurable_render(
 
     tera.register_filter(
         "markdown",
-        templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), tera.clone())
+        templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), tera.clone()),
     );
     let mut context = RenderContext::new(
         &tera,

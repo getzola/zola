@@ -10,7 +10,6 @@ use libs::tera::{
 };
 use markdown::{render_content, RenderContext};
 
-
 #[derive(Debug)]
 pub struct MarkdownFilter {
     config: Config,
@@ -19,11 +18,7 @@ pub struct MarkdownFilter {
 }
 
 impl MarkdownFilter {
-    pub fn new(
-        config: Config,
-        permalinks: HashMap<String, String>,
-        tera: Tera,
-    ) -> Self {
+    pub fn new(config: Config, permalinks: HashMap<String, String>, tera: Tera) -> Self {
         Self { config, permalinks, tera }
     }
 }
@@ -110,9 +105,9 @@ impl TeraFilter for NumFormatFilter {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap};
+    use std::collections::HashMap;
 
-    use libs::tera::{to_value, Tera, Filter};
+    use libs::tera::{to_value, Filter, Tera};
 
     use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
     use config::Config;
@@ -146,8 +141,8 @@ mod tests {
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result =
-            MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default()).filter(
+        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
+            .filter(
                 &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
                 &args,
             );
@@ -160,8 +155,8 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result =
-            MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default()).filter(
+        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
+            .filter(
                 &to_value(
                     &r#"
 |id|author_id|       timestamp_created|title                 |content           |

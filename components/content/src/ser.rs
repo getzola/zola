@@ -9,12 +9,34 @@ use libs::tera::{Map, Value};
 use utils::table_of_contents::Heading;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct BackLink<'a> {
+    pub permalink: &'a str,
+    pub title: &'a Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TranslatedContent<'a> {
     pub lang: &'a str,
     pub permalink: &'a str,
     pub title: &'a Option<String>,
     /// The path to the markdown file
     pub path: &'a Path,
+}
+
+fn find_backlinks<'a>(relative_path: &str, library: &'a Library) -> Vec<BackLink<'a>> {
+    let mut backlinks = Vec::new();
+    if let Some(b) = library.backlinks.get(relative_path) {
+        for backlink in b {
+            if let Some(p) = library.pages.get(backlink) {
+                backlinks.push(BackLink { permalink: &p.permalink, title: &p.meta.title });
+            }
+            if let Some(s) = library.sections.get(backlink) {
+                backlinks.push(BackLink { permalink: &s.permalink, title: &s.meta.title });
+            }
+        }
+        backlinks.sort_by_key(|b| b.permalink);
+    }
+    backlinks
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -45,6 +67,7 @@ pub struct SerializingPage<'a> {
     lower: Option<Box<SerializingPage<'a>>>,
     higher: Option<Box<SerializingPage<'a>>>,
     translations: Vec<TranslatedContent<'a>>,
+    backlinks: Vec<BackLink<'a>>,
 }
 
 impl<'a> SerializingPage<'a> {
@@ -60,6 +83,7 @@ impl<'a> SerializingPage<'a> {
         let mut lower = None;
         let mut higher = None;
         let mut translations = vec![];
+        let mut backlinks = vec![];
 
         if let Some(lib) = library {
             translations = lib.find_translations(&page.file.canonical);
@@ -74,6 +98,8 @@ impl<'a> SerializingPage<'a> {
                     .as_ref()
                     .map(|p| Box::new(Self::new(&lib.pages[p], Some(lib), false)));
             }
+
+            backlinks = find_backlinks(&page.file.relative, &lib);
         }
 
         Self {
@@ -103,6 +129,7 @@ impl<'a> SerializingPage<'a> {
             lower,
             higher,
             translations,
+            backlinks,
         }
     }
 }
@@ -127,6 +154,7 @@ pub struct SerializingSection<'a> {
     pages: Vec<SerializingPage<'a>>,
     subsections: Vec<&'a str>,
     translations: Vec<TranslatedContent<'a>>,
+    backlinks: Vec<BackLink<'a>>,
 }
 
 #[derive(Debug)]
@@ -145,6 +173,7 @@ impl<'a> SerializingSection<'a> {
         let mut pages = Vec::with_capacity(section.pages.len());
         let mut subsections = Vec::with_capacity(section.subsections.len());
         let mut translations = Vec::new();
+        let mut backlinks = Vec::new();
 
         match mode {
             SectionSerMode::ForMarkdown => {}
@@ -162,6 +191,8 @@ impl<'a> SerializingSection<'a> {
                         pages.push(SerializingPage::new(&lib.pages[p], Some(lib), true));
                     }
                 }
+
+                backlinks = find_backlinks(&section.file.relative, &lib);
             }
         }
 
@@ -184,6 +215,7 @@ impl<'a> SerializingSection<'a> {
             pages,
             subsections,
             translations,
+            backlinks,
         }
     }
 }

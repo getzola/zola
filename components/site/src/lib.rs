@@ -288,6 +288,10 @@ impl Site {
         tpls::register_early_global_fns(self)?;
         self.populate_sections();
         self.render_markdown()?;
+        {
+            let mut lib = self.library.write().unwrap();
+            lib.fill_backlinks();
+        }
         tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
