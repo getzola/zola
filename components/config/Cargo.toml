@@ -7,7 +7,6 @@ include = ["src/**/*"]
 [dependencies]
 serde = {version = "1.0", features = ["derive"] }
 
-console = { path = "../console" }
 errors = { path = "../errors" }
 utils = { path = "../utils" }
 libs = { path = "../libs" }

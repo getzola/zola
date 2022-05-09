@@ -379,7 +379,6 @@ dependencies = [
 name = "config"
 version = "0.1.0"
 dependencies = [
- "console 0.1.0",
  "errors",
  "libs",
  "serde",

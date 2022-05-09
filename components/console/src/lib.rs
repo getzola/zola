@@ -17,7 +17,7 @@ pub fn info(message: &str) {
 
 pub fn warn(message: &str) {
     colorize(
-        message,
+        &format!("{}{}", "Warning: ", message),
         ColorSpec::new().set_bold(true).set_fg(Some(Color::Yellow)),
         StandardStream::stdout(*COLOR_CHOICE),
     );
@@ -33,7 +33,7 @@ pub fn success(message: &str) {
 
 pub fn error(message: &str) {
     colorize(
-        message,
+        &format!("{}{}", "Error: ", message),
         ColorSpec::new().set_bold(true).set_fg(Some(Color::Red)),
         StandardStream::stderr(*COLOR_CHOICE),
     );

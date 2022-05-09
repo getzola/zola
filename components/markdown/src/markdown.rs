@@ -139,30 +139,16 @@ fn fix_link(
                 resolved.permalink
             }
             Err(_) => {
-                context.config.link_checker.internal_level.log(format!(
+                let msg = format!(
                     "Dead relative link `{}` in {}",
                     link,
                     context.current_page_path.unwrap_or("unknown"),
-                ));
+                );
                 match context.config.link_checker.internal_level {
-                    config::LinkCheckerLevel::Error => {
-                        return Err(anyhow!(
-                            "Dead relative link `{}` in {}",
-                            link,
-                            context.current_page_path.unwrap_or("unknown"),
-                        ))
-                    }
+                    config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
                     config::LinkCheckerLevel::Warn => {
-                        console::warn(
-                            format!(
-                                "{}Dead relative link `{}` in {}",
-                                config::LinkCheckerLevel::Warn.log_prefix(),
-                                link,
-                                context.current_page_path.unwrap_or("unknown"),
-                            )
-                            .as_str(),
-                        );
-                        link.to_string() // TODO rendering the broken internal relative link may not be optimal, what href should be rendered to HTML when relative links are invalid but we're in warn mode?
+                        console::error(&msg);
+                        link.to_string() // TODO document that broken internal relative links will show up in the HTML href as "@/path"
                     }
                 }
             }

@@ -100,7 +100,10 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
             );
 
             for err in errors.into_iter() {
-                site.config.link_checker.internal_level.log(err);
+                match site.config.link_checker.internal_level {
+                    LinkCheckerLevel::Error => console::error(&err),
+                    LinkCheckerLevel::Warn => console::warn(&err),
+                }
             }
 
             match site.config.link_checker.internal_level {
@@ -183,7 +186,10 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     if !invalid_url_links.is_empty() {
         for err in invalid_url_links.into_iter() {
             let msg = err.domain.as_ref().unwrap_err();
-            site.config.link_checker.external_level.log(msg.to_string());
+            match site.config.link_checker.internal_level {
+                LinkCheckerLevel::Error => console::error(&msg.to_string()),
+                LinkCheckerLevel::Warn => console::warn(&msg.to_string()),
+            }
         }
     }
 
@@ -249,12 +255,17 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     }
 
     for (page_path, link, check_res) in errors.iter() {
-        site.config.link_checker.external_level.log(format!(
+        let msg = format!(
             "Dead link in {} to {}: {}",
             page_path.to_string_lossy(),
             link,
             link_checker::message(check_res)
-        ));
+        );
+
+        match site.config.link_checker.external_level {
+            LinkCheckerLevel::Error => todo!(),
+            LinkCheckerLevel::Warn => todo!(),
+        }
     }
 
     match site.config.link_checker.external_level {
