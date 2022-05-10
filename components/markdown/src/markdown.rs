@@ -149,7 +149,7 @@ fn fix_link(
                     config::LinkCheckerLevel::Error => bail!(msg),
                     config::LinkCheckerLevel::Warn => {
                         console::warn(&msg);
-                        link.to_string() // TODO document that broken internal relative links will show up in the HTML href as "@/path"
+                        link.to_string()
                     }
                 }
             }
