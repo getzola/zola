@@ -15,7 +15,7 @@ use libs::url::Url;
 /// is always performed (while external ones only conditionally in `zola check`).  If broken links
 /// are encountered, the `internal_level` setting in config.toml will determine whether they are
 /// treated as warnings or errors.
-pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
+pub fn check_internal_links_with_anchors(site: &Site) -> Result<(), Vec<String>> {
     println!("Checking all internal links with anchors.");
     let library = site.library.write().expect("Get lock for check_internal_links_with_anchors");
 
@@ -76,7 +76,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
     });
 
     // Format faulty entries into error messages, and collect them.
-    let errors = missing_targets
+    let messages = missing_targets
         .map(|(page_path, md_path, anchor)| {
             format!(
                 "The anchor in the link `@/{}#{}` in {} does not exist.",
@@ -88,7 +88,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
         .collect::<Vec<_>>();
 
     // Finally emit a summary, and return overall anchors-checking result.
-    match errors.len() {
+    match messages.len() {
         0 => {
             println!("> Successfully checked {} internal link(s) with anchors.", anchors_total);
             Ok(())
@@ -98,18 +98,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Result<()> {
                 "> Checked {} internal link(s) with anchors: {} target(s) missing.",
                 anchors_total, errors_total,
             );
-
-            for err in errors.into_iter() {
-                match site.config.link_checker.internal_level {
-                    LinkCheckerLevel::Error => console::error(&err),
-                    LinkCheckerLevel::Warn => console::warn(&err),
-                }
-            }
-
-            match site.config.link_checker.internal_level {
-                LinkCheckerLevel::Error => Err(anyhow!("broken internal anchor links were found")),
-                LinkCheckerLevel::Warn => Ok(()),
-            }
+            Err(messages)
         }
     }
 }
@@ -128,7 +117,7 @@ fn get_link_domain(link: &str) -> Result<String> {
     };
 }
 
-pub fn check_external_links(site: &Site) -> Result<()> {
+pub fn check_external_links(site: &Site) -> Result<(), Vec<String>> {
     let library = site.library.write().expect("Get lock for check_external_links");
 
     struct LinkDef {
@@ -143,6 +132,7 @@ pub fn check_external_links(site: &Site) -> Result<()> {
         }
     }
 
+    let mut messages: Vec<String> = vec![];
     let mut checked_links: Vec<LinkDef> = vec![];
     let mut skipped_link_count: u32 = 0;
 
@@ -210,66 +200,68 @@ pub fn check_external_links(site: &Site) -> Result<()> {
     // (almost) all pages simultaneously, limiting all links for a single
     // domain to one thread to avoid rate-limiting
     let threads = std::cmp::min(links_by_domain.len(), 8);
-    let pool = rayon::ThreadPoolBuilder::new().num_threads(threads).build()?;
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(threads).build();
 
-    let errors = pool.install(|| {
-        links_by_domain
-            .par_iter()
-            .map(|(_domain, links)| {
-                let mut links_to_process = links.len();
-                links
-                    .iter()
-                    .filter_map(move |link_def| {
-                        links_to_process -= 1;
+    match pool {
+        Ok(pool) => {
+            let errors = pool.install(|| {
+                links_by_domain
+                    .par_iter()
+                    .map(|(_domain, links)| {
+                        let mut links_to_process = links.len();
+                        links
+                            .iter()
+                            .filter_map(move |link_def| {
+                                links_to_process -= 1;
 
-                        let res = link_checker::check_url(
-                            &link_def.external_link,
-                            &site.config.link_checker,
-                        );
+                                let res = link_checker::check_url(
+                                    &link_def.external_link,
+                                    &site.config.link_checker,
+                                );
 
-                        if links_to_process > 0 {
-                            // Prevent rate-limiting, wait before next crawl unless we're done with this domain
-                            thread::sleep(time::Duration::from_millis(500));
-                        }
+                                if links_to_process > 0 {
+                                    // Prevent rate-limiting, wait before next crawl unless we're done with this domain
+                                    thread::sleep(time::Duration::from_millis(500));
+                                }
 
-                        if link_checker::is_valid(&res) {
-                            None
-                        } else {
-                            Some((&link_def.file_path, &link_def.external_link, res))
-                        }
+                                if link_checker::is_valid(&res) {
+                                    None
+                                } else {
+                                    Some((&link_def.file_path, &link_def.external_link, res))
+                                }
+                            })
+                            .collect::<Vec<_>>()
                     })
+                    .flatten()
                     .collect::<Vec<_>>()
-            })
-            .flatten()
-            .collect::<Vec<_>>()
-    });
+            });
 
-    println!(
-        "> Checked {} external link(s): {} error(s) found.",
-        checked_links.len(),
-        errors.len()
-    );
+            println!(
+                "> Checked {} external link(s): {} error(s) found.",
+                checked_links.len(),
+                errors.len()
+            );
 
-    if errors.is_empty() {
-        return Ok(());
-    }
+            if errors.is_empty() {
+                return Ok(());
+            }
 
-    for (page_path, link, check_res) in errors.iter() {
-        let msg = format!(
-            "Dead link in {} to {}: {}",
-            page_path.to_string_lossy(),
-            link,
-            link_checker::message(check_res)
-        );
-
-        match site.config.link_checker.external_level {
-            LinkCheckerLevel::Error => todo!(),
-            LinkCheckerLevel::Warn => todo!(),
+            for (page_path, link, check_res) in errors.iter() {
+                messages.push(format!(
+                    "Dead link in {} to {}: {}",
+                    page_path.to_string_lossy(),
+                    link,
+                    link_checker::message(check_res)
+                ));
+            }
         }
+        Err(pool_err) => messages.push(pool_err.to_string()),
     }
 
-    match site.config.link_checker.external_level {
-        LinkCheckerLevel::Error => Err(anyhow!("Dead links found")),
-        LinkCheckerLevel::Warn => Ok(()),
-    }
+    // match site.config.link_checker.external_level {
+    //     LinkCheckerLevel::Error => Err(anyhow!("Dead links found")),
+    //     LinkCheckerLevel::Warn => Ok(()),
+    // }
+
+    Err(messages)
 }

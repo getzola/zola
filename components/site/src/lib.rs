@@ -6,6 +6,7 @@ pub mod sitemap;
 pub mod tpls;
 
 use std::collections::HashMap;
+use std::fmt::format;
 use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
@@ -295,10 +296,45 @@ impl Site {
         tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
-        link_checking::check_internal_links_with_anchors(self)?;
+        let internal_link_messages = link_checking::check_internal_links_with_anchors(self);
 
+        // log any broken internal links and error out if needed
+        if let Err(messages) = internal_link_messages {
+            let messages: Vec<String> = messages
+                .iter()
+                .enumerate()
+                .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
+                .collect();
+            let msg = format!(
+                "Found {} broken internal anchor links\n{}",
+                messages.len(),
+                messages.join("\n")
+            );
+            match self.config.link_checker.internal_level {
+                config::LinkCheckerLevel::Warn => console::warn(&msg),
+                config::LinkCheckerLevel::Error => return Err(anyhow!(msg.clone())),
+            }
+        }
+
+        // check external links, log the results, and error out if needed
         if self.config.is_in_check_mode() {
-            link_checking::check_external_links(self)?;
+            let external_link_messages = link_checking::check_external_links(self);
+            if let Err(messages) = external_link_messages {
+                let messages: Vec<String> = messages
+                    .iter()
+                    .enumerate()
+                    .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
+                    .collect();
+                let msg = format!(
+                    "Found {} broken external links\n{}",
+                    messages.len(),
+                    messages.join("\n")
+                );
+                match self.config.link_checker.external_level {
+                    config::LinkCheckerLevel::Warn => console::warn(&msg),
+                    config::LinkCheckerLevel::Error => return Err(anyhow!(msg.clone())),
+                }
+            }
         }
 
         Ok(())

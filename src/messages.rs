@@ -70,7 +70,7 @@ pub fn unravel_errors(message: &str, error: &Error) {
     if !message.is_empty() {
         console::error(message);
     }
-    console::error(&format!("Error: {}", error));
+    console::error(&error.to_string());
     let mut cause = error.source();
     while let Some(e) = cause {
         console::error(&format!("Reason: {}", e));
