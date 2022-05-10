@@ -4,7 +4,7 @@ use std::{collections::HashMap, path::PathBuf, thread};
 use config::LinkCheckerLevel;
 use libs::rayon::prelude::*;
 
-use crate::{anyhow, Site};
+use crate::Site;
 use errors::{bail, Result};
 use libs::rayon;
 use libs::url::Url;
@@ -173,14 +173,15 @@ pub fn check_external_links(site: &Site) -> Result<(), Vec<String>> {
         }
     );
 
-    if !invalid_url_links.is_empty() {
-        for err in invalid_url_links.into_iter() {
-            let msg = err.domain.as_ref().unwrap_err();
-            match site.config.link_checker.internal_level {
-                LinkCheckerLevel::Error => console::error(&msg.to_string()),
-                LinkCheckerLevel::Warn => console::warn(&msg.to_string()),
-            }
-        }
+    for err in invalid_url_links.into_iter() {
+        let msg = err.domain.as_ref().unwrap_err().to_string();
+        messages.push(msg);
+    }
+
+    // error out if we're in error mode and any external URLs couldn't be parsed
+    match site.config.link_checker.external_level {
+        LinkCheckerLevel::Error if messages.len() > 0 => return Err(messages),
+        _ => (),
     }
 
     let mut links_by_domain: HashMap<String, Vec<&LinkDef>> = HashMap::new();
@@ -248,7 +249,7 @@ pub fn check_external_links(site: &Site) -> Result<(), Vec<String>> {
 
             for (page_path, link, check_res) in errors.iter() {
                 messages.push(format!(
-                    "Dead link in {} to {}: {}",
+                    "Broken link in {} to {}: {}",
                     page_path.to_string_lossy(),
                     link,
                     link_checker::message(check_res)
@@ -257,11 +258,6 @@ pub fn check_external_links(site: &Site) -> Result<(), Vec<String>> {
         }
         Err(pool_err) => messages.push(pool_err.to_string()),
     }
-
-    // match site.config.link_checker.external_level {
-    //     LinkCheckerLevel::Error => Err(anyhow!("Dead links found")),
-    //     LinkCheckerLevel::Warn => Ok(()),
-    // }
 
     Err(messages)
 }

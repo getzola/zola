@@ -6,7 +6,6 @@ pub mod sitemap;
 pub mod tpls;
 
 use std::collections::HashMap;
-use std::fmt::format;
 use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
@@ -306,7 +305,7 @@ impl Site {
                 .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
                 .collect();
             let msg = format!(
-                "Found {} broken internal anchor links\n{}",
+                "Found {} broken internal anchor link(s)\n{}",
                 messages.len(),
                 messages.join("\n")
             );
@@ -326,7 +325,7 @@ impl Site {
                     .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
                     .collect();
                 let msg = format!(
-                    "Found {} broken external links\n{}",
+                    "Found {} broken external link(s)\n{}",
                     messages.len(),
                     messages.join("\n")
                 );
