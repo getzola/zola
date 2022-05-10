@@ -7,7 +7,7 @@
 - Switch to pulldown-cmark anchor rather than ours, some (very niche) edge cases are not supported anymore, you can
 also specify classes on headers now
 - Now outputs empty taxonomies instead of ignoring them
-- Unify all sorting variable names in templates to `lower`/`higher` in order to make it easy to re-use templates and it
+- Unify all pages sorting variable names in templates to `lower`/`higher` in order to make it easy to re-use templates and it
 was becoming hard to come up with names
 
 ### Other

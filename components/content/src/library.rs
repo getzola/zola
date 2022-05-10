@@ -772,11 +772,11 @@ mod tests {
         library.fill_backlinks();
 
         assert_eq!(library.backlinks.len(), 3);
-        assert_eq!(library.backlinks["page1.md"], set! {"_index.md".to_owned()});
+        assert_eq!(library.backlinks["page1.md"], set! {PathBuf::from("_index.md")});
         assert_eq!(
             library.backlinks["page2.md"],
-            set! {"page1.md".to_owned(), "_index.md".to_owned()}
+            set! {PathBuf::from("page1.md"), PathBuf::from("_index.md")}
         );
-        assert_eq!(library.backlinks["_index.md"], set! {"page2.md".to_owned()});
+        assert_eq!(library.backlinks["_index.md"], set! {PathBuf::from("page2.md")});
     }
 }
