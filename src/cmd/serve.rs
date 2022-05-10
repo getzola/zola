@@ -246,14 +246,18 @@ fn create_new_site(
     SITE_CONTENT.write().unwrap().clear();
 
     let mut site = Site::new(root_dir, config_file)?;
-
-    let base_address = format!("{}:{}", base_url, interface_port);
     let address = format!("{}:{}", interface, interface_port);
 
-    let base_url = if site.config.base_url.ends_with('/') {
-        format!("http://{}/", base_address)
+    let base_url = if base_url == "/" {
+        String::from("/")
     } else {
-        format!("http://{}", base_address)
+        let base_address = format!("{}:{}", base_url, interface_port);
+
+        if site.config.base_url.ends_with('/') {
+            format!("http://{}/", base_address)
+        } else {
+            format!("http://{}", base_address)
+        }
     };
 
     site.enable_serve_mode();
