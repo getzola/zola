@@ -298,8 +298,8 @@ impl Site {
         let internal_link_messages = link_checking::check_internal_links_with_anchors(self);
 
         // log any broken internal links and error out if needed
-        if let Err(messages) = internal_link_messages {
-            let messages: Vec<String> = messages
+        if !internal_link_messages.is_empty() {
+            let messages: Vec<String> = internal_link_messages
                 .iter()
                 .enumerate()
                 .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
@@ -318,8 +318,8 @@ impl Site {
         // check external links, log the results, and error out if needed
         if self.config.is_in_check_mode() {
             let external_link_messages = link_checking::check_external_links(self);
-            if let Err(messages) = external_link_messages {
-                let messages: Vec<String> = messages
+            if !external_link_messages.is_empty() {
+                let messages: Vec<String> = external_link_messages
                     .iter()
                     .enumerate()
                     .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
