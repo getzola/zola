@@ -49,7 +49,7 @@ use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
 use utils::fs::copy_file;
 
-use crate::console;
+use crate::messages;
 use std::ffi::OsStr;
 
 #[derive(Debug, PartialEq)]
@@ -228,7 +228,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                 ))
                 .unwrap();
         }
-        Err(e) => console::unravel_errors("Failed to build the site", &e),
+        Err(e) => messages::unravel_errors("Failed to build the site", &e),
     }
 }
 
@@ -274,8 +274,8 @@ fn create_new_site(
     } else {
         site.enable_live_reload(interface_port);
     }
-    console::notify_site_size(&site);
-    console::warn_about_ignored_pages(&site);
+    messages::notify_site_size(&site);
+    messages::warn_about_ignored_pages(&site);
     site.build()?;
     Ok((site, address))
 }
@@ -304,7 +304,7 @@ pub fn serve(
         include_drafts,
         None,
     )?;
-    console::report_elapsed_time(start);
+    messages::report_elapsed_time(start);
 
     // Stop right there if we can't bind to the address
     let bind_address: SocketAddrV4 = match address.parse() {
@@ -509,7 +509,7 @@ pub fn serve(
             Some(s)
         }
         Err(e) => {
-            console::unravel_errors("Failed to build the site", &e);
+            messages::unravel_errors("Failed to build the site", &e);
             None
         }
     };
@@ -628,7 +628,7 @@ pub fn serve(
                                 }
                             }
                         };
-                        console::report_elapsed_time(start);
+                        messages::report_elapsed_time(start);
                     }
                     _ => {}
                 }

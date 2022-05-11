@@ -387,6 +387,14 @@ dependencies = [
 
 [[package]]
 name = "console"
+version = "0.1.0"
+dependencies = [
+ "errors",
+ "libs",
+]
+
+[[package]]
+name = "console"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a28b32d32ca44b70c3e4acd7db1babf555fa026e385fb95f18028f88848b3c31"
@@ -1244,7 +1252,7 @@ version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "689960f187c43c01650c805fb6bc6f55ab944499d86d4ffe9474ad78991d8e94"
 dependencies = [
- "console",
+ "console 0.15.0",
  "once_cell",
  "serde",
  "serde_json",
@@ -1392,6 +1400,7 @@ version = "0.1.0"
 dependencies = [
  "ahash",
  "ammonia",
+ "atty",
  "base64",
  "csv",
  "elasticlunr-rs",
@@ -1420,6 +1429,7 @@ dependencies = [
  "svg_metadata",
  "syntect",
  "tera",
+ "termcolor",
  "time",
  "toml",
  "unic-langid",
@@ -1579,6 +1589,7 @@ name = "markdown"
 version = "0.1.0"
 dependencies = [
  "config",
+ "console 0.1.0",
  "errors",
  "insta",
  "libs",
@@ -2811,6 +2822,7 @@ name = "site"
 version = "0.1.0"
 dependencies = [
  "config",
+ "console 0.1.0",
  "content",
  "errors",
  "imageproc",
@@ -3811,9 +3823,9 @@ dependencies = [
 name = "zola"
 version = "0.16.0"
 dependencies = [
- "atty",
  "clap 3.1.17",
  "clap_complete",
+ "console 0.1.0",
  "ctrlc",
  "errors",
  "hyper",
@@ -3824,7 +3836,6 @@ dependencies = [
  "pathdiff",
  "same-file",
  "site",
- "termcolor",
  "time",
  "tokio",
  "utils",

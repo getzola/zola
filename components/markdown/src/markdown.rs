@@ -1,12 +1,13 @@
 use std::fmt::Write;
 
+use errors::bail;
 use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
 use libs::pulldown_cmark as cmark;
 use libs::tera;
 
 use crate::context::RenderContext;
-use errors::{anyhow, Context, Error, Result};
+use errors::{Context, Error, Result};
 use libs::pulldown_cmark::escape::escape_html;
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
@@ -139,7 +140,18 @@ fn fix_link(
                 resolved.permalink
             }
             Err(_) => {
-                return Err(anyhow!("Relative link {} not found.", link));
+                let msg = format!(
+                    "Broken relative link `{}` in {}",
+                    link,
+                    context.current_page_path.unwrap_or("unknown"),
+                );
+                match context.config.link_checker.internal_level {
+                    config::LinkCheckerLevel::Error => bail!(msg),
+                    config::LinkCheckerLevel::Warn => {
+                        console::warn(&msg);
+                        link.to_string()
+                    }
+                }
             }
         }
     } else if is_external_link(link) {

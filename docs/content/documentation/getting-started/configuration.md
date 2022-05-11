@@ -130,6 +130,12 @@ skip_anchor_prefixes = [
     "https://caniuse.com/",
 ]
 
+# Treat internal link problems as either "error" or "warn", default is "error"
+internal_level = "error"
+
+# Treat external link problems as either "error" or "warn", default is "error"
+external_level = "error"
+
 # Various slugification strategies, see below for details
 # Defaults to everything being a slug
 [slugify]
