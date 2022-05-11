@@ -99,7 +99,7 @@ impl<'a> SerializingPage<'a> {
                     .map(|p| Box::new(Self::new(&lib.pages[p], Some(lib), false)));
             }
 
-            backlinks = find_backlinks(&page.file.relative, &lib);
+            backlinks = find_backlinks(&page.file.relative, lib);
         }
 
         Self {
@@ -192,7 +192,7 @@ impl<'a> SerializingSection<'a> {
                     }
                 }
 
-                backlinks = find_backlinks(&section.file.relative, &lib);
+                backlinks = find_backlinks(&section.file.relative, lib);
             }
         }
 

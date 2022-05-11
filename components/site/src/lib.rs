@@ -311,7 +311,7 @@ impl Site {
             );
             match self.config.link_checker.internal_level {
                 config::LinkCheckerLevel::Warn => console::warn(&msg),
-                config::LinkCheckerLevel::Error => return Err(anyhow!(msg.clone())),
+                config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
             }
         }
 
@@ -331,7 +331,7 @@ impl Site {
                 );
                 match self.config.link_checker.external_level {
                     config::LinkCheckerLevel::Warn => console::warn(&msg),
-                    config::LinkCheckerLevel::Error => return Err(anyhow!(msg.clone())),
+                    config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
                 }
             }
         }
