@@ -3,11 +3,11 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, abridge.css class-light CSS, and No JS."
 template = "theme.html"
-date = 2022-05-02T15:40:10-07:00
+date = 2022-05-16T01:14:18-07:00
 
 [extra]
-created = 2022-05-02T15:40:10-07:00
-updated = 2022-05-02T15:40:10-07:00
+created = 2022-05-16T01:14:18-07:00
+updated = 2022-05-16T01:14:18-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.14.1"
@@ -112,6 +112,19 @@ You can customize your configurations, templates and content for yourself. Look
 at the `config.toml`, `content` files, and templates files in this
 repo for an idea.
 
+### Number of Items per page for pagination
+
+To change the number of items per page edit: `abridge/content/_index.md` and change the value for `paginate_by`
+
+### Page width
+
+You can set the overal page width by editing `themes\abridge\sass\_variables.scss` file, and adjusting these two lines:
+
+```scss
+$mw:50% !default;// max-width
+$mb:1200px !default;// value at which to switch from fluid layout to using max-width
+```
+
 ### Colors and Styles
 
 Colors and style are handled by the sass files of [abridge.css](https://github.com/jieiku/abridge.css)
@@ -142,7 +155,7 @@ build_search_index = true
 
 ​The search is the only thing that requires javascript in this this theme.
 
-If you set `build_search_index` to false then the javascript files will no longer be loaded.
+If you set `build_search_index` to false then the javascript file will no longer be loaded.
 
 The default elasticlunr search is currently used, I may eventually switch this out for something else.
 
@@ -228,8 +241,7 @@ If your problem or idea is not addressed yet, [open a new issue](https://github.
 ## Contributing
 
 We'd love your help! Especially with fixes to issues.
-The overall idea behind abridge is to be lightweight and fast, and to use zero javascript.
-The only place that I may eventually add javascript will be for the site search, but hopefully I can find another way.
+The overall idea behind abridge is to be lightweight and fast, and to use zero javascript other than the search.
 
 ## License
 
