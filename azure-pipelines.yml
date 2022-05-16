@@ -60,9 +60,9 @@ stages:
               rustup_toolchain: stable
               target: 'x86_64-apple-darwin'
             linux-stable:
-              imageName: 'ubuntu-20.04'
+              imageName: 'rust:alpine'
               rustup_toolchain: stable
-              target: 'x86_64-unknown-linux-gnu'
+              target: 'x86_64-unknown-linux-musl'
         pool:
           vmImage: $(imageName)
         steps:
@@ -70,7 +70,7 @@ stages:
               curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
               echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
             displayName: Install rust
-            condition: ne( variables['Agent.OS'], 'Windows_NT' )
+            condition: eq( variables['Agent.OS'], 'Darwin' )
           - script: |
               set CARGO_HOME=%USERPROFILE%\.cargo
               curl -sSf -o rustup-init.exe https://win.rustup.rs
