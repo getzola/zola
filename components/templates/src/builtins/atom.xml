@@ -24,7 +24,7 @@
 		<title>{{ page.title }}</title>
 		<published>{{ page.date | date(format="%+") }}</published>
 		<updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>
-		<link href="{{ page.permalink | safe }}" type="text/html"/>
+		<link rel="alternate" href="{{ page.permalink | safe }}" type="text/html"/>
 		<id>{{ page.permalink | safe }}</id>
 		<content type="html">{{ page.content }}</content>
 	</entry>
