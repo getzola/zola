@@ -419,7 +419,7 @@ pub fn serve(
         broadcaster
     };
 
-    println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(", "));
+    println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(","));
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
