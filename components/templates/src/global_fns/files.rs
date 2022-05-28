@@ -104,7 +104,7 @@ impl TeraFn for GetUrl {
             // anything else
             let mut segments = vec![];
 
-            if lang != self.config.default_language {
+            if lang != self.config.default_language && !path[1..].starts_with(&lang) {
                 segments.push(lang);
             };
 
@@ -396,6 +396,29 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/"
+        );
+    }
+
+    #[test]
+    fn does_not_duplicate_lang() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "a_section/a_page.md".to_string(),
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
+        );
+        permalinks.insert(
+            "a_section/a_page.en.md".to_string(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
+        );
+        let dir = create_temp_dir();
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("/en/a_section/a_page/").unwrap());
+        args.insert("lang".to_string(), to_value("en").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page"
         );
     }
 
