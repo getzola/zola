@@ -119,6 +119,7 @@ pub struct Taxonomy {
     pub kind: TaxonomyConfig,
     pub lang: String,
     pub slug: String,
+    pub path: String,
     pub permalink: String,
     // this vec is sorted by the count of item
     pub items: Vec<TaxonomyTerm>,
@@ -159,6 +160,7 @@ impl Taxonomy {
             slug,
             lang: tax_found.lang.to_owned(),
             kind: tax_found.config.clone(),
+            path,
             permalink,
             items: sorted_items,
         }
@@ -176,11 +178,8 @@ impl Taxonomy {
         context.insert("lang", &self.lang);
         context.insert("term", &SerializedTaxonomyTerm::from_item(item, library));
         context.insert("taxonomy", &self.kind);
-        context.insert(
-            "current_url",
-            &config.make_permalink(&format!("{}/{}", self.kind.name, item.slug)),
-        );
-        context.insert("current_path", &format!("/{}/{}/", self.kind.name, item.slug));
+        context.insert("current_url", &self.permalink);
+        context.insert("current_path", &self.path);
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/single.html", self.kind.name);
@@ -204,8 +203,8 @@ impl Taxonomy {
         context.insert("terms", &terms);
         context.insert("lang", &self.lang);
         context.insert("taxonomy", &self.kind);
-        context.insert("current_url", &config.make_permalink(&self.kind.name));
-        context.insert("current_path", &format!("/{}/", self.kind.name));
+        context.insert("current_url", &self.permalink);
+        context.insert("current_path", &self.path);
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/list.html", self.kind.name);
