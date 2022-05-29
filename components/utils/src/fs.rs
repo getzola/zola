@@ -111,7 +111,9 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
 }
 
 pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
-    for entry in WalkDir::new(src).into_iter().filter_map(std::result::Result::ok) {
+    for entry in
+        WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
+    {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
 
