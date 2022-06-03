@@ -1,9 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use libs::ammonia;
-use libs::elasticlunr::pipeline;
-use libs::elasticlunr::pipeline::TokenizerFn;
-use libs::elasticlunr::{Index, Language};
+use libs::elasticlunr::{lang, Index, IndexBuilder};
 use libs::once_cell::sync::Lazy;
 
 use config::{Config, Search};
@@ -27,25 +25,24 @@ static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
     builder
 });
 
-fn build_fields(search_config: &Search) -> Vec<String> {
-    let mut fields = vec![];
+fn build_fields(search_config: &Search, mut index: IndexBuilder) -> IndexBuilder {
     if search_config.include_title {
-        fields.push("title".to_owned());
+        index = index.add_field("title");
     }
 
     if search_config.include_description {
-        fields.push("description".to_owned());
+        index = index.add_field("description");
     }
 
     if search_config.include_path {
-        fields.push("path".to_owned());
+        index = index.add_field_with_tokenizer("path", Box::new(path_tokenizer));
     }
 
     if search_config.include_content {
-        fields.push("body".to_owned());
+        index = index.add_field("body")
     }
 
-    fields
+    index
 }
 
 fn path_tokenizer(text: &str) -> Vec<String> {
@@ -53,34 +50,6 @@ fn path_tokenizer(text: &str) -> Vec<String> {
         .filter(|s| !s.is_empty())
         .map(|s| s.trim().to_lowercase())
         .collect()
-}
-
-fn build_tokenizers(search_config: &Search, language: Language) -> Vec<TokenizerFn> {
-    let text_tokenizer = match language {
-        #[cfg(feature = "indexing-zh")]
-        Language::Chinese => pipeline::tokenize_chinese,
-        #[cfg(feature = "indexing-ja")]
-        Language::Japanese => pipeline::tokenize_japanese,
-        _ => pipeline::tokenize,
-    };
-    let mut tokenizers: Vec<TokenizerFn> = vec![];
-    if search_config.include_title {
-        tokenizers.push(text_tokenizer);
-    }
-
-    if search_config.include_description {
-        tokenizers.push(text_tokenizer);
-    }
-
-    if search_config.include_path {
-        tokenizers.push(path_tokenizer);
-    }
-
-    if search_config.include_content {
-        tokenizers.push(text_tokenizer);
-    }
-
-    tokenizers
 }
 
 fn fill_index(
@@ -126,26 +95,20 @@ fn fill_index(
 /// Errors if the language given is not available in Elasticlunr
 /// TODO: is making `in_search_index` apply to subsections of a `false` section useful?
 pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<String> {
-    let language = match Language::from_code(lang) {
+    let language = match lang::from_code(lang) {
         Some(l) => l,
         None => {
             bail!("Tried to build search index for language {} which is not supported", lang);
         }
     };
     let language_options = &config.languages[lang];
-    let mut index = Index::with_language(language, &build_fields(&language_options.search));
-
-    let tokenizers = build_tokenizers(&language_options.search, language);
+    let mut index = IndexBuilder::with_language(language);
+    index = build_fields(&language_options.search, index);
+    let mut index = index.build();
 
     for (_, section) in &library.sections {
         if section.lang == lang {
-            add_section_to_index(
-                &mut index,
-                section,
-                library,
-                &language_options.search,
-                tokenizers.clone(),
-            );
+            add_section_to_index(&mut index, section, library, &language_options.search);
         }
     }
 
@@ -157,7 +120,6 @@ fn add_section_to_index(
     section: &Section,
     library: &Library,
     search_config: &Search,
-    tokenizers: Vec<TokenizerFn>,
 ) {
     if !section.meta.in_search_index {
         return;
@@ -165,7 +127,7 @@ fn add_section_to_index(
 
     // Don't index redirecting sections
     if section.meta.redirect_to.is_none() {
-        index.add_doc_with_tokenizers(
+        index.add_doc(
             &section.permalink,
             &fill_index(
                 search_config,
@@ -174,7 +136,6 @@ fn add_section_to_index(
                 &section.path,
                 &section.content,
             ),
-            tokenizers.clone(),
         );
     }
 
@@ -184,7 +145,7 @@ fn add_section_to_index(
             continue;
         }
 
-        index.add_doc_with_tokenizers(
+        index.add_doc(
             &page.permalink,
             &fill_index(
                 search_config,
@@ -193,7 +154,6 @@ fn add_section_to_index(
                 &page.path,
                 &page.content,
             ),
-            tokenizers.clone(),
         );
     }
 }
@@ -207,21 +167,21 @@ mod tests {
     #[test]
     fn can_build_fields() {
         let mut config = Config::default();
-        let fields = build_fields(&config.search);
-        assert_eq!(fields, vec!["title", "body"]);
+        let index = build_fields(&config.search, IndexBuilder::new()).build();
+        assert_eq!(index.get_fields(), vec!["title", "body"]);
 
         config.search.include_content = false;
         config.search.include_description = true;
-        let fields = build_fields(&config.search);
-        assert_eq!(fields, vec!["title", "description"]);
+        let index = build_fields(&config.search, IndexBuilder::new()).build();
+        assert_eq!(index.get_fields(), vec!["title", "description"]);
 
         config.search.include_content = true;
-        let fields = build_fields(&config.search);
-        assert_eq!(fields, vec!["title", "description", "body"]);
+        let index = build_fields(&config.search, IndexBuilder::new()).build();
+        assert_eq!(index.get_fields(), vec!["title", "description", "body"]);
 
         config.search.include_title = false;
-        let fields = build_fields(&config.search);
-        assert_eq!(fields, vec!["description", "body"]);
+        let index = build_fields(&config.search, IndexBuilder::new()).build();
+        assert_eq!(index.get_fields(), vec!["description", "body"]);
     }
 
     #[test]
