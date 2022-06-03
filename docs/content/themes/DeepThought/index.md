@@ -3,14 +3,14 @@
 title = "DeepThought"
 description = "A simple blog theme focused on writing powered by Bulma and Zola."
 template = "theme.html"
-date = 2022-05-16T01:14:18-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-05-16T01:14:18-07:00
-updated = 2022-05-16T01:14:18-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/RatanShreshtha/DeepThought.git"
 homepage = "https://github.com/RatanShreshtha/DeepThought"
-minimum_version = "0.9.0"
+minimum_version = "0.14.1"
 license = "MIT"
 demo = "https://deepthought-theme.netlify.app/"
 
@@ -65,8 +65,6 @@ homepage = "https://ratanshreshtha.dev"
   </ol>
 </details>
 
-
-
 ## About The Project
 
 [![DeepThought](./screenshot.png)](https://deepthought-theme.netlify.app/)
@@ -74,6 +72,7 @@ homepage = "https://ratanshreshtha.dev"
 > A simple blog theme focused on writing powered by Bulma and Zola.
 
 ### Features
+
 - [x] Dark Mode
 - [x] Pagination
 - [x] Search
@@ -88,13 +87,10 @@ homepage = "https://ratanshreshtha.dev"
 - [x] Multilingual Navbar
 - [x] Katex
 
-
 ### Built With
 
-* [Zola](https://www.getzola.org/)
-* [Bulma](https://bulma.io/)
-
-
+- [Zola](https://www.getzola.org/)
+- [Bulma](https://bulma.io/)
 
 ## Getting Started
 
@@ -110,22 +106,32 @@ Follow zola's guide on [installing a theme](https://www.getzola.org/documentatio
 Make sure to add `theme = "DeepThought"` to your `config.toml`
 
 **Check zola version (only 0.9.0+)**
-Just to double-check to make sure you have the right version. It is not supported to use this theme with a version under 0.9.0.
-
-
+Just to double-check to make sure you have the right version. It is not supported to use this theme with a version under 0.14.1.
 
 ## Usage
 
 ### How to serve?
+
 Go into your sites directory and type `zola serve`. You should see your new site at `localhost:1111`.
 
- **NOTE**: you must provide the theme options variables in `config.toml` to serve a functioning site
+**NOTE**: you must provide the theme options variables in `config.toml` to serve a functioning site
 
 ### Deployment
+
 [Zola](https://www.getzola.org) already has great documentation for deploying to [Netlify](https://www.getzola.org/documentation/deployment/netlify/) or [Github Pages](https://www.getzola.org/documentation/deployment/github-pages/). I won't bore you with a regurgitated explanation.
 
 ### Theme Options
+
 ```toml
+# Enable external libraries
+[extra]
+katex.enabled = true
+katex.auto_render = true
+
+chart.enabled = true
+mermaid.enabled = true
+galleria.enabled = true
+
 navbar_items = [
  { code = "en", nav_items = [
   { url = "$BASE_URL/", name = "Home" },
@@ -159,8 +165,11 @@ keybase = "<keybase_username>"
 linkedin = "<linkedin_username>"
 stackoverflow = "<stackoverflow_userid>"
 twitter = "<twitter_username>"
-instagram = "<instagram_usernaem>"
+instagram = "<instagram_username>"
 behance = "<behance_username>"
+google_scholar = "<googlescholar_userid>"
+orcid = "<orcid_userid>"
+mastodon = "<mastadon_username>"
 
 
 # To add google analytics
@@ -173,6 +182,7 @@ disqus = "<your_disqus_shortname>"
 
 # To enable mapbox maps
 [extra.mapbox]
+enabled = true
 access_token = "<your_access_token>"
 ```
 
@@ -184,7 +194,7 @@ If you want to have a multilingual navbar on your blog, you must add your new co
 
 ```toml
 languages = [
-    {code = "fr"}, 
+    {code = "fr"},
     {code = "es"},
 ]
 ```
@@ -220,45 +230,51 @@ fr:
 
 ![DeepThought](./screenshot_navbar_fr.png)
 
-es: 
+es:
 
 ![DeepThought](./screenshot_navbar_es.png)
-
 
 ### KaTeX math formula support
 
 This theme contains math formula support using [KaTeX](https://katex.org/),
 which can be enabled by setting `katex.enabled = true` in the `extra` section
-+of `config.toml`:
-
-```toml
-[extra]
-katex.enabled = true
-katex.auto_render = true
-```
+of `config.toml`.
 
 After enabling this extension, the `katex` short code can be used in documents:
-* `{{/* katex(body="\KaTeX") */}}` to typeset a math formula inlined into a text,
+
+- `{{/* katex(body="\KaTeX") */}}` to typeset a math formula inlined into a text,
   similar to `$...$` in LaTeX
-* `{%/* katex(block=true) */%}\KaTeX{%/* end */%}` to typeset a block of math formulas,
+- `{%/* katex(block=true) */%}\KaTeX{%/* end */%}` to typeset a block of math formulas,
   similar to `$$...$$` in LaTeX
 
 #### Automatic rendering without short codes
 
 Optionally, `\\( \KaTeX \\)` / `$ \KaTeX $` inline and `\\[ \KaTeX \\]` / `$$ \KaTeX $$`
-block-style automatic rendering is also supported, if enabled in the config:
+block-style automatic rendering is also supported, if enabled in the config
+by setting `katex.auto_render = true`.
 
-```toml
-[extra]
-katex.enabled = true
-katex.auto_render = true
+### Elasticlunr search in other language
+
+Zola use [Elasticlunr.js](https://github.com/weixsong/elasticlunr.js) to add full-text search feature.
+To use languages other than en (English), you need to add some javascript files. See the Zola's issue [#1349](https://github.com/getzola/zola/issues/1349).
+By placing the `templates/base.html`on your project and using the `other_lang_search_js` block, you can load the required additional javascript files in the right timing.
+
+e.g. `templates/base.html`
+
+```html
+{%/* extends "DeepThought/templates/base.html" */%} {%/* block other_lang_search_js */%}
+<script src="{{/* get_url(path='js/lunr.stemmer.support.js') */}}"></script>
+<script src="{{/* get_url(path='js/tinyseg.js') */}}"></script>
+<script src="{{/* get_url(path='js/lunr.' ~ lang ~ '.js') */}}"></script>
+<script src="{{/* get_url(path='js/search.js') */}}"></script>
+{%/* endblock */%}
 ```
+
+More detailed explanations are aound in [elasticlunr's documents](https://github.com/weixsong/elasticlunr.js#other-languages-example-in-browser).
 
 ## Roadmap
 
 See the [open issues](https://github.com/RatanShreshtha/DeepThought/issues) for a list of proposed features (and known issues).
-
-
 
 ## Contributing
 
@@ -270,27 +286,22 @@ Contributions are what make the open source community such an amazing place to b
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-
-
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
-
 
 ## Contact
 
 Ratan Kulshreshtha - [@RatanShreshtha](https://twitter.com/RatanShreshtha)>
 
-
 Project Link: [https://github.com/RatanShreshtha/DeepThought](https://github.com/RatanShreshtha/DeepThought)
 
 ## Acknowledgements
 
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Choose an Open Source License](https://choosealicense.com)
-* [Slick Carousel](https://kenwheeler.github.io/slick)
-* [Font Awesome](https://fontawesome.com)
-* [Unsplash](https://unsplash.com/)
+- [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
+- [Choose an Open Source License](https://choosealicense.com)
+- [Slick Carousel](https://kenwheeler.github.io/slick)
+- [Font Awesome](https://fontawesome.com)
+- [Unsplash](https://unsplash.com/)
 
         

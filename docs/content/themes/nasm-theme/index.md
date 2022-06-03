@@ -3,11 +3,11 @@
 title = "nasm-theme"
 description = "A robust, elegant blue theme"
 template = "theme.html"
-date = 2022-05-16T01:14:18-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-05-16T01:14:18-07:00
-updated = 2022-05-16T01:14:18-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/lucasnasm/nasm-theme.git"
 homepage = "https://github.com/lucasnasm/nasm-theme"
 minimum_version = "0.1.0"
@@ -22,7 +22,7 @@ homepage = "https://lucasnasm.github.io"
 # nasm-theme
 
 ## Web
-![nasm-theme web](https://github.com/lucasnasm/nasm-theme/blob/master/screenshot-web.png?raw=true)
+![nasm-theme web](screenshot.png)
 
 ## Mobile
 ![nasm-theme mobile](https://github.com/lucasnasm/nasm-theme/blob/master/screenshot-mobile.png?raw=true)

@@ -3,20 +3,20 @@
 title = "feather"
 description = "A modern blog theme"
 template = "theme.html"
-date = 2022-05-16T01:14:18-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-05-16T01:14:18-07:00
-updated = 2022-05-16T01:14:18-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/piedoom/feather.git"
 homepage = "https://github.com/piedoom/feather"
-minimum_version = "0.5.1"
+minimum_version = "0.11.0"
 license = "MIT"
 demo = ""
 
 [extra.author]
 name = "doomy"
-homepage = "https://alexanderlozada.com"
+homepage = "https://doomy.org"
 +++        
 
 # feather

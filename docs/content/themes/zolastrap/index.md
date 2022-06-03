@@ -3,11 +3,11 @@
 title = "zolastrap"
 description = "A bootstrap theme for zola"
 template = "theme.html"
-date = 2022-05-16T01:14:18-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-05-16T01:14:18-07:00
-updated = 2022-05-16T01:14:18-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/marcodpt/zolastrap.git"
 homepage = "https://github.com/marcodpt/zolastrap"
 minimum_version = "0.14.1"
