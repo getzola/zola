@@ -186,7 +186,7 @@ mod tests {
         let src_file_path = src_dir.path().join("test.txt");
         let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
         File::create(&src_file_path).unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
 
         assert_eq!(
             metadata(&src_file_path).and_then(|m| m.modified()).unwrap(),
@@ -207,7 +207,7 @@ mod tests {
             let mut src_file = File::create(&src_file_path).unwrap();
             src_file.write_all(b"file1").unwrap();
         }
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         {
             let mut dest_file = File::create(&dest_file_path).unwrap();
             dest_file.write_all(b"file2").unwrap();
@@ -217,14 +217,14 @@ mod tests {
         filetime::set_file_mtime(&src_file_path, filetime::FileTime::from_unix_time(0, 0)).unwrap();
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file2");
 
         // Copy occurs if the timestamps are different while the filesizes are same.
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(42, 42))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
 
@@ -235,7 +235,7 @@ mod tests {
         }
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
     }

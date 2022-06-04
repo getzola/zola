@@ -178,8 +178,8 @@ mod tests {
     #[test]
     fn template_fallback_is_successful() {
         let mut tera = Tera::parse("test-templates/*.html").unwrap();
-        tera.add_raw_template(&"hyde/templates/index.html", "Hello").unwrap();
-        tera.add_raw_template(&"hyde/templates/theme-only.html", "Hello").unwrap();
+        tera.add_raw_template("hyde/templates/index.html", "Hello").unwrap();
+        tera.add_raw_template("hyde/templates/theme-only.html", "Hello").unwrap();
 
         // Check finding existing template
         assert_eq!(check_template_fallbacks("index.html", &tera, &None), Some("index.html"));

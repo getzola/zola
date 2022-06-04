@@ -563,11 +563,7 @@ And here's another. [^2]
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Page::from_file(
-            nested_path.join("index.md").as_path(),
-            &Config::default(),
-            &path.to_path_buf(),
-        );
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
@@ -591,11 +587,7 @@ And here's another. [^2]
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Page::from_file(
-            nested_path.join("index.md").as_path(),
-            &Config::default(),
-            &path.to_path_buf(),
-        );
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
@@ -619,11 +611,7 @@ And here's another. [^2]
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Page::from_file(
-            nested_path.join("index.md").as_path(),
-            &Config::default(),
-            &path.to_path_buf(),
-        );
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
@@ -649,11 +637,7 @@ And here's another. [^2]
         File::create(nested_path.join("graph.jpg")).unwrap();
         File::create(nested_path.join("fail.png")).unwrap();
 
-        let res = Page::from_file(
-            nested_path.join("index.md").as_path(),
-            &Config::default(),
-            &path.to_path_buf(),
-        );
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
         let page = res.unwrap();
         assert_eq!(page.file.parent, path.join("content").join("posts"));
@@ -682,8 +666,7 @@ And here's another. [^2]
         let mut config = Config::default();
         config.ignored_content_globset = Some(gsb.build().unwrap());
 
-        let res =
-            Page::from_file(nested_path.join("index.md").as_path(), &config, &path.to_path_buf());
+        let res = Page::from_file(nested_path.join("index.md").as_path(), &config, path);
 
         assert!(res.is_ok());
         let page = res.unwrap();

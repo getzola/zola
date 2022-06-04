@@ -15,7 +15,7 @@ mod prompt;
 fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
     let root_dir = dir
         .ancestors()
-        .find_map(|a| if a.join(&config_path).exists() { Some(a) } else { None })
+        .find(|a| a.join(&config_path).exists())
         .unwrap_or_else(|| panic!("could not find directory containing config file"));
 
     // if we got here we found root_dir so config file should exist so we can unwrap safely
