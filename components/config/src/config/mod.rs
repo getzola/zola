@@ -677,7 +677,7 @@ bar = "baz"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         // We expect an error here
-        assert!(!config.add_theme_extra(&theme).is_ok());
+        assert!(config.add_theme_extra(&theme).is_err());
     }
 
     #[test]
@@ -714,7 +714,7 @@ highlight_theme = "asdf"
     "#;
 
         let config = Config::parse(config);
-        assert_eq!(config.is_err(), true);
+        assert!(config.is_err());
     }
 
     #[test]
@@ -728,7 +728,7 @@ highlight_themes_css = [
     "#;
 
         let config = Config::parse(config);
-        assert_eq!(config.is_err(), true);
+        assert!(config.is_err());
     }
 
     // https://github.com/getzola/zola/issues/1687
