@@ -3,11 +3,11 @@
 title = "archie-zola"
 description = "A zola theme based on Hugo archie."
 template = "theme.html"
-date = 2022-05-16T01:14:18-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-05-16T01:14:18-07:00
-updated = 2022-05-16T01:14:18-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/XXXMrG/archie-zola.git"
 homepage = "https://github.com/XXXMrG/archie-zola"
 minimum_version = "0.14.0"
@@ -22,18 +22,18 @@ homepage = "https://github.com/XXXMrG"
 # archie-zola
 
 
-A zola theme forked from https://github.com/athul/archie
+A zola theme forked from [https://github.com/athul/archie](https://github.com/athul/archie)
 
 ## Demo
 
 
-The Main branch source code hosted on https://archie-zola.vercel.app/
+The Main branch source code hosted on [https://archie-zola.vercel.app](https://archie-zola.vercel.app)
 
 ### ScreenShot
 
-![screenshot-light](https://github.com/XXXMrG/archie-zola/blob/main/static/screenshot/screenshot-light.png)
+![screenshot-light](https://archie-zola.vercel.app/screenshot/screenshot-light.png)
 
-![screenshot-dark](https://github.com/XXXMrG/archie-zola/blob/main/static/screenshot/screenshot-dark.png)
+![screenshot-dark](https://archie-zola.vercel.app/screenshot/screenshot-dark.png)
 
 
 ## Installation
@@ -63,10 +63,10 @@ theme = "archie-zola"
 * Tags
 * Auto Dark Mode(based on system theme)
 * Dark/Light Mode toggle
+* Google Analytics Script
 
 in the planning stage：
 
-- [ ] Google Analytics Script
 - [ ] Custom CSS & JS
 - [ ] Twitter Cards & Youtube video
 
@@ -94,6 +94,9 @@ favicon = "/icon/favicon.png"
 
 # show in the footer
 copyright = "keith"
+
+# config your Google Analysis ID
+ga = "XXXX-XXXXX"
 
 
 # config menu path

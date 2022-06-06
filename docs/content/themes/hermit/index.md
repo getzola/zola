@@ -3,11 +3,11 @@
 title = "Hermit_Zola"
 description = "Minimal Zola theme"
 template = "theme.html"
-date = 2022-05-16T01:14:18-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-05-16T01:14:18-07:00
-updated = 2022-05-16T01:14:18-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/VersBinarii/hermit_zola.git"
 homepage = "https://github.com/VersBinarii/hermit_zola"
 minimum_version = "0.4.0"
@@ -27,7 +27,7 @@ homepage = "https://versbinarii.gitlab.io/blog/"
 
 Hermit is a  minimal & fast Zola theme for bloggers.
 
-![screenshot](hermit_zola.png)
+![screenshot](screenshot.png)
 
 [View demo](https://versbinarii.gitlab.io/blog/)
 

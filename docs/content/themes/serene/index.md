@@ -3,11 +3,11 @@
 title = "serene"
 description = "A blog theme for zola, simple and clean."
 template = "theme.html"
-date = 2022-05-16T01:14:18-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-05-16T01:14:18-07:00
-updated = 2022-05-16T01:14:18-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
 minimum_version = "0.9.0"
@@ -54,6 +54,8 @@ Serene is a simple and clean blog theme for Static-Site-Generator [Zola](https:/
     - Out-of-date warning
     - Creative-Commons statement
     - Comments
+    - Mathematical notations using [KaTeX](https://katex.org/)
+    - Diagrams and visualizations using [Mermaid](https://github.com/mermaid-js/mermaid)
 - Web analytics
 - Projects page
 - Easily customize
