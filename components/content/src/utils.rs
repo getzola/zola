@@ -27,7 +27,7 @@ pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
 pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec<PathBuf> {
     let mut assets = vec![];
 
-    let mut builder = WalkDir::new(path);
+    let mut builder = WalkDir::new(path).follow_links(true);
     if !recursive {
         builder = builder.max_depth(1);
     }

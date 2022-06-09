@@ -170,7 +170,8 @@ impl Site {
         // not the most elegant loop, but this is necessary to use skip_current_dir
         // which we can only decide to use after we've deserialised the section
         // so it's kinda necessecary
-        let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
+        let mut dir_walker =
+            WalkDir::new(format!("{}/{}", base_path, "content/")).follow_links(true).into_iter();
         let mut allowed_index_filenames: Vec<_> = self
             .config
             .other_languages()
@@ -220,6 +221,7 @@ impl Site {
                 // index files for all languages and process them simultaniously
                 // before any of the pages
                 let index_files = WalkDir::new(&path)
+                    .follow_links(true)
                     .max_depth(1)
                     .into_iter()
                     .filter_map(|e| match e {
