@@ -404,7 +404,8 @@ mod tests {
             kind: taxonomy_def,
             lang: "en".to_owned(),
             slug: "some-tags".to_string(),
-            permalink: "/some-tags/".to_string(),
+            path: "/some-tags/".to_string(),
+            permalink: "https://vincent.is/some-tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
         let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library, &tera, &None);
