@@ -42,3 +42,4 @@
 | [Table Dog](https://table.dog/blog/)                               |                                                          |
 | [146 Parks](https://146parks.blog/)                                | https://github.com/scouten/146parks.blog                 |
 | [films.mlcdf.fr](https://films.mlcdf.fr)                           | https://github.com/mlcdf/films                           |
+| [Mish Ushakov](https://mish.co)                                    |                                                          |

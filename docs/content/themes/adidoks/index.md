@@ -3,14 +3,14 @@
 title = "adidoks"
 description = "AdiDoks is a Zola theme helping you build modern documentation."
 template = "theme.html"
-date = 2022-02-09T00:41:54+05:30
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-02-09T00:41:54+05:30
-updated = 2022-02-09T00:41:54+05:30
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/aaranxu/adidoks.git"
 homepage = "https://github.com/aaranxu/adidoks"
-minimum_version = "0.13.0"
+minimum_version = "0.15.0"
 license = "MIT"
 demo = "https://adidoks.netlify.app/"
 
@@ -30,7 +30,7 @@ theme [Doks](https://github.com/h-enk/doks) for Zola.
 
 ## Requirements
 
-Before using the theme, you need to install the [Zola](https://www.getzola.org/documentation/getting-started/installation/) ≥ 0.13.0.
+Before using the theme, you need to install the [Zola](https://www.getzola.org/documentation/getting-started/installation/) ≥ 0.15.0.
 
 ## Quick Start
 

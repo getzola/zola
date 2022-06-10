@@ -3,12 +3,12 @@
 title = "zola.386"
 description = "Zola port of the BOOTSTRA.386 theme."
 template = "theme.html"
-date = 2022-02-09T00:41:54+05:30
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-02-09T00:41:54+05:30
-updated = 2022-02-09T00:41:54+05:30
-repository = "https://github.com/lopes/zola.386"
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
+repository = "https://github.com/lopes/zola.386.git"
 homepage = "https://github.com/lopes/zola.386"
 minimum_version = "0.10.1"
 license = "MIT"
@@ -82,7 +82,7 @@ zola386_menu = [
 ### Social
 ZOLA.386 is also prepared to deal with Google Analytics, Disqus, and Twitter --[Open Graph Protocol](https://ogp.me/) is welcome.  This theme is prepared to use the output of [Favicon Generator](https://www.favicon-generator.org/), to do so, you'll just need to download the output of that site and extract in `static/images`. 
 
-As said, Disqus is supportted, but besides setting the username in `config.toml`, you also must to put a `comments = true` extra option on the pages where Disqus will be enabled --this gives you the freedom to enable or disable comments on certain posts.  You can use the extra option `image` on each page, to represent that post.
+As said, Disqus is supported, but besides setting the username in `config.toml`, you also must to put a `comments = true` extra option on the pages where Disqus will be enabled --this gives you the freedom to enable or disable comments on certain posts.  You can use the extra option `image` on each page, to represent that post.
 
 ### Animations
 All JavaScript animations can be set at `static/js/zola386.js`.  Basically you can disable all animations, use one or two scans, and change the scan speed.  Personally, I prefer only one scan with a speed factor of 5.

@@ -432,7 +432,7 @@ pub fn serve(
         "Listening for changes in {}{}{{{}}}",
         root_dir.display(),
         MAIN_SEPARATOR,
-        watchers.join(", ")
+        watchers.join(",")
     );
 
     println!("Press Ctrl+C to stop\n");
@@ -785,9 +785,9 @@ mod tests {
     #[cfg(windows)]
     fn windows_path_handling() {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
-        let pwd = Path::new(r#"C:\\Users\johan\site"#);
-        let path = Path::new(r#"C:\\Users\johan\site\templates\hello.html"#);
-        let config_filename = Path::new(r#"C:\\Users\johan\site\config.toml"#);
+        let pwd = Path::new(r#"C:\Users\johan\site"#);
+        let path = Path::new(r#"C:\Users\johan\site\templates\hello.html"#);
+        let config_filename = Path::new(r#"C:\Users\johan\site\config.toml"#);
         assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 

@@ -3,12 +3,12 @@
 title = "lightspeed"
 description = "Zola theme with a perfect Lighthouse score"
 template = "theme.html"
-date = 2022-02-09T00:41:54+05:30
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-02-09T00:41:54+05:30
-updated = 2022-02-09T00:41:54+05:30
-repository = "https://github.com/carpetscheme/lightspeed"
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
+repository = "https://github.com/carpetscheme/lightspeed.git"
 homepage = "https://github.com/carpetscheme/lightspeed"
 minimum_version = "0.10.0"
 license = "MIT"

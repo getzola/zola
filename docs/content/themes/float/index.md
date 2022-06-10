@@ -3,20 +3,20 @@
 title = "Float"
 description = "An elegant blog theme"
 template = "theme.html"
-date = 2022-02-09T00:41:54+05:30
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-02-09T00:41:54+05:30
-updated = 2022-02-09T00:41:54+05:30
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://gitlab.com/float-theme/float.git"
 homepage = "https://float-theme.netlify.app/"
-minimum_version = "0.11.0"
+minimum_version = "0.15.3"
 license = "MIT"
 demo = ""
 
 [extra.author]
 name = "Leon"
-homepage = "https://exp2.uniuni.space/"
+homepage = "https://editor.leonh.space/"
 +++        
 
 ![Float](content/blog/2020/2020-06-14-Float theme for Zola/Float.png)
@@ -46,19 +46,20 @@ Float 是一款為 [Zola](https://www.getzola.org/) 設計的佈景主題。
 在您的 Zola 專案資料夾內：
 
 把 Float 以 Git 子模組的方式加入專案內：
-```shell
+
+```sh
 git submodule add https://gitlab.com/float-theme/float.git themes/float
 ```
 
 編輯您的 config.toml，指定 Float 作為佈景主題：
 
-```TOML
+```toml
 theme = "float"
 ```
 
 編輯您的 config.toml，加入 tags 作為分類系統：
 
-```TOML
+```toml
 taxonomies = [
     {name = "tags", paginate_by = 10},
 ]
@@ -66,13 +67,13 @@ taxonomies = [
 
 複製 float/static/ 的所有子資料夾與檔案到您的 static/：
 
-```shell
+```sh
 cp -r themes/float/static/* static/
 ```
 
 複製 float/content/ 的所有子資料夾與檔案到您的 content/：
 
-```shell
+```sh
 cp -r themes/float/content/* content/
 ```
 
@@ -86,7 +87,7 @@ cp -r themes/float/content/* content/
 content/
 └── blog/
     └── 2020/
-        └── 2020-06-21-Float theme for Zola/
+        └── 2020-06-15-Zola-Theme-Float/
             ├── index.md
             ├── pic1.png
             ├── pic2.png
@@ -99,7 +100,7 @@ content/
 
 Front-matter 請參照下列註解說明：
 
-```TOML
+```toml
 title = "Float theme for Zola"
 description = "Float features and usage guide"
 draft = false
@@ -115,7 +116,7 @@ link = "" # 指定卡片連結，若有指定則卡片不會連結到文章頁�
 
 可客製化設定大多可以在 config.toml 的 `[extra]` 區段做設定：
 
-```TOML
+```toml
 [extra]
 main_section = "blog"
 

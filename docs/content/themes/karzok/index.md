@@ -1,18 +1,18 @@
 
 +++
 title = "karzok"
-description = "A theme for your documentation. Fast and secure"
+description = "The theme for launching fast documentation sites"
 template = "theme.html"
-date = 2022-02-09T00:41:54+05:30
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2022-02-09T00:41:54+05:30
-updated = 2022-02-09T00:41:54+05:30
-repository = "https://github.com/kogeletey/karzok"
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
+repository = "https://github.com/kogeletey/karzok.git"
 homepage = "https://github.com/kogeletey/karzok"
-minimum_version = "0.0.14"
-license = "Apache-2.0"
-demo = "https://fmatch.org/karzok"
+minimum_version = "0.15.0"
+license = "MIT"
+demo = "https://karzok.re128.org"
 
 [extra.author]
 name = "Konrad Geletey"
@@ -20,8 +20,11 @@ homepage = ""
 +++        
 
 <p align="center">
-  <a href="https://builds.sr.ht/~kogeletey/karzok"><img src="https://builds.sr.ht/~kogeletey/karzok.svg"  alt="builds.sr.ht status" /></a>
-  <a href="https://design.penpot.app/#/view/b4a9c170-5cb6-11ec-826f-e949c75b760d?page-id=ef8611e1-7c24-11eb-89c7-03f8ac143bbf&index=0&share-id=d81024f0-5cb7-11ec-826f-e949c75b760d"><img alt="designed with penpot" src="https://badgen.net/badge/designed%20with/penpot/31EFB8" /></a>
+  <a href="https://github.com/kogeletey/karzok/actions"><img src="https://flat.badgen.net/github/checks/kogeletey/karzok"  alt="github workflows status" /></a>
+<!--  <a href="https://github.com/kogeletey/karzok/actions"><img src="https://github.com/kogeletey/karzok/actions/workflows/badge.svg"  alt="github workflows action status" /></a> -->
+  <a href="https://github.com/kogeletey/karzok/blob/develop/LICENSE"><img src="https://flat.badgen.net/github/license/kogeletey/karzok" alt="license a repository" /></a>
+  <a href="https://github.com/kogeletey/karzok/releases"><img src="https://flat.badgen.net/github/release/kogeletey/karzok" alt="latest release as a repository" /></a>
+  <a href="https://framagit.org/kogeletey/nebra"><img alt="pipeline status re128" src="https://framagit.org/kogeletey/nebra/badges/develop/pipeline.svg" /></a>
 </p>
 
 # Karzok
@@ -32,7 +35,7 @@ A theme for your documentation. Fast and secure
 
 ## Demo
 
-[Fmatch Karzok](https://fmatch.org/karzok)
+[Karzok](https://karzok.re128.org)
 
 ## Requirements
 
@@ -42,17 +45,14 @@ Karzok uses npm,zola to dependency managment,rendering, scripts and plugins.
 
 1. [Zola](https://www.getzola.org/documentation/getting-started/installation/)
 2. [Node.js](https://nodejs.org/)
+3. [rsync](https://rsync.samba.org)
 
 for your platform.
 
 ### Optional
 
-1. [yj](https://github.com/sclevine/yj)
-   > for transfer toml file in yaml
-2. [docker](https://docs.docker.com/engine/install/)
-   > for packaging container
-3. [rsync](https://rsync.samba.org/)
-   > A better copy and move
+- [docker](https://docs.docker.com/engine/install/)
+   > for packaging container and production
 
 ## Get Started
 
@@ -83,7 +83,7 @@ base_url = "https://karzok.example.net" # set-up for production
 theme = "karzok"
 ```
 
-See more in [Karzok Configuration](#configuration)
+See more in [configuration](https://karzok.re128.org/configure/)
 
 ### 4. Added new content
 
@@ -102,7 +102,8 @@ i. development enviroment
 1. Install node dependencies needed to work
 
 ```zsh
-npm run gen # don't use npm install before that
+npm ci
+npm run gen 
 ```
 
 2. Just run `zola serve` in the root path of the project
@@ -118,61 +119,52 @@ ii. production enviroment
 
 - with docker
 
-1. Build docker image
+1. Write file for container
 
-```zsh
-docker build .
+```Dockerfile
+FROM ghcr.io/kogeletey/karzok:latest AS build-stage
+# or your path to image
+ADD . /www
+WORKDIR /www
+RUN sh /www/build.sh 
+
+FROM nginx:stable-alpine
+
+COPY --from=build-stage /www/public /usr/share/nginx/html
+
+EXPOSE 80
 ```
 
-or if installed docker-compose
-
+2.  Run the your container
 ```zsh
-docker-compose build
+docker build -t <your_name_image> . &&\
+docker run -d -p 8080:8080 <your_name_image> 
+```
+- using gitlab-ci and gitlab-pages
+
+```yml
+image: ghcr.io/kogeletey/karzok:latest # or change use your registry
+
+pages: 
+  script:
+    - sh /www/build.sh   
+    - mv /www/public public
+  artifacts:
+    paths:
+      - public/
 ```
 
-2. Run containers
-
-```zsh
-docker start -d -p 80:80 container_id
-```
-
-or if installed docker-compose
-
-```zsh
-docker-compose up -d
-```
-
-Open in favorite browser [https://localhost](http://localhost)
-
-## Configuration
-
-## options under the `[extra]`
-
-1. `math` - rendering math formulas throught [katex](https://katex.org)
-2. `favicon` - set path to favicon icon import(default `favicon`)
-3. `localcdn`- if you want to store all assets on your domain, then enable this
-   setting
-4. `cdnurl` - you can customize your url to store assets,default use
-   [jsdelivr](https://www.jsdelivr.com)
-5. `show_word_count` - allowing you to show number of words
-6. `show_reading_time`- allowing you to show reading time
-7. `children`- for header nesting to work
-8. `[[extra.menu]]` - the main navigation on the site
-9. `[[extra.header]]` - the header navigantion for the site
-
-### Templates
-
-All pages are extend to the base.html, and you can customize them as need.
+Open in favorite browser [https://localhost:8080](http://localhost:8080)
 
 ## License
 
 This program is Free Software: You can use, study share and improve it at your
 will. Specifically you can redistribute and/or modify it under the terms of the
-[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+[MIT](https://mit-license.org/)
 
 # Contribute
 
-Make sure to read the [Code of Conduct](/meta/code-of-conduct)
+Make sure to read the [Code of Conduct](https://karzok.re128.org/reference/code-of-conduct/)
 
 ## Find bugs and come up with features
 
@@ -181,7 +173,7 @@ On the [todo.sr.ht](https://todo.sr.ht/~kogeletey/karzok) or
 
 ## Improve Code
 
-The Karzok is stored in the repository at
+The karzok is stored in the repository at
 [sr.ht](https://sr.ht/~kogeletey/karzok) and mirror
 [github](https://github.com/kogeletey/karzok)
 
