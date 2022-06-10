@@ -3,11 +3,11 @@
 title = "nasm-theme"
 description = "A robust, elegant blue theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/lucasnasm/nasm-theme.git"
 homepage = "https://github.com/lucasnasm/nasm-theme"
 minimum_version = "0.1.0"
@@ -29,17 +29,17 @@ homepage = "https://lucasnasm.github.io"
 
 ## Contents
 
-- [nasm-theme](#nasm-theme)
-  - [Web](#web)
-  - [Mobile](#mobile)
-  - [Contents](#contents)
-  - [Fonts](#fonts)
-  - [Installation](#installation)
-  - [Options](#options)
-    - [Disqus](#disqus)
-    - [Top-menu](#top-menu)
-    - [Title](#title)
-  - [Original](#original)
+- nasm-theme
+  - Web
+  - Mobile
+  - Contents
+  - Fonts
+  - Installation
+  - Options
+    - Disqus
+    - Top-menu
+    - Title
+  - Original
 ## Fonts
 Font Awesome for icons  
 Nunito Font

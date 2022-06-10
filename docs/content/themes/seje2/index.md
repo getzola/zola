@@ -3,11 +3,11 @@
 title = "Seje2"
 description = "A beautiful zola theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/eatradish/seje2"
 homepage = "https://github.com/eatradish/Seje2"
 minimum_version = "0.15.0"
@@ -27,10 +27,10 @@ homepage = "https://blog.utopiosphere.net"
 
 ## Contents
 
-- [Installation](#installation)
-- [Options](#options)
-  - [Top menu](#top-menu)
-  - ["About" page](#"About"-page)
+- Installation
+- Options
+  - Top menu
+  - "About" page
 
 ## Installation
 First download this theme to your `themes` directory:

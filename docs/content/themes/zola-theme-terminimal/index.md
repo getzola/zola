@@ -3,11 +3,11 @@
 title = "terminimal"
 description = "A simple, minimal retro theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/pawroman/zola-theme-terminimal.git"
 homepage = "https://github.com/pawroman/zola-theme-terminimal"
 minimum_version = "0.11.0"
@@ -71,7 +71,7 @@ Many thanks for that outstanding original theme, Radek!
 ### New features
 
 - You can pick the accent color as well as background color.
-  There's a new `dark` background. See [Configuration](#configuration)
+  There's a new `dark` background. See Configuration
   below for details.
 - Active "section" links will change color indicating the
   active section. This is all static, done at template level. 
@@ -80,7 +80,7 @@ Many thanks for that outstanding original theme, Radek!
 
 - 5 color themes, depending on your preference:
   blue (default), green, orange, pink, red.
-- The shortcodes `image` and `figure` (See [Shortcodes](#shortcodes)).
+- The shortcodes `image` and `figure` (See Shortcodes.
 - Fully responsive.
 
 ## How to start

@@ -3,11 +3,11 @@
 title = "Zulma"
 description = "A zola theme based off bulma.css"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/Worble/Zulma.git"
 homepage = "https://github.com/Worble/Zulma"
 minimum_version = "0.6.0"
@@ -27,22 +27,22 @@ A Bulma theme for Zola. See a live preview [here](https://festive-morse-47d46c.n
 
 ## Contents
 
-- [Zulma](#zulma)
-  - [Contents](#contents)
-  - [Installation](#installation)
-  - [Javascript](#javascript)
-    - [Sources](#sources)
-    - [Building](#building)
-  - [Options](#options)
-    - [Pagination](#pagination)
-    - [Taxonomies](#taxonomies)
-    - [Menu Links](#menu-links)
-    - [Brand](#brand)
-    - [Search](#search)
-    - [Title](#title)
-    - [Theming](#theming)
-  - [Original](#original)
-  - [Known Bugs](#known-bugs)
+- Zulma
+  - Contents
+  - Installation
+  - Javascript
+    - Sources
+    - Building
+  - Options
+    - Pagination
+    - Taxonomies
+    - Menu Links
+    - Brand
+    - Search
+    - Title
+    - Theming
+  - Original
+  - Known Bugs
 
 ## Installation
 
@@ -59,7 +59,7 @@ and then enable it in your `config.toml`:
 theme = "Zulma"
 ```
 
-That's it! No more configuration should be required, however it might look a little basic. Head to the [Options](#options) section to see what you can set for more customizability.
+That's it! No more configuration should be required, however it might look a little basic. Head to the Options section to see what you can set for more customizability.
 
 ## Javascript
 

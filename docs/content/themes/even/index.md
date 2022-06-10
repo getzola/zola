@@ -3,11 +3,11 @@
 title = "even"
 description = "A robust, elegant dark theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/getzola/even.git"
 homepage = "https://github.com/getzola/even"
 minimum_version = "0.11.0"
@@ -26,10 +26,10 @@ Even is a clean, responsive theme based on the Hugo theme with the same name fea
 
 ## Contents
 
-- [Installation](#installation)
-- [Options](#options)
-  - [Top menu](#top-menu)
-  - [Title](#title)
+- Installation
+- Options
+  - Top menu
+  - Title
 
 ## Installation
 First download this theme to your `themes` directory:
