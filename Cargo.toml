@@ -34,6 +34,9 @@ open = "2"
 pathdiff = "0.2"
 # For mimetype detection in serve mode
 mime_guess = "2.0"
+# For essence_str() function, see https://github.com/getzola/zola/issues/1845
+mime = "0.3.16"
+
 
 site = { path = "components/site" }
 errors = { path = "components/errors" }

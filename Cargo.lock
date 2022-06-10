@@ -3845,6 +3845,7 @@ dependencies = [
  "errors",
  "hyper",
  "libs",
+ "mime",
  "mime_guess",
  "notify",
  "open",
