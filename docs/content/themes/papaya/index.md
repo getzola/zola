@@ -3,11 +3,11 @@
 title = "Papaya"
 description = "A clean Zola theme for blogging and projects"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/justint/papaya.git"
 homepage = "https://github.com/justint/papaya"
 minimum_version = "0.14.0"
@@ -96,13 +96,13 @@ A clean [Zola](https://getzola.org) theme for blogging and projects, forked from
 
 Here are the customizable features of Papaya: 
 
-- [Project categories](#project-categories)
-- [Multilingual support](#multilingual-support)
-- [Custom sections and navigation menu links](#custom-sections-and-navigation-menu-links)
-- [Post/project date formats](#postproject-date-formats)
-- [Post/project featured images](#postproject-featured-images)
-- [Open Graph Protocol locale/profile information](#open-graph-protocol-localeprofile-information)
-- [Social/contact links](#socialcontact-links)
+- Project categories
+- Multilingual support
+- Custom sections and navigation menu links
+- Post/project date formats
+- Post/project featured images
+- Open Graph Protocol locale/profile information
+- Social/contact links
 
 ### Project categories
 
@@ -231,9 +231,9 @@ menu_items = [
 
 A `menu_item` can be one of two things:
 
-- **a link to a section.** Section links can be optionally configured to display its most recently authored items on your index page. See [Configuring section menu items](#configuring-section-menu-items).
+- **a link to a section.** Section links can be optionally configured to display its most recently authored items on your index page. See Configuring section menu items.
 
-- **a link to a URL.** See [Configuring URL menu items](#configuring-url-menu-items)
+- **a link to a URL.** See Configuring URL menu items
 
 #### Configuring section menu items
 
@@ -479,13 +479,13 @@ You can use `./<image-path>` to specify the relative path of image which is rela
 
    Max pixel width can be defined in your `config.toml`  with the `extra.images.max_width` property (2500px default).
 
-   See [Extended width images](#extended-width-images) section for more details and examples.
+   See Extended width images section for more details and examples.
 
 The benefits of using this shortcode over regular Markdown/HTML image embedding are:
 
 - Images are automatically resized for best performance, using Zola's [image processing functions](https://www.getzola.org/documentation/content/image-processing/)
 - Images & captions are ✨pre-styled✨ for you
-- Images can have their width extended past the document's width (see: [Extended width images](#extended-width-images))
+- Images can have their width extended past the document's width (see: Extended width images
 - Less HTML/CSS boilerplate to write
 
 

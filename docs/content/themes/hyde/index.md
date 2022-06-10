@@ -3,11 +3,11 @@
 title = "hyde"
 description = "A classic blog theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/getzola/hyde.git"
 homepage = "https://github.com/getzola/hyde"
 minimum_version = "0.11.0"
@@ -27,12 +27,12 @@ Hyde is a brazen two-column [Zola](https://github.com/getzola/zola) based on the
 
 ## Contents
 
-- [Installation](#installation)
-- [Options](#options)
-  - [Sidebar menu](#sidebar-menu)
-  - [Sticky sidebar content](#sticky-sidebar-content)
-  - [Themes](#themes)
-  - [Reverse layout](#reverse-layout)
+- Installation
+- Options
+  - Sidebar menu
+  - Sticky sidebar content
+  - Themes
+  - Reverse layout
 
 ## Installation
 First download this theme to your `themes` directory:

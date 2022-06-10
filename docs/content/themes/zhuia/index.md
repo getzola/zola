@@ -3,11 +3,11 @@
 title = "Zhuia"
 description = "An elegant but still playful theme for Zola."
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/gicrisf/zhuia.git"
 homepage = "https://github.com/gicrisf/zhuia"
 minimum_version = "0.15.0"
@@ -29,17 +29,17 @@ It is especially optimized for mobile navigation (optionally without JavaScript,
 
 ## Contents
 
-- [Installation](#installation)
-- [Features](#features)
-- [Options](#options)
-  - [Title](#title)
-  - [SEO](#seo)
-  - [Social](#social)
-  - [Footer](#footer)
-- [Name](#name)
-- [Genesis](#genesis)
-- [Donate](#donate)
-- [License](#license)
+- Installation
+- Features
+- Options
+  - Title
+  - SEO
+  - Social
+  - Footer
+- Name
+- Genesis
+- Donate
+- License
 
 ## Installation
 

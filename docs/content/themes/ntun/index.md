@@ -3,11 +3,11 @@
 title = "ntun-zola-theme"
 description = "A classic resume theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/Netoun/ntun.git"
 homepage = "https://github.com/netoun/ntun"
 minimum_version = "0.1.0"
@@ -26,8 +26,8 @@ homepage = "https://netoun.com"
 **Live demo** : https://netoun.github.io/ntun/
 ## Contents
 
-- [Installation](#installation)
-- [Options](#options)
+- Installation
+- Options
 
 ## Installation
 First download this theme to your `themes` directory:

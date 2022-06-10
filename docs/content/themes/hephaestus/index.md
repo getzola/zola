@@ -3,11 +3,11 @@
 title = "hephaestus"
 description = "A portfolio theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://github.com/BConquest/hephaestus.git"
 homepage = "https://github.com/BConquest/hephaestus"
 minimum_version = "0.4.0"
@@ -25,13 +25,13 @@ Hephaestus is a portfolio theme for zola. It uses bulma css and supports using i
 ![hephaestus screenshot](screenshot.png?raw=true)
 
 ## Contents
-- [Installation](#installation)
-- [Options](#options)
-	- [Navigation Bar](#navigation-bar)
-	- [Education](#education)
-	- [Projects](#projects)
-	- [Skills](#skills)
-	- [Social Links](#social-links)
+- Installation
+- Options
+	- Navigation Bar
+	- Education
+	- Projects
+	- Skills
+	- Social Links
 
 ## Installation
 

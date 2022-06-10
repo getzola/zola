@@ -3,11 +3,11 @@
 title = "Float"
 description = "An elegant blog theme"
 template = "theme.html"
-date = 2022-06-03T14:22:50-07:00
+date = 2022-06-10T21:55:08+02:00
 
 [extra]
-created = 2022-06-03T14:22:50-07:00
-updated = 2022-06-03T14:22:50-07:00
+created = 2022-06-10T21:55:08+02:00
+updated = 2022-06-10T21:55:08+02:00
 repository = "https://gitlab.com/float-theme/float.git"
 homepage = "https://float-theme.netlify.app/"
 minimum_version = "0.15.3"
