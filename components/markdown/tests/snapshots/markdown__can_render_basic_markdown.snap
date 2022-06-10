@@ -1,8 +1,6 @@
 ---
-source: components/rendering/tests/markdown.rs
-assertion_line: 29
+source: components/markdown/tests/markdown.rs
 expression: body
-
 ---
 <p>Hello world</p>
 <h1 id="hello-world">Hello world</h1>
@@ -11,5 +9,5 @@ Hello
 world
 Non rendered emoji :smile:
 <a href="image.jpg">a link</a>
-<img src="image.jpg" alt="alt text" /></p>
+<img src="https://www.getzola.org/test/image.jpg" alt="alt text" /></p>
 <h1>some html</h1>

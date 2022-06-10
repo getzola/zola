@@ -63,7 +63,7 @@ fn configurable_render(
         &tera,
         &config,
         &config.default_language,
-        "",
+        "https://www.getzola.org/test/",
         &permalinks,
         insert_anchor,
     );

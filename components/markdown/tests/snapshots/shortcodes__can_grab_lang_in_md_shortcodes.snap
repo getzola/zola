@@ -1,8 +1,6 @@
 ---
-source: components/rendering/tests/shortcodes.rs
-assertion_line: 63
+source: components/markdown/tests/shortcodes.rs
 expression: body
-
 ---
-<p><img src="cover.en.png" alt="Book cover in en" /></p>
+<p><img src="https://www.getzola.org/test/cover.en.png" alt="Book cover in en" /></p>
 

@@ -9,6 +9,7 @@ use libs::tera;
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
 use libs::pulldown_cmark::escape::escape_html;
+use libs::regex::Regex;
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
 use utils::table_of_contents::{make_table_of_contents, Heading};
@@ -21,6 +22,13 @@ use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
+
+/// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
+/// private schemes. This regex checks if the given string starts with something that just looks
+/// like a scheme, i.e., a case-insensitive identifier followed by a colon.
+///
+/// [uri-schemes]: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+static STARTS_WITH_SCHEMA_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[0-9A-Za-z\-]+:").unwrap());
 
 /// Efficiently insert multiple element in their specified index.
 /// The elements should sorted in ascending order by their index.
@@ -40,6 +48,11 @@ fn insert_many<T>(input: &mut Vec<T>, elem_to_insert: Vec<(usize, T)>) {
     inserted.extend(input.drain(0..len));
 
     *input = inserted;
+}
+
+/// Colocated asset links refers to the files in the same directory.
+fn is_colocated_asset_link(link: &str) -> bool {
+    !link.starts_with('/') && !link.starts_with('#') && !STARTS_WITH_SCHEMA_RE.is_match(link)
 }
 
 #[derive(Debug)]
@@ -363,6 +376,14 @@ pub fn markdown_to_html(
                     // reset highlight and close the code block
                     code_block = None;
                     events.push(Event::Html("</code></pre>\n".into()));
+                }
+                Event::Start(Tag::Image(link_type, src, title)) => {
+                    if is_colocated_asset_link(&src) {
+                        let link = format!("{}{}", context.current_page_permalink, &*src);
+                        events.push(Event::Start(Tag::Image(link_type, link.into(), title)));
+                    } else {
+                        events.push(Event::Start(Tag::Image(link_type, src, title)));
+                    }
                 }
                 Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
                     error = Some(Error::msg("There is a link that is missing a URL"));
