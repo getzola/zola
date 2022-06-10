@@ -60,16 +60,16 @@ impl Markdown {
         if self.highlight_theme == "css" {
             None
         } else {
-            Some(self.get_highlight_theme_by_name(&self.highlight_theme))
+            self.get_highlight_theme_by_name(&self.highlight_theme)
         }
     }
 
     /// Gets an arbitrary theme from the THEME_SET or the extra_theme_set
-    pub fn get_highlight_theme_by_name(&self, theme_name: &str) -> &Theme {
+    pub fn get_highlight_theme_by_name(&self, theme_name: &str) -> Option<&Theme> {
         (*self.extra_theme_set)
             .as_ref()
             .and_then(|ts| ts.themes.get(theme_name))
-            .unwrap_or_else(|| &THEME_SET.themes[theme_name])
+            .or_else(|| THEME_SET.themes.get(theme_name))
     }
 
     /// Attempt to load any extra syntaxes and themes found in the extra_syntaxes_and_themes folders
@@ -95,9 +95,12 @@ impl Markdown {
         ))
     }
 
-    pub fn export_theme_css(&self, theme_name: &str) -> String {
-        let theme = self.get_highlight_theme_by_name(theme_name);
-        css_for_theme_with_class_style(theme, CLASS_STYLE).expect("the function can't even error?")
+    pub fn export_theme_css(&self, theme_name: &str) -> Result<String> {
+        if let Some(theme) = self.get_highlight_theme_by_name(theme_name) {
+            Ok(css_for_theme_with_class_style(theme, CLASS_STYLE).expect("the function can't even error?"))
+        } else {
+            bail!("Theme {} not found", theme_name)
+        }
     }
 
     pub fn init_extra_syntaxes_and_highlight_themes(&mut self, path: &Path) -> Result<()> {

@@ -764,7 +764,7 @@ impl Site {
         for t in &self.config.markdown.highlight_themes_css {
             let p = self.static_path.join(&t.filename);
             if !p.exists() {
-                let content = &self.config.markdown.export_theme_css(&t.theme);
+                let content = &self.config.markdown.export_theme_css(&t.theme)?;
                 create_file(&p, content)?;
             }
         }
