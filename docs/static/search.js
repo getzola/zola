@@ -151,6 +151,7 @@ function initSearch() {
     }
     $searchResults.style.display = term === "" ? "none" : "block";
     $searchResultsItems.innerHTML = "";
+    currentTerm = term;
     if (term === "") {
       return;
     }
@@ -161,7 +162,6 @@ function initSearch() {
       return;
     }
 
-    currentTerm = term;
     for (var i = 0; i < Math.min(results.length, MAX_ITEMS); i++) {
       var item = document.createElement("li");
       item.innerHTML = formatSearchResultItem(results[i], term.split(" "));
