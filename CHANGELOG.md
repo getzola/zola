@@ -24,6 +24,9 @@ any pages related to that taxonomy
 - Ignore sections with `render=false` when looking for path collisions
 - Add support for backlinks
 - Add a warning mode for internal/external link checking in case you don't want zola to stop the build on invalid links
+- Always follow symlinks
+- Add `rel="alternate"` to Atom post links
+- Fix taxonomy current_path
 
 ## 0.15.3 (2022-01-23)
 
