@@ -14,7 +14,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             SortBy::UpdateDate => {
                 page.meta.datetime.is_some() || page.meta.updated_datetime.is_some()
             }
-            SortBy::Title => page.meta.title.is_some(),
+            SortBy::Title | SortBy::TitleBytes => page.meta.title.is_some(),
             SortBy::Weight => page.meta.weight.is_some(),
             SortBy::None => unreachable!(),
         });
@@ -27,6 +27,9 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
                 .cmp(&std::cmp::max(a.meta.datetime, a.meta.updated_datetime).unwrap()),
             SortBy::Title => {
                 natural_lexical_cmp(a.meta.title.as_ref().unwrap(), b.meta.title.as_ref().unwrap())
+            }
+            SortBy::TitleBytes => {
+                a.meta.title.as_ref().unwrap().cmp(b.meta.title.as_ref().unwrap())
             }
             SortBy::Weight => a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()),
             SortBy::None => unreachable!(),
@@ -110,9 +113,11 @@ mod tests {
     #[test]
     fn can_sort_by_title() {
         let titles = vec![
+            "åland",
             "bagel",
             "track_3",
             "microkernel",
+            "Österrike",
             "métro",
             "BART",
             "Underground",
@@ -135,16 +140,47 @@ mod tests {
         assert_eq!(
             sorted_titles,
             vec![
+                "åland",
                 "bagel",
                 "BART",
                 "μ-kernel",
                 "meter",
                 "métro",
                 "microkernel",
+                "Österrike",
                 "track_1",
                 "track_3",
                 "track_13",
+                "Underground"
+            ]
+        );
+
+        let (sorted_pages, ignored_pages) =
+            sort_pages(&pages.iter().collect::<Vec<_>>(), SortBy::TitleBytes);
+        // Should be sorted by title in bytes order
+        let sorted_titles: Vec<_> = sorted_pages
+            .iter()
+            .map(|key| {
+                pages.iter().find(|p| &p.file.path == key).unwrap().meta.title.as_ref().unwrap()
+            })
+            .collect();
+        assert_eq!(ignored_pages.len(), 0);
+        assert_eq!(
+            sorted_titles,
+            vec![
+                "BART",
                 "Underground",
+                "bagel",
+                "meter",
+                "microkernel",
+                "métro",
+                "track_1",
+                "track_13",
+                "track_3",
+                // Non ASCII letters are not merged with the ASCII equivalent (o/a/m here)
+                "Österrike",
+                "åland",
+                "μ-kernel"
             ]
         );
     }

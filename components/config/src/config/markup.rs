@@ -97,7 +97,8 @@ impl Markdown {
 
     pub fn export_theme_css(&self, theme_name: &str) -> Result<String> {
         if let Some(theme) = self.get_highlight_theme_by_name(theme_name) {
-            Ok(css_for_theme_with_class_style(theme, CLASS_STYLE).expect("the function can't even error?"))
+            Ok(css_for_theme_with_class_style(theme, CLASS_STYLE)
+                .expect("the function can't even error?"))
         } else {
             bail!("Theme {} not found", theme_name)
         }

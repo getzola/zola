@@ -28,6 +28,7 @@ any pages related to that taxonomy
 - Add `rel="alternate"` to Atom post links
 - Fix taxonomy `current_path`
 - Fix feed location for taxonomies not in the default language
+- Add `title_bytes` sorting method
 
 ## 0.15.3 (2022-01-23)
 
