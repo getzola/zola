@@ -158,7 +158,12 @@ fn can_build_multilingual_site() {
     assert!(file_exists!(public, "fr/auteurs/index.html"));
     assert!(!file_contains!(public, "fr/auteurs/index.html", "Queen"));
     assert!(file_contains!(public, "fr/auteurs/index.html", "Vincent"));
-    assert!(!file_exists!(public, "fr/auteurs/vincent-prouillet/atom.xml"));
+    assert!(file_exists!(public, "fr/auteurs/vincent-prouillet/atom.xml"));
+    assert!(file_contains!(
+        public,
+        "fr/auteurs/vincent-prouillet/atom.xml",
+        r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">"#
+    ));
 
     assert!(file_exists!(public, "fr/tags/index.html"));
     assert!(file_contains!(public, "fr/tags/index.html", "bonjour"));

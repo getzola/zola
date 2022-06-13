@@ -923,9 +923,14 @@ impl Site {
                 }
 
                 if taxonomy.kind.feed {
+                    let tax_path = if taxonomy.lang == self.config.default_language {
+                        PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
+                    } else {
+                        PathBuf::from(format!("{}/{}/{}", taxonomy.lang, taxonomy.slug, item.slug))
+                    };
                     self.render_feed(
                         item.pages.iter().map(|p| library.pages.get(p).unwrap()).collect(),
-                        Some(&PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))),
+                        Some(&tax_path),
                         &taxonomy.lang,
                         |mut context: Context| {
                             context.insert("taxonomy", &taxonomy.kind);

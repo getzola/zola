@@ -19,7 +19,7 @@ taxonomies = [
 [languages.fr]
 generate_feed = true
 taxonomies = [
-    {name = "auteurs"},
+    {name = "auteurs", feed = true},
     {name = "tags"},
 ]
 

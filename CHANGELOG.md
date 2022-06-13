@@ -26,7 +26,8 @@ any pages related to that taxonomy
 - Add a warning mode for internal/external link checking in case you don't want zola to stop the build on invalid links
 - Always follow symlinks
 - Add `rel="alternate"` to Atom post links
-- Fix taxonomy current_path
+- Fix taxonomy `current_path`
+- Fix feed location for taxonomies not in the default language
 
 ## 0.15.3 (2022-01-23)
 
