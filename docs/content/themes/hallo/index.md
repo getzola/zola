@@ -3,11 +3,11 @@
 title = "hallo"
 description = "A single-page theme to introduce yourself."
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/flyingP0tat0/zola-hallo.git"
 homepage = "https://github.com/janbaudisch/zola-hallo"
 minimum_version = "0.4.0"
@@ -56,10 +56,7 @@ theme = "hallo"
 
 ### Introduction
 
-The introduction text is included from `templates/partials/introduction.html`.
-
-You will need to create this file and fill it with content.
-
+The introduction text is made in `content/_index.md`.
 
 ## Options
 

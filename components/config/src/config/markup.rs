@@ -1,11 +1,11 @@
 use std::{path::Path, sync::Arc};
 
-use serde_derive::{Deserialize, Serialize};
-use syntect::{
+use libs::syntect::{
     highlighting::{Theme, ThemeSet},
     html::css_for_theme_with_class_style,
     parsing::{SyntaxSet, SyntaxSetBuilder},
 };
+use serde::{Deserialize, Serialize};
 
 use errors::{bail, Result};
 
@@ -13,19 +13,13 @@ use crate::highlighting::{CLASS_STYLE, THEME_SET};
 
 pub const DEFAULT_HIGHLIGHT_THEME: &str = "base16-ocean-dark";
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct ThemeCss {
     /// Which theme are we generating the CSS from
     pub theme: String,
     /// In which file are we going to output the CSS
     pub filename: String,
-}
-
-impl Default for ThemeCss {
-    fn default() -> ThemeCss {
-        ThemeCss { theme: String::new(), filename: String::new() }
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -66,16 +60,16 @@ impl Markdown {
         if self.highlight_theme == "css" {
             None
         } else {
-            Some(self.get_highlight_theme_by_name(&self.highlight_theme))
+            self.get_highlight_theme_by_name(&self.highlight_theme)
         }
     }
 
     /// Gets an arbitrary theme from the THEME_SET or the extra_theme_set
-    pub fn get_highlight_theme_by_name(&self, theme_name: &str) -> &Theme {
+    pub fn get_highlight_theme_by_name(&self, theme_name: &str) -> Option<&Theme> {
         (*self.extra_theme_set)
             .as_ref()
             .and_then(|ts| ts.themes.get(theme_name))
-            .unwrap_or_else(|| &THEME_SET.themes[theme_name])
+            .or_else(|| THEME_SET.themes.get(theme_name))
     }
 
     /// Attempt to load any extra syntaxes and themes found in the extra_syntaxes_and_themes folders
@@ -101,27 +95,32 @@ impl Markdown {
         ))
     }
 
-    pub fn export_theme_css(&self, theme_name: &str) -> String {
-        let theme = self.get_highlight_theme_by_name(theme_name);
-        css_for_theme_with_class_style(theme, CLASS_STYLE)
+    pub fn export_theme_css(&self, theme_name: &str) -> Result<String> {
+        if let Some(theme) = self.get_highlight_theme_by_name(theme_name) {
+            Ok(css_for_theme_with_class_style(theme, CLASS_STYLE)
+                .expect("the function can't even error?"))
+        } else {
+            bail!("Theme {} not found", theme_name)
+        }
     }
 
     pub fn init_extra_syntaxes_and_highlight_themes(&mut self, path: &Path) -> Result<()> {
-        if self.highlight_theme == "css" {
-            return Ok(());
-        }
-
         let (loaded_extra_syntaxes, loaded_extra_highlight_themes) =
             self.load_extra_syntaxes_and_highlight_themes(path)?;
 
         if let Some(extra_syntax_set) = loaded_extra_syntaxes {
             self.extra_syntax_set = Some(extra_syntax_set);
         }
+
         if let Some(extra_theme_set) = loaded_extra_highlight_themes {
             self.extra_theme_set = Arc::new(Some(extra_theme_set));
         }
 
-        // validate that the chosen highlight_theme exists in the loaded highlight theme sets
+        if self.highlight_theme == "css" {
+            return Ok(());
+        }
+
+        // Validate that the chosen highlight_theme exists in the loaded highlight theme sets
         if !THEME_SET.themes.contains_key(&self.highlight_theme) {
             if let Some(extra) = &*self.extra_theme_set {
                 if !extra.themes.contains_key(&self.highlight_theme) {
@@ -133,6 +132,20 @@ impl Markdown {
             } else {
                 bail!("Highlight theme {} not available.\n\
                 You can load custom themes by configuring `extra_syntaxes_and_themes` to include a list of folders containing '.tmTheme' files", self.highlight_theme)
+            }
+        }
+
+        // Validate that all exported highlight themes exist as well
+        for theme in self.highlight_themes_css.iter() {
+            let theme_name = &theme.theme;
+            if !THEME_SET.themes.contains_key(theme_name) {
+                // Check extra themes
+                if let Some(extra) = &*self.extra_theme_set {
+                    if !extra.themes.contains_key(theme_name) {
+                        bail!("Can't export highlight theme {}, as it does not exist.\n\
+                        Make sure it's spelled correctly, or your custom .tmTheme' is defined properly.", theme_name)
+                    }
+                }
             }
         }
 

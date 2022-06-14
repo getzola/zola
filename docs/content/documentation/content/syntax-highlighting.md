@@ -171,6 +171,9 @@ If your site source is laid out as follows:
 
 you would set your `extra_syntaxes_and_themes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
 
+You can see the list of available themes on the [configuration page](@/documentation/getting-started/configuration.md#syntax-highlighting).
+
+
 ## Inline VS classed highlighting
 
 If you use a highlighting scheme like
@@ -227,7 +230,7 @@ you get CSS class definitions, instead.
 </pre>
 ```
 
-Zola can output a css file for a theme in the `static` directory using the `highlighting_themes_css` option.
+Zola can output a css file for a theme in the `static` directory using the `highlight_themes_css` option.
 
 ```toml
 highlight_themes_css = [
@@ -269,7 +272,7 @@ highlight(code);
 ````
 
 - `hl_lines` to highlight lines. You must specify a list of inclusive ranges of lines to highlight,
-separated by whitespaces. Ranges are 1-indexed and `linenostart` doesn't influence the values, it always refers to the codeblock line number.
+separated by ` ` (whitespace). Ranges are 1-indexed and `linenostart` doesn't influence the values, it always refers to the codeblock line number.
   
 ````
 ```rust,hl_lines=1 3-5 9
@@ -280,7 +283,7 @@ highlight(code);
 ````
 
 - `hide_lines` to hide lines. You must specify a list of inclusive ranges of lines to hide,
-separated by ` `. Ranges are 1-indexed.
+separated by ` ` (whitespace). Ranges are 1-indexed.
   
 ````
 ```rust,hide_lines=1-2
@@ -382,5 +385,5 @@ If your site source is laid out as follows:
     └── ...
 ```
 
-you would set your `extra_highlight_themes` to `["highlight_themes", "highlight_themes/MyGroovyTheme"]` to load `theme1.tmTheme` and `theme2.tmTheme`.
+you would set your `extra_syntaxes_and_themes` to `["highlight_themes", "highlight_themes/MyGroovyTheme"]` to load `theme1.tmTheme` and `theme2.tmTheme`.
 Then choose one of them to use, say theme1, by setting `highlight_theme = theme1`.

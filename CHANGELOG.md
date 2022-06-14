@@ -1,14 +1,63 @@
 # Changelog
 
+## 0.16.0 (unreleased)
 
-## 0.15.0 (unreleased)
+### Breaking
+
+- Switch to pulldown-cmark anchor rather than ours, some (very niche) edge cases are not supported anymore, you can
+also specify classes on headers now
+- Now outputs empty taxonomies instead of ignoring them
+- Unify all pages sorting variable names in templates to `lower`/`higher` in order to make it easy to re-use templates and it
+was becoming hard to come up with names
+
+### Other
+- Fix markup for fenced code with linenos
+- Make `ignored_content` work with nested paths and directories
+- `zola serve/build` can now run from anywhere in a zola directory
+- Add XML support to `load_data`
+- Add YAML support to `load_data`
+- `skip_prefixes` is now checked before parsing external link URLs
+- Add `render` attribute to taxonomies configuration in `config.toml`, for when you don't want to render
+any pages related to that taxonomy
+- Serialize `transparent` field from front-matter of sections
+- Use Zola Tera instance for markdown filter: this means you have access to the same Tera functions as in shortcodes
+- Ignore sections with `render=false` when looking for path collisions
+- Add support for backlinks
+- Add a warning mode for internal/external link checking in case you don't want zola to stop the build on invalid links
+- Always follow symlinks
+- Add `rel="alternate"` to Atom post links
+- Fix taxonomy `current_path`
+- Fix feed location for taxonomies not in the default language
+- Add `title_bytes` sorting method
+
+## 0.15.3 (2022-01-23)
+
+- Fix shortcodes not being rendered in code blocks
+- Fix colocated assets with no extensions being ignored
+- Add `headers` parameters to `load_data`
+- Fix themes `robots.txt` not being rendered
+- Check for local internal anchors in HTML content of markdown files
+- Fix issues loading custom syntaxes if highlight_theme = css
+
+## 0.15.2 (2021-12-10)
+
+- Fix HTML shortcodes
+
+## 0.15.1 (2021-12-08)
+
+- Fix markdown shortcodes not being rendered correctly
+- Fix config data not getting to the templates
+
+## 0.15.0 (2021-12-05)
 
 - Fix config file watching
 - Support custom syntax highlighting themes
 - Add a `required` argument to taxonomy template functions to allow them to return empty taxonomies
 - Support colocating subfolders
-- shorcodes and `anchor-link.html` can now access the `lang` context
+- Shortcodes and `anchor-link.html` can now access the `lang` context
 - Add prompt before replacing the output directory with `zola build` if the `output-dir` flag is given
+- Shortcode handling has been completely rewritten, solving many issues
+- Also add internal links starting with `#` without any internal Zola link
 
 ## 0.14.1 (2021-08-24)
 

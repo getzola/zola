@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 50
+expression: body
+
+---
+<p>hello in en</p>
+

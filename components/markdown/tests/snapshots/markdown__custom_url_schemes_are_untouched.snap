@@ -1,0 +1,10 @@
+---
+source: components/rendering/tests/markdown.rs
+assertion_line: 194
+expression: body
+
+---
+<p><a href="xmpp:foo@bar.tld">foo@bar.tld</a></p>
+<p><a href="tel:+11234567890">(123) 456-7890</a></p>
+<p><a href="about:blank">blank page</a></p>
+

@@ -87,31 +87,31 @@ $ snap install --edge zola
 
 ### Docker
 
-Zola is available on [Docker Hub](https://hub.docker.com/r/balthek/zola).
-It has no `latest` tag, you will need to specify a [specific version to pull](https://hub.docker.com/r/balthek/zola/tags).
+Zola is available on [the GitHub registry](https://github.com/getzola/zola/pkgs/container/zola).
+It has no `latest` tag, you will need to specify a [specific version to pull](https://github.com/getzola/zola/pkgs/container/zola/versions).
 
 ```sh
-$ docker pull balthek/zola:0.14.0
-$ docker run balthek/zola:0.14.0 --version
+$ docker pull ghcr.io/getzola/zola:v0.16.0
 ```
 
 #### Build
 
 ```sh
-$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app balthek/zola:0.14.0 build
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app ghcr.io/getzola/zola:v0.16.0 build
 ```
 
 #### Serve
 
 ```sh
-$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 balthek/zola:0.14.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost
+$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 ghcr.io/getzola/zola:v0.16.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost
 ```
 
 You can now browse http://localhost:8080.
 
 > To enable live browser reload, you may have to bind to port 1024. Zola searches for an open
 > port between 1024 and 9000 for live reload. The new docker command would be
-> `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 balthek/zola:0.14.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
+> `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 ghcr.io/getzola/zola:v0.16.0 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
+
 
 ## Windows
 
@@ -130,7 +130,7 @@ $ choco install zola
 Zola does not work in PowerShell ISE.
 
 ## From source
-To build Zola from source, you will need to have Git, [Rust (at least 1.49) and Cargo](https://www.rust-lang.org/)
+To build Zola from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/)
 installed. You will also need to meet additional dependencies to compile [libsass](https://github.com/sass/libsass):
 
 - OSX, Linux and other Unix-like operating systems: `make` (`gmake` on BSDs), `g++`, `libssl-dev`

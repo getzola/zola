@@ -1,0 +1,10 @@
+---
+source: components/rendering/tests/codeblocks.rs
+assertion_line: 323
+expression: body
+
+---
+<pre data-lang="rustscript" style="background-color:#2b303b;color:#c0c5ce;" class="language-rustscript "><code class="language-rustscript" data-lang="rustscript"><span>foo
+</span><span>bar
+</span></code></pre>
+

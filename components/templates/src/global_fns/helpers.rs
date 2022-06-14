@@ -21,7 +21,8 @@ pub fn search_for_file(
     theme: &Option<String>,
     output_path: &Path,
 ) -> Result<Option<(PathBuf, String)>> {
-    let mut search_paths = vec![base_path.join("static"), base_path.join("content"), base_path.join(output_path)];
+    let mut search_paths =
+        vec![base_path.join("static"), base_path.join("content"), base_path.join(output_path)];
     if let Some(t) = theme {
         search_paths.push(base_path.join("themes").join(t).join("static"));
     }

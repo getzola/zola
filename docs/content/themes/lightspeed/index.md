@@ -3,12 +3,12 @@
 title = "lightspeed"
 description = "Zola theme with a perfect Lighthouse score"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
-repository = "https://github.com/carpetscheme/lightspeed"
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
+repository = "https://github.com/carpetscheme/lightspeed.git"
 homepage = "https://github.com/carpetscheme/lightspeed"
 minimum_version = "0.10.0"
 license = "MIT"
@@ -42,7 +42,7 @@ Demo: [quirky-perlman-34d0da.netlify.com](https://quirky-perlman-34d0da.netlify.
   - [Footer menu](#footer-menu)
   - [SEO](#seo)
   - [Footer text](#footer-text)
-  - [Sass](#Sass)
+  - [Sass](#sass)
 - [Original](#original)
 - [License](#license)
 

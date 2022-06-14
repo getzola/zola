@@ -74,7 +74,7 @@ You can also specify different addresses for the interface and base_url using `-
 
 > By default, devices from the local network **won't** be able to access the served pages. This may be of importance when you want to test page interaction and layout on your mobile device or tablet. If you set the interface to `0.0.0.0` however, devices from your local network will be able to access the served pages by requesting the local ip-address of the machine serving the pages and port used.
 >
-> In order to have everything work correctly, you might also have to alter the `base-url` flag to your local ip.
+> In order to have everything work correctly, you might also have to alter the `base-url` flag to your local ip or set it to `/` to use server-base relative paths.
 
 Use the `--open` flag to automatically open the locally hosted instance in your
 web browser.
@@ -87,6 +87,7 @@ $ zola serve --port 2000
 $ zola serve --interface 0.0.0.0
 $ zola serve --interface 0.0.0.0 --port 2000
 $ zola serve --interface 0.0.0.0 --base-url 127.0.0.1
+$ zola serve --interface 0.0.0.0 --base-url /
 $ zola serve --interface 0.0.0.0 --port 2000 --output-dir www/public
 $ zola serve --open
 ```

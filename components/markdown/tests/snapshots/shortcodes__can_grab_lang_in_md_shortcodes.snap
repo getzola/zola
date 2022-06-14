@@ -1,0 +1,6 @@
+---
+source: components/markdown/tests/shortcodes.rs
+expression: body
+---
+<p><img src="https://www.getzola.org/test/cover.en.png" alt="Book cover in en" /></p>
+

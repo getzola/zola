@@ -52,7 +52,7 @@ minify_html = false
 # directory is processed. Defaults to none, which means that all asset files are
 # copied over to the `public` directory.
 # Example:
-#     ignored_content = ["*.{graphml,xlsx}", "temp.*"]
+#     ignored_content = ["*.{graphml,xlsx}", "temp.*", "**/build_folder"]
 ignored_content = []
 
 # When set to "true", a feed is automatically generated.
@@ -84,9 +84,6 @@ hard_link_static = false
 #
 taxonomies = []
 
-# A list of directories used to search for additional `.sublime-syntax` files.
-extra_syntaxes = []
-
 # When set to "true", a search index is built from the pages and section
 # content for `default_language`.
 build_search_index = false
@@ -95,6 +92,9 @@ build_search_index = false
 [markdown]
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
+
+# A list of directories used to search for additional `.sublime-syntax` files.
+extra_syntaxes = []
 
 # The theme to use for code highlighting.
 # See below for list of allowed values.
@@ -129,6 +129,12 @@ skip_prefixes = [
 skip_anchor_prefixes = [
     "https://caniuse.com/",
 ]
+
+# Treat internal link problems as either "error" or "warn", default is "error"
+internal_level = "error"
+
+# Treat external link problems as either "error" or "warn", default is "error"
+external_level = "error"
 
 # Various slugification strategies, see below for details
 # Defaults to everything being a slug
@@ -196,7 +202,7 @@ Zola currently has the following highlight themes available:
 - [ayu-dark](https://github.com/dempfi/ayu)
 - [ayu-light](https://github.com/dempfi/ayu)
 - [ayu-mirage](https://github.com/dempfi/ayu)
-- [base16-aterlierdune-light](https://atelierbram.github.io/syntax-highlighting/atelier-schemes/dune/)
+- [base16-atelierdune-light](https://atelierbram.github.io/syntax-highlighting/atelier-schemes/dune/)
 - [base16-ocean-dark](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Base16%20Ocean%20Dark)
 - [base16-ocean-light](https://tmtheme-editor.herokuapp.com/#!/editor/theme/Base16%20Ocean%20Light)
 - [bbedit](https://tmtheme-editor.herokuapp.com/#!/editor/theme/BBEdit)
@@ -237,7 +243,7 @@ Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 
 Alternatively you can use the `extra_syntaxes_and_themes` configuration option to load your own custom themes from a .tmTheme file.
-See [Syntax Highlighting](@/syntax-highlighting.md) for more details.
+See [Syntax Highlighting](@/documentation/content/syntax-highlighting.md) for more details.
 
 ## Slugification strategies
 

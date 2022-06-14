@@ -1,0 +1,11 @@
+---
+source: components/rendering/tests/codeblocks.rs
+assertion_line: 272
+expression: body
+
+---
+<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#8fa1b3;">id</span><span>=&quot;</span><span style="color:#a3be8c;">custom-attr</span><span>&quot;&gt;
+</span></td></tr><tr><td>2</td><td><span>dQw4w9WgXcQ
+</span></td></tr><tr><td>3</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
+</span></td></tr></tbody></table></code></pre>
+

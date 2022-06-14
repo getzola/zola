@@ -1,0 +1,11 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 274
+expression: body
+
+---
+<p>ttest1</p>
+<p>123</p>
+<p>ttest2</p>
+<p>123</p>
+

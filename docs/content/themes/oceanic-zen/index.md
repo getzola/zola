@@ -3,11 +3,11 @@
 title = "Oceanic Zen"
 description = "Minimalistic blog theme"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/barlog-m/oceanic-zen.git"
 homepage = "https://github.com/barlog-m/oceanic-zen"
 minimum_version = "0.12.0"

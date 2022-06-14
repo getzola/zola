@@ -1,18 +1,7 @@
-use percent_encoding::percent_decode;
+use libs::percent_encoding::percent_decode;
 use std::collections::HashMap;
-use std::hash::BuildHasher;
-use unicode_segmentation::UnicodeSegmentation;
 
-use errors::Result;
-
-/// Get word count and estimated reading time
-pub fn get_reading_analytics(content: &str) -> (usize, usize) {
-    let word_count: usize = content.unicode_words().count();
-
-    // https://help.medium.com/hc/en-us/articles/214991667-Read-time
-    // 275 seems a bit too high though
-    (word_count, ((word_count + 199) / 200))
-}
+use errors::{anyhow, Result};
 
 /// Result of a successful resolution of an internal link.
 #[derive(Debug, PartialEq, Clone)]
@@ -22,15 +11,15 @@ pub struct ResolvedInternalLink {
     /// Internal path to the .md file, without the leading `@/`.
     pub md_path: String,
     /// Optional anchor target.
-    /// We can check whether it exists only after all the markdown rendering is done.
+    /// We can check whether it exists only after all the markdown markdown is done.
     pub anchor: Option<String>,
 }
 
 /// Resolves an internal link (of the `@/posts/something.md#hey` sort) to its absolute link and
 /// returns the path + anchor as well
-pub fn resolve_internal_link<S: BuildHasher>(
+pub fn resolve_internal_link(
     link: &str,
-    permalinks: &HashMap<String, String, S>,
+    permalinks: &HashMap<String, String>,
 ) -> Result<ResolvedInternalLink> {
     // First we remove the ./ since that's zola specific
     let clean_link = link.replacen("@/", "", 1);
@@ -41,7 +30,7 @@ pub fn resolve_internal_link<S: BuildHasher>(
     // to decode them first
     let decoded = percent_decode(parts[0].as_bytes()).decode_utf8_lossy().to_string();
     let target =
-        permalinks.get(&decoded).ok_or_else(|| format!("Relative link {} not found.", link))?;
+        permalinks.get(&decoded).ok_or_else(|| anyhow!("Relative link {} not found.", link))?;
     if parts.len() > 1 {
         Ok(ResolvedInternalLink {
             permalink: format!("{}#{}", target, parts[1]),
@@ -57,7 +46,7 @@ pub fn resolve_internal_link<S: BuildHasher>(
 mod tests {
     use std::collections::HashMap;
 
-    use super::{get_reading_analytics, resolve_internal_link};
+    use super::resolve_internal_link;
 
     #[test]
     fn can_resolve_valid_internal_link() {
@@ -102,30 +91,5 @@ mod tests {
     fn errors_resolve_inexistant_internal_link() {
         let res = resolve_internal_link("@/pages/about.md#hello", &HashMap::new());
         assert!(res.is_err());
-    }
-
-    #[test]
-    fn reading_analytics_empty_text() {
-        let (word_count, reading_time) = get_reading_analytics("  ");
-        assert_eq!(word_count, 0);
-        assert_eq!(reading_time, 0);
-    }
-
-    #[test]
-    fn reading_analytics_short_text() {
-        let (word_count, reading_time) = get_reading_analytics("Hello World");
-        assert_eq!(word_count, 2);
-        assert_eq!(reading_time, 1);
-    }
-
-    #[test]
-    fn reading_analytics_long_text() {
-        let mut content = String::new();
-        for _ in 0..1000 {
-            content.push_str(" Hello world");
-        }
-        let (word_count, reading_time) = get_reading_analytics(&content);
-        assert_eq!(word_count, 2000);
-        assert_eq!(reading_time, 10);
     }
 }

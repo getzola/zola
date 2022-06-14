@@ -3,12 +3,12 @@
 title = "codinfox-zola"
 description = "Codinfox theme for Zola"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
-repository = "https://github.com/svavs/codinfox-zola"
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
+repository = "https://github.com/svavs/codinfox-zola.git"
 homepage = "https://github.com/svavs/codinfox-zola"
 minimum_version = "0.11.0"
 license = "MIT"
@@ -37,7 +37,8 @@ This theme supports:
 2. Changable sidebar locations (reverse it by changing the boolean value in `_config.scss`)
 3. Integration of FontAwesome, MathJax, Disqus and Google Analytics
 4. Support for multilingual sites
-4. and numerous improvements over original Lanyon and Codinfox-Lanyon
+5. Support for Gravatar
+6. and numerous improvements over original Lanyon and Codinfox-Lanyon
 
 All the configuration variables and their meaning are inside:
 
@@ -52,6 +53,20 @@ Learn more and contribute on [GitHub](https://github.com/svavs/codinfox-zola).
 
 Have questions or suggestions? Feel free to [open an issue on GitHub](https://github.com/svavs/codinfox-zola/issues/new) or [ask me on Twitter](https://twitter.com/svavs).
 
+### Before you start
+
+[Get a gravatar account](https://gravatar.com) and set this up with a profile image.
+
+#### Add gravatar profile image to codinfox-zola theme
+
+1. login to gravatar.com
+2. click My Profile
+3. click **view profile** in RH sidebar beneath profile name
+4. click JSON
+5. copy the `hash` value on line 4
+6. paste the `hash` value to `author.toml` line 10
+
+
 ### Install and use
 
 To use this theme you can follow the instruction required by any Zola theme.
@@ -65,6 +80,8 @@ To define your own home picture, put an image file in the `static/img/` folder a
 Now is possible to create the content inside the `content` folder as usual for Zola sites.
 
 If you want to have a Blog with this theme, then create a folder inside the `content` folder containing all the blog posts in Markdown format. Zola automatically generate a section that you can manage as a blog. See an example in the [live demo](https://codinfox-zola.vercel.app/blog/).
+
+
  
 ## License
 

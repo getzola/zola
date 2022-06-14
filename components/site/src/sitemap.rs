@@ -2,19 +2,19 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
-use serde_derive::Serialize;
+use serde::Serialize;
 
 use config::Config;
-use library::{Library, Taxonomy};
+use content::{Library, Taxonomy};
+use libs::tera::{Map, Value};
 use std::cmp::Ordering;
-use tera::{Map, Value};
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that
 #[derive(Debug, Serialize)]
 pub struct SitemapEntry<'a> {
     pub permalink: Cow<'a, str>,
-    pub updated: Option<String>,
+    pub updated: &'a Option<String>,
     pub extra: Option<&'a Map<String, Value>>,
 }
 
@@ -33,7 +33,7 @@ impl<'a> PartialEq for SitemapEntry<'a> {
 impl<'a> Eq for SitemapEntry<'a> {}
 
 impl<'a> SitemapEntry<'a> {
-    pub fn new(permalink: Cow<'a, str>, updated: Option<String>) -> Self {
+    pub fn new(permalink: Cow<'a, str>, updated: &'a Option<String>) -> Self {
         SitemapEntry { permalink, updated, extra: None }
     }
 
@@ -61,49 +61,44 @@ pub fn find_entries<'a>(
     taxonomies: &'a [Taxonomy],
     config: &'a Config,
 ) -> Vec<SitemapEntry<'a>> {
-    let pages = library
-        .pages_values()
-        .iter()
-        .map(|p| {
-            let mut entry = SitemapEntry::new(
-                Cow::Borrowed(&p.permalink),
-                p.meta.updated.clone().or_else(|| p.meta.date.clone()),
-            );
-            entry.add_extra(&p.meta.extra);
-            entry
-        })
-        .collect::<Vec<_>>();
+    let mut entries = HashSet::new();
 
-    let mut sections = library
-        .sections_values()
-        .iter()
-        .filter(|s| s.meta.render)
-        .map(|s| {
-            let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), None);
+    for p in library.pages.values() {
+        let mut entry = SitemapEntry::new(
+            Cow::Borrowed(&p.permalink),
+            if p.meta.updated.is_some() { &p.meta.updated } else { &p.meta.date },
+        );
+        entry.add_extra(&p.meta.extra);
+        entries.insert(entry);
+    }
+
+    for s in library.sections.values() {
+        if s.meta.render {
+            let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), &None);
             entry.add_extra(&s.meta.extra);
-            entry
-        })
-        .collect::<Vec<_>>();
+            entries.insert(entry);
+        }
 
-    for section in library.sections_values().iter() {
-        if let Some(paginate_by) = section.paginate_by() {
-            let number_pagers = (section.pages.len() as f64 / paginate_by as f64).ceil() as isize;
+        if let Some(paginate_by) = s.paginate_by() {
+            let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
             for i in 1..=number_pagers {
-                let permalink =
-                    format!("{}{}/{}/", section.permalink, section.meta.paginate_path, i);
-                sections.push(SitemapEntry::new(Cow::Owned(permalink), None))
+                let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
+                entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
             }
         }
     }
 
-    let mut taxonomies_entries = vec![];
     for taxonomy in taxonomies {
+        if !taxonomy.kind.render {
+            continue;
+        }
         let name = &taxonomy.kind.name;
-        let mut terms = vec![SitemapEntry::new(Cow::Owned(config.make_permalink(name)), None)];
+        entries.insert(SitemapEntry::new(Cow::Owned(config.make_permalink(name)), &None));
+
         for item in &taxonomy.items {
-            terms.push(SitemapEntry::new(
+            entries.insert(SitemapEntry::new(
                 Cow::Owned(config.make_permalink(&format!("{}/{}", name, item.slug))),
-                None,
+                &None,
             ));
 
             if taxonomy.kind.is_paginated() {
@@ -118,28 +113,13 @@ pub fn find_entries<'a>(
                         taxonomy.kind.paginate_path(),
                         i
                     ));
-                    terms.push(SitemapEntry::new(Cow::Owned(permalink), None))
+                    entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
                 }
             }
         }
-
-        taxonomies_entries.push(terms);
     }
 
-    let mut all_sitemap_entries = HashSet::new();
-    for p in pages {
-        all_sitemap_entries.insert(p);
-    }
-    for s in sections {
-        all_sitemap_entries.insert(s);
-    }
-    for terms in taxonomies_entries {
-        for term in terms {
-            all_sitemap_entries.insert(term);
-        }
-    }
-
-    let mut entries = all_sitemap_entries.into_iter().collect::<Vec<_>>();
+    let mut entries = entries.into_iter().collect::<Vec<_>>();
     entries.sort();
     entries
 }

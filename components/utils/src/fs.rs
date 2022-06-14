@@ -1,27 +1,27 @@
-use filetime::{set_file_mtime, FileTime};
+use libs::filetime::{set_file_mtime, FileTime};
+use libs::walkdir::WalkDir;
 use std::fs::{copy, create_dir_all, metadata, File};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
-use walkdir::WalkDir;
 
-use errors::{Error, Result};
+use errors::{Context, Result};
 
 pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
     let canonical_path = path
         .canonicalize()
-        .map_err(|e| format!("Failed to canonicalize {}: {}", path.display(), e))?;
+        .with_context(|| format!("Failed to canonicalize {}", path.display()))?;
     let canonical_parent = parent
         .canonicalize()
-        .map_err(|e| format!("Failed to canonicalize {}: {}", parent.display(), e))?;
+        .with_context(|| format!("Failed to canonicalize {}", parent.display()))?;
 
     Ok(canonical_path.starts_with(canonical_parent))
 }
 
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
-    let mut file = File::create(&path)
-        .map_err(|e| Error::chain(format!("Failed to create file {}", path.display()), e))?;
+    let mut file =
+        File::create(&path).with_context(|| format!("Failed to create file {}", path.display()))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }
@@ -38,9 +38,8 @@ pub fn ensure_directory_exists(path: &Path) -> Result<()> {
 /// exists before creating it
 pub fn create_directory(path: &Path) -> Result<()> {
     if !path.exists() {
-        create_dir_all(path).map_err(|e| {
-            Error::chain(format!("Was not able to create folder {}", path.display()), e)
-        })?;
+        create_dir_all(path)
+            .with_context(|| format!("Failed to create folder {}", path.display()))?;
     }
     Ok(())
 }
@@ -49,7 +48,7 @@ pub fn create_directory(path: &Path) -> Result<()> {
 pub fn read_file(path: &Path) -> Result<String> {
     let mut content = String::new();
     File::open(path)
-        .map_err(|e| Error::chain(format!("Failed to open '{}'", path.display()), e))?
+        .with_context(|| format!("Failed to open file {}", path.display()))?
         .read_to_string(&mut content)?;
 
     // Remove utf-8 BOM if any.
@@ -67,8 +66,8 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
     let target_path = dest.join(relative_path);
 
     if let Some(parent_directory) = target_path.parent() {
-        create_dir_all(parent_directory).map_err(|e| {
-            Error::chain(format!("Was not able to create folder {}", parent_directory.display()), e)
+        create_dir_all(parent_directory).with_context(|| {
+            format!("Failed to create directory {}", parent_directory.display())
         })?;
     }
 
@@ -81,38 +80,29 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
 /// 3. Its filesize is identical to that of the src file.
 pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
     if let Some(parent_directory) = dest.parent() {
-        create_dir_all(parent_directory).map_err(|e| {
-            Error::chain(format!("Was not able to create folder {}", parent_directory.display()), e)
+        create_dir_all(parent_directory).with_context(|| {
+            format!("Failed to create directory {}", parent_directory.display())
         })?;
     }
 
     if hard_link {
         std::fs::hard_link(src, dest)?
     } else {
-        let src_metadata = metadata(src)?;
+        let src_metadata = metadata(src)
+            .with_context(|| format!("Failed to get metadata of {}", src.display()))?;
         let src_mtime = FileTime::from_last_modification_time(&src_metadata);
         if Path::new(&dest).is_file() {
             let target_metadata = metadata(&dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                copy(src, &dest).map_err(|e| {
-                    Error::chain(
-                        format!(
-                            "Was not able to copy file {} to {}",
-                            src.display(),
-                            dest.display()
-                        ),
-                        e,
-                    )
+                copy(src, &dest).with_context(|| {
+                    format!("Was not able to copy file {} to {}", src.display(), dest.display())
                 })?;
                 set_file_mtime(&dest, src_mtime)?;
             }
         } else {
-            copy(src, &dest).map_err(|e| {
-                Error::chain(
-                    format!("Was not able to copy file {} to {}", src.display(), dest.display()),
-                    e,
-                )
+            copy(src, &dest).with_context(|| {
+                format!("Was not able to copy directory {} to {}", src.display(), dest.display())
             })?;
             set_file_mtime(&dest, src_mtime)?;
         }
@@ -121,7 +111,9 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
 }
 
 pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
-    for entry in WalkDir::new(src).into_iter().filter_map(std::result::Result::ok) {
+    for entry in
+        WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
+    {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
 
@@ -130,14 +122,12 @@ pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
                 create_directory(&target_path)?;
             }
         } else {
-            copy_file(entry.path(), dest, src, hard_link).map_err(|e| {
-                Error::chain(
-                    format!(
-                        "Was not able to copy file {} to {}",
-                        entry.path().display(),
-                        dest.display()
-                    ),
-                    e,
+            copy_file(entry.path(), dest, src, hard_link).with_context(|| {
+                format!(
+                    "Was not able to copy {} to {} (hard_link={})",
+                    entry.path().display(),
+                    dest.display(),
+                    hard_link
                 )
             })?;
         }
@@ -183,6 +173,7 @@ mod tests {
     use std::path::PathBuf;
     use std::str::FromStr;
 
+    use libs::filetime;
     use tempfile::tempdir_in;
 
     use super::copy_file;
@@ -197,7 +188,7 @@ mod tests {
         let src_file_path = src_dir.path().join("test.txt");
         let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
         File::create(&src_file_path).unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
 
         assert_eq!(
             metadata(&src_file_path).and_then(|m| m.modified()).unwrap(),
@@ -218,7 +209,7 @@ mod tests {
             let mut src_file = File::create(&src_file_path).unwrap();
             src_file.write_all(b"file1").unwrap();
         }
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         {
             let mut dest_file = File::create(&dest_file_path).unwrap();
             dest_file.write_all(b"file2").unwrap();
@@ -228,14 +219,14 @@ mod tests {
         filetime::set_file_mtime(&src_file_path, filetime::FileTime::from_unix_time(0, 0)).unwrap();
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file2");
 
         // Copy occurs if the timestamps are different while the filesizes are same.
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(42, 42))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
 
@@ -246,7 +237,7 @@ mod tests {
         }
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
-        copy_file(&src_file_path, &dest_dir.path().to_path_buf(), &base_path, false).unwrap();
+        copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
     }

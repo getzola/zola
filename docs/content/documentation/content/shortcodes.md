@@ -69,7 +69,8 @@ There are two kinds of shortcodes:
 - ones that do not take a body, such as the YouTube example above
 - ones that do, such as one that styles a quote
 
-In both cases, the arguments must be named and they will all be passed to the template.
+In both cases, the arguments must be named and they will all be passed to the template. 
+Parentheses are mandatory even if there are no arguments.
 
 Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the argument names
 can only contain numbers, letters and underscores, or in Regex terms `[0-9A-Za-z_]`.
@@ -130,6 +131,29 @@ A quote
 The body of the shortcode will be automatically passed down to the rendering context as the `body` variable and needs
 to be on a new line.
 
+### Shortcodes with no arguments
+Note that for both cases that the parentheses for shortcodes are necessary. 
+A shortcode without the parentheses will render as plaintext and no warning will be emitted.
+
+As an example, this is how an `aside` shortcode-with-body with no arguments would be defined in `aside.html`:
+```jinja2
+<aside>
+    {{ body }}
+</aside>
+```
+
+We could use it in our Markdown file like so:
+
+```md
+Readers can refer to the aside for more information.
+
+{%/* aside() */%}
+An aside
+{%/* end */%}
+```
+
+### Content similar to shortcodes
+
 If you want to have some content that looks like a shortcode but not have Zola try to render it,
 you will need to escape it by using `{%/*` and `*/%}` instead of `{%` and `%}`. You won't need to escape
 anything else until the closing tag.
@@ -185,7 +209,7 @@ Embed a responsive player for a YouTube video.
 The arguments are:
 
 - `id`: the video id (mandatory)
-- `playlist: the playlist id (optional)
+- `playlist`: the playlist id (optional)
 - `class`: a class to add to the `<div>` surrounding the iframe
 - `autoplay`: when set to "true", the video autoplays on load
 

@@ -1,0 +1,7 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 293
+expression: body
+
+---
+<p>\n2\n</p>

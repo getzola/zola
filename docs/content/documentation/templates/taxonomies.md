@@ -3,10 +3,14 @@ title = "Taxonomies"
 weight = 40
 +++
 
-Zola will look up the following files in the `templates` directory:
+Zola will look up the following, taxon-specific files in the `templates` directory:
 
 - `$TAXONOMY_NAME/single.html`
 - `$TAXONOMY_NAME/list.html`
+
+if they are not found, it will attempt to fall back on the following generic template files:
+- `taxonomy_single.html`
+- `taxonomy_list.html`
 
 First, `TaxonomyTerm` has the following fields:
 
@@ -25,8 +29,7 @@ name: String,
 paginate_by: Number?;
 paginate_path: String?;
 feed: Bool;
-lang: String;
-permalink: String;
+render: Bool;
 ```
 
 

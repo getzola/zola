@@ -1,0 +1,7 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 312
+expression: body
+
+---
+[multi, ple, lines]

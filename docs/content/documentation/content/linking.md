@@ -8,7 +8,7 @@ While rendering the Markdown content, a unique id will automatically be assigned
 This id is created by converting the heading text to a [slug](https://en.wikipedia.org/wiki/Semantic_URL#Slug) if `slugify.anchors` is set to `"on"` (the default).
 If `slugify.paths` is set to `"safe"`, whitespaces are replaced by `_` and the following characters are stripped: `#`, `%`, `<`, `>`, `[`, `]`, `(`, `)`, \`, `^`, `{`, `|`, `}`.
 If `slugify.paths` is set to `"off"`, no modifications are made, and you may be left with nominally illegal ids.
-A number is appended at the end if the slug already exists for that article 
+A number is appended at the end if the slug already exists for that article.
 For example:
 
 ```md
@@ -19,10 +19,10 @@ For example:
 ## Example code <- example-code-1
 ```
 
-You can also manually specify an id with a `{#…}` suffix on the heading line:
+You can also manually specify an id with a `{#…}` suffix on the heading line as well as CSS classes:
 
 ```md
-# Something manual! {#manual}
+# Something manual! {#manual .header .bold}
 ```
 
 This is useful for making deep links robust, either proactively (so that you can later change the text of a heading
@@ -54,3 +54,5 @@ to link to. The path to the file starts from the `content` directory.
 
 For example, linking to a file located at `content/pages/about.md` would be `[my link](@/pages/about.md)`.
 You can still link to an anchor directly; `[my link](@/pages/about.md#example)` will work as expected.
+
+By default, broken internal links are treated as errors.  To treat them as warnings instead, visit the `[link_checker]` section of `config.toml` and set `internal_level = "warn"`.  Note: treating broken links as warnings allows the site to be built with broken links intact, so a link such as `[my link](@/pages/whoops.md)` will be rendered to HTML as `<a href="@/pages/whoops.md">`.

@@ -1,0 +1,7 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 198
+expression: body
+
+---
+<img src='https://placekitten.com/200/300' alt='something'></img>

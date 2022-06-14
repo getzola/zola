@@ -1,22 +1,18 @@
-use lazy_static::lazy_static;
-use syntect::dumps::from_binary;
-use syntect::highlighting::{Theme, ThemeSet};
-use syntect::html::ClassStyle;
-use syntect::parsing::{SyntaxReference, SyntaxSet};
+use libs::once_cell::sync::Lazy;
+use libs::syntect::dumps::from_binary;
+use libs::syntect::highlighting::{Theme, ThemeSet};
+use libs::syntect::html::ClassStyle;
+use libs::syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use crate::config::Config;
 
 pub const CLASS_STYLE: ClassStyle = ClassStyle::SpacedPrefixed { prefix: "z-" };
 
-lazy_static! {
-    pub static ref SYNTAX_SET: SyntaxSet = {
-        let ss: SyntaxSet =
-            from_binary(include_bytes!("../../../sublime/syntaxes/newlines.packdump"));
-        ss
-    };
-    pub static ref THEME_SET: ThemeSet =
-        from_binary(include_bytes!("../../../sublime/themes/all.themedump"));
-}
+pub static SYNTAX_SET: Lazy<SyntaxSet> =
+    Lazy::new(|| from_binary(include_bytes!("../../../sublime/syntaxes/newlines.packdump")));
+
+pub static THEME_SET: Lazy<ThemeSet> =
+    Lazy::new(|| from_binary(include_bytes!("../../../sublime/themes/all.themedump")));
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum HighlightSource {

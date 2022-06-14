@@ -3,16 +3,16 @@
 title = "anatole-zola"
 description = "A port of farbox-theme-Anatole for zola"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
 repository = "https://github.com/longfangsong/anatole-zola.git"
 homepage = "https://github.com/longfangsong/anatole-zola"
 minimum_version = "0.4.0"
 license = "MIT"
-demo = "https://longfangsong.github.io/blog-next"
+demo = "https://longfangsong.github.io"
 
 [extra.author]
 name = "longfangsong"
@@ -21,13 +21,13 @@ homepage = "https://github.com/longfangsong"
 
 # Anatole Theme for Zola
 
-Port [Anatole theme for farbox](https://github.com/hi-caicai/farbox-theme-Anatole) to Zola.
-
+*[Anatole theme for Farbox](https://github.com/hi-caicai/farbox-theme-Anatole) ported to Zola*
+___
+[Zola Homepage](https://www.getzola.org/themes/anatole-zola/) | [Demo with customizations](https://longfangsong.github.io/)
+___
 ![screenshot](./screenshot.png)
 
 ![screenshot-mobile](./screenshot-mobile.png)
-
-You can view my blog for an example configuation, with customizations.
 
 ## Installation
 
@@ -59,17 +59,17 @@ base_url = "https://example.com"
 
 ### Language
 
-Currently, we have English and Chinese translation, set the `default_language` if necessary:
+Currently, we have English, Chinese and German translations, set the `default_language` if necessary:
 
 ```toml
 # 如果你想要中文
 default_language = "zh"
 ```
 
-It's sad that transations in themes are not working, you can copy these to your `config.toml`:
+If there are complications, you can copy this snippet to your `config.toml`:
 
 ```toml
-[translations.en]
+[languages.en.translations]
 about = "About"
 home = "Home"
 tags = "Tags"
@@ -78,7 +78,7 @@ links = "Links"
 next_page = "Next Page"
 last_page = "Last Page"
 
-[translations.zh]
+[languages.zh.translations]
 home = "首页"
 about = "关于"
 tags = "标签"
@@ -86,46 +86,66 @@ archive = "归档"
 links = "友链"
 next_page = "下一页"
 last_page = "上一页"
+
+[languages.de.translations]
+about = "Info"
+home = "Home"
+tags = "Kategorien"
+archive = "Archiv"
+links = "Links"
+date_format = "%d-%m-%Y"
+next_page = "Nächste Seite"
+last_page = "Vorherige Seite"
 ```
 
-Feel free to create a pull request if you want to translate the promotes into other languages!
+Feel free to create a pull request if you want to translate the theme into other languages!
 
 ### Sections
 
 Tags and links sections are optional.
 
-- If you want to enable the tags page, add 
+- If you want to enable the tags page, add
   ```toml
   taxonomies = [
     {name = "tags"},
   ]
-  
+
   [extra.show]
   tags = true
   ```
   To your `config.toml`
-  
-- If you want to enable the links page, add 
+
+- If you want to enable the links page, add
 
   ```toml
   [extra.show]
   links = true
   ```
 
-  and copy `content/links` to your own `content` library. And edit the `_index.md` in it to edit its content.
+  and copy `content/links` to your own `content` library. And edit the `_index.md` in it to modify its content.
+
+- If you want to add the author's name on each page, add:
+
+  ```toml
+  [extra]
+  author = "John Doe"
+  ```
 
 ### Sidebar menu
 
-We support a bunch of social links, they are:
+We support a bunch of social links:
 
 ```toml
 [extra.social]
 github = ""
+stackoverflow = "" # use user_id
 twitter = ""
 facebook = ""
 instagram = ""
 dribbble = ""
 weibo = ""
+linkedin = ""
+flickr = ""
 ```
 
 Fill in your username if you want! And the logo won't appear if you leave it empty.
@@ -134,7 +154,9 @@ Fill in your username if you want! And the logo won't appear if you leave it emp
 
 ### Comment system
 
-We currently support [valine](https://valine.js.org/quickstart.html):
+We currently support... 
+
+- [Valine](https://valine.js.org/quickstart.html):
 
 ```toml
 [extra.comment.valine]
@@ -146,16 +168,26 @@ avatar = "mm" # avatar style https://github.com/xCss/Valine/wiki/avatar-setting-
 placeholder = "Say something here"
 ```
 
-And [disqus](https://disqus.com/admin/create/), note disqus does not work in Mainland China:
+- [Disqus](https://disqus.com/admin/create/), note that Disqus does not work in Mainland China:
 
 ```toml
 [extra.comment.disqus]
 name = "longfangsong"
 ```
 
+- [Utterances](https://utteranc.es/):
+
+```toml
+[extra.comment.utterances]
+repo = "Your repo for comments"
+issue_term = "pathname"
+theme = "github-light"
+```
+
+
 ## Customize
 
-There are several points I left in the origin templates for you to customize your site.
+There are several options I left in the origin templates for you to customize your site.
 
 ### More style
 
@@ -179,5 +211,6 @@ You can add more social links by adding a `templates.html` with some content add
 {%/* endblock */%}
 ```
 
-If you want to use some awsome logos, [font awsome icons](https://fontawesome.com/icons?d=gallery) are already available.
+If you want to use some awesome logos, [FontAwesome icons](https://fontawesome.com/icons?d=gallery) are already available.
+
         

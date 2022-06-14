@@ -3,20 +3,20 @@
 title = "dose"
 description = "a small blog theme"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
-repository = "https://github.com/oltd/dose.git"
-homepage = "https://github.com/oltd/dose"
-minimum_version = "0.13.0"
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
+repository = "https://github.com/oltdaniel/dose.git"
+homepage = "https://github.com/oltdaniel/dose"
+minimum_version = "0.14.0"
 license = "MIT"
-demo = "https://oltd.github.io/dose"
+demo = "https://oltdaniel.github.io/dose"
 
 [extra.author]
-name = "oltd"
-homepage = "https://oltd.dev"
+name = "oltdaniel"
+homepage = "https://oltdaniel.eu"
 +++        
 
 # dose
@@ -29,7 +29,7 @@ First download this theme to your `themes` directory:
 
 ```bash
 cd themes
-git clone https://github.com/oltd/dose.git
+git clone https://github.com/oltdaniel/dose.git
 ```
 
 and then enable it in your `config.toml`:
@@ -51,8 +51,8 @@ And the theme uses the following extras:
 ```toml
 [extra]
 social_media = [
-    {name = "GitHub", url = "https://github.com/oltd"},
-    {name = "Twitter", url = "https://twitter.com/@oltd_maker"},
+    {name = "GitHub", url = "https://github.com/oltdaniel"},
+    {name = "Twitter", url = "https://twitter.com/@twitter"},
 ]
 ```
 
@@ -90,19 +90,38 @@ This theme supports dark and light mode. Currently this will be only switched ba
 
 #### Size
 
-We need about `2kB` extra stuff aside from images and raw html. This is divided up to `1.7kB CSS` and `~300B JS`.
+We need about `~2.3KiB` extra stuff aside from images and raw html. This is divided up to `~2.1KiB CSS` and `212B JS`.
+
+Test yourself with `zola build 1>/dev/null; echo "scale=2; $(cat public/**/*.{js,css} | wc -c)/1024" | bc -l`.
 
 #### Syntax Highlighting
 
 As I didn't want to invest any time in creating an own syntax color schema for this theme, I suggest to use `visual-studio-dark`, which is the same one used in the demo page.
 
+#### Customization
+
+You can create your own version of this theme, by simply changing the sass variables in `sass/style.scss` to match your taste.
+
+```scss
+/**
+ * Variables
+ */
+$base-background: white;
+$text-color: black;
+$article-tag: green;
+$lang-tag: red;
+$link-color: blue;
+$target-color: yellow;
+$separator-decoration: "//////";
+```
+
 ### TODO
 
-- [ ] introduce sass variables for colors
-- [ ] dark/light switch with javascript and store in browser session
+- [x] introduce sass variables for colors
+- [x] dark/light switch with javascript and store in browser local storage
 
 ## License
 
-![GitHub](https://img.shields.io/github/license/oltd/dose)
+![GitHub](https://img.shields.io/github/license/oltdaniel/dose)
 
         

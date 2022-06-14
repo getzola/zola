@@ -3,7 +3,7 @@ use std::path::Path;
 use errors::{Error, Result};
 use site::Site;
 
-use crate::console;
+use crate::messages;
 use crate::prompt::ask_bool_timeout;
 
 const BUILD_PROMPT_TIMEOUT_MILLIS: u64 = 10_000;
@@ -47,7 +47,7 @@ pub fn build(
         site.include_drafts();
     }
     site.load()?;
-    console::notify_site_size(&site);
-    console::warn_about_ignored_pages(&site);
+    messages::notify_site_size(&site);
+    messages::warn_about_ignored_pages(&site);
     site.build()
 }

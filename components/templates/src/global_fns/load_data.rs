@@ -5,18 +5,21 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
-use csv::Reader;
-use reqwest::header::{HeaderValue, CONTENT_TYPE};
-use reqwest::{blocking::Client, header};
-use tera::{from_value, to_value, Error, Function as TeraFn, Map, Result, Value};
-use url::Url;
+use libs::csv::Reader;
+use libs::reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE};
+use libs::reqwest::{blocking::Client, header};
+use libs::tera::{
+    from_value, to_value, Error, Error as TeraError, Function as TeraFn, Map, Result, Value,
+};
+use libs::url::Url;
+use libs::{nom_bibtex, serde_json, serde_yaml, toml};
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, read_file};
 
 use crate::global_fns::helpers::search_for_file;
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
-    "`load_data`: requires EITHER a `path` or `url` argument";
+    "`load_data`: requires EITHER a `path`, `url`, or `literal` argument";
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash)]
 enum Method {
@@ -43,6 +46,8 @@ enum OutputFormat {
     Csv,
     Bibtex,
     Plain,
+    Xml,
+    Yaml,
 }
 
 impl FromStr for OutputFormat {
@@ -54,7 +59,9 @@ impl FromStr for OutputFormat {
             "csv" => Ok(OutputFormat::Csv),
             "json" => Ok(OutputFormat::Json),
             "bibtex" => Ok(OutputFormat::Bibtex),
+            "xml" => Ok(OutputFormat::Xml),
             "plain" => Ok(OutputFormat::Plain),
+            "yaml" => Ok(OutputFormat::Yaml),
             format => Err(format!("Unknown output format {}", format).into()),
         }
     }
@@ -67,7 +74,9 @@ impl OutputFormat {
             OutputFormat::Csv => "text/csv",
             OutputFormat::Toml => "application/toml",
             OutputFormat::Bibtex => "application/x-bibtex",
+            OutputFormat::Xml => "text/xml",
             OutputFormat::Plain => "text/plain",
+            OutputFormat::Yaml => "application/x-yaml",
         })
     }
 }
@@ -76,6 +85,7 @@ impl OutputFormat {
 enum DataSource {
     Url(Url),
     Path(PathBuf),
+    Literal(String),
 }
 
 impl DataSource {
@@ -87,16 +97,21 @@ impl DataSource {
     fn from_args(
         path_arg: Option<String>,
         url_arg: Option<String>,
+        literal_arg: Option<String>,
         base_path: &Path,
         theme: &Option<String>,
         output_path: &Path,
     ) -> Result<Option<Self>> {
-        if path_arg.is_some() && url_arg.is_some() {
+        // only one of `path`, `url`, or `literal` can be specified
+        if (path_arg.is_some() && url_arg.is_some())
+            || (path_arg.is_some() && literal_arg.is_some())
+            || (url_arg.is_some() && literal_arg.is_some())
+        {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
         }
 
         if let Some(path) = path_arg {
-            return match search_for_file(&base_path, &path, &theme, &output_path)
+            return match search_for_file(base_path, &path, theme, output_path)
                 .map_err(|e| format!("`load_data`: {}", e))?
             {
                 Some((f, _)) => Ok(Some(DataSource::Path(f))),
@@ -111,6 +126,10 @@ impl DataSource {
                 .map_err(|e| format!("`load_data`: Failed to parse {} as url: {}", url, e).into());
         }
 
+        if let Some(string_literal) = literal_arg {
+            return Ok(Some(DataSource::Literal(string_literal)));
+        }
+
         Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
     }
 
@@ -120,12 +139,14 @@ impl DataSource {
         method: Method,
         post_body: &Option<String>,
         post_content_type: &Option<String>,
+        headers: &Option<Vec<String>>,
     ) -> u64 {
         let mut hasher = DefaultHasher::new();
         format.hash(&mut hasher);
         method.hash(&mut hasher);
         post_body.hash(&mut hasher);
         post_content_type.hash(&mut hasher);
+        headers.hash(&mut hasher);
         self.hash(&mut hasher);
         hasher.finish()
     }
@@ -139,6 +160,8 @@ impl Hash for DataSource {
                 path.hash(state);
                 get_file_time(path).expect("get file time").hash(state);
             }
+            // TODO: double check expectations here
+            DataSource::Literal(string_literal) => string_literal.hash(state),
         };
     }
 }
@@ -162,8 +185,33 @@ fn get_output_format_from_args(
     }
 }
 
+fn add_headers_from_args(header_args: Option<Vec<String>>) -> Result<HeaderMap> {
+    let mut headers = HeaderMap::new();
+    if let Some(header_args) = header_args {
+        for arg in header_args {
+            let mut splitter = arg.splitn(2, '=');
+            let key = splitter
+                .next()
+                .ok_or_else(|| {
+                    format!("Invalid header argument. Expecting header key, got '{}'", arg)
+                })?
+                .to_string();
+            let value = splitter.next().ok_or_else(|| {
+                format!("Invalid header argument. Expecting header value, got '{}'", arg)
+            })?;
+            headers.append(
+                HeaderName::from_str(&key)
+                    .map_err(|e| format!("Invalid header name '{}': {}", key, e))?,
+                value.parse().map_err(|e| format!("Invalid header value '{}': {}", value, e))?,
+            );
+        }
+    }
+
+    Ok(headers)
+}
+
 /// A Tera function to load data from a file or from a URL
-/// Currently the supported formats are json, toml, csv, bibtex and plain text
+/// Currently the supported formats are json, toml, csv, yaml, bibtex and plain text
 #[derive(Debug)]
 pub struct LoadData {
     base_path: PathBuf,
@@ -190,6 +238,8 @@ impl TeraFn for LoadData {
         // Either a local path or a URL
         let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let literal_arg =
+            optional_arg!(String, args.get("literal"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         // Optional general params
         let format_arg = optional_arg!(
             String,
@@ -223,10 +273,22 @@ impl TeraFn for LoadData {
             },
             _ => Method::Get,
         };
+        let headers = optional_arg!(
+            Vec<String>,
+            args.get("headers"),
+            "`load_data`: `headers` needs to be an argument with a list of strings of format <name>=<value>."
+        );
 
         // If the file doesn't exist, source is None
         let data_source = match (
-            DataSource::from_args(path_arg.clone(), url_arg, &self.base_path, &self.theme, &self.output_path),
+            DataSource::from_args(
+                path_arg.clone(),
+                url_arg,
+                literal_arg,
+                &self.base_path,
+                &self.theme,
+                &self.output_path,
+            ),
             required,
         ) {
             // If the file was not required, return a Null value to the template
@@ -249,8 +311,13 @@ impl TeraFn for LoadData {
         };
 
         let file_format = get_output_format_from_args(format_arg, &data_source)?;
-        let cache_key =
-            data_source.get_cache_key(&file_format, method, &post_body_arg, &post_content_type);
+        let cache_key = data_source.get_cache_key(
+            &file_format,
+            method,
+            &post_body_arg,
+            &post_content_type,
+            &headers,
+        );
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
         if let Some(cached_result) = cache.get(&cache_key) {
@@ -265,10 +332,12 @@ impl TeraFn for LoadData {
                 let req = match method {
                     Method::Get => response_client
                         .get(url.as_str())
+                        .headers(add_headers_from_args(headers)?)
                         .header(header::ACCEPT, file_format.as_accept_header()),
                     Method::Post => {
                         let mut resp = response_client
                             .post(url.as_str())
+                            .headers(add_headers_from_args(headers)?)
                             .header(header::ACCEPT, file_format.as_accept_header());
                         if let Some(content_type) = post_content_type {
                             match HeaderValue::from_str(&content_type) {
@@ -313,6 +382,7 @@ impl TeraFn for LoadData {
                     }
                 }
             }
+            DataSource::Literal(string_literal) => Ok(string_literal),
         }?;
 
         let result_value: Result<Value> = match file_format {
@@ -320,6 +390,8 @@ impl TeraFn for LoadData {
             OutputFormat::Csv => load_csv(data),
             OutputFormat::Json => load_json(data),
             OutputFormat::Bibtex => load_bibtex(data),
+            OutputFormat::Xml => load_xml(data),
+            OutputFormat::Yaml => load_yaml(data),
             OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
         };
 
@@ -336,6 +408,13 @@ fn load_json(json_data: String) -> Result<Value> {
     let json_content: Value =
         serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
     Ok(json_content)
+}
+
+/// Parse a YAML string and convert it to a Tera Value
+fn load_yaml(yaml_data: String) -> Result<Value> {
+    let yaml_content: Value =
+        serde_yaml::from_str(yaml_data.as_str()).map_err(|e| format!("{:?}", e))?;
+    Ok(yaml_content)
 }
 
 /// Parse a TOML string and convert it to a Tera Value
@@ -431,7 +510,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
             let record = match result {
                 Ok(r) => r,
                 Err(e) => {
-                    return Err(tera::Error::chain(
+                    return Err(TeraError::chain(
                         String::from("Error encountered when parsing csv records"),
                         e,
                     ));
@@ -454,6 +533,42 @@ fn load_csv(csv_data: String) -> Result<Value> {
     to_value(csv_value).map_err(|err| err.into())
 }
 
+/// Parse an XML string and convert it to a Tera Value
+///
+/// An example XML file `example.xml` could be:
+/// ```xml
+/// <root>
+///   <headers>Number</headers>
+///   <headers>Title</headers>
+///   <records>
+///     <item>1</item>
+///     <item>Gutenberg</item>
+///   </records>
+///   <records>
+///     <item>2</item>
+///     <item>Printing</item>
+///   </records>
+/// </root>
+/// ```
+/// The json value output would be:
+/// ```json
+/// {   
+///     "root": {
+///         "headers": ["Number", "Title"],
+///         "records": [
+///                         ["1", "Gutenberg"],
+///                         ["2", "Printing"]
+///                    ]
+///     }
+/// }
+/// ```
+fn load_xml(xml_data: String) -> Result<Value> {
+    let xml_content: Value =
+        libs::quickxml_to_serde::xml_string_to_json(xml_data, &Default::default())
+            .map_err(|e| format!("{:?}", e))?;
+    Ok(xml_content)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{DataSource, LoadData, OutputFormat};
@@ -462,11 +577,11 @@ mod tests {
     use std::path::PathBuf;
 
     use crate::global_fns::load_data::Method;
+    use libs::serde_json::json;
+    use libs::tera::{self, to_value, Function};
     use mockito::mock;
-    use serde_json::json;
     use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
-    use tera::{to_value, Function};
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -654,12 +769,14 @@ mod tests {
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         let cache_key_2 = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         assert_eq!(cache_key, cache_key_2);
     }
@@ -671,12 +788,14 @@ mod tests {
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         let json_cache_key = DataSource::Path(get_test_file("test.json")).get_cache_key(
             &OutputFormat::Toml,
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         assert_ne!(toml_cache_key, json_cache_key);
     }
@@ -688,14 +807,35 @@ mod tests {
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         let json_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
             &OutputFormat::Json,
             Method::Get,
             &None,
             &None,
+            &Some(vec![]),
         );
         assert_ne!(toml_cache_key, json_cache_key);
+    }
+
+    #[test]
+    fn different_cache_key_per_headers() {
+        let header1_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Json,
+            Method::Get,
+            &None,
+            &None,
+            &Some(vec!["a=b".to_string()]),
+        );
+        let header2_cache_key = DataSource::Path(get_test_file("test.toml")).get_cache_key(
+            &OutputFormat::Json,
+            Method::Get,
+            &None,
+            &None,
+            &Some(vec![]),
+        );
+        assert_ne!(header1_cache_key, header2_cache_key);
     }
 
     #[test]
@@ -935,6 +1075,46 @@ mod tests {
     }
 
     #[test]
+    fn can_load_xml() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.xml").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "root": {
+                    "key": "value",
+                    "array": [1, 2, 3],
+                    "subpackage": {
+                        "subkey": 5
+                    }
+                }
+            })
+        )
+    }
+
+    #[test]
+    fn can_load_yaml() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.yaml").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            })
+        )
+    }
+
+    #[test]
     fn is_load_remote_data_using_post_method_with_different_body_not_cached() {
         let _mjson = mock("POST", "/kr1zdgbm4y3")
             .with_header("content-type", "application/json")
@@ -995,5 +1175,184 @@ mod tests {
         assert!(result2.is_ok());
 
         _mjson.assert();
+    }
+
+    #[test]
+    fn is_custom_headers_working() {
+        let _mjson = mock("POST", "/kr1zdgbm4y4")
+            .with_header("content-type", "application/json")
+            .match_header("accept", "text/plain")
+            .match_header("x-custom-header", "some-values")
+            .with_body("{i_am:'json'}")
+            .expect(1)
+            .create();
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y4");
+
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("post").unwrap());
+        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
+        args.insert("body".to_string(), to_value("this is a match").unwrap());
+        args.insert("headers".to_string(), to_value(["x-custom-header=some-values"]).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+
+        _mjson.assert();
+    }
+
+    #[test]
+    fn is_custom_headers_working_with_multiple_values() {
+        let _mjson = mock("POST", "/kr1zdgbm4y5")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .match_header("authorization", "Bearer 123")
+            // Mockito currently does not have a way to validate multiple headers with the same name
+            // see https://github.com/lipanski/mockito/issues/117
+            .match_header("accept", mockito::Matcher::Any)
+            .match_header("x-custom-header", "some-values")
+            .match_header("x-other-header", "some-other-values")
+            .with_body("<html>I am a server that needs authentication and returns HTML with Accept set to JSON</html>")
+            .expect(1)
+            .create();
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y5");
+
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("method".to_string(), to_value("post").unwrap());
+        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
+        args.insert("body".to_string(), to_value("this is a match").unwrap());
+        args.insert(
+            "headers".to_string(),
+            to_value([
+                "x-custom-header=some-values",
+                "x-other-header=some-other-values",
+                "accept=application/json",
+                "authorization=Bearer 123",
+            ])
+            .unwrap(),
+        );
+        let result = static_fn.call(&args);
+        assert!(result.is_ok());
+
+        _mjson.assert();
+    }
+
+    #[test]
+    fn fails_when_specifying_invalid_headers() {
+        let _mjson = mock("GET", "/kr1zdgbm4y6").with_status(204).expect(0).create();
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y6");
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("headers".to_string(), to_value(["bad-entry::bad-header"]).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_err());
+
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("url".to_string(), to_value(&url).unwrap());
+        args.insert("format".to_string(), to_value("plain").unwrap());
+        args.insert("headers".to_string(), to_value(["\n=\r"]).unwrap());
+        let result = static_fn.call(&args);
+        assert!(result.is_err());
+
+        _mjson.assert();
+    }
+
+    #[test]
+    fn can_load_plain_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let plain_str = "abc 123";
+        args.insert("literal".to_string(), to_value(plain_str).unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(result, plain_str);
+    }
+
+    #[test]
+    fn can_load_json_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let json_str = r#"{
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            }"#;
+        args.insert("literal".to_string(), to_value(json_str).unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            })
+        );
+    }
+
+    #[test]
+    fn can_load_toml_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let toml_str = r#"
+        [category]
+        key = "value"
+        date = 1979-05-27T07:32:00Z
+        lt1 = 07:32:00
+        "#;
+        args.insert("literal".to_string(), to_value(toml_str).unwrap());
+        args.insert("format".to_string(), to_value("toml").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        // TOML does not load in order
+        assert_eq!(
+            result,
+            json!({
+                "category": {
+                    "date": "1979-05-27T07:32:00Z",
+                    "lt1": "07:32:00",
+                    "key": "value"
+                },
+            })
+        );
+    }
+
+    #[test]
+    fn can_load_csv_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let csv_str = r#"Number,Title
+1,Gutenberg
+2,Printing"#;
+        args.insert("literal".to_string(), to_value(csv_str).unwrap());
+        args.insert("format".to_string(), to_value("csv").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "headers": ["Number", "Title"],
+                "records": [
+                    ["1", "Gutenberg"],
+                    ["2", "Printing"]
+                ],
+            })
+        )
     }
 }

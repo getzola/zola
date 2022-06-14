@@ -23,7 +23,7 @@
 
 use std::fs::{read_dir, remove_dir_all};
 use std::net::{SocketAddrV4, TcpListener};
-use std::path::{Path, PathBuf};
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -33,20 +33,23 @@ use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
 use mime_guess::from_path as mimetype_from_path;
+use time::macros::format_description;
+use time::{OffsetDateTime, UtcOffset};
 
-use chrono::prelude::*;
+use libs::percent_encoding;
+use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{Error as ZolaError, Result};
-use globset::GlobSet;
+use errors::{anyhow, Context, Result};
+use libs::globset::GlobSet;
+use libs::relative_path::{RelativePath, RelativePathBuf};
 use pathdiff::diff_paths;
-use relative_path::{RelativePath, RelativePathBuf};
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
 use utils::fs::copy_file;
 
-use crate::console;
+use crate::messages;
 use std::ffi::OsStr;
 
 #[derive(Debug, PartialEq)]
@@ -73,6 +76,7 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Response<Body>> {
+    let original_root = root.clone();
     let mut path = RelativePathBuf::new();
     // https://zola.discourse.group/t/percent-encoding-for-slugs/736
     let decoded = match percent_encoding::percent_decode_str(req.uri().path()).decode_utf8() {
@@ -111,6 +115,11 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     // Remove the first slash from the request path
     // otherwise `PathBuf` will interpret it as an absolute path
     root.push(&decoded[1..]);
+
+    // Ensure we are only looking for things in our public folder
+    if !root.starts_with(original_root) {
+        return Ok(not_found());
+    }
 
     let metadata = match tokio::fs::metadata(root.as_path()).await {
         Err(err) => return Ok(io_error(err)),
@@ -219,7 +228,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                 ))
                 .unwrap();
         }
-        Err(e) => console::unravel_errors("Failed to build the site", &e),
+        Err(e) => messages::unravel_errors("Failed to build the site", &e),
     }
 }
 
@@ -237,14 +246,18 @@ fn create_new_site(
     SITE_CONTENT.write().unwrap().clear();
 
     let mut site = Site::new(root_dir, config_file)?;
-
-    let base_address = format!("{}:{}", base_url, interface_port);
     let address = format!("{}:{}", interface, interface_port);
 
-    let base_url = if site.config.base_url.ends_with('/') {
-        format!("http://{}/", base_address)
+    let base_url = if base_url == "/" {
+        String::from("/")
     } else {
-        format!("http://{}", base_address)
+        let base_address = format!("{}:{}", base_url, interface_port);
+
+        if site.config.base_url.ends_with('/') {
+            format!("http://{}/", base_address)
+        } else {
+            format!("http://{}", base_address)
+        }
     };
 
     site.enable_serve_mode();
@@ -261,8 +274,8 @@ fn create_new_site(
     } else {
         site.enable_live_reload(interface_port);
     }
-    console::notify_site_size(&site);
-    console::warn_about_ignored_pages(&site);
+    messages::notify_site_size(&site);
+    messages::warn_about_ignored_pages(&site);
     site.build()?;
     Ok((site, address))
 }
@@ -278,6 +291,7 @@ pub fn serve(
     open: bool,
     include_drafts: bool,
     fast_rebuild: bool,
+    utc_offset: UtcOffset,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, address) = create_new_site(
@@ -290,19 +304,20 @@ pub fn serve(
         include_drafts,
         None,
     )?;
-    console::report_elapsed_time(start);
+    messages::report_elapsed_time(start);
 
     // Stop right there if we can't bind to the address
     let bind_address: SocketAddrV4 = match address.parse() {
         Ok(a) => a,
-        Err(_) => return Err(format!("Invalid address: {}.", address).into()),
+        Err(_) => return Err(anyhow!("Invalid address: {}.", address)),
     };
     if (TcpListener::bind(&bind_address)).is_err() {
-        return Err(format!("Cannot start server on address {}.", address).into());
+        return Err(anyhow!("Cannot start server on address {}.", address));
     }
 
     let config_path = PathBuf::from(config_file);
-    let config_path_rel = diff_paths(&config_path, &root_dir).unwrap_or(config_path.clone());
+    let config_path_rel =
+        diff_paths(&config_path, &root_dir).unwrap_or_else(|| config_path.clone());
 
     // An array of (path, WatchMode) where the path should be watched for changes,
     // and the WatchMode value indicates whether this file/folder must exist for
@@ -336,7 +351,7 @@ pub fn serve(
         if should_watch {
             watcher
                 .watch(root_dir.join(entry), RecursiveMode::Recursive)
-                .map_err(|e| ZolaError::chain(format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()), e))?;
+                .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());
         }
     }
@@ -404,7 +419,7 @@ pub fn serve(
 
         let ws_server = ws_server
             .bind(&*ws_address)
-            .map_err(|_| format!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
+            .map_err(|_| anyhow!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
 
         thread::spawn(move || {
             ws_server.run().unwrap();
@@ -413,7 +428,12 @@ pub fn serve(
         broadcaster
     };
 
-    println!("Listening for changes in {}{{{}}}", root_dir.display(), watchers.join(", "));
+    println!(
+        "Listening for changes in {}{}{{{}}}",
+        root_dir.display(),
+        MAIN_SEPARATOR,
+        watchers.join(",")
+    );
 
     println!("Press Ctrl+C to stop\n");
     // Delete the output folder on ctrl+C
@@ -489,7 +509,7 @@ pub fn serve(
             Some(s)
         }
         Err(e) => {
-            console::unravel_errors("Failed to build the site", &e);
+            messages::unravel_errors("Failed to build the site", &e);
             None
         }
     };
@@ -515,10 +535,17 @@ pub fn serve(
                         if path.is_dir() && is_folder_empty(&path) {
                             continue;
                         }
-                        println!(
-                            "Change detected @ {}",
-                            Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
-                        );
+
+                        let format =
+                            format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+                        let current_time =
+                            OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
+                        if let Ok(time_str) = current_time {
+                            println!("Change detected @ {}", time_str);
+                        } else {
+                            // if formatting fails for some reason
+                            println!("Change detected");
+                        };
 
                         let start = Instant::now();
                         match detect_change_kind(root_dir, &path, &config_path) {
@@ -538,7 +565,7 @@ pub fn serve(
                                         } else {
                                             // an asset changed? a folder renamed?
                                             // should we make it smarter so it doesn't reload the whole site?
-                                            Err("dummy".into())
+                                            Err(anyhow!("dummy"))
                                         };
 
                                         if res.is_err() {
@@ -601,7 +628,7 @@ pub fn serve(
                                 }
                             }
                         };
-                        console::report_elapsed_time(start);
+                        messages::report_elapsed_time(start);
                     }
                     _ => {}
                 }
@@ -758,9 +785,9 @@ mod tests {
     #[cfg(windows)]
     fn windows_path_handling() {
         let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
-        let pwd = Path::new(r#"C:\\Users\johan\site"#);
-        let path = Path::new(r#"C:\\Users\johan\site\templates\hello.html"#);
-        let config_filename = Path::new(r#"C:\\Users\johan\site\config.toml"#);
+        let pwd = Path::new(r#"C:\Users\johan\site"#);
+        let path = Path::new(r#"C:\Users\johan\site\templates\hello.html"#);
+        let config_filename = Path::new(r#"C:\Users\johan\site\config.toml"#);
         assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
     }
 

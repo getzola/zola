@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use errors::Result;
 use site::Site;
 
-use crate::console;
+use crate::messages;
 
 pub fn check(
     root_dir: &Path,
@@ -23,7 +23,7 @@ pub fn check(
         site.include_drafts();
     }
     site.load()?;
-    console::check_site_summary(&site);
-    console::warn_about_ignored_pages(&site);
+    messages::check_site_summary(&site);
+    messages::warn_about_ignored_pages(&site);
     Ok(())
 }

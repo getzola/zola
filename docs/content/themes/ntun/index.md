@@ -3,12 +3,12 @@
 title = "ntun-zola-theme"
 description = "A classic resume theme"
 template = "theme.html"
-date = 2021-08-18T01:00:57-07:00
+date = 2022-06-03T14:22:50-07:00
 
 [extra]
-created = 2021-08-18T01:00:57-07:00
-updated = 2021-08-18T01:00:57-07:00
-repository = "https://github.com/Netoun/ntun"
+created = 2022-06-03T14:22:50-07:00
+updated = 2022-06-03T14:22:50-07:00
+repository = "https://github.com/Netoun/ntun.git"
 homepage = "https://github.com/netoun/ntun"
 minimum_version = "0.1.0"
 license = "MIT"
@@ -64,7 +64,7 @@ links = [
     { url = "", title="", icon = "fab fa-github"},
     { url = "", title="", icon = "fab fa-twitter"},
     { url = "", title="", icon = "fab fa-linkedin"},
-    { url = "mailto:"title="", icon = "fas fa-envelope"}
+    { url = "mailto:", title="", icon = "fas fa-envelope"}
 ]
 
 # if you add languages, put your emoji flag on array
@@ -75,4 +75,5 @@ languages_flags = [
 
 If you put `$BASE_URL` in a url, it will automatically be replaced by the actual
 site URL.
+
         

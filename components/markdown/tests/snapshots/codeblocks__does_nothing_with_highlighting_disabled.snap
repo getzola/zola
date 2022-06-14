@@ -1,0 +1,10 @@
+---
+source: components/rendering/tests/codeblocks.rs
+assertion_line: 336
+expression: body
+
+---
+<pre><code>foo
+bar
+</code></pre>
+

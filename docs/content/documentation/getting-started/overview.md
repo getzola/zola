@@ -155,6 +155,7 @@ Let's now create some more templates. In the `templates` directory, create a `bl
   {{ section.title }}
 </h1>
 <ul>
+  <!-- If you are using pagination, section.pages will be empty. You need to use the paginator object -->  
   {% for page in section.pages %}
   <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
   {% endfor %}
@@ -219,7 +220,7 @@ The `index.html` file inside the `templates` directory should be:
 <h1 class="title">
   This is my blog made with Zola.
 </h1>
-<p>Click <a href="/blog/">here</a> to see my posts.</p>
+<p>Click <a href="{{/* get_url(path="@/blog/_index.md") */}}">here</a> to see my posts.</p>
 {% endblock content %}
 ```  
 

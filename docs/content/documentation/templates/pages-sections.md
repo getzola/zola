@@ -19,7 +19,6 @@ content: String;
 title: String?;
 description: String?;
 date: String?;
-// `updated` will be the same as `date` if `date` is specified but `updated` is not in front-matter
 updated: String?;
 slug: String;
 path: String;
@@ -35,14 +34,10 @@ toc: Array<Header>,
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;
-// `earlier` and `later` are only populated if the section variable `sort_by` is set to `date`
-// and only set when rendering the page itself
-earlier: Page?;
-later: Page?;
-// `heavier` and `lighter` are only populated if the section variable `sort_by` is set to `weight`
-// and only set when rendering the page itself
-heavier: Page?;
-lighter: Page?;
+// earlier / ligher
+lower: Page?;
+// later / heavier
+higher: Page?;
 // Year/month/day is only set if the page has a date and month/day are 1-indexed
 year: Number?;
 month: Number?;

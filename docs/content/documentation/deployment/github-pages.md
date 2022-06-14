@@ -5,7 +5,7 @@ weight = 30
 
 By default, GitHub Pages uses Jekyll (a ruby based static site generator),
 but you can also publish any generated files provided you have an `index.html` file in the root of a branch called
-`gh-pages` or `master`. In addition you can publish from a `docs` directory in your repository. That branch name can
+`gh-pages`, `main` or `master`. In addition you can publish from a `docs` directory in your repository. That branch name can
 also be manually changed in the settings of a repository. To serve a site at `<username>.github.io` or
 `<organization>.github.io`, you must name the repository `<username>.github.io` or
 `<organization>.github.io` (otherwise GitHub will append the repository name to the URL, e.g.:
@@ -18,7 +18,7 @@ We can use any continuous integration (CI) server to build and deploy our site. 
 
 In either case, it seems to work best if you use `git submodule` to include your theme, e.g.:
 
-```shell
+```bash
 git submodule add https://github.com/getzola/after-dark.git themes/after-dark
 ```
 
@@ -26,15 +26,15 @@ git submodule add https://github.com/getzola/after-dark.git themes/after-dark
 
 Using *Github Actions* for the deployment of your Zola-Page on Github-Pages is pretty easy. You basically need three things:
 
-1. A *Personal access token* to give the *Github Action* the permission to push into your repository.
+1. A *Personal access token* to give the *Github Action* the permission to push into your repository ONLY IF you are publishing from another repo
 2. Create the *Github Action*.
 3. Check the *Github Pages* section in repository settings.
 
-Let's start with the token.
+Let's start with the token. Remember, if you are publishing the site on the same repo, you do not need to follow that step.
 
 For creating the token either click on [here](https://github.com/settings/tokens) or go to Settings > Developer Settings > Personal access tokens. Under the *Select Scopes* section, give it *repo* permissions and click *Generate token*. Then copy the token, navigate to your repository and add in the Settings tab the *Secret* `TOKEN` and paste your token in it.
 
-Next we need to create the *Github Action*. Here we can make use of the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action). Go to the *Actions* tab of your repository, click on *set up a workflow yourself* to get a blank workflow file. Copy the following script into it and commit it afterwards.
+Next we need to create the *Github Action*. Here we can make use of the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action). Go to the *Actions* tab of your repository, click on *set up a workflow yourself* to get a blank workflow file. Copy the following script into it and commit it afterwards; note that you may need to change the `github.ref` branch from `main` to `master` or similar, as the action will only run for the branch you choose.
 
 ```yaml
 # On every push this script is executed
@@ -43,11 +43,12 @@ name: Build and deploy GH Pages
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: checkout
         uses: actions/checkout@v2
       - name: build_and_deploy
-        uses: shalzz/zola-deploy-action@v0.13.0
+        uses: shalzz/zola-deploy-action@v0.14.1
         env:
           # Target branch
           PAGES_BRANCH: gh-pages
@@ -64,7 +65,7 @@ Finally we need to check the *Github Pages* section of the repository settings. 
 There you can also configure a *custom domain* and *Enforce HTTPS* mode. Before configuring a *custom domains*, please check out [this](https://github.com/shalzz/zola-deploy-action/blob/master/README.md#custom-domain).
 
 If you want to keep the source of your site in a private repository (including, for example, draft
-posts), adapt the following `.github/workflows/main.yml`:
+posts), adapt the following `.github/workflows/main.yml` (making sure to update the branches as required):
 
 ```yaml
 on: push
@@ -110,7 +111,7 @@ Depending on how you added your theme, Travis may not know how to access
 it. The best way to ensure that it will have full access to the theme is to use git
 submodules. When doing this, ensure that you are using the `https` version of the URL.
 
-```shell
+```bash
 $ git submodule add {THEME_URL} themes/{THEME_NAME}
 ```
 

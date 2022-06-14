@@ -2,13 +2,13 @@ mod config;
 pub mod highlighting;
 mod theme;
 
+use std::path::Path;
+
 pub use crate::config::{
-    languages::LanguageOptions, link_checker::LinkChecker, search::Search, slugify::Slugify,
-    taxonomies::Taxonomy, Config,
+    languages::LanguageOptions, link_checker::LinkChecker, link_checker::LinkCheckerLevel,
+    search::Search, slugify::Slugify, taxonomies::TaxonomyConfig, Config,
 };
 use errors::Result;
-
-use std::path::Path;
 
 /// Get and parse the config.
 /// If it doesn't succeed, exit

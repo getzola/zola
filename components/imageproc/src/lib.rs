@@ -1,6 +1,5 @@
 use std::collections::hash_map::Entry as HEntry;
 use std::collections::HashMap;
-use std::error::Error as StdError;
 use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
@@ -11,23 +10,22 @@ use image::error::ImageResult;
 use image::io::Reader as ImgReader;
 use image::{imageops::FilterType, EncodableLayout};
 use image::{ImageFormat, ImageOutputFormat};
-use lazy_static::lazy_static;
+use libs::{image, once_cell, rayon, regex, svg_metadata, webp};
+use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use svg_metadata::Metadata as SvgMetadata;
 
 use config::Config;
-use errors::{Error, Result};
+use errors::{anyhow, Context, Error, Result};
 use utils::fs as ufs;
 
 static RESIZED_SUBDIR: &str = "processed_images";
 const DEFAULT_Q_JPG: u8 = 75;
 
-lazy_static! {
-    pub static ref RESIZED_FILENAME: Regex =
-        Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png|webp)"#).unwrap();
-}
+static RESIZED_FILENAME: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"([0-9a-f]{16})([0-9a-f]{2})[.](jpg|png|webp)"#).unwrap());
 
 /// Size and format read cheaply with `image`'s `Reader`.
 #[derive(Debug)]
@@ -84,22 +82,20 @@ impl ResizeArgs {
         match op {
             "fit_width" => {
                 if width.is_none() {
-                    return Err("op=\"fit_width\" requires a `width` argument".into());
+                    return Err(anyhow!("op=\"fit_width\" requires a `width` argument"));
                 }
             }
             "fit_height" => {
                 if height.is_none() {
-                    return Err("op=\"fit_height\" requires a `height` argument".into());
+                    return Err(anyhow!("op=\"fit_height\" requires a `height` argument"));
                 }
             }
             "scale" | "fit" | "fill" => {
                 if width.is_none() || height.is_none() {
-                    return Err(
-                        format!("op={} requires a `width` and `height` argument", op).into()
-                    );
+                    return Err(anyhow!("op={} requires a `width` and `height` argument", op));
                 }
             }
-            _ => return Err(format!("Invalid image resize operation: {}", op).into()),
+            _ => return Err(anyhow!("Invalid image resize operation: {}", op)),
         };
 
         Ok(match op {
@@ -225,7 +221,7 @@ impl Format {
             "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
             "png" => Ok(Png),
             "webp" => Ok(WebP(quality)),
-            _ => Err(format!("Invalid image format: {}", format).into()),
+            _ => Err(anyhow!("Invalid image format: {}", format)),
         }
     }
 
@@ -333,7 +329,8 @@ impl ImageOp {
                 img.write_to(&mut f, ImageOutputFormat::Jpeg(q))?;
             }
             Format::WebP(q) => {
-                let encoder = webp::Encoder::from_image(&img);
+                let encoder = webp::Encoder::from_image(&img)
+                    .map_err(|_| anyhow!("Unable to load this kind of image with webp"))?;
                 let memory = match q {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
@@ -377,8 +374,6 @@ impl EnqueueResponse {
 /// taking care of file stale status based on timestamps and possible hash collisions.
 #[derive(Debug)]
 pub struct Processor {
-    /// The base path of the Zola site
-    base_path: PathBuf,
     base_url: String,
     output_dir: PathBuf,
     /// A map of a ImageOps by their stored hash.
@@ -394,7 +389,6 @@ impl Processor {
         Processor {
             output_dir: base_path.join("static").join(RESIZED_SUBDIR),
             base_url: config.make_permalink(RESIZED_SUBDIR),
-            base_path,
             img_ops: HashMap::new(),
             img_ops_collisions: Vec::new(),
         }
@@ -419,9 +413,8 @@ impl Processor {
         format: &str,
         quality: Option<u8>,
     ) -> Result<EnqueueResponse> {
-        let meta = ImageMeta::read(&input_path).map_err(|e| {
-            Error::chain(format!("Failed to read image: {}", input_path.display()), e)
-        })?;
+        let meta = ImageMeta::read(&input_path)
+            .with_context(|| format!("Failed to read image: {}", input_path.display()))?;
 
         let args = ResizeArgs::from_args(op, width, height)?;
         let op = ResizeOp::new(args, meta.size);
@@ -533,8 +526,9 @@ impl Processor {
             .map(|(hash, op)| {
                 let target =
                     self.output_dir.join(Self::op_filename(*hash, op.collision_id, op.format));
-                op.perform(&target).map_err(|e| {
-                    Error::chain(format!("Failed to process image: {}", op.input_path.display()), e)
+
+                op.perform(&target).with_context(|| {
+                    format!("Failed to process image: {}", op.input_path.display())
                 })
             })
             .collect::<Result<()>>()
@@ -575,29 +569,28 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
     let path = path.as_ref();
     let ext = path.extension().and_then(OsStr::to_str).unwrap_or("").to_lowercase();
 
-    let error = |e: Box<dyn StdError + Send + Sync>| {
-        Error::chain(format!("Failed to read image: {}", path.display()), e)
-    };
+    let err_context = || format!("Failed to read image: {}", path.display());
 
     match ext.as_str() {
         "svg" => {
-            let img = SvgMetadata::parse_file(&path).map_err(|e| error(e.into()))?;
+            let img = SvgMetadata::parse_file(&path).with_context(err_context)?;
             match (img.height(), img.width(), img.view_box()) {
                 (Some(h), Some(w), _) => Ok((h, w)),
                 (_, _, Some(view_box)) => Ok((view_box.height, view_box.width)),
-                _ => Err("Invalid dimensions: SVG width/height and viewbox not set.".into()),
+                _ => Err(anyhow!("Invalid dimensions: SVG width/height and viewbox not set.")),
             }
-            .map(|(h, w)| ImageMetaResponse::new_svg(h as u32, w as u32))
+            //this is not a typo, this returns the correct values for width and height.
+            .map(|(h, w)| ImageMetaResponse::new_svg(w as u32, h as u32))
         }
         "webp" => {
-            // Unfortunatelly we have to load the entire image here, unlike with the others :|
-            let data = fs::read(path).map_err(|e| error(e.into()))?;
+            // Unfortunately we have to load the entire image here, unlike with the others :|
+            let data = fs::read(path).with_context(err_context)?;
             let decoder = webp::Decoder::new(&data[..]);
             decoder.decode().map(ImageMetaResponse::from).ok_or_else(|| {
                 Error::msg(format!("Failed to decode WebP image: {}", path.display()))
             })
         }
-        _ => ImageMeta::read(path).map(ImageMetaResponse::from).map_err(|e| error(e.into())),
+        _ => ImageMeta::read(path).map(ImageMetaResponse::from).with_context(err_context),
     }
 }
 

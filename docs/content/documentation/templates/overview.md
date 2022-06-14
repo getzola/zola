@@ -23,6 +23,8 @@ A few variables are available on all templates except feeds and the sitemap:
 Config variables can be accessed like `config.variable`, in HTML for example with `{{ config.base_url }}`.
 The 404 template does not get `current_path` and `current_url` (this information cannot be determined).
 
+On top of the `config` attributes mentioned above, it also gets `config.mode` which is whether it's run in `build`, `serve` or `check`.
+
 ## Standard templates
 By default, Zola will look for three templates: `index.html`, which is applied
 to the site homepage; `section.html`, which is applied to all sections (any HTML
@@ -201,14 +203,14 @@ This can also be used to get the permalinks for static assets, for example if
 we want to link to the file that is located at `static/css/app.css`:
 
 ```jinja2
-{{/* get_url(path="static/css/app.css") */}}
+{{/* get_url(path="css/app.css") */}}
 ```
 
 By default, assets will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
 An example is:
 
 ```jinja2
-{{/* get_url(path="static/css/app.css", trailing_slash=true) */}}
+{{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
 In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
@@ -256,36 +258,54 @@ The method returns a map containing `width`, `height` and `format` (the lowercas
 ```
 
 ### `load_data`
-Loads data from a file or URL. Supported file types include *toml*, *json*, *csv* and *bibtex* and only supports UTF-8 encoding.
+
+Loads data from a file, URL, or string literal. Supported file types include *toml*, *json*, *csv*, *bibtex*, *yaml* 
+and *xml* and only supports UTF-8 encoding.
+
 Any other file type will be loaded as plain text.
 
-The `path` argument specifies the path to the data file, according to the [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic).
+The `path` argument specifies the path to a local data file, according to the [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic).
 
 ```jinja2
 {% set data = load_data(path="content/blog/story/data.toml") %}
 ```
+
+Alternatively, the `url` argument specifies the location of a remote URL to load.
+
+```jinja2
+{% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris") %}
+```
+
+Alternatively, the `literal` argument specifies an object literal. Note: if the `format` argument is not specified, then plain text will be what is assumed.
+
+```jinja2
+{% set data = load_data(literal='{"name": "bob"}', format="json") %}
+{{ data["name"] }}
+```
+
+*Note: the `required` parameter has no effect when used in combination with the `literal` argument.*
 
 The optional `required` boolean argument can be set to false so that missing data (HTTP error or local file not found) does not produce an error, but returns a null value instead. However, permission issues with a local file and invalid data that could not be parsed to the requested data format will still produce an error even with `required=false`.
 
 The snippet below outputs the HTML from a Wikipedia page, or "No data found" if the page was not reachable, or did not return a successful HTTP code:
 
 ```jinja2
-{% set data = load_data(path="https://en.wikipedia.org/wiki/Commune_of_Paris", required=false) %}
+{% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris", required=false) %}
 {% if data %}{{ data | safe }}{% else %}No data found{% endif %}
 ```
 
-The optional `format` argument allows you to specify and override which data type is contained
-within the file specified in the `path` argument. Valid entries are `toml`, `json`, `csv`, `bibtex`
-or `plain`. If the `format` argument isn't specified, then the path extension is used.
+The optional `format` argument allows you to specify and override which data type is contained within the specified file or URL.
+Valid entries are `toml`, `json`, `csv`, `bibtex`, `yaml`, `xml` or `plain`. If the `format` argument isn't specified, then the 
+path extension is used. In the case of a literal, `plain` is assumed if `format` is unspecified.
 
 
 ```jinja2
 {% set data = load_data(path="content/blog/story/data.txt", format="json") %}
 ```
 
-Use the `plain` format for when your file has a toml/json/csv extension but you want to load it as plain text.
+Use the `plain` format for when your file has a supported extension but you want to load it as plain text.
 
-For *toml* and *json*, the data is loaded into a structure matching the original data file;
+For *toml*, *json*, *yaml* and *xml*, the data is loaded into a structure matching the original data file;
 however, for *csv* there is no native notion of such a structure. Instead, the data is separated
 into a data structure containing *headers* and *records*. See the example below to see
 how this works.
@@ -405,6 +425,43 @@ This example will make a POST request to the kroki service to generate a SVG.
   'very easy!' [color = 'orange'];
 }")%}
 {{postdata|safe}}
+```
+
+If you need additional handling for the HTTP headers, you can use the `headers` parameter.
+You might need this parameter when the resource requires authentication or require passing additional
+parameters via special headers.
+Please note that the headers will be appended to the default headers set by Zola itself instead of replacing them.
+
+This example will make a POST request to the GitHub markdown rendering service.
+
+```jinja2
+{% set postdata = load_data(url="https://api.github.com/markdown", format="plain", method="POST", content_type="application/json", headers=["accept=application/vnd.github.v3+json"], body='{"text":"headers support added in #1710, commit before it: b3918f124d13ec1bedad4860c15a060dd3751368","context":"getzola/zola","mode":"gfm"}')%}
+{{postdata|safe}}
+```
+
+The following example shows how to send a GraphQL query to GitHub (requires authentication).
+If you want to try this example on your own machine, you need to provide a GitHub PAT (Personal Access Token),
+you can acquire the access token at this link: https://github.com/settings/tokens and then set `GITHUB_TOKEN`
+environment variable to the access token you have obtained.
+
+```jinja2
+{% set token = get_env(name="GITHUB_TOKEN") %}
+{% set postdata = load_data(url="https://api.github.com/graphql", format="json", method="POST" ,content_type="application/json", headers=["accept=application/vnd.github.v4.idl", "authentication=Bearer " ~ token], body='{"query":"query { viewer { login }}"}')%}
+{{postdata|safe}}
+```
+
+In case you need to specify multiple headers with the same name, you can specify them like this:
+
+```
+headers=["accept=application/json,text/html"]
+```
+
+Which is equivalent to two `Accept` headers with `application/json` and `text/html`.
+
+If it doesn't work, you can instead specify the headers multiple times to achieve a similar effect:
+
+```
+headers=["accept=application/json", "accept=text/html"]
 ```
 
 #### Data caching
