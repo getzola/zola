@@ -3,11 +3,11 @@
 title = "zola.386"
 description = "Zola port of the BOOTSTRA.386 theme."
 template = "theme.html"
-date = 2022-06-10T21:55:08+02:00
+date = 2022-06-15T01:35:37-07:00
 
 [extra]
-created = 2022-06-10T21:55:08+02:00
-updated = 2022-06-10T21:55:08+02:00
+created = 2022-06-15T01:35:37-07:00
+updated = 2022-06-15T01:35:37-07:00
 repository = "https://github.com/lopes/zola.386.git"
 homepage = "https://github.com/lopes/zola.386"
 minimum_version = "0.10.1"

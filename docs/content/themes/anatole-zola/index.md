@@ -3,11 +3,11 @@
 title = "anatole-zola"
 description = "A port of farbox-theme-Anatole for zola"
 template = "theme.html"
-date = 2022-06-10T21:55:08+02:00
+date = 2022-06-15T01:35:37-07:00
 
 [extra]
-created = 2022-06-10T21:55:08+02:00
-updated = 2022-06-10T21:55:08+02:00
+created = 2022-06-15T01:35:37-07:00
+updated = 2022-06-15T01:35:37-07:00
 repository = "https://github.com/longfangsong/anatole-zola.git"
 homepage = "https://github.com/longfangsong/anatole-zola"
 minimum_version = "0.4.0"
@@ -28,6 +28,10 @@ ___
 ![screenshot](./screenshot.png)
 
 ![screenshot-mobile](./screenshot-mobile.png)
+
+![screenshot-dark](./screenshot-dark.png)
+
+![screenshot-mobile-dark](./screenshot-mobile-dark.png)
 
 ## Installation
 
@@ -56,6 +60,15 @@ title = "Anatole"
 description = "A other zola theme"
 base_url = "https://example.com"
 ```
+
+### Mode
+
+Though the origin theme only support light mode, we added a dark mode option here.
+
+You can either 
+- set the `extra.mode` field in `config.toml` to use the dark/light mode
+- or set the `extra.default_mode` field in `config.toml` to read the dark/light mode from `localStorage` (the key is `'mode'`), and use some Javascript to control the theme each reader is using
+- or do nothing, we'll use light mode by default
 
 ### Language
 
