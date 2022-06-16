@@ -93,8 +93,8 @@ build_search_index = false
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
 
-# A list of directories used to search for additional `.sublime-syntax` files.
-extra_syntaxes = []
+# A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
+extra_syntaxes_and_themes = []
 
 # The theme to use for code highlighting.
 # See below for list of allowed values.
