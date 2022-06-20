@@ -6,7 +6,7 @@ pub fn has_anchor_id(content: &str, anchor: &str) -> bool {
 }
 
 fn anchor_id_checks(anchor: &str) -> Regex {
-    Regex::new(&format!(r#" (?i)(id|name) *= *("|')*{}("|'| |>)+"#, anchor)).unwrap()
+    Regex::new(&format!(r#"\s(?i)(id|name) *= *("|')*{}("|'| |>)+"#, anchor)).unwrap()
 }
 
 #[cfg(test)]
@@ -39,5 +39,12 @@ mod tests {
         // Case variants
         assert!(m(r#"<a ID="fred">"#));
         assert!(m(r#"<a iD="fred">"#));
+
+        // Newline variants
+        assert!(m(r#"<a
+id="fred">"#));
+
+        // Non matchers
+        assert!(!m(r#"<a notid="fred">"#))
     }
 }
