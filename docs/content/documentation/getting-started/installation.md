@@ -85,6 +85,26 @@ Zola is available on snapcraft:
 $ snap install --edge zola
 ```
 
+### Flatpak
+
+Zola is available as a flatpak on [flathub](https://flathub.org):
+
+```sh
+$ flatpak install flathub org.getzola.zola
+```
+
+To use zola:
+
+```sh
+$ flatpak run org.getzola.zola [command]
+```
+
+To avoid having to type this everytime, an alaias can be created in `~/.bashrc`:
+
+```sh
+$ alias zola="flatpak run org.getzola.zola"
+```
+
 ### Docker
 
 Zola is available on [the GitHub registry](https://github.com/getzola/zola/pkgs/container/zola).
