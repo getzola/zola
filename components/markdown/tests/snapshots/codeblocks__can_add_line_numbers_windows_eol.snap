@@ -1,0 +1,9 @@
+---
+source: components/markdown/tests/codeblocks.rs
+assertion_line: 248
+expression: body
+---
+<pre data-linenos style="background-color:#2b303b;color:#c0c5ce;"><code><table><tbody><tr><td>1</td><td><span>foo
+</span></td></tr><tr><td>2</td><td><span>bar
+</span></td></tr></tbody></table></code></pre>
+
