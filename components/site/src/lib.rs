@@ -218,7 +218,7 @@ impl Site {
             // is it a section or not?
             if path.is_dir() {
                 // if we are processing a section we have to collect
-                // index files for all languages and process them simultaniously
+                // index files for all languages and process them simultaneously
                 // before any of the pages
                 let index_files = WalkDir::new(&path)
                     .follow_links(true)
@@ -228,15 +228,12 @@ impl Site {
                         Err(_) => None,
                         Ok(f) => {
                             let path_str = f.path().file_name().unwrap().to_str().unwrap();
+                            // https://github.com/getzola/zola/issues/1244
                             if f.path().is_file()
                                 && allowed_index_filenames.iter().any(|s| s == path_str)
                             {
                                 Some(f)
                             } else {
-                                // https://github.com/getzola/zola/issues/1244
-                                if path_str.starts_with("_index.") {
-                                    println!("Expected a section filename, got `{}`. Allowed values: `{:?}`", path_str, &allowed_index_filenames);
-                                }
                                 None
                             }
                         }
