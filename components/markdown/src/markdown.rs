@@ -317,13 +317,12 @@ pub fn markdown_to_html(
             };
         }
 
+        let mut accumulated_block = String::new();
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
                 Event::Text(text) => {
-                    if let Some(ref mut code_block) = code_block {
-                        let html;
+                    if let Some(ref mut _code_block) = code_block {
                         if contains_shortcode(text.as_ref()) {
-                            let mut accumulated_block = String::new();
                             // mark the start of the code block events
                             let stack_start = events.len();
                             render_shortcodes!(true, text, range);
@@ -341,13 +340,12 @@ pub fn markdown_to_html(
                                     }
                                 }
                             }
-                            html = code_block.highlight(&accumulated_block);
+
                             // remove all the original events from shortcode rendering
                             events.truncate(stack_start);
                         } else {
-                            html = code_block.highlight(&text);
+                            accumulated_block += &text;
                         }
-                        events.push(Event::Html(html.into()));
                     } else {
                         let text = if context.config.markdown.render_emoji {
                             EMOJI_REPLACER.replace_all(&text).to_string().into()
@@ -373,6 +371,12 @@ pub fn markdown_to_html(
                     events.push(Event::Html(begin.into()));
                 }
                 Event::End(Tag::CodeBlock(_)) => {
+                    if let Some(ref mut code_block) = code_block {
+                        let html = code_block.highlight(&accumulated_block);
+                        events.push(Event::Html(html.into()));
+                        accumulated_block.clear();
+                    }
+
                     // reset highlight and close the code block
                     code_block = None;
                     events.push(Event::Html("</code></pre>\n".into()));
