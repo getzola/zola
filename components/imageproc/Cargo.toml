@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+kamadak-exif = "0.5.4"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

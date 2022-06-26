@@ -10,6 +10,7 @@ use image::error::ImageResult;
 use image::io::Reader as ImgReader;
 use image::{imageops::FilterType, EncodableLayout};
 use image::{ImageFormat, ImageOutputFormat};
+use libs::image::DynamicImage;
 use libs::{image, once_cell, rayon, regex, svg_metadata, webp};
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
@@ -319,6 +320,8 @@ impl ImageOp {
             None => img,
         };
 
+        let img = fix_orientation(img, &self.input_path);
+
         let mut f = File::create(target_path)?;
 
         match self.format {
@@ -340,6 +343,35 @@ impl ImageOp {
         }
 
         Ok(())
+    }
+}
+
+/// Apply image rotation based on EXIF data
+pub fn fix_orientation(img: DynamicImage, path: &Path) -> DynamicImage {
+    let file = std::fs::File::open(path).unwrap();
+    let mut buf_reader = std::io::BufReader::new(&file);
+    let exif_reader = exif::Reader::new();
+    let exif = exif_reader.read_from_container(&mut buf_reader);
+    let exif = match exif {
+        Ok(exif) => exif,
+        Err(_) => return img,
+    };
+    match exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY) {
+        // Values are taken from the page 30 of
+        // https://www.cipa.jp/std/documents/e/DC-008-2012_E.pdf
+        // For more details check http://sylvana.net/jpegcrop/exif_orientation.html
+        Some(orientation) => match orientation.value.get_uint(0) {
+            Some(1) => img,
+            Some(2) => img.fliph(),
+            Some(3) => img.rotate180(),
+            Some(4) => img.flipv(),
+            Some(5) => img.fliph().rotate270(),
+            Some(6) => img.rotate90(),
+            Some(7) => img.fliph().rotate90(),
+            Some(8) => img.rotate270(),
+            _ => img,
+        },
+        None => img,
     }
 }
 
