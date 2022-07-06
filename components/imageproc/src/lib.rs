@@ -320,7 +320,7 @@ impl ImageOp {
             None => img,
         };
 
-        let img = fix_orientation(img, &self.input_path);
+        let img = fix_orientation(&img, &self.input_path).unwrap_or(img);
 
         let mut f = File::create(target_path)?;
 
@@ -347,31 +347,26 @@ impl ImageOp {
 }
 
 /// Apply image rotation based on EXIF data
-pub fn fix_orientation(img: DynamicImage, path: &Path) -> DynamicImage {
-    let file = std::fs::File::open(path).unwrap();
+/// Returns `None` if no transformation is needed
+pub fn fix_orientation(img: &DynamicImage, path: &Path) -> Option<DynamicImage> {
+    let file = std::fs::File::open(path).ok()?;
     let mut buf_reader = std::io::BufReader::new(&file);
     let exif_reader = exif::Reader::new();
-    let exif = exif_reader.read_from_container(&mut buf_reader);
-    let exif = match exif {
-        Ok(exif) => exif,
-        Err(_) => return img,
-    };
-    match exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY) {
+    let exif = exif_reader.read_from_container(&mut buf_reader).ok()?;
+    let orientation = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?;
+    match orientation {
         // Values are taken from the page 30 of
         // https://www.cipa.jp/std/documents/e/DC-008-2012_E.pdf
         // For more details check http://sylvana.net/jpegcrop/exif_orientation.html
-        Some(orientation) => match orientation.value.get_uint(0) {
-            Some(1) => img,
-            Some(2) => img.fliph(),
-            Some(3) => img.rotate180(),
-            Some(4) => img.flipv(),
-            Some(5) => img.fliph().rotate270(),
-            Some(6) => img.rotate90(),
-            Some(7) => img.fliph().rotate90(),
-            Some(8) => img.rotate270(),
-            _ => img,
-        },
-        None => img,
+        1 => None,
+        2 => Some(img.fliph()),
+        3 => Some(img.rotate180()),
+        4 => Some(img.flipv()),
+        5 => Some(img.fliph().rotate270()),
+        6 => Some(img.rotate90()),
+        7 => Some(img.fliph().rotate90()),
+        8 => Some(img.rotate270()),
+        _ => None,
     }
 }
 

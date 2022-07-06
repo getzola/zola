@@ -156,6 +156,12 @@ fn read_image_metadata_webp() {
 
 #[test]
 fn fix_orientation_test() {
+    fn load_img_and_fix_orientation(img_name: &str) -> DynamicImage {
+        let path = TEST_IMGS.join(img_name);
+        let img = image::open(&path).unwrap();
+        fix_orientation(&img, &path).unwrap_or(img)
+    }
+
     let img = image::open(TEST_IMGS.join("exif_1.jpg")).unwrap();
     assert!(check_img(img));
     assert!(check_img(load_img_and_fix_orientation("exif_0.jpg")));
@@ -205,12 +211,6 @@ fn resize_and_check(source_img: &str) -> bool {
     let processed_path = PathBuf::from(&resp.static_path);
     let img = image::open(&tmpdir.join(processed_path)).unwrap();
     check_img(img)
-}
-
-fn load_img_and_fix_orientation(img_name: &str) -> DynamicImage {
-    let path = TEST_IMGS.join(img_name);
-    let img = image::open(&path).unwrap();
-    fix_orientation(img, &path)
 }
 
 // Checks that an image has the correct orientation
