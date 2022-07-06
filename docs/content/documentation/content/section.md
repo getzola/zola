@@ -79,7 +79,8 @@ paginate_reversed = false
 # This determines whether to insert a link for each header like the ones you can see on this site if you hover over
 # a header.
 # The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
-# This value can be "left", "right" or "none".
+# This value can be "left", "right", "heading" or "none".
+# "heading" means the full heading becomes the text of the anchor.
 insert_anchor_links = "none"
 
 # If set to "true", the section pages will be in the search index. This is only used if

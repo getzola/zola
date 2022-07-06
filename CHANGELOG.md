@@ -4,11 +4,11 @@
 
 ### Breaking
 
-- Switch to pulldown-cmark anchor rather than ours, some (very niche) edge cases are not supported anymore, you can
+- Switch to pulldown-cmark anchor system rather than ours, some (very niche) edge cases are not supported anymore, you can
 also specify classes on headers now
 - Now outputs empty taxonomies instead of ignoring them
 - Unify all pages sorting variable names in templates to `lower`/`higher` in order to make it easy to re-use templates and it
-was becoming hard to come up with names
+was becoming hard to come up with names to be honest
 
 ### Other
 - Fix markup for fenced code with linenos
@@ -24,11 +24,12 @@ any pages related to that taxonomy
 - Ignore sections with `render=false` when looking for path collisions
 - Add support for backlinks
 - Add a warning mode for internal/external link checking in case you don't want zola to stop the build on invalid links
-- Always follow symlinks
+- Always follow symlinks when loading the site/assets
 - Add `rel="alternate"` to Atom post links
 - Fix taxonomy `current_path`
 - Fix feed location for taxonomies not in the default language
 - Add `title_bytes` sorting method
+- Add `insert_anchor = "heading"`
 
 ## 0.15.3 (2022-01-23)
 
