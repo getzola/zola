@@ -29,7 +29,7 @@ any pages related to that taxonomy
 - Fix taxonomy `current_path`
 - Fix feed location for taxonomies not in the default language
 - Add `title_bytes` sorting method
-- Add `insert_anchor = "heading"`
+- Add `insert_anchor = "heading"`, which allows users to use the entire heading as a link (rather than needing a seperate icon)
 
 ## 0.15.3 (2022-01-23)
 
