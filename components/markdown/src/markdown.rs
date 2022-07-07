@@ -520,7 +520,7 @@ pub fn markdown_to_html(
                 let anchor_idx = match context.insert_anchor {
                     InsertAnchor::Left => start_idx + 1,
                     InsertAnchor::Right => end_idx,
-                    InsertAnchor::Heading => 0,  // fixed later
+                    InsertAnchor::Heading => 0,  // modified later to the correct value
                     InsertAnchor::None => unreachable!(),
                 };
                 let mut c = tera::Context::new();
