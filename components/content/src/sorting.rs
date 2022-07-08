@@ -202,6 +202,16 @@ mod tests {
         assert_eq!(pages[1], page1.file.path);
         assert_eq!(pages[2], page2.file.path);
         assert_eq!(ignored_pages.len(), 0);
+
+        // 10 should come after 2
+        let page1 = create_page_with_title("1");
+        let page2 = create_page_with_title("10");
+        let page3 = create_page_with_title("2");
+        let (pages, ignored_pages) = sort_pages(&[&page1, &page2, &page3], SortBy::Path);
+        assert_eq!(pages[0], page1.file.path);
+        assert_eq!(pages[1], page3.file.path);
+        assert_eq!(pages[2], page2.file.path);
+        assert_eq!(ignored_pages.len(), 0);
     }
 
     #[test]
