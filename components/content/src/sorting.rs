@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::{Page, SortBy};
 use libs::lexical_sort::natural_lexical_cmp;
@@ -16,6 +16,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             }
             SortBy::Title | SortBy::TitleBytes => page.meta.title.is_some(),
             SortBy::Weight => page.meta.weight.is_some(),
+            SortBy::Path => true,
             SortBy::None => unreachable!(),
         });
 
@@ -32,6 +33,8 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
                 a.meta.title.as_ref().unwrap().cmp(b.meta.title.as_ref().unwrap())
             }
             SortBy::Weight => a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()),
+            SortBy::Path => compare_by_path_lexically(&a.file.path, &b.file.path)
+                .unwrap_or_else(|| a.file.path.cmp(&b.file.path)),
             SortBy::None => unreachable!(),
         };
 
@@ -46,6 +49,10 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
         can_be_sorted.iter().map(|p| p.file.path.clone()).collect(),
         cannot_be_sorted.iter().map(|p: &&Page| p.file.path.clone()).collect(),
     )
+}
+
+fn compare_by_path_lexically(a: &Path, b: &Path) -> Option<Ordering> {
+    Some(natural_lexical_cmp(a.to_str()?, b.to_str()?))
 }
 
 #[cfg(test)]
@@ -183,6 +190,18 @@ mod tests {
                 "μ-kernel"
             ]
         );
+    }
+
+    #[test]
+    fn can_sort_by_path() {
+        let page1 = create_page_with_title("2");
+        let page2 = create_page_with_title("3");
+        let page3 = create_page_with_title("1");
+        let (pages, ignored_pages) = sort_pages(&[&page1, &page2, &page3], SortBy::Path);
+        assert_eq!(pages[0], page3.file.path);
+        assert_eq!(pages[1], page1.file.path);
+        assert_eq!(pages[2], page2.file.path);
+        assert_eq!(ignored_pages.len(), 0);
     }
 
     #[test]

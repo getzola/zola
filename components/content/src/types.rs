@@ -15,6 +15,8 @@ pub enum SortBy {
     TitleBytes,
     /// Lower weight comes first
     Weight,
+    /// Sort by file system path
+    Path,
     /// No sorting
     None,
 }
