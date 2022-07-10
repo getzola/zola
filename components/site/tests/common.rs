@@ -99,12 +99,12 @@ fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String
             Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
             _ => unified_path.to_slash_lossy(),
         };
-        Some((unified_path_str, Some(lang.to_str().unwrap().into())))
+        Some((unified_path_str.to_string(), Some(lang.to_str().unwrap().into())))
     } else {
         // No lang, return no_ext directly
         let mut no_ext_string = match no_ext.strip_prefix(base_dir) {
-            Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
-            _ => no_ext.to_slash_lossy(),
+            Ok(path_without_prefix) => path_without_prefix.to_slash_lossy().to_string(),
+            _ => no_ext.to_slash_lossy().to_string(),
         };
         no_ext_string.push_str(".md");
         Some((no_ext_string, None))
