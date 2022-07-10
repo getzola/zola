@@ -5,5 +5,12 @@ use serde::{Deserialize, Serialize};
 pub enum InsertAnchor {
     Left,
     Right,
+    Heading,
     None,
+}
+
+impl InsertAnchor {
+    pub fn uses_template(&self) -> bool {
+        matches!(self, InsertAnchor::Left | InsertAnchor::Right)
+    }
 }

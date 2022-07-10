@@ -101,6 +101,9 @@ fn can_insert_anchors() {
     let body =
         common::render_with_insert_anchor(&cases.join("\n"), InsertAnchor::Right).unwrap().body;
     insta::assert_snapshot!(body);
+    let body =
+        common::render_with_insert_anchor(&cases.join("\n"), InsertAnchor::Heading).unwrap().body;
+    insta::assert_snapshot!(body);
 }
 
 #[test]

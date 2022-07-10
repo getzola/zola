@@ -32,7 +32,7 @@ links working.
 
 ## Anchor insertion
 It is possible to have Zola automatically insert anchor links next to the heading, as you can see on this documentation
-if you hover a title.
+if you hover a title or covering the full heading text.
 
 This option is set at the section level: the `insert_anchor_links` variable on the
 [section front matter page](@/documentation/content/section.md#front-matter).
@@ -46,6 +46,9 @@ The anchor link template has the following variables:
 - `id`: the heading's id after applying the rules defined by `slugify.anchors`
 - `lang`: the current language, unless called from the `markdown` template filter, in which case it will always be `en`
 - `level`: the heading level (between 1 and 6)
+
+If you use `insert_anchor = "heading"`, the template will still be used but only the opening `<a>` tag will get extracted
+from it, everything else will not be used.
 
 ## Internal links
 Linking to other pages and their headings is so common that Zola adds a

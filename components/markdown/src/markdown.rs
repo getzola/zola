@@ -30,6 +30,10 @@ static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
 /// [uri-schemes]: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
 static STARTS_WITH_SCHEMA_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[0-9A-Za-z\-]+:").unwrap());
 
+/// Matches a <a>..</a> tag, getting the opening tag in a capture group.
+/// Used only with AnchorInsert::Heading to grab it from the template
+static A_HTML_TAG: Lazy<Regex> = Lazy::new(|| Regex::new(r"(<\s*a[^>]*>).*?<\s*/\s*a>").unwrap());
+
 /// Efficiently insert multiple element in their specified index.
 /// The elements should sorted in ascending order by their index.
 ///
@@ -516,7 +520,8 @@ pub fn markdown_to_html(
                 let anchor_idx = match context.insert_anchor {
                     InsertAnchor::Left => start_idx + 1,
                     InsertAnchor::Right => end_idx,
-                    InsertAnchor::None => 0, // Not important
+                    InsertAnchor::Heading => 0,  // modified later to the correct value
+                    InsertAnchor::None => unreachable!(),
                 };
                 let mut c = tera::Context::new();
                 c.insert("id", &id);
@@ -530,7 +535,15 @@ pub fn markdown_to_html(
                     &None,
                 )
                 .context("Failed to render anchor link template")?;
-                anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
+                if context.insert_anchor != InsertAnchor::Heading {
+                    anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
+                } else {
+                    if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
+                        let opening_tag = captures.get(1).map_or("", |m| m.as_str()).to_string();
+                        anchors_to_insert.push((start_idx + 1, Event::Html(opening_tag.into())));
+                        anchors_to_insert.push((end_idx, Event::Html("</a>".into())));
+                    }
+                }
             }
 
             // record heading to make table of contents

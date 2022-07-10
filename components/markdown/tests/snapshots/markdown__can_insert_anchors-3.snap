@@ -1,0 +1,10 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+---
+<h1 id="hello"><a class="zola-anchor" href="#hello" aria-label="Anchor link for: hello">Hello</a></h1>
+<h1 id="world"><a class="zola-anchor" href="#world" aria-label="Anchor link for: world">World</a></h1>
+<h1 id="hello-1"><a class="zola-anchor" href="#hello-1" aria-label="Anchor link for: hello-1">Hello!</a></h1>
+<h2 id="rust"><a class="zola-anchor" href="#rust" aria-label="Anchor link for: rust"><a href="https://rust-lang.org">Rust</a></a></h2>
+<h1 id="hello-2"><a class="zola-anchor" href="#hello-2" aria-label="Anchor link for: hello-2">Hello*_()</a></h1>
+
