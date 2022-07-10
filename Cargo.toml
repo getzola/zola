@@ -30,7 +30,7 @@ time = { version = "0.3", features = ["formatting", "macros", "local-offset"] }
 notify = "4"
 ws = "0.9"
 ctrlc = "3"
-open = "2"
+open = "3"
 pathdiff = "0.2"
 # For mimetype detection in serve mode
 mime_guess = "2.0"

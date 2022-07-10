@@ -21,4 +21,4 @@ content = { path = "../content" }
 
 [dev-dependencies]
 tempfile = "3"
-path-slash = "0.1.4"
+path-slash = "0.2"
