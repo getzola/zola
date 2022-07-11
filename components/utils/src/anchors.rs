@@ -1,5 +1,5 @@
-use libs::regex::Regex;
 use libs::regex::escape;
+use libs::regex::Regex;
 
 pub fn has_anchor_id(content: &str, anchor: &str) -> bool {
     let checks = anchor_id_checks(anchor);
@@ -7,8 +7,7 @@ pub fn has_anchor_id(content: &str, anchor: &str) -> bool {
 }
 
 fn anchor_id_checks(anchor: &str) -> Regex {
-    Regex::new(&format!(r#"\s(?i)(id|name) *= *("|')*{}("|'| |>)+"#,
-                        escape(anchor))).unwrap()
+    Regex::new(&format!(r#"\s(?i)(id|name) *= *("|')*{}("|'| |>)+"#, escape(anchor))).unwrap()
 }
 
 #[cfg(test)]

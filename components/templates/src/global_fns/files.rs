@@ -104,9 +104,11 @@ impl TeraFn for GetUrl {
             // anything else
             let mut segments = vec![];
 
-            if lang != self.config.default_language && !path[1..].starts_with(&lang) {
-                segments.push(lang);
-            };
+            if lang != self.config.default_language {
+                if path.is_empty() || !path[1..].starts_with(&lang) {
+                    segments.push(lang);
+                }
+            }
 
             segments.push(path);
 
@@ -366,7 +368,12 @@ title = "A title"
         );
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            permalinks.clone(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());

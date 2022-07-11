@@ -241,13 +241,9 @@ bar
 
 #[test]
 fn can_add_line_numbers_windows_eol() {
-    let body = render_codeblock(
-        "```linenos\r\nfoo\r\nbar\r\n```\r\n",
-        true,
-    );
+    let body = render_codeblock("```linenos\r\nfoo\r\nbar\r\n```\r\n", true);
     insta::assert_snapshot!(body);
-} 
-
+}
 
 #[test]
 fn can_add_line_numbers_with_lineno_start() {

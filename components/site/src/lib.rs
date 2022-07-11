@@ -534,12 +534,7 @@ impl Site {
 
     /// Find all the tags and categories if it's asked in the config
     pub fn populate_taxonomies(&mut self) -> Result<()> {
-        if self.config.taxonomies.is_empty() {
-            return Ok(());
-        }
-
         self.taxonomies = self.library.read().unwrap().find_taxonomies(&self.config);
-
         Ok(())
     }
 

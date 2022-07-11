@@ -353,7 +353,8 @@ pub fn fix_orientation(img: &DynamicImage, path: &Path) -> Option<DynamicImage> 
     let mut buf_reader = std::io::BufReader::new(&file);
     let exif_reader = exif::Reader::new();
     let exif = exif_reader.read_from_container(&mut buf_reader).ok()?;
-    let orientation = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?;
+    let orientation =
+        exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?;
     match orientation {
         // Values are taken from the page 30 of
         // https://www.cipa.jp/std/documents/e/DC-008-2012_E.pdf
