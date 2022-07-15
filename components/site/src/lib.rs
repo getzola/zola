@@ -365,11 +365,13 @@ impl Site {
                     let filename = format!("_index.{}.md", l);
                     index_section.file.path = self.content_path.join(&filename);
                     index_section.file.relative = filename;
+                    index_section.file.canonical = self.content_path.join(format!("_index.{}", l));
                 } else {
                     index_section.file.name = "_index".to_string();
                     index_section.permalink = self.config.make_permalink("");
                     index_section.file.path = self.content_path.join("_index.md");
                     index_section.file.relative = "_index.md".to_string();
+                    index_section.file.canonical = self.content_path.join("_index");
                     index_section.path = "/".to_string();
                 }
                 index_section.lang = index_section.file.find_language(

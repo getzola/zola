@@ -31,6 +31,7 @@ any pages related to that taxonomy
 - Add `title_bytes` sorting method
 - Add `insert_anchor = "heading"`, which allows users to use the entire heading as a link
 - Apply orientation transformation based on EXIF data
+- Fix generated homepages not having their `translations` filled properly
 
 ## 0.15.3 (2022-01-23)
 
