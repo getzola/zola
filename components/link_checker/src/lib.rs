@@ -1,13 +1,15 @@
-use lazy_static::lazy_static;
-use reqwest::header::{HeaderMap, ACCEPT};
-use reqwest::{blocking::Client, StatusCode};
-
-use config::LinkChecker;
-
 use std::collections::HashMap;
 use std::result;
 use std::sync::{Arc, RwLock};
-use utils::links::has_anchor_id;
+
+use libs::once_cell::sync::Lazy;
+use libs::reqwest::header::{HeaderMap, ACCEPT};
+use libs::reqwest::{blocking::Client, StatusCode};
+
+use config::LinkChecker;
+use errors::anyhow;
+
+use utils::anchors::has_anchor_id;
 
 pub type Result = result::Result<StatusCode, String>;
 
@@ -25,10 +27,9 @@ pub fn message(res: &Result) -> String {
     }
 }
 
-lazy_static! {
-    // Keep history of link checks so a rebuild doesn't have to check again
-    static ref LINKS: Arc<RwLock<HashMap<String, Result>>> = Arc::new(RwLock::new(HashMap::new()));
-}
+// Keep history of link checks so a rebuild doesn't have to check again
+static LINKS: Lazy<Arc<RwLock<HashMap<String, Result>>>> =
+    Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
 
 pub fn check_url(url: &str, config: &LinkChecker) -> Result {
     {
@@ -42,6 +43,7 @@ pub fn check_url(url: &str, config: &LinkChecker) -> Result {
     headers.insert(ACCEPT, "text/html".parse().unwrap());
     headers.append(ACCEPT, "*/*".parse().unwrap());
 
+    // TODO: pass the client to the check_url, do not pass the config
     let client = Client::builder()
         .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
         .build()
@@ -106,11 +108,10 @@ fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
     let index = url.find('#').unwrap();
     let anchor = url.get(index + 1..).unwrap();
 
-
-    if has_anchor_id(&body, &anchor){
+    if has_anchor_id(&body, anchor) {
         Ok(())
     } else {
-        Err(errors::Error::from(format!("Anchor `#{}` not found on page", anchor)))
+        Err(anyhow!("Anchor `#{}` not found on page", anchor))
     }
 }
 
@@ -119,8 +120,8 @@ mod tests {
     use super::{
         check_page_for_anchor, check_url, has_anchor, is_valid, message, LinkChecker, LINKS,
     };
+    use libs::reqwest::StatusCode;
     use mockito::mock;
-    use reqwest::StatusCode;
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests

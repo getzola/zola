@@ -99,12 +99,12 @@ fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String
             Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
             _ => unified_path.to_slash_lossy(),
         };
-        Some((unified_path_str, Some(lang.to_str().unwrap().into())))
+        Some((unified_path_str.to_string(), Some(lang.to_str().unwrap().into())))
     } else {
         // No lang, return no_ext directly
         let mut no_ext_string = match no_ext.strip_prefix(base_dir) {
-            Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
-            _ => no_ext.to_slash_lossy(),
+            Ok(path_without_prefix) => path_without_prefix.to_slash_lossy().to_string(),
+            _ => no_ext.to_slash_lossy().to_string(),
         };
         no_ext_string.push_str(".md");
         Some((no_ext_string, None))
@@ -186,16 +186,16 @@ impl Translations {
         let library = site.library.clone();
         let library = library.read().unwrap();
         // WORKAROUND because site.content_path is private
-        let unified_path = if let Some(page) =
-            library.get_page(site.base_path.join("content").join(path))
-        {
-            page.file.canonical.clone()
-        } else if let Some(section) = library.get_section(site.base_path.join("content").join(path))
-        {
-            section.file.canonical.clone()
-        } else {
-            panic!("No such page or section: {}", path);
-        };
+        let unified_path =
+            if let Some(page) = library.pages.get(&site.base_path.join("content").join(path)) {
+                page.file.canonical.clone()
+            } else if let Some(section) =
+                library.sections.get(&site.base_path.join("content").join(path))
+            {
+                section.file.canonical.clone()
+            } else {
+                panic!("No such page or section: {}", path);
+            };
 
         let translations = library.translations.get(&unified_path);
         if translations.is_none() {
@@ -213,14 +213,14 @@ impl Translations {
                 // Are we looking for a section? (no file extension here)
                 if unified_path.ends_with("_index") {
                     //library.get_section_by_key(*key).file.relative.to_string()
-                    let section = library.get_section_by_key(*key);
+                    let section = &library.sections[key];
                     Translation {
                         lang: section.lang.clone(),
                         permalink: section.permalink.clone(),
                         path: section.file.path.to_str().unwrap().to_string(),
                     }
                 } else {
-                    let page = library.get_page_by_key(*key);
+                    let page = &library.pages[key];
                     Translation {
                         lang: page.lang.clone(),
                         permalink: page.permalink.clone(),

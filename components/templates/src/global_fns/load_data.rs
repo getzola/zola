@@ -5,18 +5,21 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
-use csv::Reader;
-use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE};
-use reqwest::{blocking::Client, header};
-use tera::{from_value, to_value, Error, Function as TeraFn, Map, Result, Value};
-use url::Url;
+use libs::csv::Reader;
+use libs::reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE};
+use libs::reqwest::{blocking::Client, header};
+use libs::tera::{
+    from_value, to_value, Error, Error as TeraError, Function as TeraFn, Map, Result, Value,
+};
+use libs::url::Url;
+use libs::{nom_bibtex, serde_json, serde_yaml, toml};
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, read_file};
 
 use crate::global_fns::helpers::search_for_file;
 
 static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
-    "`load_data`: requires EITHER a `path` or `url` argument";
+    "`load_data`: requires EITHER a `path`, `url`, or `literal` argument";
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash)]
 enum Method {
@@ -43,6 +46,8 @@ enum OutputFormat {
     Csv,
     Bibtex,
     Plain,
+    Xml,
+    Yaml,
 }
 
 impl FromStr for OutputFormat {
@@ -54,7 +59,9 @@ impl FromStr for OutputFormat {
             "csv" => Ok(OutputFormat::Csv),
             "json" => Ok(OutputFormat::Json),
             "bibtex" => Ok(OutputFormat::Bibtex),
+            "xml" => Ok(OutputFormat::Xml),
             "plain" => Ok(OutputFormat::Plain),
+            "yaml" => Ok(OutputFormat::Yaml),
             format => Err(format!("Unknown output format {}", format).into()),
         }
     }
@@ -67,7 +74,9 @@ impl OutputFormat {
             OutputFormat::Csv => "text/csv",
             OutputFormat::Toml => "application/toml",
             OutputFormat::Bibtex => "application/x-bibtex",
+            OutputFormat::Xml => "text/xml",
             OutputFormat::Plain => "text/plain",
+            OutputFormat::Yaml => "application/x-yaml",
         })
     }
 }
@@ -76,6 +85,7 @@ impl OutputFormat {
 enum DataSource {
     Url(Url),
     Path(PathBuf),
+    Literal(String),
 }
 
 impl DataSource {
@@ -87,11 +97,16 @@ impl DataSource {
     fn from_args(
         path_arg: Option<String>,
         url_arg: Option<String>,
+        literal_arg: Option<String>,
         base_path: &Path,
         theme: &Option<String>,
         output_path: &Path,
     ) -> Result<Option<Self>> {
-        if path_arg.is_some() && url_arg.is_some() {
+        // only one of `path`, `url`, or `literal` can be specified
+        if (path_arg.is_some() && url_arg.is_some())
+            || (path_arg.is_some() && literal_arg.is_some())
+            || (url_arg.is_some() && literal_arg.is_some())
+        {
             return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
         }
 
@@ -109,6 +124,10 @@ impl DataSource {
                 .map(DataSource::Url)
                 .map(Some)
                 .map_err(|e| format!("`load_data`: Failed to parse {} as url: {}", url, e).into());
+        }
+
+        if let Some(string_literal) = literal_arg {
+            return Ok(Some(DataSource::Literal(string_literal)));
         }
 
         Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
@@ -141,6 +160,8 @@ impl Hash for DataSource {
                 path.hash(state);
                 get_file_time(path).expect("get file time").hash(state);
             }
+            // TODO: double check expectations here
+            DataSource::Literal(string_literal) => string_literal.hash(state),
         };
     }
 }
@@ -190,7 +211,7 @@ fn add_headers_from_args(header_args: Option<Vec<String>>) -> Result<HeaderMap> 
 }
 
 /// A Tera function to load data from a file or from a URL
-/// Currently the supported formats are json, toml, csv, bibtex and plain text
+/// Currently the supported formats are json, toml, csv, yaml, bibtex and plain text
 #[derive(Debug)]
 pub struct LoadData {
     base_path: PathBuf,
@@ -217,6 +238,8 @@ impl TeraFn for LoadData {
         // Either a local path or a URL
         let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let literal_arg =
+            optional_arg!(String, args.get("literal"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
         // Optional general params
         let format_arg = optional_arg!(
             String,
@@ -261,6 +284,7 @@ impl TeraFn for LoadData {
             DataSource::from_args(
                 path_arg.clone(),
                 url_arg,
+                literal_arg,
                 &self.base_path,
                 &self.theme,
                 &self.output_path,
@@ -358,6 +382,7 @@ impl TeraFn for LoadData {
                     }
                 }
             }
+            DataSource::Literal(string_literal) => Ok(string_literal),
         }?;
 
         let result_value: Result<Value> = match file_format {
@@ -365,6 +390,8 @@ impl TeraFn for LoadData {
             OutputFormat::Csv => load_csv(data),
             OutputFormat::Json => load_json(data),
             OutputFormat::Bibtex => load_bibtex(data),
+            OutputFormat::Xml => load_xml(data),
+            OutputFormat::Yaml => load_yaml(data),
             OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
         };
 
@@ -381,6 +408,13 @@ fn load_json(json_data: String) -> Result<Value> {
     let json_content: Value =
         serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
     Ok(json_content)
+}
+
+/// Parse a YAML string and convert it to a Tera Value
+fn load_yaml(yaml_data: String) -> Result<Value> {
+    let yaml_content: Value =
+        serde_yaml::from_str(yaml_data.as_str()).map_err(|e| format!("{:?}", e))?;
+    Ok(yaml_content)
 }
 
 /// Parse a TOML string and convert it to a Tera Value
@@ -476,7 +510,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
             let record = match result {
                 Ok(r) => r,
                 Err(e) => {
-                    return Err(tera::Error::chain(
+                    return Err(TeraError::chain(
                         String::from("Error encountered when parsing csv records"),
                         e,
                     ));
@@ -499,6 +533,42 @@ fn load_csv(csv_data: String) -> Result<Value> {
     to_value(csv_value).map_err(|err| err.into())
 }
 
+/// Parse an XML string and convert it to a Tera Value
+///
+/// An example XML file `example.xml` could be:
+/// ```xml
+/// <root>
+///   <headers>Number</headers>
+///   <headers>Title</headers>
+///   <records>
+///     <item>1</item>
+///     <item>Gutenberg</item>
+///   </records>
+///   <records>
+///     <item>2</item>
+///     <item>Printing</item>
+///   </records>
+/// </root>
+/// ```
+/// The json value output would be:
+/// ```json
+/// {   
+///     "root": {
+///         "headers": ["Number", "Title"],
+///         "records": [
+///                         ["1", "Gutenberg"],
+///                         ["2", "Printing"]
+///                    ]
+///     }
+/// }
+/// ```
+fn load_xml(xml_data: String) -> Result<Value> {
+    let xml_content: Value =
+        libs::quickxml_to_serde::xml_string_to_json(xml_data, &Default::default())
+            .map_err(|e| format!("{:?}", e))?;
+    Ok(xml_content)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{DataSource, LoadData, OutputFormat};
@@ -507,11 +577,11 @@ mod tests {
     use std::path::PathBuf;
 
     use crate::global_fns::load_data::Method;
+    use libs::serde_json::json;
+    use libs::tera::{self, to_value, Function};
     use mockito::mock;
-    use serde_json::json;
     use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
-    use tera::{to_value, Function};
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -1005,6 +1075,46 @@ mod tests {
     }
 
     #[test]
+    fn can_load_xml() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.xml").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "root": {
+                    "key": "value",
+                    "array": [1, 2, 3],
+                    "subpackage": {
+                        "subkey": 5
+                    }
+                }
+            })
+        )
+    }
+
+    #[test]
+    fn can_load_yaml() {
+        let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("test.yaml").unwrap());
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            })
+        )
+    }
+
+    #[test]
     fn is_load_remote_data_using_post_method_with_different_body_not_cached() {
         let _mjson = mock("POST", "/kr1zdgbm4y3")
             .with_header("content-type", "application/json")
@@ -1152,5 +1262,97 @@ mod tests {
         assert!(result.is_err());
 
         _mjson.assert();
+    }
+
+    #[test]
+    fn can_load_plain_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let plain_str = "abc 123";
+        args.insert("literal".to_string(), to_value(plain_str).unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(result, plain_str);
+    }
+
+    #[test]
+    fn can_load_json_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let json_str = r#"{
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            }"#;
+        args.insert("literal".to_string(), to_value(json_str).unwrap());
+        args.insert("format".to_string(), to_value("json").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "key": "value",
+                "array": [1, 2, 3],
+                "subpackage": {
+                    "subkey": 5
+                }
+            })
+        );
+    }
+
+    #[test]
+    fn can_load_toml_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let toml_str = r#"
+        [category]
+        key = "value"
+        date = 1979-05-27T07:32:00Z
+        lt1 = 07:32:00
+        "#;
+        args.insert("literal".to_string(), to_value(toml_str).unwrap());
+        args.insert("format".to_string(), to_value("toml").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        // TOML does not load in order
+        assert_eq!(
+            result,
+            json!({
+                "category": {
+                    "date": "1979-05-27T07:32:00Z",
+                    "lt1": "07:32:00",
+                    "key": "value"
+                },
+            })
+        );
+    }
+
+    #[test]
+    fn can_load_csv_literal() {
+        let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
+        let mut args = HashMap::new();
+        let csv_str = r#"Number,Title
+1,Gutenberg
+2,Printing"#;
+        args.insert("literal".to_string(), to_value(csv_str).unwrap());
+        args.insert("format".to_string(), to_value("csv").unwrap());
+
+        let result = static_fn.call(&args.clone()).unwrap();
+
+        assert_eq!(
+            result,
+            json!({
+                "headers": ["Number", "Title"],
+                "records": [
+                    ["1", "Gutenberg"],
+                    ["2", "Printing"]
+                ],
+            })
+        )
     }
 }

@@ -1,24 +1,16 @@
 [package]
 name = "imageproc"
 version = "0.1.0"
-authors = ["Vojtěch Král <vojtech@kral.hk>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-lazy_static = "1"
-regex = "1.0"
-tera = "1"
-image = "0.23"
-rayon = "1"
-webp = "0.1.1"
 serde = { version = "1", features = ["derive"] }
-svg_metadata = "0.4.1"
+kamadak-exif = "0.5.4"
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
 config = { path = "../config" }
+libs = { path = "../libs" }
 
 [dev-dependencies]
-# TODO: prune
-serde_json = "1"
-site = { path = "../site" }
+tempfile = "3"

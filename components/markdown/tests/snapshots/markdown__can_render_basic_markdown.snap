@@ -1,0 +1,13 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+---
+<p>Hello world</p>
+<h1 id="hello-world">Hello world</h1>
+<p>Hello <em>world</em>
+Hello
+world
+Non rendered emoji :smile:
+<a href="image.jpg">a link</a>
+<img src="https://www.getzola.org/test/image.jpg" alt="alt text" /></p>
+<h1>some html</h1>

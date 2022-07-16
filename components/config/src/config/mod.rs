@@ -8,13 +8,14 @@ pub mod taxonomies;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use globset::{Glob, GlobSet, GlobSetBuilder};
-use serde_derive::{Deserialize, Serialize};
-use toml::Value as Toml;
+use libs::globset::{Glob, GlobSet, GlobSetBuilder};
+use libs::toml::Value as Toml;
+use serde::{Deserialize, Serialize};
 
 use crate::theme::Theme;
-use errors::{bail, Error, Result};
+use errors::{anyhow, bail, Result};
 use utils::fs::read_file;
+use utils::slugs::slugify_paths;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
@@ -55,8 +56,7 @@ pub struct Config {
     pub feed_filename: String,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
-
-    pub taxonomies: Vec<taxonomies::Taxonomy>,
+    pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
@@ -99,7 +99,7 @@ pub struct SerializedConfig<'a> {
     default_language: &'a str,
     generate_feed: bool,
     feed_filename: &'a str,
-    taxonomies: &'a [taxonomies::Taxonomy],
+    taxonomies: &'a [taxonomies::TaxonomyConfig],
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
 }
@@ -109,7 +109,7 @@ impl Config {
     /// Parses a string containing TOML to our Config struct
     /// Any extra parameter will end up in the extra field
     pub fn parse(content: &str) -> Result<Config> {
-        let mut config: Config = match toml::from_str(content) {
+        let mut config: Config = match libs::toml::from_str(content) {
             Ok(c) => c,
             Err(e) => bail!(e),
         };
@@ -124,6 +124,7 @@ impl Config {
         }
 
         config.add_default_language();
+        config.slugify_taxonomies();
 
         if !config.ignored_content.is_empty() {
             // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
@@ -149,24 +150,32 @@ impl Config {
     pub fn default_for_test() -> Self {
         let mut config = Config::default();
         config.add_default_language();
+        config.slugify_taxonomies();
         config
     }
 
     /// Parses a config file from the given path
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Config> {
         let path = path.as_ref();
-        let content =
-            read_file(path).map_err(|e| errors::Error::chain("Failed to load config", e))?;
+        let content = read_file(path)?;
 
         let mut config = Config::parse(&content)?;
         let config_dir = path
             .parent()
-            .ok_or_else(|| Error::msg("Failed to find directory containing the config file."))?;
+            .ok_or_else(|| anyhow!("Failed to find directory containing the config file."))?;
 
         // this is the step at which missing extra syntax and highlighting themes are raised as errors
         config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
 
         Ok(config)
+    }
+
+    pub fn slugify_taxonomies(&mut self) {
+        for (_, lang_options) in self.languages.iter_mut() {
+            for tax_def in lang_options.taxonomies.iter_mut() {
+                tax_def.slug = slugify_paths(&tax_def.name, self.slugify.taxonomies);
+            }
+        }
     }
 
     /// Makes a url, taking into account that the base url might have a trailing slash
@@ -247,6 +256,10 @@ impl Config {
         others
     }
 
+    pub fn other_languages_codes(&self) -> Vec<&str> {
+        self.languages.keys().filter(|k| *k != &self.default_language).map(|k| k.as_str()).collect()
+    }
+
     /// Is this site using i18n?
     pub fn is_multilingual(&self) -> bool {
         !self.other_languages().is_empty()
@@ -272,14 +285,19 @@ impl Config {
                 .translations
                 .get(key)
                 .ok_or_else(|| {
-                    Error::msg(format!(
-                        "Translation key '{}' for language '{}' is missing",
-                        key, lang
-                    ))
+                    anyhow!("Translation key '{}' for language '{}' is missing", key, lang)
                 })
                 .map(|term| term.to_string())
         } else {
             bail!("Language '{}' not found.", lang)
+        }
+    }
+
+    pub fn has_taxonomy(&self, name: &str, lang: &str) -> bool {
+        if let Some(lang_options) = self.languages.get(lang) {
+            lang_options.taxonomies.iter().any(|t| t.name == name)
+        } else {
+            false
         }
     }
 
@@ -325,7 +343,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
         }
         _ => {
             // Trying to merge a table with something else
-            Err(Error::msg(&format!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from)))
+            Err(anyhow!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from))
         }
     }
 }
@@ -561,21 +579,28 @@ ignored_content = []
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
-ignored_content = ["*.{graphml,iso}", "*.py?"]
+ignored_content = ["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]
         "#;
 
         let config = Config::parse(config_str).unwrap();
         let v = config.ignored_content;
-        assert_eq!(v, vec!["*.{graphml,iso}", "*.py?"]);
+        assert_eq!(v, vec!["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]);
 
         let g = config.ignored_content_globset.unwrap();
-        assert_eq!(g.len(), 2);
+        assert_eq!(g.len(), 3);
         assert!(g.is_match("foo.graphml"));
+        assert!(g.is_match("foo/bar/foo.graphml"));
         assert!(g.is_match("foo.iso"));
         assert!(!g.is_match("foo.png"));
         assert!(g.is_match("foo.py2"));
         assert!(g.is_match("foo.py3"));
         assert!(!g.is_match("foo.py"));
+        assert!(g.is_match("foo/bar/target"));
+        assert!(g.is_match("foo/bar/baz/temp_folder"));
+        assert!(g.is_match("foo/bar/baz/temp_folder/target"));
+        assert!(g.is_match("temp_folder"));
+        assert!(g.is_match("my/isos/foo.iso"));
+        assert!(g.is_match("content/poetry/zen.py2"));
     }
 
     #[test]
@@ -652,7 +677,7 @@ bar = "baz"
         "#;
         let theme = Theme::parse(theme_str).unwrap();
         // We expect an error here
-        assert!(!config.add_theme_extra(&theme).is_ok());
+        assert!(config.add_theme_extra(&theme).is_err());
     }
 
     #[test]
@@ -689,7 +714,7 @@ highlight_theme = "asdf"
     "#;
 
         let config = Config::parse(config);
-        assert_eq!(config.is_err(), true);
+        assert!(config.is_err());
     }
 
     #[test]
@@ -703,7 +728,7 @@ highlight_themes_css = [
     "#;
 
         let config = Config::parse(config);
-        assert_eq!(config.is_err(), true);
+        assert!(config.is_err());
     }
 
     // https://github.com/getzola/zola/issues/1687

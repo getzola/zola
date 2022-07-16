@@ -1,102 +1,86 @@
-use clap::{crate_authors, crate_description, crate_version, App, AppSettings, Arg, SubCommand};
+use std::path::PathBuf;
 
-pub fn build_cli() -> App<'static, 'static> {
-    App::new("zola")
-        .version(crate_version!())
-        .author(crate_authors!())
-        .about(crate_description!())
-        .setting(AppSettings::SubcommandRequiredElseHelp)
-        .arg(
-            Arg::with_name("root")
-                .short("r")
-                .long("root")
-                .takes_value(true)
-                .default_value(".")
-                .help("Directory to use as root of project")
-        )
-        .arg(
-            Arg::with_name("config")
-                .short("c")
-                .long("config")
-                .takes_value(true)
-                .help("Path to a config file other than config.toml in the root of project")
-        )
-        .subcommands(vec![
-            SubCommand::with_name("init")
-                .about("Create a new Zola project")
-                .args(&[
-                    Arg::with_name("name")
-                        .default_value(".")
-                        .help("Name of the project. Will create a new directory with that name in the current directory"),
-                    Arg::with_name("force")
-                        .short("f")
-                        .long("force")
-                        .takes_value(false)
-                        .help("Force creation of project even if directory is non-empty")
-                ]),
-            SubCommand::with_name("build")
-                .about("Deletes the output directory if there is one and builds the site")
-                .args(&[
-                    Arg::with_name("base_url")
-                        .short("u")
-                        .long("base-url")
-                        .takes_value(true)
-                        .help("Force the base URL to be that value (default to the one in config.toml)"),
-                    Arg::with_name("output_dir")
-                        .short("o")
-                        .long("output-dir")
-                        .takes_value(true)
-                        .help("Outputs the generated site in the given path (by default 'public' dir in project root)"),
-                    Arg::with_name("drafts")
-                        .long("drafts")
-                        .takes_value(false)
-                        .help("Include drafts when loading the site"),
-                ]),
-            SubCommand::with_name("serve")
-                .about("Serve the site. Rebuild and reload on change automatically")
-                .args(&[
-                    Arg::with_name("interface")
-                        .short("i")
-                        .long("interface")
-                        .takes_value(true)
-                        .help("Interface to bind on (default: 127.0.0.1)"),
-                    Arg::with_name("port")
-                        .short("p")
-                        .long("port")
-                        .takes_value(true)
-                        .help("Which port to use (default: 1111)"),
-                    Arg::with_name("output_dir")
-                        .short("o")
-                        .long("output-dir")
-                        .takes_value(true)
-                        .help("Outputs assets of the generated site in the given path (by default 'public' dir in project root). HTML/XML will be stored in memory."),
-                    Arg::with_name("base_url")
-                        .short("u")
-                        .long("base-url")
-                        .takes_value(true)
-                        .help("Changes the base_url (default: 127.0.0.1)"),
-                    Arg::with_name("drafts")
-                        .long("drafts")
-                        .takes_value(false)
-                        .help("Include drafts when loading the site"),
-                    Arg::with_name("open")
-                        .short("O")
-                        .long("open")
-                        .takes_value(false)
-                        .help("Open site in the default browser"),
-                    Arg::with_name("fast")
-                        .short("f")
-                        .long("fast")
-                        .takes_value(false)
-                        .help("Only rebuild the minimum on change - useful when working on a specific page/section"),
-                ]),
-            SubCommand::with_name("check")
-                .about("Try building the project without rendering it. Checks links")
-                .args(&[
-                    Arg::with_name("drafts")
-                        .long("drafts")
-                        .takes_value(false)
-                        .help("Include drafts when loading the site"),
-                ])
-        ])
+use clap::{Parser, Subcommand};
+
+#[derive(Parser)]
+#[clap(version, author, about)]
+pub struct Cli {
+    /// Directory to use as root of project
+    #[clap(short = 'r', long, default_value = ".")]
+    pub root: PathBuf,
+
+    /// Path to a config file other than config.toml in the root of project
+    #[clap(short = 'c', long, default_value = "config.toml")]
+    pub config: PathBuf,
+
+    #[clap(subcommand)]
+    pub command: Command,
+}
+
+#[derive(Subcommand)]
+pub enum Command {
+    /// Create a new Zola project
+    Init {
+        /// Name of the project. Will create a new directory with that name in the current directory
+        #[clap(default_value = ".")]
+        name: String,
+
+        /// Force creation of project even if directory is non-empty
+        #[clap(short = 'f', long)]
+        force: bool,
+    },
+
+    /// Deletes the output directory if there is one and builds the site
+    Build {
+        /// Force the base URL to be that value (defaults to the one in config.toml)
+        #[clap(short = 'u', long)]
+        base_url: Option<String>,
+
+        /// Outputs the generated site in the given path (by default 'public' dir in project root)
+        #[clap(short = 'o', long)]
+        output_dir: Option<PathBuf>,
+
+        /// Include drafts when loading the site
+        #[clap(long)]
+        drafts: bool,
+    },
+
+    /// Serve the site. Rebuild and reload on change automatically
+    Serve {
+        /// Interface to bind on
+        #[clap(short = 'i', long, default_value = "127.0.0.1")]
+        interface: String,
+
+        /// Which port to use
+        #[clap(short = 'p', long, default_value_t = 1111)]
+        port: u16,
+
+        /// Outputs assets of the generated site in the given path (by default 'public' dir in project root).
+        /// HTML/XML will be stored in memory.
+        #[clap(short = 'o', long)]
+        output_dir: Option<PathBuf>,
+
+        /// Changes the base_url
+        #[clap(short = 'u', long, default_value = "127.0.0.1")]
+        base_url: String,
+
+        /// Include drafts when loading the site
+        #[clap(long)]
+        drafts: bool,
+
+        /// Open site in the default browser
+        #[clap(short = 'O', long)]
+        open: bool,
+
+        /// Only rebuild the minimum on change - useful when working on a specific page/section
+        #[clap(short = 'f', long)]
+        fast: bool,
+    },
+
+    /// Try to build the project without rendering it. Checks links
+    Check {
+        /// Include drafts when loading the site
+        #[clap(long)]
+        drafts: bool,
+    },
 }

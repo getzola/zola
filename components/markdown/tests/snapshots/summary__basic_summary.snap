@@ -1,0 +1,13 @@
+---
+source: components/rendering/tests/summary.rs
+assertion_line: 24
+expression: body
+
+---
+<p>Hello world!</p>
+<h1 id="introduction">Introduction</h1>
+<ul>
+<li>first</li>
+<li>second</li>
+</ul>
+

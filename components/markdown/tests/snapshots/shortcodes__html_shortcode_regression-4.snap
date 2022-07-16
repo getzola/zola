@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 293
+expression: body
+
+---
+<p><span>2</span>\n<strong>The Book</strong> 2</p>
+

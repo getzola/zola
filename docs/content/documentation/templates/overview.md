@@ -258,7 +258,10 @@ The method returns a map containing `width`, `height` and `format` (the lowercas
 ```
 
 ### `load_data`
-Loads data from a file or URL. Supported file types include *toml*, *json*, *csv* and *bibtex* and only supports UTF-8 encoding.
+
+Loads data from a file, URL, or string literal. Supported file types include *toml*, *json*, *csv*, *bibtex*, *yaml* 
+and *xml* and only supports UTF-8 encoding.
+
 Any other file type will be loaded as plain text.
 
 The `path` argument specifies the path to a local data file, according to the [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic).
@@ -273,6 +276,15 @@ Alternatively, the `url` argument specifies the location of a remote URL to load
 {% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris") %}
 ```
 
+Alternatively, the `literal` argument specifies an object literal. Note: if the `format` argument is not specified, then plain text will be what is assumed.
+
+```jinja2
+{% set data = load_data(literal='{"name": "bob"}', format="json") %}
+{{ data["name"] }}
+```
+
+*Note: the `required` parameter has no effect when used in combination with the `literal` argument.*
+
 The optional `required` boolean argument can be set to false so that missing data (HTTP error or local file not found) does not produce an error, but returns a null value instead. However, permission issues with a local file and invalid data that could not be parsed to the requested data format will still produce an error even with `required=false`.
 
 The snippet below outputs the HTML from a Wikipedia page, or "No data found" if the page was not reachable, or did not return a successful HTTP code:
@@ -282,18 +294,18 @@ The snippet below outputs the HTML from a Wikipedia page, or "No data found" if 
 {% if data %}{{ data | safe }}{% else %}No data found{% endif %}
 ```
 
-The optional `format` argument allows you to specify and override which data type is contained
-within the specified file or URL. Valid entries are `toml`, `json`, `csv`, `bibtex`
-or `plain`. If the `format` argument isn't specified, then the path extension is used.
+The optional `format` argument allows you to specify and override which data type is contained within the specified file or URL.
+Valid entries are `toml`, `json`, `csv`, `bibtex`, `yaml`, `xml` or `plain`. If the `format` argument isn't specified, then the 
+path extension is used. In the case of a literal, `plain` is assumed if `format` is unspecified.
 
 
 ```jinja2
 {% set data = load_data(path="content/blog/story/data.txt", format="json") %}
 ```
 
-Use the `plain` format for when your file has a toml/json/csv extension but you want to load it as plain text.
+Use the `plain` format for when your file has a supported extension but you want to load it as plain text.
 
-For *toml* and *json*, the data is loaded into a structure matching the original data file;
+For *toml*, *json*, *yaml* and *xml*, the data is loaded into a structure matching the original data file;
 however, for *csv* there is no native notion of such a structure. Instead, the data is separated
 into a data structure containing *headers* and *records*. See the example below to see
 how this works.

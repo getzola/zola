@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use tera::{Context, Tera};
+use libs::tera::{Context, Tera};
 
 use errors::{bail, Result};
 
@@ -78,7 +78,7 @@ pub fn render_template(
     theme: &Option<String>,
 ) -> Result<String> {
     if let Some(template) = check_template_fallbacks(name, tera, theme) {
-        return tera.render(&template, &context).map_err(std::convert::Into::into);
+        return tera.render(template, &context).map_err(std::convert::Into::into);
     }
 
     // maybe it's a default one?
@@ -150,7 +150,7 @@ mod tests {
     use crate::templates::check_template_fallbacks;
 
     use super::rewrite_theme_paths;
-    use tera::Tera;
+    use libs::tera::Tera;
 
     #[test]
     fn can_rewrite_all_paths_of_theme() {
@@ -178,8 +178,8 @@ mod tests {
     #[test]
     fn template_fallback_is_successful() {
         let mut tera = Tera::parse("test-templates/*.html").unwrap();
-        tera.add_raw_template(&"hyde/templates/index.html", "Hello").unwrap();
-        tera.add_raw_template(&"hyde/templates/theme-only.html", "Hello").unwrap();
+        tera.add_raw_template("hyde/templates/index.html", "Hello").unwrap();
+        tera.add_raw_template("hyde/templates/theme-only.html", "Hello").unwrap();
 
         // Check finding existing template
         assert_eq!(check_template_fallbacks("index.html", &tera, &None), Some("index.html"));

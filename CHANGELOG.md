@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.16.0 (unreleased)
+
+### Breaking
+
+- Switch to pulldown-cmark anchor system rather than ours, some (very niche) edge cases are not supported anymore, you can
+also specify classes on headers now
+- Now outputs empty taxonomies instead of ignoring them
+- Unify all pages sorting variable names in templates to `lower`/`higher` in order to make it easy to re-use templates and it
+was becoming hard to come up with names to be honest
+
+### Other
+- Fix markup for fenced code with linenos
+- Make `ignored_content` work with nested paths and directories
+- `zola serve/build` can now run from anywhere in a zola directory
+- Add XML support to `load_data`
+- Add YAML support to `load_data`
+- `skip_prefixes` is now checked before parsing external link URLs
+- Add `render` attribute to taxonomies configuration in `config.toml`, for when you don't want to render
+any pages related to that taxonomy
+- Serialize `transparent` field from front-matter of sections
+- Use Zola Tera instance for markdown filter: this means you have access to the same Tera functions as in shortcodes
+- Ignore sections with `render=false` when looking for path collisions
+- Add support for backlinks
+- Add a warning mode for internal/external link checking in case you don't want zola to stop the build on invalid links
+- Always follow symlinks when loading the site/assets
+- Add `rel="alternate"` to Atom post links
+- Fix taxonomy `current_path`
+- Fix feed location for taxonomies not in the default language
+- Add `title_bytes` sorting method
+- Add `insert_anchor = "heading"`, which allows users to use the entire heading as a link
+- Apply orientation transformation based on EXIF data
+- Fix generated homepages not having their `translations` filled properly
+
 ## 0.15.3 (2022-01-23)
 
 - Fix shortcodes not being rendered in code blocks

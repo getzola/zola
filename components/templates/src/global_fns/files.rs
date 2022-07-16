@@ -3,10 +3,11 @@ use std::path::PathBuf;
 use std::{fs, io, result};
 
 use crate::global_fns::helpers::search_for_file;
-use base64::encode as encode_b64;
 use config::Config;
-use sha2::{digest, Sha256, Sha384, Sha512};
-use tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use libs::base64::encode as encode_b64;
+use libs::sha2::{digest, Sha256, Sha384, Sha512};
+use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use libs::url;
 use utils::site::resolve_internal_link;
 
 fn compute_file_hash<D: digest::Digest>(
@@ -104,8 +105,10 @@ impl TeraFn for GetUrl {
             let mut segments = vec![];
 
             if lang != self.config.default_language {
-                segments.push(lang);
-            };
+                if path.is_empty() || !path[1..].starts_with(&lang) {
+                    segments.push(lang);
+                }
+            }
 
             segments.push(path);
 
@@ -233,8 +236,8 @@ mod tests {
     use std::fs::create_dir;
     use std::path::PathBuf;
 
+    use libs::tera::{to_value, Function};
     use tempfile::{tempdir, TempDir};
-    use tera::{to_value, Function};
 
     use config::Config;
     use utils::fs::create_file;
@@ -365,7 +368,12 @@ title = "A title"
         );
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            permalinks.clone(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
@@ -395,6 +403,29 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/"
+        );
+    }
+
+    #[test]
+    fn does_not_duplicate_lang() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "a_section/a_page.md".to_string(),
+            "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
+        );
+        permalinks.insert(
+            "a_section/a_page.en.md".to_string(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
+        );
+        let dir = create_temp_dir();
+        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("/en/a_section/a_page/").unwrap());
+        args.insert("lang".to_string(), to_value("en").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/en/a_section/a_page"
         );
     }
 

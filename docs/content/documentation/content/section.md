@@ -48,7 +48,7 @@ description = ""
 # A draft section is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
 draft = false
 
-# Used to sort pages by "date", "title", "weight", or "none". See below for more information.
+# Used to sort pages by "date", "update_date", "title", "title_bytes", "weight", or "none". See below for more information.
 sort_by = "none"
 
 # Used by the parent section to order its subsections.
@@ -79,7 +79,8 @@ paginate_reversed = false
 # This determines whether to insert a link for each header like the ones you can see on this site if you hover over
 # a header.
 # The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
-# This value can be "left", "right" or "none".
+# This value can be "left", "right", "heading" or "none".
+# "heading" means the full heading becomes the text of the anchor.
 insert_anchor_links = "none"
 
 # If set to "true", the section pages will be in the search index. This is only used if
@@ -142,8 +143,8 @@ create a list of links to the posts, a simple template might look like this:
 
 This would iterate over the posts in the order specified
 by the `sort_by` variable set in the `_index.md` page for the corresponding
-section.  The `sort_by` variable can be given one of three values: `date`,
-`title`, `weight` or `none`.  If `sort_by` is not set, the pages will be
+section.  The `sort_by` variable can be given a few values: `date`, `update_date`
+`title`, `title_bytes`, `weight` or `none`.  If `sort_by` is not set, the pages will be
 sorted in the `none` order, which is not intended for sorted content.
 
 Any page that is missing the data it needs to be sorted will be ignored and
@@ -159,28 +160,37 @@ The `sort_by` front-matter variable can have the following values:
 
 ### `date`
 This will sort all pages by their `date` field, from the most recent (at the
-top of the list) to the oldest (at the bottom of the list).  Each page will
-get `page.earlier` and `page.later` variables that contain the pages with
+top of the list) to the oldest (at the bottom of the list). Each page will
+get `page.lower` and `page.higher` variables that contain the pages with
 earlier and later dates, respectively.
+
+### `update_date`
+Same as `date` except it will take into account any `updated` date for the pages.
 
 ### `title`
 This will sort all pages by their `title` field in natural lexical order, as
 defined  by `natural_lexical_cmp` in the [lexical-sort] crate. Each page will
-get `page.title_prev` and `page.title_next` variables that  contain the pages
+get `page.lower` and `page.higher` variables that contain the pages
 with  previous and next titles, respectively.
 
 For example, here is a natural lexical ordering: "bachata, BART, bolero,
 μ-kernel, meter, Métro, Track-2, Track-3, Track-13, underground". Notice how
-special characters and numbers are sorted reasonably. This is better than
-the standard sorting: "BART, Métro, Track-13, Track-2, Track-3, bachata,
-bolero, meter, underground, μ-kernel".
+special characters and numbers are sorted reasonably.
 
 [lexical-sort]: https://docs.rs/lexical-sort
+
+### `title_bytes`
+Same as `title` except it uses the bytes directly to sort.
+Natural sorting treats non-ascii
+characters like their closest ascii character. This can lead to unexpected
+results for languages with different character sets. The last three characters
+of the Swedish alphabet, åäö, for example would be considered by the natural
+sort as aao. In that case the standard byte-order sort may be more suitable.
 
 ### `weight`
 This will be sort all pages by their `weight` field, from lightest weight
 (at the top of the list) to heaviest (at the bottom of the list).  Each
-page gets `page.lighter` and `page.heavier` variables that contain the
+page gets `page.lower` and `page.higher` variables that contain the
 pages with lighter and heavier weights, respectively.
 
 ### Reversed sorting
@@ -190,11 +200,7 @@ pages sorted by weight will be sorted from lightest (at the top) to heaviest
 (at the bottom); pages sorted by date will be sorted from oldest (at the top)
 to newest (at the bottom).
 
-`reverse` has no effect on:
-
-* `page.later` / `page.earlier`,
-* `page.title_prev` / `page.title_next`, or
-* `page.heavier` / `page.lighter`.
+`reverse` has no effect on `page.lower` / `page.higher`.
 
 If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
 

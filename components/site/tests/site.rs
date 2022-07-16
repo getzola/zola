@@ -2,10 +2,12 @@ mod common;
 
 use std::collections::HashMap;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use common::{build_site, build_site_with_setup};
-use config::Taxonomy;
+use config::TaxonomyConfig;
+use content::Page;
+use libs::ahash::AHashMap;
 use site::sitemap;
 use site::Site;
 
@@ -19,71 +21,67 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages().len(), 32);
+    assert_eq!(library.pages.len(), 33);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
-    let url_post = library.get_page(&posts_path.join("fixed-url.md")).unwrap();
+    let url_post = library.pages.get(&posts_path.join("fixed-url.md")).unwrap();
     assert_eq!(url_post.path, "/a-fixed-url/");
 
     // Make sure the article in a folder with only asset doesn't get counted as a section
     let asset_folder_post =
-        library.get_page(&posts_path.join("with-assets").join("index.md")).unwrap();
+        library.pages.get(&posts_path.join("with-assets").join("index.md")).unwrap();
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(library.sections().len(), 12);
+    assert_eq!(library.sections.len(), 12);
 
     // And that the sections are correct
-    let index_section = library.get_section(&path.join("content").join("_index.md")).unwrap();
+    let index_section = library.sections.get(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 5);
     assert_eq!(index_section.pages.len(), 3);
     assert!(index_section.ancestors.is_empty());
 
-    let posts_section = library.get_section(&posts_path.join("_index.md")).unwrap();
+    let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
     assert_eq!(posts_section.pages.len(), 9); // 10 with 1 draft == 9
-    assert_eq!(
-        posts_section.ancestors,
-        vec![*library.get_section_key(&index_section.file.path).unwrap()]
-    );
+    assert_eq!(posts_section.ancestors, vec![index_section.file.relative.clone()]);
 
     // Make sure we remove all the pwd + content from the sections
-    let basic = library.get_page(&posts_path.join("simple.md")).unwrap();
+    let basic = library.pages.get(&posts_path.join("simple.md")).unwrap();
     assert_eq!(basic.file.components, vec!["posts".to_string()]);
     assert_eq!(
         basic.ancestors,
-        vec![
-            *library.get_section_key(&index_section.file.path).unwrap(),
-            *library.get_section_key(&posts_section.file.path).unwrap(),
-        ]
+        vec![index_section.file.relative.clone(), posts_section.file.relative.clone(),]
     );
 
     let tutorials_section =
-        library.get_section(&posts_path.join("tutorials").join("_index.md")).unwrap();
+        library.sections.get(&posts_path.join("tutorials").join("_index.md")).unwrap();
     assert_eq!(tutorials_section.subsections.len(), 2);
-    let sub1 = library.get_section_by_key(tutorials_section.subsections[0]);
-    let sub2 = library.get_section_by_key(tutorials_section.subsections[1]);
+    let sub1 = &library.sections[&tutorials_section.subsections[0]];
+    let sub2 = &library.sections[&tutorials_section.subsections[1]];
     assert_eq!(sub1.clone().meta.title.unwrap(), "Programming");
     assert_eq!(sub2.clone().meta.title.unwrap(), "DevOps");
     assert_eq!(tutorials_section.pages.len(), 0);
 
     let devops_section = library
-        .get_section(&posts_path.join("tutorials").join("devops").join("_index.md"))
+        .sections
+        .get(&posts_path.join("tutorials").join("devops").join("_index.md"))
         .unwrap();
     assert_eq!(devops_section.subsections.len(), 0);
     assert_eq!(devops_section.pages.len(), 2);
     assert_eq!(
         devops_section.ancestors,
         vec![
-            *library.get_section_key(&index_section.file.path).unwrap(),
-            *library.get_section_key(&posts_section.file.path).unwrap(),
-            *library.get_section_key(&tutorials_section.file.path).unwrap(),
+            index_section.file.relative.clone(),
+            posts_section.file.relative.clone(),
+            tutorials_section.file.relative.clone(),
         ]
     );
 
     let prog_section = library
-        .get_section(&posts_path.join("tutorials").join("programming").join("_index.md"))
+        .sections
+        .get(&posts_path.join("tutorials").join("programming").join("_index.md"))
         .unwrap();
     assert_eq!(prog_section.subsections.len(), 0);
     assert_eq!(prog_section.pages.len(), 2);
@@ -100,6 +98,21 @@ fn can_parse_site() {
         .find(|e| e.permalink.ends_with("tutorials/programming/"))
         .expect("expected to find programming section in sitemap");
     assert_eq!(Some(&prog_section.meta.extra), sitemap_entry.extra);
+}
+
+#[test]
+fn errors_on_unknown_taxonomies() {
+    let (mut site, _, _) = build_site("test_site");
+    let mut page = Page::default();
+    page.file.path = PathBuf::from("unknown/taxo.md");
+    page.meta.taxonomies.insert("wrong".to_string(), vec![]);
+    let res = site.add_page(page, false);
+    assert!(res.is_err());
+    let err = res.unwrap_err();
+    assert_eq!(
+        err.to_string(),
+        "Page `unknown/taxo.md` has taxonomy `wrong` which is not defined in config.toml"
+    );
 }
 
 #[test]
@@ -259,7 +272,7 @@ fn can_build_site_with_live_reload_and_drafts() {
 
     // drafted sections are included
     let library = site.library.read().unwrap();
-    assert_eq!(library.sections().len(), 14);
+    assert_eq!(library.sections.len(), 14);
 
     assert!(file_exists!(public, "secret_section/index.html"));
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
@@ -272,8 +285,11 @@ fn can_build_site_with_taxonomies() {
     let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.load().unwrap();
         {
-            let mut library = site.library.write().unwrap();
-            for (i, (_, page)) in library.pages_mut().iter_mut().enumerate() {
+            let library = &mut *site.library.write().unwrap();
+            let mut pages = vec![];
+
+            let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
+            for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
                 page.meta.taxonomies = {
                     let mut taxonomies = HashMap::new();
                     taxonomies.insert(
@@ -282,6 +298,10 @@ fn can_build_site_with_taxonomies() {
                     );
                     taxonomies
                 };
+                pages.push(page);
+            }
+            for p in pages {
+                library.insert_page(p);
             }
         }
         site.populate_taxonomies().unwrap();
@@ -289,7 +309,7 @@ fn can_build_site_with_taxonomies() {
     });
 
     assert!(&public.exists());
-    assert_eq!(site.taxonomies.len(), 1);
+    assert_eq!(site.taxonomies.len(), 2);
 
     assert!(file_exists!(public, "index.html"));
     assert!(file_exists!(public, "sitemap.xml"));
@@ -353,7 +373,7 @@ fn can_build_site_with_pagination_for_section() {
         site.load().unwrap();
         {
             let mut library = site.library.write().unwrap();
-            for (_, section) in library.sections_mut() {
+            for (_, section) in library.sections.iter_mut() {
                 if section.is_index() {
                     continue;
                 }
@@ -481,7 +501,8 @@ fn can_build_site_with_pagination_for_index() {
             let mut library = site.library.write().unwrap();
             {
                 let index = library
-                    .get_section_mut(&site.base_path.join("content").join("_index.md"))
+                    .sections
+                    .get_mut(&site.base_path.join("content").join("_index.md"))
                     .unwrap();
                 index.meta.paginate_by = Some(2);
                 index.meta.template = Some("index_paginated.html".to_string());
@@ -544,17 +565,21 @@ fn can_build_site_with_pagination_for_index() {
 #[test]
 fn can_build_site_with_pagination_for_taxonomy() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
-        site.config.taxonomies.push(Taxonomy {
+        site.config.languages.get_mut("en").unwrap().taxonomies.push(TaxonomyConfig {
             name: "tags".to_string(),
+            slug: "tags".to_string(),
             paginate_by: Some(2),
             paginate_path: None,
+            render: true,
             feed: true,
         });
         site.load().unwrap();
         {
-            let mut library = site.library.write().unwrap();
+            let library = &mut *site.library.write().unwrap();
+            let mut pages = vec![];
 
-            for (i, (_, page)) in library.pages_mut().iter_mut().enumerate() {
+            let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
+            for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
                 page.meta.taxonomies = {
                     let mut taxonomies = HashMap::new();
                     taxonomies.insert(
@@ -563,6 +588,10 @@ fn can_build_site_with_pagination_for_taxonomy() {
                     );
                     taxonomies
                 };
+                pages.push(page);
+            }
+            for p in pages {
+                library.insert_page(p);
             }
         }
         site.populate_taxonomies().unwrap();
@@ -596,7 +625,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
         "tags/a/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/tags/a/\""
     ));
-    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 8"));
+    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 9"));
     assert!(file_contains!(public, "tags/a/index.html", "Page size: 2"));
     assert!(file_contains!(public, "tags/a/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
@@ -609,7 +638,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     assert!(file_contains!(
         public,
         "tags/a/index.html",
-        "Last: https://replace-this-with-your-url.com/tags/a/page/8/"
+        "Last: https://replace-this-with-your-url.com/tags/a/page/9/"
     ));
     assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
 
@@ -678,35 +707,35 @@ fn can_apply_page_templates() {
     let template_path = path.join("content").join("applying_page_template");
     let library = site.library.read().unwrap();
 
-    let template_section = library.get_section(&template_path.join("_index.md")).unwrap();
+    let template_section = library.sections.get(&template_path.join("_index.md")).unwrap();
     assert_eq!(template_section.subsections.len(), 2);
     assert_eq!(template_section.pages.len(), 2);
 
-    let from_section_config = library.get_page_by_key(template_section.pages[0]);
+    let from_section_config = &library.pages[&template_section.pages[0]];
     assert_eq!(from_section_config.meta.template, Some("page_template.html".into()));
     assert_eq!(from_section_config.meta.title, Some("From section config".into()));
 
-    let override_page_template = library.get_page_by_key(template_section.pages[1]);
+    let override_page_template = &library.pages[&template_section.pages[1]];
     assert_eq!(override_page_template.meta.template, Some("page_template_override.html".into()));
     assert_eq!(override_page_template.meta.title, Some("Override".into()));
 
     // It should have applied recursively as well
     let another_section =
-        library.get_section(&template_path.join("another_section").join("_index.md")).unwrap();
+        library.sections.get(&template_path.join("another_section").join("_index.md")).unwrap();
     assert_eq!(another_section.subsections.len(), 0);
     assert_eq!(another_section.pages.len(), 1);
 
-    let changed_recursively = library.get_page_by_key(another_section.pages[0]);
+    let changed_recursively = &library.pages[&another_section.pages[0]];
     assert_eq!(changed_recursively.meta.template, Some("page_template.html".into()));
     assert_eq!(changed_recursively.meta.title, Some("Changed recursively".into()));
 
     // But it should not have override a children page_template
     let yet_another_section =
-        library.get_section(&template_path.join("yet_another_section").join("_index.md")).unwrap();
+        library.sections.get(&template_path.join("yet_another_section").join("_index.md")).unwrap();
     assert_eq!(yet_another_section.subsections.len(), 0);
     assert_eq!(yet_another_section.pages.len(), 1);
 
-    let child = library.get_page_by_key(yet_another_section.pages[0]);
+    let child = &library.pages[&yet_another_section.pages[0]];
     assert_eq!(child.meta.template, Some("page_template_child.html".into()));
     assert_eq!(child.meta.title, Some("Local section override".into()));
 }
@@ -767,15 +796,42 @@ fn can_get_hash_for_static_files() {
 }
 
 #[test]
-fn check_site() {
+fn can_check_site() {
     let (mut site, _tmp_dir, _public) = build_site("test_site");
 
     assert_eq!(
         site.config.link_checker.skip_anchor_prefixes,
         vec!["https://github.com/rust-lang/rust/blob/"]
     );
+    assert_eq!(
+        site.config.link_checker.skip_prefixes,
+        vec!["http://[2001:db8::]/", "http://invaliddomain"]
+    );
+
+    site.config.enable_check_mode();
+    site.load().expect("link check test_site");
+}
+
+#[test]
+#[should_panic]
+fn panics_on_invalid_external_domain() {
+    let (mut site, _tmp_dir, _public) = build_site("test_site");
+
+    // remove the invalid domain skip prefix
+    let i = site
+        .config
+        .link_checker
+        .skip_prefixes
+        .iter()
+        .position(|prefix| prefix == "http://invaliddomain")
+        .unwrap();
+    site.config.link_checker.skip_prefixes.remove(i);
+
+    // confirm the invalid domain skip prefix was removed
     assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
 
+    // check the test site, this time without the invalid domain skip prefix, which should cause a
+    // panic
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
 }

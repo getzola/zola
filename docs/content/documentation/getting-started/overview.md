@@ -155,6 +155,7 @@ Let's now create some more templates. In the `templates` directory, create a `bl
   {{ section.title }}
 </h1>
 <ul>
+  <!-- If you are using pagination, section.pages will be empty. You need to use the paginator object -->  
   {% for page in section.pages %}
   <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
   {% endfor %}

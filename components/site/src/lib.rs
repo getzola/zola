@@ -1,5 +1,6 @@
 pub mod feed;
 pub mod link_checking;
+mod minify;
 pub mod sass;
 pub mod sitemap;
 pub mod tpls;
@@ -9,29 +10,26 @@ use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use lazy_static::lazy_static;
-use rayon::prelude::*;
-use tera::{Context, Tera};
-use walkdir::{DirEntry, WalkDir};
+use libs::once_cell::sync::Lazy;
+use libs::rayon::prelude::*;
+use libs::tera::{Context, Tera};
+use libs::walkdir::{DirEntry, WalkDir};
 
 use config::{get_config, Config};
-use errors::{bail, Error, Result};
-use front_matter::InsertAnchor;
-use library::{find_taxonomies, Library, Page, Paginator, Section, Taxonomy};
-use relative_path::RelativePathBuf;
+use content::{Library, Page, Paginator, Section, Taxonomy};
+use errors::{anyhow, bail, Context as ErrorContext, Result};
+use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
 };
-use utils::minify;
 use utils::net::get_available_port;
 use utils::templates::{render_template, ShortcodeDefinition};
+use utils::types::InsertAnchor;
 
-lazy_static! {
-    /// The in-memory rendered map content
-    pub static ref SITE_CONTENT: Arc<RwLock<HashMap<RelativePathBuf, String>>> = Arc::new(RwLock::new(HashMap::new()));
-}
+pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
+    Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
 
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -73,7 +71,7 @@ impl Site {
     pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
-        let mut config = get_config(config_file)?;
+        let mut config = get_config(&path.join(config_file))?;
 
         if let Some(theme) = config.theme.clone() {
             // Grab data from the extra section of the theme
@@ -101,7 +99,7 @@ impl Site {
             permalinks: HashMap::new(),
             include_drafts: false,
             // We will allocate it properly later on
-            library: Arc::new(RwLock::new(Library::new(0, 0, false))),
+            library: Arc::new(RwLock::new(Library::default())),
             build_mode: BuildMode::Disk,
             shortcode_definitions,
         };
@@ -144,7 +142,7 @@ impl Site {
         self.live_reload = Some(live_reload_port);
     }
 
-    /// Reloads the templates and rebuild the site without re-rendering the Markdown.
+    /// Reloads the templates and rebuild the site without re-markdown the Markdown.
     pub fn reload_templates(&mut self) -> Result<()> {
         self.tera.full_reload()?;
         // TODO: be smarter than that, no need to recompile sass for example
@@ -164,15 +162,16 @@ impl Site {
     /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
     pub fn load(&mut self) -> Result<()> {
-        let base_path = self.base_path.to_string_lossy().replace("\\", "/");
+        let base_path = self.base_path.to_string_lossy().replace('\\', "/");
 
-        self.library = Arc::new(RwLock::new(Library::new(0, 0, self.config.is_multilingual())));
+        self.library = Arc::new(RwLock::new(Library::new(&self.config)));
         let mut pages_insert_anchors = HashMap::new();
 
         // not the most elegant loop, but this is necessary to use skip_current_dir
         // which we can only decide to use after we've deserialised the section
         // so it's kinda necessecary
-        let mut dir_walker = WalkDir::new(format!("{}/{}", base_path, "content/")).into_iter();
+        let mut dir_walker =
+            WalkDir::new(format!("{}/{}", base_path, "content/")).follow_links(true).into_iter();
         let mut allowed_index_filenames: Vec<_> = self
             .config
             .other_languages()
@@ -219,24 +218,22 @@ impl Site {
             // is it a section or not?
             if path.is_dir() {
                 // if we are processing a section we have to collect
-                // index files for all languages and process them simultaniously
+                // index files for all languages and process them simultaneously
                 // before any of the pages
                 let index_files = WalkDir::new(&path)
+                    .follow_links(true)
                     .max_depth(1)
                     .into_iter()
                     .filter_map(|e| match e {
                         Err(_) => None,
                         Ok(f) => {
                             let path_str = f.path().file_name().unwrap().to_str().unwrap();
+                            // https://github.com/getzola/zola/issues/1244
                             if f.path().is_file()
                                 && allowed_index_filenames.iter().any(|s| s == path_str)
                             {
                                 Some(f)
                             } else {
-                                // https://github.com/getzola/zola/issues/1244
-                                if path_str.starts_with("_index.") {
-                                    println!("Expected a section filename, got `{}`. Allowed values: `{:?}`", path_str, &allowed_index_filenames);
-                                }
                                 None
                             }
                         }
@@ -273,9 +270,14 @@ impl Site {
 
         {
             let library = self.library.read().unwrap();
-            let collisions = library.check_for_path_collisions();
+            let collisions = library.find_path_collisions();
             if !collisions.is_empty() {
-                return Err(Error::from_collisions(collisions));
+                let mut msg = String::from("Found path collisions:\n");
+                for (path, filepaths) in collisions {
+                    let row = format!("- `{}` from files {:?}\n", path, filepaths);
+                    msg.push_str(&row);
+                }
+                return Err(anyhow!(msg));
             }
         }
 
@@ -285,13 +287,52 @@ impl Site {
         tpls::register_early_global_fns(self)?;
         self.populate_sections();
         self.render_markdown()?;
+        {
+            let mut lib = self.library.write().unwrap();
+            lib.fill_backlinks();
+        }
         tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
-        link_checking::check_internal_links_with_anchors(self)?;
+        let internal_link_messages = link_checking::check_internal_links_with_anchors(self);
 
+        // log any broken internal links and error out if needed
+        if !internal_link_messages.is_empty() {
+            let messages: Vec<String> = internal_link_messages
+                .iter()
+                .enumerate()
+                .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
+                .collect();
+            let msg = format!(
+                "Found {} broken internal anchor link(s)\n{}",
+                messages.len(),
+                messages.join("\n")
+            );
+            match self.config.link_checker.internal_level {
+                config::LinkCheckerLevel::Warn => console::warn(&msg),
+                config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
+            }
+        }
+
+        // check external links, log the results, and error out if needed
         if self.config.is_in_check_mode() {
-            link_checking::check_external_links(self)?;
+            let external_link_messages = link_checking::check_external_links(self);
+            if !external_link_messages.is_empty() {
+                let messages: Vec<String> = external_link_messages
+                    .iter()
+                    .enumerate()
+                    .map(|(i, msg)| format!("  {}. {}", i + 1, msg))
+                    .collect();
+                let msg = format!(
+                    "Found {} broken external link(s)\n{}",
+                    messages.len(),
+                    messages.join("\n")
+                );
+                match self.config.link_checker.external_level {
+                    config::LinkCheckerLevel::Warn => console::warn(&msg),
+                    config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
+                }
+            }
         }
 
         Ok(())
@@ -301,7 +342,7 @@ impl Site {
     /// a _index.md to render the index page at the root of the site
     pub fn create_default_index_sections(&mut self) -> Result<()> {
         for (index_path, lang) in self.index_section_paths() {
-            if let Some(index_section) = self.library.read().unwrap().get_section(&index_path) {
+            if let Some(index_section) = self.library.read().unwrap().sections.get(&index_path) {
                 if self.config.build_search_index && !index_section.meta.in_search_index {
                     bail!(
                     "You have enabled search in the config but disabled it in the index section: \
@@ -312,7 +353,7 @@ impl Site {
             }
             let mut library = self.library.write().expect("Get lock for load");
             // Not in else because of borrow checker
-            if !library.contains_section(&index_path) {
+            if !library.sections.contains_key(&index_path) {
                 let mut index_section = Section::default();
                 index_section.file.parent = self.content_path.clone();
                 index_section.file.filename =
@@ -324,14 +365,19 @@ impl Site {
                     let filename = format!("_index.{}.md", l);
                     index_section.file.path = self.content_path.join(&filename);
                     index_section.file.relative = filename;
+                    index_section.file.canonical = self.content_path.join(format!("_index.{}", l));
                 } else {
                     index_section.file.name = "_index".to_string();
                     index_section.permalink = self.config.make_permalink("");
                     index_section.file.path = self.content_path.join("_index.md");
                     index_section.file.relative = "_index.md".to_string();
+                    index_section.file.canonical = self.content_path.join("_index");
                     index_section.path = "/".to_string();
                 }
-                index_section.lang = index_section.file.find_language(&self.config)?;
+                index_section.lang = index_section.file.find_language(
+                    &self.config.default_language,
+                    &self.config.other_languages_codes(),
+                )?;
                 library.insert_section(index_section);
             }
         }
@@ -350,7 +396,7 @@ impl Site {
 
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
-        for (_, p) in self.library.read().unwrap().pages() {
+        for (_, p) in &self.library.read().unwrap().pages {
             pages_insert_anchors.insert(
                 p.file.path.clone(),
                 self.find_parent_section_insert_anchor(&p.file.parent.clone(), &p.lang),
@@ -359,7 +405,7 @@ impl Site {
 
         let mut library = self.library.write().expect("Get lock for render_markdown");
         library
-            .pages_mut()
+            .pages
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
@@ -376,7 +422,7 @@ impl Site {
             .collect::<Result<()>>()?;
 
         library
-            .sections_mut()
+            .sections
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
@@ -391,6 +437,16 @@ impl Site {
     /// Add a page to the site
     /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_page(&mut self, mut page: Page, render_md: bool) -> Result<()> {
+        for taxa_name in page.meta.taxonomies.keys() {
+            if !self.config.has_taxonomy(taxa_name, &page.lang) {
+                bail!(
+                    "Page `{}` has taxonomy `{}` which is not defined in config.toml",
+                    page.file.path.display(),
+                    taxa_name
+                );
+            }
+        }
+
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render_md {
             let insert_anchor =
@@ -405,7 +461,7 @@ impl Site {
         }
 
         let mut library = self.library.write().expect("Get lock for add_page");
-        library.remove_page(&page.file.path);
+        library.pages.remove(&page.file.path);
         library.insert_page(page);
 
         Ok(())
@@ -419,7 +475,7 @@ impl Site {
         self.populate_sections();
         self.populate_taxonomies()?;
         let library = self.library.read().unwrap();
-        let page = library.get_page(&path).unwrap();
+        let page = library.pages.get(path).unwrap();
         self.render_page(page)
     }
 
@@ -436,7 +492,7 @@ impl Site {
             )?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");
-        library.remove_section(&section.file.path);
+        library.sections.remove(&section.file.path);
         library.insert_section(section);
 
         Ok(())
@@ -449,7 +505,7 @@ impl Site {
         self.add_section(section, true)?;
         self.populate_sections();
         let library = self.library.read().unwrap();
-        let section = library.get_section(&path).unwrap();
+        let section = library.sections.get(path).unwrap();
         self.render_section(section, true)
     }
 
@@ -465,7 +521,7 @@ impl Site {
         } else {
             parent_path.join("_index.md")
         };
-        match self.library.read().unwrap().get_section(&parent) {
+        match self.library.read().unwrap().sections.get(&parent) {
             Some(s) => s.meta.insert_anchor_links,
             None => InsertAnchor::None,
         }
@@ -475,17 +531,12 @@ impl Site {
     /// as well as the pages for each section
     pub fn populate_sections(&mut self) {
         let mut library = self.library.write().expect("Get lock for populate_sections");
-        library.populate_sections(&self.config);
+        library.populate_sections(&self.config, &self.content_path);
     }
 
     /// Find all the tags and categories if it's asked in the config
     pub fn populate_taxonomies(&mut self) -> Result<()> {
-        if self.config.taxonomies.is_empty() {
-            return Ok(());
-        }
-
-        self.taxonomies = find_taxonomies(&self.config, &self.library.read().unwrap())?;
-
+        self.taxonomies = self.library.read().unwrap().find_taxonomies(&self.config);
         Ok(())
     }
 
@@ -538,8 +589,7 @@ impl Site {
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
             // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path)
-                .map_err(|e| Error::chain("Couldn't delete output directory", e))?;
+            remove_dir_all(&self.output_path).context("Couldn't delete output directory")?;
         }
 
         Ok(())
@@ -634,7 +684,7 @@ impl Site {
         }
         start = log_time(start, "Cleaned folder");
 
-        // Generate/move all assets before rendering any content
+        // Generate/move all assets before markdown any content
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
             if theme_path.join("sass").exists() {
@@ -666,15 +716,10 @@ impl Site {
         let library = self.library.read().unwrap();
         if self.config.generate_feed {
             let is_multilingual = self.config.is_multilingual();
-            let pages = if is_multilingual {
-                library
-                    .pages_values()
-                    .iter()
-                    .filter(|p| p.lang == self.config.default_language)
-                    .cloned()
-                    .collect()
+            let pages: Vec<_> = if is_multilingual {
+                library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
             } else {
-                library.pages_values()
+                library.pages.values().collect()
             };
             self.render_feed(pages, None, &self.config.default_language, |c| c)?;
             start = log_time(start, "Generated feed in default language");
@@ -684,8 +729,7 @@ impl Site {
             if !language.generate_feed {
                 continue;
             }
-            let pages =
-                library.pages_values().iter().filter(|p| &p.lang == code).cloned().collect();
+            let pages: Vec<_> = library.pages.values().filter(|p| &p.lang == code).collect();
             self.render_feed(pages, Some(&PathBuf::from(code)), code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
@@ -714,8 +758,8 @@ impl Site {
         for t in &self.config.markdown.highlight_themes_css {
             let p = self.static_path.join(&t.filename);
             if !p.exists() {
-                let content = &self.config.markdown.export_theme_css(&t.theme);
-                create_file(&p, &content)?;
+                let content = &self.config.markdown.export_theme_css(&t.theme)?;
+                create_file(&p, content)?;
             }
         }
 
@@ -780,12 +824,12 @@ impl Site {
     pub fn render_aliases(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         let library = self.library.read().unwrap();
-        for (_, page) in library.pages() {
+        for (_, page) in &library.pages {
             for alias in &page.meta.aliases {
                 self.render_alias(alias, &page.permalink)?;
             }
         }
-        for (_, section) in library.sections() {
+        for (_, section) in &library.sections {
             for alias in &section.meta.aliases {
                 self.render_alias(alias, &section.permalink)?;
             }
@@ -818,6 +862,9 @@ impl Site {
     /// Renders all taxonomies
     pub fn render_taxonomies(&self) -> Result<()> {
         for taxonomy in &self.taxonomies {
+            if !taxonomy.kind.render {
+                continue;
+            }
             self.render_taxonomy(taxonomy)?;
         }
 
@@ -870,9 +917,14 @@ impl Site {
                 }
 
                 if taxonomy.kind.feed {
+                    let tax_path = if taxonomy.lang == self.config.default_language {
+                        PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
+                    } else {
+                        PathBuf::from(format!("{}/{}/{}", taxonomy.lang, taxonomy.slug, item.slug))
+                    };
                     self.render_feed(
-                        item.pages.iter().map(|p| library.get_page_by_key(*p)).collect(),
-                        Some(&PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))),
+                        item.pages.iter().map(|p| library.pages.get(p).unwrap()).collect(),
+                        Some(&tax_path),
                         &taxonomy.lang,
                         |mut context: Context| {
                             context.insert("taxonomy", &taxonomy.kind);
@@ -957,8 +1009,7 @@ impl Site {
         if let Some(base) = base_path {
             let mut components = Vec::new();
             for component in base.components() {
-                // TODO: avoid cloning the paths
-                components.push(component.as_os_str().to_string_lossy().as_ref().to_string());
+                components.push(component.as_os_str().to_string_lossy());
             }
             self.write_content(
                 &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
@@ -999,13 +1050,13 @@ impl Site {
 
         if section.meta.generate_feed {
             let library = &self.library.read().unwrap();
-            let pages = section.pages.iter().map(|k| library.get_page_by_key(*k)).collect();
+            let pages = section.pages.iter().map(|k| library.pages.get(k).unwrap()).collect();
             self.render_feed(
                 pages,
                 Some(&PathBuf::from(&section.path[1..])),
                 &section.lang,
                 |mut context: Context| {
-                    context.insert("section", &section.to_serialized(library));
+                    context.insert("section", &section.serialize(library));
                     context
                 },
             )?;
@@ -1028,7 +1079,7 @@ impl Site {
             section
                 .pages
                 .par_iter()
-                .map(|k| self.render_page(self.library.read().unwrap().get_page_by_key(*k)))
+                .map(|k| self.render_page(self.library.read().unwrap().pages.get(k).unwrap()))
                 .collect::<Result<()>>()?;
         }
 
@@ -1068,9 +1119,9 @@ impl Site {
         self.library
             .read()
             .unwrap()
-            .sections_values()
-            .into_par_iter()
-            .map(|s| self.render_section(s, true))
+            .sections
+            .par_iter()
+            .map(|(_, s)| self.render_section(s, true))
             .collect::<Result<()>>()
     }
 

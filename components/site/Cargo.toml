@@ -6,33 +6,19 @@ edition = "2018"
 include = ["src/**/*"]
 
 [dependencies]
-tera = "1"
-glob = "0.3"
-walkdir = "2"
-rayon = "1"
-serde = "1"
-serde_derive = "1"
-sass-rs = "0.2"
-lazy_static = "1.1"
-relative-path = "1"
-slotmap = "1"
-url = "2"
+serde = { version = "1.0", features = ["derive"] }
 
 errors = { path = "../errors" }
 config = { path = "../config" }
+console = { path = "../console" }
 utils = { path = "../utils" }
 templates = { path = "../templates" }
-front_matter = { path = "../front_matter" }
 search = { path = "../search" }
 imageproc = { path = "../imageproc" }
-library = { path = "../library" }
 link_checker = { path = "../link_checker" }
+libs = { path = "../libs" }
+content = { path = "../content" }
 
 [dev-dependencies]
 tempfile = "3"
-path-slash = "0.1.4"
-
-[features]
-default = []
-rust-tls = ["templates/rust-tls", "link_checker/rust-tls"]
-native-tls = ["templates/native-tls", "link_checker/native-tls"]
+path-slash = "0.2"

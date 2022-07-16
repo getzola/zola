@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/markdown.rs
+assertion_line: 135
+expression: body
+
+---
+<p>This – is “it”…</p>
+

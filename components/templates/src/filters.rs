@@ -1,17 +1,14 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
-use std::path::PathBuf;
 
-use base64::{decode, encode};
 use config::Config;
-use rendering::{render_content, RenderContext};
-use tera::{
+use libs::base64::{decode, encode};
+use libs::tera::{
     to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
     Value,
 };
-
-use crate::load_tera;
+use markdown::{render_content, RenderContext};
 
 #[derive(Debug)]
 pub struct MarkdownFilter {
@@ -21,13 +18,8 @@ pub struct MarkdownFilter {
 }
 
 impl MarkdownFilter {
-    pub fn new(
-        path: PathBuf,
-        config: Config,
-        permalinks: HashMap<String, String>,
-    ) -> TeraResult<Self> {
-        let tera = load_tera(&path, &config).map_err(tera::Error::msg)?;
-        Ok(Self { config, permalinks, tera })
+    pub fn new(config: Config, permalinks: HashMap<String, String>, tera: Tera) -> Self {
+        Self { config, permalinks, tera }
     }
 }
 
@@ -94,7 +86,7 @@ impl NumFormatFilter {
 
 impl TeraFilter for NumFormatFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-        use num_format::{Locale, ToFormattedString};
+        use libs::num_format::{Locale, ToFormattedString};
 
         let num = try_get_value!("num_format", "value", i64, value);
         let locale = match args.get("locale") {
@@ -113,17 +105,16 @@ impl TeraFilter for NumFormatFilter {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, path::PathBuf};
+    use std::collections::HashMap;
 
-    use tera::{to_value, Filter};
+    use libs::tera::{to_value, Filter, Tera};
 
     use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
     use config::Config;
 
     #[test]
     fn markdown_filter() {
-        let result = MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new())
-            .unwrap()
+        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
             .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
@@ -137,8 +128,7 @@ mod tests {
         let args = HashMap::new();
         let config = Config::default();
         let permalinks = HashMap::new();
-        let mut tera =
-            super::load_tera(&PathBuf::new(), &config).map_err(tera::Error::msg).unwrap();
+        let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
         let filter = MarkdownFilter { config, permalinks, tera };
         let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);
@@ -151,8 +141,8 @@ mod tests {
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result =
-            MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).unwrap().filter(
+        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
+            .filter(
                 &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
                 &args,
             );
@@ -165,8 +155,8 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result =
-            MarkdownFilter::new(PathBuf::new(), Config::default(), HashMap::new()).unwrap().filter(
+        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
+            .filter(
                 &to_value(
                     &r#"
 |id|author_id|       timestamp_created|title                 |content           |
@@ -191,15 +181,13 @@ mod tests {
         config.markdown.external_links_target_blank = true;
 
         let md = "Hello <https://google.com> :smile: ...";
-        let result = MarkdownFilter::new(PathBuf::new(), config.clone(), HashMap::new())
-            .unwrap()
+        let result = MarkdownFilter::new(config.clone(), HashMap::new(), Tera::default())
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
-        let result = MarkdownFilter::new(PathBuf::new(), config, HashMap::new())
-            .unwrap()
+        let result = MarkdownFilter::new(config, HashMap::new(), Tera::default())
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("style"));
@@ -210,8 +198,7 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
-        let result = MarkdownFilter::new(PathBuf::new(), Config::default(), permalinks)
-            .unwrap()
+        let result = MarkdownFilter::new(Config::default(), permalinks, Tera::default())
             .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(

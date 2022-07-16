@@ -2,4 +2,4 @@
 title = "Home"
 +++
 
-Homepage
+Homepage. [Our blog](@/blog/_index.md)

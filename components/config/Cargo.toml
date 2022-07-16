@@ -1,19 +1,12 @@
 [package]
 name = "config"
 version = "0.1.0"
-authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
-edition = "2018"
+edition = "2021"
 include = ["src/**/*"]
 
 [dependencies]
-toml = "0.5"
-serde = "1"
-serde_derive = "1"
-chrono = "0.4"
-globset = "0.4"
-lazy_static = "1"
-syntect = "4"
-unic-langid = "0.9"
+serde = {version = "1.0", features = ["derive"] }
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }
+libs = { path = "../libs" }

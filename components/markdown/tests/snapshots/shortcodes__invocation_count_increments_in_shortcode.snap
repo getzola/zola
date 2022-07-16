@@ -1,0 +1,11 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 254
+expression: body
+
+---
+<p><p>a: 1</p>
+<p>b: 1</p>
+<p>a: 2</p>
+<p>b: 2</p></p>
+

@@ -1,0 +1,10 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 184
+expression: body
+
+---
+<p>Hello</p>
+<h1 id="passing-through">Passing through</h1>
+<p><em>to</em> <strong>the</strong> document</p>
+

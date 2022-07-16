@@ -1,8 +1,8 @@
-use library::{Library, Taxonomy};
+use content::{Library, Taxonomy};
+use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-use tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use utils::slugs::{slugify_paths, SlugifyStrategy};
 
 #[derive(Debug)]
@@ -90,8 +90,8 @@ impl TeraFn for GetPage {
         );
         let full_path = self.base_path.join(&path);
         let library = self.library.read().unwrap();
-        match library.get_page(&full_path) {
-            Some(p) => Ok(to_value(p.to_serialized(&library)).unwrap()),
+        match library.pages.get(&full_path) {
+            Some(p) => Ok(to_value(p.serialize(&library)).unwrap()),
             None => Err(format!("Page `{}` not found.", path).into()),
         }
     }
@@ -122,12 +122,12 @@ impl TeraFn for GetSection {
         let full_path = self.base_path.join(&path);
         let library = self.library.read().unwrap();
 
-        match library.get_section(&full_path) {
+        match library.sections.get(&full_path) {
             Some(s) => {
                 if metadata_only {
-                    Ok(to_value(s.to_serialized_basic(&library)).unwrap())
+                    Ok(to_value(s.serialize_basic(&library)).unwrap())
                 } else {
-                    Ok(to_value(s.to_serialized(&library)).unwrap())
+                    Ok(to_value(s.serialize(&library)).unwrap())
                 }
             }
             None => Err(format!("Section `{}` not found.", path).into()),
@@ -185,45 +185,34 @@ impl TeraFn for GetTaxonomy {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use config::{Config, Taxonomy as TaxonomyConfig};
-    use library::TaxonomyItem;
+    use config::{Config, TaxonomyConfig};
+    use content::TaxonomyTerm;
 
     #[test]
     fn can_get_taxonomy() {
-        let mut config = Config::default();
+        let mut config = Config::default_for_test();
         config.slugify.taxonomies = SlugifyStrategy::On;
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Arc::new(RwLock::new(Library::new(0, 0, false)));
-        let tag = TaxonomyItem::new(
-            "Programming",
-            &config.default_language,
-            "tags",
-            &config,
-            vec![],
-            &library.read().unwrap(),
-        );
-        let tag_fr = TaxonomyItem::new(
-            "Programmation",
-            "fr",
-            "tags",
-            &config,
-            vec![],
-            &library.read().unwrap(),
-        );
+        config.slugify_taxonomies();
+        let library = Arc::new(RwLock::new(Library::new(&config)));
+        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
             slug: "tags".to_string(),
-            permalink: "/tags/".to_string(),
+            path: "/tags/".to_string(),
+            permalink: "https://vincent.is/tags/".to_string(),
             items: vec![tag],
         };
         let tags_fr = Taxonomy {
             kind: taxo_config_fr,
             lang: "fr".to_owned(),
             slug: "tags".to_string(),
-            permalink: "/fr/tags/".to_string(),
+            path: "/fr/tags/".to_string(),
+            permalink: "https://vincent.is/fr/tags/".to_string(),
             items: vec![tag_fr],
         };
 
@@ -279,28 +268,22 @@ mod tests {
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let library = Library::new(0, 0, false);
-        let tag = TaxonomyItem::new(
-            "Programming",
-            &config.default_language,
-            "tags",
-            &config,
-            vec![],
-            &library,
-        );
-        let tag_fr = TaxonomyItem::new("Programmation", "fr", "tags", &config, vec![], &library);
+        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
             slug: "tags".to_string(),
-            permalink: "/tags/".to_string(),
+            path: "/tags/".to_string(),
+            permalink: "https://vincent.is/tags/".to_string(),
             items: vec![tag],
         };
         let tags_fr = Taxonomy {
             kind: taxo_config_fr,
             lang: "fr".to_owned(),
             slug: "tags".to_string(),
-            permalink: "/fr/tags/".to_string(),
+            path: "/fr/tags/".to_string(),
+            permalink: "https://vincent.is/fr/tags/".to_string(),
             items: vec![tag_fr],
         };
 

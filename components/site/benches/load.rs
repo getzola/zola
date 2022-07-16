@@ -1,4 +1,4 @@
-//! Benchmarking loading/markdown rendering of generated sites of various sizes
+//! Benchmarking loading/markdown markdown of generated sites of various sizes
 #![feature(test)]
 extern crate test;
 

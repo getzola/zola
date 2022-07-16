@@ -1,0 +1,11 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 385
+expression: body
+
+---
+<blockquote>
+<p>test quote
+<img src='https://placekitten.com/200/300' alt='a quote'></img></p>
+</blockquote>
+

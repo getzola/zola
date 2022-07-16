@@ -1,24 +1,13 @@
 [package]
 name = "link_checker"
 version = "0.1.0"
-authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-lazy_static = "1"
-
 config = { path = "../config" }
 errors = { path = "../errors" }
 utils = { path = "../utils" }
-
-[dependencies.reqwest]
-version = "0.11"
-default-features = false
-features = ["blocking"]
+libs = { path = "../libs" }
 
 [dev-dependencies]
-mockito = "0.30"
-
-[features]
-rust-tls = ["reqwest/rustls-tls"]
-native-tls = ["reqwest/default-tls"]
+mockito = "0.31"

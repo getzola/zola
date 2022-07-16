@@ -27,6 +27,9 @@ summary = "Mon blog"
 [languages.it.translations]
 summary = "Mio blog"
 
+# translations for the default language are not prefixed by languages.code
+[translations]
+summary = "My blog"
 ```
 
 Note: By default, Chinese and Japanese search indexing is not included. You can include

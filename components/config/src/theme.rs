@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use serde_derive::{Deserialize, Serialize};
-use toml::Value as Toml;
+use libs::toml::Value as Toml;
+use serde::{Deserialize, Serialize};
 
-use errors::{bail, Result};
+use errors::{bail, Context, Result};
 use utils::fs::read_file;
 
 /// Holds the data from a `theme.toml` file.
@@ -40,8 +40,8 @@ impl Theme {
 
     /// Parses a theme file from the given path
     pub fn from_file(path: &Path, theme_name: &str) -> Result<Theme> {
-        let content = read_file(path)
-            .map_err(|e| errors::Error::chain(format!("Failed to load theme {}", theme_name), e))?;
+        let content =
+            read_file(path).with_context(|| format!("Failed to load theme {}", theme_name))?;
         Theme::parse(&content)
     }
 }

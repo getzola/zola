@@ -1,0 +1,18 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 343
+expression: body
+
+---
+<ul>
+<li>a</li>
+<li>b
+<div>
+	Hello World!
+    </div></li>
+<li>c
+<div>
+	Hello World!
+    </div></li>
+</ul>
+
