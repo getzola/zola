@@ -187,10 +187,13 @@ of the Swedish alphabet, åäö, for example would be considered by the natural
 sort as aao. In that case the standard byte-order sort may be more suitable.
 
 ### `weight`
-This will be sort all pages by their `weight` field, from lightest weight
-(at the top of the list) to heaviest (at the bottom of the list).  Each
+This will sort all pages by their `weight` field, from the lightest weight
+(at the top of the list) to the heaviest (at the bottom of the list). Each
 page gets `page.lower` and `page.higher` variables that contain the
 pages with lighter and heavier weights, respectively.
+
+### `slug`
+This will sort pages or sections by their slug in natural lexical order.
 
 ### Reversed sorting
 When iterating through pages, you may wish to use the Tera `reverse` filter,
