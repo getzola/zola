@@ -55,6 +55,9 @@
     <release version="0.16.0" date="2022-07-16">
       <url>https://github.com/getzola/zola/releases/tag/v0.16.0</url>
     </release>
+    <release version="0.15.3" date="2022-01-22">
+      <url>https://github.com/getzola/zola/releases/tag/v0.15.3</url>
+    </release>
   </releases>
 
 </component>
