@@ -24,7 +24,7 @@ use utils::anchors::has_anchor_id;
 use utils::fs::read_file;
 
 // Based on https://regex101.com/r/H2n38Z/1/tests
-// A regex parsing RFC3339 date followed by {_,-}, some characters and ended by .md
+// A regex parsing RFC3339 date followed by {_,-} and some characters
 static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
         r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)\s?(_|-)(?P<slug>.+$)"
@@ -114,16 +114,18 @@ impl Page {
         page.reading_time = Some(reading_time);
 
         let mut slug_from_dated_filename = None;
-        let file_path = if page.file.name == "index" {
+
+        let file_path_for_slug = if page.file.name == "index" {
             if let Some(parent) = page.file.path.parent() {
                 parent.file_name().unwrap().to_str().unwrap().to_string()
             } else {
-                page.file.name.replace(".md", "")
+                page.file.name.to_string()
             }
         } else {
-            page.file.name.replace(".md", "")
+            page.file.name.to_string()
         };
-        if let Some(ref caps) = RFC3339_DATE.captures(&file_path) {
+
+        if let Some(ref caps) = RFC3339_DATE.captures(&file_path_for_slug) {
             slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
@@ -134,23 +136,10 @@ impl Page {
         page.slug = {
             if let Some(ref slug) = page.meta.slug {
                 slugify_paths(slug, config.slugify.paths)
-            } else if page.file.name == "index" {
-                if let Some(parent) = page.file.path.parent() {
-                    if let Some(slug) = slug_from_dated_filename {
-                        slugify_paths(&slug, config.slugify.paths)
-                    } else {
-                        slugify_paths(
-                            parent.file_name().unwrap().to_str().unwrap(),
-                            config.slugify.paths,
-                        )
-                    }
-                } else {
-                    slugify_paths(&page.file.name, config.slugify.paths)
-                }
             } else if let Some(slug) = slug_from_dated_filename {
                 slugify_paths(&slug, config.slugify.paths)
             } else {
-                slugify_paths(&page.file.name, config.slugify.paths)
+                slugify_paths(&file_path_for_slug, config.slugify.paths)
             }
         };
 
