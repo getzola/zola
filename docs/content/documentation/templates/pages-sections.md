@@ -54,6 +54,8 @@ relative_path: String;
 lang: String;
 // Information about all the available languages for that content, including the current page
 translations: Array<TranslatedContent>;
+// All the pages/sections linking this page: their permalink and a title if there is one
+backlinks: Array<{permalink: String, title: String?}>;
 ```
 
 ## Section variables
@@ -100,6 +102,8 @@ relative_path: String;
 lang: String;
 // Information about all the available languages for that content
 translations: Array<TranslatedContent>;
+// All the pages/sections linking this page: their permalink and a title if there is one
+backlinks: Array<{permalink: String, title: String?}>;
 ```
 
 ## Table of contents

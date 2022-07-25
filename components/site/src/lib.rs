@@ -162,8 +162,6 @@ impl Site {
     /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
     pub fn load(&mut self) -> Result<()> {
-        let base_path = self.base_path.to_string_lossy().replace('\\', "/");
-
         self.library = Arc::new(RwLock::new(Library::new(&self.config)));
         let mut pages_insert_anchors = HashMap::new();
 
@@ -171,7 +169,7 @@ impl Site {
         // which we can only decide to use after we've deserialised the section
         // so it's kinda necessecary
         let mut dir_walker =
-            WalkDir::new(format!("{}/{}", base_path, "content/")).follow_links(true).into_iter();
+            WalkDir::new(self.base_path.join("content")).follow_links(true).into_iter();
         let mut allowed_index_filenames: Vec<_> = self
             .config
             .other_languages()
