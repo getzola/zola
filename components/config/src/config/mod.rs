@@ -21,6 +21,7 @@ use utils::slugs::slugify_paths;
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Mode {
     Build,
     Serve,
