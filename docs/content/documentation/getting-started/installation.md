@@ -30,10 +30,12 @@ $ pacman -S zola
 
 ### Alpine Linux
 
-Zola is available in the official Alpine Linux repository, only on the `edge` version for now.
+Zola is available in the official Alpine Linux community repository since Alpine v3.13.
+
+See this section of the Alpine Wiki explaining how to enable the community repository if necessary: https://wiki.alpinelinux.org/wiki/Repositories#Enabling_the_community_repository
 
 ```sh
-$ apk add zola --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
+$ apk add zola
 ```
 
 ### Debian
