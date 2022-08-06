@@ -142,6 +142,10 @@ external_level = "error"
 paths = "on"
 taxonomies = "on"
 anchors = "on"
+# Whether to remove date prefixes for page path slugs.
+# For example, content/posts/2016-10-08_a-post-with-dates.md => posts/a-post-with-dates
+# When true, content/posts/2016-10-08_a-post-with-dates.md => posts/2016-10-08-a-post-with-dates
+paths_keep_dates = false
 
 [search]
 # Whether to include the title of the page/section in the index

@@ -658,8 +658,28 @@ anchors = "off"
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.slugify.paths, SlugifyStrategy::On);
+        assert_eq!(config.slugify.paths_keep_dates, false);
         assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Safe);
         assert_eq!(config.slugify.anchors, SlugifyStrategy::Off);
+    }
+
+    #[test]
+    fn slugify_paths_keep_dates() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[slugify]
+paths_keep_dates = true
+taxonomies = "off"
+anchors = "safe"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.slugify.paths, SlugifyStrategy::On);
+        assert_eq!(config.slugify.paths_keep_dates, true);
+        assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Off);
+        assert_eq!(config.slugify.anchors, SlugifyStrategy::Safe);
     }
 
     #[test]
