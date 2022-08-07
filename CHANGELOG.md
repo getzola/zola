@@ -3,6 +3,7 @@
 ## 0.16.1 (unreleased)
 
 - Fix many Windows bugs
+- Fix overriding built-in shortcodes
 
 ## 0.16.0 (2022-07-16)
 
