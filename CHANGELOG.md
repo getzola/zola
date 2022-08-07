@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.17.0 (unreleased)
+## 0.16.1 (unreleased)
 
+- Fix many Windows bugs
 
 ## 0.16.0 (2022-07-16)
 
