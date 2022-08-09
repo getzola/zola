@@ -259,7 +259,7 @@ The method returns a map containing `width`, `height` and `format` (the lowercas
 
 ### `load_data`
 
-Loads data from a file, URL, or string literal. Supported file types include *toml*, *json*, *csv*, *bibtex*, *yaml* 
+Loads data from a file, URL, or string literal. Supported file types include *toml*, *json*, *csv*, *bibtex*, *yaml*/*yml*, 
 and *xml* and only supports UTF-8 encoding.
 
 Any other file type will be loaded as plain text.
