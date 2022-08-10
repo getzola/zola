@@ -4,6 +4,7 @@
 
 - Fix many Windows bugs
 - Fix overriding built-in shortcodes
+- Support .yml files with `load_data`
 
 ## 0.16.0 (2022-07-16)
 
