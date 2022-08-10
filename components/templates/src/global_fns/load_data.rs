@@ -61,7 +61,7 @@ impl FromStr for OutputFormat {
             "bibtex" => Ok(OutputFormat::Bibtex),
             "xml" => Ok(OutputFormat::Xml),
             "plain" => Ok(OutputFormat::Plain),
-            "yaml" => Ok(OutputFormat::Yaml),
+            "yaml" | "yml" => Ok(OutputFormat::Yaml),
             format => Err(format!("Unknown output format {}", format).into()),
         }
     }
