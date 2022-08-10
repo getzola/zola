@@ -10,8 +10,6 @@ use errors::{bail, Result};
 use utils::fs::{create_file, ensure_directory_exists};
 
 pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
-    console::info("compiling sass...");
-
     ensure_directory_exists(output_path)?;
 
     let sass_path = {
