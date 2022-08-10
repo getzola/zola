@@ -61,6 +61,7 @@ members = ["components/*"]
 [profile.release]
 lto = true
 codegen-units = 1
+strip = true
 
 [profile.dev]
 # Disabling debug info speeds up builds a bunch,
