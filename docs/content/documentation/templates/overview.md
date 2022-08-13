@@ -241,6 +241,19 @@ integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Int
 
 Do note that subresource integrity is typically used when using external scripts, which `get_file_hash` does not support.
 
+### `get_hash`
+
+Returns the hash digest (SHA-256, SHA-384 or SHA-512) of a string literal.
+
+It can take the following arguments:
+- `literal`: mandatory, the value to be hashed
+- `sha_type`: optional, one of `256`, `384` or `512`, defaults to `384`
+- `base64`: optional, `true` or `false`, defaults to `true`. Whether to encode the hash as base64
+
+```jinja2
+{{/* get_hash(literal="Hello World", sha_type=256) */}}
+```
+
 ### `get_image_metadata`
 
 Gets metadata for an image. This supports common formats like JPEG, PNG, WebP, BMP, GIF as well as SVG.
