@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.16.1 (unreleased)
+## 0.16.1 (2022-08-14)
 
 - Fix many Windows bugs
 - Fix overriding built-in shortcodes
