@@ -1,0 +1,9 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 76
+expression: body
+
+---
+<quote>This is a quote</quote>
+<p>Here is another paragraph.</p>
+

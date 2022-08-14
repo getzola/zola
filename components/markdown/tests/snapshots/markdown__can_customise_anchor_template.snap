@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/markdown.rs
+assertion_line: 127
+expression: body
+
+---
+<h1 id="hello">Hello (in en)</h1>
+

@@ -1,0 +1,22 @@
+{% extends "themes.html" %}
+
+{% block title %}{{ page.title }} | Zola {% endblock title %}
+{% block theme_content %}
+    <div class="theme-info">
+        <img src="{{page.permalink}}screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>{{ page.title }}</h1>
+            <p>{{ page.description }}</p>
+            <p><b>Author:</b> {{page.extra.author.name}}</p>
+            <p><b>License:</b> {{page.extra.license}}</p>
+            <p><b>Homepage:</b> <a href="{{page.extra.homepage}}">{{page.extra.homepage}}</a></p>
+            {% if page.extra.demo %}
+              <p><b>Live Demo:</b> <a href="{{page.extra.demo}}">{{page.extra.demo}}</a></p>
+            {% endif %}
+            <p><b>Last updated:</b> {{page.extra.updated }}</p>
+        </div>
+    </div>
+
+    <hr>
+    {{page.content | safe}}
+{% endblock theme_content %}

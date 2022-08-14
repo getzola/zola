@@ -1,0 +1,19 @@
+---
+source: components/rendering/tests/codeblocks.rs
+assertion_line: 310
+expression: body
+
+---
+<pre data-linenos data-lang="html" style="background-color:#2b303b;color:#c0c5ce;" class="language-html "><code class="language-html" data-lang="html"><table><tbody><tr><td>1</td><td><span>&lt;</span><span style="color:#bf616a;">a </span><span style="color:#d08770;">href</span><span>=&quot;</span><span style="color:#a3be8c;">javascript:void(0);</span><span>&quot;&gt;{{ before(texts=&quot;1&quot;) }}&lt;/</span><span style="color:#bf616a;">a</span><span>&gt;
+</span></td></tr><tr><td>2</td><td><span>Normally people would not write something &amp; like </span><span style="background-color:#bf616a;color:#2b303b;">&lt;&gt;</span><span> this：
+</span></td></tr><tr><td>3</td><td><span>&lt;</span><span style="color:#bf616a;">div </span><span style="color:#8fa1b3;">id</span><span>=&quot;</span><span style="color:#a3be8c;">custom-attr</span><span>&quot;&gt;
+</span></td></tr><tr><td>4</td><td><span>An inline dQw4w9WgXcQ shortcode
+</span></td></tr><tr><td>5</td><td><span>&lt;/</span><span style="color:#bf616a;">div</span><span>&gt;
+</span></td></tr><tr><td>6</td><td><span>Plain text in-between
+</span></td></tr><tr><td>7</td><td><span>{% quote(author=&quot;Vincent&quot;) %}
+</span></td></tr><tr><td>8</td><td><span>A quote
+</span></td></tr><tr><td>9</td><td><span>{% end %}
+</span></td></tr><tr><td>10</td><td><span>{# A Tera comment, you should see it #}
+</span></td></tr><tr><td>11</td><td><span style="color:#65737e;">&lt;!-- end text goes here --&gt;
+</span></td></tr></tbody></table></code></pre>
+

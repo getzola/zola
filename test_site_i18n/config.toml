@@ -1,0 +1,34 @@
+# The URL the site will be built for
+base_url = "https://example.com"
+
+# Whether to automatically compile all Sass files in the sass directory
+compile_sass = false
+
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = true
+
+default_language = "en"
+
+generate_feed = true
+
+taxonomies = [
+    {name = "authors", feed = true},
+    {name = "tags"},
+]
+
+[languages.fr]
+generate_feed = true
+taxonomies = [
+    {name = "auteurs", feed = true},
+    {name = "tags"},
+]
+
+[languages.it]
+build_search_index = true
+
+[markdown]
+highlight_code = false
+
+
+[extra]
+# Put all your custom variables here

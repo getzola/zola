@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<component type="console-application">
+  <id>org.getzola.zola</id>
+  <icon type="remote">https://github.com/getzola/zola/blob/72461a1fc9a767d4eadb6be48a0c5ba35e974049/docs/static/favicon.ico</icon>
+
+  <name>Zola</name>
+  <summary>A fast static site generator in a single binary with everything built-in</summary>
+  <developer_name>Vincent Prouillet and contributors</developer_name>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <description>
+    <p>
+      Zola comes as a single executable with Sass compilation, syntax highlighting, table of contents and many other features 
+      that traditionally require setting up a dev environment adding some JavaScript libraries to your site.
+    </p>
+    <p>
+      The average site will be generated in less than a second, including Sass compilation and syntax highlighting.
+    </p>
+    <p>
+      Zola renders your whole site as static files, making it trivial to handle any kind of traffic you will throw at it at no 
+      cost without having to worry about managing a server or a database.
+    </p>
+    <p>
+      From the CLI to the template engine, everything is designed to be intuitive. Don't take my word for it though, look at the
+      documentation and see for yourself.
+    </p>
+    <p>
+      Zola gets out of your way so you can focus on your content, be it a blog, a knowledge base, a landing page or a combination 
+      of them.
+    </p>
+    <p>
+      Zola comes with shortcodes and internal links to make it easier to write your content.
+    </p>
+  </description>
+
+  <categories>
+    <category>Development</category>
+    <category>WebDevelopment</category>
+  </categories>
+
+  <url type="homepage">https://www.getzola.org/</url>
+  <url type="bugtracker">https://github.com/getzola/zola/issues</url>
+  <url type="help">https://www.getzola.org/documentation/</url>
+
+  <provides>
+    <binary>zola</binary>
+  </provides>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="0.16.0" date="2022-07-16">
+      <url>https://github.com/getzola/zola/releases/tag/v0.16.0</url>
+    </release>
+    <release version="0.15.3" date="2022-01-22">
+      <url>https://github.com/getzola/zola/releases/tag/v0.15.3</url>
+    </release>
+  </releases>
+
+</component>

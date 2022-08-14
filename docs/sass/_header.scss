@@ -1,0 +1,33 @@
+header {
+  .header__logo {
+    border-bottom: none;
+  }
+
+  nav a {
+    margin-right: 2rem;
+  }
+
+  .header__logo {
+    font-size: 2rem;
+    font-weight: bold;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  header {
+    padding: 1rem 0;
+
+    nav {
+      text-align: center;
+    }
+
+    .header__logo {
+      // to force menu links to be on a line below
+      display: block;
+    }
+  }
+}

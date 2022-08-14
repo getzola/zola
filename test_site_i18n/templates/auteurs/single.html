@@ -1,0 +1,22 @@
+{% if not paginator %}
+    Tag: {{ term.name }}
+
+    {% for page in term.pages %}
+        <article>
+            <h3 class="post__title"><a href="{{ page.permalink | safe }}">{{ page.title | safe }}</a></h3>
+        </article>
+    {% endfor %}
+{% else %}
+    Tag: {{ term.name }}
+    {% for page in paginator.pages %}
+        {{page.title|safe}}
+    {% endfor %}
+    Num pagers: {{ paginator.number_pagers }}
+    Page size: {{ paginator.paginate_by }}
+    Current index: {{ paginator.current_index }}
+    First: {{ paginator.first | safe }}
+    Last: {{ paginator.last | safe }}
+    {% if paginator.previous %}has_prev{% endif%}
+    {% if paginator.next %}has_next{% endif%}
+{% endif %}
+{{lang}}

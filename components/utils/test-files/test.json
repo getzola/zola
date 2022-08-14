@@ -1,0 +1,7 @@
+{
+    "key": "value",
+    "array": [1, 2, 3],
+    "subpackage": {
+        "subkey": 5
+    }
+}

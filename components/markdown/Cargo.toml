@@ -1,0 +1,19 @@
+[package]
+name = "markdown"
+version = "0.1.0"
+edition = "2021"
+include = ["src/**/*"]
+
+[dependencies]
+pest = "2"
+pest_derive = "2"
+
+errors = { path = "../errors" }
+utils = { path = "../utils" }
+config = { path = "../config" }
+console = { path = "../console" }
+libs = { path = "../libs" }
+
+[dev-dependencies]
+templates = { path = "../templates" }
+insta = "1.12.0"

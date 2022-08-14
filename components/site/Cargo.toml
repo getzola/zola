@@ -1,0 +1,24 @@
+[package]
+name = "site"
+version = "0.1.0"
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+edition = "2018"
+include = ["src/**/*"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+errors = { path = "../errors" }
+config = { path = "../config" }
+console = { path = "../console" }
+utils = { path = "../utils" }
+templates = { path = "../templates" }
+search = { path = "../search" }
+imageproc = { path = "../imageproc" }
+link_checker = { path = "../link_checker" }
+libs = { path = "../libs" }
+content = { path = "../content" }
+
+[dev-dependencies]
+tempfile = "3"
+path-slash = "0.2"

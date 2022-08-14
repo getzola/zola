@@ -1,0 +1,144 @@
+#compdef zola
+
+autoload -U is-at-least
+
+_zola() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'-c+[Path to a config file other than config.toml]' \
+'--config=[Path to a config file other than config.toml]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_zola_commands" \
+"*::: :->zola" \
+&& ret=0
+    case $state in
+    (zola)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:zola-command-$line[1]:"
+        case $line[1] in
+            (init)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+'::name -- Name of the project. Will create a new directory with that name in the current directory:_files' \
+&& ret=0
+;;
+(build)
+_arguments "${_arguments_options[@]}" \
+'-u+[Force the base URL to be that value (default to the one in config.toml)]' \
+'--base-url=[Force the base URL to be that value (default to the one in config.toml)]' \
+'-o+[Outputs the generated site in the given path]' \
+'--output-dir=[Outputs the generated site in the given path]' \
+'--drafts[Include drafts when loading the site]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(serve)
+_arguments "${_arguments_options[@]}" \
+'-i+[Interface to bind on]' \
+'--interface=[Interface to bind on]' \
+'-p+[Which port to use]' \
+'--port=[Which port to use]' \
+'-o+[Outputs the generated site in the given path]' \
+'--output-dir=[Outputs the generated site in the given path]' \
+'-u+[Changes the base_url]' \
+'--base-url=[Changes the base_url]' \
+'--watch-only[Do not start a server, just re-build project on changes]' \
+'--drafts[Include drafts when loading the site]' \
+'-O[Open site in the default browser]' \
+'--open[Open site in the default browser]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(check)
+_arguments "${_arguments_options[@]}" \
+'--drafts[Include drafts when loading the site]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_zola_commands] )) ||
+_zola_commands() {
+    local commands; commands=(
+        "init:Create a new Zola project" \
+"build:Deletes the output directory if there is one and builds the site" \
+"serve:Serve the site. Rebuild and reload on change automatically" \
+"check:Try building the project without rendering it. Checks links" \
+"help:Prints this message or the help of the given subcommand(s)" \
+    )
+    _describe -t commands 'zola commands' commands "$@"
+}
+(( $+functions[_zola__build_commands] )) ||
+_zola__build_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'zola build commands' commands "$@"
+}
+(( $+functions[_zola__check_commands] )) ||
+_zola__check_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'zola check commands' commands "$@"
+}
+(( $+functions[_zola__help_commands] )) ||
+_zola__help_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'zola help commands' commands "$@"
+}
+(( $+functions[_zola__init_commands] )) ||
+_zola__init_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'zola init commands' commands "$@"
+}
+(( $+functions[_zola__serve_commands] )) ||
+_zola__serve_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'zola serve commands' commands "$@"
+}
+
+_zola "$@"

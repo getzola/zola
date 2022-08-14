@@ -1,0 +1,10 @@
+---
+source: components/rendering/tests/markdown.rs
+assertion_line: 43
+expression: body
+
+---
+<p><a href="https://getzola.org/about/">rel link</a>
+<a href="https://getzola.org/about/#cv">rel link with anchor</a>
+<a href="https://getzola.org/about/">abs link</a></p>
+

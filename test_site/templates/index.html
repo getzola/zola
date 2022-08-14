@@ -1,0 +1,18 @@
+
+{% extends 'sample/templates/index.html' %}
+{% block content %}
+    <div class="list-posts">
+        {% for page in section.pages %}
+            <article>
+                <h3 class="post__title"><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
+            </article>
+        {% endfor %}
+    </div>
+    <!-- Next line is meant to test inner html chars (see https://github.com/getzola/zola/issues/1152) -->
+    <p> <<< </p>
+{% endblock content %}
+
+{% block script %}
+    <script src="{{ get_url(path="scripts/hello.js") | safe }}"
+            integrity="sha384-{{ get_file_hash(path="scripts/hello.js", base64=true) | safe }}"></script>
+{% endblock script %}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
+        <meta name="author" content="{{ config.extra.author }}">
+        <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+        <link rel="stylesheet" href="{{ get_url(path="site.css") }}"/>
+        <link rel="icon" href="{{ get_url(path="favicon.ico") }}">
+    </head>
+    <body>
+
+        <header>
+            <nav class="{% block extra_nav_class %}container{% endblock extra_nav_class %}">
+                <a class="header__logo white" href="{{ config.base_url }}">Zola</a>
+                <a class="white" href="{{ get_url(path="@/documentation/_index.md") }}" class="nav-link">Docs</a>
+                <a class="white" href="{{ get_url(path="@/themes/_index.md") }}" class="nav-link">Themes</a>
+                <a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a>
+                <a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a>
+
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content {% block extra_content_class %}{% endblock extra_content_class %}">
+            {% block content %}
+                <div class="hero">
+                    <h1>Your one-stop static site engine</h1>
+                    <p class="hero__tagline">
+                        Forget dependencies. Everything you need in one binary.
+                    </p>
+                    <a href="{{ get_url(path="@/documentation/_index.md") }}" class="button">Get started</a>
+                </div>
+
+                <div class="inverted-colours selling-points">
+                    <div class="selling-points__content container">
+                        <div class="selling-point">
+                            <h2>No dependencies</h2>
+                            <p>
+                                Zola comes as a single executable with Sass compilation, syntax highlighting, table of contents
+                                and many other features that traditionally require setting up a dev environment
+                                or adding some JavaScript libraries to your site.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Blazing fast</h2>
+                            <p>
+                                The average site will be generated in less than a second,
+                                including Sass compilation and syntax highlighting.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Scalable</h2>
+                            <p>
+                                Zola renders your whole site as static files, making it trivial to handle
+                                any kind of traffic you will throw at it at no cost without having
+                                to worry about managing a server or a database.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Easy to use</h2>
+                            <p>
+                                From the CLI to the template engine, everything is designed to be intuitive.
+                                Don't take my word for it though, look at the
+                                <a href="{{ get_url(path="@/documentation/_index.md") }}">documentation</a> and see for yourself.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Flexible</h2>
+                            <p>
+                                Zola gets out of your way so you can focus on your content, be it a blog,
+                                a knowledge base, a landing page or a combination of them.
+                            </p>
+                        </div>
+
+                        <div class="selling-point">
+                            <h2>Augmented Markdown</h2>
+                            <p>
+                                Zola comes with <a href="{{ get_url(path="@/documentation/content/shortcodes.md") }}">shortcodes</a> and
+                                <a href="{{ get_url(path="@/documentation/content/linking.md") }}">internal links</a>
+                                to make it easier to write your content.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            {% endblock content %}
+        </div>
+        <footer>
+            ©2017-{{ now() | date(format="%Y") }} — <a class="white" href="https://vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="{{ get_url(path="elasticlunr.min.js") }}"></script>
+        <script type="text/javascript" src="{{ get_url(path="search_index.en.js") }}"></script>
+        <script type="text/javascript" src="{{ get_url(path="search.js") }}"></script>
+    </body>
+</html>

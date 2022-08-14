@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="{{ config.description }}">
+      <meta name="author" content="{{ config.extra.author.name }}">
+      <link href="https://fonts.googleapis.com/css?family=Fira+Mono|Fira+Sans|Merriweather" rel="stylesheet">
+      <link href="{{ config.base_url }}/site.css" rel="stylesheet">
+      <title>{{ config.title }}</title>
+    </head>
+
+  <body>
+    <div class="content">
+        {% block content %}
+            <div class="list-posts">
+                {% for page in paginator.pages %}
+                    <article>
+                        <h3 class="post__title"><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
+                    </article>
+                {% endfor %}
+                {% if paginator.previous %}has_prev{% endif %}
+                {% if paginator.next %}has_next{% endif %}
+                Num pages: {{ paginator.number_pagers }}
+                Current index: {{ paginator.current_index }}
+                First: {{ paginator.first | safe }}
+                Last: {{ paginator.last | safe }}
+            </div>
+        {% endblock content %}
+    </div>
+
+    {% include "current_path.html" %}
+
+  </body>
+</html>

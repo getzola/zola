@@ -1,0 +1,35 @@
+title = "My Integration Testing site"
+base_url = "https://replace-this-with-your-url.com"
+compile_sass = true
+generate_feed = true
+theme = "sample"
+
+taxonomies = [
+    {name = "categories", feed = true},
+    {name = "podcast_authors", feed = true},
+]
+
+ignored_content = ["*/ignored.md"]
+
+[markdown]
+highlight_code = true
+highlight_theme = "custom_gruvbox"
+extra_syntaxes_and_themes = ["syntaxes", "highlight_themes"]
+
+[slugify]
+paths = "on"
+taxonomies = "on"
+anchors = "on"
+
+[link_checker]
+skip_prefixes = [
+    "http://[2001:db8::]/",
+    "http://invaliddomain",
+]
+
+skip_anchor_prefixes = [
+    "https://github.com/rust-lang/rust/blob/",
+]
+
+[extra.author]
+name = "Vincent Prouillet"

@@ -1,0 +1,10 @@
+---
+source: components/rendering/tests/codeblocks.rs
+assertion_line: 253
+expression: body
+
+---
+<pre data-linenos style="background-color:#2b303b;color:#c0c5ce;"><code><table><tbody><tr><td>1</td><td><span>foo
+</span></td></tr><tr><td><mark style="background-color:#65737e30;">2</mark></td><td><mark style="background-color:#65737e30;"><span>bar
+</span></mark></td></tr></tbody></table></code></pre>
+

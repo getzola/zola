@@ -1,0 +1,10 @@
+{% extends "index.html" %}
+
+{% block content %}
+    {{ page.content | safe }}
+    {{ page.relative_path | safe }}
+    {{ page.toc }}
+
+    {% if page.earlier %}Previous article: {{ page.earlier.permalink }}{% endif %}
+    {% if page.later %}Next article: {{ page.later.permalink }}{% endif %}
+{% endblock content %}

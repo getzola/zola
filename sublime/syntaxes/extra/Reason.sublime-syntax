@@ -1,0 +1,158 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Reason
+file_extensions:
+  - re
+  - rei
+scope: source.reason
+contexts:
+  main:
+    - include: reason_comment_doc_block
+    - include: reason_comment_block
+    - include: reason_comment
+    - include: reason_named_arg
+    - include: reason_module
+    - include: reason_lifetime
+    - include: reason_self
+    - include: reason_string
+    - include: reason_raw_string
+    - match: '\''([^\''\\]|\\(x[0-9A-Fa-f]{2}|u\{[0-9A-Fa-f]{1,6}\}|.))\'''
+      scope: string.quoted.single.source.reason
+    - match: '\b(fun)\s+([a-zA-Z_][a-zA-Z0-9_]?[\w\:,+ \''<>?]*)\s*(?:\()'
+      scope: meta.function.source.reason
+      captures:
+        1: keyword.source.reason
+        2: entity.name.function.source.reason
+    - match: '(let|and)\s+(module\s+)(rec\s+)?([[:alpha:]_][[:alnum:]_]*)\s*(:[^=]*)?(=?)'
+      comment: This matches the 'let x = val' style of variable intitialization.
+      scope: meta.initialization.reason
+      captures:
+        1: keyword.source.reason
+        2: keyword.source.reason
+        3: keyword.source.reason
+        4: variable.other.reason
+        5: storage.type.source.reason
+        6: keyword.operator.reason
+    - match: '(let)\s+(rec\s+)?([[:alpha:]_][[:alnum:]_]*)\s*(:[^=]*)?(=?)'
+      comment: This matches the 'let x = val' style of variable intitialization.
+      scope: meta.initialization.reason
+      captures:
+        1: keyword.source.reason
+        2: keyword.source.reason
+        4: storage.type.source.reason
+        5: keyword.operator.reason
+    - match: (extern\s+crate)\s+(\w+)
+      scope: meta.import.reason
+      captures:
+        1: keyword.source.reason
+        2: support
+    - match: '\b(macro_rules!)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\{)'
+      scope: meta.macro.source.reason
+      captures:
+        1: keyword.source.reason
+        2: entity.name.macro.source.reason
+    - match: \b(as|box|break|claim|const|continue|copy|Copy|crate|do|drop|then|else|extern|for|if|impl|in|let|and|loop|switch|fun|open|include|mod|move|mutable|Owned|priv|pub|pure|ref|return|unsafe|use|while|mod|Send|static|trait|struct|enum|exception|type|module|rec|where)\b
+      scope: keyword.source.reason
+    - match: \b(Self|m32|m64|m128|f80|f16|f128|int|uint|isize|usize|float|char|bool|u8|u16|u32|u64|f32|f64|i8|i16|i32|i64|str|Option|Either|c_float|c_double|c_void|FILE|fpos_t|DIR|dirent|c_char|c_schar|c_uchar|c_short|c_ushort|c_int|c_uint|c_long|c_ulong|size_t|ptrdiff_t|clock_t|time_t|c_longlong|c_ulonglong|intptr_t|uintptr_t|off_t|dev_t|ino_t|pid_t|mode_t|ssize_t)\b
+      scope: storage.type.source.reason
+    - match: \bself\b
+      scope: variable.language.source.reason
+    - match: \b(true|false|Some|None|Ok|Err)\b
+      scope: constant.language.source.reason
+    - match: \b(EXIT_FAILURE|EXIT_SUCCESS|RAND_MAX|EOF|SEEK_SET|SEEK_CUR|SEEK_END|_IOFBF|_IONBF|_IOLBF|BUFSIZ|FOPEN_MAX|FILENAME_MAX|L_tmpnam|TMP_MAX|O_RDONLY|O_WRONLY|O_RDWR|O_APPEND|O_CREAT|O_EXCL|O_TRUNC|S_IFIFO|S_IFCHR|S_IFBLK|S_IFDIR|S_IFREG|S_IFMT|S_IEXEC|S_IWRITE|S_IREAD|S_IRWXU|S_IXUSR|S_IWUSR|S_IRUSR|F_OK|R_OK|W_OK|X_OK|STDIN_FILENO|STDOUT_FILENO|STDERR_FILENO)\b
+      scope: support.constant.source.reason
+    - match: '#!?\['
+      push:
+        - meta_scope: comment.block.attribute.reason
+        - match: '\]'
+          pop: true
+        - include: reason_string
+        - include: reason_raw_string
+    - match: '\b(([0-9][0-9_]*)|([0-9][0-9_]*(usize|u8|u16|u32|u64))|([0-9][0-9_]*(isize|i8|i16|i32|i64)))\b'
+      scope: constant.numeric.integer.source.reason
+    - match: '\b((0x[a-fA-F0-9_]+)|(0x[a-fA-F0-9_]+(usize|u8|u16|u32|u64))|(0x[a-fA-F0-9_]+(isize|i8|i16|i32|i64)))\b'
+      scope: constant.numeric.hex.source.reason
+    - match: '\b((0b[01_]+)|(0b[01_]+(usize|u8|u16|u32|u64))|(0b[01_]+(isize|i8|i16|i32|i64)))\b'
+      scope: constant.numeric.binary.source.reason
+    - match: '\b(([0-9][0-9_]*(f32|f64|f))|([0-9][0-9_]*([eE][+-]=[0-9_]+))|([0-9][0-9_]*([eE][+-]=[0-9_]+)(f32|f64|f))|([0-9][0-9_]*\.[0-9_]+)|([0-9][0-9_]*\.[0-9_]+(f32|f64|f))|([0-9][0-9_]*\.[0-9_]+%([eE][+-]=[0-9_]+))|([0-9][0-9_]*\.[0-9_]+%([eE][+-]=[0-9_]+)(f32|f64|f)))\b'
+      scope: constant.numeric.float.source.reason
+    - match: "(=>)|(->)|[-:=*,!.+|%/&~@<>;]"
+      scope: keyword.operator.reason
+    - match: \b_\b
+      scope: support.function.reason
+    - match: \b(\w+)\b(?=\()
+      scope: support.function.reason
+    - match: \b(\w+!)(?=\()
+      scope: support.macro.reason
+    - match: '\b(\w+)::'
+      scope: meta.namespace-block.reason
+    - match: '\b(\w+!)\s*[({\[]'
+      scope: meta.macro.source.reason
+      captures:
+        1: meta.preprocessor.reason
+    - match: '(\[|\]|{|}|\(|\))'
+      scope: punctuation.definition.bracket.reason
+    - match: \b(Box|Vec|StrBuf|Path|Option|Result|Reader|Writer|Stream|Seek|Buffer|IoError|IoResult|Sender|SyncSender|Receiver|Cell|RefCell|Any)\b
+      scope: support.class.std.source.reason
+    - match: \b(Send|Sized|Copy|Share)\b
+      scope: support.type.kind.source.reason
+    - match: \bbox\b
+      scope: storage.modifier.box.source.reason
+    - match: \brec\b
+      scope: storage.modifier.rec.source.reason
+    - match: \bmodule\b
+      scope: storage.modifier.module.source.reason
+  reason_comment:
+    - match: //
+      push:
+        - meta_scope: comment.source.reason
+        - match: (?=^)
+          pop: true
+  reason_comment_block:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.source.reason
+        - match: \*/
+          pop: true
+        - include: reason_comment_block
+  reason_comment_doc_block:
+    - match: '/\*[!\*][^\*]'
+      push:
+        - meta_scope: comment.block.documentation.source.reason
+        - match: \*/
+          pop: true
+        - include: reason_comment_doc_block
+  reason_escaped_character:
+    - match: '\\(x[0-9A-Fa-f]{2}|u\{[0-9A-Fa-f]{1,6}\}|.)'
+      scope: constant.character.escape.source.reason
+  reason_lifetime:
+    - match: '\''([a-zA-Z_][a-zA-Z0-9_]*)(?!\'')\b'
+      scope: storage.modifier.lifetime.source.reason
+      captures:
+        1: entity.name.lifetime.source.reason
+  reason_module:
+    - match: '\b([A-Z][a-zA-Z0-9_]*)\b'
+      captures:
+        1: variable.other.reason
+  reason_named_arg:
+    - match: '(@([a-zA-Z_][a-zA-Z0-9_]*))\b'
+      captures:
+        1: storage.modifier.lifetime.source.reason
+        2: entity.name.lifetime.source.reason
+  reason_raw_string:
+    - match: r(#*)"
+      push:
+        - meta_scope: string.quoted.double.raw.source.reason
+        - match: '"(\1)'
+          pop: true
+  reason_self:
+    - match: \bself\b
+      scope: variable.language.source.reason
+  reason_string:
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.source.reason
+        - match: '"'
+          pop: true
+        - include: reason_escaped_character

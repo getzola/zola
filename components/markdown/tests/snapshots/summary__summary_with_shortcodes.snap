@@ -1,0 +1,12 @@
+---
+source: components/rendering/tests/summary.rs
+assertion_line: 41
+expression: body
+
+---
+<p><p>a: 1</p> <p>a: 2</p>
+<div><h1 id="hello-world">Hello world</h1>
+</div></p>
+<pre><code>some code;
+</code></pre>
+

@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/markdown.rs
+assertion_line: 161
+expression: body
+
+---
+<p><a rel="noreferrer" href="https://google.com">https://google.com</a></p>
+

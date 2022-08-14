@@ -1,0 +1,11 @@
+title = "My site"
+base_url = "https://staging.com"
+highlight_code = true
+theme = "sample"
+
+[markdown]
+highlight_code = true
+
+[extra.author]
+name = "Vincent Prouillet"
+

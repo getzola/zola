@@ -1,0 +1,8 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 52
+expression: body
+
+---
+<p>hello shortcode-id</p>
+<quote>A quote</quote>shortcode-id2shortcode-id3

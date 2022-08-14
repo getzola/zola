@@ -1,0 +1,5 @@
+{% for tag in terms %}
+    {{ tag.name }} {{ tag.slug }} {{ tag.pages | length }}
+{% endfor %}
+
+{% include "current_path.html" %}

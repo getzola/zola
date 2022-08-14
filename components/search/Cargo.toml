@@ -1,0 +1,10 @@
+[package]
+name = "search"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+errors = { path = "../errors" }
+content = { path = "../content" }
+config = { path = "../config" }
+libs = { path = "../libs" }

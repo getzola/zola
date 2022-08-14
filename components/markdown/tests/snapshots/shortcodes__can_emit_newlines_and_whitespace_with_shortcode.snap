@@ -1,0 +1,11 @@
+---
+source: components/rendering/tests/shortcodes.rs
+assertion_line: 161
+expression: body
+
+---
+<pre>Hello
+
+Zola
+
+!</pre>

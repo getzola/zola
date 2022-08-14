@@ -1,0 +1,54 @@
+[package]
+name = "libs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ahash = "0.8"
+ammonia = "3"
+atty = "0.2.11"
+base64 = "0.13"
+csv = "1"
+elasticlunr-rs = { version = "3.0.0", features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
+filetime = "0.2"
+gh-emoji = "1"
+glob = "0.3"
+globset = "0.4"
+image = "0.24"
+lexical-sort = "0.3"
+minify-html = "0.9"
+nom-bibtex = "0.3"
+num-format = "0.4"
+once_cell = "1"
+percent-encoding = "2"
+pulldown-cmark = { version = "0.9", default-features = false, features = ["simd"]  }
+quickxml_to_serde = "0.5"
+rayon = "1"
+regex = "1"
+relative-path = "1"
+reqwest = { version = "0.11", default-features = false, features = ["blocking"] }
+sass-rs = "0.2"
+serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
+slug = "0.1"
+svg_metadata = "0.4"
+syntect = "5"
+tera = { version = "1", features = ["preserve_order"] }
+termcolor = "1.0.4"
+time = "0.3"
+toml = "0.5"
+unic-langid = "0.9"
+unicode-segmentation = "1.2"
+url = "2"
+walkdir = "2"
+webp = "0.2"
+
+
+[features]
+# TODO: fix me, it doesn't pick up the reqwuest feature if not set as default
+default = ["rust-tls"]
+rust-tls = ["reqwest/rustls-tls"]
+native-tls = ["reqwest/default-tls"]
+indexing-zh = ["elasticlunr-rs/zh"]
+indexing-ja = ["elasticlunr-rs/ja"]

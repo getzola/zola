@@ -1,0 +1,90 @@
+.documentation {
+  padding: 3rem;
+  display: flex;
+
+  &__sidebar {
+    margin-right: 2rem;
+
+    ul {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    > ul {
+      > li {
+        margin-bottom: 1rem;
+      }
+
+      .documentation__sidebar__title {
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+
+      ul {
+        margin-top: 0.25rem;
+
+        li {
+          border-left: 1px solid $background;
+          padding-left: 0.75rem;
+          padding-top: 0.25rem;
+          padding-bottom: 0.25rem;
+        }
+
+        li.active a {
+          font-weight: bold;
+          border-bottom: 1px solid $link-color;
+        }
+      }
+    }
+
+  }
+
+  &__content {
+    width: 60%;
+    // Same as the anchor absolute left to not overlap
+    margin-left: 2rem;
+
+    h1, h2, h3, h4, h5, h6 {
+      .zola-anchor {
+        font-size: 1.25rem;
+        margin-left: -2rem;
+        margin-right: 0.75rem;
+        text-decoration: none;
+        border-bottom-color: transparent;
+        cursor: pointer;
+      }
+    }
+
+    blockquote {
+      border-left: 10px solid black;
+      padding: 0.25rem 0.5rem;
+      margin-left: 0;
+      font-style: italic;
+    }
+  }
+
+  iframe {
+    width: 100%;
+    min-height: 400px;
+  }
+}
+
+
+@media only screen and (max-width: 1000px) {
+  .documentation {
+    flex-direction: column;
+    padding: 2rem;
+
+    &__content {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    &__sidebar {
+      border-top: 1px solid $background;
+      order: 1;
+      margin-right: 0;
+      margin-top: 1rem;
+    }
+  }
+}

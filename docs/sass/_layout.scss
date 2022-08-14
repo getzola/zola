@@ -1,0 +1,29 @@
+header {
+  padding: 2rem 3rem;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+@media only screen and (max-width: 1000px)  {
+  .container {
+    max-width: 90%;
+  }
+}
+
+.content {
+  flex-grow: 1;
+
+  &--reversed {
+    background: $foreground;
+    color: $background;
+  }
+}
+
+
+footer {
+  text-align: center;
+  padding: 2rem 3rem;
+}

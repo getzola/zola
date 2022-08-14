@@ -1,0 +1,15 @@
+[package]
+name = "utils"
+version = "0.1.0"
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+edition = "2018"
+include = ["src/**/*"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+errors = { path = "../errors" }
+libs = { path = "../libs" }
+
+[dev-dependencies]
+tempfile = "3"

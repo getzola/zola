@@ -1,0 +1,17 @@
+{{page.title}}
+{{page.content | safe}}
+Language: {{lang}}
+
+{% for t in page.translations %}
+Translated in {{t.lang|default(value=config.default_language)}}: {{t.title}} {{t.permalink|safe}}
+
+<br><br>
+
+{% set translated_page = get_page(path = t.path) %}
+{{ translated_page.content | safe }}
+
+{% endfor %}
+
+{% for taxo_kind, items in page.taxonomies %}
+    {% set taxo = get_taxonomy(kind=taxo_kind, lang=lang) %}
+{% endfor %}

@@ -1,0 +1,18 @@
+[package]
+name = "templates"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+errors = { path = "../errors" }
+utils = { path = "../utils" }
+content = { path = "../content" }
+config = { path = "../config" }
+imageproc = { path = "../imageproc" }
+markdown = { path = "../markdown" }
+libs = { path = "../libs" }
+
+
+[dev-dependencies]
+mockito = "0.31"
+tempfile = "3"

@@ -1,0 +1,54 @@
+.inverted-colours {
+  background: $foreground;
+  color: $background;
+}
+
+.hero {
+  width: 60%;
+  margin: 0 auto;
+  margin-top: 3rem;
+  margin-bottom: 6rem;
+  text-align: center;
+
+  &__tagline {
+    margin-bottom: 2rem;
+  }
+}
+
+.selling-points {
+  padding: 3rem;
+
+  &__content {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+.selling-point {
+  // 2 selling points per row on desktop
+  width: 33%;
+  padding: 2rem;
+  padding-top: 1rem;
+}
+
+// and 1 on mobile
+@media only screen and (max-width: 1000px) {
+  .hero {
+    width: 90%;
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .selling-points {
+    padding: 2rem;
+  }
+
+  .selling-point {
+    width: 100%;
+    padding: 1rem;
+
+    h2 {
+      text-align: center;
+    }
+  }
+}

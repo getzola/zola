@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+name: mylang
+file_extensions: [mylang]
+scope: source.mylang
+
+contexts:
+  main:
+    - match: \b(if|else|for|while)\b
+      scope: keyword.control

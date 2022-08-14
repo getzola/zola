@@ -1,0 +1,27 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.lyric
+file_extensions:
+  - lrc
+  - lyric
+contexts:
+  main:
+    - match: '\[([0-5][0-9]:[0-5][0-9]\.[0-9][0-9])\]'
+      captures:
+        1: constant.other.time.lyric
+      push:
+        - match: '(.*)[\n\r]+'
+          captures:
+            1: string.literal.lyric
+          pop: true
+    - match: '(\[)([a-zA-Z].*)(:)(.*)(\])'
+      captures:
+        1: punctuation.definition.meta.lyric
+        2: entity.name.function.lyric
+        3: punctuation.definition.split.lyric
+        4: meta.object-literal.key.lyric
+        5: punctuation.definition.meta.lyric
+    - match: (.*)
+      captures:
+        1: invalid.illegal.lyric

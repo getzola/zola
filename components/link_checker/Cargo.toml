@@ -1,0 +1,13 @@
+[package]
+name = "link_checker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+config = { path = "../config" }
+errors = { path = "../errors" }
+utils = { path = "../utils" }
+libs = { path = "../libs" }
+
+[dev-dependencies]
+mockito = "0.31"

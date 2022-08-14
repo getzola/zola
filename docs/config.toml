@@ -1,0 +1,19 @@
+base_url = "https://www.getzola.org/"
+title = "Zola"
+description = "Everything you need to make a static site engine in one binary."
+
+compile_sass = true
+build_search_index = true
+
+[markdown]
+highlight_code = true
+highlight_theme = "kronuz"
+#highlight_theme = "css"
+#highlight_themes_css = [
+#  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
+#  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
+#]
+
+
+[extra]
+author = "Vincent Prouillet"

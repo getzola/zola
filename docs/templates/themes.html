@@ -1,0 +1,22 @@
+{% extends "index.html" %}
+
+{% block extra_nav_class %}{% endblock extra_nav_class %}
+{% block extra_content_class %}content--reversed{% endblock extra_content_class %}
+
+{% block title %}Themes | {{ super() }} {% endblock title %}
+
+{% block content %}
+    <div class="themes-container">
+        {% block theme_content %}
+            <h1>Zola themes</h1>
+            <div class="themes">
+                {% for theme in section.pages %}
+                    <a class="theme" href="{{theme.permalink}}">
+                        <img src="{{theme.permalink}}screenshot.png" alt="Screenshot of {{theme.title}}">
+                        <span>{{theme.title}}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endblock theme_content %}
+    </div>
+{% endblock content %}

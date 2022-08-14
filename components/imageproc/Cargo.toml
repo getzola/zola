@@ -1,0 +1,16 @@
+[package]
+name = "imageproc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+kamadak-exif = "0.5.4"
+
+errors = { path = "../errors" }
+utils = { path = "../utils" }
+config = { path = "../config" }
+libs = { path = "../libs" }
+
+[dev-dependencies]
+tempfile = "3"
