@@ -60,10 +60,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.output_path.clone(),
         ),
     );
-    site.tera.register_function(
-        "get_hash",
-        global_fns::GetHash::new()
-    );
+    site.tera.register_function("get_hash", global_fns::get_hash);
 
     site.tera.register_filter(
         "markdown",

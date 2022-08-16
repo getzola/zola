@@ -9,7 +9,7 @@ mod images;
 mod load_data;
 
 pub use self::content::{GetPage, GetSection, GetTaxonomy, GetTaxonomyUrl};
-pub use self::files::{GetFileHash, GetHash, GetUrl};
+pub use self::files::{GetFileHash, get_hash, GetUrl};
 pub use self::i18n::Trans;
 pub use self::images::{GetImageMetadata, ResizeImage};
 pub use self::load_data::LoadData;

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{fs, io, result};
+use std::io::Read;
 
 use crate::global_fns::helpers::search_for_file;
 use config::Config;
@@ -30,7 +31,7 @@ where
 fn compute_hash<D: digest::Digest>(
     literal: String,
     as_base64: bool,
-) -> result::Result<String, io::Error>
+) -> String
 where
     digest::Output<D>: core::fmt::LowerHex,
     D: std::io::Write,
@@ -38,9 +39,9 @@ where
     let mut hasher = D::new();
     hasher.update(literal);
     if as_base64 {
-        Ok(encode_b64(hasher.finalize()))
+        encode_b64(hasher.finalize())
     } else {
-        Ok(format!("{:x}", hasher.finalize()))
+        format!("{:x}", hasher.finalize())
     }
 }
 
@@ -201,18 +202,6 @@ impl TeraFn for GetFileHash {
             args.get("path"),
             "`get_file_hash` requires a `path` argument with a string value"
         );
-        let sha_type = optional_arg!(
-            u16,
-            args.get("sha_type"),
-            "`get_file_hash`: `sha_type` must be 256, 384 or 512"
-        )
-        .unwrap_or(384);
-        let base64 = optional_arg!(
-            bool,
-            args.get("base64"),
-            "`get_file_hash`: `base64` must be true or false"
-        )
-        .unwrap_or(true);
 
         let file_path =
             match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
@@ -224,73 +213,65 @@ impl TeraFn for GetFileHash {
                 }
             };
 
-        let f = match std::fs::File::open(file_path) {
+        let mut f = match std::fs::File::open(file_path) {
             Ok(f) => f,
             Err(e) => {
                 return Err(format!("File {} could not be open: {}", path, e).into());
             }
         };
 
-        let hash = match sha_type {
-            256 => compute_file_hash::<Sha256>(f, base64),
-            384 => compute_file_hash::<Sha384>(f, base64),
-            512 => compute_file_hash::<Sha512>(f, base64),
-            _ => return Err("`get_file_hash`: Invalid sha value".into()),
+        let mut contents = String::new();
+
+        match f.read_to_string(&mut contents) {
+            Ok(f) => f,
+            Err(e) => {
+                return Err(format!("File {} could not be read: {}", path, e).into());
+            }
         };
-
-        match hash {
-            Ok(digest) => Ok(to_value(digest).unwrap()),
-            Err(_) => Err("`get_file_hash`: could no compute hash".into()),
-        }
+        
+        Ok(to_value(process_hashes(contents, args)?).unwrap())
     }
 }
 
-#[derive(Debug)]
-pub struct GetHash {}
 
-impl GetHash {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl TeraFn for GetHash {
-    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
-        let literal = required_arg!(
-            String,
-            args.get("literal"),
-            "`get_hash` requires a `literal` argument with a string value"
+pub fn get_hash(args: &HashMap<String, Value>) -> Result<Value> {
+    let literal = required_arg!(
+        String,
+        args.get("literal"),
+        "`get_hash` requires a `literal` argument with a string value"
         );
-        let sha_type = optional_arg!(
-            u16,
-            args.get("sha_type"),
-            "`get_hash`: `sha_type` must be 256, 384 or 512"
+
+    Ok(to_value(process_hashes(literal, args)?).unwrap())
+}
+
+fn process_hashes(literal: String, args: &HashMap<String, Value>) -> Result<String> {
+    let sha_type = optional_arg!(
+        u16,
+        args.get("sha_type"),
+        "`get_hash`: `sha_type` must be 256, 384 or 512"
         )
         .unwrap_or(384);
-        let base64 = optional_arg!(
-            bool,
-            args.get("base64"),
-            "`get_hash`: `base64` must be true or false"
+    let base64 = optional_arg!(
+        bool,
+        args.get("base64"),
+        "`get_hash`: `base64` must be true or false"
         )
         .unwrap_or(true);
 
-        let hash = match sha_type {
-            256 => compute_hash::<Sha256>(literal, base64),
-            384 => compute_hash::<Sha384>(literal, base64),
-            512 => compute_hash::<Sha512>(literal, base64),
-            _ => return Err("`get_hash`: Invalid sha value".into()),
-        };
+    let hash = match sha_type {
+        256 => compute_hash::<Sha256>(literal, base64),
+        384 => compute_hash::<Sha384>(literal, base64),
+        512 => compute_hash::<Sha512>(literal, base64),
+        _ => return Err("`get_hash`: Invalid sha value".into()),
+    };
 
-        match hash {
-            Ok(digest) => Ok(to_value(digest).unwrap()),
-            Err(_) => Err("`get_hash`: could no compute hash".into()),
-        }
-    }
+    Ok(hash)
 }
+
 
 #[cfg(test)]
 mod tests {
-    use super::{GetFileHash, GetHash, GetUrl};
+    use super::{GetFileHash, get_hash, GetUrl};
 
     use std::collections::HashMap;
     use std::fs::create_dir;
@@ -592,71 +573,65 @@ title = "A title"
 
     #[test]
     fn can_get_hash_sha256_no_base64() {
-        let static_fn = GetHash::new();
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
         args.insert("base64".to_string(), to_value(false).unwrap());
         assert_eq!(
-            static_fn.call(&args).unwrap(),
+            get_hash(&args).unwrap(),
             "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
         );
     }
 
     #[test]
     fn can_get_hash_sha256_base64() {
-        let static_fn = GetHash::new();
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
         args.insert("base64".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=");
+        assert_eq!(get_hash(&args).unwrap(), "pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=");
     }
 
     #[test]
     fn can_get_hash_sha384_no_base64() {
-        let static_fn = GetHash::new();
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("base64".to_string(), to_value(false).unwrap());
         assert_eq!(
-            static_fn.call(&args).unwrap(),
+            get_hash(&args).unwrap(),
             "99514329186b2f6ae4a1329e7ee6c610a729636335174ac6b740f9028396fcc803d0e93863a7c3d90f86beee782f4f3f"
             );
     }
 
     #[test]
     fn can_get_hash_sha384() {
-        let static_fn = GetHash::new();
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         assert_eq!(
-            static_fn.call(&args).unwrap(),
+            get_hash(&args).unwrap(),
             "mVFDKRhrL2rkoTKefubGEKcpY2M1F0rGt0D5AoOW/MgD0Ok4Y6fD2Q+Gvu54L08/"
         );
     }
 
     #[test]
     fn can_get_hash_sha512_no_base64() {
-        let static_fn = GetHash::new();
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
         args.insert("base64".to_string(), to_value(false).unwrap());
         assert_eq!(
-            static_fn.call(&args).unwrap(),
+            get_hash(&args).unwrap(),
             "2c74fd17edafd80e8447b0d46741ee243b7eb74dd2149a0ab1b9246fb30382f27e853d8585719e0e67cbda0daa8f51671064615d645ae27acb15bfb1447f459b"
         );
     }
 
     #[test]
     fn can_get_hash_sha512() {
-        let static_fn = GetHash::new();
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
         assert_eq!(
-            static_fn.call(&args).unwrap(),
+            get_hash(&args).unwrap(),
             "LHT9F+2v2A6ER7DUZ0HuJDt+t03SFJoKsbkkb7MDgvJ+hT2FhXGeDmfL2g2qj1FnEGRhXWRa4nrLFb+xRH9Fmw=="
         );
     }
