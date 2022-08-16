@@ -3,11 +3,11 @@
 title = "anatole-zola"
 description = "A port of farbox-theme-Anatole for zola"
 template = "theme.html"
-date = 2022-06-15T01:35:37-07:00
+date = 2022-08-15T23:36:23-07:00
 
 [extra]
-created = 2022-06-15T01:35:37-07:00
-updated = 2022-06-15T01:35:37-07:00
+created = 2022-08-15T23:36:23-07:00
+updated = 2022-08-15T23:36:23-07:00
 repository = "https://github.com/longfangsong/anatole-zola.git"
 homepage = "https://github.com/longfangsong/anatole-zola"
 minimum_version = "0.4.0"
@@ -72,7 +72,7 @@ You can either
 
 ### Language
 
-Currently, we have English, Chinese and German translations, set the `default_language` if necessary:
+Currently, we have English, Chinese, German and Swedish translations, set the `default_language` if necessary:
 
 ```toml
 # 如果你想要中文
@@ -83,24 +83,29 @@ If there are complications, you can copy this snippet to your `config.toml`:
 
 ```toml
 [languages.en.translations]
+language_name = "English"
 about = "About"
 home = "Home"
 tags = "Tags"
 archive = "Archive"
 links = "Links"
+date_format = "%Y-%m-%d"
 next_page = "Next Page"
 last_page = "Last Page"
 
 [languages.zh.translations]
+language_name = "中文"
 home = "首页"
 about = "关于"
 tags = "标签"
 archive = "归档"
 links = "友链"
+date_format = "%Y-%m-%d"
 next_page = "下一页"
 last_page = "上一页"
 
 [languages.de.translations]
+language_name = "Deutsch"
 about = "Info"
 home = "Home"
 tags = "Kategorien"
@@ -109,9 +114,26 @@ links = "Links"
 date_format = "%d-%m-%Y"
 next_page = "Nächste Seite"
 last_page = "Vorherige Seite"
+
+[languages.sv.translations]
+language_name = "Svenska"
+about = "Info"
+home = "Hem"
+tags = "Etiketter"
+archive = "Arkiv"
+links = "Länkar"
+date_format = "%Y-%m-%d"
+next_page = "Nästa Sidan"
+last_page = "Sista Sidan"
 ```
 
 Feel free to create a pull request if you want to translate the theme into other languages!
+#### Multilingual
+
+The theme will become multilingual automatically if you specify another language except `default_language`.
+
+You'll see a language-switching button on top right.
+
 
 ### Sections
 

@@ -3,11 +3,11 @@
 title = "kangae"
 description = "a lightweight microblog theme for zola"
 template = "theme.html"
-date = 2022-06-15T01:35:37-07:00
+date = 2022-08-15T23:36:23-07:00
 
 [extra]
-created = 2022-06-15T01:35:37-07:00
-updated = 2022-06-15T01:35:37-07:00
+created = 2022-08-15T23:36:23-07:00
+updated = 2022-08-15T23:36:23-07:00
 repository = "https://github.com/ayushnix/kangae.git"
 homepage = "https://github.com/ayushnix/kangae"
 minimum_version = "0.15.0"
@@ -178,11 +178,10 @@ If you're in India, you can also use UPI for donations. My UPI address is `ayush
 
 # Notes
 
-I'm not really a web developer and I don't intend to be one either. However, I am interested in
-learning HTML and CSS to create lightweight textual websites. You may be interested in reading [my
-log about how I learned HTML and CSS][12]. However, that page is just an unorganized dump of my
-thoughts and isn't a polished blog post. [Seirdy's blog post on creating textual websites][13] is
-probably a better reference.
+Although I'm not a web developer, I am interested in learning HTML and CSS to create lightweight
+textual websites. You may be interested in reading [my log about how I learned HTML and CSS][12].
+However, that page is just an unorganized dump of my thoughts and isn't a polished blog post.
+[Seirdy's blog post on creating textual websites][13] is probably a better reference.
 
 # TODO (maybe?)
 
@@ -196,6 +195,7 @@ probably a better reference.
 - pagination
 - light and dark mode switch
 - content tabs
+- microdata and microformats2
 
 [1]: https://kangae.ayushnix.com/
 [2]: https://www.getzola.org/

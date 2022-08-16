@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No JS."
 template = "theme.html"
-date = 2022-06-15T01:35:37-07:00
+date = 2022-08-15T23:36:23-07:00
 
 [extra]
-created = 2022-06-15T01:35:37-07:00
-updated = 2022-06-15T01:35:37-07:00
+created = 2022-08-15T23:36:23-07:00
+updated = 2022-08-15T23:36:23-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge/"
-minimum_version = "0.14.1"
+minimum_version = "0.16.0"
 license = "MIT"
 demo = "https://abridge.netlify.app/"
 
@@ -28,9 +28,9 @@ Abridge is a fast and lightweight Zola theme using semantic html, only ~6kb css 
 
 There is also [Abridge-minimal](https://github.com/jieiku/abridge.css) Theme which is used to showcase the [abridge.css framework](https://github.com/Jieiku/abridge.css/tree/master/dist)
 
-Maintainence of this project is made possible by all the <a href="https://github.com/Jieiku/abridge/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/Jieiku">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/Jieiku">click here</a>. 💖
+Maintenance of this project is made possible by all the <a href="https://github.com/Jieiku/abridge/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/Jieiku">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/Jieiku">click here</a>. 💖
 
-<!-- sponsors --><a href="https://github.com/yugfletcher"><img src="https://github.com/yugfletcher.png" width="60px" alt="" /></a><!-- sponsors -->
+<!-- sponsors --><!-- sponsors -->
 
 ---
 
@@ -40,7 +40,7 @@ Maintainence of this project is made possible by all the <a href="https://github
 
 ## Requirements
 
-This theme requires version 0.14.1 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
+This theme requires version 0.16.0 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
 
 ## Quick Start
 
@@ -80,37 +80,22 @@ git submodule add https://github.com/jieiku/abridge.git themes/abridge
 
 ### Step 3: Configuration
 
-Enable the theme in your `config.toml` in the site directory:
-
-```toml
-theme = "abridge"
-```
-
-Or copy the `config.toml` from the theme directory to your project's root directory:
+Copy the `config.toml` from the theme directory to your project's root directory:
 (This will give you a base configuration with all config values used)
+If you plan to use the search_facade feature (dynamic ondemand loading of search) then also copy the package.json (and netlify.toml if you use netlify)
+You will also want to copy the content/static folder if you intend to use stork or tinysearch
 
 ```bash
 cp themes/abridge/config.toml config.toml
+cp themes/abridge/package.json package.json
+cp themes/abridge/netlify.toml netlify.toml
+cp -r themes/abridge/content/static content/
 ```
 
-Uncomment the theme line, and point extra_syntaxes_and_themes at the correct directory:
+Uncomment the theme line:
 ```bash
 sed -i 's/^#theme = "abridge"/theme = "abridge"/' config.toml
-sed -i 's/^extra_syntaxes_and_themes = \["highlight_themes"\]/extra_syntaxes_and_themes = \["highlight_themes", "themes\/abridge\/highlight_themes"\]/' config.toml
 ```
-
-The result should be:
-```toml
-theme = "abridge"
-[markdown]
-extra_syntaxes_and_themes = ["highlight_themes", "themes/abridge/highlight_themes"]
-highlight_code = true
-highlight_theme = "css"
-```
-
-By default abridge uses `highlight_theme = "css"`.
-
-This allows the code block light/dark mode to change with the rest of the site, this also prevents unsafe-inline for style-src in our CSP.
 
 ### Step 4: Add new content
 
@@ -132,6 +117,128 @@ zola serve
 
 Zola will start the development web server making your site accessible by default at
 `http://127.0.0.1:1111`. Saved changes will live reload in the browser.
+
+### Step 6: Add provisions for search_facade.js (dynamic ondemand loading of search related js) or disable the facade.
+
+**IMPORTANT!** by default abridge dynamically loads the js related to the search when the search box is clicked, this allows for a faster page load and saved bandwidth. (not everyone needs or will use the search!)
+
+This feature uses a bundle that has all js related to the search in a single js file, this ensures that the files are in the proper order, and that once downloaded the search is ready to use.
+
+to generate this file you have to do this:
+
+```shell
+zola build
+npm run abridge
+zola build # or zola serve
+```
+
+or if testing/running the theme directly:
+
+```shell
+zola build
+npm run abridge-demo
+zola build # or zola serve
+```
+
+I completely understand that this makes configuration a bit complicated. Zola does not have any built-in facilities for bundling javascript so we are using uglifyjs, shasum, openssl, etc (all defined in package.json) If you find this too difficult then I highly suggest just disabling the facade and loading the search index with the rest of the page:
+
+You can disable the facade (dynamic loading of search) in the config.toml:
+
+```toml
+js_search_facade = false
+```
+
+The Abridge demo uses netlify, and the included package.json and netlify.toml files handle this extra bundle step for us automatically.
+
+An overview of this logic is this:
+
+```shell
+zola build # just to generate search_index.en.js
+uglifyjs to create search_bundle.min.js # all search related files
+update sha256 hash and base64 encoded sha384 hash in search_facade.js file for cachebust and subresource integrity
+uglifyjs to create abridge-bundle.min.js to include search_facade.js with the new hashes.
+zola build to update the hashes for abridge-bundle.min.js
+```
+
+If you plan to use the included netlify.toml file you should change the following:
+```toml
+command = "zola build && npm run abridge-demo && zola build"
+```
+
+to this:
+```toml
+command = "zola build && npm run abridge && zola build"
+```
+
+### Step 7: Switch Search library (optional)
+
+Abridge by default uses elasticlunr for the search library (zola's default), but both tinysearch and stork are supported search libraries.
+
+**Switch to tinysearch:**
+
+First you have to install tinysearch so that you can build the index:
+
+```shell
+git clone https://github.com/tinysearch/tinysearch
+cd tinysearch
+cargo build --release
+sudo cp ./target/release/tinysearch /usr/local/bin/tinysearch
+exit # reload shell environment
+```
+
+Switch abridge to tinysearch:
+
+```shell
+cd ~/.dev/abridge
+sed -i 's/^search_library =.*/search_library = "tinysearch"/' config.toml
+zola build
+tinysearch --optimize --path static public/data_tinysearch/index.html
+# zola serve
+```
+
+**Switch to stork:**
+
+First you have to install stork so that you can build the index:
+
+```shell
+git clone https://github.com/jameslittle230/stork
+cd stork
+cargo build --release
+sudo cp ./target/release/stork /usr/local/bin/stork
+exit # reload shell environment
+```
+
+Switch abridge to stork:
+
+```shell
+cd ~/.dev/abridge
+sed -i 's/^search_library =.*/search_library = "stork"/' config.toml
+zola build
+stork build --input public/data_stork/index.html --output static/stork.st
+# zola serve
+```
+
+**Switch back to elasticlunr:**
+
+abridge as a theme:
+```shell
+cd ~/.dev/abridge
+sed -i 's/^search_library =.*/search_library = false/' config.toml
+zola build
+npm run abridge
+zola build
+# zola serve
+```
+
+abridge theme directly:
+```shell
+cd ~/.dev/abridge
+sed -i 's/^search_library =.*/search_library = false/' config.toml
+zola build
+npm run abridge-demo
+zola build
+# zola serve
+```
 
 ## Customization
 
@@ -175,19 +282,29 @@ These are the javascript files currently used by Abridge:
 - search_index.en.js: search index generated by zola at each build for elasticlunr.
 - elasticlunr.min.js: search library for client side searching.
 - search.js: to make use of elasticlunr from our sites search box for both suggestions and the results page.
+- search_facade.js: used to dynamically load a bundle containing all search related js ONLY when the search box is clicked. (on-demand)
+- email.js: uses javascript to obfuscate your real email address for the mail icon at the bottom of the page.
 - codecopy.js: add a Copy Button to code blocks, to copy contents of the code block to clipboard.
 - theme.js: very tiny script to facilitate local storage for the theme switcher. (never bundle, gets loaded separate)
 - theme_button.js: tiny script for the theme switcher function when you click the theme switch button.
 - prestyle.js: Used to preload css files `<link rel="preload"` - this script changes these to `<link rel="stylesheet"` once the page has finished loading, this allows us to load stylesheets for external fonts, fontawesome, or katex in a non blocking fashion.
 
-js_bundle is set to a javascript file with a bundle of multiple javascript files, this allows us to serve fewer javascript files (only the search index and the bundle). Included are a few of the likely most commonly used combinations, but you can generate these yourself using uglifyjs if you need to, there are examples in the config.toml, eg:
+js_bundle is set to a javascript file with a bundle of multiple javascript files, this allows us to serve fewer javascript files (only the search index and the bundle, or if using the facade all the js related features minus the search related files). Included are a few of the likely most commonly used combinations, but you can generate any combination of js features into a bundle yourself using uglifyjs if you need to, there are examples in the config.toml (or in package.json), eg:
 
-`uglifyjs prestyle.js theme_button.js elasticlunr.min.js search.js -o abridge-switcher.min.js -c -m`
+`uglifyjs prestyle.js theme_button.js elasticlunr.min.js search.js -c -m -o abridge-nofacade.min.js`
 
-- search.min.js - includes: elasticlunr, search.
-- abridge.min.js - includes: prestyle, elasticlunr, search.
-- abridge-switcher.min.js: includes: prestyle, theme_button, elasticlunr, search.
+Abridge Default Bundle:
+- abridge-bundle.min.js: includes: prestyle, theme_button, search_facade, email, codecopy
 
+Abridge Alternate Bundles:
+- abridge-searchonly.min.js - includes: elasticlunr, search
+- abridge-noswitcher.min.js - includes: prestyle, email, codecopy, elasticlunr, search
+- abridge-nofacade.min.js: includes: prestyle, theme_button, email, codecopy, elasticlunr, search
+
+Support Files:
+- theme.min.js (not a bundle, just a minification of theme.js)
+- katexbundle.min.js - includes: katex.min.js mathtex-script-type.min.js auto-render.min.js katexoptions.js
+- search_bundle.min.js: includes: search_index.en, elasticlunr, search (loaded on demand by search_facade)
 
 ### Global Configuration
 
@@ -257,17 +374,23 @@ The following options should be under the `[extra]` in `config.toml`
 - `security_header_csp` - Content Security policy, to enfore security rules: [observatory](https://observatory.mozilla.org), [csp-google](https://csp-evaluator.withgoogle.com/)
 
 - `integrity` - Useful to set false during development, should normally be set to true.
+- `js_bundle` - Useful to set false during javascript development, should normally be set to true.
+- `js_switcher` - Set to false to disable the theme switcher.
+- `js_search_facade` - Set to false to disable the search facade (dynamic loading of search_bundle).
+- `search_library` - search library to use, valid values are: false or elasticlunr, tinysearch, stork
+
 - `js_search_index` - The search index file to include in the header, comment out to disable.
 - `js_prestyle` - The script file used to preload: FontAwesome, Katex, external Google Fonts.
-- `js_search` - The search script file to include in the header, comment out to disable.
-
+- `js_codecopy` - The script file used to copy the code in code blocks.
+- `js_email` - The script file used to obfuscate the email link in footer.
 - `js_theme` - Used for the Theme Switcher, to facilitate localstorage.
 - `js_themeButton` - Used for the Theme Switcher.
-- `js_bundle` - Used to define a javascript bundle, [more information](https://github.com/Jieiku/abridge#javascript-files-js_bundle-and-options).
-- `stylesheets = [ "abridge.css" ]` - The stylesheet file(s) to include in the header.
+
+- `stylesheets = [ "abridge-switcher.css" ]` - The stylesheet file(s) to include in the header.
 
 - `banner` - Image to use in seo related cards, this will be the fallback image if the individual articles does not provide one.
 - `favicon_...` - Used to set the various favicons (displayed in bookmarks and active browser tab)
+- `icon_...` - Used to set the various icons used on the site.
 - `fontawesome =` - Uncomment to enable fontawesome library, this will include the file in the header.
     * `icon_read` - icon to display in meta info on index and posts, comment out to disable
     * `icon_date` - icon to display in meta info on index and posts, comment out to disable
@@ -344,7 +467,7 @@ Refer to [overview-images](https://raw.githubusercontent.com/Jieiku/abridge/mast
 ```md
 +++
 title = "Image Shortcodes"
-description = "Images can be embeded directly using markdown `![Ferris](ferris.svg)`, but using a shortcode prevents CLS by explicitly setting the width and height."
+description = "Images can be embedded directly using markdown `![Ferris](ferris.svg)`, but using a shortcode prevents CLS by explicitly setting the width and height."
 date = 2021-05-19
 
 [taxonomies]
@@ -372,6 +495,27 @@ I recommend only enabling math on a per page bases in your post.md files, instea
 All pages extend to `base.html`, and you can customize them as need.
 
 ## Optional Performance Optimizations:
+
+### Abridge.woff2 Icon Font
+
+By default Abridge uses SVG icons directly in CSS, `abridge/sass/include/_icons.scss`, this very efficient and results in the least requests, additionally noscript does not block these resources.
+
+The Abridge.woff2 Icon Font is a subset of Font Awesome, it is still included but not used by default because noscript addon blocks loading of font resources.
+
+If you still want to use font icons continue reading:
+
+Abridge.woff2 Icon Font is a subset of Font Awesome, and can be loaded like any other font by uncommenting the font in the `abridge/sass/font.scss` and including the font.css file in your stylesheet array defined in config.toml: `stylesheets = [ "abridge-switcher.css", "font.css", "iconfont.css" ]`
+
+Abridge.woff2 file can be overridden just like any other Zola theme file, by placing your own Abridge.woff2 in your sites root eg: `mysite/static/font/Abridge.woff2`
+
+To create your own Icon Font with other/more icons you can use the repository here: https://github.com/Jieiku/fontsubset
+
+You will also need to add the additional icon entries to `abridge/sass/fonts/_Abridge.scss`
+
+If you are running Abridge as a submodule, what you can do instead is copy `_Abridge.scss` as your own `mysite/sass/myfont.scss`, and then adjust your config.toml:
+
+instead of this: `stylesheets = [ "abridge-switcher.css" ]` do this: `stylesheets = [ "abridge-switcher.css", "myfont.css" ]`
+
 
 ### Theme-Switcher
 
