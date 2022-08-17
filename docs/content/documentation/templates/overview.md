@@ -180,6 +180,23 @@ items: Array<TaxonomyTerm>;
 
 See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
 
+### `get_taxonomy_term`
+Gets a single term from a taxonomy of a specific kind.
+
+```jinja2
+{% set categories = get_taxonomy_term(kind="categories", term="term_name") %}
+```
+
+The type of the output is a single `TaxonomyTerm` item.
+
+`lang` (optional) default to `config.default_language` in config.toml
+
+`include_pages` (optional) default to true. If false, the `pages` item in the `TaxonomyTerm` is replaced with `page_count`, an integer with the number of pages for this term.
+
+`required` (optional) if a taxonomy or term is not found`.
+
+See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
+
 ### `get_url`
 Gets the permalink for the given path.
 If the path starts with `@/`, it will be treated as an internal link like the ones used in Markdown, 
