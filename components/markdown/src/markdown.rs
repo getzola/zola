@@ -56,7 +56,10 @@ fn insert_many<T>(input: &mut Vec<T>, elem_to_insert: Vec<(usize, T)>) {
 
 /// Colocated asset links refers to the files in the same directory.
 fn is_colocated_asset_link(link: &str) -> bool {
-    !link.starts_with('/') && !link.starts_with('#') && !STARTS_WITH_SCHEMA_RE.is_match(link)
+    !link.starts_with('/')
+        && !link.starts_with("..")
+        && !link.starts_with('#')
+        && !STARTS_WITH_SCHEMA_RE.is_match(link)
 }
 
 #[derive(Debug)]
@@ -605,5 +608,23 @@ mod tests {
         assert!(!is_external_link("#introduction"));
 
         assert!(!is_external_link("http.jpg"))
+    }
+
+    #[test]
+    // Tests for link  that points to files in the same directory
+    fn test_is_colocated_asset_link_true() {
+        let links: [&str; 2] = ["./same-dir.md", "file.md"];
+        for link in links {
+            assert!(is_colocated_asset_link(link));
+        }
+    }
+
+    #[test]
+    // Tests for files where the link points to a different directory
+    fn test_is_colocated_asset_link_false() {
+        let links: [&str; 2] = ["/other-dir/file.md", "../sub-dir/file.md"];
+        for link in links {
+            assert!(!is_colocated_asset_link(link));
+        }
     }
 }
