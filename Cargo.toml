@@ -13,8 +13,6 @@ keywords = ["static", "site", "generator", "blog"]
 include = ["src/**/*", "LICENSE", "README.md"]
 
 [build-dependencies]
-clap = "3"
-clap_complete = "3"
 winres = "0.1"
 time = "0.3"
 
@@ -23,6 +21,7 @@ name = "zola"
 
 [dependencies]
 clap = { version = "3", features = ["derive"] }
+clap_complete = "3"
 # Below is for the serve cmd
 hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }
 tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time"] }

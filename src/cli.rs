@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use clap_complete::Shell;
 
 #[derive(Parser)]
 #[clap(version, author, about)]
@@ -82,5 +83,12 @@ pub enum Command {
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,
+    },
+
+    /// Generate shell completion
+    Completion {
+        /// Shell to generate completion for
+        #[clap(arg_enum)]
+        shell: Shell,
     },
 }
