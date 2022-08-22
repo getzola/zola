@@ -3,11 +3,11 @@
 title = "karzok"
 description = "The theme for launching fast documentation sites"
 template = "theme.html"
-date = 2022-06-15T01:35:37-07:00
+date = 2022-08-16T14:32:26-05:00
 
 [extra]
-created = 2022-06-15T01:35:37-07:00
-updated = 2022-06-15T01:35:37-07:00
+created = 2022-08-16T14:32:26-05:00
+updated = 2022-08-16T14:32:26-05:00
 repository = "https://github.com/kogeletey/karzok.git"
 homepage = "https://github.com/kogeletey/karzok"
 minimum_version = "0.15.0"
@@ -21,7 +21,6 @@ homepage = ""
 
 <p align="center">
   <a href="https://github.com/kogeletey/karzok/actions"><img src="https://flat.badgen.net/github/checks/kogeletey/karzok"  alt="github workflows status" /></a>
-<!--  <a href="https://github.com/kogeletey/karzok/actions"><img src="https://github.com/kogeletey/karzok/actions/workflows/badge.svg"  alt="github workflows action status" /></a> -->
   <a href="https://github.com/kogeletey/karzok/blob/develop/LICENSE"><img src="https://flat.badgen.net/github/license/kogeletey/karzok" alt="license a repository" /></a>
   <a href="https://github.com/kogeletey/karzok/releases"><img src="https://flat.badgen.net/github/release/kogeletey/karzok" alt="latest release as a repository" /></a>
   <a href="https://framagit.org/kogeletey/nebra"><img alt="pipeline status re128" src="https://framagit.org/kogeletey/nebra/badges/develop/pipeline.svg" /></a>
