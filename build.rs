@@ -1,7 +1,3 @@
-// use clap::Shell;
-
-include!("src/cli.rs");
-
 fn generate_pe_header() {
     use time::OffsetDateTime;
 
@@ -18,12 +14,6 @@ fn generate_pe_header() {
 }
 
 fn main() {
-    // disabled below as it fails in CI
-    //    let mut app = build_cli();
-    //    app.gen_completions("zola", Shell::Bash, "completions/");
-    //    app.gen_completions("zola", Shell::Fish, "completions/");
-    //    app.gen_completions("zola", Shell::Zsh, "completions/");
-    //    app.gen_completions("zola", Shell::PowerShell, "completions/");
     if std::env::var("CARGO_CFG_TARGET_OS").unwrap() != "windows"
         && std::env::var("PROFILE").unwrap() != "release"
     {
