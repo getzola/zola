@@ -28,13 +28,6 @@ fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
 
 fn main() {
     let cli = Cli::parse();
-
-    if let Command::Completion { shell } = &cli.command {
-        let cmd = &mut Cli::command();
-        clap_complete::generate(*shell, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
-        return;
-    }
-
     let cli_dir: PathBuf = cli.root.canonicalize().unwrap_or_else(|_| {
         panic!("Could not find canonical path of root dir: {}", cli.root.display())
     });
@@ -107,6 +100,9 @@ fn main() {
                 }
             }
         }
-        Command::Completion { .. } => (),
+        Command::Completion { shell } => {
+            let cmd = &mut Cli::command();
+            clap_complete::generate(shell, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
+        }
     }
 }
