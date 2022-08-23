@@ -23,6 +23,7 @@ pub struct SerializedTaxonomyTerm<'a> {
     path: &'a str,
     permalink: &'a str,
     pages: Vec<SerializingPage<'a>>,
+    page_count: usize,
 }
 
 impl<'a> SerializedTaxonomyTerm<'a> {
@@ -39,6 +40,7 @@ impl<'a> SerializedTaxonomyTerm<'a> {
             path: &item.path,
             permalink: &item.permalink,
             pages,
+            page_count: item.pages.len(),
         }
     }
 }
@@ -49,6 +51,7 @@ pub struct SerializedTaxonomyTermWithoutPages<'a> {
     slug: &'a str,
     path: &'a str,
     permalink: &'a str,
+    pages: Vec<SerializingPage<'a>>,
     page_count: usize,
 }
 
@@ -59,6 +62,7 @@ impl<'a> SerializedTaxonomyTermWithoutPages<'a> {
             slug: &item.slug,
             path: &item.path,
             permalink: &item.permalink,
+            pages: vec!(),
             page_count: item.pages.len(),
         }
     }

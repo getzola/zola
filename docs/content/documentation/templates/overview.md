@@ -191,7 +191,7 @@ The type of the output is a single `TaxonomyTerm` item.
 
 `lang` (optional) default to `config.default_language` in config.toml
 
-`include_pages` (optional) default to true. If false, the `pages` item in the `TaxonomyTerm` is replaced with `page_count`, an integer with the number of pages for this term.
+`include_pages` (optional) default to true. If false, the `pages` item in the `TaxonomyTerm` will be empty, regardless of what pages may actually exist for this term. `page_count` will correctly reflect the number of pages for this term in both cases.
 
 `required` (optional) if a taxonomy or term is not found`.
 
