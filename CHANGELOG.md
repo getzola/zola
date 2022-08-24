@@ -2,6 +2,10 @@
 
 ## 0.17.0 (unreleased)
 
+- Add `get_taxonomy_term` function
+- Add slugify.paths_keep_dates option
+- Add command to generate shell completions
+
 ## 0.16.1 (2022-08-14)
 
 - Fix many Windows bugs
