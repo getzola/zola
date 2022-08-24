@@ -4009,7 +4009,7 @@ dependencies = [
 
 [[package]]
 name = "zola"
-version = "0.16.1"
+version = "0.17.0"
 dependencies = [
  "clap",
  "clap_complete",
