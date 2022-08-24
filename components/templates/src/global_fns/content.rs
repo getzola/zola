@@ -1,4 +1,4 @@
-use content::{Library, Taxonomy};
+use content::{Library, Taxonomy, TaxonomyTerm};
 use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -182,6 +182,93 @@ impl TeraFn for GetTaxonomy {
     }
 }
 
+#[derive(Debug)]
+pub struct GetTaxonomyTerm {
+    library: Arc<RwLock<Library>>,
+    taxonomies: HashMap<String, Taxonomy>,
+    default_lang: String,
+}
+impl GetTaxonomyTerm {
+    pub fn new(
+        default_lang: &str,
+        all_taxonomies: Vec<Taxonomy>,
+        library: Arc<RwLock<Library>>,
+    ) -> Self {
+        let mut taxonomies = HashMap::new();
+        for taxo in all_taxonomies {
+            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), taxo);
+        }
+        Self { taxonomies, library, default_lang: default_lang.to_string() }
+    }
+}
+impl TeraFn for GetTaxonomyTerm {
+    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
+        let kind = required_arg!(
+            String,
+            args.get("kind"),
+            "`get_taxonomy_term` requires a `kind` argument with a string value"
+        );
+        let term = required_arg!(
+            String,
+            args.get("term"),
+            "`get_taxonomy_term` requires a `term` argument with a string value"
+        );
+        let include_pages = optional_arg!(
+            bool,
+            args.get("include_pages"),
+            "`get_taxonomy_term`: `include_pages` must be a boolean (true or false)"
+        )
+        .unwrap_or(true);
+        let required = optional_arg!(
+            bool,
+            args.get("required"),
+            "`get_taxonomy_term`: `required` must be a boolean (true or false)"
+        )
+        .unwrap_or(true);
+
+        let lang = optional_arg!(
+            String,
+            args.get("lang"),
+            "`get_taxonomy_term_by_name`: `lang` must be a string"
+        )
+        .unwrap_or_else(|| self.default_lang.clone());
+
+        let tax: &Taxonomy = match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
+            (Some(t), _) => t,
+            (None, false) => {
+                return Ok(Value::Null);
+            }
+            (None, true) => {
+                return Err(format!(
+                    "`get_taxonomy_term_by_name` received an unknown taxonomy as kind: {}",
+                    kind
+                )
+                .into());
+            }
+        };
+
+        let term: &TaxonomyTerm = match (tax.items.iter().find(|i| i.name == term), required) {
+            (Some(t), _) => t,
+            (None, false) => {
+                return Ok(Value::Null);
+            }
+            (None, true) => {
+                return Err(format!(
+                    "`get_taxonomy_term_by_name` received an unknown taxonomy as kind: {}",
+                    kind
+                )
+                .into());
+            }
+        };
+
+        if include_pages {
+            Ok(to_value(term.serialize(&self.library.read().unwrap())).unwrap())
+        } else {
+            Ok(to_value(term.serialize_without_pages(&self.library.read().unwrap())).unwrap())
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -323,6 +410,70 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("kind".to_string(), to_value("tags").unwrap());
         args.insert("name".to_string(), to_value("random").unwrap());
+        assert!(static_fn.call(&args).is_err());
+    }
+
+    #[test]
+    fn can_get_taxonomy_term() {
+        let mut config = Config::default_for_test();
+        config.slugify.taxonomies = SlugifyStrategy::On;
+        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let taxo_config_fr =
+            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        config.slugify_taxonomies();
+        let library = Arc::new(RwLock::new(Library::new(&config)));
+        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
+        let tags = Taxonomy {
+            kind: taxo_config,
+            lang: config.default_language.clone(),
+            slug: "tags".to_string(),
+            path: "/tags/".to_string(),
+            permalink: "https://vincent.is/tags/".to_string(),
+            items: vec![tag],
+        };
+        let tags_fr = Taxonomy {
+            kind: taxo_config_fr,
+            lang: "fr".to_owned(),
+            slug: "tags".to_string(),
+            path: "/fr/tags/".to_string(),
+            permalink: "https://vincent.is/fr/tags/".to_string(),
+            items: vec![tag_fr],
+        };
+
+        let taxonomies = vec![tags.clone(), tags_fr.clone()];
+        let static_fn = GetTaxonomyTerm::new(&config.default_language, taxonomies, library);
+        // can find it correctly
+        let mut args = HashMap::new();
+        args.insert("kind".to_string(), to_value("tags").unwrap());
+        args.insert("term".to_string(), to_value("Programming").unwrap());
+        let res = static_fn.call(&args).unwrap();
+        let res_obj = res.as_object().unwrap();
+        assert_eq!(res_obj["name"], Value::String("Programming".to_string()));
+        assert_eq!(res_obj["slug"], Value::String("programming".to_string()));
+        assert_eq!(
+            res_obj["permalink"],
+            Value::String("http://a-website.com/tags/programming/".to_string())
+        );
+        assert_eq!(res_obj["pages"], Value::Array(vec![]));
+        // Works with other languages as well
+        let mut args = HashMap::new();
+        args.insert("kind".to_string(), to_value("tags").unwrap());
+        args.insert("term".to_string(), to_value("Programmation").unwrap());
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        let res = static_fn.call(&args).unwrap();
+        let res_obj = res.as_object().unwrap();
+        assert_eq!(res_obj["name"], Value::String("Programmation".to_string()));
+
+        // and errors if it can't find either taxonomy or term
+        let mut args = HashMap::new();
+        args.insert("kind".to_string(), to_value("something-else").unwrap());
+        args.insert("term".to_string(), to_value("Programming").unwrap());
+        assert!(static_fn.call(&args).is_err());
+
+        let mut args = HashMap::new();
+        args.insert("kind".to_string(), to_value("tags").unwrap());
+        args.insert("kind".to_string(), to_value("something-else").unwrap());
         assert!(static_fn.call(&args).is_err());
     }
 }

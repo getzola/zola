@@ -91,4 +91,12 @@ pub fn register_tera_global_fns(site: &mut Site) {
             site.library.clone(),
         ),
     );
+    site.tera.register_function(
+        "get_taxonomy_term",
+        global_fns::GetTaxonomyTerm::new(
+            &site.config.default_language,
+            site.taxonomies.clone(),
+            site.library.clone(),
+        ),
+    );
 }
