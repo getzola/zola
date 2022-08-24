@@ -23,6 +23,7 @@ pub struct SerializedTaxonomyTerm<'a> {
     path: &'a str,
     permalink: &'a str,
     pages: Vec<SerializingPage<'a>>,
+    page_count: usize,
 }
 
 impl<'a> SerializedTaxonomyTerm<'a> {
@@ -39,6 +40,30 @@ impl<'a> SerializedTaxonomyTerm<'a> {
             path: &item.path,
             permalink: &item.permalink,
             pages,
+            page_count: item.pages.len(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct SerializedTaxonomyTermWithoutPages<'a> {
+    name: &'a str,
+    slug: &'a str,
+    path: &'a str,
+    permalink: &'a str,
+    pages: Vec<SerializingPage<'a>>,
+    page_count: usize,
+}
+
+impl<'a> SerializedTaxonomyTermWithoutPages<'a> {
+    pub fn from_item(item: &'a TaxonomyTerm, _library: &'a Library) -> Self {
+        SerializedTaxonomyTermWithoutPages {
+            name: &item.name,
+            slug: &item.slug,
+            path: &item.path,
+            permalink: &item.permalink,
+            pages: vec!(),
+            page_count: item.pages.len(),
         }
     }
 }
@@ -80,6 +105,13 @@ impl TaxonomyTerm {
 
     pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyTerm<'a> {
         SerializedTaxonomyTerm::from_item(self, library)
+    }
+
+    pub fn serialize_without_pages<'a>(
+        &'a self,
+        library: &'a Library,
+    ) -> SerializedTaxonomyTermWithoutPages<'a> {
+        SerializedTaxonomyTermWithoutPages::from_item(self, library)
     }
 
     pub fn merge(&mut self, other: Self) {
