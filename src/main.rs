@@ -4,7 +4,7 @@ use std::time::Instant;
 use cli::{Cli, Command};
 use utils::net::{get_available_port, port_is_available};
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use time::UtcOffset;
 
 mod cli;
@@ -99,6 +99,10 @@ fn main() {
                     std::process::exit(1);
                 }
             }
+        }
+        Command::Completion { shell } => {
+            let cmd = &mut Cli::command();
+            clap_complete::generate(shell, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
         }
     }
 }

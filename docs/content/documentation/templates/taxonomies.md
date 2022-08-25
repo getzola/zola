@@ -20,6 +20,7 @@ slug: String;
 path: String;
 permalink: String;
 pages: Array<Page>;
+page_count: Number;
 ```
 
 and `TaxonomyConfig` has the following fields:

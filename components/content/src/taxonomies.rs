@@ -23,14 +23,17 @@ pub struct SerializedTaxonomyTerm<'a> {
     path: &'a str,
     permalink: &'a str,
     pages: Vec<SerializingPage<'a>>,
+    page_count: usize,
 }
 
 impl<'a> SerializedTaxonomyTerm<'a> {
-    pub fn from_item(item: &'a TaxonomyTerm, library: &'a Library) -> Self {
+    pub fn from_item(item: &'a TaxonomyTerm, library: &'a Library, include_pages: bool) -> Self {
         let mut pages = vec![];
 
-        for p in &item.pages {
-            pages.push(SerializingPage::new(&library.pages[p], Some(library), false));
+        if include_pages {
+            for p in &item.pages {
+                pages.push(SerializingPage::new(&library.pages[p], Some(library), false));
+            }
         }
 
         SerializedTaxonomyTerm {
@@ -39,6 +42,7 @@ impl<'a> SerializedTaxonomyTerm<'a> {
             path: &item.path,
             permalink: &item.permalink,
             pages,
+            page_count: item.pages.len(),
         }
     }
 }
@@ -79,7 +83,14 @@ impl TaxonomyTerm {
     }
 
     pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyTerm<'a> {
-        SerializedTaxonomyTerm::from_item(self, library)
+        SerializedTaxonomyTerm::from_item(self, library, true)
+    }
+
+    pub fn serialize_without_pages<'a>(
+        &'a self,
+        library: &'a Library,
+    ) -> SerializedTaxonomyTerm<'a> {
+        SerializedTaxonomyTerm::from_item(self, library, false)
     }
 
     pub fn merge(&mut self, other: Self) {
@@ -104,7 +115,7 @@ pub struct SerializedTaxonomy<'a> {
 impl<'a> SerializedTaxonomy<'a> {
     pub fn from_taxonomy(taxonomy: &'a Taxonomy, library: &'a Library) -> Self {
         let items: Vec<SerializedTaxonomyTerm> =
-            taxonomy.items.iter().map(|i| SerializedTaxonomyTerm::from_item(i, library)).collect();
+            taxonomy.items.iter().map(|i| SerializedTaxonomyTerm::from_item(i, library, true)).collect();
         SerializedTaxonomy {
             kind: &taxonomy.kind,
             lang: &taxonomy.lang,
@@ -176,7 +187,7 @@ impl Taxonomy {
         let mut context = Context::new();
         context.insert("config", &config.serialize(&self.lang));
         context.insert("lang", &self.lang);
-        context.insert("term", &SerializedTaxonomyTerm::from_item(item, library));
+        context.insert("term", &SerializedTaxonomyTerm::from_item(item, library, true));
         context.insert("taxonomy", &self.kind);
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
@@ -199,7 +210,7 @@ impl Taxonomy {
         let mut context = Context::new();
         context.insert("config", &config.serialize(&self.lang));
         let terms: Vec<SerializedTaxonomyTerm> =
-            self.items.iter().map(|i| SerializedTaxonomyTerm::from_item(i, library)).collect();
+            self.items.iter().map(|i| SerializedTaxonomyTerm::from_item(i, library, true)).collect();
         context.insert("terms", &terms);
         context.insert("lang", &self.lang);
         context.insert("taxonomy", &self.kind);
