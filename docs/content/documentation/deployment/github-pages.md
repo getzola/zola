@@ -26,13 +26,13 @@ git submodule add https://github.com/getzola/after-dark.git themes/after-dark
 
 Using *Github Actions* for the deployment of your Zola-Page on Github-Pages is pretty easy. You basically need three things:
 
-1. A *Personal access token* to give the *Github Action* the permission to push into your repository ONLY IF you are publishing from another repo
+1. A *Personal access token* to give the *Github Action* the permission to push into your repository.
 2. Create the *Github Action*.
 3. Check the *Github Pages* section in repository settings.
 
-Let's start with the token. Remember, if you are publishing the site on the same repo, you do not need to follow that step.
+Let's start with the token.
 
-For creating the token either click on [here](https://github.com/settings/tokens) or go to Settings > Developer Settings > Personal access tokens. Under the *Select Scopes* section, give it *repo* permissions and click *Generate token*. Then copy the token, navigate to your repository and add in the Settings tab the *Secret* `TOKEN` and paste your token in it.
+For creating the token either click on [here](https://github.com/settings/tokens/new?scopes=public_repo) or go to Settings > Developer Settings > Personal access tokens. Under the *Select Scopes* section, give it *public_repo* permissions and click *Generate token*. Then copy the token, navigate to your repository and add in the Settings tab the *Secret* `TOKEN` and paste your token in it.
 
 Next we need to create the *Github Action*. Here we can make use of the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action). Go to the *Actions* tab of your repository, click on *set up a workflow yourself* to get a blank workflow file. Copy the following script into it and commit it afterwards; note that you may need to change the `github.ref` branch from `main` to `master` or similar, as the action will only run for the branch you choose.
 
@@ -46,9 +46,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.0
       - name: build_and_deploy
-        uses: shalzz/zola-deploy-action@v0.14.1
+        uses: shalzz/zola-deploy-action@v0.16.1
         env:
           # Target branch
           PAGES_BRANCH: gh-pages
@@ -75,9 +75,9 @@ jobs:
     if: github.ref != 'refs/heads/main'
     steps:
       - name: 'checkout'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.0
       - name: 'build'
-        uses: shalzz/zola-deploy-action@v0.13.0
+        uses: shalzz/zola-deploy-action@v0.16.1
         env:
           PAGES_BRANCH: gh-pages
           BUILD_DIR: .
@@ -88,9 +88,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: 'checkout'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.0
       - name: 'build and deploy'
-        uses: shalzz/zola-deploy-action@v0.13.0
+        uses: shalzz/zola-deploy-action@v0.16.1
         env:
           PAGES_BRANCH: master
           BUILD_DIR: .
