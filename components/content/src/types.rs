@@ -15,6 +15,8 @@ pub enum SortBy {
     TitleBytes,
     /// Lower weight comes first
     Weight,
+    /// Sort by slug
+    Slug,
     /// No sorting
     None,
 }
