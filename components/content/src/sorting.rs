@@ -16,6 +16,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             }
             SortBy::Title | SortBy::TitleBytes => page.meta.title.is_some(),
             SortBy::Weight => page.meta.weight.is_some(),
+            SortBy::Slug => true,
             SortBy::None => unreachable!(),
         });
 
@@ -32,6 +33,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
                 a.meta.title.as_ref().unwrap().cmp(b.meta.title.as_ref().unwrap())
             }
             SortBy::Weight => a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()),
+            SortBy::Slug => natural_lexical_cmp(&a.slug, &b.slug),
             SortBy::None => unreachable!(),
         };
 
@@ -71,6 +73,16 @@ mod tests {
     fn create_page_with_weight(weight: usize) -> Page {
         let front_matter = PageFrontMatter { weight: Some(weight), ..Default::default() };
         Page::new(format!("content/hello-{}.md", weight), front_matter, &PathBuf::new())
+    }
+
+    fn create_page_with_slug(slug: &str) -> Page {
+        let front_matter = PageFrontMatter { slug: Some(slug.to_owned()), ..Default::default() };
+        let mut page =
+            Page::new(format!("content/hello-{}.md", slug), front_matter, &PathBuf::new());
+        // Normally, the slug field is populated when a page is parsed, but
+        // since we're creating one manually, we have to set it explicitly
+        page.slug = slug.to_owned();
+        page
     }
 
     #[test]
@@ -183,6 +195,28 @@ mod tests {
                 "μ-kernel"
             ]
         );
+    }
+
+    #[test]
+    fn can_sort_by_slug() {
+        let page1 = create_page_with_slug("2");
+        let page2 = create_page_with_slug("3");
+        let page3 = create_page_with_slug("1");
+        let (pages, ignored_pages) = sort_pages(&[&page1, &page2, &page3], SortBy::Slug);
+        assert_eq!(pages[0], page3.file.path);
+        assert_eq!(pages[1], page1.file.path);
+        assert_eq!(pages[2], page2.file.path);
+        assert_eq!(ignored_pages.len(), 0);
+
+        // 10 should come after 2
+        let page1 = create_page_with_slug("1");
+        let page2 = create_page_with_slug("10");
+        let page3 = create_page_with_slug("2");
+        let (pages, ignored_pages) = sort_pages(&[&page1, &page2, &page3], SortBy::Slug);
+        assert_eq!(pages[0], page1.file.path);
+        assert_eq!(pages[1], page3.file.path);
+        assert_eq!(pages[2], page2.file.path);
+        assert_eq!(ignored_pages.len(), 0);
     }
 
     #[test]
