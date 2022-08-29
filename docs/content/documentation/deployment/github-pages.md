@@ -26,11 +26,11 @@ git submodule add https://github.com/getzola/after-dark.git themes/after-dark
 
 Using *Github Actions* for the deployment of your Zola-Page on Github-Pages is pretty easy. You basically need three things:
 
-1. A *Personal access token* to give the *Github Action* the permission to push into your repository.
+1. A *Personal access token* to give the *Github Action* the permission to push into your repository ONLY IF you are publishing from another repo
 2. Create the *Github Action*.
 3. Check the *Github Pages* section in repository settings.
 
-Let's start with the token.
+Let's start with the token. Remember, if you are publishing the site on the same repo, you do not need to follow that step.
 
 For creating the token either click on [here](https://github.com/settings/tokens/new?scopes=public_repo) or go to Settings > Developer Settings > Personal access tokens. Under the *Select Scopes* section, give it *public_repo* permissions and click *Generate token*. Then copy the token, navigate to your repository and add in the Settings tab the *Secret* `TOKEN` and paste your token in it.
 
