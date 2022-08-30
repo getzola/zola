@@ -142,10 +142,10 @@ impl TeraFn for GetUrl {
                     }
                     None => {
                         return Err(format!(
-                                "`get_url`: Could not find or open file {}",
-                                path_with_lang
-                                )
-                            .into())
+                            "`get_url`: Could not find or open file {}",
+                            path_with_lang
+                        )
+                        .into())
                     }
                 };
             }
@@ -155,10 +155,10 @@ impl TeraFn for GetUrl {
                     Ok(parsed) => parsed.into(),
                     Err(_) => {
                         return Err(format!(
-                                "`get_url`: Could not parse link `{}` as a valid URL",
-                                permalink
-                                )
-                            .into())
+                            "`get_url`: Could not parse link `{}` as a valid URL",
+                            permalink
+                        )
+                        .into())
                     }
                 };
             }
@@ -190,13 +190,13 @@ impl TeraFn for GetHash {
             String,
             args.get("path"),
             "`get_hash` requires either a `path` or a `literal` argument with a string value"
-            );
+        );
 
         let literal = optional_arg!(
             String,
             args.get("literal"),
             "`get_hash` requires either a `path` or a `literal` argument with a string value"
-            );
+        );
 
         let contents = match (path, literal) {
             (Some(_), Some(_)) => {
@@ -242,14 +242,15 @@ impl TeraFn for GetHash {
             u16,
             args.get("sha_type"),
             "`get_hash`: `sha_type` must be 256, 384 or 512"
-            )
-            .unwrap_or(384);
+        )
+        .unwrap_or(384);
+        
         let base64 = optional_arg!(
             bool,
             args.get("base64"),
             "`get_hash`: `base64` must be true or false"
-            )
-            .unwrap_or(true);
+        )
+        .unwrap_or(true);
 
         let hash = match sha_type {
             256 => compute_hash::<Sha256>(contents, base64),
@@ -302,7 +303,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
-            );
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
@@ -317,7 +318,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
-            );
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -332,7 +333,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
-            );
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
@@ -348,7 +349,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
-            );
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css");
@@ -386,7 +387,7 @@ title = "A title"
         assert_eq!(
             "`it` is not an authorized language (check config.languages).",
             format!("{}", err)
-            );
+        );
     }
 
     #[test]
@@ -395,11 +396,11 @@ title = "A title"
         permalinks.insert(
             "a_section/a_page.md".to_string(),
             "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
-            );
+        );
         permalinks.insert(
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
-            );
+        );
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
         let static_fn = GetUrl::new(
@@ -407,14 +408,14 @@ title = "A title"
             config.clone(),
             permalinks.clone(),
             PathBuf::new(),
-            );
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "https://remplace-par-ton-url.fr/a_section/a_page/"
-            );
+        );
     }
 
     #[test]
@@ -424,11 +425,11 @@ title = "A title"
         permalinks.insert(
             "a_section/a_page.md".to_string(),
             "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
-            );
+        );
         permalinks.insert(
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
-            );
+        );
         let dir = create_temp_dir();
         let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
         let mut args = HashMap::new();
@@ -437,7 +438,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/"
-            );
+        );
     }
 
     #[test]
@@ -447,11 +448,11 @@ title = "A title"
         permalinks.insert(
             "a_section/a_page.md".to_string(),
             "https://remplace-par-ton-url.fr/a_section/a_page/".to_string(),
-            );
+        );
         permalinks.insert(
             "a_section/a_page.en.md".to_string(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
-            );
+        );
         let dir = create_temp_dir();
         let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
         let mut args = HashMap::new();
@@ -460,7 +461,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page"
-            );
+        );
     }
 
     #[test]
@@ -498,7 +499,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840"
-            );
+        );
     }
 
     #[test]
@@ -534,7 +535,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "FBwJvSiJl3O3crvgZNi3GPodbyhSt+r9XtZonSa3SIO3ni6BTNadW1KrR2qihMQU"
-            );
+        );
     }
 
     #[test]
@@ -548,7 +549,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "379dfab35123b9159d9e4e92dc90e2be44cf3c2f7f09b2e2df80a1b219b461de3556c93e1a9ceb3008e999e2d6a54b4f1d65ee9be9be63fa45ec88931623372f"
-            );
+        );
     }
 
     #[test]
@@ -561,7 +562,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "N536s1EjuRWdnk6S3JDivkTPPC9/CbLi34Chshm0Yd41Vsk+GpzrMAjpmeLWpUtPHWXum+m+Y/pF7IiTFiM3Lw=="
-            );
+        );
     }
 
     #[test]
@@ -575,7 +576,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
-            );
+        );
     }
 
     #[test]
@@ -613,7 +614,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "mVFDKRhrL2rkoTKefubGEKcpY2M1F0rGt0D5AoOW/MgD0Ok4Y6fD2Q+Gvu54L08/"
-            );
+        );
     }
 
     #[test]
@@ -627,7 +628,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "2c74fd17edafd80e8447b0d46741ee243b7eb74dd2149a0ab1b9246fb30382f27e853d8585719e0e67cbda0daa8f51671064615d645ae27acb15bfb1447f459b"
-            );
+        );
     }
 
     #[test]
@@ -640,7 +641,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "LHT9F+2v2A6ER7DUZ0HuJDt+t03SFJoKsbkkb7MDgvJ+hT2FhXGeDmfL2g2qj1FnEGRhXWRa4nrLFb+xRH9Fmw=="
-            );
+        );
     }
 
     #[test]
@@ -654,14 +655,14 @@ title = "A title"
             "path".to_string(),
             to_value(dir.path().join("app.css").strip_prefix(std::env::temp_dir()).unwrap())
             .unwrap(),
-            );
+        );
         assert_eq!(
             static_fn.call(&args).unwrap(),
             format!(
                 "https://remplace-par-ton-url.fr/{}/app.css",
                 dir.path().file_stem().unwrap().to_string_lossy()
-                )
             )
+        )
     }
 
     #[test]
