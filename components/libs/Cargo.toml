@@ -34,7 +34,7 @@ sha2 = "0.10"
 slug = "0.1"
 svg_metadata = "0.4"
 syntect = "5"
-tera = { version = "1", features = ["preserve_order"] }
+tera = { version = "1.17", features = ["preserve_order", "date-locale"] }
 termcolor = "1.0.4"
 time = "0.3"
 toml = "0.5"
