@@ -46,7 +46,7 @@ $ zola build --base-url $DEPLOY_URL
 This is useful for example when you want to deploy previews of a site to a dynamic URL, such as Netlify
 deploy previews.
 
-You can override the default output directory `public` by passing another value to the `output-dir` flag (if this directory already exists, the user will be prompted whether to replace the folder).
+You can override the default output directory `public` by passing another value to the `output-dir` flag. If this directory already exists, the user will be prompted whether to replace the folder; you can override this prompt by passing the --force flag.
 
 ```bash
 $ zola build --output-dir $DOCUMENT_ROOT

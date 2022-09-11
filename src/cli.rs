@@ -41,6 +41,10 @@ pub enum Command {
         #[clap(short = 'o', long)]
         output_dir: Option<PathBuf>,
 
+        /// Force building the site even if output directory is non-empty
+        #[clap(short = 'f', long)]
+        force: bool,
+
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,

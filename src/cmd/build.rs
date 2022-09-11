@@ -13,17 +13,18 @@ pub fn build(
     config_file: &Path,
     base_url: Option<&str>,
     output_dir: Option<&Path>,
+    force: bool,
     include_drafts: bool,
 ) -> Result<()> {
     let mut site = Site::new(root_dir, config_file)?;
     if let Some(output_dir) = output_dir {
         // Check whether output directory exists or not
         // This way we don't replace already existing files.
-        if output_dir.exists() {
+        if !force && output_dir.exists() {
             console::warn(&format!("The directory '{}' already exists. Building to this directory will delete files contained within this directory.", output_dir.display()));
 
             // Prompt the user to ask whether they want to continue.
-            let clear_dir = tokio::runtime::Runtime::new()
+            let clear_dir = force || tokio::runtime::Runtime::new()
                 .expect("Tokio runtime failed to instantiate")
                 .block_on(ask_bool_timeout(
                     "Are you sure you want to continue?",
