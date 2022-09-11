@@ -6,7 +6,7 @@ pub mod sitemap;
 pub mod tpls;
 
 use std::collections::HashMap;
-use std::fs::remove_dir_all;
+use std::fs::{remove_dir_all, remove_file};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -23,6 +23,7 @@ use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
+    file_hidden,
 };
 use utils::net::get_available_port;
 use utils::templates::{render_template, ShortcodeDefinition};
@@ -583,11 +584,29 @@ impl Site {
         imageproc.do_process()
     }
 
-    /// Deletes the `public` directory if it exists
+    /// Deletes the contents in the `public` directory if it exists
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
-            // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path).context("Couldn't delete output directory")?;
+            // Delete contents of current `public` directory so we can start fresh
+            for entry in self.output_path.read_dir().context(format!(
+                "Couldn't read output directory `{}`",
+                self.output_path.display()
+            ))? {
+                let entry = entry.context("Couldn't read entry in output directory")?.path();
+
+                // Skip hidden files and folders if the preserve_hidden_file configuration option is set
+                if self.config.preserve_hidden_files && file_hidden(&entry) {
+                    continue;
+                }
+
+                if entry.is_dir() {
+                    remove_dir_all(entry)
+                        .context("Couldn't delete folder while cleaning the output directory")?;
+                } else {
+                    remove_file(entry)
+                        .context("Couldn't delete file while cleaning the output directory")?;
+                }
+            }
         }
 
         Ok(())

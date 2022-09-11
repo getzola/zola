@@ -78,6 +78,8 @@ pub struct Config {
     pub mode: Mode,
 
     pub output_dir: String,
+    /// Whether hidden files inside the output directory are preserved when rebuilding the site
+    pub preserve_hidden_files: bool,
 
     pub link_checker: link_checker::LinkChecker,
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
@@ -371,6 +373,7 @@ impl Default for Config {
             ignored_content_globset: None,
             translations: HashMap::new(),
             output_dir: "public".to_string(),
+            preserve_hidden_files: false,
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),

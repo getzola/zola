@@ -31,7 +31,7 @@ pub enum Command {
         force: bool,
     },
 
-    /// Deletes the output directory if there is one and builds the site
+    /// Deletes all content in the output directory if there is one and builds the site
     Build {
         /// Force the base URL to be that value (defaults to the one in config.toml)
         #[clap(short = 'u', long)]
