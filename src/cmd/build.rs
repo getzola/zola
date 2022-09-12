@@ -24,7 +24,7 @@ pub fn build(
             console::warn(&format!("The directory '{}' already exists. Building to this directory will delete files contained within this directory.", output_dir.display()));
 
             // Prompt the user to ask whether they want to continue.
-            let clear_dir = force || tokio::runtime::Runtime::new()
+            let clear_dir = tokio::runtime::Runtime::new()
                 .expect("Tokio runtime failed to instantiate")
                 .block_on(ask_bool_timeout(
                     "Are you sure you want to continue?",
