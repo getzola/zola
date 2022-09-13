@@ -587,7 +587,11 @@ impl Site {
     /// Deletes the contents in the `public` directory if it exists
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
-            // Delete contents of current `public` directory so we can start fresh
+            if !self.config.preserve_hidden_files {
+                return Ok(remove_dir_all(&self.output_path)
+                    .context("Couldn't delete output directory")?);
+            }
+
             for entry in self.output_path.read_dir().context(format!(
                 "Couldn't read output directory `{}`",
                 self.output_path.display()
@@ -595,7 +599,7 @@ impl Site {
                 let entry = entry.context("Couldn't read entry in output directory")?.path();
 
                 // Skip hidden files and folders if the preserve_hidden_file configuration option is set
-                if self.config.preserve_hidden_files && file_hidden(&entry) {
+                if file_hidden(&entry) {
                     continue;
                 }
 

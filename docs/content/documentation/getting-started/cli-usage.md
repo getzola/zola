@@ -31,7 +31,7 @@ $ zola init
 
 ## build
 
-This will build the whole site in the `public` directory (if this directory already exists, its contents are deleted).
+This will build the whole site in the `public` directory (if this directory already exists, it is deleted).
 
 ```bash
 $ zola build
