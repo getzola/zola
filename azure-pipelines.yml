@@ -148,3 +148,16 @@ stages:
               title: '$(Build.SourceBranchName)'
               assetUploadMode: 'replace'
               addChangeLog: true
+          - task: GithubRelease@0
+            condition: eq( variables['Agent.OS'], 'Windows_NT' )
+            inputs:
+              gitHubConnection: 'zola'
+              repositoryName: 'getzola/zola'
+              action: 'edit'
+              target: '$(build.sourceVersion)'
+              tagSource: 'manual'
+              tag: '$(Build.SourceBranchName)'
+              assets: '$(Build.ArtifactStagingDirectory)/zola.exe'
+              title: '$(Build.SourceBranchName).exe'
+              assetUploadMode: 'replace'
+              addChangeLog: true
