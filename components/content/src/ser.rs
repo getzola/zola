@@ -4,6 +4,7 @@ use std::path::Path;
 use serde::Serialize;
 
 use crate::library::Library;
+use crate::taxonomies::SerializedTaxonomy;
 use crate::{Page, Section};
 use libs::tera::{Map, Value};
 use utils::table_of_contents::Heading;
@@ -155,6 +156,7 @@ pub struct SerializingSection<'a> {
     subsections: Vec<&'a str>,
     translations: Vec<TranslatedContent<'a>>,
     backlinks: Vec<BackLink<'a>>,
+    taxonomies: Vec<SerializedTaxonomy<'a>>,
 }
 
 #[derive(Debug)]
@@ -174,10 +176,17 @@ impl<'a> SerializingSection<'a> {
         let mut subsections = Vec::with_capacity(section.subsections.len());
         let mut translations = Vec::new();
         let mut backlinks = Vec::new();
+        let mut taxonomies = Vec::new();
 
         match mode {
             SectionSerMode::ForMarkdown => {}
             SectionSerMode::MetadataOnly(lib) | SectionSerMode::Full(lib) => {
+                taxonomies = section
+                    .taxonomies
+                    .iter()
+                    .map(|t| SerializedTaxonomy::from_taxonomy(t, lib))
+                    .collect();
+
                 translations = lib.find_translations(&section.file.canonical);
                 subsections = section
                     .subsections
@@ -216,6 +225,7 @@ impl<'a> SerializingSection<'a> {
             subsections,
             translations,
             backlinks,
+            taxonomies,
         }
     }
 }

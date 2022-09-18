@@ -104,6 +104,8 @@ lang: String;
 translations: Array<TranslatedContent>;
 // All the pages/sections linking this page: their permalink and a title if there is one
 backlinks: Array<{permalink: String, title: String?}>;
+// The merged taxonomies of this section and any sub-sections
+taxonomies: Array<Taxonomy>;
 ```
 
 ## Table of contents

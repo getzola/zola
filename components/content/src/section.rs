@@ -15,6 +15,7 @@ use crate::front_matter::{split_section_content, SectionFrontMatter};
 use crate::library::Library;
 use crate::ser::{SectionSerMode, SerializingSection};
 use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
+use crate::Taxonomy;
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -61,6 +62,8 @@ pub struct Section {
     pub internal_links: Vec<(String, Option<String>)>,
     /// The list of all links to external webpages. They can be validated by the `link_checker`.
     pub external_links: Vec<String>,
+    /// Taxonomies specific to the section (i.e. all pages in this section and sub-sections)
+    pub taxonomies: Vec<Taxonomy>,
 }
 
 impl Section {
