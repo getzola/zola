@@ -160,6 +160,10 @@ include_content = true
 # become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
 
+# Wether to produce the search index as a javascript file or as a JSON file
+# Accepted value "javascript" or "json"
+index_format = "javascript"
+
 # Optional translation object for the default language
 # Example:
 #     default_language = "fr"
