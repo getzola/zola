@@ -15,7 +15,7 @@ use libs::rayon::prelude::*;
 use libs::tera::{Context, Tera};
 use libs::walkdir::{DirEntry, WalkDir};
 
-use config::{get_config, Config};
+use config::{get_config, Config, IndexFormat};
 use content::{Library, Page, Paginator, Section, Taxonomy};
 use errors::{anyhow, bail, Context as ErrorContext, Result};
 use libs::relative_path::RelativePathBuf;
@@ -764,32 +764,36 @@ impl Site {
         Ok(())
     }
 
+    fn index_for_lang(&self, lang: &str) -> Result<()> {
+        let index_json = search::build_index(
+            &self.config.default_language,
+            &self.library.read().unwrap(),
+            &self.config,
+        )?;
+        let (path, content) = match &self.config.search.index_format {
+            IndexFormat::Json => {
+                let path = self.output_path.join(&format!("search_index.{}.json", lang));
+                (path, index_json)
+            }
+            IndexFormat::Javascript => {
+                let path = self.output_path.join(&format!("search_index.{}.js", lang));
+                let content = format!("window.searchIndex = {};", index_json);
+                (path, content)
+            }
+        };
+        create_file(&path, &content)
+    }
+
     pub fn build_search_index(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         // TODO: add those to the SITE_CONTENT map
 
         // index first
-        create_file(
-            &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
-            &format!(
-                "window.searchIndex = {};",
-                search::build_index(
-                    &self.config.default_language,
-                    &self.library.read().unwrap(),
-                    &self.config
-                )?
-            ),
-        )?;
+        self.index_for_lang(&self.config.default_language)?;
 
         for (code, language) in &self.config.other_languages() {
             if code != &self.config.default_language && language.build_search_index {
-                create_file(
-                    &self.output_path.join(&format!("search_index.{}.js", &code)),
-                    &format!(
-                        "window.searchIndex = {};",
-                        search::build_index(code, &self.library.read().unwrap(), &self.config)?
-                    ),
-                )?;
+                self.index_for_lang(code)?;
             }
         }
 
