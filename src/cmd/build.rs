@@ -17,7 +17,7 @@ pub fn build(
     if let Some(output_dir) = output_dir {
         if !force && output_dir.exists() {
             return Err(Error::msg(format!(
-                "Directory '{}' already exists. User --force to overwrite.",
+                "Directory '{}' already exists. Use --force to overwrite.",
                 output_dir.display(),
             )));
         }
