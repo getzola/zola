@@ -1,5 +1,4 @@
 use std::io::{self, BufRead, Write};
-use std::time::Duration;
 
 use libs::url::Url;
 
@@ -30,24 +29,6 @@ pub fn ask_bool(question: &str, default: bool) -> Result<bool> {
             println!("Invalid choice: '{}'", input);
             ask_bool(question, default)
         }
-    }
-}
-
-/// Ask a yes/no question to the user with a timeout
-pub async fn ask_bool_timeout(question: &str, default: bool, timeout: Duration) -> Result<bool> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-
-    let q = question.to_string();
-    std::thread::spawn(move || {
-        tx.send(ask_bool(&q, default)).unwrap();
-    });
-
-    match tokio::time::timeout(timeout, rx).await {
-        Err(_) => {
-            console::warn("\nWaited too long for response.");
-            Ok(default)
-        }
-        Ok(val) => val.expect("Tokio failed to properly execute"),
     }
 }
 

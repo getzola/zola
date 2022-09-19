@@ -39,7 +39,7 @@ fn main() {
                 std::process::exit(1);
             }
         }
-        Command::Build { base_url, output_dir, drafts } => {
+        Command::Build { base_url, output_dir, force, drafts } => {
             console::info("Building site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
@@ -48,6 +48,7 @@ fn main() {
                 &config_file,
                 base_url.as_deref(),
                 output_dir.as_deref(),
+                force,
                 drafts,
             ) {
                 Ok(()) => messages::report_elapsed_time(start),
