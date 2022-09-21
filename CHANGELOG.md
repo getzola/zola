@@ -5,6 +5,8 @@
 - Add `get_taxonomy_term` function
 - Add slugify.paths_keep_dates option
 - Add command to generate shell completions
+- Fix link generation to colocated assets other than images
+
 
 ## 0.16.1 (2022-08-14)
 

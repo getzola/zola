@@ -174,6 +174,8 @@ fn fix_link(
                 }
             }
         }
+    } else if is_colocated_asset_link(link) {
+        format!("{}{}", context.current_page_permalink, link)
     } else if is_external_link(link) {
         external_links.push(link.to_owned());
         link.to_owned()
@@ -613,7 +615,7 @@ mod tests {
     #[test]
     // Tests for link  that points to files in the same directory
     fn test_is_colocated_asset_link_true() {
-        let links: [&str; 2] = ["./same-dir.md", "file.md"];
+        let links: [&str; 3] = ["./same-dir.md", "file.md", "qwe.js"];
         for link in links {
             assert!(is_colocated_asset_link(link));
         }
