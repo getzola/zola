@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
-use std::{collections::hash_map::DefaultHasher, io::Write};
+use std::{collections::hash_map::DefaultHasher, io::{Write, BufWriter}};
 
 use image::error::ImageResult;
 use image::io::Reader as ImgReader;
@@ -322,14 +322,15 @@ impl ImageOp {
 
         let img = fix_orientation(&img, &self.input_path).unwrap_or(img);
 
-        let mut f = File::create(target_path)?;
+        let f = File::create(target_path)?;
+        let mut buffered_f = BufWriter::new(f);
 
         match self.format {
             Format::Png => {
-                img.write_to(&mut f, ImageOutputFormat::Png)?;
+                img.write_to(&mut buffered_f, ImageOutputFormat::Png)?;
             }
             Format::Jpeg(q) => {
-                img.write_to(&mut f, ImageOutputFormat::Jpeg(q))?;
+                img.write_to(&mut buffered_f, ImageOutputFormat::Jpeg(q))?;
             }
             Format::WebP(q) => {
                 let encoder = webp::Encoder::from_image(&img)
@@ -338,7 +339,7 @@ impl ImageOp {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
                 };
-                f.write_all(memory.as_bytes())?;
+                buffered_f.write_all(memory.as_bytes())?;
             }
         }
 
