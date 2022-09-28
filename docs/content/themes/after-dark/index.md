@@ -3,11 +3,11 @@
 title = "after-dark"
 description = "A robust, elegant dark theme"
 template = "theme.html"
-date = 2022-08-16T14:32:26-05:00
+date = 2022-09-29T05:26:01+09:00
 
 [extra]
-created = 2022-08-16T14:32:26-05:00
-updated = 2022-08-16T14:32:26-05:00
+created = 2022-09-29T05:26:01+09:00
+updated = 2022-09-29T05:26:01+09:00
 repository = "https://github.com/getzola/after-dark.git"
 homepage = "https://github.com/getzola/after-dark"
 minimum_version = "0.11.0"

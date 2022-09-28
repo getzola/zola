@@ -3,11 +3,11 @@
 title = "archie-zola"
 description = "A zola theme based on Hugo archie."
 template = "theme.html"
-date = 2022-08-16T14:32:26-05:00
+date = 2022-09-29T05:26:01+09:00
 
 [extra]
-created = 2022-08-16T14:32:26-05:00
-updated = 2022-08-16T14:32:26-05:00
+created = 2022-09-29T05:26:01+09:00
+updated = 2022-09-29T05:26:01+09:00
 repository = "https://github.com/XXXMrG/archie-zola.git"
 homepage = "https://github.com/XXXMrG/archie-zola"
 minimum_version = "0.14.0"
