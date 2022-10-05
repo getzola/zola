@@ -189,8 +189,8 @@ impl Taxonomy {
         context.insert("lang", &self.lang);
         context.insert("term", &SerializedTaxonomyTerm::from_item(item, library, true));
         context.insert("taxonomy", &self.kind);
-        context.insert("current_url", &self.permalink);
-        context.insert("current_path", &self.path);
+        context.insert("current_url", &item.permalink);
+        context.insert("current_path", &item.path);
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/single.html", self.kind.name);
