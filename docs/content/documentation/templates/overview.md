@@ -234,17 +234,21 @@ In the case of non-internal links, you can also add a cachebust of the format `?
 by passing `cachebust=true` to the `get_url` function. In this case, the path will need to resolve to an actual file. 
 See [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic) for details.
 
-### `get_file_hash`
+### `get_hash`
 
-Returns the hash digest (SHA-256, SHA-384 or SHA-512) of a file.
+Returns the hash digest (SHA-256, SHA-384 or SHA-512) of a file or a string literal.
 
 It can take the following arguments:
 - `path`: mandatory, see [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic) for details
+- **or** `literal`: mandatory, the string value to be hashed
 - `sha_type`: optional, one of `256`, `384` or `512`, defaults to `384`
 - `base64`: optional, `true` or `false`, defaults to `true`. Whether to encode the hash as base64
 
+Either `path` or `literal` must be given.
+
 ```jinja2
-{{/* get_file_hash(path="static/js/app.js", sha_type=256) */}}
+{{/* get_hash(literal="Hello World", sha_type=256) */}}
+{{/* get_hash(path="static/js/app.js", sha_type=256) */}}
 ```
 
 The function can also output a base64-encoded hash value when its `base64`
@@ -253,10 +257,10 @@ integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Int
 
 ```jinja2
 <script src="{{/* get_url(path="static/js/app.js") */}}"
-  integrity="sha384-{{ get_file_hash(path="static/js/app.js", sha_type=384, base64=true) | safe }}"></script>
+  integrity="sha384-{{ get_hash(path="static/js/app.js", sha_type=384, base64=true) | safe }}"></script>
 ```
 
-Do note that subresource integrity is typically used when using external scripts, which `get_file_hash` does not support.
+Do note that subresource integrity is typically used when using external scripts, which `get_hash` does not support.
 
 ### `get_image_metadata`
 
