@@ -771,11 +771,11 @@ impl Site {
             &self.config,
         )?;
         let (path, content) = match &self.config.search.index_format {
-            IndexFormat::Json => {
+            IndexFormat::ElasticlunrJson => {
                 let path = self.output_path.join(&format!("search_index.{}.json", lang));
                 (path, index_json)
             }
-            IndexFormat::Javascript => {
+            IndexFormat::ElasticlunrJavascript => {
                 let path = self.output_path.join(&format!("search_index.{}.js", lang));
                 let content = format!("window.searchIndex = {};", index_json);
                 (path, content)

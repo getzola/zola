@@ -17,7 +17,7 @@ After `zola build` or `zola serve`, you should see two files in your public dire
 - `search_index.${default_language}.js`: so `search_index.en.js` for a default setup
 - `elasticlunr.min.js`
 
-If you set `index_format = "json"` in your `config.toml`, a `search_index.${default_language}.json` is generated
+If you set `index_format = "elasticlunr_json"` in your `config.toml`, a `search_index.${default_language}.json` is generated
 instead of the default `search_index.${default_language}.js`.
 
 As each site will be different, Zola makes no assumptions about your search function and doesn't provide
