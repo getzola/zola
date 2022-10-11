@@ -2,10 +2,16 @@
 
 ## 0.17.0 (unreleased)
 
+### Breaking
+- `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
+
+### Other
+
 - Add `get_taxonomy_term` function
 - Add slugify.paths_keep_dates option
 - Add command to generate shell completions
 - Fix link generation to colocated assets other than images
+- Add `get_hash` Tera function
 
 
 ## 0.16.1 (2022-08-14)
