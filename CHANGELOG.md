@@ -12,6 +12,8 @@
 - Add command to generate shell completions
 - Fix link generation to colocated assets other than images
 - Add `get_hash` Tera function
+- Minify CSS and JS embedded in HTML
+- Fix slow image processingq
 
 
 ## 0.16.1 (2022-08-14)
