@@ -182,11 +182,22 @@ fn method_not_allowed() -> Response<Body> {
 
 fn io_error(err: std::io::Error) -> Response<Body> {
     match err.kind() {
+        // Cannot add `| std::io::ErrorKind::NotADirectory` to first branch
+        // until `io_error_more` unstable feature is merged
         std::io::ErrorKind::NotFound => not_found(),
         std::io::ErrorKind::PermissionDenied => {
             Response::builder().status(StatusCode::FORBIDDEN).body(Body::empty()).unwrap()
         }
-        _ => panic!("{}", err),
+
+        _ => {
+            // "Not A Directory" IO error occurs when a request is made for an
+            // existing file with a trailing forward slash (e.g. `/logo.png/`)
+            if err.raw_os_error() == Some(20) {
+                not_found()
+            } else {
+                panic!("{}", err)
+            }
+        }
     }
 }
 
