@@ -40,7 +40,7 @@ stages:
             displayName: Cargo build (Native TLS)
           - script: cargo build --all
             displayName: Cargo build (Rust TLS)
-          - script: cargo test --all
+          - script: RUST_BACKTRACE=1 cargo test --all
             displayName: Cargo test
 
 
