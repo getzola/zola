@@ -80,6 +80,10 @@ pub enum Command {
         /// Only rebuild the minimum on change - useful when working on a specific page/section
         #[clap(short = 'f', long)]
         fast: bool,
+
+        /// Default append port to the base url.
+        #[clap(long, default_value_t = false)]
+        no_port_append: bool,
     },
 
     /// Try to build the project without rendering it. Checks links
