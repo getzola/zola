@@ -58,7 +58,16 @@ fn main() {
                 }
             }
         }
-        Command::Serve { interface, mut port, output_dir, base_url, drafts, open, fast } => {
+        Command::Serve {
+            interface,
+            mut port,
+            output_dir,
+            base_url,
+            drafts,
+            open,
+            fast,
+            no_port_append,
+        } => {
             if port != 1111 && !port_is_available(port) {
                 console::error("The requested port is not available");
                 std::process::exit(1);
@@ -83,6 +92,7 @@ fn main() {
                 open,
                 drafts,
                 fast,
+                no_port_append,
                 UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
             ) {
                 messages::unravel_errors("Failed to serve the site", &e);

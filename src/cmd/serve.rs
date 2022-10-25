@@ -241,6 +241,7 @@ fn create_new_site(
     base_url: &str,
     config_file: &Path,
     include_drafts: bool,
+    no_port_append: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, String)> {
     SITE_CONTENT.write().unwrap().clear();
@@ -251,7 +252,11 @@ fn create_new_site(
     let base_url = if base_url == "/" {
         String::from("/")
     } else {
-        let base_address = format!("{}:{}", base_url, interface_port);
+        let base_address = if no_port_append {
+            base_url.to_string()
+        } else {
+            format!("{}:{}", base_url, interface_port)
+        };
 
         if site.config.base_url.ends_with('/') {
             format!("http://{}/", base_address)
@@ -291,6 +296,7 @@ pub fn serve(
     open: bool,
     include_drafts: bool,
     fast_rebuild: bool,
+    no_port_append: bool,
     utc_offset: UtcOffset,
 ) -> Result<()> {
     let start = Instant::now();
@@ -302,6 +308,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        no_port_append,
         None,
     )?;
     messages::report_elapsed_time(start);
@@ -502,6 +509,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        no_port_append,
         ws_port,
     ) {
         Ok((s, _)) => {
