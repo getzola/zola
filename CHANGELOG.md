@@ -13,7 +13,9 @@
 - Fix link generation to colocated assets other than images
 - Add `get_hash` Tera function
 - Minify CSS and JS embedded in HTML
-- Fix slow image processingq
+- Fix slow image processing
+- Fix current_url in taxonomy term
+- Add new flag 'port_append' to give the ability to remove port from base url
 
 
 ## 0.16.1 (2022-08-14)

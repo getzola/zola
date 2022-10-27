@@ -82,7 +82,7 @@ pub enum Command {
         fast: bool,
 
         /// Default append port to the base url.
-        #[clap(long, default_value_t = false)]
+        #[clap(long)]
         no_port_append: bool,
     },
 
