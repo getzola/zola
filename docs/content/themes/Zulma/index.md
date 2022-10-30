@@ -3,11 +3,11 @@
 title = "Zulma"
 description = "A zola theme based off bulma.css"
 template = "theme.html"
-date = 2022-10-04T04:04:47-05:00
+date = 2022-10-31T02:39:20+06:00
 
 [extra]
-created = 2022-10-04T04:04:47-05:00
-updated = 2022-10-04T04:04:47-05:00
+created = 2022-10-31T02:39:20+06:00
+updated = 2022-10-31T02:39:20+06:00
 repository = "https://github.com/Worble/Zulma.git"
 homepage = "https://github.com/Worble/Zulma"
 minimum_version = "0.6.0"

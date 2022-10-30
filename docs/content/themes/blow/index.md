@@ -3,11 +3,11 @@
 title = "Blow"
 description = "A Zola theme made with Tailwindcss"
 template = "theme.html"
-date = 2022-10-04T04:04:47-05:00
+date = 2022-10-31T02:39:20+06:00
 
 [extra]
-created = 2022-10-04T04:04:47-05:00
-updated = 2022-10-04T04:04:47-05:00
+created = 2022-10-31T02:39:20+06:00
+updated = 2022-10-31T02:39:20+06:00
 repository = "https://github.com/tchartron/blow.git"
 homepage = "https://github.com/tchartron/blow"
 minimum_version = "0.9.0"

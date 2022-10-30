@@ -3,11 +3,11 @@
 title = "ataraxia"
 description = "A personal theme focused on ease of reading"
 template = "theme.html"
-date = 2022-10-04T04:04:47-05:00
+date = 2022-10-31T02:39:20+06:00
 
 [extra]
-created = 2022-10-04T04:04:47-05:00
-updated = 2022-10-04T04:04:47-05:00
+created = 2022-10-31T02:39:20+06:00
+updated = 2022-10-31T02:39:20+06:00
 repository = "https://github.com/gersonbdev/ataraxia-zola"
 homepage = "https://github.com/gersonbdev/ataraxia-zola"
 minimum_version = "0.16.0"
