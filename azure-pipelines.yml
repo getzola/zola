@@ -42,6 +42,8 @@ stages:
             displayName: Cargo build (Rust TLS)
           - script: cargo test --all
             displayName: Cargo test
+          - script: cargo fmt --check
+            displayName: Cargo fmt
 
 
   - stage: Release
