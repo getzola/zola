@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
 use std::fs;
 use std::io::Read;
+use std::path::PathBuf;
 
 use crate::global_fns::helpers::search_for_file;
 use config::Config;
@@ -11,10 +11,7 @@ use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use libs::url;
 use utils::site::resolve_internal_link;
 
-fn compute_hash<D: digest::Digest>(
-    literal: String,
-    as_base64: bool,
-) -> String
+fn compute_hash<D: digest::Digest>(literal: String, as_base64: bool) -> String
 where
     digest::Output<D>: core::fmt::LowerHex,
     D: std::io::Write,
@@ -135,8 +132,7 @@ impl TeraFn for GetUrl {
                     f.read_to_string(&mut contents).ok()?;
 
                     Some(compute_hash::<Sha256>(contents, false))
-                })
-                {
+                }) {
                     Some(hash) => {
                         permalink = format!("{}?h={}", permalink, hash);
                     }
@@ -201,14 +197,16 @@ impl TeraFn for GetHash {
         let contents = match (path, literal) {
             (Some(_), Some(_)) => {
                 return Err("`get_hash`: must have only one of `path` or `literal` argument".into());
-            },
+            }
             (None, None) => {
-                return Err("`get_hash`: must have at least one of `path` or `literal` argument".into());
-            },
+                return Err(
+                    "`get_hash`: must have at least one of `path` or `literal` argument".into()
+                );
+            }
             (Some(path_v), None) => {
                 let file_path =
                     match search_for_file(&self.base_path, &path_v, &self.theme, &self.output_path)
-                    .map_err(|e| format!("`get_hash`: {}", e))?
+                        .map_err(|e| format!("`get_hash`: {}", e))?
                     {
                         Some((f, _)) => f,
                         None => {
@@ -234,9 +232,8 @@ impl TeraFn for GetHash {
 
                 contents
             }
-            (None, Some(literal_v)) => { literal_v }
+            (None, Some(literal_v)) => literal_v,
         };
-
 
         let sha_type = optional_arg!(
             u16,
@@ -244,13 +241,10 @@ impl TeraFn for GetHash {
             "`get_hash`: `sha_type` must be 256, 384 or 512"
         )
         .unwrap_or(384);
-        
-        let base64 = optional_arg!(
-            bool,
-            args.get("base64"),
-            "`get_hash`: `base64` must be true or false"
-        )
-        .unwrap_or(true);
+
+        let base64 =
+            optional_arg!(bool, args.get("base64"), "`get_hash`: `base64` must be true or false")
+                .unwrap_or(true);
 
         let hash = match sha_type {
             256 => compute_hash::<Sha256>(contents, base64),
@@ -587,9 +581,7 @@ title = "A title"
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
         args.insert("base64".to_string(), to_value(true).unwrap());
-        assert_eq!(
-            static_fn.call(&args).unwrap(),
-            "pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=");
+        assert_eq!(static_fn.call(&args).unwrap(), "pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=");
     }
 
     #[test]
@@ -654,7 +646,7 @@ title = "A title"
         args.insert(
             "path".to_string(),
             to_value(dir.path().join("app.css").strip_prefix(std::env::temp_dir()).unwrap())
-            .unwrap(),
+                .unwrap(),
         );
         assert_eq!(
             static_fn.call(&args).unwrap(),
