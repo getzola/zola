@@ -482,13 +482,10 @@ pub fn markdown_to_html(
         }
 
         // We remove all the empty things we might have pushed before so we don't get some random \n
-        events = events
-            .into_iter()
-            .filter(|e| match e {
-                Event::Text(text) | Event::Html(text) => !text.is_empty(),
-                _ => true,
-            })
-            .collect();
+        events.retain(|e| match e {
+            Event::Text(text) | Event::Html(text) => !text.is_empty(),
+            _ => true,
+        });
 
         let heading_refs = get_heading_refs(&events);
 
