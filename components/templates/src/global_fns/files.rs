@@ -102,10 +102,10 @@ impl TeraFn for GetUrl {
             // anything else
             let mut segments = vec![];
 
-            if lang != self.config.default_language {
-                if path.is_empty() || !path[1..].starts_with(&lang) {
-                    segments.push(lang);
-                }
+            if lang != self.config.default_language
+                && (path.is_empty() || !path[1..].starts_with(&lang))
+            {
+                segments.push(lang);
             }
 
             segments.push(path);
