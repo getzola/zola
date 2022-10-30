@@ -271,12 +271,12 @@ impl Library {
             section.ignored_pages.clear();
             section.ancestors.clear();
 
-            if let Some(children) = subsections.get(&*path) {
+            if let Some(children) = subsections.get(path) {
                 let mut children: Vec<_> = children.clone();
                 children.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
                 section.subsections = children;
             }
-            if let Some(parents) = ancestors.get(&*path) {
+            if let Some(parents) = ancestors.get(path) {
                 section.ancestors = parents.clone();
             }
         }
