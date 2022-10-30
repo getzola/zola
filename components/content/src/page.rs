@@ -31,7 +31,7 @@ static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     ).unwrap()
 });
 
-static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"<sup\s*.*?>\s*.*?</sup>").unwrap());
+static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap());
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Page {
@@ -513,7 +513,7 @@ Hello world
         let content = r#"
 +++
 +++
-This page has footnotes, here's one. [^1]
+This page use <sup>1.5</sup> and has footnotes, here's one. [^1]
 
 <!-- more -->
 
@@ -536,7 +536,7 @@ And here's another. [^2]
         .unwrap();
         assert_eq!(
             page.summary,
-            Some("<p>This page has footnotes, here\'s one. </p>\n".to_string())
+            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n".to_string())
         );
     }
 
