@@ -13,14 +13,14 @@ use crate::ser::{SectionSerMode, SerializingPage, SerializingSection};
 use crate::taxonomies::{Taxonomy, TaxonomyTerm};
 use crate::Section;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum PaginationRoot<'a> {
     Section(&'a Section),
     Taxonomy(&'a Taxonomy, &'a TaxonomyTerm),
 }
 
 /// A list of all the pages in the paginator with their index and links
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Pager<'a> {
     /// The page number in the paginator (1-indexed)
     pub index: usize,
@@ -43,7 +43,7 @@ impl<'a> Pager<'a> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Paginator<'a> {
     /// All pages in the section/taxonomy
     all_pages: Cow<'a, [PathBuf]>,

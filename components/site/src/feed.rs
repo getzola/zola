@@ -10,7 +10,7 @@ use content::{Page, TaxonomyTerm};
 use errors::Result;
 use utils::templates::render_template;
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SerializedFeedTaxonomyItem<'a> {
     name: &'a str,
     slug: &'a str,

@@ -8,13 +8,13 @@ use crate::{Page, Section};
 use libs::tera::{Map, Value};
 use utils::table_of_contents::Heading;
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct BackLink<'a> {
     pub permalink: &'a str,
     pub title: &'a Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct TranslatedContent<'a> {
     pub lang: &'a str,
     pub permalink: &'a str,
@@ -39,7 +39,7 @@ fn find_backlinks<'a>(relative_path: &str, library: &'a Library) -> Vec<BackLink
     backlinks
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct SerializingPage<'a> {
     relative_path: &'a str,
     content: &'a str,
@@ -134,7 +134,7 @@ impl<'a> SerializingPage<'a> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct SerializingSection<'a> {
     relative_path: &'a str,
     content: &'a str,

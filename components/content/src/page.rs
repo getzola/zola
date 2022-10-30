@@ -33,7 +33,7 @@ static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
 
 static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap());
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Page {
     /// All info about the actual file
     pub file: FileInfo,

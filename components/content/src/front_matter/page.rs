@@ -12,7 +12,7 @@ use utils::de::{fix_toml_dates, from_toml_datetime};
 use crate::front_matter::split::RawFrontMatter;
 
 /// The front matter of every page
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(default)]
 pub struct PageFrontMatter {
     /// <title> of the page

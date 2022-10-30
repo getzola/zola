@@ -17,7 +17,7 @@ use crate::ser::{SectionSerMode, SerializingSection};
 use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Section {
     /// All info about the actual file
     pub file: FileInfo,

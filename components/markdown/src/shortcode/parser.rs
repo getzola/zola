@@ -10,7 +10,7 @@ use utils::templates::ShortcodeFileType;
 
 pub const SHORTCODE_PLACEHOLDER: &str = "@@ZOLA_SC_PLACEHOLDER@@";
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Eq)]
 pub struct Shortcode {
     pub(crate) name: String,
     pub(crate) args: Value,
