@@ -67,7 +67,7 @@ fn compile_sass_glob(
 }
 
 fn is_partial_scss(entry: &DirEntry) -> bool {
-    entry.file_name().to_str().map(|s| s.starts_with("_")).unwrap_or(false)
+    entry.file_name().to_str().map(|s| s.starts_with('_')).unwrap_or(false)
 }
 
 fn get_non_partial_scss(sass_path: &Path, extension: &str) -> Vec<PathBuf> {
