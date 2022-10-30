@@ -585,7 +585,7 @@ impl From<ImageMeta> for ImageMetaResponse {
         Self {
             width: im.size.0,
             height: im.size.1,
-            format: im.format.and_then(|f| f.extensions_str().get(0)).copied(),
+            format: im.format.and_then(|f| f.extensions_str().first()).copied(),
         }
     }
 }
