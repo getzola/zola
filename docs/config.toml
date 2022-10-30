@@ -5,6 +5,9 @@ description = "Everything you need to make a static site engine in one binary."
 compile_sass = true
 build_search_index = true
 
+[search]
+index_format = "elasticlunr_json"
+
 [markdown]
 highlight_code = true
 highlight_theme = "kronuz"
