@@ -539,12 +539,10 @@ pub fn markdown_to_html(
                 .context("Failed to render anchor link template")?;
                 if context.insert_anchor != InsertAnchor::Heading {
                     anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
-                } else {
-                    if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
-                        let opening_tag = captures.get(1).map_or("", |m| m.as_str()).to_string();
-                        anchors_to_insert.push((start_idx + 1, Event::Html(opening_tag.into())));
-                        anchors_to_insert.push((end_idx, Event::Html("</a>".into())));
-                    }
+                } else if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
+                    let opening_tag = captures.get(1).map_or("", |m| m.as_str()).to_string();
+                    anchors_to_insert.push((start_idx + 1, Event::Html(opening_tag.into())));
+                    anchors_to_insert.push((end_idx, Event::Html("</a>".into())));
                 }
             }
 
