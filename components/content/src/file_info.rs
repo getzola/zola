@@ -26,7 +26,7 @@ pub fn find_content_components<P: AsRef<Path>>(path: P) -> Vec<String> {
 }
 
 /// Struct that contains all the information about the actual file
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct FileInfo {
     /// The full path to the .md file
     pub path: PathBuf,

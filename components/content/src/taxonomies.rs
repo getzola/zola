@@ -16,7 +16,7 @@ use crate::{Page, SortBy};
 
 use crate::sorting::sort_pages;
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SerializedTaxonomyTerm<'a> {
     name: &'a str,
     slug: &'a str,
@@ -104,7 +104,9 @@ impl PartialEq for TaxonomyTerm {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+impl Eq for TaxonomyTerm {}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SerializedTaxonomy<'a> {
     kind: &'a TaxonomyConfig,
     lang: &'a str,
@@ -128,7 +130,7 @@ impl<'a> SerializedTaxonomy<'a> {
     }
 }
 /// All different taxonomies we have and their content
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Taxonomy {
     pub kind: TaxonomyConfig,
     pub lang: String,
@@ -256,7 +258,7 @@ impl Taxonomy {
 }
 
 /// Only used while building the taxonomies
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) struct TaxonomyFound<'a> {
     pub lang: &'a str,
     pub slug: String,
