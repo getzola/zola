@@ -46,9 +46,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.0
       - name: build_and_deploy
-        uses: shalzz/zola-deploy-action@v0.14.1
+        uses: shalzz/zola-deploy-action@v0.16.1
         env:
           # Target branch
           PAGES_BRANCH: gh-pages
