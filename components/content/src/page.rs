@@ -229,7 +229,7 @@ impl Page {
         self.summary = res
             .summary_len
             .map(|l| &res.body[0..l])
-            .map(|s| FOOTNOTES_RE.replace(s, "").into_owned());
+            .map(|s| FOOTNOTES_RE.replace_all(s, "").into_owned());
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
@@ -515,13 +515,17 @@ Hello world
 +++
 This page use <sup>1.5</sup> and has footnotes, here's one. [^1]
 
+Here's another. [^2]
+
 <!-- more -->
 
-And here's another. [^2]
+And here's another. [^3]
 
 [^1]: This is the first footnote.
 
-[^2]: This is the second footnote."#
+[^2]: This is the secund footnote.
+
+[^3]: This is the third footnote."#
             .to_string();
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
@@ -536,7 +540,7 @@ And here's another. [^2]
         .unwrap();
         assert_eq!(
             page.summary,
-            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n".to_string())
+            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>\n".to_string())
         );
     }
 
