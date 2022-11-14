@@ -1,9 +1,9 @@
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
-use libs::walkdir::{WalkDir, DirEntry};
-use libs::globset::{Glob};
+use libs::globset::Glob;
 use libs::sass_rs::{compile_file, Options, OutputStyle};
+use libs::walkdir::{DirEntry, WalkDir};
 
 use crate::anyhow;
 use errors::{bail, Result};
@@ -67,16 +67,13 @@ fn compile_sass_glob(
 }
 
 fn is_partial_scss(entry: &DirEntry) -> bool {
-    entry.file_name()
-         .to_str()
-         .map(|s| s.starts_with("_"))
-         .unwrap_or(false)
+    entry.file_name().to_str().map(|s| s.starts_with("_")).unwrap_or(false)
 }
 
 fn get_non_partial_scss(sass_path: &Path, extension: &str) -> Vec<PathBuf> {
     let glob_string = format!("*.{}", extension);
     let glob = Glob::new(glob_string.as_str()).expect("Invalid glob for sass").compile_matcher();
-    
+
     WalkDir::new(sass_path)
         .into_iter()
         .filter_entry(|e| !is_partial_scss(e))
