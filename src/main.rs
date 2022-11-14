@@ -13,16 +13,30 @@ mod messages;
 mod prompt;
 
 fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
-    let root_dir = dir
+    // Takes a potentially relative path and returns and absolute one from current_dir
+    // Required because relative paths don't always work correctly on Windows
+    // https://github.com/getzola/zola/issues/1361
+    fn make_abs_path(path: &Path) -> PathBuf {
+        if path.is_relative() {
+            return env::current_dir().unwrap().join(path);
+        } else {
+            return path.to_path_buf();
+        }
+    }
+
+    let base_dir = if dir == Path::new(".") {
+        env::current_dir().unwrap()
+    } else {
+        make_abs_path(dir)
+    };
+
+    let root_dir = base_dir
         .ancestors()
         .find(|a| a.join(&config_path).exists())
         .unwrap_or_else(|| panic!("could not find directory containing config file"));
 
     // if we got here we found root_dir so config file should exist so we can unwrap safely
-    let config_file = root_dir
-        .join(&config_path)
-        .canonicalize()
-        .unwrap_or_else(|_| panic!("could not find directory containing config file"));
+    let config_file = root_dir.join(&config_path);
     (root_dir.to_path_buf(), config_file)
 }
 
