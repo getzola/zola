@@ -589,8 +589,8 @@ impl Site {
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
             if !self.config.preserve_dotfiles_in_output {
-                return Ok(remove_dir_all(&self.output_path)
-                    .context("Couldn't delete output directory")?);
+                return remove_dir_all(&self.output_path)
+                    .context("Couldn't delete output directory");
             }
 
             for entry in self.output_path.read_dir().context(format!(
