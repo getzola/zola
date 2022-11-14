@@ -21,7 +21,7 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
     let mut file =
-        File::create(&path).with_context(|| format!("Failed to create file {}", path.display()))?;
+        File::create(path).with_context(|| format!("Failed to create file {}", path.display()))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }
@@ -92,19 +92,19 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
             .with_context(|| format!("Failed to get metadata of {}", src.display()))?;
         let src_mtime = FileTime::from_last_modification_time(&src_metadata);
         if Path::new(&dest).is_file() {
-            let target_metadata = metadata(&dest)?;
+            let target_metadata = metadata(dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                copy(src, &dest).with_context(|| {
+                copy(src, dest).with_context(|| {
                     format!("Was not able to copy file {} to {}", src.display(), dest.display())
                 })?;
-                set_file_mtime(&dest, src_mtime)?;
+                set_file_mtime(dest, src_mtime)?;
             }
         } else {
-            copy(src, &dest).with_context(|| {
+            copy(src, dest).with_context(|| {
                 format!("Was not able to copy directory {} to {}", src.display(), dest.display())
             })?;
-            set_file_mtime(&dest, src_mtime)?;
+            set_file_mtime(dest, src_mtime)?;
         }
     }
     Ok(())

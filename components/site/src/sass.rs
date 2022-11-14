@@ -51,12 +51,12 @@ fn compile_sass_glob(
     for file in files {
         let css = compile_file(&file, options.clone()).map_err(|e| anyhow!(e))?;
 
-        let path_inside_sass = file.strip_prefix(&sass_path).unwrap();
+        let path_inside_sass = file.strip_prefix(sass_path).unwrap();
         let parent_inside_sass = path_inside_sass.parent();
         let css_output_path = output_path.join(path_inside_sass).with_extension("css");
 
         if parent_inside_sass.is_some() {
-            create_dir_all(&css_output_path.parent().unwrap())?;
+            create_dir_all(css_output_path.parent().unwrap())?;
         }
 
         create_file(&css_output_path, &css)?;

@@ -31,7 +31,9 @@ static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     ).unwrap()
 });
 
-static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap());
+static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
+});
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Page {
@@ -260,7 +262,7 @@ impl Page {
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
         self.assets
             .iter()
-            .filter_map(|asset| asset.strip_prefix(&self.file.path.parent().unwrap()).ok())
+            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
             .filter_map(|filename| filename.to_str())
             .map(|filename| {
                 let mut path = self.file.path.clone();

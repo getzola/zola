@@ -62,7 +62,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     if let Some(ref theme) = config.theme {
         // Test that the templates folder exist for that theme
-        let theme_path = path.join("themes").join(&theme);
+        let theme_path = path.join("themes").join(theme);
         if !theme_path.join("templates").exists() {
             bail!("Theme `{}` is missing a templates folder", theme);
         }

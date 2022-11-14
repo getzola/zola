@@ -218,7 +218,7 @@ impl Site {
                 // if we are processing a section we have to collect
                 // index files for all languages and process them simultaneously
                 // before any of the pages
-                let index_files = WalkDir::new(&path)
+                let index_files = WalkDir::new(path)
                     .follow_links(true)
                     .max_depth(1)
                     .into_iter()
@@ -664,7 +664,7 @@ impl Site {
                 asset_path,
                 &current_path.join(
                     asset_path
-                        .strip_prefix(&page.file.path.parent().unwrap())
+                        .strip_prefix(page.file.path.parent().unwrap())
                         .expect("Couldn't get filename from page asset"),
                 ),
             )?;
@@ -1071,7 +1071,7 @@ impl Site {
                 asset_path,
                 &output_path.join(
                     asset_path
-                        .strip_prefix(&section.file.path.parent().unwrap())
+                        .strip_prefix(section.file.path.parent().unwrap())
                         .expect("Failed to get asset filename for section"),
                 ),
             )?;
