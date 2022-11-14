@@ -222,8 +222,11 @@ impl Taxonomy {
     ) -> Result<String> {
         let mut context = Context::new();
         context.insert("config", &config.serialize(&self.lang));
-        let terms: Vec<SerializedTaxonomyTerm> =
-            self.items.iter().map(|i| SerializedTaxonomyTerm::from_item(i, library, true)).collect();
+        let terms: Vec<SerializedTaxonomyTerm> = self
+            .items
+            .iter()
+            .map(|i| SerializedTaxonomyTerm::from_item(i, library, true))
+            .collect();
         context.insert("terms", &terms);
         context.insert("lang", &self.lang);
         context.insert("taxonomy", &self.kind);

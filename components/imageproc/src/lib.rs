@@ -4,7 +4,10 @@ use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
-use std::{collections::hash_map::DefaultHasher, io::{Write, BufWriter}};
+use std::{
+    collections::hash_map::DefaultHasher,
+    io::{BufWriter, Write},
+};
 
 use image::error::ImageResult;
 use image::io::Reader as ImgReader;
