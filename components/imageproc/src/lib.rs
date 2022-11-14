@@ -605,7 +605,7 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
 
     match ext.as_str() {
         "svg" => {
-            let img = SvgMetadata::parse_file(&path).with_context(err_context)?;
+            let img = SvgMetadata::parse_file(path).with_context(err_context)?;
             match (img.height(), img.width(), img.view_box()) {
                 (Some(h), Some(w), _) => Ok((h, w)),
                 (_, _, Some(view_box)) => Ok((view_box.height, view_box.width)),

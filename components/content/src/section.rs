@@ -198,7 +198,7 @@ impl Section {
     fn serialize_assets(&self) -> Vec<String> {
         self.assets
             .iter()
-            .filter_map(|asset| asset.strip_prefix(&self.file.path.parent().unwrap()).ok())
+            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
             .filter_map(|filename| filename.to_str())
             .map(|filename| format!("{}{}", self.path, filename))
             .collect()

@@ -318,13 +318,12 @@ pub fn serve(
         Ok(a) => a,
         Err(_) => return Err(anyhow!("Invalid address: {}.", address)),
     };
-    if (TcpListener::bind(&bind_address)).is_err() {
+    if (TcpListener::bind(bind_address)).is_err() {
         return Err(anyhow!("Cannot start server on address {}.", address));
     }
 
     let config_path = PathBuf::from(config_file);
-    let config_path_rel =
-        diff_paths(&config_path, &root_dir).unwrap_or_else(|| config_path.clone());
+    let config_path_rel = diff_paths(&config_path, root_dir).unwrap_or_else(|| config_path.clone());
 
     // An array of (path, WatchMode) where the path should be watched for changes,
     // and the WatchMode value indicates whether this file/folder must exist for
