@@ -205,7 +205,7 @@ impl<'a> Paginator<'a> {
         } else {
             paginator.insert("next", Value::Null);
         }
-        paginator.insert("number_pagers", to_value(&self.pagers.len()).unwrap());
+        paginator.insert("number_pagers", to_value(self.pagers.len()).unwrap());
         let base_url = if self.paginate_path.is_empty() {
             self.permalink.to_string()
         } else {
