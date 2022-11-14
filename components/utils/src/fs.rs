@@ -171,7 +171,7 @@ pub fn is_dotfile<P>(path: P) -> bool
 where
     P: AsRef<Path>,
 {
-    path.as_ref().file_name().and_then(|s| s.to_str()).map(|s| s.starts_with(".")).unwrap_or(false)
+    path.as_ref().file_name().and_then(|s| s.to_str()).map(|s| s.starts_with('.')).unwrap_or(false)
 }
 
 #[cfg(test)]
