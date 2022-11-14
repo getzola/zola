@@ -42,7 +42,7 @@ theme = ""
 output_dir = "public"
 
 # Whether hidden files and folders at the root level of the output directory are preserved when building the site.
-preserve_hidden_files = false
+preserve_dotfiles_in_output = false
 
 # When set to "true", the Sass files in the `sass` directory in the site root are compiled.
 # Sass files in theme directories are always compiled.

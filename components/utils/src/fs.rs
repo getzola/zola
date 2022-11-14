@@ -166,8 +166,8 @@ where
     time_source.and_then(|ts| time_target.map(|tt| ts > tt)).unwrap_or(true)
 }
 
-/// Checks if the file or folder for the given path is hidden, meaning starts with '.'
-pub fn file_hidden<P>(path: P) -> bool
+/// Checks if the file or folder for the given path is a dotfile, meaning starts with '.'
+pub fn is_dotfile<P>(path: P) -> bool
 where
     P: AsRef<Path>,
 {

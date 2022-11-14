@@ -23,7 +23,7 @@ use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
-    file_hidden,
+    is_dotfile,
 };
 use utils::net::get_available_port;
 use utils::templates::{render_template, ShortcodeDefinition};
@@ -584,10 +584,11 @@ impl Site {
         imageproc.do_process()
     }
 
-    /// Deletes the contents in the `public` directory if it exists
+    /// Deletes the `public` directory if it exists and the `preserve_dotfiles_in_output` option is set to false,
+    /// or if set to true: its contents except for the dotfiles at the root level.
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
-            if !self.config.preserve_hidden_files {
+            if !self.config.preserve_dotfiles_in_output {
                 return Ok(remove_dir_all(&self.output_path)
                     .context("Couldn't delete output directory")?);
             }
@@ -598,8 +599,8 @@ impl Site {
             ))? {
                 let entry = entry.context("Couldn't read entry in output directory")?.path();
 
-                // Skip hidden files and folders if the preserve_hidden_file configuration option is set
-                if file_hidden(&entry) {
+                // Skip dotfiles if the preserve_dotfiles_in_output configuration option is set
+                if is_dotfile(&entry) {
                     continue;
                 }
 
