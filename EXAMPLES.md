@@ -44,7 +44,6 @@
 | [films.mlcdf.fr](https://films.mlcdf.fr)                           | https://github.com/mlcdf/films                           |
 | [Mish Ushakov](https://mish.co)                                    |                                                          |
 | [castor](https://castorisdead.xyz)                                 | https://github.com/whoisYoges/website                    |
-| [pwnwriter](https://pwnwriter.xyz)                                 | https://github.com/pwnwriter/www                         |
 | [mrkaran](https://mrkaran.dev)                                     | https://github.com/mr-karan/website                      |
 | [giuseppedepalma](https://giuseppedepalma.com/)                    | https://github.com/giusdp/giuseppedepalma.com/           |
 
