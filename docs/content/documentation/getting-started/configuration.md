@@ -41,7 +41,8 @@ theme = ""
 # For overriding the default output directory `public`, set it to another value (e.g.: "docs")
 output_dir = "public"
 
-# Whether dotfiles at the root level of the output directory are preserved when building the site.
+# Whether dotfiles at the root level of the output directory are preserved when (re)building the site.
+# Enabling this also prevents the deletion of the output folder itself on rebuilds.
 preserve_dotfiles_in_output = false
 
 # When set to "true", the Sass files in the `sass` directory in the site root are compiled.
