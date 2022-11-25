@@ -216,21 +216,21 @@ It accepts an optional parameter `lang` in order to compute a *language-aware UR
 {% set url = get_url(path="@/blog/_index.md", lang="en") %}
 ```
 
-This can also be used to get the permalinks for static assets, for example if
-we want to link to the file that is located at `static/css/app.css`:
+This can also be used to get the permalink for a static file, for example if
+you want to link to the file that is located at `static/css/app.css`:
 
 ```jinja2
 {{/* get_url(path="css/app.css") */}}
 ```
 
-By default, assets will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
+By default, the link will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
 An example is:
 
 ```jinja2
 {{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
-In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
+In the case of a non-internal link, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
 by passing `cachebust=true` to the `get_url` function. In this case, the path will need to resolve to an actual file. 
 See [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic) for details.
 
