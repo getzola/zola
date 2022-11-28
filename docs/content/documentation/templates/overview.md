@@ -69,7 +69,7 @@ in Tera.
 Converts the given variable to HTML using Markdown. There are a few differences compared to page/section Markdown rendering:
 
 - shortcodes evaluated by this filter cannot access the current rendering context: `config` will be available, but accessing `section` or `page` (among others) from a shortcode called within the `markdown` filter will prevent your site from building (see [this discussion](https://github.com/getzola/zola/pull/1358))
-- `lang` in shortcodes will always be equal to the site's `default_lang` (or `en` otherwise) ; it should not be a problem, but if it is in most cases, but if you need to use language-aware shortcodes in this filter, please refer to the [Shortcode context](@/documentation/content/shortcodes.md#shortcode-context) section of the docs.
+- `lang` in shortcodes will always be equal to the site's `config.default_language` (or `en` otherwise) ; it should not be a problem, but if it is in most cases, but if you need to use language-aware shortcodes in this filter, please refer to the [Shortcode context](@/documentation/content/shortcodes.md#shortcode-context) section of the docs.
 
 By default, the filter will wrap all text in a paragraph. To disable this behaviour, you can
 pass `true` to the inline argument:
