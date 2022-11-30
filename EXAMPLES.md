@@ -43,3 +43,7 @@
 | [146 Parks](https://146parks.blog/)                                | https://github.com/scouten/146parks.blog                 |
 | [films.mlcdf.fr](https://films.mlcdf.fr)                           | https://github.com/mlcdf/films                           |
 | [Mish Ushakov](https://mish.co)                                    |                                                          |
+| [castor](https://castorisdead.xyz)                                 | https://github.com/whoisYoges/website                    |
+| [mrkaran](https://mrkaran.dev)                                     | https://github.com/mr-karan/website                      |
+| [giuseppedepalma](https://giuseppedepalma.com/)                    | https://github.com/giusdp/giuseppedepalma.com/           |
+
