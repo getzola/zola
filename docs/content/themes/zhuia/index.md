@@ -3,11 +3,11 @@
 title = "Zhuia"
 description = "An elegant but still playful theme for Zola."
 template = "theme.html"
-date = 2022-11-26T14:27:32+05:30
+date = 2022-12-04T21:40:33+02:00
 
 [extra]
-created = 2022-11-26T14:27:32+05:30
-updated = 2022-11-26T14:27:32+05:30
+created = 2022-12-04T21:40:33+02:00
+updated = 2022-12-04T21:40:33+02:00
 repository = "https://github.com/gicrisf/zhuia.git"
 homepage = "https://github.com/gicrisf/zhuia"
 minimum_version = "0.15.0"
