@@ -126,7 +126,7 @@ impl Config {
             languages::validate_code(code)?;
         }
 
-        config.add_default_language();
+        config.add_default_language()?;
         config.slugify_taxonomies();
 
         if !config.ignored_content.is_empty() {
@@ -152,7 +152,7 @@ impl Config {
 
     pub fn default_for_test() -> Self {
         let mut config = Config::default();
-        config.add_default_language();
+        config.add_default_language().unwrap();
         config.slugify_taxonomies();
         config
     }
@@ -208,7 +208,7 @@ impl Config {
     /// Adds the default language to the list of languages if options for it are specified at base level of config.toml.
     /// If section for the same language also exists, the options at this section and base are merged and then adds it
     /// to list.
-    pub fn add_default_language(&mut self) {
+    pub fn add_default_language(&mut self) -> Result<()> {
         // We automatically insert a language option for the default language *if* it isn't present
         // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
         // TODO: as source of truth?
@@ -224,18 +224,18 @@ impl Config {
             translations: self.translations.clone(),
         };
 
-        if !base_default_language_options.is_default() {
-            if self.languages.contains_key(&self.default_language) {
+        if let Some(section_default_language_options) = self.languages.get(&self.default_language) {
+            if base_default_language_options != languages::LanguageOptions::default() {
                 println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
                     which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
-
-                let section_default_language_options =
-                    self.languages.get(&self.default_language).unwrap().clone();
-
-                base_default_language_options.merge(&section_default_language_options);
+                base_default_language_options.merge(&section_default_language_options)?;
+            } else {
+                return Ok(());
             }
-            self.languages.insert(self.default_language.clone(), base_default_language_options);
         }
+        self.languages.insert(self.default_language.clone(), base_default_language_options);
+
+        Ok(())
     }
 
     /// Merges the extra data from the theme with the config extra data
@@ -400,33 +400,6 @@ mod tests {
     use utils::slugs::SlugifyStrategy;
 
     #[test]
-    fn add_default_language_skips_insert() {
-        let title = Some("A title".to_string());
-        let description = Some("A description".to_string());
-
-        let mut config = Config::default();
-        config.languages.insert(
-            config.default_language.clone(),
-            languages::LanguageOptions {
-                title: title.clone(),
-                description: description.clone(),
-                generate_feed: true,
-                feed_filename: config.feed_filename.clone(),
-                taxonomies: config.taxonomies.clone(),
-                build_search_index: false,
-                search: search::Search::default(),
-                translations: config.translations.clone(),
-            },
-        );
-        config.add_default_language();
-
-        let default_language_options =
-            config.languages.get(&config.default_language).unwrap().clone();
-        assert_eq!(default_language_options.title, title);
-        assert_eq!(default_language_options.description, description);
-    }
-
-    #[test]
     #[should_panic]
     fn add_default_language_causes_panic() {
         let title = Some("A title".to_string());
@@ -447,11 +420,12 @@ mod tests {
                 translations: config.translations.clone(),
             },
         );
-        config.add_default_language();
+        let result = config.add_default_language();
+        result.expect("Should return an Err and panic.");
     }
 
     #[test]
-    fn can_add_default_language_with_merge() {
+    fn can_add_default_language_with_warning() {
         let title = Some("A title".to_string());
         let description = Some("A description".to_string());
 
@@ -470,7 +444,7 @@ mod tests {
                 translations: config.translations.clone(),
             },
         );
-        config.add_default_language();
+        config.add_default_language().unwrap();
 
         let default_language_options =
             config.languages.get(&config.default_language).unwrap().clone();
@@ -479,14 +453,14 @@ mod tests {
     }
 
     #[test]
-    fn can_add_default_language_without_merge() {
+    fn can_add_default_language_without_warning() {
         let title = Some("A title".to_string());
         let description = Some("A description".to_string());
 
         let mut config = Config::default();
         config.title = title.clone();
         config.description = description.clone();
-        config.add_default_language();
+        config.add_default_language().unwrap();
 
         let default_language_options =
             config.languages.get(&config.default_language).unwrap().clone();

@@ -33,13 +33,14 @@ pub struct LanguageOptions {
 impl LanguageOptions {
     /// Merges self with another LanguageOptions, panicking if 2 equivalent fields are not None,
     /// empty or of default value.
-    pub fn merge(&mut self, other: &LanguageOptions) {
+    pub fn merge(&mut self, other: &LanguageOptions) -> Result<()> {
         match &self.title {
             None => self.title = other.title.clone(),
             Some(self_title) => match &other.title {
-                Some(other_title) => panic!(
-                    "Error: `title` for default language is specified twice, as {:?} and {:?}.",
-                    self_title, other_title
+                Some(other_title) => bail!(
+                    "`title` for default language is specified twice, as {:?} and {:?}.",
+                    self_title,
+                    other_title
                 ),
                 None => (),
             },
@@ -48,7 +49,11 @@ impl LanguageOptions {
         match &self.description {
             None => self.description = other.description.clone(),
             Some(self_description) => match &other.description {
-                Some(other_description) => panic!("Error: `description` for default language is specified twice, as {:?} and {:?}.", self_description, other_description),
+                Some(other_description) => bail!(
+                    "`description` for default language is specified twice, as {:?} and {:?}.",
+                    self_description,
+                    other_description
+                ),
                 None => (),
             },
         };
@@ -59,7 +64,11 @@ impl LanguageOptions {
             // "atom.xml" is default value.
             true => self.feed_filename = other.feed_filename.clone(),
             false => match &other.feed_filename.is_empty() {
-                false => panic!("Error: `feed filename` for default language is specifiec twice, as {:?} and {:?}.", self.feed_filename, other.feed_filename),
+                false => bail!(
+                    "`feed filename` for default language is specifiec twice, as {:?} and {:?}.",
+                    self.feed_filename,
+                    other.feed_filename
+                ),
                 true => (),
             },
         };
@@ -67,7 +76,11 @@ impl LanguageOptions {
         match &self.taxonomies.is_empty() {
             true => self.taxonomies = other.taxonomies.clone(),
             false => match &other.taxonomies.is_empty() {
-                false => panic!("Error: `taxonomies` for default language is specifiec twice, as {:?} and {:?}.", self.taxonomies, other.taxonomies),
+                false => bail!(
+                    "`taxonomies` for default language is specifiec twice, as {:?} and {:?}.",
+                    self.taxonomies,
+                    other.taxonomies
+                ),
                 true => (),
             },
         };
@@ -77,63 +90,28 @@ impl LanguageOptions {
         match self.search == search::Search::default() {
             true => self.search = other.search.clone(),
             false => match self.search == other.search {
-                true => (),
-                false => panic!(
-                    "Error: `search` for default language is specified twice, as {:?} and {:?}.",
-                    self.search, other.search
+                false => bail!(
+                    "`search` for default language is specified twice, as {:?} and {:?}.",
+                    self.search,
+                    other.search
                 ),
+                true => (),
             },
         };
 
         match &self.translations.is_empty() {
             true => self.translations = other.translations.clone(),
             false => match &other.translations.is_empty() {
+                false => bail!(
+                    "`translations` for default language is specified twice, as {:?} and {:?}.",
+                    self.translations,
+                    other.translations
+                ),
                 true => (),
-                false => panic!("Error: `translations` for default language is specified twice, as {:?} and {:?}.", self.translations, other.translations),
             },
         };
-    }
 
-    /// Checks whether self is of default value.
-    pub fn is_default(&self) -> bool {
-        match &self.title {
-            Some(_) => return false,
-            None => (),
-        };
-
-        match &self.description {
-            Some(_) => return false,
-            None => (),
-        };
-
-        if self.generate_feed {
-            return false;
-        }
-
-        if &self.feed_filename == "atom.xml" {
-            return false;
-        }
-
-        match &self.taxonomies.is_empty() {
-            false => return false,
-            true => (),
-        };
-
-        if self.build_search_index {
-            return false;
-        }
-
-        match self.search == search::Search::default() {
-            false => return false,
-            true => (),
-        };
-
-        match &self.translations.is_empty() {
-            false => return false,
-            true => (),
-        };
-
-        true
+        Ok(())
     }
 }
 
@@ -174,7 +152,7 @@ mod tests {
             translations: HashMap::new(),
         };
 
-        base_default_language_options.merge(&section_default_language_options);
+        base_default_language_options.merge(&section_default_language_options).unwrap();
     }
 
     #[test]
@@ -202,6 +180,8 @@ mod tests {
             translations: HashMap::new(),
         };
 
-        base_default_language_options.merge(&section_default_language_options);
+        base_default_language_options
+            .merge(&section_default_language_options)
+            .expect("This should lead to panic");
     }
 }
