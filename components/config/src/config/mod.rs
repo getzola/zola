@@ -228,7 +228,7 @@ impl Config {
             if base_default_language_options != languages::LanguageOptions::default() {
                 println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
                     which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
-                base_default_language_options.merge(&section_default_language_options)?;
+                base_default_language_options.merge(section_default_language_options)?;
             } else {
                 return Ok(());
             }
