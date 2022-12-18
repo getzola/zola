@@ -34,7 +34,7 @@ toc: Array<Header>,
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;
-// earlier / ligher
+// earlier / lighter
 lower: Page?;
 // later / heavier
 higher: Page?;
