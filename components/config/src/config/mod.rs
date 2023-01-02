@@ -105,6 +105,7 @@ pub struct SerializedConfig<'a> {
     taxonomies: &'a [taxonomies::TaxonomyConfig],
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
+    markdown: &'a markup::Markdown,
 }
 
 impl Config {
@@ -319,6 +320,7 @@ impl Config {
             taxonomies: &options.taxonomies,
             build_search_index: options.build_search_index,
             extra: &self.extra,
+            markdown: &self.markdown,
         }
     }
 }
@@ -766,5 +768,20 @@ title = "Zola"
         let config = Config::parse(config).unwrap();
         let serialised = config.serialize(&config.default_language);
         assert_eq!(serialised.title, &config.title);
+    }
+
+    #[test]
+    fn markdown_config_in_serializedconfig() {
+        let config = r#"
+base_url = "https://www.getzola.org/"
+title = "Zola"
+[markdown]
+highlight_code = true
+highlight_theme = "css"
+    "#;
+
+        let config = Config::parse(config).unwrap();
+        let serialised = config.serialize(&config.default_language);
+        assert_eq!(serialised.markdown.highlight_theme, config.markdown.highlight_theme);
     }
 }
