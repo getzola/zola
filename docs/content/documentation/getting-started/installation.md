@@ -109,7 +109,7 @@ To use zola:
 $ flatpak run org.getzola.zola [command]
 ```
 
-To avoid having to type this everytime, an alias can be created in `~/.bashrc`:
+To avoid having to type this every time, an alias can be created in `~/.bashrc`:
 
 ```sh
 $ alias zola="flatpak run org.getzola.zola"
