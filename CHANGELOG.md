@@ -16,6 +16,8 @@
 - Fix slow image processing
 - Fix current_url in taxonomy term
 - Add new flag 'port_append' to give the ability to remove port from base url
+- `config.markdown` is now available in templates
+- Add `preserve_dotfiles_in_output` option in the config
 
 
 ## 0.16.1 (2022-08-14)
