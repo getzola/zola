@@ -3,11 +3,11 @@
 title = "Seje2"
 description = "A beautiful zola theme"
 template = "theme.html"
-date = 2022-11-26T14:27:32+05:30
+date = 2022-12-04T21:40:33+02:00
 
 [extra]
-created = 2022-11-26T14:27:32+05:30
-updated = 2022-11-26T14:27:32+05:30
+created = 2022-12-04T21:40:33+02:00
+updated = 2022-12-04T21:40:33+02:00
 repository = "https://github.com/eatradish/seje2"
 homepage = "https://github.com/eatradish/Seje2"
 minimum_version = "0.15.0"
