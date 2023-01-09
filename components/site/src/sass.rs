@@ -9,7 +9,6 @@ use crate::anyhow;
 use errors::{bail, Result};
 use utils::fs::{create_file, ensure_directory_exists};
 
-
 pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
     ensure_directory_exists(output_path)?;
 
@@ -77,7 +76,8 @@ mod tests {
     fn test_get_non_partial_scss() {
         use std::env;
 
-        let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+        let mut path =
+            env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
         path.push("test_site");
         path.push("sass");
 
@@ -91,7 +91,8 @@ mod tests {
     fn test_get_non_partial_scss_underscores() {
         use std::env;
 
-        let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+        let mut path =
+            env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
         path.push("test_site");
         path.push("_dir_with_underscores");
         path.push("..");
