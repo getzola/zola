@@ -125,7 +125,7 @@ impl TeraFn for GetUrl {
                     &self.output_path,
                 )
                 .map_err(|e| format!("`get_url`: {}", e))?
-                .and_then(|(p, _)| fs::File::open(&p).ok())
+                .and_then(|(p, _)| fs::File::open(p).ok())
                 .and_then(|mut f| {
                     let mut contents = String::new();
 

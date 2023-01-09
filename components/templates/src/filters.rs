@@ -62,7 +62,7 @@ pub fn base64_encode<S: BuildHasher>(
     _: &HashMap<String, Value, S>,
 ) -> TeraResult<Value> {
     let s = try_get_value!("base64_encode", "value", String, value);
-    Ok(to_value(&encode(s.as_bytes())).unwrap())
+    Ok(to_value(encode(s.as_bytes())).unwrap())
 }
 
 pub fn base64_decode<S: BuildHasher>(
@@ -70,7 +70,7 @@ pub fn base64_decode<S: BuildHasher>(
     _: &HashMap<String, Value, S>,
 ) -> TeraResult<Value> {
     let s = try_get_value!("base64_decode", "value", String, value);
-    Ok(to_value(&String::from_utf8(decode(s.as_bytes()).unwrap()).unwrap()).unwrap())
+    Ok(to_value(String::from_utf8(decode(s.as_bytes()).unwrap()).unwrap()).unwrap())
 }
 
 #[derive(Debug)]
