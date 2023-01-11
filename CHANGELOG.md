@@ -4,6 +4,7 @@
 
 ### Breaking
 - `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
+- Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass)
 
 ### Other
 
@@ -18,7 +19,6 @@
 - Add new flag 'port_append' to give the ability to remove port from base url
 - `config.markdown` is now available in templates
 - Add `preserve_dotfiles_in_output` option in the config
-- Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass)
 
 
 ## 0.16.1 (2022-08-14)
