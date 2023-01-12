@@ -4,7 +4,8 @@
 
 ### Breaking
 - `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
-- Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass)
+- Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass). See https://sass-lang.com/documentation/breaking-changes
+for breaking changes with libsass: look for "beginning in Dart Sass"
 
 ### Other
 
