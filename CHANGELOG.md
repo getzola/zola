@@ -22,7 +22,7 @@ for breaking changes with libsass: look for "beginning in Dart Sass"
 - Add new flag `zola serve --no_port_append` to give the ability to remove port from base url
 - `config.markdown` is now available in templates
 - Add `preserve_dotfiles_in_output` option in the config
-- Add JSON output for the search index
+- Add Elasticlunr JSON output for the search index
 - Add sorting by slug for pages
 
 
