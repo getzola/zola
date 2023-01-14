@@ -174,8 +174,8 @@ impl Site {
         let mut allowed_index_filenames: Vec<_> = self
             .config
             .other_languages()
-            .iter()
-            .map(|(code, _)| format!("_index.{}.md", code))
+            .keys()
+            .map(|code| format!("_index.{}.md", code))
             .collect();
         allowed_index_filenames.push("_index.md".to_string());
 
@@ -796,11 +796,11 @@ impl Site {
         )?;
         let (path, content) = match &self.config.search.index_format {
             IndexFormat::ElasticlunrJson => {
-                let path = self.output_path.join(&format!("search_index.{}.json", lang));
+                let path = self.output_path.join(format!("search_index.{}.json", lang));
                 (path, index_json)
             }
             IndexFormat::ElasticlunrJavascript => {
-                let path = self.output_path.join(&format!("search_index.{}.js", lang));
+                let path = self.output_path.join(format!("search_index.{}.js", lang));
                 let content = format!("window.searchIndex = {};", index_json);
                 (path, content)
             }

@@ -96,7 +96,7 @@ pub enum Command {
     /// Generate shell completion
     Completion {
         /// Shell to generate completion for
-        #[clap(arg_enum)]
+        #[clap(value_enum)]
         shell: Shell,
     },
 }

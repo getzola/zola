@@ -246,6 +246,25 @@ You can then support light and dark mode like so:
 @import url("syntax-theme-light.css") (prefers-color-scheme: light);
 ```
 
+Alternately, you can reference the stylesheets in your base template to reduce request chains:
+
+```html
+<head>
+  <!-- Other content -->
+  <link rel="stylesheet" type="text/css" href="/syntax-theme-dark.css" media="(prefers-color-scheme: dark)" />
+  <link rel="stylesheet" type="text/css" href="/syntax-theme-light.css" media="(prefers-color-scheme: light)" />
+</head>
+```
+
+Themes can conditionally include code-highlighting stylesheet `<link>` tags by wrapping them in a conditional:
+
+```jinja2
+{% if config.markdown.highlight_code and config.markdown.highlight_theme == "css" %}
+<link rel="stylesheet" type="text/css" href="/syntax-theme-dark.css" media="(prefers-color-scheme: dark)" />
+<link rel="stylesheet" type="text/css" href="/syntax-theme-light.css" media="(prefers-color-scheme: light)" />
+{% endif %}
+```
+
 
 ## Annotations
 

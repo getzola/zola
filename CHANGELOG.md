@@ -4,18 +4,26 @@
 
 ### Breaking
 - `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
+- Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass). See https://sass-lang.com/documentation/breaking-changes
+for breaking changes with libsass: look for "beginning in Dart Sass"
+- Enable locale date formatting for the Tera `date` filter
+
 
 ### Other
 
 - Add `get_taxonomy_term` function
-- Add slugify.paths_keep_dates option
+- Add `slugify.paths_keep_dates` option
 - Add command to generate shell completions
-- Fix link generation to colocated assets other than images
+- Fix link generation to co-located assets other than images
 - Add `get_hash` Tera function
 - Minify CSS and JS embedded in HTML
 - Fix slow image processing
-- Fix current_url in taxonomy term
-- Add new flag 'port_append' to give the ability to remove port from base url
+- Fix `current_url` in taxonomy term
+- Add new flag `zola serve --no_port_append` to give the ability to remove port from base url
+- `config.markdown` is now available in templates
+- Add `preserve_dotfiles_in_output` option in the config
+- Add Elasticlunr JSON output for the search index
+- Add sorting by slug for pages
 
 
 ## 0.16.1 (2022-08-14)

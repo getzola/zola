@@ -5,7 +5,8 @@ use std::path::PathBuf;
 
 use crate::global_fns::helpers::search_for_file;
 use config::Config;
-use libs::base64::encode as encode_b64;
+
+use libs::base64::engine::{general_purpose::STANDARD as standard_b64, Engine};
 use libs::sha2::{digest, Sha256, Sha384, Sha512};
 use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use libs::url;
@@ -19,7 +20,7 @@ where
     let mut hasher = D::new();
     hasher.update(literal);
     if as_base64 {
-        encode_b64(hasher.finalize())
+        standard_b64.encode(hasher.finalize())
     } else {
         format!("{:x}", hasher.finalize())
     }
@@ -125,7 +126,7 @@ impl TeraFn for GetUrl {
                     &self.output_path,
                 )
                 .map_err(|e| format!("`get_url`: {}", e))?
-                .and_then(|(p, _)| fs::File::open(&p).ok())
+                .and_then(|(p, _)| fs::File::open(p).ok())
                 .and_then(|mut f| {
                     let mut contents = String::new();
 
