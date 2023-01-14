@@ -400,17 +400,60 @@ mod tests {
     use utils::slugs::SlugifyStrategy;
 
     #[test]
-    #[should_panic]
-    fn add_default_language_causes_panic() {
-        let title = Some("A title".to_string());
-        let title_2 = Some("Another title".to_string());
+    fn can_add_default_language_with_data_only_at_base_section() {
+        let title_base = Some("Base section title".to_string());
+        let description_base = Some("Base section description".to_string());
 
         let mut config = Config::default();
-        config.title = title.clone();
+        config.title = title_base.clone();
+        config.description = description_base.clone();
+        config.add_default_language().unwrap();
+
+        let default_language_options =
+            config.languages.get(&config.default_language).unwrap().clone();
+        assert_eq!(default_language_options.title, title_base);
+        assert_eq!(default_language_options.description, description_base);
+    }
+
+    #[test]
+    fn can_add_default_language_with_data_at_base_and_language_section() {
+        let title_base = Some("Base section title".to_string());
+        let description_lang_section = Some("Language section description".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
         config.languages.insert(
             config.default_language.clone(),
             languages::LanguageOptions {
-                title: title_2.clone(),
+                title: None,
+                description: description_lang_section.clone(),
+                generate_feed: true,
+                feed_filename: config.feed_filename.clone(),
+                taxonomies: config.taxonomies.clone(),
+                build_search_index: false,
+                search: search::Search::default(),
+                translations: config.translations.clone(),
+            },
+        );
+        config.add_default_language().unwrap();
+
+        let default_language_options =
+            config.languages.get(&config.default_language).unwrap().clone();
+        assert_eq!(default_language_options.title, title_base);
+        assert_eq!(default_language_options.description, description_lang_section);
+    }
+
+    #[test]
+    fn errors_when_same_field_present_at_base_and_language_section() {
+        let title_base = Some("Base section title".to_string());
+        let title_lang_section = Some("Language section title".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
+        config.languages.insert(
+            config.default_language.clone(),
+            languages::LanguageOptions {
+                title: title_lang_section.clone(),
                 description: None,
                 generate_feed: true,
                 feed_filename: config.feed_filename.clone(),
@@ -421,51 +464,7 @@ mod tests {
             },
         );
         let result = config.add_default_language();
-        result.expect("Should return an Err and panic.");
-    }
-
-    #[test]
-    fn can_add_default_language_with_warning() {
-        let title = Some("A title".to_string());
-        let description = Some("A description".to_string());
-
-        let mut config = Config::default();
-        config.title = title.clone();
-        config.languages.insert(
-            config.default_language.clone(),
-            languages::LanguageOptions {
-                title: None,
-                description: description.clone(),
-                generate_feed: true,
-                feed_filename: config.feed_filename.clone(),
-                taxonomies: config.taxonomies.clone(),
-                build_search_index: false,
-                search: search::Search::default(),
-                translations: config.translations.clone(),
-            },
-        );
-        config.add_default_language().unwrap();
-
-        let default_language_options =
-            config.languages.get(&config.default_language).unwrap().clone();
-        assert_eq!(default_language_options.title, title);
-        assert_eq!(default_language_options.description, description);
-    }
-
-    #[test]
-    fn can_add_default_language_without_warning() {
-        let title = Some("A title".to_string());
-        let description = Some("A description".to_string());
-
-        let mut config = Config::default();
-        config.title = title.clone();
-        config.description = description.clone();
-        config.add_default_language().unwrap();
-
-        let default_language_options =
-            config.languages.get(&config.default_language).unwrap().clone();
-        assert_eq!(default_language_options.title, title);
-        assert_eq!(default_language_options.description, description);
+        assert!(result.is_err());
     }
 
     #[test]
