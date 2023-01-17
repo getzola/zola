@@ -6,7 +6,8 @@
 - `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
 - Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass). See https://sass-lang.com/documentation/breaking-changes
 for breaking changes with libsass: look for "beginning in Dart Sass"
-- Enable locale date formatting for the Tera `date` filter
+- Merge settings for the default language set in the root of `config.toml` and in the `[languages.{default_lang}]` section. 
+This will error if 2 values are set
 
 
 ### Other
@@ -24,6 +25,7 @@ for breaking changes with libsass: look for "beginning in Dart Sass"
 - Add `preserve_dotfiles_in_output` option in the config
 - Add Elasticlunr JSON output for the search index
 - Add sorting by slug for pages
+- Enable locale date formatting for the Tera `date` filter
 
 
 ## 0.16.1 (2022-08-14)
