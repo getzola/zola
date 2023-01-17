@@ -130,8 +130,11 @@ impl Markdown {
                     )
                 }
             } else {
-                bail!("Highlight theme {} not available.\n\
-                You can load custom themes by configuring `extra_syntaxes_and_themes` to include a list of folders containing '.tmTheme' files", self.highlight_theme)
+                bail!(
+                    "Highlight theme {} not available.\n\
+                You can load custom themes by configuring `extra_syntaxes_and_themes` to include a list of folders containing '.tmTheme' files",
+                    self.highlight_theme
+                )
             }
         }
 
@@ -142,8 +145,11 @@ impl Markdown {
                 // Check extra themes
                 if let Some(extra) = &*self.extra_theme_set {
                     if !extra.themes.contains_key(theme_name) {
-                        bail!("Can't export highlight theme {}, as it does not exist.\n\
-                        Make sure it's spelled correctly, or your custom .tmTheme' is defined properly.", theme_name)
+                        bail!(
+                            "Can't export highlight theme {}, as it does not exist.\n\
+                        Make sure it's spelled correctly, or your custom .tmTheme' is defined properly.",
+                            theme_name
+                        )
                     }
                 }
             }
