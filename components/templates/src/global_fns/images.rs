@@ -127,7 +127,7 @@ impl TeraFn for GetImageMetadata {
             return Ok(cached_result.clone());
         }
 
-        let response = imageproc::read_image_metadata(&src_path)
+        let response = imageproc::read_image_metadata(src_path)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         let out = to_value(response).unwrap();
         cache.insert(unified_path, out.clone());

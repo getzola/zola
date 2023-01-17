@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 /// Populated while receiving events from the markdown parser
-#[derive(Debug, Default, PartialEq, Clone, Serialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize)]
 pub struct Heading {
     pub level: u32,
     pub id: String,

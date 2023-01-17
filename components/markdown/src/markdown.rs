@@ -56,7 +56,10 @@ fn insert_many<T>(input: &mut Vec<T>, elem_to_insert: Vec<(usize, T)>) {
 
 /// Colocated asset links refers to the files in the same directory.
 fn is_colocated_asset_link(link: &str) -> bool {
-    !link.starts_with('/') && !link.starts_with('#') && !STARTS_WITH_SCHEMA_RE.is_match(link)
+    !link.starts_with('/')
+        && !link.starts_with("..")
+        && !link.starts_with('#')
+        && !STARTS_WITH_SCHEMA_RE.is_match(link)
 }
 
 #[derive(Debug)]
@@ -171,6 +174,8 @@ fn fix_link(
                 }
             }
         }
+    } else if is_colocated_asset_link(link) {
+        format!("{}{}", context.current_page_permalink, link)
     } else if is_external_link(link) {
         external_links.push(link.to_owned());
         link.to_owned()
@@ -477,13 +482,10 @@ pub fn markdown_to_html(
         }
 
         // We remove all the empty things we might have pushed before so we don't get some random \n
-        events = events
-            .into_iter()
-            .filter(|e| match e {
-                Event::Text(text) | Event::Html(text) => !text.is_empty(),
-                _ => true,
-            })
-            .collect();
+        events.retain(|e| match e {
+            Event::Text(text) | Event::Html(text) => !text.is_empty(),
+            _ => true,
+        });
 
         let heading_refs = get_heading_refs(&events);
 
@@ -537,12 +539,10 @@ pub fn markdown_to_html(
                 .context("Failed to render anchor link template")?;
                 if context.insert_anchor != InsertAnchor::Heading {
                     anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
-                } else {
-                    if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
-                        let opening_tag = captures.get(1).map_or("", |m| m.as_str()).to_string();
-                        anchors_to_insert.push((start_idx + 1, Event::Html(opening_tag.into())));
-                        anchors_to_insert.push((end_idx, Event::Html("</a>".into())));
-                    }
+                } else if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
+                    let opening_tag = captures.get(1).map_or("", |m| m.as_str()).to_string();
+                    anchors_to_insert.push((start_idx + 1, Event::Html(opening_tag.into())));
+                    anchors_to_insert.push((end_idx, Event::Html("</a>".into())));
                 }
             }
 
@@ -605,5 +605,23 @@ mod tests {
         assert!(!is_external_link("#introduction"));
 
         assert!(!is_external_link("http.jpg"))
+    }
+
+    #[test]
+    // Tests for link  that points to files in the same directory
+    fn test_is_colocated_asset_link_true() {
+        let links: [&str; 3] = ["./same-dir.md", "file.md", "qwe.js"];
+        for link in links {
+            assert!(is_colocated_asset_link(link));
+        }
+    }
+
+    #[test]
+    // Tests for files where the link points to a different directory
+    fn test_is_colocated_asset_link_false() {
+        let links: [&str; 2] = ["/other-dir/file.md", "../sub-dir/file.md"];
+        for link in links {
+            assert!(!is_colocated_asset_link(link));
+        }
     }
 }

@@ -78,6 +78,8 @@ pub struct Config {
     pub mode: Mode,
 
     pub output_dir: String,
+    /// Whether dotfiles inside the output directory are preserved when rebuilding the site
+    pub preserve_dotfiles_in_output: bool,
 
     pub link_checker: link_checker::LinkChecker,
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
@@ -103,6 +105,7 @@ pub struct SerializedConfig<'a> {
     taxonomies: &'a [taxonomies::TaxonomyConfig],
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
+    markdown: &'a markup::Markdown,
 }
 
 impl Config {
@@ -317,6 +320,7 @@ impl Config {
             taxonomies: &options.taxonomies,
             build_search_index: options.build_search_index,
             extra: &self.extra,
+            markdown: &self.markdown,
         }
     }
 }
@@ -371,6 +375,7 @@ impl Default for Config {
             ignored_content_globset: None,
             translations: HashMap::new(),
             output_dir: "public".to_string(),
+            preserve_dotfiles_in_output: false,
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),
@@ -658,8 +663,28 @@ anchors = "off"
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.slugify.paths, SlugifyStrategy::On);
+        assert_eq!(config.slugify.paths_keep_dates, false);
         assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Safe);
         assert_eq!(config.slugify.anchors, SlugifyStrategy::Off);
+    }
+
+    #[test]
+    fn slugify_paths_keep_dates() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[slugify]
+paths_keep_dates = true
+taxonomies = "off"
+anchors = "safe"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.slugify.paths, SlugifyStrategy::On);
+        assert_eq!(config.slugify.paths_keep_dates, true);
+        assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Off);
+        assert_eq!(config.slugify.anchors, SlugifyStrategy::Safe);
     }
 
     #[test]
@@ -743,5 +768,20 @@ title = "Zola"
         let config = Config::parse(config).unwrap();
         let serialised = config.serialize(&config.default_language);
         assert_eq!(serialised.title, &config.title);
+    }
+
+    #[test]
+    fn markdown_config_in_serializedconfig() {
+        let config = r#"
+base_url = "https://www.getzola.org/"
+title = "Zola"
+[markdown]
+highlight_code = true
+highlight_theme = "css"
+    "#;
+
+        let config = Config::parse(config).unwrap();
+        let serialised = config.serialize(&config.default_language);
+        assert_eq!(serialised.markdown.highlight_theme, config.markdown.highlight_theme);
     }
 }

@@ -271,12 +271,12 @@ impl Library {
             section.ignored_pages.clear();
             section.ancestors.clear();
 
-            if let Some(children) = subsections.get(&*path) {
+            if let Some(children) = subsections.get(path) {
                 let mut children: Vec<_> = children.clone();
                 children.sort_by(|a, b| sections_weight[a].cmp(&sections_weight[b]));
                 section.subsections = children;
             }
-            if let Some(parents) = ancestors.get(&*path) {
+            if let Some(parents) = ancestors.get(path) {
                 section.ancestors = parents.clone();
             }
         }
@@ -295,7 +295,7 @@ impl Library {
         for (path, page) in self.pages.iter_mut() {
             let parent_filename = &index_filename_by_lang[&page.lang];
             add_translation(&page.file.canonical, path);
-            let mut parent_section_path = page.file.parent.join(&parent_filename);
+            let mut parent_section_path = page.file.parent.join(parent_filename);
 
             while let Some(parent_section) = self.sections.get_mut(&parent_section_path) {
                 let is_transparent = parent_section.meta.transparent;
@@ -323,7 +323,7 @@ impl Library {
 
                 // We've added `_index(.{LANG})?.md` so if we are here so we need to go up twice
                 match parent_section_path.clone().parent().unwrap().parent() {
-                    Some(parent) => parent_section_path = parent.join(&parent_filename),
+                    Some(parent) => parent_section_path = parent.join(parent_filename),
                     None => break,
                 }
             }

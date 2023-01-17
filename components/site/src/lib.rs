@@ -6,7 +6,7 @@ pub mod sitemap;
 pub mod tpls;
 
 use std::collections::HashMap;
-use std::fs::remove_dir_all;
+use std::fs::{remove_dir_all, remove_file};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -15,7 +15,7 @@ use libs::rayon::prelude::*;
 use libs::tera::{Context, Tera};
 use libs::walkdir::{DirEntry, WalkDir};
 
-use config::{get_config, Config};
+use config::{get_config, Config, IndexFormat};
 use content::{Library, Page, Paginator, Section, Taxonomy};
 use errors::{anyhow, bail, Context as ErrorContext, Result};
 use libs::relative_path::RelativePathBuf;
@@ -23,6 +23,7 @@ use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
+    is_dotfile,
 };
 use utils::net::get_available_port;
 use utils::templates::{render_template, ShortcodeDefinition};
@@ -173,8 +174,8 @@ impl Site {
         let mut allowed_index_filenames: Vec<_> = self
             .config
             .other_languages()
-            .iter()
-            .map(|(code, _)| format!("_index.{}.md", code))
+            .keys()
+            .map(|code| format!("_index.{}.md", code))
             .collect();
         allowed_index_filenames.push("_index.md".to_string());
 
@@ -218,7 +219,7 @@ impl Site {
                 // if we are processing a section we have to collect
                 // index files for all languages and process them simultaneously
                 // before any of the pages
-                let index_files = WalkDir::new(&path)
+                let index_files = WalkDir::new(path)
                     .follow_links(true)
                     .max_depth(1)
                     .into_iter()
@@ -583,11 +584,34 @@ impl Site {
         imageproc.do_process()
     }
 
-    /// Deletes the `public` directory if it exists
+    /// Deletes the `public` directory if it exists and the `preserve_dotfiles_in_output` option is set to false,
+    /// or if set to true: its contents except for the dotfiles at the root level.
     pub fn clean(&self) -> Result<()> {
         if self.output_path.exists() {
-            // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path).context("Couldn't delete output directory")?;
+            if !self.config.preserve_dotfiles_in_output {
+                return remove_dir_all(&self.output_path)
+                    .context("Couldn't delete output directory");
+            }
+
+            for entry in self.output_path.read_dir().context(format!(
+                "Couldn't read output directory `{}`",
+                self.output_path.display()
+            ))? {
+                let entry = entry.context("Couldn't read entry in output directory")?.path();
+
+                // Skip dotfiles if the preserve_dotfiles_in_output configuration option is set
+                if is_dotfile(&entry) {
+                    continue;
+                }
+
+                if entry.is_dir() {
+                    remove_dir_all(entry)
+                        .context("Couldn't delete folder while cleaning the output directory")?;
+                } else {
+                    remove_file(entry)
+                        .context("Couldn't delete file while cleaning the output directory")?;
+                }
+            }
         }
 
         Ok(())
@@ -664,7 +688,7 @@ impl Site {
                 asset_path,
                 &current_path.join(
                     asset_path
-                        .strip_prefix(&page.file.path.parent().unwrap())
+                        .strip_prefix(page.file.path.parent().unwrap())
                         .expect("Couldn't get filename from page asset"),
                 ),
             )?;
@@ -764,32 +788,36 @@ impl Site {
         Ok(())
     }
 
+    fn index_for_lang(&self, lang: &str) -> Result<()> {
+        let index_json = search::build_index(
+            &self.config.default_language,
+            &self.library.read().unwrap(),
+            &self.config,
+        )?;
+        let (path, content) = match &self.config.search.index_format {
+            IndexFormat::ElasticlunrJson => {
+                let path = self.output_path.join(format!("search_index.{}.json", lang));
+                (path, index_json)
+            }
+            IndexFormat::ElasticlunrJavascript => {
+                let path = self.output_path.join(format!("search_index.{}.js", lang));
+                let content = format!("window.searchIndex = {};", index_json);
+                (path, content)
+            }
+        };
+        create_file(&path, &content)
+    }
+
     pub fn build_search_index(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         // TODO: add those to the SITE_CONTENT map
 
         // index first
-        create_file(
-            &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
-            &format!(
-                "window.searchIndex = {};",
-                search::build_index(
-                    &self.config.default_language,
-                    &self.library.read().unwrap(),
-                    &self.config
-                )?
-            ),
-        )?;
+        self.index_for_lang(&self.config.default_language)?;
 
         for (code, language) in &self.config.other_languages() {
             if code != &self.config.default_language && language.build_search_index {
-                create_file(
-                    &self.output_path.join(&format!("search_index.{}.js", &code)),
-                    &format!(
-                        "window.searchIndex = {};",
-                        search::build_index(code, &self.library.read().unwrap(), &self.config)?
-                    ),
-                )?;
+                self.index_for_lang(code)?;
             }
         }
 
@@ -1067,7 +1095,7 @@ impl Site {
                 asset_path,
                 &output_path.join(
                     asset_path
-                        .strip_prefix(&section.file.path.parent().unwrap())
+                        .strip_prefix(section.file.path.parent().unwrap())
                         .expect("Failed to get asset filename for section"),
                 ),
             )?;

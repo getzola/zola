@@ -31,9 +31,11 @@ static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     ).unwrap()
 });
 
-static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"<sup\s*.*?>\s*.*?</sup>").unwrap());
+static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
+});
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Page {
     /// All info about the actual file
     pub file: FileInfo,
@@ -126,7 +128,9 @@ impl Page {
         };
 
         if let Some(ref caps) = RFC3339_DATE.captures(&file_path_for_slug) {
-            slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
+            if !config.slugify.paths_keep_dates {
+                slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
+            }
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
                 page.meta.date_to_datetime();
@@ -227,7 +231,7 @@ impl Page {
         self.summary = res
             .summary_len
             .map(|l| &res.body[0..l])
-            .map(|s| FOOTNOTES_RE.replace(s, "").into_owned());
+            .map(|s| FOOTNOTES_RE.replace_all(s, "").into_owned());
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
@@ -258,7 +262,7 @@ impl Page {
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
         self.assets
             .iter()
-            .filter_map(|asset| asset.strip_prefix(&self.file.path.parent().unwrap()).ok())
+            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
             .filter_map(|filename| filename.to_str())
             .map(|filename| {
                 let mut path = self.file.path.clone();
@@ -511,15 +515,19 @@ Hello world
         let content = r#"
 +++
 +++
-This page has footnotes, here's one. [^1]
+This page use <sup>1.5</sup> and has footnotes, here's one. [^1]
+
+Here's another. [^2]
 
 <!-- more -->
 
-And here's another. [^2]
+And here's another. [^3]
 
 [^1]: This is the first footnote.
 
-[^2]: This is the second footnote."#
+[^2]: This is the secund footnote.
+
+[^3]: This is the third footnote."#
             .to_string();
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
@@ -534,7 +542,7 @@ And here's another. [^2]
         .unwrap();
         assert_eq!(
             page.summary,
-            Some("<p>This page has footnotes, here\'s one. </p>\n".to_string())
+            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>\n".to_string())
         );
     }
 

@@ -180,6 +180,23 @@ items: Array<TaxonomyTerm>;
 
 See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
 
+### `get_taxonomy_term`
+Gets a single term from a taxonomy of a specific kind.
+
+```jinja2
+{% set categories = get_taxonomy_term(kind="categories", term="term_name") %}
+```
+
+The type of the output is a single `TaxonomyTerm` item.
+
+`lang` (optional) default to `config.default_language` in config.toml
+
+`include_pages` (optional) default to true. If false, the `pages` item in the `TaxonomyTerm` will be empty, regardless of what pages may actually exist for this term. `page_count` will correctly reflect the number of pages for this term in both cases.
+
+`required` (optional) if a taxonomy or term is not found`.
+
+See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for a full documentation of those types.
+
 ### `get_url`
 Gets the permalink for the given path.
 If the path starts with `@/`, it will be treated as an internal link like the ones used in Markdown, 
@@ -199,35 +216,39 @@ It accepts an optional parameter `lang` in order to compute a *language-aware UR
 {% set url = get_url(path="@/blog/_index.md", lang="en") %}
 ```
 
-This can also be used to get the permalinks for static assets, for example if
-we want to link to the file that is located at `static/css/app.css`:
+This can also be used to get the permalink for a static file, for example if
+you want to link to the file that is located at `static/css/app.css`:
 
 ```jinja2
 {{/* get_url(path="css/app.css") */}}
 ```
 
-By default, assets will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
+By default, the link will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
 An example is:
 
 ```jinja2
 {{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
-In the case of non-internal links, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
+In the case of a non-internal link, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
 by passing `cachebust=true` to the `get_url` function. In this case, the path will need to resolve to an actual file. 
 See [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic) for details.
 
-### `get_file_hash`
+### `get_hash`
 
-Returns the hash digest (SHA-256, SHA-384 or SHA-512) of a file.
+Returns the hash digest (SHA-256, SHA-384 or SHA-512) of a file or a string literal.
 
 It can take the following arguments:
 - `path`: mandatory, see [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic) for details
+- **or** `literal`: mandatory, the string value to be hashed
 - `sha_type`: optional, one of `256`, `384` or `512`, defaults to `384`
 - `base64`: optional, `true` or `false`, defaults to `true`. Whether to encode the hash as base64
 
+Either `path` or `literal` must be given.
+
 ```jinja2
-{{/* get_file_hash(path="static/js/app.js", sha_type=256) */}}
+{{/* get_hash(literal="Hello World", sha_type=256) */}}
+{{/* get_hash(path="static/js/app.js", sha_type=256) */}}
 ```
 
 The function can also output a base64-encoded hash value when its `base64`
@@ -236,10 +257,10 @@ integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Int
 
 ```jinja2
 <script src="{{/* get_url(path="static/js/app.js") */}}"
-  integrity="sha384-{{ get_file_hash(path="static/js/app.js", sha_type=384, base64=true) | safe }}"></script>
+  integrity="sha384-{{ get_hash(path="static/js/app.js", sha_type=384, base64=true) | safe }}"></script>
 ```
 
-Do note that subresource integrity is typically used when using external scripts, which `get_file_hash` does not support.
+Do note that subresource integrity is typically used when using external scripts, which `get_hash` does not support.
 
 ### `get_image_metadata`
 

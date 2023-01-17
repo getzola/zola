@@ -142,11 +142,24 @@ function initSearch() {
     }
   };
   var currentTerm = "";
-  var index = elasticlunr.Index.load(window.searchIndex);
+  var index;
+  
+  var initIndex = async function () {
+    if (index === undefined) {
+      index = fetch("/search_index.en.json")
+        .then(
+          async function(response) {
+            return await elasticlunr.Index.load(await response.json());
+        }
+      );
+    }
+    let res = await index;
+    return res;
+  }
 
-  $searchInput.addEventListener("keyup", debounce(function() {
+  $searchInput.addEventListener("keyup", debounce(async function() {
     var term = $searchInput.value.trim();
-    if (term === currentTerm || !index) {
+    if (term === currentTerm) {
       return;
     }
     $searchResults.style.display = term === "" ? "none" : "block";
@@ -156,7 +169,7 @@ function initSearch() {
       return;
     }
 
-    var results = index.search(term, options);
+    var results = (await initIndex()).search(term, options);
     if (results.length === 0) {
       $searchResults.style.display = "none";
       return;

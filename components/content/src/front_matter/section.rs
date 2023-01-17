@@ -11,7 +11,7 @@ use crate::SortBy;
 static DEFAULT_PAGINATE_PATH: &str = "page";
 
 /// The front matter of every section
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SectionFrontMatter {
     /// <title> of the page

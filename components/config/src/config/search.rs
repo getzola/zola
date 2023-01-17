@@ -1,6 +1,19 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum IndexFormat {
+    ElasticlunrJson,
+    ElasticlunrJavascript,
+}
+
+impl Default for IndexFormat {
+    fn default() -> IndexFormat {
+        IndexFormat::ElasticlunrJavascript
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Search {
     /// Include the title of the page in the search index. `true` by default.
@@ -15,6 +28,8 @@ pub struct Search {
     pub include_description: bool,
     /// Include the path of the page in the search index. `false` by default.
     pub include_path: bool,
+    /// Foramt of the search index to be produced. Javascript by default
+    pub index_format: IndexFormat,
 }
 
 impl Default for Search {
@@ -25,6 +40,7 @@ impl Default for Search {
             include_description: false,
             include_path: false,
             truncate_content_length: None,
+            index_format: Default::default(),
         }
     }
 }

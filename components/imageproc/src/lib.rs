@@ -4,7 +4,10 @@ use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
-use std::{collections::hash_map::DefaultHasher, io::Write};
+use std::{
+    collections::hash_map::DefaultHasher,
+    io::{BufWriter, Write},
+};
 
 use image::error::ImageResult;
 use image::io::Reader as ImgReader;
@@ -322,14 +325,15 @@ impl ImageOp {
 
         let img = fix_orientation(&img, &self.input_path).unwrap_or(img);
 
-        let mut f = File::create(target_path)?;
+        let f = File::create(target_path)?;
+        let mut buffered_f = BufWriter::new(f);
 
         match self.format {
             Format::Png => {
-                img.write_to(&mut f, ImageOutputFormat::Png)?;
+                img.write_to(&mut buffered_f, ImageOutputFormat::Png)?;
             }
             Format::Jpeg(q) => {
-                img.write_to(&mut f, ImageOutputFormat::Jpeg(q))?;
+                img.write_to(&mut buffered_f, ImageOutputFormat::Jpeg(q))?;
             }
             Format::WebP(q) => {
                 let encoder = webp::Encoder::from_image(&img)
@@ -338,7 +342,7 @@ impl ImageOp {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
                 };
-                f.write_all(memory.as_bytes())?;
+                buffered_f.write_all(memory.as_bytes())?;
             }
         }
 
@@ -581,7 +585,7 @@ impl From<ImageMeta> for ImageMetaResponse {
         Self {
             width: im.size.0,
             height: im.size.1,
-            format: im.format.and_then(|f| f.extensions_str().get(0)).copied(),
+            format: im.format.and_then(|f| f.extensions_str().first()).copied(),
         }
     }
 }
@@ -601,7 +605,7 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
 
     match ext.as_str() {
         "svg" => {
-            let img = SvgMetadata::parse_file(&path).with_context(err_context)?;
+            let img = SvgMetadata::parse_file(path).with_context(err_context)?;
             match (img.height(), img.width(), img.view_box()) {
                 (Some(h), Some(w), _) => Ok((h, w)),
                 (_, _, Some(view_box)) => Ok((view_box.height, view_box.width)),
