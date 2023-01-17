@@ -210,11 +210,7 @@ impl Config {
     /// If section for the same language also exists, the options at this section and base are merged and then adds it
     /// to list.
     pub fn add_default_language(&mut self) -> Result<()> {
-        // We automatically insert a language option for the default language *if* it isn't present
-        // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
-        // TODO: as source of truth?
-
-        let mut base_default_language_options = languages::LanguageOptions {
+        let mut base_language_options = languages::LanguageOptions {
             title: self.title.clone(),
             description: self.description.clone(),
             generate_feed: self.generate_feed,
@@ -225,16 +221,15 @@ impl Config {
             translations: self.translations.clone(),
         };
 
-        if let Some(section_default_language_options) = self.languages.get(&self.default_language) {
-            if base_default_language_options != languages::LanguageOptions::default() {
-                println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
-                    which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
-                base_default_language_options.merge(section_default_language_options)?;
-            } else {
+        if let Some(section_language_options) = self.languages.get(&self.default_language) {
+            if base_language_options == languages::LanguageOptions::default() {
                 return Ok(());
             }
+            println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
+                which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
+            base_language_options.merge(section_language_options)?;
         }
-        self.languages.insert(self.default_language.clone(), base_default_language_options);
+        self.languages.insert(self.default_language.clone(), base_language_options);
 
         Ok(())
     }
