@@ -135,7 +135,9 @@ impl TeraFn for GetUrl {
                     Some(compute_hash::<Sha256>(contents, false))
                 }) {
                     Some(hash) => {
-                        permalink = format!("{}?h={}", permalink, hash);
+                        let fullhash = format!("{}", hash);
+                        let shorthash = &fullhash[..20]; // 2^-80 chance of false positive
+                        permalink = format!("{}?h={}", permalink, shorthash);
                     }
                     None => {
                         return Err(format!(
