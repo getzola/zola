@@ -14,9 +14,12 @@ static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
     let mut clean_content = HashSet::new();
     clean_content.insert("script");
     clean_content.insert("style");
+    let mut rm_tags = HashSet::new();
+    rm_tags.insert("pre");
     let mut builder = ammonia::Builder::new();
     builder
         .tags(HashSet::new())
+        .rm_tags(rm_tags)
         .tag_attributes(HashMap::new())
         .generic_attributes(HashSet::new())
         .link_rel(None)
