@@ -31,85 +31,66 @@ pub struct LanguageOptions {
 }
 
 impl LanguageOptions {
-    /// Merges self with another LanguageOptions, panicking if 2 equivalent fields are not None,
-    /// empty or of default value.
+    /// Merges self with another LanguageOptions, erroring if 2 equivalent fields are not None,
+    /// empty or the default value.
     pub fn merge(&mut self, other: &LanguageOptions) -> Result<()> {
-        match &self.title {
-            None => self.title = other.title.clone(),
-            Some(self_title) => match &other.title {
-                Some(other_title) => bail!(
-                    "`title` for default language is specified twice, as {:?} and {:?}.",
-                    self_title,
-                    other_title
-                ),
-                None => (),
-            },
-        };
-
-        match &self.description {
-            None => self.description = other.description.clone(),
-            Some(self_description) => match &other.description {
-                Some(other_description) => bail!(
-                    "`description` for default language is specified twice, as {:?} and {:?}.",
-                    self_description,
-                    other_description
-                ),
-                None => (),
-            },
-        };
+        macro_rules! merge_field {
+            ($orig_field:expr,$other_field:expr,$name:expr) => {
+                match &$orig_field {
+                    None => $orig_field = $other_field.clone(),
+                    Some(cur_value) => {
+                        if let Some(other_field_value) = &$other_field {
+                            bail!(
+                                "`{}` for default language is specified twice, as {:?} and {:?}.",
+                                $name,
+                                cur_value,
+                                other_field_value
+                            );
+                        }
+                    }
+                };
+            };
+            ($cond:expr,$orig_field:expr,$other_field:expr,$name:expr) => {
+                if $cond {
+                    $orig_field = $other_field.clone();
+                } else if !$other_field.is_empty() {
+                    bail!(
+                        "`{}` for default language is specified twice, as {:?} and {:?}.",
+                        $name,
+                        $orig_field,
+                        $other_field
+                    )
+                }
+            };
+        }
+        merge_field!(self.title, other.title, "title");
+        merge_field!(self.description, other.description, "description");
+        merge_field!(
+            self.feed_filename == "atom.xml",
+            self.feed_filename,
+            other.feed_filename,
+            "feed_filename"
+        );
+        merge_field!(self.taxonomies.is_empty(), self.taxonomies, other.taxonomies, "taxonomies");
+        merge_field!(
+            self.translations.is_empty(),
+            self.translations,
+            other.translations,
+            "translations"
+        );
 
         self.generate_feed = self.generate_feed || other.generate_feed;
-
-        match &self.feed_filename == "atom.xml" {
-            // "atom.xml" is default value.
-            true => self.feed_filename = other.feed_filename.clone(),
-            false => match &other.feed_filename.is_empty() {
-                false => bail!(
-                    "`feed filename` for default language is specifiec twice, as {:?} and {:?}.",
-                    self.feed_filename,
-                    other.feed_filename
-                ),
-                true => (),
-            },
-        };
-
-        match &self.taxonomies.is_empty() {
-            true => self.taxonomies = other.taxonomies.clone(),
-            false => match &other.taxonomies.is_empty() {
-                false => bail!(
-                    "`taxonomies` for default language is specifiec twice, as {:?} and {:?}.",
-                    self.taxonomies,
-                    other.taxonomies
-                ),
-                true => (),
-            },
-        };
-
         self.build_search_index = self.build_search_index || other.build_search_index;
 
-        match self.search == search::Search::default() {
-            true => self.search = other.search.clone(),
-            false => match self.search == other.search {
-                false => bail!(
-                    "`search` for default language is specified twice, as {:?} and {:?}.",
-                    self.search,
-                    other.search
-                ),
-                true => (),
-            },
-        };
-
-        match &self.translations.is_empty() {
-            true => self.translations = other.translations.clone(),
-            false => match &other.translations.is_empty() {
-                false => bail!(
-                    "`translations` for default language is specified twice, as {:?} and {:?}.",
-                    self.translations,
-                    other.translations
-                ),
-                true => (),
-            },
-        };
+        if self.search == search::Search::default() {
+            self.search = other.search.clone();
+        } else if self.search != other.search {
+            bail!(
+                "`search` for default language is specified twice, as {:?} and {:?}.",
+                self.search,
+                other.search
+            );
+        }
 
         Ok(())
     }
@@ -156,7 +137,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn merge_with_conflict() {
         let mut base_default_language_options = LanguageOptions {
             title: Some("Site's title".to_string()),
@@ -180,8 +160,8 @@ mod tests {
             translations: HashMap::new(),
         };
 
-        base_default_language_options
-            .merge(&section_default_language_options)
-            .expect("This should lead to panic");
+        let res =
+            base_default_language_options.merge(&section_default_language_options).unwrap_err();
+        assert!(res.to_string().contains("`description` for default language is specified twice"));
     }
 }
