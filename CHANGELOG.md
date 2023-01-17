@@ -8,6 +8,7 @@
 for breaking changes with libsass: look for "beginning in Dart Sass"
 - Merge settings for the default language set in the root of `config.toml` and in the `[languages.{default_lang}]` section. 
 This will error if 2 values are set
+- Code blocks content are no longer included in the search index
 
 
 ### Other
