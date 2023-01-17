@@ -127,7 +127,7 @@ impl Config {
             languages::validate_code(code)?;
         }
 
-        config.add_default_language();
+        config.add_default_language()?;
         config.slugify_taxonomies();
 
         if !config.ignored_content.is_empty() {
@@ -153,7 +153,7 @@ impl Config {
 
     pub fn default_for_test() -> Self {
         let mut config = Config::default();
-        config.add_default_language();
+        config.add_default_language().unwrap();
         config.slugify_taxonomies();
         config
     }
@@ -206,26 +206,37 @@ impl Config {
         }
     }
 
-    /// Adds the default language to the list of languages if not present
-    pub fn add_default_language(&mut self) {
+    /// Adds the default language to the list of languages if options for it are specified at base level of config.toml.
+    /// If section for the same language also exists, the options at this section and base are merged and then adds it
+    /// to list.
+    pub fn add_default_language(&mut self) -> Result<()> {
         // We automatically insert a language option for the default language *if* it isn't present
         // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
         // TODO: as source of truth?
-        if !self.languages.contains_key(&self.default_language) {
-            self.languages.insert(
-                self.default_language.clone(),
-                languages::LanguageOptions {
-                    title: self.title.clone(),
-                    description: self.description.clone(),
-                    generate_feed: self.generate_feed,
-                    feed_filename: self.feed_filename.clone(),
-                    build_search_index: self.build_search_index,
-                    taxonomies: self.taxonomies.clone(),
-                    search: self.search.clone(),
-                    translations: self.translations.clone(),
-                },
-            );
+
+        let mut base_default_language_options = languages::LanguageOptions {
+            title: self.title.clone(),
+            description: self.description.clone(),
+            generate_feed: self.generate_feed,
+            feed_filename: self.feed_filename.clone(),
+            build_search_index: self.build_search_index,
+            taxonomies: self.taxonomies.clone(),
+            search: self.search.clone(),
+            translations: self.translations.clone(),
+        };
+
+        if let Some(section_default_language_options) = self.languages.get(&self.default_language) {
+            if base_default_language_options != languages::LanguageOptions::default() {
+                println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
+                    which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
+                base_default_language_options.merge(section_default_language_options)?;
+            } else {
+                return Ok(());
+            }
         }
+        self.languages.insert(self.default_language.clone(), base_default_language_options);
+
+        Ok(())
     }
 
     /// Merges the extra data from the theme with the config extra data
@@ -389,6 +400,74 @@ impl Default for Config {
 mod tests {
     use super::*;
     use utils::slugs::SlugifyStrategy;
+
+    #[test]
+    fn can_add_default_language_with_data_only_at_base_section() {
+        let title_base = Some("Base section title".to_string());
+        let description_base = Some("Base section description".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
+        config.description = description_base.clone();
+        config.add_default_language().unwrap();
+
+        let default_language_options =
+            config.languages.get(&config.default_language).unwrap().clone();
+        assert_eq!(default_language_options.title, title_base);
+        assert_eq!(default_language_options.description, description_base);
+    }
+
+    #[test]
+    fn can_add_default_language_with_data_at_base_and_language_section() {
+        let title_base = Some("Base section title".to_string());
+        let description_lang_section = Some("Language section description".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
+        config.languages.insert(
+            config.default_language.clone(),
+            languages::LanguageOptions {
+                title: None,
+                description: description_lang_section.clone(),
+                generate_feed: true,
+                feed_filename: config.feed_filename.clone(),
+                taxonomies: config.taxonomies.clone(),
+                build_search_index: false,
+                search: search::Search::default(),
+                translations: config.translations.clone(),
+            },
+        );
+        config.add_default_language().unwrap();
+
+        let default_language_options =
+            config.languages.get(&config.default_language).unwrap().clone();
+        assert_eq!(default_language_options.title, title_base);
+        assert_eq!(default_language_options.description, description_lang_section);
+    }
+
+    #[test]
+    fn errors_when_same_field_present_at_base_and_language_section() {
+        let title_base = Some("Base section title".to_string());
+        let title_lang_section = Some("Language section title".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
+        config.languages.insert(
+            config.default_language.clone(),
+            languages::LanguageOptions {
+                title: title_lang_section.clone(),
+                description: None,
+                generate_feed: true,
+                feed_filename: config.feed_filename.clone(),
+                taxonomies: config.taxonomies.clone(),
+                build_search_index: false,
+                search: search::Search::default(),
+                translations: config.translations.clone(),
+            },
+        );
+        let result = config.add_default_language();
+        assert!(result.is_err());
+    }
 
     #[test]
     fn can_import_valid_config() {
