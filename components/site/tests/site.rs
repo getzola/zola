@@ -777,7 +777,7 @@ fn can_ignore_markdown_content() {
 fn can_cachebust_static_files() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(file_contains!(public, "index.html",
-        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d0fde18e82b04d7bca1881d10846c769b486640da3de9\" rel=\"stylesheet\">"));
+        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d\" rel=\"stylesheet\">"));
 }
 
 #[test]
