@@ -126,6 +126,10 @@ path = ""
 # current one. This takes an array of paths, not URLs.
 aliases = []
 
+# A list of page authors. If a site feed is enabled, the first author (if any)
+# will be used as the page's author in the default feed template.
+authors = []
+
 # When set to "true", the page will be in the search index. This is only used if
 # `build_search_index` is set to "true" in the Zola configuration and the parent section
 # hasn't set `in_search_index` to "false" in its front matter.

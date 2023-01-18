@@ -836,6 +836,31 @@ fn panics_on_invalid_external_domain() {
     site.load().expect("link check test_site");
 }
 
+#[test]
+fn can_find_site_and_page_authors() {
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, config_file).unwrap();
+    site.load().unwrap();
+    let library = site.library.read().unwrap();
+
+    // The config has a global default author set.
+    let author = site.config.author;
+    assert_eq!(Some("config@example.com (Config Author)".to_string()), author);
+
+    let posts_path = path.join("content").join("posts");
+    let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
+
+    let p1 = &library.pages[&posts_section.pages[0]];
+    let p2 = &library.pages[&posts_section.pages[1]];
+
+    // Only the first page has had an author added.
+    assert_eq!(1, p1.meta.authors.len());
+    assert_eq!("page@example.com (Page Author)", p1.meta.authors.get(0).unwrap());
+    assert_eq!(0, p2.meta.authors.len());
+}
+
 // Follows test_site/themes/sample/templates/current_path.html
 fn current_path(path: &str) -> String {
     format!("[current_path]({})", path)
