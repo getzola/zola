@@ -304,7 +304,10 @@ title = "A title"
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css?h=572e691dc68c3fcd653a");
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "http://a-website.com/app.css?h=572e691dc68c3fcd653a"
+        );
     }
 
     #[test]
@@ -335,7 +338,10 @@ title = "A title"
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css/?h=572e691dc68c3fcd653a");
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "http://a-website.com/app.css/?h=572e691dc68c3fcd653a"
+        );
     }
 
     #[test]
