@@ -135,7 +135,9 @@ impl TeraFn for GetUrl {
                     Some(compute_hash::<Sha256>(contents, false))
                 }) {
                     Some(hash) => {
-                        permalink = format!("{}?h={}", permalink, hash);
+                        let fullhash = format!("{}", hash);
+                        let shorthash = &fullhash[..20]; // 2^-80 chance of false positive
+                        permalink = format!("{}?h={}", permalink, shorthash);
                     }
                     None => {
                         return Err(format!(
@@ -302,7 +304,7 @@ title = "A title"
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css?h=572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css?h=572e691dc68c3fcd653a");
     }
 
     #[test]
@@ -333,7 +335,7 @@ title = "A title"
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("trailing_slash".to_string(), to_value(true).unwrap());
         args.insert("cachebust".to_string(), to_value(true).unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css/?h=572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
+        assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/app.css/?h=572e691dc68c3fcd653a");
     }
 
     #[test]
