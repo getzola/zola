@@ -26,7 +26,7 @@ quickxml_to_serde = "0.5"
 rayon = "1"
 regex = "1"
 relative-path = "1"
-reqwest = { version = "0.11", default-features = false, features = ["blocking"] }
+reqwest = { version = "0.11", default-features = false, features = ["blocking", "rustls-tls"] }
 grass = {version = "0.12.1", default-features = false, features = ["random"]}
 serde_json = "1"
 serde_yaml = "0.9"
@@ -46,9 +46,5 @@ webp = "0.2"
 
 
 [features]
-# TODO: fix me, it doesn't pick up the reqwuest feature if not set as default
-default = ["rust-tls"]
-rust-tls = ["reqwest/rustls-tls"]
-native-tls = ["reqwest/default-tls"]
 indexing-zh = ["elasticlunr-rs/zh"]
 indexing-ja = ["elasticlunr-rs/ja"]
