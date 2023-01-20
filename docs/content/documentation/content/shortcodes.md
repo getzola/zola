@@ -92,8 +92,7 @@ should not be used as argument names in shortcodes.
 
 ### Shortcodes without body
 
-Simply call the shortcode as if it was a Tera function in a variable block. All the examples below are valid
-calls of the YouTube shortcode.
+Simply call the shortcode as if it was a Tera function in a variable block.
 
 ```md
 Here is a YouTube video:
@@ -197,13 +196,12 @@ Every shortcode can access the current language in the `lang` variable in the co
 
 You can then use it in your Markdown like so: `{{/* bookcover() */}}`
 
-## Built-in shortcodes
+## Examples
 
-Zola comes with a few built-in shortcodes. If you want to override a default shortcode template,
-simply place a `{shortcode_name}.html` file in the `templates/shortcodes` directory and Zola will
-use that instead.
+Here are some shortcodes for inspiration.
 
 ### YouTube
+
 Embed a responsive player for a YouTube video.
 
 The arguments are:
@@ -213,79 +211,26 @@ The arguments are:
 - `class`: a class to add to the `<div>` surrounding the iframe
 - `autoplay`: when set to "true", the video autoplays on load
 
-Usage example:
+Code:
 
-```md
-{{/* youtube(id="dQw4w9WgXcQ") */}}
-
-{{/* youtube(id="dQw4w9WgXcQ", playlist="RDdQw4w9WgXcQ") */}}
-
-{{/* youtube(id="dQw4w9WgXcQ", autoplay=true) */}}
-
-{{/* youtube(id="dQw4w9WgXcQ", autoplay=true, class="youtube") */}}
 ```
-
-Result example:
-
-{{ youtube(id="dQw4w9WgXcQ") }}
-
-### Vimeo
-Embed a player for a Vimeo video.
-
-The arguments are:
-
-- `id`: the video id (mandatory)
-- `class`: a class to add to the `<div>` surrounding the iframe
+<div {% if class %}class="{{class}}"{% endif %}>
+    <iframe src="https://www.youtube-nocookie.com/embed/{{id}}{% if playlist %}?list={{playlist}}{% endif %}{% if autoplay %}?autoplay=1{% endif %}" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+</div>
+```
 
 Usage example:
 
 ```md
-{{/* vimeo(id="124313553") */}}
+{{/* youtube(id="dCKeXuVHl1o") */}}
 
-{{/* vimeo(id="124313553", class="vimeo") */}}
+{{/* youtube(id="dCKeXuVHl1o", playlist="RDdQw4w9WgXcQ") */}}
+
+{{/* youtube(id="dCKeXuVHl1o", autoplay=true) */}}
+
+{{/* youtube(id="dCKeXuVHl1o", autoplay=true, class="youtube") */}}
 ```
 
-Result example:
+### Image Gallery
 
-{{ vimeo(id="124313553") }}
-
-### Streamable
-Embed a player for a Streamable video.
-
-The arguments are:
-
-- `id`: the video id (mandatory)
-- `class`: a class to add to the `<div>` surrounding the iframe
-
-Usage example:
-
-```md
-{{/* streamable(id="92ok4") */}}
-
-{{/* streamable(id="92ok4", class="streamble") */}}
-```
-
-Result example:
-
-{{ streamable(id="92ok4") }}
-
-### Gist
-Embed a [Github gist](https://gist.github.com).
-
-The arguments are:
-
-- `url`: the url to the gist (mandatory)
-- `file`: by default, the shortcode will pull every file from the URL unless a specific filename is requested
-- `class`: a class to add to the `<div>` surrounding the iframe
-
-Usage example:
-
-```md
-{{/* gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57") */}}
-
-{{/* gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57", class="gist") */}}
-```
-
-Result example:
-
-{{ gist(url="https://gist.github.com/Keats/e5fb6aad409f28721c0ba14161644c57") }}
+See [content processing page](@/documentation/content/image-processing/index.md#creating-picture-galleries) for code and example.
