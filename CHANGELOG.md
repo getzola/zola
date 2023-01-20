@@ -29,6 +29,7 @@ This will error if 2 values are set
 - Enable locale date formatting for the Tera `date` filter
 - Cachebust fingerprint is now only 20 chars long
 - Add `text` alias for plain text highlighting (before, only `txt` was used)
+- Switch reqwest TLS backend to rustls-tls
 
 
 ## 0.16.1 (2022-08-14)
