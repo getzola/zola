@@ -48,6 +48,9 @@ libs = { path = "components/libs" }
 same-file = "1"
 
 [features]
+default = ["rust-tls"]
+rust-tls = ["libs/rust-tls"]
+native-tls = ["libs/native-tls"]
 indexing-zh = ["libs/indexing-zh"]
 indexing-ja = ["libs/indexing-ja"]
 
