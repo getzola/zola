@@ -25,7 +25,7 @@ use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
     is_dotfile,
 };
-use utils::net::get_available_port;
+use utils::net::{get_available_port, is_external_link};
 use utils::templates::{render_template, ShortcodeDefinition};
 use utils::types::InsertAnchor;
 
@@ -1142,7 +1142,7 @@ impl Site {
         }
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
-            let permalink = self.config.make_permalink(redirect_to);
+            let permalink = if is_external_link(redirect_to) {redirect_to} else {self.config.make_permalink(redirect_to)}
             self.write_content(
                 &components,
                 "index.html",

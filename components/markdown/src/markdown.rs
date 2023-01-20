@@ -5,6 +5,7 @@ use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
 use libs::pulldown_cmark as cmark;
 use libs::tera;
+use utils::net::is_external_link;
 
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
@@ -131,11 +132,6 @@ fn find_anchor(anchors: &[String], name: String, level: u16) -> String {
     }
 
     find_anchor(anchors, name, level + 1)
-}
-
-/// Returns whether a link starts with an HTTP(s) scheme.
-fn is_external_link(link: &str) -> bool {
-    link.starts_with("http:") || link.starts_with("https:")
 }
 
 fn fix_link(
