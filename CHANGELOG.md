@@ -28,6 +28,7 @@ This will error if 2 values are set
 - Add sorting by slug for pages
 - Enable locale date formatting for the Tera `date` filter
 - Cachebust fingerprint is now only 20 chars long
+- Add `text` alias for plain text highlighting (before, only `txt` was used)
 
 
 ## 0.16.1 (2022-08-14)
