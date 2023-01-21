@@ -5,6 +5,7 @@ pub mod sass;
 pub mod sitemap;
 pub mod tpls;
 
+use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::fs::{remove_dir_all, remove_file};
 use std::path::{Path, PathBuf};
@@ -1142,7 +1143,7 @@ impl Site {
         }
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
-            let permalink = if is_external_link(redirect_to) {redirect_to} else {self.config.make_permalink(redirect_to)}
+            let permalink: Cow<String> = if is_external_link(redirect_to) {Cow::Borrowed(redirect_to)} else {Cow::Owned(self.config.make_permalink(redirect_to))};
             self.write_content(
                 &components,
                 "index.html",
