@@ -5,7 +5,7 @@ pub mod sass;
 pub mod sitemap;
 pub mod tpls;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{remove_dir_all, remove_file};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
@@ -179,6 +179,12 @@ impl Site {
             .collect();
         allowed_index_filenames.push("_index.md".to_string());
 
+        // We will insert colocated pages (those with a index.md filename)
+        // at the end to detect pages that are actually errors:
+        // when there is both a _index.md and index.md in the same folder
+        let mut pages = Vec::new();
+        let mut components = HashSet::new();
+
         loop {
             let entry: DirEntry = match dir_walker.next() {
                 None => break,
@@ -242,8 +248,9 @@ impl Site {
                 for index_file in index_files {
                     let section =
                         Section::from_file(index_file.path(), &self.config, &self.base_path)?;
+                    components.extend(section.file.components.clone());
 
-                    // if the section is drafted we can skip the enitre dir
+                    // if the section is drafted we can skip the entire dir
                     if section.meta.draft && !self.include_drafts {
                         dir_walker.skip_current_dir();
                         continue;
@@ -253,19 +260,37 @@ impl Site {
                 }
             } else {
                 let page = Page::from_file(path, &self.config, &self.base_path)?;
-
-                // should we skip drafts?
-                if page.meta.draft && !self.include_drafts {
-                    continue;
-                }
-                pages_insert_anchors.insert(
-                    page.file.path.clone(),
-                    self.find_parent_section_insert_anchor(&page.file.parent.clone(), &page.lang),
-                );
-                self.add_page(page, false)?;
+                pages.push(page);
             }
         }
         self.create_default_index_sections()?;
+
+        for page in pages {
+            // should we skip drafts?
+            if page.meta.draft && !self.include_drafts {
+                continue;
+            }
+
+            // We are only checking it on load and not in add_page since we have access to
+            // all the components there.
+            if page.file.filename == "index.md" {
+                let is_invalid = match page.components.last() {
+                    Some(last) => components.contains(last),
+                    // content/index.md is always invalid
+                    None => true,
+                };
+
+                if is_invalid {
+                    bail!("We can't have a page called `index.md` in the same folder as an index section in {:?}", page.file.parent);
+                }
+            }
+
+            pages_insert_anchors.insert(
+                page.file.path.clone(),
+                self.find_parent_section_insert_anchor(&page.file.parent.clone(), &page.lang),
+            );
+            self.add_page(page, false)?;
+        }
 
         {
             let library = self.library.read().unwrap();
@@ -445,6 +470,9 @@ impl Site {
                 );
             }
         }
+
+        // We can't have a page called index.md when there is a _index.md in the same folder
+        if page.file.filename == "index.md" {}
 
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render_md {

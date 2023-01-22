@@ -157,7 +157,11 @@ impl Page {
             }
         } else {
             let mut path = if page.file.components.is_empty() {
-                page.slug.clone()
+                if page.file.name == "index" {
+                    String::new()
+                } else {
+                    page.slug.clone()
+                }
             } else {
                 format!("{}/{}", page.file.components.join("/"), page.slug)
             };
