@@ -10,7 +10,8 @@ for breaking changes with libsass: look for "beginning in Dart Sass"
 This will error if 2 values are set
 - Code blocks content are no longer included in the search index
 - Remove built-ins shortcodes
-  - Having a file called `index.md` in a folder with a `_index.md` is now an error
+- Having a file called `index.md` in a folder with a `_index.md` is now an error
+- Ignore temp files from vim/emacs/macos/etc as well as files without extensions when getting colocated assets
 
 ### Other
 

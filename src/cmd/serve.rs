@@ -38,16 +38,16 @@ use time::{OffsetDateTime, UtcOffset};
 
 use libs::percent_encoding;
 use libs::serde_json;
+use libs::globset::GlobSet;
+use libs::relative_path::{RelativePath, RelativePathBuf};
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Result};
-use libs::globset::GlobSet;
-use libs::relative_path::{RelativePath, RelativePathBuf};
 use pathdiff::diff_paths;
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
-use utils::fs::copy_file;
+use utils::fs::{copy_file, is_temp_file};
 
 use crate::messages;
 use std::ffi::OsStr;
@@ -652,32 +652,6 @@ fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bo
     }
 }
 
-/// Returns whether the path we received corresponds to a temp file created
-/// by an editor or the OS
-fn is_temp_file(path: &Path) -> bool {
-    let ext = path.extension();
-    match ext {
-        Some(ex) => match ex.to_str().unwrap() {
-            "swp" | "swx" | "tmp" | ".DS_STORE" => true,
-            // jetbrains IDE
-            x if x.ends_with("jb_old___") => true,
-            x if x.ends_with("jb_tmp___") => true,
-            x if x.ends_with("jb_bak___") => true,
-            // vim & jetbrains
-            x if x.ends_with('~') => true,
-            _ => {
-                if let Some(filename) = path.file_stem() {
-                    // emacs
-                    let name = filename.to_str().unwrap();
-                    name.starts_with('#') || name.starts_with(".#")
-                } else {
-                    false
-                }
-            }
-        },
-        None => true,
-    }
-}
 
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
