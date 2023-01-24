@@ -103,6 +103,14 @@ impl PageFrontMatter {
 
         f.date_to_datetime();
 
+        for (_, terms) in &f.taxonomies {
+            for term in terms {
+                if term.trim().is_empty() {
+                    bail!("A taxonomy term cannot be an empty string");
+                }
+            }
+        }
+
         if let Some(ref date) = f.date {
             if f.datetime.is_none() {
                 bail!("`date` could not be parsed: {}.", date);
@@ -473,5 +481,25 @@ taxonomies:
         let res2 = res.unwrap();
         assert_eq!(res2.taxonomies["categories"], vec!["Dev"]);
         assert_eq!(res2.taxonomies["tags"], vec!["Rust", "JavaScript"]);
+    }
+
+    #[test_case(&RawFrontMatter::Toml(r#"
+title = "Hello World"
+
+[taxonomies]
+tags = [""]
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
+title: Hello World
+
+taxonomies:
+    tags:
+        -
+"#); "yaml")]
+    fn errors_on_empty_taxonomy_term(content: &RawFrontMatter) {
+        // https://github.com/getzola/zola/issues/2085
+        let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
+        assert!(res.is_err());
     }
 }
