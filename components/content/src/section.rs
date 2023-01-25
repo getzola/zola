@@ -163,6 +163,7 @@ impl Section {
         context
             .tera_context
             .insert("section", &SerializingSection::new(self, SectionSerMode::ForMarkdown));
+        context.tera_context.insert("colocated_path", &self.file.colocated_path);
 
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;

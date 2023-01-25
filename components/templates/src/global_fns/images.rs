@@ -60,7 +60,8 @@ impl TeraFn for ResizeImage {
                 return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
             }
         }
-        let resize_op = imageproc::ResizeOperation::from_args(&op, width, height).map_err(|e| format!("`resize_image`: {}", e))?;
+        let resize_op = imageproc::ResizeOperation::from_args(&op, width, height)
+            .map_err(|e| format!("`resize_image`: {}", e))?;
         let mut imageproc = self.imageproc.lock().unwrap();
         let (file_path, unified_path) =
             match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
@@ -71,7 +72,6 @@ impl TeraFn for ResizeImage {
                     return Err(format!("`resize_image`: Cannot find file: {}", path).into());
                 }
             };
-
 
         let response = imageproc
             .enqueue(resize_op, unified_path, file_path, &format, quality)
@@ -193,11 +193,13 @@ mod tests {
 
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("gutenberg.da10f4be4f1c441e.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("gutenberg.da10f4be4f1c441e.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/gutenberg.da10f4be4f1c441e.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/gutenberg.da10f4be4f1c441e.jpg")
+                .unwrap()
         );
 
         // 2. resizing an image in content with a relative path
@@ -205,11 +207,13 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("gutenberg.3301b37eed389d2e.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("gutenberg.3301b37eed389d2e.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/gutenberg.3301b37eed389d2e.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/gutenberg.3301b37eed389d2e.jpg")
+                .unwrap()
         );
 
         // 3. resizing with an absolute path is the same as the above
@@ -227,7 +231,8 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("asset.d2fde9a750b68471.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("asset.d2fde9a750b68471.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
@@ -239,11 +244,13 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("in-theme.9b0d29e07d588b60.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("in-theme.9b0d29e07d588b60.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/in-theme.9b0d29e07d588b60.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/in-theme.9b0d29e07d588b60.jpg")
+                .unwrap()
         );
     }
 

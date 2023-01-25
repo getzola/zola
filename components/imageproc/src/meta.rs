@@ -47,7 +47,6 @@ impl ImageMetaResponse {
 
 impl From<ImageMeta> for ImageMetaResponse {
     fn from(im: ImageMeta) -> Self {
-        println!("{:?}", im);
         Self {
             width: im.size.0,
             height: im.size.1,

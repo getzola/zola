@@ -37,6 +37,9 @@ pub struct FileInfo {
     pub name: String,
     /// The .md path, starting from the content directory, with `/` slashes
     pub relative: String,
+    /// The path from the content directory to the colocated directory. Ends with a `/` when set.
+    /// Only filled if it is a colocated directory, None otherwise.
+    pub colocated_path: Option<String>,
     /// Path of the directory containing the .md file
     pub parent: PathBuf,
     /// Path of the grand parent directory for that file. Only used in sections to find subsections.
@@ -63,11 +66,17 @@ impl FileInfo {
         } else {
             format!("{}.md", name)
         };
+        let mut colocated_path = None;
 
         // If we have a folder with an asset, don't consider it as a component
         // Splitting on `.` as we might have a language so it isn't *only* index but also index.fr
         // etc
         if !components.is_empty() && name.split('.').collect::<Vec<_>>()[0] == "index" {
+            colocated_path = Some({
+                let mut val = components.join("/");
+                val.push('/');
+                val
+            });
             components.pop();
             // also set parent_path to grandparent instead
             parent = parent.parent().unwrap().to_path_buf();
@@ -83,6 +92,7 @@ impl FileInfo {
             name,
             components,
             relative,
+            colocated_path,
         }
     }
 
@@ -108,6 +118,7 @@ impl FileInfo {
             name,
             components,
             relative,
+            colocated_path: None,
         }
     }
 
@@ -171,6 +182,7 @@ mod tests {
             &PathBuf::new(),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
+        assert_eq!(file.colocated_path, Some("posts/tutorials/python/".to_string()));
     }
 
     #[test]
@@ -211,6 +223,7 @@ mod tests {
             &PathBuf::new(),
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
+        assert_eq!(file.colocated_path, Some("posts/tutorials/python/".to_string()));
         let res = file.find_language("en", &["fr"]);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "fr");

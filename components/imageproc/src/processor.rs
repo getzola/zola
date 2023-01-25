@@ -158,7 +158,14 @@ impl Processor {
         // Only add it to the set of things to process if the file doesn't exist or the input file
         // is stale
         if !output_path.exists() || ufs::file_stale(&input_path, &output_path) {
-            self.img_ops.insert(ImageOp { input_path, output_path, instr, format });
+            println!(
+                "Processing {:?}, output_exists? {}, is stale? {}",
+                input_path,
+                output_path.exists(),
+                ufs::file_stale(&input_path, &output_path)
+            );
+            let img_op = ImageOp { input_path, output_path, instr, format };
+            self.img_ops.insert(img_op);
         }
 
         Ok(enqueue_response)
@@ -193,6 +200,7 @@ impl Processor {
             .iter()
             .map(|o| o.output_path.file_name().unwrap().to_string_lossy())
             .collect();
+
         for entry in fs::read_dir(&self.output_dir)? {
             let entry_path = entry?.path();
             if entry_path.is_file() {
