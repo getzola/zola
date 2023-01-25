@@ -26,10 +26,18 @@ pub struct ImageOp {
     output_path: PathBuf,
     instr: ResizeInstructions,
     format: Format,
+    /// Whether we actually want to perform that op.
+    /// In practice we set it to true if the output file already
+    /// exists and is not stale. We do need to keep the ImageOp around for pruning though.
+    ignore: bool,
 }
 
 impl ImageOp {
     fn perform(&self) -> Result<()> {
+        if self.ignore {
+            return Ok(());
+        }
+
         let mut img = image::open(&self.input_path)?;
 
         let img = match self.instr.crop_instruction {
@@ -154,19 +162,8 @@ impl Processor {
         let output_path = self.output_dir.join(&filename);
         let instr = ResizeInstructions::new(op, meta.size);
         let enqueue_response = EnqueueResponse::new(url, static_path, meta, &instr);
-
-        // Only add it to the set of things to process if the file doesn't exist or the input file
-        // is stale
-        if !output_path.exists() || ufs::file_stale(&input_path, &output_path) {
-            println!(
-                "Processing {:?}, output_exists? {}, is stale? {}",
-                input_path,
-                output_path.exists(),
-                ufs::file_stale(&input_path, &output_path)
-            );
-            let img_op = ImageOp { input_path, output_path, instr, format };
-            self.img_ops.insert(img_op);
-        }
+        let img_op = ImageOp { ignore: output_path.exists() && !ufs::file_stale(&input_path, &output_path) , input_path, output_path, instr, format};
+        self.img_ops.insert(img_op);
 
         Ok(enqueue_response)
     }
