@@ -103,7 +103,7 @@ impl PageFrontMatter {
 
         f.date_to_datetime();
 
-        for (_, terms) in &f.taxonomies {
+        for terms in f.taxonomies.values() {
             for term in terms {
                 if term.trim().is_empty() {
                     bail!("A taxonomy term cannot be an empty string");
