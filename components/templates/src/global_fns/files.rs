@@ -149,19 +149,6 @@ impl TeraFn for GetUrl {
                 };
             }
 
-            if cfg!(target_os = "windows") {
-                permalink = match url::Url::parse(&permalink) {
-                    Ok(parsed) => parsed.into(),
-                    Err(_) => {
-                        return Err(format!(
-                            "`get_url`: Could not parse link `{}` as a valid URL",
-                            permalink
-                        )
-                        .into())
-                    }
-                };
-            }
-
             Ok(to_value(permalink).unwrap())
         }
     }
@@ -643,27 +630,6 @@ title = "A title"
             static_fn.call(&args).unwrap(),
             "LHT9F+2v2A6ER7DUZ0HuJDt+t03SFJoKsbkkb7MDgvJ+hT2FhXGeDmfL2g2qj1FnEGRhXWRa4nrLFb+xRH9Fmw=="
         );
-    }
-
-    #[test]
-    fn can_resolve_asset_path_to_valid_url() {
-        let config = Config::parse(CONFIG_DATA).unwrap();
-        let dir = create_temp_dir();
-        let static_fn =
-            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert(
-            "path".to_string(),
-            to_value(dir.path().join("app.css").strip_prefix(std::env::temp_dir()).unwrap())
-                .unwrap(),
-        );
-        assert_eq!(
-            static_fn.call(&args).unwrap(),
-            format!(
-                "https://remplace-par-ton-url.fr/{}/app.css",
-                dir.path().file_stem().unwrap().to_string_lossy()
-            )
-        )
     }
 
     #[test]
