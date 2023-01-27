@@ -9,7 +9,6 @@ use config::Config;
 use libs::base64::engine::{general_purpose::STANDARD as standard_b64, Engine};
 use libs::sha2::{digest, Sha256, Sha384, Sha512};
 use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
-use libs::url;
 use utils::site::resolve_internal_link;
 
 fn compute_hash<D: digest::Digest>(literal: String, as_base64: bool) -> String
@@ -135,8 +134,7 @@ impl TeraFn for GetUrl {
                     Some(compute_hash::<Sha256>(contents, false))
                 }) {
                     Some(hash) => {
-                        let fullhash = format!("{}", hash);
-                        let shorthash = &fullhash[..20]; // 2^-80 chance of false positive
+                        let shorthash = &hash[..20]; // 2^-80 chance of false positive
                         permalink = format!("{}?h={}", permalink, shorthash);
                     }
                     None => {
