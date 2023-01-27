@@ -37,7 +37,7 @@ syntect = "5"
 tera = { version = "1.17", features = ["preserve_order", "date-locale"] }
 termcolor = "1.0.4"
 time = "0.3"
-toml = "0.5"
+toml = "0.7"
 unic-langid = "0.9"
 unicode-segmentation = "1.2"
 url = "2"
