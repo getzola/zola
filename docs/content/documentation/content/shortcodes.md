@@ -164,10 +164,11 @@ Every shortcode can access some variables, beyond what you explicitly passed as 
 
 - invocation count (`nth`)
 - current language (`lang`), unless called from the `markdown` template filter (in which case it will always be the same value as `default_language` in configuration, or `en` when it is unset)
+- `colocated_path`
 
 When one of these variables conflict with a variable passed as argument, the argument value will be used.
 
-### Invocation Count
+### `nth`: invocation count
 
 Every shortcode context is passed in a variable named `nth` that tracks how many times a particular shortcode has
 been invoked in the current Markdown file. Given a shortcode `true_statement.html` template:
@@ -185,17 +186,30 @@ It could be used in our Markdown as follows:
 
 This is useful when implementing custom markup for features such as sidenotes or end notes.
 
-### Current language
+### `lang`: current language
+**NOTE:** When calling a shortcode from within the `markdown` template filter, the `lang` variable will always be `en`. 
+If you feel like you need that, please consider using template macros instead. 
+If you really need that, you can rewrite your Markdown content to pass `lang` as argument to the shortcode.
 
-**NOTE:** When calling a shortcode from within the `markdown` template filter, the `lang` variable will always be `en`. If you feel like you need that, please consider using template macros instead. If you really need that, you can rewrite your Markdown content to pass `lang` as argument to the shortcode.
-
-Every shortcode can access the current language in the `lang` variable in the context. This is useful for presenting/filtering information in a shortcode depending in a per-language manner. For example, to display a per-language book cover for the current page in a shortcode called `bookcover.md`:
+Every shortcode can access the current language in the `lang` variable in the context. 
+This is useful for presenting/filtering information in a shortcode depending in a per-language manner. For example, to display a per-language book cover for the current page in a shortcode called `bookcover.md`:
 
 ```jinja2
 ![Book cover in {{ lang }}](cover.{{ lang }}.png)
 ```
 
-You can then use it in your Markdown like so: `{{/* bookcover() */}}`
+### `page` or `section`
+You can access a slighty stripped down version of the equivalent variables in the normal templates.
+The only things missing are translations, backlinks and pages for sections as we are still in the middle of processing.
+
+A useful attribute to `page` in shortcodes is `colocated_path`.
+This is used when you want to pass the name of some assets to shortcodes without repeating the full folders path.
+Mostly useful when combined with `load_data` or `resize_image`.
+
+```jinja2
+{% set resized = resize_image(format="jpg", path=page.colocated_path ~ img_name, width=width, op="fit_width") %}
+<img alt="{{ alt }}" src="{{ resized.url | safe }}" />
+```
 
 ## Examples
 

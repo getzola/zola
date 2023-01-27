@@ -12,6 +12,7 @@ This will error if 2 values are set
 - Remove built-ins shortcodes
 - Having a file called `index.md` in a folder with a `_index.md` is now an error
 - Ignore temp files from vim/emacs/macos/etc as well as files without extensions when getting colocated assets
+- Now integrates the file stem of the original file into the processed images filename: {stem}.{hash}.{extension}
 
 ### Other
 
@@ -31,7 +32,7 @@ This will error if 2 values are set
 - Enable locale date formatting for the Tera `date` filter
 - Cachebust fingerprint is now only 20 chars long
 - Add `text` alias for plain text highlighting (before, only `txt` was used)
-
+- Adds a new field to `page`: `colocated_path` that points to the folder of the current file being rendered if it's a colocated folder. None otherwise.
 
 ## 0.16.1 (2022-08-14)
 

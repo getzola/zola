@@ -174,7 +174,6 @@ where
     path.as_ref().file_name().and_then(|s| s.to_str()).map(|s| s.starts_with('.')).unwrap_or(false)
 }
 
-
 /// Returns whether the path we received corresponds to a temp file created
 /// by an editor or the OS
 pub fn is_temp_file(path: &Path) -> bool {

@@ -36,10 +36,10 @@ use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 
-use libs::percent_encoding;
-use libs::serde_json;
 use libs::globset::GlobSet;
+use libs::percent_encoding;
 use libs::relative_path::{RelativePath, RelativePathBuf};
+use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
@@ -651,7 +651,6 @@ fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bo
         None => false,
     }
 }
-
 
 /// Detect what changed from the given path so we have an idea what needs
 /// to be reloaded
