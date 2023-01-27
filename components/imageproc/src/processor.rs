@@ -162,7 +162,13 @@ impl Processor {
         let output_path = self.output_dir.join(&filename);
         let instr = ResizeInstructions::new(op, meta.size);
         let enqueue_response = EnqueueResponse::new(url, static_path, meta, &instr);
-        let img_op = ImageOp { ignore: output_path.exists() && !ufs::file_stale(&input_path, &output_path) , input_path, output_path, instr, format};
+        let img_op = ImageOp {
+            ignore: output_path.exists() && !ufs::file_stale(&input_path, &output_path),
+            input_path,
+            output_path,
+            instr,
+            format,
+        };
         self.img_ops.insert(img_op);
 
         Ok(enqueue_response)

@@ -32,8 +32,7 @@ This will error if 2 values are set
 - Enable locale date formatting for the Tera `date` filter
 - Cachebust fingerprint is now only 20 chars long
 - Add `text` alias for plain text highlighting (before, only `txt` was used)
-- Adds a new built-in variable to shortcodes: `colocated_path` that points to the folder of the current file being rendered if it's a colocated folder. None otherwise.
-
+- Adds a new field to `page`: `colocated_path` that points to the folder of the current file being rendered if it's a colocated folder. None otherwise.
 
 ## 0.16.1 (2022-08-14)
 

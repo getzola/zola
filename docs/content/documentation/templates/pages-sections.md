@@ -50,6 +50,9 @@ assets: Array<String>;
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
+// The relative path from the `content` directory to the directory of a colocated index.md markdown file
+// Null if the file is not colocated.
+colocated_path: String?;
 // The language for the page if there is one. Default to the config `default_language`
 lang: String;
 // Information about all the available languages for that content, including the current page

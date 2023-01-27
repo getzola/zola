@@ -228,7 +228,6 @@ impl Page {
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
         context.tera_context.insert("page", &SerializingPage::new(self, None, false));
-        context.tera_context.insert("colocated_path", &self.file.colocated_path);
 
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;

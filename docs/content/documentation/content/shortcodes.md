@@ -197,18 +197,18 @@ This is useful for presenting/filtering information in a shortcode depending in 
 ![Book cover in {{ lang }}](cover.{{ lang }}.png)
 ```
 
-### `colocated_path`
+### `page` or `section`
+You can access a slighty stripped down version of the equivalent variables in the normal templates.
+The only things missing are translations, backlinks and pages for sections as we are still in the middle of processing.
+
+A useful attribute to `page` in shortcodes is `colocated_path`.
 This is used when you want to pass the name of some assets to shortcodes without repeating the full folders path.
 Mostly useful when combined with `load_data` or `resize_image`.
 
 ```jinja2
-{% set resized = resize_image(format="jpg", path=colocated_path ~ img_name, width=width, op="fit_width") %}
+{% set resized = resize_image(format="jpg", path=page.colocated_path ~ img_name, width=width, op="fit_width") %}
 <img alt="{{ alt }}" src="{{ resized.url | safe }}" />
 ```
-
-### `page` or `section`
-You can access a slighty stripped down version of the equivalent variables in the normal templates.
-The only things missing are translations, backlinks and pages for sections as we are still in the middle of processing.
 
 ## Examples
 

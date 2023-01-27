@@ -42,6 +42,7 @@ fn find_backlinks<'a>(relative_path: &str, library: &'a Library) -> Vec<BackLink
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct SerializingPage<'a> {
     relative_path: &'a str,
+    colocated_path: &'a Option<String>,
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
@@ -104,6 +105,7 @@ impl<'a> SerializingPage<'a> {
 
         Self {
             relative_path: &page.file.relative,
+            colocated_path: &page.file.colocated_path,
             ancestors: &page.ancestors,
             content: &page.content,
             permalink: &page.permalink,
@@ -137,6 +139,7 @@ impl<'a> SerializingPage<'a> {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct SerializingSection<'a> {
     relative_path: &'a str,
+    colocated_path: &'a Option<String>,
     content: &'a str,
     permalink: &'a str,
     draft: bool,
@@ -198,6 +201,7 @@ impl<'a> SerializingSection<'a> {
 
         Self {
             relative_path: &section.file.relative,
+            colocated_path: &section.file.colocated_path,
             ancestors: &section.ancestors,
             draft: section.meta.draft,
             content: &section.content,
