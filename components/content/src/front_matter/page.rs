@@ -392,20 +392,20 @@ title = "Hello"
 description = "hey there"
 
 [extra]
-some-date = 2002-14-01
+some-date = 2002-11-01
 "#); "toml")]
     #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 
 extra:
-    some-date: 2002-14-01
+    some-date: 2002-11-01
 "#); "yaml")]
     fn can_parse_dates_in_extra(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().extra["some-date"], to_value("2002-14-01").unwrap());
+        assert_eq!(res.unwrap().extra["some-date"], to_value("2002-11-01").unwrap());
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -413,7 +413,7 @@ title = "Hello"
 description = "hey there"
 
 [extra.something]
-some-date = 2002-14-01
+some-date = 2002-11-01
 "#); "toml")]
     #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
@@ -421,13 +421,13 @@ description: hey there
 
 extra:
     something:
-        some-date: 2002-14-01
+        some-date: 2002-11-01
 "#); "yaml")]
     fn can_parse_nested_dates_in_extra(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-14-01").unwrap());
+        assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-11-01").unwrap());
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
