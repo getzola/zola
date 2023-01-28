@@ -49,9 +49,10 @@ $ sudo dpkg -i zola_<version>_amd64_debian_<debian_version>.deb
 
 ### Fedora
 
-Zola has been available in the official repositories since Fedora 29.
+On Fedora, Zola is avialable via [COPR](https://fedoraproject.org/wiki/Category:Copr).
 
 ```sh
+$ sudo dnf copr enable fz0x1/zola
 $ sudo dnf install zola
 ```
 
