@@ -7,6 +7,7 @@ use config::Config;
 use errors::{Context, Result};
 use markdown::{render_content, RenderContext};
 use utils::fs::read_file;
+use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
 use utils::templates::{render_template, ShortcodeDefinition};
 
@@ -168,7 +169,14 @@ impl Section {
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.body;
         self.toc = res.toc;
+
         self.external_links = res.external_links;
+        if let Some(ref redirect_to) = self.meta.redirect_to {
+            if is_external_link(redirect_to) {
+                self.external_links.push(redirect_to.to_owned());
+            }
+        }
+
         self.internal_links = res.internal_links;
 
         Ok(())
