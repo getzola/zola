@@ -364,4 +364,24 @@ Bonjour le monde"#
         assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
     }
+
+    #[test]
+    fn can_redirect_to_external_site() {
+        let config = Config::default();
+        let content = r#"
++++
+redirect_to = "https://bar.com/something"
++++
+Example"#
+            .to_string();
+        let res = Section::parse(
+            Path::new("content/subcontent/_index.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.meta.redirect_to, Some("https://bar.com/something".to_owned()));
+    }
 }
