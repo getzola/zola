@@ -62,7 +62,7 @@ In this example the page for `Release year` would include links to pages for bot
 
 ## Configuration
 
-A taxonomy has five variables:
+A taxonomy has six variables:
 
 - `name`: a required string that will be used in the URLs, usually the plural version (i.e., tags, categories, etc.)
 - `paginate_by`: if this is set to a number, each term page will be paginated by this much.
@@ -70,6 +70,7 @@ A taxonomy has five variables:
 For example the default would be page/1.
 - `feed`: if set to `true`, a feed (atom by default) will be generated for each term.
 - `lang`: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for
+- `render`: if set to `false`, pages will not be rendered for the taxonomy or for individual terms.
 
 Insert into the configuration file (config.toml):
 
