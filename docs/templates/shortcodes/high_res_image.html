@@ -1,0 +1,5 @@
+{% set mdata = get_image_metadata(path=path) %}
+{% set w = (mdata.width / 2) | int %}
+{% set h = (mdata.height / 2) | int %}
+{% set image = resize_image(path=path, width=w, height=h, op="fit_width") %}
+<img src="{{ image.url }}" srcset="/{{path}} 2x"/>
