@@ -1,4 +1,3 @@
-#![allow(clippy::uninlined_format_args)]
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 

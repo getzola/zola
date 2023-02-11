@@ -33,6 +33,8 @@ This will error if 2 values are set
 - Cachebust fingerprint is now only 20 chars long
 - Add `text` alias for plain text highlighting (before, only `txt` was used)
 - Adds a new field to `page`: `colocated_path` that points to the folder of the current file being rendered if it's a colocated folder. None otherwise.
+- Add `author` as a first-class property to the config and `authors` to pages
+- Allows using external URL for `redirect_to`
 
 ## 0.16.1 (2022-08-14)
 
