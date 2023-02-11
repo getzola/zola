@@ -146,6 +146,7 @@ impl Page {
                 slugify_paths(&file_path_for_slug, config.slugify.paths)
             }
         };
+        println!("page.slug = {:?}", page.slug);
 
         page.path = if let Some(ref p) = page.meta.path {
             let path = p.trim();
@@ -700,6 +701,38 @@ And here's another. [^3]
         assert_eq!(page.assets.len(), 1);
         assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
     }
+
+    // https://github.com/getzola/zola/issues/1566
+    #[test]
+    fn colocated_page_with_slug_and_date_in_path() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        let articles_path = path.join("content").join("articles");
+        create_dir(&articles_path).expect("create posts temp dir");
+
+        let config = Config::default();
+
+        // first a non-colocated one
+        let file_path = articles_path.join("2021-07-29-sample-article-1.md");
+        let mut f = File::create(&file_path).unwrap();
+        f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
+        let res = Page::from_file(&file_path, &config, path);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "/articles/hey/");
+
+        // then a colocated one, it should still work
+        let dir_path = articles_path.join("2021-07-29-sample-article-2.md");
+        create_dir(&dir_path).expect("create posts temp dir");
+        let mut f = File::create(&dir_path.join("index.md")).unwrap();
+        f.write_all(b"+++\nslug=\"ho\"\n+++\n").unwrap();
+        let res = Page::from_file(&dir_path.join("index.md"), &config, path);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "/articles/ho/");
+    }
+
 
     #[test]
     fn can_get_date_from_short_date_in_filename() {
