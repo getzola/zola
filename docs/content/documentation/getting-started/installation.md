@@ -116,6 +116,23 @@ To avoid having to type this every time, an alias can be created in `~/.bashrc`:
 $ alias zola="flatpak run org.getzola.zola"
 ```
 
+### Via Github Actions
+
+Zola can be installed in a GHA workflow with [taiki-e/install-action](https://github.com/taiki-e/install-action).
+Simply add it in your CI config, for example:
+
+```yaml
+jobs:
+  foo:
+    steps:
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: zola@v0.16
+      # ...
+```
+
+See the action repo for docs and more examples.
+
 ### Docker
 
 Zola is available on [the GitHub registry](https://github.com/getzola/zola/pkgs/container/zola).
