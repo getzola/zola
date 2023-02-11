@@ -58,6 +58,8 @@ pub struct Config {
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
+    /// The default author for pages.
+    pub author: Option<String>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
@@ -103,6 +105,7 @@ pub struct SerializedConfig<'a> {
     generate_feed: bool,
     feed_filename: &'a str,
     taxonomies: &'a [taxonomies::TaxonomyConfig],
+    author: &'a Option<String>,
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
     markdown: &'a markup::Markdown,
@@ -324,6 +327,7 @@ impl Config {
             generate_feed: options.generate_feed,
             feed_filename: &options.feed_filename,
             taxonomies: &options.taxonomies,
+            author: &self.author,
             build_search_index: options.build_search_index,
             extra: &self.extra,
             markdown: &self.markdown,
@@ -373,6 +377,7 @@ impl Default for Config {
             feed_filename: "atom.xml".to_string(),
             hard_link_static: false,
             taxonomies: Vec::new(),
+            author: None,
             compile_sass: false,
             minify_html: false,
             mode: Mode::Build,
@@ -857,5 +862,16 @@ highlight_theme = "css"
         let config = Config::parse(config).unwrap();
         let serialised = config.serialize(&config.default_language);
         assert_eq!(serialised.markdown.highlight_theme, config.markdown.highlight_theme);
+    }
+
+    #[test]
+    fn sets_default_author_if_present() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+author = "person@example.com (Some Person)"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert_eq!(config.author, Some("person@example.com (Some Person)".to_owned()))
     }
 }

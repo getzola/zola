@@ -49,6 +49,8 @@ pub struct PageFrontMatter {
     pub taxonomies: HashMap<String, Vec<String>>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
+    /// The authors of the page.
+    pub authors: Vec<String>,
     /// All aliases for that page. Zola will create HTML templates that will
     /// redirect to this
     #[serde(skip_serializing)]
@@ -153,6 +155,7 @@ impl Default for PageFrontMatter {
             path: None,
             taxonomies: HashMap::new(),
             weight: None,
+            authors: Vec::new(),
             aliases: Vec::new(),
             template: None,
             extra: Map::new(),
@@ -501,5 +504,28 @@ taxonomies:
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_err());
+    }
+
+    #[test_case(&RawFrontMatter::Toml(r#"
+authors = ["person1@example.com (Person One)", "person2@example.com (Person Two)"]
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
+title: Hello World
+authors:
+    - person1@example.com (Person One)
+    - person2@example.com (Person Two)
+"#); "yaml")]
+    fn can_parse_authors(content: &RawFrontMatter) {
+        let res = PageFrontMatter::parse(content);
+        assert!(res.is_ok());
+        let res2 = res.unwrap();
+        assert_eq!(res2.authors.len(), 2);
+        assert_eq!(
+            vec!(
+                "person1@example.com (Person One)".to_owned(),
+                "person2@example.com (Person Two)".to_owned()
+            ),
+            res2.authors
+        );
     }
 }

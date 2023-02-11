@@ -346,6 +346,32 @@ Hello world"#;
     }
 
     #[test]
+    fn can_parse_author() {
+        let config = Config::default_for_test();
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
+authors = ["person@example.com (A. Person)"]
++++
+Hello world"#;
+        let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
+
+        assert_eq!(1, page.meta.authors.len());
+        assert_eq!("person@example.com (A. Person)", page.meta.authors.get(0).unwrap());
+    }
+
+    #[test]
     fn test_can_make_url_from_sections_and_slug() {
         let content = r#"
     +++
