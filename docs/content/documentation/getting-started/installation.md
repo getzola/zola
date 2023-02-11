@@ -127,7 +127,7 @@ jobs:
     steps:
       - uses: taiki-e/install-action@v2
         with:
-          tool: zola@v0.16
+          tool: zola@0.16
       # ...
 ```
 
