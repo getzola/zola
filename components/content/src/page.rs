@@ -733,7 +733,6 @@ And here's another. [^3]
         assert_eq!(page.path, "/articles/ho/");
     }
 
-
     #[test]
     fn can_get_date_from_short_date_in_filename() {
         let config = Config::default();
