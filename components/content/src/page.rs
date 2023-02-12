@@ -146,7 +146,6 @@ impl Page {
                 slugify_paths(&file_path_for_slug, config.slugify.paths)
             }
         };
-        println!("page.slug = {:?}", page.slug);
 
         page.path = if let Some(ref p) = page.meta.path {
             let path = p.trim();
