@@ -35,6 +35,7 @@ This will error if 2 values are set
 - Adds a new field to `page`: `colocated_path` that points to the folder of the current file being rendered if it's a colocated folder. None otherwise.
 - Add `author` as a first-class property to the config and `authors` to pages
 - Allows using external URL for `redirect_to`
+- Recognize links starting with `www` as external for the link checker
 
 ## 0.16.1 (2022-08-14)
 
