@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.17.1 (unreleased)
+
+- Fix bugs with colocated directories in the root `content` directory
+
 ## 0.17.0 (2023-02-16)
 
 ### Breaking
