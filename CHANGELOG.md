@@ -1,13 +1,13 @@
 # Changelog
 
-## 0.17.0 (unreleased)
+## 0.17.0 (2023-02-16)
 
 ### Breaking
 - `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
 - Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass). See https://sass-lang.com/documentation/breaking-changes
 for breaking changes with libsass: look for "beginning in Dart Sass"
 - Merge settings for the default language set in the root of `config.toml` and in the `[languages.{default_lang}]` section. 
-This will error if 2 values are set
+This will error if the same keys are defined multiple times
 - Code blocks content are no longer included in the search index
 - Remove built-ins shortcodes
 - Having a file called `index.md` in a folder with a `_index.md` is now an error
