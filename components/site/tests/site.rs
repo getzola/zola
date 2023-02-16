@@ -21,7 +21,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages.len(), 33);
+    assert_eq!(library.pages.len(), 34);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -39,7 +39,7 @@ fn can_parse_site() {
     // And that the sections are correct
     let index_section = library.sections.get(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 5);
-    assert_eq!(index_section.pages.len(), 3);
+    assert_eq!(index_section.pages.len(), 4);
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
@@ -220,6 +220,13 @@ fn can_build_site_without_live_reload() {
         public,
         "robots.txt",
         "Sitemap: https://replace-this-with-your-url.com/sitemap.xml"
+    ));
+
+    // And
+    assert!(file_contains!(
+        public,
+        "colocated-assets/index.html",
+        "Assets in root content directory"
     ));
 }
 

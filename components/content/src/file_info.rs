@@ -77,6 +77,7 @@ impl FileInfo {
                 val.push('/');
                 val
             });
+
             components.pop();
             // also set parent_path to grandparent instead
             parent = parent.parent().unwrap().to_path_buf();

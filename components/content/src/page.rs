@@ -157,7 +157,7 @@ impl Page {
             }
         } else {
             let mut path = if page.file.components.is_empty() {
-                if page.file.name == "index" {
+                if page.file.name == "index" && page.file.colocated_path.is_none() {
                     String::new()
                 } else {
                     page.slug.clone()

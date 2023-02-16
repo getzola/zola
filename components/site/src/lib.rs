@@ -277,8 +277,8 @@ impl Site {
             if page.file.filename == "index.md" {
                 let is_invalid = match page.components.last() {
                     Some(last) => components.contains(last),
-                    // content/index.md is always invalid
-                    None => true,
+                    // content/index.md is always invalid, but content/colocated/index.md is ok
+                    None => page.file.colocated_path.is_none(),
                 };
 
                 if is_invalid {
@@ -471,9 +471,6 @@ impl Site {
                 );
             }
         }
-
-        // We can't have a page called index.md when there is a _index.md in the same folder
-        if page.file.filename == "index.md" {}
 
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         if render_md {
