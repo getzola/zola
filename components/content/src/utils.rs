@@ -7,6 +7,9 @@ use config::Config;
 use utils::fs::is_temp_file;
 use utils::table_of_contents::Heading;
 
+use once_cell::sync::Lazy;
+use fancy_regex::Regex;
+
 pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
     for heading in headings {
         if heading.id == anchor {
@@ -55,6 +58,12 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
 
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
+    // extract words out of raw html
+    let extract_words_regex: Lazy<Regex> = Lazy::new(||
+        Regex::new(r#"<(script|style)((.|\n)*)</\1>|<.*?>"#).unwrap()
+    );
+    let content = extract_words_regex.replace_all(content, "");
+
     let word_count: usize = content.unicode_words().count();
 
     // https://help.medium.com/hc/en-us/articles/214991667-Read-time
