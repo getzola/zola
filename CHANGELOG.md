@@ -3,6 +3,7 @@
 ## 0.17.1 (unreleased)
 
 - Fix bugs with colocated directories in the root `content` directory
+- Add `generate_feed` field to the `section` object in templates
 
 ## 0.17.0 (2023-02-16)
 
