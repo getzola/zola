@@ -201,6 +201,8 @@ pub fn is_temp_file(path: &Path) -> bool {
     }
 }
 
+/// Deletes the `output_path` directory if it exists and `preserve_dotfiles_in_output` is set to false,
+/// or if set to true: its contents except for the dotfiles at the root level.
 pub fn clean_site_output_folder(
     output_path: &Path,
     preserve_dotfiles_in_output: bool,
