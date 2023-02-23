@@ -209,7 +209,7 @@ pub fn clean_site_output_folder(
 ) -> Result<()> {
     if output_path.exists() {
         if !preserve_dotfiles_in_output {
-            return remove_dir_all(&output_path).context("Couldn't delete output directory");
+            return remove_dir_all(output_path).context("Couldn't delete output directory");
         }
 
         for entry in output_path
