@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use std::fs::{read_dir, remove_dir_all};
+use std::fs::read_dir;
 use std::net::{SocketAddrV4, TcpListener};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
@@ -47,7 +47,7 @@ use errors::{anyhow, Context, Result};
 use pathdiff::diff_paths;
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
-use utils::fs::{copy_file, is_temp_file};
+use utils::fs::{clean_site_output_folder, copy_file, is_temp_file};
 
 use crate::messages;
 use std::ffi::OsStr;
@@ -441,12 +441,14 @@ pub fn serve(
         watchers.join(",")
     );
 
+    let preserve_dotfiles_in_output = site.config.preserve_dotfiles_in_output;
+
     println!("Press Ctrl+C to stop\n");
-    // Delete the output folder on ctrl+C
+    // Clean the output folder on ctrl+C
     ctrlc::set_handler(move || {
-        match remove_dir_all(&output_path) {
+        match clean_site_output_folder(&output_path, preserve_dotfiles_in_output) {
             Ok(()) => (),
-            Err(e) => println!("Errored while deleting output folder: {}", e),
+            Err(e) => println!("Errored while cleaning output folder: {}", e),
         }
         ::std::process::exit(0);
     })
