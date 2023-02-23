@@ -22,8 +22,8 @@ use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
-    copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
-    clean_site_output_folder,
+    clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
+    ensure_directory_exists,
 };
 use utils::net::{get_available_port, is_external_link};
 use utils::templates::{render_template, ShortcodeDefinition};

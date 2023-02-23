@@ -1,6 +1,6 @@
 use libs::filetime::{set_file_mtime, FileTime};
 use libs::walkdir::WalkDir;
-use std::fs::{copy, create_dir_all, metadata, File, remove_dir_all, remove_file};
+use std::fs::{copy, create_dir_all, metadata, remove_dir_all, remove_file, File};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
