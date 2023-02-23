@@ -7,7 +7,6 @@ pub mod tpls;
 
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
-use std::fs::{remove_dir_all, remove_file};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -18,13 +17,13 @@ use libs::walkdir::{DirEntry, WalkDir};
 
 use config::{get_config, Config, IndexFormat};
 use content::{Library, Page, Paginator, Section, Taxonomy};
-use errors::{anyhow, bail, Context as ErrorContext, Result};
+use errors::{anyhow, bail, Result};
 use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
-    is_dotfile,
+    clean_site_output_folder,
 };
 use utils::net::{get_available_port, is_external_link};
 use utils::templates::{render_template, ShortcodeDefinition};
@@ -613,34 +612,7 @@ impl Site {
     /// Deletes the `public` directory if it exists and the `preserve_dotfiles_in_output` option is set to false,
     /// or if set to true: its contents except for the dotfiles at the root level.
     pub fn clean(&self) -> Result<()> {
-        if self.output_path.exists() {
-            if !self.config.preserve_dotfiles_in_output {
-                return remove_dir_all(&self.output_path)
-                    .context("Couldn't delete output directory");
-            }
-
-            for entry in self.output_path.read_dir().context(format!(
-                "Couldn't read output directory `{}`",
-                self.output_path.display()
-            ))? {
-                let entry = entry.context("Couldn't read entry in output directory")?.path();
-
-                // Skip dotfiles if the preserve_dotfiles_in_output configuration option is set
-                if is_dotfile(&entry) {
-                    continue;
-                }
-
-                if entry.is_dir() {
-                    remove_dir_all(entry)
-                        .context("Couldn't delete folder while cleaning the output directory")?;
-                } else {
-                    remove_file(entry)
-                        .context("Couldn't delete file while cleaning the output directory")?;
-                }
-            }
-        }
-
-        Ok(())
+        clean_site_output_folder(&self.output_path, self.config.preserve_dotfiles_in_output)
     }
 
     /// Handles whether to write to disk or to memory
