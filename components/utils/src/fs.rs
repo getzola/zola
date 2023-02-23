@@ -1,6 +1,6 @@
 use libs::filetime::{set_file_mtime, FileTime};
 use libs::walkdir::WalkDir;
-use std::fs::{copy, create_dir_all, metadata, File};
+use std::fs::{copy, create_dir_all, metadata, remove_dir_all, remove_file, File};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
@@ -199,6 +199,41 @@ pub fn is_temp_file(path: &Path) -> bool {
         },
         None => true,
     }
+}
+
+/// Deletes the `output_path` directory if it exists and `preserve_dotfiles_in_output` is set to false,
+/// or if set to true: its contents except for the dotfiles at the root level.
+pub fn clean_site_output_folder(
+    output_path: &Path,
+    preserve_dotfiles_in_output: bool,
+) -> Result<()> {
+    if output_path.exists() {
+        if !preserve_dotfiles_in_output {
+            return remove_dir_all(output_path).context("Couldn't delete output directory");
+        }
+
+        for entry in output_path
+            .read_dir()
+            .context(format!("Couldn't read output directory `{}`", output_path.display()))?
+        {
+            let entry = entry.context("Couldn't read entry in output directory")?.path();
+
+            // Skip dotfiles if the preserve_dotfiles_in_output configuration option is set
+            if is_dotfile(&entry) {
+                continue;
+            }
+
+            if entry.is_dir() {
+                remove_dir_all(entry)
+                    .context("Couldn't delete folder while cleaning the output directory")?;
+            } else {
+                remove_file(entry)
+                    .context("Couldn't delete file while cleaning the output directory")?;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
