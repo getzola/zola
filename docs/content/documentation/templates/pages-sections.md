@@ -80,7 +80,7 @@ path: String;
 components: Array<String>;
 permalink: String;
 extra: HashMap<String, Any>;
-// Pages directly in this section. By default, the pages are not sorted. Please set the "sorted_by"
+// Pages directly in this section. By default, the pages are not sorted. Please set the "sort_by"
 // variable in the _index.md file of the corresponding section to "date" or "weight" for sorting by
 // date and weight, respectively.
 pages: Array<Page>;
