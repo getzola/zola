@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.17.1 (unreleased)
+## 0.17.1 (2023-02-24)
 
 - Fix bugs with colocated directories in the root `content` directory
+- Fix `zola serve` not  respecting `preserve_dotfiles_in_output`
 - Add `generate_feed` field to the `section` object in templates
 
 ## 0.17.0 (2023-02-16)
