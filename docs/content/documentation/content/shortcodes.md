@@ -4,8 +4,7 @@ weight = 40
 +++
 
 Zola borrows the concept of [shortcodes](https://codex.wordpress.org/Shortcode_API) from WordPress.
-In our case, a shortcode corresponds to a template defined in the `templates/shortcodes` directory or
-a built-in one that can be used in a Markdown file.
+In our case, a shortcode corresponds to a template defined in the `templates/shortcodes` directory that can be used in a Markdown file.
 
 Broadly speaking, Zola's shortcodes cover two distinct use cases:
 
