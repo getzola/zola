@@ -116,6 +116,24 @@ To avoid having to type this every time, an alias can be created in `~/.bashrc`:
 $ alias zola="flatpak run org.getzola.zola"
 ```
 
+### NixOS / Nixpkgs
+
+Zola is [available](https://search.nixos.org/packages?show=zola&query=zola)
+in the nixpkgs repository. If you're using NixOS, you can install Zola
+by adding the following to `/etc/nixos/configuration.nix`:
+
+```
+environment.systemPackages = [
+  pkgs.zola
+];
+```
+
+If you're using Nix as a package manager in another OS, you can install it using:
+
+```
+nix-env -iA nixpkgs.zola
+```
+
 ### Via Github Actions
 
 Zola can be installed in a GHA workflow with [taiki-e/install-action](https://github.com/taiki-e/install-action).
