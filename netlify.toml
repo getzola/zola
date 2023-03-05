@@ -4,7 +4,7 @@
     command = "zola build"
 
 [build.environment]
-    ZOLA_VERSION = "0.15.3"
+    ZOLA_VERSION = "0.17.1"
 
 [context.deploy-preview]
     command = "zola build --base-url $DEPLOY_PRIME_URL"
