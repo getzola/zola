@@ -39,7 +39,7 @@ fn can_parse_site() {
     // And that the sections are correct
     let index_section = library.sections.get(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 5);
-    assert_eq!(index_section.pages.len(), 4);
+    assert_eq!(index_section.pages.len(), 5);
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
@@ -279,7 +279,7 @@ fn can_build_site_with_live_reload_and_drafts() {
 
     // drafted sections are included
     let library = site.library.read().unwrap();
-    assert_eq!(library.sections.len(), 14);
+    assert_eq!(library.sections.len(), 15);
 
     assert!(file_exists!(public, "secret_section/index.html"));
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
@@ -545,13 +545,13 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "<a href=\"https://replace-this-with-your-url.com/\">Click here</a>"
     ));
-    assert!(file_contains!(public, "index.html", "Num pages: 2"));
+    assert!(file_contains!(public, "index.html", "Num pages: 3"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
     assert!(file_contains!(
         public,
         "index.html",
-        "Last: https://replace-this-with-your-url.com/page/2/"
+        "Last: https://replace-this-with-your-url.com/page/3/"
     ));
     assert!(!file_contains!(public, "index.html", "has_prev"));
     assert!(file_contains!(public, "index.html", "has_next"));
