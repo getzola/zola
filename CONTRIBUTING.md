@@ -55,7 +55,7 @@ $ cargo run --example generate_sublime synpack ../../sublime/syntaxes ../../subl
 ```
 
 ### Adding a theme
-A gallery containing lots of themes is located at https://tmtheme-editor.herokuapp.com/#!/editor/theme/Agola%20Dark.
+A gallery containing lots of themes is located at https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(light).
 More themes can be easily added to Zola, just make a PR with the wanted theme added in the `sublime/themes` directory.
 
 If you want to test Zola with a new theme, it needs to be built into the syntect file `all.themedump`.
