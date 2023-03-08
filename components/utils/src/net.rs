@@ -10,7 +10,7 @@ pub fn port_is_available(port: u16) -> bool {
     TcpListener::bind(("127.0.0.1", port)).is_ok()
 }
 
-/// Returns whether a link starts with an HTTP(s) scheme or "www.".
+/// Returns whether a link starts with an HTTP(s) scheme.
 pub fn is_external_link(link: &str) -> bool {
-    link.starts_with("http:") || link.starts_with("https:") || link.starts_with("www.")
+    link.starts_with("http:") || link.starts_with("https:")
 }
