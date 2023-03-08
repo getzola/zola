@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.18.0 (unreleased)
+## 0.17.2 (unreleased)
 
+- Fix one more invalid error with colocated directories
+- Revert "Recognize links starting with `www` as external for the link checker" as they won't be external links in practice
+- 
 
 ## 0.17.1 (2023-02-24)
 
