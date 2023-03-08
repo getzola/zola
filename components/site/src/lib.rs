@@ -183,7 +183,7 @@ impl Site {
         // at the end to detect pages that are actually errors:
         // when there is both a _index.md and index.md in the same folder
         let mut pages = Vec::new();
-        let mut components = HashSet::new();
+        let mut sections = HashSet::new();
 
         loop {
             let entry: DirEntry = match dir_walker.next() {
@@ -248,7 +248,7 @@ impl Site {
                 for index_file in index_files {
                     let section =
                         Section::from_file(index_file.path(), &self.config, &self.base_path)?;
-                    components.extend(section.file.components.clone());
+                    sections.insert(section.components.join("/"));
 
                     // if the section is drafted we can skip the entire dir
                     if section.meta.draft && !self.include_drafts {
@@ -275,7 +275,7 @@ impl Site {
             // all the components there.
             if page.file.filename == "index.md" {
                 let is_invalid = match page.components.last() {
-                    Some(last) => components.contains(last),
+                    Some(_) => sections.contains(&page.components.join("/")),
                     // content/index.md is always invalid, but content/colocated/index.md is ok
                     None => page.file.colocated_path.is_none(),
                 };
