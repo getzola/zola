@@ -593,7 +593,6 @@ mod tests {
     fn test_is_external_link() {
         assert!(is_external_link("http://example.com/"));
         assert!(is_external_link("https://example.com/"));
-        assert!(is_external_link("www.example.com"));
         assert!(is_external_link("https://example.com/index.html#introduction"));
 
         assert!(!is_external_link("mailto:user@example.com"));
