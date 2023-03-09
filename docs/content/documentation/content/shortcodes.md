@@ -199,7 +199,12 @@ This is useful for presenting/filtering information in a shortcode depending in 
 
 ### `page` or `section`
 You can access a slighty stripped down version of the equivalent variables in the normal templates.
-The only things missing are translations, backlinks and pages for sections as we are still in the middle of processing.
+The following attributes will be empty:
+- translations
+- backlinks
+- pages
+
+(Note: this is because the rendering of markdown is done before populating the sections)
 
 A useful attribute to `page` in shortcodes is `colocated_path`.
 This is used when you want to pass the name of some assets to shortcodes without repeating the full folders path.
