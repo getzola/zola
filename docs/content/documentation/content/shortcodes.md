@@ -200,6 +200,7 @@ This is useful for presenting/filtering information in a shortcode depending in 
 ### `page` or `section`
 You can access a slighty stripped down version of the equivalent variables in the normal templates.
 The following attributes will be empty:
+
 - translations
 - backlinks
 - pages
