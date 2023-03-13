@@ -3,11 +3,11 @@
 title = "EasyDocs"
 description = "An easy way to create docs for your project"
 template = "theme.html"
-date = 2022-12-04T21:40:33+02:00
+date = 2023-03-13T18:33:59+01:00
 
 [extra]
-created = 2022-12-04T21:40:33+02:00
-updated = 2022-12-04T21:40:33+02:00
+created = 2023-03-13T18:33:59+01:00
+updated = 2023-03-13T18:33:59+01:00
 repository = "https://github.com/codeandmedia/zola_easydocs_theme.git"
 homepage = "https://github.com/codeandmedia/zola_easydocs_theme"
 minimum_version = "0.13.0"

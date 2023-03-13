@@ -3,11 +3,11 @@
 title = "adidoks"
 description = "AdiDoks is a Zola theme helping you build modern documentation."
 template = "theme.html"
-date = 2022-12-04T21:40:33+02:00
+date = 2023-03-13T18:33:59+01:00
 
 [extra]
-created = 2022-12-04T21:40:33+02:00
-updated = 2022-12-04T21:40:33+02:00
+created = 2023-03-13T18:33:59+01:00
+updated = 2023-03-13T18:33:59+01:00
 repository = "https://github.com/aaranxu/adidoks.git"
 homepage = "https://github.com/aaranxu/adidoks"
 minimum_version = "0.15.0"
