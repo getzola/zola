@@ -76,14 +76,3 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
         _ => ImageMeta::read(path).map(ImageMetaResponse::from).with_context(err_context),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn can_get_webp_metadata() {
-        let filepath = Path::new("tests/test_imgs/webp.webp");
-        assert!(filepath.exists());
-    }
-}
