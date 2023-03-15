@@ -12,7 +12,7 @@ use utils::de::{fix_toml_dates, from_toml_datetime};
 use crate::front_matter::split::RawFrontMatter;
 
 /// The front matter of every page
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(default)]
 pub struct PageFrontMatter {
     /// <title> of the page
@@ -49,6 +49,8 @@ pub struct PageFrontMatter {
     pub taxonomies: HashMap<String, Vec<String>>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
+    /// The authors of the page.
+    pub authors: Vec<String>,
     /// All aliases for that page. Zola will create HTML templates that will
     /// redirect to this
     #[serde(skip_serializing)]
@@ -103,6 +105,14 @@ impl PageFrontMatter {
 
         f.date_to_datetime();
 
+        for terms in f.taxonomies.values() {
+            for term in terms {
+                if term.trim().is_empty() {
+                    bail!("A taxonomy term cannot be an empty string");
+                }
+            }
+        }
+
         if let Some(ref date) = f.date {
             if f.datetime.is_none() {
                 bail!("`date` could not be parsed: {}.", date);
@@ -145,6 +155,7 @@ impl Default for PageFrontMatter {
             path: None,
             taxonomies: HashMap::new(),
             weight: None,
+            authors: Vec::new(),
             aliases: Vec::new(),
             template: None,
             extra: Map::new(),
@@ -384,20 +395,20 @@ title = "Hello"
 description = "hey there"
 
 [extra]
-some-date = 2002-14-01
+some-date = 2002-11-01
 "#); "toml")]
     #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
 description: hey there
 
 extra:
-    some-date: 2002-14-01
+    some-date: 2002-11-01
 "#); "yaml")]
     fn can_parse_dates_in_extra(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().extra["some-date"], to_value("2002-14-01").unwrap());
+        assert_eq!(res.unwrap().extra["some-date"], to_value("2002-11-01").unwrap());
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -405,7 +416,7 @@ title = "Hello"
 description = "hey there"
 
 [extra.something]
-some-date = 2002-14-01
+some-date = 2002-11-01
 "#); "toml")]
     #[test_case(&RawFrontMatter::Yaml(r#"
 title: Hello
@@ -413,13 +424,13 @@ description: hey there
 
 extra:
     something:
-        some-date: 2002-14-01
+        some-date: 2002-11-01
 "#); "yaml")]
     fn can_parse_nested_dates_in_extra(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-14-01").unwrap());
+        assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-11-01").unwrap());
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -473,5 +484,48 @@ taxonomies:
         let res2 = res.unwrap();
         assert_eq!(res2.taxonomies["categories"], vec!["Dev"]);
         assert_eq!(res2.taxonomies["tags"], vec!["Rust", "JavaScript"]);
+    }
+
+    #[test_case(&RawFrontMatter::Toml(r#"
+title = "Hello World"
+
+[taxonomies]
+tags = [""]
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
+title: Hello World
+
+taxonomies:
+    tags:
+        -
+"#); "yaml")]
+    fn errors_on_empty_taxonomy_term(content: &RawFrontMatter) {
+        // https://github.com/getzola/zola/issues/2085
+        let res = PageFrontMatter::parse(content);
+        println!("{:?}", res);
+        assert!(res.is_err());
+    }
+
+    #[test_case(&RawFrontMatter::Toml(r#"
+authors = ["person1@example.com (Person One)", "person2@example.com (Person Two)"]
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
+title: Hello World
+authors:
+    - person1@example.com (Person One)
+    - person2@example.com (Person Two)
+"#); "yaml")]
+    fn can_parse_authors(content: &RawFrontMatter) {
+        let res = PageFrontMatter::parse(content);
+        assert!(res.is_ok());
+        let res2 = res.unwrap();
+        assert_eq!(res2.authors.len(), 2);
+        assert_eq!(
+            vec!(
+                "person1@example.com (Person One)".to_owned(),
+                "person2@example.com (Person Two)".to_owned()
+            ),
+            res2.authors
+        );
     }
 }

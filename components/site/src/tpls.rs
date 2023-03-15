@@ -53,14 +53,13 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
         ),
     );
     site.tera.register_function(
-        "get_file_hash",
-        global_fns::GetFileHash::new(
+        "get_hash",
+        global_fns::GetHash::new(
             site.base_path.clone(),
             site.config.theme.clone(),
             site.output_path.clone(),
         ),
     );
-
     site.tera.register_filter(
         "markdown",
         filters::MarkdownFilter::new(
@@ -86,6 +85,14 @@ pub fn register_tera_global_fns(site: &mut Site) {
     site.tera.register_function(
         "get_taxonomy",
         global_fns::GetTaxonomy::new(
+            &site.config.default_language,
+            site.taxonomies.clone(),
+            site.library.clone(),
+        ),
+    );
+    site.tera.register_function(
+        "get_taxonomy_term",
+        global_fns::GetTaxonomyTerm::new(
             &site.config.default_language,
             site.taxonomies.clone(),
             site.library.clone(),

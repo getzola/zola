@@ -4,7 +4,7 @@ use std::time::Instant;
 use cli::{Cli, Command};
 use utils::net::{get_available_port, port_is_available};
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use time::UtcOffset;
 
 mod cli;
@@ -15,12 +15,12 @@ mod prompt;
 fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
     let root_dir = dir
         .ancestors()
-        .find(|a| a.join(&config_path).exists())
+        .find(|a| a.join(config_path).exists())
         .unwrap_or_else(|| panic!("could not find directory containing config file"));
 
     // if we got here we found root_dir so config file should exist so we can unwrap safely
     let config_file = root_dir
-        .join(&config_path)
+        .join(config_path)
         .canonicalize()
         .unwrap_or_else(|_| panic!("could not find directory containing config file"));
     (root_dir.to_path_buf(), config_file)
@@ -39,7 +39,7 @@ fn main() {
                 std::process::exit(1);
             }
         }
-        Command::Build { base_url, output_dir, drafts } => {
+        Command::Build { base_url, output_dir, force, drafts } => {
             console::info("Building site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
@@ -48,6 +48,7 @@ fn main() {
                 &config_file,
                 base_url.as_deref(),
                 output_dir.as_deref(),
+                force,
                 drafts,
             ) {
                 Ok(()) => messages::report_elapsed_time(start),
@@ -57,7 +58,16 @@ fn main() {
                 }
             }
         }
-        Command::Serve { interface, mut port, output_dir, base_url, drafts, open, fast } => {
+        Command::Serve {
+            interface,
+            mut port,
+            output_dir,
+            base_url,
+            drafts,
+            open,
+            fast,
+            no_port_append,
+        } => {
             if port != 1111 && !port_is_available(port) {
                 console::error("The requested port is not available");
                 std::process::exit(1);
@@ -82,6 +92,7 @@ fn main() {
                 open,
                 drafts,
                 fast,
+                no_port_append,
                 UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
             ) {
                 messages::unravel_errors("Failed to serve the site", &e);
@@ -99,6 +110,10 @@ fn main() {
                     std::process::exit(1);
                 }
             }
+        }
+        Command::Completion { shell } => {
+            let cmd = &mut Cli::command();
+            clap_complete::generate(shell, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
         }
     }
 }

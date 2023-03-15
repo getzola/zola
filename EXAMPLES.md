@@ -23,7 +23,7 @@
 | [shaleenjain.com](https://shaleenjain.com)                         | https://github.com/shalzz/shalzz.github.io               |
 | [Hello, Rust!](https://hello-rust.show)                            | https://github.com/hello-rust/hello-rust.github.io       |
 | [maxdeviant.com](https://maxdeviant.com/)                          |                                                          |
-| [Uwes Blog](https://uwe-arzt.de)                                   | https://github.com/uwearzt/site-uwe-arzt                 |
+| [Uwes Blog](https://uwe-arzt.de)                                   | https://codeberg.org/uwearzt/site-uwe-arzt               |
 | [ozkriff.games](https://ozkriff.games)                             | https://github.com/ozkriff/ozkriff.github.io-src         |
 | [Sylvain Kerkour](https://kerkour.fr)                              | https://gitlab.com/z0mbie42/kerkour.fr                   |
 | [CodeShow by Bruno Rocha](https://codeshow.com.br)                 | https://github.com/codeshow/site                         |
@@ -43,3 +43,7 @@
 | [146 Parks](https://146parks.blog/)                                | https://github.com/scouten/146parks.blog                 |
 | [films.mlcdf.fr](https://films.mlcdf.fr)                           | https://github.com/mlcdf/films                           |
 | [Mish Ushakov](https://mish.co)                                    |                                                          |
+| [castor](https://castorisdead.xyz)                                 | https://github.com/whoisYoges/website                    |
+| [mrkaran](https://mrkaran.dev)                                     | https://github.com/mr-karan/website                      |
+| [giuseppedepalma](https://giuseppedepalma.com/)                    | https://github.com/giusdp/giuseppedepalma.com/           |
+

@@ -2,9 +2,19 @@ use std::env;
 use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
 
 use config::Config;
-use imageproc::{assert_processed_path_matches, fix_orientation, ImageMetaResponse, Processor};
+use imageproc::{fix_orientation, ImageMetaResponse, Processor, ResizeOperation};
 use libs::image::{self, DynamicImage, GenericImageView, Pixel};
 use libs::once_cell::sync::Lazy;
+
+/// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
+fn assert_processed_path_matches(path: &str, prefix: &str, extension: &str) {
+    let filename = path
+        .strip_prefix(prefix)
+        .unwrap_or_else(|| panic!("Path `{}` doesn't start with `{}`", path, prefix));
+
+    let suffix = format!(".{}", extension);
+    assert!(filename.ends_with(&suffix), "Path `{}` doesn't end with `{}`", path, suffix);
+}
 
 static CONFIG: &str = r#"
 title = "imageproc integration tests"
@@ -38,9 +48,9 @@ fn image_op_test(
     let tmpdir = tempfile::tempdir().unwrap().into_path();
     let config = Config::parse(CONFIG).unwrap();
     let mut proc = Processor::new(tmpdir.clone(), &config);
+    let resize_op = ResizeOperation::from_args(op, width, height).unwrap();
 
-    let resp =
-        proc.enqueue(source_img.into(), source_path, op, width, height, format, None).unwrap();
+    let resp = proc.enqueue(resize_op, source_img.into(), source_path, format, None).unwrap();
     assert_processed_path_matches(&resp.url, "https://example.com/processed_images/", expect_ext);
     assert_processed_path_matches(&resp.static_path, PROCESSED_PREFIX.as_str(), expect_ext);
     assert_eq!(resp.width, expect_width);
@@ -202,10 +212,9 @@ fn resize_and_check(source_img: &str) -> bool {
     let tmpdir = tempfile::tempdir().unwrap().into_path();
     let config = Config::parse(CONFIG).unwrap();
     let mut proc = Processor::new(tmpdir.clone(), &config);
+    let resize_op = ResizeOperation::from_args("scale", Some(16), Some(16)).unwrap();
 
-    let resp = proc
-        .enqueue(source_img.into(), source_path, "scale", Some(16), Some(16), "jpg", None)
-        .unwrap();
+    let resp = proc.enqueue(resize_op, source_img.into(), source_path, "jpg", None).unwrap();
 
     proc.do_process().unwrap();
     let processed_path = PathBuf::from(&resp.static_path);
@@ -224,5 +233,3 @@ fn check_img(img: DynamicImage) -> bool {
     // bottom right is white
         && img.get_pixel(15, 15).channels() == [255, 255, 255, 255]
 }
-
-// TODO: Test that hash remains the same if physical path is changed

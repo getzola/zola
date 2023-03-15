@@ -54,13 +54,7 @@ to be able to build the theme from your repository.
 ## Submitting a theme to the gallery
 
 If you want your theme to be featured in the [themes](@/themes/_index.md) section
-of this site, the theme will require two more things:
-
-- `screenshot.png`: a screenshot of the theme in action with a max size of around 2000x1000
-- `README.md`: a thorough README explaining how to use the theme and any other information
-of importance
-
-The first step is to make sure that the theme meets the following three requirements:
+of this site, make sure that the theme meets the following three requirements:
 
 - have a `screenshot.png` of the theme in action with a max size of around 2000x1000
 - have a thorough `README.md` explaining how to use the theme and any other information

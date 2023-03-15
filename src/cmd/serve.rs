@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use std::fs::{read_dir, remove_dir_all};
+use std::fs::read_dir;
 use std::net::{SocketAddrV4, TcpListener};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
@@ -36,18 +36,18 @@ use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 
+use libs::globset::GlobSet;
 use libs::percent_encoding;
+use libs::relative_path::{RelativePath, RelativePathBuf};
 use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Result};
-use libs::globset::GlobSet;
-use libs::relative_path::{RelativePath, RelativePathBuf};
 use pathdiff::diff_paths;
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
-use utils::fs::copy_file;
+use utils::fs::{clean_site_output_folder, copy_file, is_temp_file};
 
 use crate::messages;
 use std::ffi::OsStr;
@@ -241,6 +241,7 @@ fn create_new_site(
     base_url: &str,
     config_file: &Path,
     include_drafts: bool,
+    no_port_append: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, String)> {
     SITE_CONTENT.write().unwrap().clear();
@@ -251,7 +252,11 @@ fn create_new_site(
     let base_url = if base_url == "/" {
         String::from("/")
     } else {
-        let base_address = format!("{}:{}", base_url, interface_port);
+        let base_address = if no_port_append {
+            base_url.to_string()
+        } else {
+            format!("{}:{}", base_url, interface_port)
+        };
 
         if site.config.base_url.ends_with('/') {
             format!("http://{}/", base_address)
@@ -291,6 +296,7 @@ pub fn serve(
     open: bool,
     include_drafts: bool,
     fast_rebuild: bool,
+    no_port_append: bool,
     utc_offset: UtcOffset,
 ) -> Result<()> {
     let start = Instant::now();
@@ -302,6 +308,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        no_port_append,
         None,
     )?;
     messages::report_elapsed_time(start);
@@ -311,13 +318,12 @@ pub fn serve(
         Ok(a) => a,
         Err(_) => return Err(anyhow!("Invalid address: {}.", address)),
     };
-    if (TcpListener::bind(&bind_address)).is_err() {
+    if (TcpListener::bind(bind_address)).is_err() {
         return Err(anyhow!("Cannot start server on address {}.", address));
     }
 
     let config_path = PathBuf::from(config_file);
-    let config_path_rel =
-        diff_paths(&config_path, &root_dir).unwrap_or_else(|| config_path.clone());
+    let config_path_rel = diff_paths(&config_path, root_dir).unwrap_or_else(|| config_path.clone());
 
     // An array of (path, WatchMode) where the path should be watched for changes,
     // and the WatchMode value indicates whether this file/folder must exist for
@@ -435,12 +441,14 @@ pub fn serve(
         watchers.join(",")
     );
 
+    let preserve_dotfiles_in_output = site.config.preserve_dotfiles_in_output;
+
     println!("Press Ctrl+C to stop\n");
-    // Delete the output folder on ctrl+C
+    // Clean the output folder on ctrl+C
     ctrlc::set_handler(move || {
-        match remove_dir_all(&output_path) {
+        match clean_site_output_folder(&output_path, preserve_dotfiles_in_output) {
             Ok(()) => (),
-            Err(e) => println!("Errored while deleting output folder: {}", e),
+            Err(e) => println!("Errored while cleaning output folder: {}", e),
         }
         ::std::process::exit(0);
     })
@@ -502,6 +510,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        no_port_append,
         ws_port,
     ) {
         Ok((s, _)) => {
@@ -642,33 +651,6 @@ fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bo
     match ignored_content_globset {
         Some(gs) => gs.is_match(path),
         None => false,
-    }
-}
-
-/// Returns whether the path we received corresponds to a temp file created
-/// by an editor or the OS
-fn is_temp_file(path: &Path) -> bool {
-    let ext = path.extension();
-    match ext {
-        Some(ex) => match ex.to_str().unwrap() {
-            "swp" | "swx" | "tmp" | ".DS_STORE" => true,
-            // jetbrains IDE
-            x if x.ends_with("jb_old___") => true,
-            x if x.ends_with("jb_tmp___") => true,
-            x if x.ends_with("jb_bak___") => true,
-            // vim & jetbrains
-            x if x.ends_with('~') => true,
-            _ => {
-                if let Some(filename) = path.file_stem() {
-                    // emacs
-                    let name = filename.to_str().unwrap();
-                    name.starts_with('#') || name.starts_with(".#")
-                } else {
-                    false
-                }
-            }
-        },
-        None => true,
     }
 }
 

@@ -31,9 +31,11 @@ static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     ).unwrap()
 });
 
-static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"<sup\s*.*?>\s*.*?</sup>").unwrap());
+static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
+});
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Page {
     /// All info about the actual file
     pub file: FileInfo,
@@ -126,7 +128,9 @@ impl Page {
         };
 
         if let Some(ref caps) = RFC3339_DATE.captures(&file_path_for_slug) {
-            slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
+            if !config.slugify.paths_keep_dates {
+                slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
+            }
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
                 page.meta.date_to_datetime();
@@ -153,7 +157,11 @@ impl Page {
             }
         } else {
             let mut path = if page.file.components.is_empty() {
-                page.slug.clone()
+                if page.file.name == "index" && page.file.colocated_path.is_none() {
+                    String::new()
+                } else {
+                    page.slug.clone()
+                }
             } else {
                 format!("{}/{}", page.file.components.join("/"), page.slug)
             };
@@ -227,7 +235,7 @@ impl Page {
         self.summary = res
             .summary_len
             .map(|l| &res.body[0..l])
-            .map(|s| FOOTNOTES_RE.replace(s, "").into_owned());
+            .map(|s| FOOTNOTES_RE.replace_all(s, "").into_owned());
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;
@@ -258,7 +266,7 @@ impl Page {
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
         self.assets
             .iter()
-            .filter_map(|asset| asset.strip_prefix(&self.file.path.parent().unwrap()).ok())
+            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
             .filter_map(|filename| filename.to_str())
             .map(|filename| {
                 let mut path = self.file.path.clone();
@@ -335,6 +343,32 @@ Hello world"#;
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
         assert_eq!(page.raw_content, "Hello world".to_string());
         assert_eq!(page.content, "<p>Hello world</p>\n".to_string());
+    }
+
+    #[test]
+    fn can_parse_author() {
+        let config = Config::default_for_test();
+        let content = r#"
++++
+title = "Hello"
+description = "hey there"
+authors = ["person@example.com (A. Person)"]
++++
+Hello world"#;
+        let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &Tera::default(),
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
+
+        assert_eq!(1, page.meta.authors.len());
+        assert_eq!("person@example.com (A. Person)", page.meta.authors.get(0).unwrap());
     }
 
     #[test]
@@ -511,15 +545,19 @@ Hello world
         let content = r#"
 +++
 +++
-This page has footnotes, here's one. [^1]
+This page use <sup>1.5</sup> and has footnotes, here's one. [^1]
+
+Here's another. [^2]
 
 <!-- more -->
 
-And here's another. [^2]
+And here's another. [^3]
 
 [^1]: This is the first footnote.
 
-[^2]: This is the second footnote."#
+[^2]: This is the secund footnote.
+
+[^3]: This is the third footnote."#
             .to_string();
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
@@ -534,7 +572,7 @@ And here's another. [^2]
         .unwrap();
         assert_eq!(
             page.summary,
-            Some("<p>This page has footnotes, here\'s one. </p>\n".to_string())
+            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>\n".to_string())
         );
     }
 
@@ -661,6 +699,37 @@ And here's another. [^2]
         let page = res.unwrap();
         assert_eq!(page.assets.len(), 1);
         assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+    }
+
+    // https://github.com/getzola/zola/issues/1566
+    #[test]
+    fn colocated_page_with_slug_and_date_in_path() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        create_dir(&path.join("content")).expect("create content temp dir");
+        let articles_path = path.join("content").join("articles");
+        create_dir(&articles_path).expect("create posts temp dir");
+
+        let config = Config::default();
+
+        // first a non-colocated one
+        let file_path = articles_path.join("2021-07-29-sample-article-1.md");
+        let mut f = File::create(&file_path).unwrap();
+        f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
+        let res = Page::from_file(&file_path, &config, path);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "/articles/hey/");
+
+        // then a colocated one, it should still work
+        let dir_path = articles_path.join("2021-07-29-sample-article-2.md");
+        create_dir(&dir_path).expect("create posts temp dir");
+        let mut f = File::create(&dir_path.join("index.md")).unwrap();
+        f.write_all(b"+++\nslug=\"ho\"\n+++\n").unwrap();
+        let res = Page::from_file(&dir_path.join("index.md"), &config, path);
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "/articles/ho/");
     }
 
     #[test]

@@ -21,7 +21,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages.len(), 33);
+    assert_eq!(library.pages.len(), 35);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -34,17 +34,17 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(library.sections.len(), 12);
+    assert_eq!(library.sections.len(), 13);
 
     // And that the sections are correct
     let index_section = library.sections.get(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 5);
-    assert_eq!(index_section.pages.len(), 3);
+    assert_eq!(index_section.pages.len(), 5);
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
-    assert_eq!(posts_section.pages.len(), 9); // 10 with 1 draft == 9
+    assert_eq!(posts_section.pages.len(), 10); // 11 with 1 draft == 10
     assert_eq!(posts_section.ancestors, vec![index_section.file.relative.clone()]);
 
     // Make sure we remove all the pwd + content from the sections
@@ -221,6 +221,13 @@ fn can_build_site_without_live_reload() {
         "robots.txt",
         "Sitemap: https://replace-this-with-your-url.com/sitemap.xml"
     ));
+
+    // And
+    assert!(file_contains!(
+        public,
+        "colocated-assets/index.html",
+        "Assets in root content directory"
+    ));
 }
 
 #[test]
@@ -272,7 +279,7 @@ fn can_build_site_with_live_reload_and_drafts() {
 
     // drafted sections are included
     let library = site.library.read().unwrap();
-    assert_eq!(library.sections.len(), 14);
+    assert_eq!(library.sections.len(), 15);
 
     assert!(file_exists!(public, "secret_section/index.html"));
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
@@ -538,13 +545,13 @@ fn can_build_site_with_pagination_for_index() {
         "page/1/index.html",
         "<a href=\"https://replace-this-with-your-url.com/\">Click here</a>"
     ));
-    assert!(file_contains!(public, "index.html", "Num pages: 2"));
+    assert!(file_contains!(public, "index.html", "Num pages: 3"));
     assert!(file_contains!(public, "index.html", "Current index: 1"));
     assert!(file_contains!(public, "index.html", "First: https://replace-this-with-your-url.com/"));
     assert!(file_contains!(
         public,
         "index.html",
-        "Last: https://replace-this-with-your-url.com/page/2/"
+        "Last: https://replace-this-with-your-url.com/page/3/"
     ));
     assert!(!file_contains!(public, "index.html", "has_prev"));
     assert!(file_contains!(public, "index.html", "has_next"));
@@ -777,7 +784,7 @@ fn can_ignore_markdown_content() {
 fn can_cachebust_static_files() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(file_contains!(public, "index.html",
-        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d0fde18e82b04d7bca1881d10846c769b486640da3de9\" rel=\"stylesheet\">"));
+        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d\" rel=\"stylesheet\">"));
 }
 
 #[test]
@@ -834,6 +841,31 @@ fn panics_on_invalid_external_domain() {
     // panic
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
+}
+
+#[test]
+fn can_find_site_and_page_authors() {
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push("test_site");
+    let config_file = path.join("config.toml");
+    let mut site = Site::new(&path, config_file).unwrap();
+    site.load().unwrap();
+    let library = site.library.read().unwrap();
+
+    // The config has a global default author set.
+    let author = site.config.author;
+    assert_eq!(Some("config@example.com (Config Author)".to_string()), author);
+
+    let posts_path = path.join("content").join("posts");
+    let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
+
+    let p1 = &library.pages[&posts_section.pages[0]];
+    let p2 = &library.pages[&posts_section.pages[1]];
+
+    // Only the first page has had an author added.
+    assert_eq!(1, p1.meta.authors.len());
+    assert_eq!("page@example.com (Page Author)", p1.meta.authors.get(0).unwrap());
+    assert_eq!(0, p2.meta.authors.len());
 }
 
 // Follows test_site/themes/sample/templates/current_path.html

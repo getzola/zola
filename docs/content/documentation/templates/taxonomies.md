@@ -12,6 +12,8 @@ if they are not found, it will attempt to fall back on the following generic tem
 - `taxonomy_single.html`
 - `taxonomy_list.html`
 
+The taxonomy templates are required only if at least one taxonomy exists with `render` set to `true`.
+
 First, `TaxonomyTerm` has the following fields:
 
 ```ts
@@ -20,6 +22,7 @@ slug: String;
 path: String;
 permalink: String;
 pages: Array<Page>;
+page_count: Number;
 ```
 
 and `TaxonomyConfig` has the following fields:

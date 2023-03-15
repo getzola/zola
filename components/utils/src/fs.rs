@@ -1,6 +1,6 @@
 use libs::filetime::{set_file_mtime, FileTime};
 use libs::walkdir::WalkDir;
-use std::fs::{copy, create_dir_all, metadata, File};
+use std::fs::{copy, create_dir_all, metadata, remove_dir_all, remove_file, File};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
@@ -21,7 +21,7 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
     let mut file =
-        File::create(&path).with_context(|| format!("Failed to create file {}", path.display()))?;
+        File::create(path).with_context(|| format!("Failed to create file {}", path.display()))?;
     file.write_all(content.as_bytes())?;
     Ok(())
 }
@@ -92,19 +92,19 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
             .with_context(|| format!("Failed to get metadata of {}", src.display()))?;
         let src_mtime = FileTime::from_last_modification_time(&src_metadata);
         if Path::new(&dest).is_file() {
-            let target_metadata = metadata(&dest)?;
+            let target_metadata = metadata(dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                copy(src, &dest).with_context(|| {
+                copy(src, dest).with_context(|| {
                     format!("Was not able to copy file {} to {}", src.display(), dest.display())
                 })?;
-                set_file_mtime(&dest, src_mtime)?;
+                set_file_mtime(dest, src_mtime)?;
             }
         } else {
-            copy(src, &dest).with_context(|| {
+            copy(src, dest).with_context(|| {
                 format!("Was not able to copy directory {} to {}", src.display(), dest.display())
             })?;
-            set_file_mtime(&dest, src_mtime)?;
+            set_file_mtime(dest, src_mtime)?;
         }
     }
     Ok(())
@@ -164,6 +164,76 @@ where
     let time_target = get_file_time(p_target);
 
     time_source.and_then(|ts| time_target.map(|tt| ts > tt)).unwrap_or(true)
+}
+
+/// Checks if the file or folder for the given path is a dotfile, meaning starts with '.'
+pub fn is_dotfile<P>(path: P) -> bool
+where
+    P: AsRef<Path>,
+{
+    path.as_ref().file_name().and_then(|s| s.to_str()).map(|s| s.starts_with('.')).unwrap_or(false)
+}
+
+/// Returns whether the path we received corresponds to a temp file created
+/// by an editor or the OS
+pub fn is_temp_file(path: &Path) -> bool {
+    let ext = path.extension();
+    match ext {
+        Some(ex) => match ex.to_str().unwrap() {
+            "swp" | "swx" | "tmp" | ".DS_STORE" | ".DS_Store" => true,
+            // jetbrains IDE
+            x if x.ends_with("jb_old___") => true,
+            x if x.ends_with("jb_tmp___") => true,
+            x if x.ends_with("jb_bak___") => true,
+            // vim & jetbrains
+            x if x.ends_with('~') => true,
+            _ => {
+                if let Some(filename) = path.file_stem() {
+                    // emacs
+                    let name = filename.to_str().unwrap();
+                    name.starts_with('#') || name.starts_with(".#")
+                } else {
+                    false
+                }
+            }
+        },
+        None => true,
+    }
+}
+
+/// Deletes the `output_path` directory if it exists and `preserve_dotfiles_in_output` is set to false,
+/// or if set to true: its contents except for the dotfiles at the root level.
+pub fn clean_site_output_folder(
+    output_path: &Path,
+    preserve_dotfiles_in_output: bool,
+) -> Result<()> {
+    if output_path.exists() {
+        if !preserve_dotfiles_in_output {
+            return remove_dir_all(output_path).context("Couldn't delete output directory");
+        }
+
+        for entry in output_path
+            .read_dir()
+            .context(format!("Couldn't read output directory `{}`", output_path.display()))?
+        {
+            let entry = entry.context("Couldn't read entry in output directory")?.path();
+
+            // Skip dotfiles if the preserve_dotfiles_in_output configuration option is set
+            if is_dotfile(&entry) {
+                continue;
+            }
+
+            if entry.is_dir() {
+                remove_dir_all(entry)
+                    .context("Couldn't delete folder while cleaning the output directory")?;
+            } else {
+                remove_file(entry)
+                    .context("Couldn't delete file while cleaning the output directory")?;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

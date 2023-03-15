@@ -49,9 +49,10 @@ $ sudo dpkg -i zola_<version>_amd64_debian_<debian_version>.deb
 
 ### Fedora
 
-Zola has been available in the official repositories since Fedora 29.
+On Fedora, Zola is avialable via [COPR](https://fedoraproject.org/wiki/Category:Copr).
 
 ```sh
+$ sudo dnf copr enable fz0x1/zola
 $ sudo dnf install zola
 ```
 
@@ -79,6 +80,14 @@ Zola is available in the official package repository.
 $ doas pkg_add zola
 ```
 
+### pkgsrc
+
+Zola is available in the official package repository, with [pkgin](https://pkgin.net/).
+
+```sh
+$ pkgin install zola
+```
+
 ### Snapcraft
 
 Zola is available on snapcraft:
@@ -101,11 +110,28 @@ To use zola:
 $ flatpak run org.getzola.zola [command]
 ```
 
-To avoid having to type this everytime, an alias can be created in `~/.bashrc`:
+To avoid having to type this every time, an alias can be created in `~/.bashrc`:
 
 ```sh
 $ alias zola="flatpak run org.getzola.zola"
 ```
+
+### Via Github Actions
+
+Zola can be installed in a GHA workflow with [taiki-e/install-action](https://github.com/taiki-e/install-action).
+Simply add it in your CI config, for example:
+
+```yaml
+jobs:
+  foo:
+    steps:
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: zola@0.16
+      # ...
+```
+
+See the action repo for docs and more examples.
 
 ### Docker
 

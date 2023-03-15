@@ -5,7 +5,7 @@
 
 use libs::syntect::dumps::*;
 use libs::syntect::highlighting::ThemeSet;
-use libs::syntect::parsing::SyntaxSetBuilder;
+use libs::syntect::parsing::{SyntaxDefinition, SyntaxSetBuilder};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
@@ -27,6 +27,12 @@ fn main() {
         (Some(ref cmd), Some(ref package_dir), Some(ref packpath_newlines)) if cmd == "synpack" => {
             let mut builder = SyntaxSetBuilder::new();
             builder.add_plain_text_syntax();
+            // We add an alias to txt for text
+            // https://github.com/getzola/zola/issues/1633
+            let s = "---\nname: Plain Text\nfile_extensions: [text]\nscope: text.plain\ncontexts: \
+                 {main: []}";
+            let syn = SyntaxDefinition::load_from_str(s, false, None).unwrap();
+            builder.add(syn);
             let base_path = Path::new(&package_dir).to_path_buf();
 
             // First the official Sublime packages

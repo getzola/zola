@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use errors::{anyhow, Result};
 
 /// Result of a successful resolution of an internal link.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ResolvedInternalLink {
     /// Resolved link target, as absolute URL address.
     pub permalink: String,

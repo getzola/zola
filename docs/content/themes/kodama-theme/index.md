@@ -3,11 +3,11 @@
 title = "kodama"
 description = "Theme insipired by wowchemy academic."
 template = "theme.html"
-date = 2022-06-15T01:35:37-07:00
+date = 2022-12-04T21:40:33+02:00
 
 [extra]
-created = 2022-06-15T01:35:37-07:00
-updated = 2022-06-15T01:35:37-07:00
+created = 2022-12-04T21:40:33+02:00
+updated = 2022-12-04T21:40:33+02:00
 repository = "https://github.com/adfaure/kodama-theme.git"
 homepage = "https://github.com/adfaure/kodama-theme"
 minimum_version = "0.15"
@@ -27,7 +27,7 @@ homepage = "https://adrien-faure.fr"
 This theme is greatly inspired from hugo academic theme.
 
 First lets introduce some technical details:
-- It relies on [zola](https://getzola.com).
+- It relies on [zola](https://www.getzola.org/).
 - It has no javascript.
 - The CSS is built with [tailwindcss](https://tailwindcss.com/).
     - The blog articles are themed with [@tailwindcss/typography](https://tailwindcss.com/docs/typography-plugin) theme.
@@ -200,6 +200,17 @@ sort_by = "date"
 # Here the two dedicated templates
 template = "publications.html"
 page_template = "publication-page.html"
+
+# If you want to show your publications under different sections
+# the title will be the displayed text in your website, and the type
+# should be the type of publication.
+# Each individual plublication has an `extra.type` that refers to the
+# publication type (example in content sub-section).
+extra.publications_types = [
+  { title = "Journal articles", type = "journals" },
+  { title = "Thesis", type = "thesis" },
+  { title = "Conferences and workshops ", type = "conferences" }
+]
 +++
 
 ## Content
@@ -232,11 +243,20 @@ date = 2021-05-18
 [extra]
 type = "Conference"
 authors = [ "Kodama Mononoke" ]
-publication_types = "Conference paper"
+
+# Should be the type of the publication type it should appears under
+# configured in the front matter of publications/_index.md
+type = "conferences"
+
 featured = true
 publication = "2020 IEE rainbow workshop"
+# Add full url for your pdf and your presentation
 url_pdf = "https://your-pdf"
 url_slides = "path_to_slides"
+
+# Add a link to a local pdf inside of your paper folder (example in content/publications/paper1.index.md)
+pdf = "paper.pdf"
+slides = "path_to_slides.pdf"
 +++
 ```
 
@@ -244,4 +264,5 @@ url_slides = "path_to_slides"
 
 The icons available in this project are stored in a dedicated macro function in `templates/macros/icons.html`.
 To add a new svg, you can add a case in the `if elif .. else` of the function containing the svg copied from [heroicons](https://heroicons.com/) for instance.
+
         

@@ -23,16 +23,6 @@ pub static ZOLA_TERA: Lazy<Tera> = Lazy::new(|| {
             include_str!("builtins/split_sitemap_index.xml"),
         ),
         ("__zola_builtins/anchor-link.html", include_str!("builtins/anchor-link.html")),
-        (
-            "__zola_builtins/shortcodes/youtube.html",
-            include_str!("builtins/shortcodes/youtube.html"),
-        ),
-        ("__zola_builtins/shortcodes/vimeo.html", include_str!("builtins/shortcodes/vimeo.html")),
-        ("__zola_builtins/shortcodes/gist.html", include_str!("builtins/shortcodes/gist.html")),
-        (
-            "__zola_builtins/shortcodes/streamable.html",
-            include_str!("builtins/shortcodes/streamable.html"),
-        ),
         ("internal/alias.html", include_str!("builtins/internal/alias.html")),
     ])
     .unwrap();
@@ -62,7 +52,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     if let Some(ref theme) = config.theme {
         // Test that the templates folder exist for that theme
-        let theme_path = path.join("themes").join(&theme);
+        let theme_path = path.join("themes").join(theme);
         if !theme_path.join("templates").exists() {
             bail!("Theme `{}` is missing a templates folder", theme);
         }

@@ -34,7 +34,7 @@ toc: Array<Header>,
 word_count: Number;
 // Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
 reading_time: Number;
-// earlier / ligher
+// earlier / lighter
 lower: Page?;
 // later / heavier
 higher: Page?;
@@ -50,6 +50,9 @@ assets: Array<String>;
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
+// The relative path from the `content` directory to the directory of a colocated index.md markdown file
+// Null if the file is not colocated.
+colocated_path: String?;
 // The language for the page if there is one. Default to the config `default_language`
 lang: String;
 // Information about all the available languages for that content, including the current page
@@ -77,7 +80,7 @@ path: String;
 components: Array<String>;
 permalink: String;
 extra: HashMap<String, Any>;
-// Pages directly in this section. By default, the pages are not sorted. Please set the "sorted_by"
+// Pages directly in this section. By default, the pages are not sorted. Please set the "sort_by"
 // variable in the _index.md file of the corresponding section to "date" or "weight" for sorting by
 // date and weight, respectively.
 pages: Array<Page>;
@@ -104,6 +107,8 @@ lang: String;
 translations: Array<TranslatedContent>;
 // All the pages/sections linking this page: their permalink and a title if there is one
 backlinks: Array<{permalink: String, title: String?}>;
+// Whether this section generates a feed or not. Taken from the front-matter if set
+generate_feed: bool;
 ```
 
 ## Table of contents

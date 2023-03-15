@@ -15,7 +15,7 @@ macro_rules! render_default_tpl {
     }};
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShortcodeFileType {
     Markdown,
     Html,

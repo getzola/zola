@@ -60,7 +60,8 @@ impl TeraFn for ResizeImage {
                 return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
             }
         }
-
+        let resize_op = imageproc::ResizeOperation::from_args(&op, width, height)
+            .map_err(|e| format!("`resize_image`: {}", e))?;
         let mut imageproc = self.imageproc.lock().unwrap();
         let (file_path, unified_path) =
             match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
@@ -73,7 +74,7 @@ impl TeraFn for ResizeImage {
             };
 
         let response = imageproc
-            .enqueue(unified_path, file_path, &op, width, height, &format, quality)
+            .enqueue(resize_op, unified_path, file_path, &format, quality)
             .map_err(|e| format!("`resize_image`: {}", e))?;
 
         to_value(response).map_err(Into::into)
@@ -127,7 +128,7 @@ impl TeraFn for GetImageMetadata {
             return Ok(cached_result.clone());
         }
 
-        let response = imageproc::read_image_metadata(&src_path)
+        let response = imageproc::read_image_metadata(src_path)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         let out = to_value(response).unwrap();
         cache.insert(unified_path, out.clone());
@@ -183,22 +184,22 @@ mod tests {
         args.insert("height".to_string(), to_value(40).unwrap());
         args.insert("width".to_string(), to_value(40).unwrap());
 
-        // hashing is stable based on filename and params so we can compare with hashes
+        // hashing is stable based on filepath and params so we can compare with hashes
 
         // 1. resizing an image in static
         args.insert("path".to_string(), to_value("static/gutenberg.jpg").unwrap());
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         let static_path = Path::new("static").join("processed_images");
 
-        // TODO: Use `assert_processed_path_matches()` from imageproc so that hashes don't need to be hardcoded
-
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("6a89d6483cdc5f7700.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("gutenberg.da10f4be4f1c441e.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/6a89d6483cdc5f7700.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/gutenberg.da10f4be4f1c441e.jpg")
+                .unwrap()
         );
 
         // 2. resizing an image in content with a relative path
@@ -206,11 +207,13 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("202d9263f4dbc95900.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("gutenberg.3301b37eed389d2e.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/202d9263f4dbc95900.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/gutenberg.3301b37eed389d2e.jpg")
+                .unwrap()
         );
 
         // 3. resizing with an absolute path is the same as the above
@@ -228,22 +231,26 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("6296a3c153f701be00.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("asset.d2fde9a750b68471.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/6296a3c153f701be00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/asset.d2fde9a750b68471.jpg").unwrap()
         );
 
         // 6. Looking up a file in the theme
         args.insert("path".to_string(), to_value("in-theme.jpg").unwrap());
+        let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("6296a3c153f701be00.jpg").display())).unwrap()
+            to_value(&format!("{}", static_path.join("in-theme.9b0d29e07d588b60.jpg").display()))
+                .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/6296a3c153f701be00.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/in-theme.9b0d29e07d588b60.jpg")
+                .unwrap()
         );
     }
 

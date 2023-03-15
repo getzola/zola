@@ -16,11 +16,13 @@ create a **page** at `[base_url]/about`).
 If the file is given any name _other_ than `index.md` or `_index.md`, then it will
 create a page with that name (without the `.md`). For example, naming a file in the root of your
 content directory `about.md` would create a page at `[base_url]/about`.
+
 Another exception to this rule is that a filename starting with a datetime (YYYY-mm-dd or [an RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by
 an underscore (`_`) or a dash (`-`) will use that date as the page date, unless already set
 in the front matter. The page name will be anything after `_`/`-`, so the file `2018-10-10-hello-world.md` will
 be available at `[base_url]/hello-world`. Note that the full RFC3339 datetime contains colons, which is not a valid
 character in a filename on Windows.
+This behavior can be disabled by setting `slugify.paths_keep_date` to `true` (the default is `false`). Note that a `_` separating the date would be slugified into a `-` with the default value for `slugify.paths` of `"on"`.
 
 As you can see, creating an `about.md` file is equivalent to creating an
 `about/index.md` file. The only difference between the two methods is that creating
@@ -123,6 +125,10 @@ path = ""
 # Use aliases if you are moving content but want to redirect previous URLs to the
 # current one. This takes an array of paths, not URLs.
 aliases = []
+
+# A list of page authors. If a site feed is enabled, the first author (if any)
+# will be used as the page's author in the default feed template.
+authors = []
 
 # When set to "true", the page will be in the search index. This is only used if
 # `build_search_index` is set to "true" in the Zola configuration and the parent section

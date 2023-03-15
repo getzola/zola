@@ -4,6 +4,7 @@ use libs::unicode_segmentation::UnicodeSegmentation;
 use libs::walkdir::WalkDir;
 
 use config::Config;
+use utils::fs::is_temp_file;
 use utils::table_of_contents::Heading;
 
 pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
@@ -33,7 +34,8 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     }
     for entry in builder.into_iter().filter_map(std::result::Result::ok) {
         let entry_path = entry.path();
-        if entry_path.is_file() {
+
+        if entry_path.is_file() && !is_temp_file(entry_path) {
             match entry_path.extension() {
                 Some(e) => match e.to_str() {
                     Some("md") => continue,
@@ -45,7 +47,7 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     }
 
     if let Some(ref globset) = config.ignored_content_globset {
-        assets = assets.into_iter().filter(|p| !globset.is_match(p)).collect();
+        assets.retain(|p| !globset.is_match(p));
     }
 
     assets
@@ -82,10 +84,10 @@ mod tests {
         File::create(path.join("subdir").join("example.js")).unwrap();
 
         let assets = find_related_assets(path, &Config::default(), true);
-        assert_eq!(assets.len(), 5);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 5);
+        assert_eq!(assets.len(), 4);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 4);
 
-        for asset in ["example.js", "graph.jpg", "fail.png", "subdir/example.js", "extensionless"] {
+        for asset in ["example.js", "graph.jpg", "fail.png", "subdir/example.js"] {
             assert!(assets.iter().any(|p| p.strip_prefix(path).unwrap() == Path::new(asset)))
         }
     }
@@ -103,10 +105,10 @@ mod tests {
         File::create(path.join("subdir").join("index.md")).unwrap();
         File::create(path.join("subdir").join("example.js")).unwrap();
         let assets = find_related_assets(path, &Config::default(), false);
-        assert_eq!(assets.len(), 4);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 4);
+        assert_eq!(assets.len(), 3);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 3);
 
-        for asset in ["example.js", "graph.jpg", "fail.png", "extensionless"] {
+        for asset in ["example.js", "graph.jpg", "fail.png"] {
             assert!(assets.iter().any(|p| p.strip_prefix(path).unwrap() == Path::new(asset)))
         }
     }

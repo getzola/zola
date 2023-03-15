@@ -8,13 +8,13 @@ use crate::{Page, Section};
 use libs::tera::{Map, Value};
 use utils::table_of_contents::Heading;
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct BackLink<'a> {
     pub permalink: &'a str,
     pub title: &'a Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct TranslatedContent<'a> {
     pub lang: &'a str,
     pub permalink: &'a str,
@@ -39,9 +39,10 @@ fn find_backlinks<'a>(relative_path: &str, library: &'a Library) -> Vec<BackLink
     backlinks
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct SerializingPage<'a> {
     relative_path: &'a str,
+    colocated_path: &'a Option<String>,
     content: &'a str,
     permalink: &'a str,
     slug: &'a str,
@@ -54,6 +55,7 @@ pub struct SerializingPage<'a> {
     month: Option<u8>,
     day: Option<u8>,
     taxonomies: &'a HashMap<String, Vec<String>>,
+    authors: &'a [String],
     extra: &'a Map<String, Value>,
     path: &'a str,
     components: &'a [String],
@@ -104,6 +106,7 @@ impl<'a> SerializingPage<'a> {
 
         Self {
             relative_path: &page.file.relative,
+            colocated_path: &page.file.colocated_path,
             ancestors: &page.ancestors,
             content: &page.content,
             permalink: &page.permalink,
@@ -117,6 +120,7 @@ impl<'a> SerializingPage<'a> {
             month,
             day,
             taxonomies: &page.meta.taxonomies,
+            authors: &page.meta.authors,
             path: &page.path,
             components: &page.components,
             summary: &page.summary,
@@ -134,9 +138,10 @@ impl<'a> SerializingPage<'a> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct SerializingSection<'a> {
     relative_path: &'a str,
+    colocated_path: &'a Option<String>,
     content: &'a str,
     permalink: &'a str,
     draft: bool,
@@ -155,6 +160,7 @@ pub struct SerializingSection<'a> {
     subsections: Vec<&'a str>,
     translations: Vec<TranslatedContent<'a>>,
     backlinks: Vec<BackLink<'a>>,
+    generate_feed: bool,
 }
 
 #[derive(Debug)]
@@ -198,6 +204,7 @@ impl<'a> SerializingSection<'a> {
 
         Self {
             relative_path: &section.file.relative,
+            colocated_path: &section.file.colocated_path,
             ancestors: &section.ancestors,
             draft: section.meta.draft,
             content: &section.content,
@@ -212,6 +219,7 @@ impl<'a> SerializingSection<'a> {
             reading_time: section.reading_time,
             assets: &section.serialized_assets,
             lang: &section.lang,
+            generate_feed: section.meta.generate_feed,
             pages,
             subsections,
             translations,

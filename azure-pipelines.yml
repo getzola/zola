@@ -21,7 +21,7 @@ stages:
               rustup_toolchain: stable
             linux-pinned:
               imageName: 'ubuntu-20.04'
-              rustup_toolchain: 1.60.0
+              rustup_toolchain: 1.64.0
         pool:
           vmImage: $(imageName)
         steps:
@@ -42,6 +42,10 @@ stages:
             displayName: Cargo build (Rust TLS)
           - script: cargo test --all
             displayName: Cargo test
+          - script: cargo fmt --check
+            displayName: Cargo fmt
+          - script: cargo clippy --workspace -- -Dwarnings
+            displayName: Cargo clippy
 
 
   - stage: Release

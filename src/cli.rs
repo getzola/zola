@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use clap_complete::Shell;
 
 #[derive(Parser)]
 #[clap(version, author, about)]
@@ -40,6 +41,10 @@ pub enum Command {
         #[clap(short = 'o', long)]
         output_dir: Option<PathBuf>,
 
+        /// Force building the site even if output directory is non-empty
+        #[clap(short = 'f', long)]
+        force: bool,
+
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,
@@ -75,6 +80,10 @@ pub enum Command {
         /// Only rebuild the minimum on change - useful when working on a specific page/section
         #[clap(short = 'f', long)]
         fast: bool,
+
+        /// Default append port to the base url.
+        #[clap(long)]
+        no_port_append: bool,
     },
 
     /// Try to build the project without rendering it. Checks links
@@ -82,5 +91,12 @@ pub enum Command {
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,
+    },
+
+    /// Generate shell completion
+    Completion {
+        /// Shell to generate completion for
+        #[clap(value_enum)]
+        shell: Shell,
     },
 }

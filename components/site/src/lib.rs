@@ -5,8 +5,8 @@ pub mod sass;
 pub mod sitemap;
 pub mod tpls;
 
-use std::collections::HashMap;
-use std::fs::remove_dir_all;
+use std::borrow::Cow;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -15,16 +15,17 @@ use libs::rayon::prelude::*;
 use libs::tera::{Context, Tera};
 use libs::walkdir::{DirEntry, WalkDir};
 
-use config::{get_config, Config};
+use config::{get_config, Config, IndexFormat};
 use content::{Library, Page, Paginator, Section, Taxonomy};
-use errors::{anyhow, bail, Context as ErrorContext, Result};
+use errors::{anyhow, bail, Result};
 use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
-    copy_directory, copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
+    clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
+    ensure_directory_exists,
 };
-use utils::net::get_available_port;
+use utils::net::{get_available_port, is_external_link};
 use utils::templates::{render_template, ShortcodeDefinition};
 use utils::types::InsertAnchor;
 
@@ -173,10 +174,16 @@ impl Site {
         let mut allowed_index_filenames: Vec<_> = self
             .config
             .other_languages()
-            .iter()
-            .map(|(code, _)| format!("_index.{}.md", code))
+            .keys()
+            .map(|code| format!("_index.{}.md", code))
             .collect();
         allowed_index_filenames.push("_index.md".to_string());
+
+        // We will insert colocated pages (those with a index.md filename)
+        // at the end to detect pages that are actually errors:
+        // when there is both a _index.md and index.md in the same folder
+        let mut pages = Vec::new();
+        let mut sections = HashSet::new();
 
         loop {
             let entry: DirEntry = match dir_walker.next() {
@@ -218,7 +225,7 @@ impl Site {
                 // if we are processing a section we have to collect
                 // index files for all languages and process them simultaneously
                 // before any of the pages
-                let index_files = WalkDir::new(&path)
+                let index_files = WalkDir::new(path)
                     .follow_links(true)
                     .max_depth(1)
                     .into_iter()
@@ -241,8 +248,9 @@ impl Site {
                 for index_file in index_files {
                     let section =
                         Section::from_file(index_file.path(), &self.config, &self.base_path)?;
+                    sections.insert(section.components.join("/"));
 
-                    // if the section is drafted we can skip the enitre dir
+                    // if the section is drafted we can skip the entire dir
                     if section.meta.draft && !self.include_drafts {
                         dir_walker.skip_current_dir();
                         continue;
@@ -252,19 +260,37 @@ impl Site {
                 }
             } else {
                 let page = Page::from_file(path, &self.config, &self.base_path)?;
-
-                // should we skip drafts?
-                if page.meta.draft && !self.include_drafts {
-                    continue;
-                }
-                pages_insert_anchors.insert(
-                    page.file.path.clone(),
-                    self.find_parent_section_insert_anchor(&page.file.parent.clone(), &page.lang),
-                );
-                self.add_page(page, false)?;
+                pages.push(page);
             }
         }
         self.create_default_index_sections()?;
+
+        for page in pages {
+            // should we skip drafts?
+            if page.meta.draft && !self.include_drafts {
+                continue;
+            }
+
+            // We are only checking it on load and not in add_page since we have access to
+            // all the components there.
+            if page.file.filename == "index.md" {
+                let is_invalid = match page.components.last() {
+                    Some(_) => sections.contains(&page.components.join("/")),
+                    // content/index.md is always invalid, but content/colocated/index.md is ok
+                    None => page.file.colocated_path.is_none(),
+                };
+
+                if is_invalid {
+                    bail!("We can't have a page called `index.md` in the same folder as an index section in {:?}", page.file.parent);
+                }
+            }
+
+            pages_insert_anchors.insert(
+                page.file.path.clone(),
+                self.find_parent_section_insert_anchor(&page.file.parent.clone(), &page.lang),
+            );
+            self.add_page(page, false)?;
+        }
 
         {
             let library = self.library.read().unwrap();
@@ -583,14 +609,10 @@ impl Site {
         imageproc.do_process()
     }
 
-    /// Deletes the `public` directory if it exists
+    /// Deletes the `public` directory if it exists and the `preserve_dotfiles_in_output` option is set to false,
+    /// or if set to true: its contents except for the dotfiles at the root level.
     pub fn clean(&self) -> Result<()> {
-        if self.output_path.exists() {
-            // Delete current `public` directory so we can start fresh
-            remove_dir_all(&self.output_path).context("Couldn't delete output directory")?;
-        }
-
-        Ok(())
+        clean_site_output_folder(&self.output_path, self.config.preserve_dotfiles_in_output)
     }
 
     /// Handles whether to write to disk or to memory
@@ -664,7 +686,7 @@ impl Site {
                 asset_path,
                 &current_path.join(
                     asset_path
-                        .strip_prefix(&page.file.path.parent().unwrap())
+                        .strip_prefix(page.file.path.parent().unwrap())
                         .expect("Couldn't get filename from page asset"),
                 ),
             )?;
@@ -764,32 +786,36 @@ impl Site {
         Ok(())
     }
 
+    fn index_for_lang(&self, lang: &str) -> Result<()> {
+        let index_json = search::build_index(
+            &self.config.default_language,
+            &self.library.read().unwrap(),
+            &self.config,
+        )?;
+        let (path, content) = match &self.config.search.index_format {
+            IndexFormat::ElasticlunrJson => {
+                let path = self.output_path.join(format!("search_index.{}.json", lang));
+                (path, index_json)
+            }
+            IndexFormat::ElasticlunrJavascript => {
+                let path = self.output_path.join(format!("search_index.{}.js", lang));
+                let content = format!("window.searchIndex = {};", index_json);
+                (path, content)
+            }
+        };
+        create_file(&path, &content)
+    }
+
     pub fn build_search_index(&self) -> Result<()> {
         ensure_directory_exists(&self.output_path)?;
         // TODO: add those to the SITE_CONTENT map
 
         // index first
-        create_file(
-            &self.output_path.join(&format!("search_index.{}.js", self.config.default_language)),
-            &format!(
-                "window.searchIndex = {};",
-                search::build_index(
-                    &self.config.default_language,
-                    &self.library.read().unwrap(),
-                    &self.config
-                )?
-            ),
-        )?;
+        self.index_for_lang(&self.config.default_language)?;
 
         for (code, language) in &self.config.other_languages() {
             if code != &self.config.default_language && language.build_search_index {
-                create_file(
-                    &self.output_path.join(&format!("search_index.{}.js", &code)),
-                    &format!(
-                        "window.searchIndex = {};",
-                        search::build_index(code, &self.library.read().unwrap(), &self.config)?
-                    ),
-                )?;
+                self.index_for_lang(code)?;
             }
         }
 
@@ -1067,7 +1093,7 @@ impl Site {
                 asset_path,
                 &output_path.join(
                     asset_path
-                        .strip_prefix(&section.file.path.parent().unwrap())
+                        .strip_prefix(section.file.path.parent().unwrap())
                         .expect("Failed to get asset filename for section"),
                 ),
             )?;
@@ -1086,7 +1112,11 @@ impl Site {
         }
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
-            let permalink = self.config.make_permalink(redirect_to);
+            let permalink: Cow<String> = if is_external_link(redirect_to) {
+                Cow::Borrowed(redirect_to)
+            } else {
+                Cow::Owned(self.config.make_permalink(redirect_to))
+            };
             self.write_content(
                 &components,
                 "index.html",

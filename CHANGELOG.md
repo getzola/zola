@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.17.2 (unreleased)
+
+- Fix one more invalid error with colocated directories
+- Revert "Recognize links starting with `www` as external for the link checker" as they won't be external links in practice
+- 
+
+## 0.17.1 (2023-02-24)
+
+- Fix bugs with colocated directories in the root `content` directory
+- Fix `zola serve` not  respecting `preserve_dotfiles_in_output`
+- Add `generate_feed` field to the `section` object in templates
+
+## 0.17.0 (2023-02-16)
+
+### Breaking
+- `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
+- Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass). See https://sass-lang.com/documentation/breaking-changes
+for breaking changes with libsass: look for "beginning in Dart Sass"
+- Merge settings for the default language set in the root of `config.toml` and in the `[languages.{default_lang}]` section. 
+This will error if the same keys are defined multiple times
+- Code blocks content are no longer included in the search index
+- Remove built-ins shortcodes
+- Having a file called `index.md` in a folder with a `_index.md` is now an error
+- Ignore temp files from vim/emacs/macos/etc as well as files without extensions when getting colocated assets
+- Now integrates the file stem of the original file into the processed images filename: {stem}.{hash}.{extension}
+
+### Other
+
+- Add `get_taxonomy_term` function
+- Add `slugify.paths_keep_dates` option
+- Add command to generate shell completions
+- Fix link generation to co-located assets other than images
+- Add `get_hash` Tera function
+- Minify CSS and JS embedded in HTML
+- Fix slow image processing
+- Fix `current_url` in taxonomy term
+- Add new flag `zola serve --no_port_append` to give the ability to remove port from base url
+- `config.markdown` is now available in templates
+- Add `preserve_dotfiles_in_output` option in the config
+- Add Elasticlunr JSON output for the search index
+- Add sorting by slug for pages
+- Enable locale date formatting for the Tera `date` filter
+- Cachebust fingerprint is now only 20 chars long
+- Add `text` alias for plain text highlighting (before, only `txt` was used)
+- Adds a new field to `page`: `colocated_path` that points to the folder of the current file being rendered if it's a colocated folder. None otherwise.
+- Add `author` as a first-class property to the config and `authors` to pages
+- Allows using external URL for `redirect_to`
+- Recognize links starting with `www` as external for the link checker
+
 ## 0.16.1 (2022-08-14)
 
 - Fix many Windows bugs

@@ -8,6 +8,6 @@ expression: body
 Hello
 world
 Non rendered emoji :smile:
-<a href="image.jpg">a link</a>
+<a href="https://www.getzola.org/test/image.jpg">a link</a>
 <img src="https://www.getzola.org/test/image.jpg" alt="alt text" /></p>
 <h1>some html</h1>

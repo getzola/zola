@@ -58,6 +58,8 @@ pub struct Config {
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
+    /// The default author for pages.
+    pub author: Option<String>,
 
     /// Whether to compile the `sass` directory and output the css files into the static folder
     pub compile_sass: bool,
@@ -78,6 +80,8 @@ pub struct Config {
     pub mode: Mode,
 
     pub output_dir: String,
+    /// Whether dotfiles inside the output directory are preserved when rebuilding the site
+    pub preserve_dotfiles_in_output: bool,
 
     pub link_checker: link_checker::LinkChecker,
     /// The setup for which slugification strategies to use for paths, taxonomies and anchors
@@ -101,8 +105,10 @@ pub struct SerializedConfig<'a> {
     generate_feed: bool,
     feed_filename: &'a str,
     taxonomies: &'a [taxonomies::TaxonomyConfig],
+    author: &'a Option<String>,
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
+    markdown: &'a markup::Markdown,
 }
 
 impl Config {
@@ -124,7 +130,7 @@ impl Config {
             languages::validate_code(code)?;
         }
 
-        config.add_default_language();
+        config.add_default_language()?;
         config.slugify_taxonomies();
 
         if !config.ignored_content.is_empty() {
@@ -150,7 +156,7 @@ impl Config {
 
     pub fn default_for_test() -> Self {
         let mut config = Config::default();
-        config.add_default_language();
+        config.add_default_language().unwrap();
         config.slugify_taxonomies();
         config
     }
@@ -203,26 +209,32 @@ impl Config {
         }
     }
 
-    /// Adds the default language to the list of languages if not present
-    pub fn add_default_language(&mut self) {
-        // We automatically insert a language option for the default language *if* it isn't present
-        // TODO: what to do if there is like an empty dict for the lang? merge it or use the language
-        // TODO: as source of truth?
-        if !self.languages.contains_key(&self.default_language) {
-            self.languages.insert(
-                self.default_language.clone(),
-                languages::LanguageOptions {
-                    title: self.title.clone(),
-                    description: self.description.clone(),
-                    generate_feed: self.generate_feed,
-                    feed_filename: self.feed_filename.clone(),
-                    build_search_index: self.build_search_index,
-                    taxonomies: self.taxonomies.clone(),
-                    search: self.search.clone(),
-                    translations: self.translations.clone(),
-                },
-            );
+    /// Adds the default language to the list of languages if options for it are specified at base level of config.toml.
+    /// If section for the same language also exists, the options at this section and base are merged and then adds it
+    /// to list.
+    pub fn add_default_language(&mut self) -> Result<()> {
+        let mut base_language_options = languages::LanguageOptions {
+            title: self.title.clone(),
+            description: self.description.clone(),
+            generate_feed: self.generate_feed,
+            feed_filename: self.feed_filename.clone(),
+            build_search_index: self.build_search_index,
+            taxonomies: self.taxonomies.clone(),
+            search: self.search.clone(),
+            translations: self.translations.clone(),
+        };
+
+        if let Some(section_language_options) = self.languages.get(&self.default_language) {
+            if base_language_options == languages::LanguageOptions::default() {
+                return Ok(());
+            }
+            println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
+                which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
+            base_language_options.merge(section_language_options)?;
         }
+        self.languages.insert(self.default_language.clone(), base_language_options);
+
+        Ok(())
     }
 
     /// Merges the extra data from the theme with the config extra data
@@ -315,8 +327,10 @@ impl Config {
             generate_feed: options.generate_feed,
             feed_filename: &options.feed_filename,
             taxonomies: &options.taxonomies,
+            author: &self.author,
             build_search_index: options.build_search_index,
             extra: &self.extra,
+            markdown: &self.markdown,
         }
     }
 }
@@ -363,6 +377,7 @@ impl Default for Config {
             feed_filename: "atom.xml".to_string(),
             hard_link_static: false,
             taxonomies: Vec::new(),
+            author: None,
             compile_sass: false,
             minify_html: false,
             mode: Mode::Build,
@@ -371,6 +386,7 @@ impl Default for Config {
             ignored_content_globset: None,
             translations: HashMap::new(),
             output_dir: "public".to_string(),
+            preserve_dotfiles_in_output: false,
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),
@@ -384,6 +400,74 @@ impl Default for Config {
 mod tests {
     use super::*;
     use utils::slugs::SlugifyStrategy;
+
+    #[test]
+    fn can_add_default_language_with_data_only_at_base_section() {
+        let title_base = Some("Base section title".to_string());
+        let description_base = Some("Base section description".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
+        config.description = description_base.clone();
+        config.add_default_language().unwrap();
+
+        let default_language_options =
+            config.languages.get(&config.default_language).unwrap().clone();
+        assert_eq!(default_language_options.title, title_base);
+        assert_eq!(default_language_options.description, description_base);
+    }
+
+    #[test]
+    fn can_add_default_language_with_data_at_base_and_language_section() {
+        let title_base = Some("Base section title".to_string());
+        let description_lang_section = Some("Language section description".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
+        config.languages.insert(
+            config.default_language.clone(),
+            languages::LanguageOptions {
+                title: None,
+                description: description_lang_section.clone(),
+                generate_feed: true,
+                feed_filename: config.feed_filename.clone(),
+                taxonomies: config.taxonomies.clone(),
+                build_search_index: false,
+                search: search::Search::default(),
+                translations: config.translations.clone(),
+            },
+        );
+        config.add_default_language().unwrap();
+
+        let default_language_options =
+            config.languages.get(&config.default_language).unwrap().clone();
+        assert_eq!(default_language_options.title, title_base);
+        assert_eq!(default_language_options.description, description_lang_section);
+    }
+
+    #[test]
+    fn errors_when_same_field_present_at_base_and_language_section() {
+        let title_base = Some("Base section title".to_string());
+        let title_lang_section = Some("Language section title".to_string());
+
+        let mut config = Config::default();
+        config.title = title_base.clone();
+        config.languages.insert(
+            config.default_language.clone(),
+            languages::LanguageOptions {
+                title: title_lang_section.clone(),
+                description: None,
+                generate_feed: true,
+                feed_filename: config.feed_filename.clone(),
+                taxonomies: config.taxonomies.clone(),
+                build_search_index: false,
+                search: search::Search::default(),
+                translations: config.translations.clone(),
+            },
+        );
+        let result = config.add_default_language();
+        assert!(result.is_err());
+    }
 
     #[test]
     fn can_import_valid_config() {
@@ -658,8 +742,28 @@ anchors = "off"
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.slugify.paths, SlugifyStrategy::On);
+        assert_eq!(config.slugify.paths_keep_dates, false);
         assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Safe);
         assert_eq!(config.slugify.anchors, SlugifyStrategy::Off);
+    }
+
+    #[test]
+    fn slugify_paths_keep_dates() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+
+[slugify]
+paths_keep_dates = true
+taxonomies = "off"
+anchors = "safe"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.slugify.paths, SlugifyStrategy::On);
+        assert_eq!(config.slugify.paths_keep_dates, true);
+        assert_eq!(config.slugify.taxonomies, SlugifyStrategy::Off);
+        assert_eq!(config.slugify.anchors, SlugifyStrategy::Safe);
     }
 
     #[test]
@@ -743,5 +847,31 @@ title = "Zola"
         let config = Config::parse(config).unwrap();
         let serialised = config.serialize(&config.default_language);
         assert_eq!(serialised.title, &config.title);
+    }
+
+    #[test]
+    fn markdown_config_in_serializedconfig() {
+        let config = r#"
+base_url = "https://www.getzola.org/"
+title = "Zola"
+[markdown]
+highlight_code = true
+highlight_theme = "css"
+    "#;
+
+        let config = Config::parse(config).unwrap();
+        let serialised = config.serialize(&config.default_language);
+        assert_eq!(serialised.markdown.highlight_theme, config.markdown.highlight_theme);
+    }
+
+    #[test]
+    fn sets_default_author_if_present() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+author = "person@example.com (Some Person)"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert_eq!(config.author, Some("person@example.com (Some Person)".to_owned()))
     }
 }

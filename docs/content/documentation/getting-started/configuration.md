@@ -41,6 +41,10 @@ theme = ""
 # For overriding the default output directory `public`, set it to another value (e.g.: "docs")
 output_dir = "public"
 
+# Whether dotfiles at the root level of the output directory are preserved when (re)building the site.
+# Enabling this also prevents the deletion of the output folder itself on rebuilds.
+preserve_dotfiles_in_output = false
+
 # When set to "true", the Sass files in the `sass` directory in the site root are compiled.
 # Sass files in theme directories are always compiled.
 compile_sass = false
@@ -142,6 +146,10 @@ external_level = "error"
 paths = "on"
 taxonomies = "on"
 anchors = "on"
+# Whether to remove date prefixes for page path slugs.
+# For example, content/posts/2016-10-08_a-post-with-dates.md => posts/a-post-with-dates
+# When true, content/posts/2016-10-08_a-post-with-dates.md => posts/2016-10-08-a-post-with-dates
+paths_keep_dates = false
 
 [search]
 # Whether to include the title of the page/section in the index
@@ -155,6 +163,10 @@ include_content = true
 # At which character to truncate the content to. Useful if you have a lot of pages and the index would
 # become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
+
+# Wether to produce the search index as a javascript file or as a JSON file
+# Accepted value "elasticlunr_javascript" or "elasticlunr_json"
+index_format = "elasticlunr_javascript"
 
 # Optional translation object for the default language
 # Example:

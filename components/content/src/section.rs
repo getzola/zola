@@ -7,6 +7,7 @@ use config::Config;
 use errors::{Context, Result};
 use markdown::{render_content, RenderContext};
 use utils::fs::read_file;
+use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
 use utils::templates::{render_template, ShortcodeDefinition};
 
@@ -17,7 +18,7 @@ use crate::ser::{SectionSerMode, SerializingSection};
 use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Section {
     /// All info about the actual file
     pub file: FileInfo,
@@ -168,7 +169,14 @@ impl Section {
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.body;
         self.toc = res.toc;
+
         self.external_links = res.external_links;
+        if let Some(ref redirect_to) = self.meta.redirect_to {
+            if is_external_link(redirect_to) {
+                self.external_links.push(redirect_to.to_owned());
+            }
+        }
+
         self.internal_links = res.internal_links;
 
         Ok(())
@@ -198,7 +206,7 @@ impl Section {
     fn serialize_assets(&self) -> Vec<String> {
         self.assets
             .iter()
-            .filter_map(|asset| asset.strip_prefix(&self.file.path.parent().unwrap()).ok())
+            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
             .filter_map(|filename| filename.to_str())
             .map(|filename| format!("{}{}", self.path, filename))
             .collect()
@@ -355,5 +363,25 @@ Bonjour le monde"#
         let section = res.unwrap();
         assert_eq!(section.lang, "fr".to_string());
         assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
+    }
+
+    #[test]
+    fn can_redirect_to_external_site() {
+        let config = Config::default();
+        let content = r#"
++++
+redirect_to = "https://bar.com/something"
++++
+Example"#
+            .to_string();
+        let res = Section::parse(
+            Path::new("content/subcontent/_index.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.meta.redirect_to, Some("https://bar.com/something".to_owned()));
     }
 }

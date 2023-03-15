@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 
 use config::Config;
-use libs::base64::{decode, encode};
+use libs::base64::engine::{general_purpose::STANDARD as standard_b64, Engine};
 use libs::tera::{
     to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
     Value,
@@ -62,7 +62,7 @@ pub fn base64_encode<S: BuildHasher>(
     _: &HashMap<String, Value, S>,
 ) -> TeraResult<Value> {
     let s = try_get_value!("base64_encode", "value", String, value);
-    Ok(to_value(&encode(s.as_bytes())).unwrap())
+    Ok(to_value(standard_b64.encode(s.as_bytes())).unwrap())
 }
 
 pub fn base64_decode<S: BuildHasher>(
@@ -70,7 +70,12 @@ pub fn base64_decode<S: BuildHasher>(
     _: &HashMap<String, Value, S>,
 ) -> TeraResult<Value> {
     let s = try_get_value!("base64_decode", "value", String, value);
-    Ok(to_value(&String::from_utf8(decode(s.as_bytes()).unwrap()).unwrap()).unwrap())
+    let decoded = standard_b64
+        .decode(s.as_bytes())
+        .map_err(|e| format!("`base64_decode`: failed to decode: {}", e))?;
+    let as_str =
+        String::from_utf8(decoded).map_err(|e| format!("`base64_decode`: invalid utf-8: {}", e))?;
+    Ok(to_value(as_str).unwrap())
 }
 
 #[derive(Debug)]
