@@ -37,7 +37,11 @@
         </author>
         <link rel="alternate" href="{{ page.permalink | safe }}" type="text/html"/>
         <id>{{ page.permalink | safe }}</id>
+        {% if page.summary %}
+        <summary type="html">{{ page.summary }}</summary>
+        {% else %}
         <content type="html">{{ page.content }}</content>
+        {% endif %}
     </entry>
     {%- endfor %}
 </feed>
