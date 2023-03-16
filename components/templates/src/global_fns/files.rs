@@ -11,13 +11,13 @@ use libs::sha2::{digest, Sha256, Sha384, Sha512};
 use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use utils::site::resolve_internal_link;
 
-fn compute_hash<D: digest::Digest>(literal: String, as_base64: bool) -> String
+fn compute_hash<D: digest::Digest>(data: &[u8], as_base64: bool) -> String
 where
     digest::Output<D>: core::fmt::LowerHex,
     D: std::io::Write,
 {
     let mut hasher = D::new();
-    hasher.update(literal);
+    hasher.update(data);
     if as_base64 {
         standard_b64.encode(hasher.finalize())
     } else {
@@ -127,11 +127,9 @@ impl TeraFn for GetUrl {
                 .map_err(|e| format!("`get_url`: {}", e))?
                 .and_then(|(p, _)| fs::File::open(p).ok())
                 .and_then(|mut f| {
-                    let mut contents = String::new();
-
-                    f.read_to_string(&mut contents).ok()?;
-
-                    Some(compute_hash::<Sha256>(contents, false))
+                    let mut contents = Vec::new();
+                    f.read_to_end(&mut contents).ok()?;
+                    Some(compute_hash::<Sha256>(&contents, false))
                 }) {
                     Some(hash) => {
                         let shorthash = &hash[..20]; // 2^-80 chance of false positive
@@ -202,16 +200,16 @@ impl TeraFn for GetHash {
                         }
                     };
 
-                let mut f = match std::fs::File::open(file_path) {
+                let mut f = match fs::File::open(file_path) {
                     Ok(f) => f,
                     Err(e) => {
                         return Err(format!("File {} could not be open: {}", path_v, e).into());
                     }
                 };
 
-                let mut contents = String::new();
+                let mut contents = Vec::new();
 
-                match f.read_to_string(&mut contents) {
+                match f.read_to_end(&mut contents) {
                     Ok(f) => f,
                     Err(e) => {
                         return Err(format!("File {} could not be read: {}", path_v, e).into());
@@ -220,7 +218,7 @@ impl TeraFn for GetHash {
 
                 contents
             }
-            (None, Some(literal_v)) => literal_v,
+            (None, Some(literal_v)) => literal_v.into_bytes(),
         };
 
         let sha_type = optional_arg!(
@@ -235,9 +233,9 @@ impl TeraFn for GetHash {
                 .unwrap_or(true);
 
         let hash = match sha_type {
-            256 => compute_hash::<Sha256>(contents, base64),
-            384 => compute_hash::<Sha384>(contents, base64),
-            512 => compute_hash::<Sha512>(contents, base64),
+            256 => compute_hash::<Sha256>(&contents, base64),
+            384 => compute_hash::<Sha384>(&contents, base64),
+            512 => compute_hash::<Sha512>(&contents, base64),
             _ => return Err("`get_hash`: Invalid sha value".into()),
         };
 
@@ -250,7 +248,7 @@ mod tests {
     use super::{GetHash, GetUrl};
 
     use std::collections::HashMap;
-    use std::fs::create_dir;
+    use std::fs::{copy, create_dir};
     use std::path::PathBuf;
 
     use libs::tera::{to_value, Function};
@@ -292,6 +290,16 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "http://a-website.com/app.css?h=572e691dc68c3fcd653a"
+        );
+
+        // And binary files as well
+        copy("gutenberg.jpg", dir.path().join("gutenberg.jpg")).unwrap();
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("gutenberg.jpg").unwrap());
+        args.insert("cachebust".to_string(), to_value(true).unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "http://a-website.com/gutenberg.jpg?h=93fff9d0ecde9b119c0c"
         );
     }
 
