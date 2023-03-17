@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::search;
 use crate::config::taxonomies;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct LanguageOptions {
     /// Title of the site. Defaults to None
@@ -93,6 +93,21 @@ impl LanguageOptions {
         }
 
         Ok(())
+    }
+}
+
+impl Default for LanguageOptions {
+    fn default() -> LanguageOptions {
+        LanguageOptions {
+            title: None,
+            description: None,
+            generate_feed: false,
+            feed_filename: "atom.xml".to_string(),
+            taxonomies: vec![],
+            build_search_index: false,
+            search: search::Search::default(),
+            translations: HashMap::new(),
+        }
     }
 }
 
