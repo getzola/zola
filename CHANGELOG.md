@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.18.0 (unreleased)
+
 ## 0.17.2 (2023-03-19)
 
 - Fix one more invalid error with colocated directories
