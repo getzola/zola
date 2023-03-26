@@ -42,13 +42,15 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
 }
 
 pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
-    let tpl_glob =
-        format!("{}/{}", path.to_string_lossy().replace('\\', "/"), "templates/**/*.{*ml,md}");
-
-    // Only parsing as we might be extending templates from themes and that would error
-    // as we haven't loaded them yet
-    let mut tera =
-        Tera::parse(&tpl_glob).context("Error parsing templates from the /templates directory")?;
+    let mut tera = if path.join("templates").exists() {
+        let tpl_glob =
+            format!("{}/{}", path.to_string_lossy().replace('\\', "/"), "templates/**/*.{*ml,md}");
+        // Only parsing as we might be extending templates from themes and that would error
+        // as we haven't loaded them yet
+        Tera::parse(&tpl_glob).context("Error parsing templates from the /templates directory")?
+    } else {
+        Tera::default()
+    };
 
     if let Some(ref theme) = config.theme {
         // Test that the templates folder exist for that theme
