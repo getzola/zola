@@ -90,19 +90,20 @@ taxonomies = [
 **Example 2:** (multilingual site)
 
 ```toml
+# These taxonomies go in the main section
 taxonomies = [
-    {name = "director", feed = true, lang = "fr"},
-    {name = "director", feed = true, lang = "eo"},
-    {name = "director", feed = true, lang = "en"},
-    {name = "genres", feed = true, lang = "fr"},
-    {name = "genres", feed = true, lang = "eo"},
-    {name = "genres", feed = true, lang = "en"},
-    {name = "awards", feed = true, lang = "fr"},
-    {name = "awards", feed = true, lang = "eo"},
-    {name = "awards", feed = true, lang = "en"},
-    {name = "release-year", feed = true, lang = "fr"},
-    {name = "release-year", feed = true, lang = "eo"},
-    {name = "release-year", feed = true, lang = "en"},
+    {name = "director", feed = true},
+    {name = "genres", feed = true},
+    {name = "awards", feed = true},
+    {name = "release-year", feed = true},
+]
+
+[languages.fr]
+taxonomies = [
+    {name = "director", feed = true},
+    {name = "genres", feed = true},
+    {name = "awards", feed = true},
+    {name = "release-year", feed = true},
 ]
 ```
 
