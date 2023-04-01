@@ -45,21 +45,27 @@ If `slugify.paths` is set to `"off"`, no modifications are made.
 
 If you want URLs containing non-ASCII characters, `slugify.paths` needs to be set to `"safe"` or `"off"`.
 
+Example config.toml
+```
+[slugify]
+paths = "off"
+```
+
 ### Path from frontmatter
 
 The output path for the page will first be read from the `slug` key in the page's frontmatter.
 
-**Example:** (file `content/zines/mlf-kurdistan.md`)
+**Example:** (file `content/gunce/merhaba-dünya.md`)
 
 ```
 +++
-title = "Le mouvement des Femmes Libres, à la tête de la libération kurde"
-slug = "femmes-libres-libération-kurde"
+title = "Merhaba Dünya"
+slug = "merhaba-dünya"
 +++
-This is my article.
+Merhaba Dünya.
 ```
 
-This frontmatter will output the article to `[base_url]/zines/femmes-libres-libération-kurde` with `slugify.paths` set to `"safe"` or `"off"`, and to `[base_url]/zines/femmes-libres-liberation-kurde` with the default value for `slugify.paths` of `"on"`.
+This frontmatter will output the article to `[base_url]/gunce/merhaba-dünya` with `slugify.paths` set to `"safe"` or `"off"`, and to `[base_url]/gunce/merhaba-dunya` with the default value for `slugify.paths` of `"on"`.
 
 ### Path from filename
 
