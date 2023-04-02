@@ -86,6 +86,13 @@ Encode the variable to base64.
 ### base64_decode
 Decode the variable from base64.
 
+### replace_re
+Replace text via regular expressions.
+
+```jinja2
+{{ some_text | replace_re(pattern=`(?P<last>[^,\s]+),\s+(?P<first>\S+)`, rep=`$first $last`) }}
+```
+
 ### num_format
 Format a number into its string representation.
 
