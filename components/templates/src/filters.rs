@@ -131,11 +131,8 @@ mod tests {
 
     use libs::tera::{to_value, Filter, Tera};
 
-    use crate::filters::replace_re;
-
-    use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
+    use super::{base64_decode, base64_encode, replace_re, MarkdownFilter, NumFormatFilter};
     use config::Config;
-    use regex::Regex;
 
     #[test]
     fn markdown_filter() {
@@ -273,13 +270,13 @@ mod tests {
 
     #[test]
     fn replace_re_filter() {
-        let pattern = r"(?P<last>[^,\s]+),\s+(?P<first>\S+)";
-        let rep = "$last $first";
         let value = "Springsteen, Bruce";
         let expected = "Bruce Springsteen";
+        let pattern = r"(?P<last>[^,\s]+),\s+(?P<first>\S+)";
+        let rep = "$first $last";
         let mut args = HashMap::new();
-        args.insert("pattern".to_string(), to_value(pattern).unwrap()).unwrap();
-        args.insert(rep.to_string(), to_value(rep).unwrap()).unwrap();
+        args.insert("pattern".to_string(), to_value(pattern).unwrap());
+        args.insert("rep".to_string(), to_value(rep).unwrap());
         let result = replace_re(&to_value(value).unwrap(), &args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(expected).unwrap());
