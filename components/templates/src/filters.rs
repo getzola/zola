@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::hash::BuildHasher;
 
 use config::Config;
+use libs::regex::Regex;
 use libs::base64::engine::{general_purpose::STANDARD as standard_b64, Engine};
 use libs::tera::{
     to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
@@ -78,6 +79,22 @@ pub fn base64_decode<S: BuildHasher>(
     Ok(to_value(as_str).unwrap())
 }
 
+pub fn replace_re(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+    let text = try_get_value!("replace_re", "value", String, value);
+    let pattern = match args.get("pattern") {
+        Some(val) => try_get_value!("replace_re", "pattern", String, val),
+        None => return Err(TeraError::msg("Filter `replace_re` expected an arg called `pattern`")),
+    };
+    let rep = match args.get("rep") {
+        Some(val) => try_get_value!("replace_re", "replace", String, val),
+        None => return Err(TeraError::msg("Filter `replace_re` expected an arg called `replace`")),
+    };
+    let pattern_re = Regex::new(&pattern)
+        .map_err(|e| format!("`replace_re`: failed to compile regex: {}", e))?;
+    let replaced = pattern_re.replace_all(&text, &rep);
+    Ok(to_value(replaced).unwrap())
+}
+
 #[derive(Debug)]
 pub struct NumFormatFilter {
     default_language: String,
@@ -114,7 +131,7 @@ mod tests {
 
     use libs::tera::{to_value, Filter, Tera};
 
-    use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter};
+    use super::{base64_decode, base64_encode, replace_re, MarkdownFilter, NumFormatFilter};
     use config::Config;
 
     #[test]
@@ -249,6 +266,20 @@ mod tests {
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), to_value(expected).unwrap());
         }
+    }
+
+    #[test]
+    fn replace_re_filter() {
+        let value = "Springsteen, Bruce";
+        let expected = "Bruce Springsteen";
+        let pattern = r"(?P<last>[^,\s]+),\s+(?P<first>\S+)";
+        let rep = "$first $last";
+        let mut args = HashMap::new();
+        args.insert("pattern".to_string(), to_value(pattern).unwrap());
+        args.insert("rep".to_string(), to_value(rep).unwrap());
+        let result = replace_re(&to_value(value).unwrap(), &args);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), to_value(expected).unwrap());
     }
 
     #[test]
