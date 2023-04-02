@@ -4,8 +4,8 @@ use std::hash::BuildHasher;
 
 use config::Config;
 
-use libs::regex::Regex;
 use libs::base64::engine::{general_purpose::STANDARD as standard_b64, Engine};
+use libs::regex::Regex;
 use libs::tera::{
     to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
     Value,
