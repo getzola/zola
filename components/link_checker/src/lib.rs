@@ -30,6 +30,13 @@ pub fn message(res: &Result) -> String {
 // Keep history of link checks so a rebuild doesn't have to check again
 static LINKS: Lazy<Arc<RwLock<HashMap<String, Result>>>> =
     Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
+// Make sure to create only a single Client so that we can reuse the connections
+static CLIENT: Lazy<Client> = Lazy::new(|| {
+    Client::builder()
+        .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
+        .build()
+        .expect("reqwest client build")
+});
 
 pub fn check_url(url: &str, config: &LinkChecker) -> Result {
     {
@@ -44,15 +51,11 @@ pub fn check_url(url: &str, config: &LinkChecker) -> Result {
     headers.append(ACCEPT, "*/*".parse().unwrap());
 
     // TODO: pass the client to the check_url, do not pass the config
-    let client = Client::builder()
-        .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
-        .build()
-        .expect("reqwest client build");
 
     let check_anchor = !config.skip_anchor_prefixes.iter().any(|prefix| url.starts_with(prefix));
 
     // Need to actually do the link checking
-    let res = match client.get(url).headers(headers).send() {
+    let res = match CLIENT.get(url).headers(headers).send() {
         Ok(ref mut response) if check_anchor && has_anchor(url) => {
             let body = {
                 let mut buf: Vec<u8> = vec![];
