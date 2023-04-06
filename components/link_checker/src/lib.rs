@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::result;
 use std::sync::{Arc, RwLock};
-use std::time::Duration;
 
 use libs::once_cell::sync::Lazy;
 use libs::reqwest::header::{HeaderMap, ACCEPT};
