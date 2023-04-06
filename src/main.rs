@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use cli::{Cli, Command};
+use errors::anyhow;
 use utils::net::{get_available_port, port_is_available};
 
 use clap::{CommandFactory, Parser};
@@ -13,10 +14,17 @@ mod messages;
 mod prompt;
 
 fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
-    let root_dir = dir
-        .ancestors()
-        .find(|a| a.join(config_path).exists())
-        .unwrap_or_else(|| panic!("could not find directory containing config file"));
+    let root_dir = dir.ancestors().find(|a| a.join(config_path).exists()).unwrap_or_else(|| {
+        messages::unravel_errors(
+            "",
+            &anyhow!(
+                "{} not found in current directory or ancestors, current_dir is {}",
+                config_path.display(),
+                dir.display()
+            ),
+        );
+        std::process::exit(1);
+    });
 
     // if we got here we found root_dir so config file should exist so we can unwrap safely
     let config_file = root_dir
