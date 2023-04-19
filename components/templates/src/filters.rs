@@ -308,9 +308,11 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("pattern".to_string(), to_value(pattern).unwrap());
         args.insert("rep".to_string(), to_value(rep).unwrap());
-        let result = ReplaceReFilter::new().filter(&to_value(value).unwrap(), &args);
+        let replace_re = ReplaceReFilter::new();
+        let result = replace_re.filter(&to_value(value).unwrap(), &args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(expected).unwrap());
+        assert!(replace_re.re_cache.lock().unwrap().contains_key(pattern));
     }
 
     #[test]

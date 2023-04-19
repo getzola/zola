@@ -90,7 +90,8 @@ Decode the variable from base64.
 Replace text via regular expressions.
 
 ```jinja2
-{{ some_text | replace_re(pattern=`(?P<last>[^,\s]+),\s+(?P<first>\S+)`, rep=`$first $last`) }}
+{{ "World Hello" | replace_re(pattern=`(?P<subject>\w+), (?P<greeting>\w+)`, rep=`$greeting $subject`) }}
+<!-- Hello World -->
 ```
 
 ### num_format
