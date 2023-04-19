@@ -162,7 +162,7 @@ mod tests {
 
     use libs::tera::{to_value, Filter, Tera};
 
-    use super::{base64_decode, base64_encode, ReplaceReFilter, MarkdownFilter, NumFormatFilter};
+    use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter, ReplaceReFilter};
     use config::Config;
 
     #[test]
