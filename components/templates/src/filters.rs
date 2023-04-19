@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
+use std::sync::{Arc, Mutex};
 
 use config::Config;
 
@@ -80,20 +81,49 @@ pub fn base64_decode<S: BuildHasher>(
     Ok(to_value(as_str).unwrap())
 }
 
-pub fn replace_re(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-    let text = try_get_value!("replace_re", "value", String, value);
-    let pattern = match args.get("pattern") {
-        Some(val) => try_get_value!("replace_re", "pattern", String, val),
-        None => return Err(TeraError::msg("Filter `replace_re` expected an arg called `pattern`")),
-    };
-    let rep = match args.get("rep") {
-        Some(val) => try_get_value!("replace_re", "rep", String, val),
-        None => return Err(TeraError::msg("Filter `replace_re` expected an arg called `rep`")),
-    };
-    let pattern_re = Regex::new(&pattern)
-        .map_err(|e| format!("`replace_re`: failed to compile regex: {}", e))?;
-    let replaced = pattern_re.replace_all(&text, &rep);
-    Ok(to_value(replaced).unwrap())
+#[derive(Debug)]
+pub struct ReplaceReFilter {
+    re_cache: Arc<Mutex<HashMap<String, Regex>>>,
+}
+
+impl ReplaceReFilter {
+    pub fn new() -> Self {
+        return Self { re_cache: Arc::new(Mutex::new(HashMap::new())) };
+    }
+}
+
+impl TeraFilter for ReplaceReFilter {
+    fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        let text = try_get_value!("replace_re", "value", String, value);
+        let pattern = match args.get("pattern") {
+            Some(val) => try_get_value!("replace_re", "pattern", String, val),
+            None => {
+                return Err(TeraError::msg("Filter `replace_re` expected an arg called `pattern`"))
+            }
+        };
+        let rep = match args.get("rep") {
+            Some(val) => try_get_value!("replace_re", "replace", String, val),
+            None => {
+                return Err(TeraError::msg("Filter `replace_re` expected an arg called `replace`"))
+            }
+        };
+
+        let mut cache = self.re_cache.lock().expect("re_cache lock");
+        let pattern_re = {
+            match cache.get(&pattern) {
+                Some(pat) => pat.clone(),
+                None => {
+                    let pat = Regex::new(&pattern)
+                        .map_err(|e| format!("`replace_re`: failed to compile regex: {}", e))?;
+                    cache.insert(pattern, pat.clone());
+                    pat
+                }
+            }
+        };
+
+        let replaced = pattern_re.replace_all(&text, &rep);
+        Ok(to_value(replaced).unwrap())
+    }
 }
 
 #[derive(Debug)]
@@ -132,7 +162,7 @@ mod tests {
 
     use libs::tera::{to_value, Filter, Tera};
 
-    use super::{base64_decode, base64_encode, replace_re, MarkdownFilter, NumFormatFilter};
+    use super::{base64_decode, base64_encode, ReplaceReFilter, MarkdownFilter, NumFormatFilter};
     use config::Config;
 
     #[test]
@@ -278,7 +308,7 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("pattern".to_string(), to_value(pattern).unwrap());
         args.insert("rep".to_string(), to_value(rep).unwrap());
-        let result = replace_re(&to_value(value).unwrap(), &args);
+        let result = ReplaceReFilter::new().filter(&to_value(value).unwrap(), &args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(expected).unwrap());
     }
