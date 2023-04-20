@@ -86,6 +86,14 @@ Encode the variable to base64.
 ### base64_decode
 Decode the variable from base64.
 
+### regex_replace
+Replace text via regular expressions.
+
+```jinja2
+{{ "World Hello" | regex_replace(pattern=`(?P<subject>\w+), (?P<greeting>\w+)`, rep=`$greeting $subject`) }}
+<!-- Hello World -->
+```
+
 ### num_format
 Format a number into its string representation.
 
