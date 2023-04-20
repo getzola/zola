@@ -28,6 +28,7 @@ pub static ZOLA_TERA: Lazy<Tera> = Lazy::new(|| {
     .unwrap();
     tera.register_filter("base64_encode", filters::base64_encode);
     tera.register_filter("base64_decode", filters::base64_decode);
+    tera.register_filter("regex_replace", filters::RegexReplaceFilter::new());
     tera
 });
 
