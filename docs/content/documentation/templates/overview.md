@@ -86,11 +86,11 @@ Encode the variable to base64.
 ### base64_decode
 Decode the variable from base64.
 
-### replace_re
+### regex_replace
 Replace text via regular expressions.
 
 ```jinja2
-{{ "World Hello" | replace_re(pattern=`(?P<subject>\w+), (?P<greeting>\w+)`, rep=`$greeting $subject`) }}
+{{ "World Hello" | regex_replace(pattern=`(?P<subject>\w+), (?P<greeting>\w+)`, rep=`$greeting $subject`) }}
 <!-- Hello World -->
 ```
 

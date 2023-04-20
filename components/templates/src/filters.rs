@@ -82,46 +82,48 @@ pub fn base64_decode<S: BuildHasher>(
 }
 
 #[derive(Debug)]
-pub struct ReplaceReFilter {
+pub struct RegexReplaceFilter {
     re_cache: Arc<Mutex<HashMap<String, Regex>>>,
 }
 
-impl ReplaceReFilter {
+impl RegexReplaceFilter {
     pub fn new() -> Self {
         return Self { re_cache: Arc::new(Mutex::new(HashMap::new())) };
     }
 }
 
-impl TeraFilter for ReplaceReFilter {
+impl TeraFilter for RegexReplaceFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-        let text = try_get_value!("replace_re", "value", String, value);
+        let text = try_get_value!("regex_replace", "value", String, value);
         let pattern = match args.get("pattern") {
-            Some(val) => try_get_value!("replace_re", "pattern", String, val),
+            Some(val) => try_get_value!("regex_replace", "pattern", String, val),
             None => {
-                return Err(TeraError::msg("Filter `replace_re` expected an arg called `pattern`"))
+                return Err(TeraError::msg(
+                    "Filter `regex_replace` expected an arg called `pattern`",
+                ))
             }
         };
         let rep = match args.get("rep") {
-            Some(val) => try_get_value!("replace_re", "replace", String, val),
+            Some(val) => try_get_value!("regex_replace", "rep", String, val),
             None => {
-                return Err(TeraError::msg("Filter `replace_re` expected an arg called `replace`"))
+                return Err(TeraError::msg("Filter `regex_replace` expected an arg called `rep`"))
             }
         };
 
         let mut cache = self.re_cache.lock().expect("re_cache lock");
-        let pattern_re = {
+        let replaced = {
             match cache.get(&pattern) {
-                Some(pat) => pat.clone(),
+                Some(pat) => pat.replace_all(&text, &rep),
                 None => {
                     let pat = Regex::new(&pattern)
-                        .map_err(|e| format!("`replace_re`: failed to compile regex: {}", e))?;
-                    cache.insert(pattern, pat.clone());
-                    pat
+                        .map_err(|e| format!("`regex_replace`: failed to compile regex: {}", e))?;
+                    let replaced = pat.replace_all(&text, &rep);
+                    cache.insert(pattern, pat);
+                    replaced
                 }
             }
         };
 
-        let replaced = pattern_re.replace_all(&text, &rep);
         Ok(to_value(replaced).unwrap())
     }
 }
@@ -162,7 +164,9 @@ mod tests {
 
     use libs::tera::{to_value, Filter, Tera};
 
-    use super::{base64_decode, base64_encode, MarkdownFilter, NumFormatFilter, ReplaceReFilter};
+    use super::{
+        base64_decode, base64_encode, MarkdownFilter, NumFormatFilter, RegexReplaceFilter,
+    };
     use config::Config;
 
     #[test]
@@ -300,7 +304,7 @@ mod tests {
     }
 
     #[test]
-    fn replace_re_filter() {
+    fn regex_replace_filter() {
         let value = "Springsteen, Bruce";
         let expected = "Bruce Springsteen";
         let pattern = r"(?P<last>[^,\s]+),\s+(?P<first>\S+)";
@@ -308,11 +312,11 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("pattern".to_string(), to_value(pattern).unwrap());
         args.insert("rep".to_string(), to_value(rep).unwrap());
-        let replace_re = ReplaceReFilter::new();
-        let result = replace_re.filter(&to_value(value).unwrap(), &args);
+        let regex_replace = RegexReplaceFilter::new();
+        let result = regex_replace.filter(&to_value(value).unwrap(), &args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(expected).unwrap());
-        assert!(replace_re.re_cache.lock().unwrap().contains_key(pattern));
+        assert!(regex_replace.re_cache.lock().unwrap().contains_key(pattern));
     }
 
     #[test]
