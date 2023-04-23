@@ -33,7 +33,7 @@
           </author>
           <link>{{ page.permalink | escape_xml | safe }}</link>
           <guid>{{ page.permalink | escape_xml | safe }}</guid>
-          <description>{% if page.summary %}{{ page.summary }}{% else %}{{ page.content }}{% endif %}</description>
+          <description xml:base="{{ page.permalink | escape_xml | safe }}">{% if page.summary %}{{ page.summary }}{% else %}{{ page.content }}{% endif %}</description>
       </item>
       {%- endfor %}
     </channel>
