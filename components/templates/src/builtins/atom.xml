@@ -40,7 +40,7 @@
         {% if page.summary %}
         <summary type="html">{{ page.summary }}</summary>
         {% else %}
-        <content type="html">{{ page.content }}</content>
+        <content type="html" xml:base="{{ page.permalink | escape_xml | safe }}">{{ page.content }}</content>
         {% endif %}
     </entry>
     {%- endfor %}
