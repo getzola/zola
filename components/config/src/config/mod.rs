@@ -28,7 +28,7 @@ pub enum Mode {
     Check,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
@@ -109,6 +109,7 @@ pub struct SerializedConfig<'a> {
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
     markdown: &'a markup::Markdown,
+    search: &'a search::Search,
 }
 
 impl Config {
@@ -331,6 +332,7 @@ impl Config {
             build_search_index: options.build_search_index,
             extra: &self.extra,
             markdown: &self.markdown,
+            search: &self.search,
         }
     }
 }
