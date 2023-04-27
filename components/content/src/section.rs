@@ -161,9 +161,9 @@ impl Section {
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
-        context
-            .tera_context
-            .insert("section", &SerializingSection::new(self, SectionSerMode::ForMarkdown));
+        let serializing_section = SerializingSection::new(self, SectionSerMode::ForMarkdown);
+        context.tera_context.insert("section", &serializing_section);
+        context.tera_context.insert("this", &serializing_section);
 
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;

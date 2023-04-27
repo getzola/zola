@@ -1,4 +1,4 @@
-/// A page, can be a blog post or a basic page
+// A page, can be a blog post or a basic page
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -227,7 +227,9 @@ impl Page {
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
-        context.tera_context.insert("page", &SerializingPage::new(self, None, false));
+        let serializing_page = SerializingPage::new(self, None, false);
+        context.tera_context.insert("page", &serializing_page);
+        context.tera_context.insert("this", &serializing_page);
 
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
