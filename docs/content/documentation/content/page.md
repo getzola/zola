@@ -22,7 +22,7 @@ an underscore (`_`) or a dash (`-`) will use that date as the page date, unless 
 in the front matter. The page name will be anything after `_`/`-`, so the file `2018-10-10-hello-world.md` will
 be available at `[base_url]/hello-world`. Note that the full RFC3339 datetime contains colons, which is not a valid
 character in a filename on Windows.
-This behavior can be disabled by setting `slugify.paths_keep_date` to `true` (the default is `false`). Note that a `_` separating the date would be slugified into a `-` with the default value for `slugify.paths` of `"on"`.
+This behavior can be disabled by setting `slugify.paths_keep_dates` to `true` (the default is `false`). Note that a `_` separating the date would be slugified into a `-` with the default value for `slugify.paths` of `"on"`.
 
 As you can see, creating an `about.md` file is equivalent to creating an
 `about/index.md` file. The only difference between the two methods is that creating
