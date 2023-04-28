@@ -787,11 +787,7 @@ impl Site {
     }
 
     fn index_for_lang(&self, lang: &str) -> Result<()> {
-        let index_json = search::build_index(
-            &self.config.default_language,
-            &self.library.read().unwrap(),
-            &self.config,
-        )?;
+        let index_json = search::build_index(lang, &self.library.read().unwrap(), &self.config)?;
         let (path, content) = match &self.config.search.index_format {
             IndexFormat::ElasticlunrJson => {
                 let path = self.output_path.join(format!("search_index.{}.json", lang));
