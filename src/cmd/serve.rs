@@ -280,6 +280,7 @@ fn create_new_site(
         site.enable_live_reload(interface_port);
     }
     messages::notify_site_size(&site);
+    messages::warn_about_default_templates(&site);
     messages::warn_about_ignored_pages(&site);
     site.build()?;
     Ok((site, address))

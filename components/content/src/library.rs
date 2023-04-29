@@ -26,6 +26,9 @@ macro_rules! set {
 pub struct Library {
     pub pages: AHashMap<PathBuf, Page>,
     pub sections: AHashMap<PathBuf, Section>,
+    // NOTE FOR REVIEW perhaps I can put a property on Page and Section and compute this collection
+    // we want to warn users of potentially unexpected default template renders
+    pub default_templates: Vec<String>,
     // aliases -> files, so we can easily check for conflicts
     pub reverse_aliases: AHashMap<String, AHashSet<PathBuf>>,
     pub translations: AHashMap<PathBuf, AHashSet<PathBuf>>,

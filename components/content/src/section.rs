@@ -9,7 +9,7 @@ use markdown::{render_content, RenderContext};
 use utils::fs::read_file;
 use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{render_retrieved_template, retrieve_template_and_default_status, ShortcodeDefinition};
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{split_section_content, SectionFrontMatter};
@@ -182,8 +182,8 @@ impl Section {
         Ok(())
     }
 
-    /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
+    /// Renders the section using the default layout, unless specified in front-matter
+    pub fn render_html_and_get_default_status(&self, tera: &Tera, config: &Config, library: &Library) -> Result<(String, bool)> {
         let tpl_name = self.get_template_name();
 
         let mut context = TeraContext::new();
@@ -193,8 +193,11 @@ impl Section {
         context.insert("section", &SerializingSection::new(self, SectionSerMode::Full(library)));
         context.insert("lang", &self.lang);
 
-        render_template(tpl_name, tera, context, &config.theme)
-            .with_context(|| format!("Failed to render section '{}'", self.file.path.display()))
+        let (retrieved_template, is_default) = retrieve_template_and_default_status(tpl_name, tera, &config.theme)
+            .with_context(|| format!("Failed to retrieve template '{}'", self.file.path.display()))?;
+        let result = render_retrieved_template(retrieved_template, is_default, tera, &context)
+            .with_context(|| format!("Failed to render section '{}'", self.file.path.display()))?;
+        Ok((result, is_default))
     }
 
     /// Is this the index section?

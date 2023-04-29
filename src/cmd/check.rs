@@ -24,6 +24,7 @@ pub fn check(
     }
     site.load()?;
     messages::check_site_summary(&site);
+    messages::warn_about_default_templates(&site);
     messages::warn_about_ignored_pages(&site);
     Ok(())
 }

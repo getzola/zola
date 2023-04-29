@@ -69,10 +69,58 @@ pub fn get_shortcodes(tera: &Tera) -> HashMap<String, ShortcodeDefinition> {
     shortcode_definitions
 }
 
+/// Check for default names.
+/// We want to store them in library so we can warn about unexpected defaults being rendered.
+pub fn retrieve_template_and_default_status<'a>(
+    name: &'a str,
+    tera: &'a Tera,
+    theme: &Option<String>,
+) -> Result<(&'a str, bool)> {
+    if let Some(template) = check_template_fallbacks(name, tera, theme) {
+        return Ok((template, false));
+    }
+    // maybe it's a default one?
+    match name {
+        "index.html" | "section.html" | "page.html" | "single.html" | "list.html" => {
+            return Ok((name, true))
+        },
+        _ => bail!("Tried to resolve `{}` but the template wasn't found", name),
+    }
+}
+
+/// TODO REWRITE ME to account for `retrieve_template_and_default_status` separation
 /// Renders the given template with the given context, but also ensures that, if the default file
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string
 /// to avoid an error if there isn't a template with that name
+pub fn render_retrieved_template(
+    template: &str,
+    is_default: bool,
+    tera: &Tera,
+    context: &Context,
+) -> Result<String> {
+    if !is_default {
+        tera.render(template, context).map_err(std::convert::Into::into)
+    } else {
+        match template {
+            "index.html" | "section.html" => render_default_tpl!(
+                template,
+                "https://www.getzola.org/documentation/templates/pages-sections/#section-variables"
+            ),
+            "page.html" => render_default_tpl!(
+                template,
+                "https://www.getzola.org/documentation/templates/pages-sections/#page-variables"
+            ),
+            "single.html" | "list.html" => {
+                render_default_tpl!(template, "https://www.getzola.org/documentation/templates/taxonomies/")
+            },
+            // This is technically unreachable if retrieve_template_and_default_status is called
+            // before this function
+            _ => bail!("Tried to render `{}` but the template wasn't found", template),
+        }
+    }
+}
+
 pub fn render_template(
     name: &str,
     tera: &Tera,
@@ -99,7 +147,6 @@ pub fn render_template(
         _ => bail!("Tried to render `{}` but the template wasn't found", name),
     }
 }
-
 /// Rewrites the path of duplicate templates to include the complete theme path
 /// Theme templates  will be injected into site templates, with higher priority for site
 /// templates. To keep a copy of the template in case it's being extended from a site template

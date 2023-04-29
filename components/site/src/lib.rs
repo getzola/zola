@@ -673,7 +673,10 @@ impl Site {
 
     /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
-        let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+        let (output, is_default) = page.render_html_and_get_default_status(&self.tera, &self.config, &self.library.read().unwrap())?;
+        if is_default {
+            self.library.write().unwrap().default_templates.push(page.file.path.display().to_string());
+        }
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
         let current_path =
@@ -1133,8 +1136,11 @@ impl Site {
                 &Paginator::from_section(section, &self.library.read().unwrap()),
             )?;
         } else {
-            let output =
-                section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+            let (output, is_default) =
+                section.render_html_and_get_default_status(&self.tera, &self.config, &self.library.read().unwrap())?;
+            if is_default {
+                self.library.write().unwrap().default_templates.push(section.file.path.display().to_string());
+            }
             let content = self.inject_livereload(output);
             self.write_content(&components, "index.html", content, false)?;
         }
