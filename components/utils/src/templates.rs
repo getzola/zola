@@ -83,7 +83,7 @@ pub fn retrieve_template_and_default_status<'a>(
     match name {
         "index.html" | "section.html" | "page.html" | "single.html" | "list.html" => {
             return Ok((name, true))
-        },
+        }
         _ => bail!("Tried to resolve `{}` but the template wasn't found", name),
     }
 }
@@ -112,8 +112,11 @@ pub fn render_retrieved_template(
                 "https://www.getzola.org/documentation/templates/pages-sections/#page-variables"
             ),
             "single.html" | "list.html" => {
-                render_default_tpl!(template, "https://www.getzola.org/documentation/templates/taxonomies/")
-            },
+                render_default_tpl!(
+                    template,
+                    "https://www.getzola.org/documentation/templates/taxonomies/"
+                )
+            }
             // This is technically unreachable if retrieve_template_and_default_status is called
             // before this function
             _ => bail!("Tried to render `{}` but the template wasn't found", template),

@@ -11,7 +11,9 @@ use errors::{Context, Result};
 use markdown::{render_content, RenderContext};
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
-use utils::templates::{render_retrieved_template, retrieve_template_and_default_status, ShortcodeDefinition};
+use utils::templates::{
+    render_retrieved_template, retrieve_template_and_default_status, ShortcodeDefinition,
+};
 use utils::types::InsertAnchor;
 
 use crate::file_info::FileInfo;
@@ -245,10 +247,15 @@ impl Page {
     }
 
     /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html_and_get_default_status(&self, tera: &Tera, config: &Config, library: &Library) -> Result<(String, bool)> {
+    pub fn render_html_and_get_default_status(
+        &self,
+        tera: &Tera,
+        config: &Config,
+        library: &Library,
+    ) -> Result<(String, bool)> {
         let tpl_name = match self.meta.template {
             Some(ref l) => l,
-            None => "page.html"
+            None => "page.html",
         };
 
         let mut context = TeraContext::new();
@@ -258,12 +265,13 @@ impl Page {
         context.insert("page", &self.serialize(library));
         context.insert("lang", &self.lang);
 
-        let (retrieved_template, is_default) = retrieve_template_and_default_status(tpl_name, tera, &config.theme)
-            .with_context(|| format!("Failed to retrieve template '{}'", self.file.path.display()))?;
+        let (retrieved_template, is_default) =
+            retrieve_template_and_default_status(tpl_name, tera, &config.theme).with_context(
+                || format!("Failed to retrieve template '{}'", self.file.path.display()),
+            )?;
         let result = render_retrieved_template(retrieved_template, is_default, tera, &context)
             .with_context(|| format!("Failed to render page '{}'", self.file.path.display()))?;
         Ok((result, is_default))
-
     }
 
     /// Creates a vectors of asset URLs.
