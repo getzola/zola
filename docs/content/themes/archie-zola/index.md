@@ -3,11 +3,11 @@
 title = "archie-zola"
 description = "A zola theme based on Hugo archie."
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/XXXMrG/archie-zola.git"
 homepage = "https://github.com/XXXMrG/archie-zola"
 minimum_version = "0.14.0"
@@ -64,6 +64,7 @@ theme = "archie-zola"
 * Auto Dark Mode(based on system theme)
 * Dark/Light Mode toggle
 * Google Analytics Script
+* Meta Tags For Individual Pages
 
 in the planning stage：
 
@@ -73,6 +74,45 @@ in the planning stage：
 
 ## Config
 
+### Customize `<meta/>` tags 
+
+The following TOML and YAML code will yiled two `<meta/>` tags, `<meta property="og:title" content="the og title"/>`, `<meta property="og:description" content="the og description"/>`. 
+
+TOML: 
+
+```toml
+title = "post title"
+description = "post desc"
+date = "2023-01-01"
+
+[extra]
+meta = [
+    {property = "og:title", content = "the og title"},
+    {property = "og:description", content = "the og description"},
+]
+```
+
+YAML: 
+
+```yaml
+title: "post title"
+description: "post desc"
+date: "2023-01-01"
+extra: 
+    meta: 
+        - property: "og:title"
+          content: "the og title"
+        - property: "og:description"
+          content: "the og description"
+```
+
+If the `og:title`, the `og:description`, or the "description" are not set, the page's title and description will be used. That is, the following TOML code generates `<meta property="og:title" content="post title"/>`, `<meta property="og:description" content="post desc"/>`, and `<meta property="og:description" content="post desc"/>` as default values. 
+
+```toml
+title = "post title"
+description = "post desc"
+date = "2023-01-01"
+```
 
 ### Theme config
 
@@ -165,4 +205,5 @@ We appreciate any form of contribution:
 
 * New issues (feature requests, bug reports, questions, ideas, ...)
 * Pull requests (documentation improvements, code improvements, new features, ...)
+
         

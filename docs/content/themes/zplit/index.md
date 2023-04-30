@@ -3,11 +3,11 @@
 title = "Zplit"
 description = "A single page theme for a professional online presence."
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/gicrisf/zplit"
 homepage = "https://github.com/gicrisf/zplit"
 minimum_version = "0.15.0"
@@ -103,7 +103,9 @@ To sort the post index by date, enable sort in your index section `content/_inde
 sort_by = "date"
 ```
 
-Showing the posts in the main page could need some tweaking of the code, because it's not an officially supported feature.
+This theme wasn't written with blogging in mind, but more as a landing page for professionals. If you want to blog some stuff, though, you can, absolutely. If you add a new section in the content directory, you just have to add it to the main menu through the config file and it will be immediately accessible to the user.
+
+The theme doesn't support taxonomies or other advanced stuff: just simple pages. If you want to extend the blogging features, feel free to tweak the code or open an issue with a specific request.
 
 ## Custom CSS
 
@@ -146,6 +148,7 @@ If you choose this way, you don't have to care about anything else in that file.
 - [x] Custom CSS
 - [x] Custom colors
 - [x] 404 page
+- [x] Basic blogging features
 - [ ] Open Graph and Twitter Cards support
 - [ ] Multilanguage support
 

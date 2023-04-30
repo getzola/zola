@@ -3,23 +3,23 @@
 title = "Float"
 description = "An elegant blog theme"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://gitlab.com/float-theme/float.git"
-homepage = "https://float-theme.netlify.app/"
+homepage = "https://gitlab.com/float-theme/float/"
 minimum_version = "0.15.3"
 license = "MIT"
-demo = ""
+demo = "https://float-theme.netlify.app/"
 
 [extra.author]
 name = "Leon"
 homepage = "https://editor.leonh.space/"
 +++        
 
-![Float](content/blog/2020/2020-06-14-Float theme for Zola/Float.png)
+![Float](content/blog/2020/2020-06-15-Zola-Theme-Float/Float.png)
 
 **[English](README.en.md)**
 

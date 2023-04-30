@@ -3,11 +3,11 @@
 title = "Zhuia"
 description = "An elegant but still playful theme for Zola."
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/gicrisf/zhuia.git"
 homepage = "https://github.com/gicrisf/zhuia"
 minimum_version = "0.15.0"
@@ -20,6 +20,8 @@ homepage = "https://github.com/gicrisf"
 +++        
 
 # Zhuia
+
+![logo-zhuia](static/logo.png)
 
 An elegant but still playful theme for [Zola](https://getzola.org/) powered by [Spectre.css](https://picturepan2.github.io/spectre/).
 
@@ -34,6 +36,7 @@ It is especially optimized for mobile navigation (optionally without JavaScript,
 - Options
   - Title
   - SEO
+  - Menu
   - Social
   - Footer
 - Name
@@ -82,15 +85,16 @@ sort_by = "date"
 - [x] Easily extendable menu
 - [ ] Inter-page pagination
 - [x] Optional NoJs
-- [ ] Hamburger animation
+- [x] Hamburger animation
 - [ ] Comments
 - [ ] Related posts (not sure about this)
 - [ ] Search bar
 - [x] Math rendering
-- [ ] Other shortcodes (WIP)
-- [ ] Multilanguage support (WIP)
+- [x] Other shortcodes
+- [ ] Multilanguage support
 - [ ] Dark mode
 - [ ] Table of Contents
+- [ ] Image + text title option
 
 ## Options
 
@@ -131,16 +135,18 @@ Set a field in `extra` with a key of `footer_links`:
 # Freely comment out or delete every field
 social_links = [
     {url = "https://t.me/yourname", name = "telegram"},
-    # {url = "https://facebook.com/yourname", name = "facebook"},
-    {url = "https://twitter.com/yourname", name = "twitter"},
-    # {url = "", name = "instagram"},
+    {url = "https://twitter.com/gicrisf", name = "twitter"},
     {url = "https://github.com/gicrisf", name = "github"},
+    # {url = "", name = "facebook"},
+    # {url = "", name = "instagram"},
+    # {url = "", name = "bookstack"},
+    # {url = "", name = "dokuwiki"},
 ]
 ```
 
 ![social buttons](social-buttons.png)
 
-The theme automatically use the right icons for the social in the example.
+The theme automatically picks up the right icons.
 We can expand the support to other social, for sure: make a PR or open an enhancement issue to ask a new implementation.
 
 ### Footer
