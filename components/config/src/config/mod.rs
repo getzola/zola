@@ -109,7 +109,7 @@ pub struct SerializedConfig<'a> {
     build_search_index: bool,
     extra: &'a HashMap<String, Toml>,
     markdown: &'a markup::Markdown,
-    search_index_format: &'a search::IndexFormat,
+    search: search::SerializedSearch<'a>,
 }
 
 impl Config {
@@ -332,7 +332,7 @@ impl Config {
             build_search_index: options.build_search_index,
             extra: &self.extra,
             markdown: &self.markdown,
-            search_index_format: &self.search.index_format,
+            search: self.search.serialize(),
         }
     }
 }

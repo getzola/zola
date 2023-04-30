@@ -44,3 +44,16 @@ impl Default for Search {
         }
     }
 }
+
+impl Search {
+    pub fn serialize(&self) -> SerializedSearch {
+        SerializedSearch {
+            index_format: &self.index_format
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct SerializedSearch<'a> {
+    pub index_format: &'a IndexFormat,
+}
