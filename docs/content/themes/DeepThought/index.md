@@ -3,11 +3,11 @@
 title = "DeepThought"
 description = "A simple blog theme focused on writing powered by Bulma and Zola."
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/RatanShreshtha/DeepThought.git"
 homepage = "https://github.com/RatanShreshtha/DeepThought"
 minimum_version = "0.14.1"
@@ -19,59 +19,97 @@ name = "Ratan Kulshreshtha"
 homepage = "https://ratanshreshtha.dev"
 +++        
 
-<p align="center">
-  <a href="https://github.com/RatanShreshtha/DeepThought">
-    <img src="static/images/avatar.png" alt="Logo" width="80" height="80">
-  </a>
+<div align="center">
 
-  <h3 align="center">DeepThought</h3>
-
-  <p align="center">
+  <img src="static/images/avatar.png" alt="logo" width="200" height="auto" />
+  <h1>DeepThought</h1>
+  
+  <p>
     A simple blog theme focused on writing powered by Bulma and Zola.
-    <br />
-    <a href="https://deepthought-theme.netlify.app/docs/"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/RatanShreshtha/DeepThought">Code Repository</a>
-    ·
-    <a href="https://github.com/RatanShreshtha/DeepThought/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/RatanShreshtha/DeepThought/issues">Request Feature</a>
   </p>
+  
+  
+<!-- Badges -->
+<p>
+  <a href="https://github.com/RatanShreshtha/DeepThought/graphs/contributors">
+    <img src="https://img.shields.io/github/contributors/RatanShreshtha/DeepThought" alt="contributors" />
+  </a>
+  <a href="">
+    <img src="https://img.shields.io/github/last-commit/RatanShreshtha/DeepThought" alt="last update" />
+  </a>
+  <a href="https://github.com/RatanShreshtha/DeepThought/network/members">
+    <img src="https://img.shields.io/github/forks/RatanShreshtha/DeepThought" alt="forks" />
+  </a>
+  <a href="https://github.com/RatanShreshtha/DeepThought/stargazers">
+    <img src="https://img.shields.io/github/stars/RatanShreshtha/DeepThought" alt="stars" />
+  </a>
+  <a href="https://github.com/RatanShreshtha/DeepThought/issues/">
+    <img src="https://img.shields.io/github/issues/RatanShreshtha/DeepThought" alt="open issues" />
+  </a>
+  <a href="https://github.com/RatanShreshtha/DeepThought/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/RatanShreshtha/DeepThought.svg" alt="license" />
+  </a>
 </p>
+   
+<h4>
+    <a href="https://github.com/RatanShreshtha/DeepThought/">View Demo</a>
+  <span> · </span>
+    <a href="https://github.com/RatanShreshtha/DeepThought">Documentation</a>
+  <span> · </span>
+    <a href="https://github.com/RatanShreshtha/DeepThought/issues/">Report Bug</a>
+  <span> · </span>
+    <a href="https://github.com/RatanShreshtha/DeepThought/issues/">Request Feature</a>
+  </h4>
+</div>
 
-<details open="open">
-  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgements">Acknowledgements</a></li>
-  </ol>
-</details>
+<br />
 
-## About The Project
+<!-- Table of Contents -->
+# :notebook_with_decorative_cover: Table of Contents
 
-[![DeepThought](./screenshot.png)](https://deepthought-theme.netlify.app/)
+- :notebook_with_decorative_cover: Table of Contents
+  - :star2: About the Project
+    - :camera: Screenshots
+    - :space_invader: Tech Stack
+    - :dart: Features
+  - :toolbox: Getting Started
+    - :bangbang: Prerequisites
+    - :gear: Installation
+    - :running: Run Locally
+    - :triangular_flag_on_post: Deployment
+  - :eyes: Usage
+      - Multilingual Navbar
+    - KaTeX math formula support
+      - Automatic rendering without short codes
+    - Elasticlunr search in other language
+  - :wave: Contributing
+  - :warning: License
+  - :handshake: Contact
+  - :gem: Acknowledgements
 
-> A simple blog theme focused on writing powered by Bulma and Zola.
+  
 
-### Features
+<!-- About the Project -->
+## :star2: About the Project
+
+
+<!-- Screenshots -->
+### :camera: Screenshots
+
+<div align="center"> 
+  <img src="screenshot.png" alt="screenshot" />
+</div>
+
+
+<!-- TechStack -->
+### :space_invader: Tech Stack
+
+
+- [Zola](https://www.getzola.org/) - Your one-stop static site engine
+- [Bulma](https://bulma.io/) - The modern CSS framework that just works. 
+
+<!-- Features -->
+### :dart: Features
 
 - [x] Dark Mode
 - [x] Pagination
@@ -87,20 +125,16 @@ homepage = "https://ratanshreshtha.dev"
 - [x] Multilingual Navbar
 - [x] Katex
 
-### Built With
+<!-- Getting Started -->
+## 	:toolbox: Getting Started
 
-- [Zola](https://www.getzola.org/)
-- [Bulma](https://bulma.io/)
-
-## Getting Started
-
-To get a local copy up and running follow these simple steps.
-
-### Prerequisites
+<!-- Prerequisites -->
+### :bangbang: Prerequisites
 
 You need static site generator (SSG) [Zola](https://www.getzola.org/documentation/getting-started/installation/) installed in your machine to use this theme follow their guide on [getting started](https://www.getzola.org/documentation/getting-started/overview/).
 
-### Installation
+<!-- Installation -->
+### :gear: Installation
 
 Follow zola's guide on [installing a theme](https://www.getzola.org/documentation/themes/installing-and-using-themes/).
 Make sure to add `theme = "DeepThought"` to your `config.toml`
@@ -108,19 +142,22 @@ Make sure to add `theme = "DeepThought"` to your `config.toml`
 **Check zola version (only 0.9.0+)**
 Just to double-check to make sure you have the right version. It is not supported to use this theme with a version under 0.14.1.
 
-## Usage
-
-### How to serve?
+<!-- Run Locally -->
+### :running: Run Locally
 
 Go into your sites directory and type `zola serve`. You should see your new site at `localhost:1111`.
 
 **NOTE**: you must provide the theme options variables in `config.toml` to serve a functioning site
 
-### Deployment
+<!-- Deployment -->
+### :triangular_flag_on_post: Deployment
 
 [Zola](https://www.getzola.org) already has great documentation for deploying to [Netlify](https://www.getzola.org/documentation/deployment/netlify/) or [Github Pages](https://www.getzola.org/documentation/deployment/github-pages/). I won't bore you with a regurgitated explanation.
 
-### Theme Options
+<!-- Usage -->
+## :eyes: Usage
+
+Following options are available with the `DeepThought` theme
 
 ```toml
 # Enable external libraries
@@ -169,7 +206,8 @@ instagram = "<instagram_username>"
 behance = "<behance_username>"
 google_scholar = "<googlescholar_userid>"
 orcid = "<orcid_userid>"
-mastodon = "<mastadon_username>"
+mastodon_username = "<mastadon_username>"
+mastodon_server = "<mastodon_server>" (if not set, defaults to mastodon.social)
 
 
 # To add google analytics
@@ -272,34 +310,45 @@ e.g. `templates/base.html`
 
 More detailed explanations are aound in [elasticlunr's documents](https://github.com/weixsong/elasticlunr.js#other-languages-example-in-browser).
 
-## Roadmap
+<!-- Contributing -->
+## :wave: Contributing
 
-See the [open issues](https://github.com/RatanShreshtha/DeepThought/issues) for a list of proposed features (and known issues).
+<a href="https://github.com/RatanShreshtha/DeepThought/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=RatanShreshtha/DeepThought" />
+</a>
 
-## Contributing
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are greatly appreciated.
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- Fork the Project
+- Create your Feature Branch (git checkout -b feature/AmazingFeature)
+- Commit your Changes (git commit -m 'Add some AmazingFeature')
+- Push to the Branch (git push origin feature/AmazingFeature)
+- Open a Pull Request
 
-## License
+<!-- License -->
+## :warning: License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See  `LICENSE` for more information.
 
-## Contact
 
-Ratan Kulshreshtha - [@RatanShreshtha](https://twitter.com/RatanShreshtha)>
+<!-- Contact -->
+## :handshake: Contact
+
+Ratan Kulshreshtha - [@RatanShreshtha](https://twitter.com/RatanShreshtha) - ratan.shreshtha[at]gmail.com
 
 Project Link: [https://github.com/RatanShreshtha/DeepThought](https://github.com/RatanShreshtha/DeepThought)
 
-## Acknowledgements
 
-- [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
+<!-- Acknowledgments -->
+## :gem: Acknowledgements
+
+Use this section to mention useful resources and libraries that you have used in your projects.
+
+- [Shields.io](https://shields.io/)
 - [Choose an Open Source License](https://choosealicense.com)
+- [Awesome README](https://github.com/matiassingers/awesome-readme)
+- [Emoji Cheat Sheet](https://github.com/ikatyang/emoji-cheat-sheet/blob/main/README.md#travel--places)
 - [Slick Carousel](https://kenwheeler.github.io/slick)
 - [Font Awesome](https://fontawesome.com)
 - [Unsplash](https://unsplash.com/)

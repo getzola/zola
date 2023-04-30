@@ -3,11 +3,11 @@
 title = "karzok"
 description = "The theme for launching fast documentation sites"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/kogeletey/karzok.git"
 homepage = "https://github.com/kogeletey/karzok"
 minimum_version = "0.15.0"
@@ -38,20 +38,13 @@ A theme for your documentation. Fast and secure
 
 ## Requirements
 
-Karzok uses npm,zola to dependency managment,rendering, scripts and plugins.
-
-### Install
-
-1. [Zola](https://www.getzola.org/documentation/getting-started/installation/)
-2. [Node.js](https://nodejs.org/)
-3. [rsync](https://rsync.samba.org)
-
-for your platform.
+- [Node.js](https://nodejs.org/)
 
 ### Optional
 
 - [docker](https://docs.docker.com/engine/install/)
-   > for packaging container and production
+
+> for packaging container and production
 
 ## Get Started
 
@@ -163,19 +156,11 @@ will. Specifically you can redistribute and/or modify it under the terms of the
 
 # Contribute
 
-Make sure to read the [Code of Conduct](https://karzok.re128.org/reference/code-of-conduct/)
+Make sure to read the [Code of Conduct](https://karzok.re128.org/reference/code_of_conduct/)
 
 ## Find bugs and come up with features
 
 On the [todo.sr.ht](https://todo.sr.ht/~kogeletey/karzok) or
 [github issues](https://github.com/kogeletey/karzok/issues)
-
-## Improve Code
-
-The karzok is stored in the repository at
-[sr.ht](https://sr.ht/~kogeletey/karzok) and mirror
-[github](https://github.com/kogeletey/karzok)
-
-> Thank you so much for any help
 
         

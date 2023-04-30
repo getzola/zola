@@ -3,11 +3,11 @@
 title = "kodama"
 description = "Theme insipired by wowchemy academic."
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/adfaure/kodama-theme.git"
 homepage = "https://github.com/adfaure/kodama-theme"
 minimum_version = "0.15"
@@ -258,6 +258,23 @@ url_slides = "path_to_slides"
 pdf = "paper.pdf"
 slides = "path_to_slides.pdf"
 +++
+```
+
+## Extend the html header
+
+In some cases, it is needed to add extra javascript or css files to be loaded by the web browsers.
+The base template of this theme define an empty block named `user_head`.
+
+To use this block, you can just create a new template name `templates/base.html` with the following content:
+
+```html
+{%/* extends "kodama-theme/templates/base.html" */%}
+
+{%/* block user_head */%}
+  <script>
+    console.log("hello world!");
+  </script>
+{%/* endblock user_head */%}
 ```
 
 ## Icons

@@ -3,16 +3,16 @@
 title = "Toucan"
 description = "Inspired from Pelican default theme"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://git.42l.fr/HugoTrentesaux/toucan.git"
 homepage = "https://git.42l.fr/HugoTrentesaux/toucan"
 minimum_version = "0.8.0"
 license = "AGPL"
-demo = "http://blog.coinduf.eu/"
+demo = "https://toucan.coinduf.eu/"
 
 [extra.author]
 name = "Hugo Trentesaux"

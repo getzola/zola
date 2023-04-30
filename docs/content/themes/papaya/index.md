@@ -3,14 +3,14 @@
 title = "Papaya"
 description = "A clean Zola theme for blogging and projects"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/justint/papaya.git"
 homepage = "https://github.com/justint/papaya"
-minimum_version = "0.14.0"
+minimum_version = "0.16.1"
 license = "MIT"
 demo = "https://justintennant.me/papaya"
 
@@ -23,26 +23,38 @@ homepage = "https://justintennant.me"
 
 A clean [Zola](https://getzola.org) theme for blogging and projects, forked from [Anpu](https://github.com/zbrox/anpu-zola-theme).
 
+## Preview
+
 **Demo site**: [https://justintennant.me/papaya/](https://justintennant.me/papaya/)
 
-![index](pics/index.png)
+![index light/dark](https://raw.githubusercontent.com/justint/papaya/main/pics/blendedindex.png)
 
-![projects](pics/projects.png)
+<p align="center">
+  <img alt="Light Projects" src="https://raw.githubusercontent.com/justint/papaya/main/pics/projects.png" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="Dark Projects" src="https://raw.githubusercontent.com/justint/papaya/main/pics/projects_dark.png" width="45%">
+</p>
 
-![project](pics/project.png)
+<p align="center">
+  <img alt="Light Project" src="https://raw.githubusercontent.com/justint/papaya/main/pics/project.png" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="Dark Project" src="https://raw.githubusercontent.com/justint/papaya/main/pics/project_dark.png" width="45%">
+</p>
 
 ## Features
 
 - Blog posts
 - Project pages
+- Automatic light/dark mode
 - Categories and tags
-- Multilingual support
+- Optional multilingual support
 - Customizable sections and navigation menu links
 - Featured images for posts/pages
 - Smart image embedding shortcode (`{{/* img() */}}`)
 - GitHub repository star/fork counts
 - [Open Graph Protocol](https://ogp.me/) tags
-- Social/contact links 
+- [Utterances](https://utteranc.es/) support
+- Social/contact links
 - 100% Google Lighthouse score
 
 ## Installation
@@ -59,14 +71,13 @@ A clean [Zola](https://getzola.org) theme for blogging and projects, forked from
     theme = "papaya"
     ```
 
-3. This theme requires both the `tags` and `categories` taxonomies.
+3. Copy the following sections and keys (and their contents/values) from papaya's [`config.toml`](https://github.com/justint/papaya/blob/main/config.toml) and paste them into your site's `config.toml`:
 
-    ```toml
-    taxonomies = [
-        { name = "categories" },
-        { name = "tags" },
-    ]
-    ```
+   - `[languages]`
+     - `[languages.en]`
+     - `[languages.en.translations]`
+   - `[extra.cdn]`
+     - `font_awesome`
 
 4. In your `content` directory, add new `blog` and `projects` directories. Copy the `_index.md` file from Papaya's `content/blog` into your `content/blog`, and the `_index.md` and `categories.json` files from Papaya's `content/projects` into your `content/projects`.
  
@@ -97,11 +108,13 @@ A clean [Zola](https://getzola.org) theme for blogging and projects, forked from
 Here are the customizable features of Papaya: 
 
 - Project categories
+- Light/dark mode
 - Multilingual support
-- Custom sections and navigation menu links
+- Sections and navigation menu links
 - Post/project date formats
 - Post/project featured images
 - Open Graph Protocol locale/profile information
+- Utterances
 - Social/contact links
 
 ### Project categories
@@ -142,9 +155,15 @@ categories = ["software"]
 
 The example project page above would be grouped into & displayed within the "Software" category of your projects page.
 
+### Light/dark mode
+
+The Papaya theme can be set to `"light"`, `"dark"`, or `"auto"` mode in the `config.toml`.
+
+In `"auto"`, the light and dark modes are implicitly chosen by the `prefers-color-scheme` CSS media feature. The theme will switch automatically based on the viewer's OS or user agent setting.
+
 ### Multilingual support
 
-Currently Zola has a basic internationalization (i18n) support, you can see this at [zola doc](https://www.getzola.org/documentation/content/multilingual/).
+Currently Zola has basic internationalization (`i18n`) support, you can read more in [zola's Multilingual Sites doc](https://www.getzola.org/documentation/content/multilingual/).
 
 To write a multilingual site, follow the steps below (English and Chinese in this example):
 
@@ -215,7 +234,7 @@ Now you will have a website that supports both English and Chinese! Since `defau
 
 A page (post or project) can be available in both languages or only in one language, and it's not necessary that a page is available in the default language.
 
-### Custom sections and navigation menu links
+### Sections and navigation menu links
 
 The navigation menu is constructed from a list of `menu_items` in your `config.toml`. For example:
 ```toml
@@ -418,6 +437,24 @@ last_name = "Tiliqua"
 gender = "female"
 username = "tiliquasp"
 ```
+
+### Utterances
+
+[Utterances](https://utteranc.es/) is a comments widget built on GitHub issues. When enabled, Papaya can display GitHub issues as comments on your blog posts.
+
+To enable:
+
+1. Follow instructions on the [utterances](https://utteranc.es/) website.
+
+2. Once you're at the "Enable Utterances" step, enter the following keys into your `config.toml`:
+
+   ```toml
+   [extra.utterances]
+   enabled = true
+   repo = "yourname/yourrepository" # put your repository's short path here
+   post_map = "pathname"
+   label = "utterances"
+   theme = "preferred-color-scheme"
 
 ### Social/contact links
 

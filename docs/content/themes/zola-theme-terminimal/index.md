@@ -3,11 +3,11 @@
 title = "terminimal"
 description = "A simple, minimal retro theme"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/pawroman/zola-theme-terminimal.git"
 homepage = "https://github.com/pawroman/zola-theme-terminimal"
 minimum_version = "0.11.0"
@@ -29,7 +29,7 @@ homepage = "https://github.com/pawroman"
 See the live demo (of the default configuration) here:
 https://pawroman.github.io/zola-theme-terminimal/
 
-Tested with Zola v0.15.3.
+Tested with Zola v0.16.1. Please note that earlier versions might not work because of breaking changes across Zola versions.
 
 #### Fork disclaimer
 
@@ -147,7 +147,7 @@ Example:
 ```
 {{/* figure(src="http://rustacean.net/assets/rustacean-flat-gesture.png",
           style="width: 25%;",
-          position="right"
+          position="right",
           caption_position="left",
           caption="Ferris, the (unofficial) Rust mascot",
           caption_style="font-weight: bold; font-style: italic;") */}}
@@ -341,6 +341,25 @@ all pages) to the site:
 #           in your site's "static" directory.
 favicon = "/favicon.png"
 favicon_mimetype = "image/png"
+```
+
+### Page titles
+
+The theme allows you to configure how the page titles (the `<title>` elements) are rendered.
+
+Use `"combined"` to render titles as `"Page title | Main title"`.
+
+```toml
+# Optional: Set how <title> elements are rendered.
+# Values:
+# - "main_only" -- only the main title (`config.title`) is rendered.
+# - "page_only" -- only the page title (if defined) is rendered,
+#                  falling back to `config.title` if not defined or empty.
+# - "combined" -- combine like so: "page_title | main_title",
+#                 or if page_title is not defined or empty, fall back to `main_title`
+#
+# Note that the main (index) page only has the main title.
+page_titles = "combined"
 ```
 
 All the configuration options are also described in
