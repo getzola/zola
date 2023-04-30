@@ -280,9 +280,10 @@ fn create_new_site(
         site.enable_live_reload(interface_port);
     }
     messages::notify_site_size(&site);
-    messages::warn_about_default_templates(&site);
+    println!("CANARY 1");
     messages::warn_about_ignored_pages(&site);
     site.build()?;
+    messages::warn_about_default_templates(&site);
     Ok((site, address))
 }
 

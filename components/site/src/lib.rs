@@ -500,7 +500,13 @@ impl Site {
         self.populate_taxonomies()?;
         let library = self.library.read().unwrap();
         let page = library.pages.get(path).unwrap();
-        self.render_page(page)
+        let path_string = page.file.path.display().to_string();
+        let is_default = self.render_page(page)?;
+        drop(library);
+        if is_default {
+            self.library.write().unwrap().default_templates.push(path_string);
+        }
+        Ok(())
     }
 
     /// Add a section to the site
@@ -528,9 +534,14 @@ impl Site {
         let section = Section::from_file(path, &self.config, &self.base_path)?;
         self.add_section(section, true)?;
         self.populate_sections();
-        let library = self.library.read().unwrap();
-        let section = library.sections.get(path).unwrap();
-        self.render_section(section, true)
+        let mut default_path_strings;
+        {
+            let library = self.library.read().unwrap();
+            let section = library.sections.get(path).unwrap();
+            default_path_strings = self.render_section(section, true)?;
+        }
+        self.library.write().unwrap().default_templates.append(&mut default_path_strings);
+        Ok(())
     }
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
@@ -672,19 +683,13 @@ impl Site {
     }
 
     /// Renders a single content page
-    pub fn render_page(&self, page: &Page) -> Result<()> {
+    pub fn render_page(&self, page: &Page) -> Result<bool> {
         let (output, is_default) = page.render_html_and_get_default_status(
             &self.tera,
             &self.config,
             &self.library.read().unwrap(),
         )?;
-        if is_default {
-            self.library
-                .write()
-                .unwrap()
-                .default_templates
-                .push(page.file.path.display().to_string());
-        }
+
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
         let current_path =
@@ -702,8 +707,7 @@ impl Site {
                 ),
             )?;
         }
-
-        Ok(())
+        Ok(is_default)
     }
 
     /// Deletes the `public` directory (only for `zola build`) and builds the site
@@ -1059,10 +1063,11 @@ impl Site {
     }
 
     /// Renders a single section
-    pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
+    pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<Vec<String>> {
         ensure_directory_exists(&self.output_path)?;
         let mut output_path = self.output_path.clone();
         let mut components: Vec<&str> = Vec::new();
+        let mut default_path_strings: Vec<String> = Vec::new();
         let create_directories = self.build_mode == BuildMode::Disk || !section.assets.is_empty();
 
         if section.lang != self.config.default_language {
@@ -1111,15 +1116,35 @@ impl Site {
         }
 
         if render_pages {
-            section
+            //default_path_strings.append(&mut section
+            let default_info = section
                 .pages
                 .par_iter()
-                .map(|k| self.render_page(self.library.read().unwrap().pages.get(k).unwrap()))
-                .collect::<Result<()>>()?;
+                .map(|k| {
+                    Ok((self.render_page(self.library.read().unwrap().pages.get(k).unwrap())?,
+                    k.display().to_string()))
+                })
+                .filter(|item| {
+                    if let Ok(inner) = item {
+                        inner.0
+                    } else {
+                        false
+                    }
+                })
+                .collect::<Result<Vec<(bool, String)>>>()?;
+
+            default_path_strings.append(
+                &mut default_info
+                    .into_iter()
+                    .map(|info| {
+                        info.1
+                    })
+                    .collect::<Vec<String>>()
+            );
         }
 
         if !section.meta.render {
-            return Ok(());
+            return Ok(default_path_strings);
         }
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
@@ -1135,7 +1160,7 @@ impl Site {
                 create_directories,
             )?;
 
-            return Ok(());
+            return Ok(default_path_strings);
         }
 
         if section.meta.is_paginated() {
@@ -1149,29 +1174,35 @@ impl Site {
                 &self.config,
                 &self.library.read().unwrap(),
             )?;
-            if is_default {
-                self.library
-                    .write()
-                    .unwrap()
-                    .default_templates
-                    .push(section.file.path.display().to_string());
-            }
             let content = self.inject_livereload(output);
             self.write_content(&components, "index.html", content, false)?;
+            if is_default {
+                default_path_strings.push(section.file.path.display().to_string());
+            }
         }
 
-        Ok(())
+        Ok(default_path_strings)
     }
 
     /// Renders all sections
     pub fn render_sections(&self) -> Result<()> {
-        self.library
-            .read()
-            .unwrap()
-            .sections
-            .par_iter()
-            .map(|(_, s)| self.render_section(s, true))
-            .collect::<Result<()>>()
+        let nested_info;
+        {
+            nested_info = self.library
+                .read()
+                .unwrap()
+                .sections
+                .par_iter()
+                .map(|(_, s)| {
+                    self.render_section(s, true)
+                })
+                .collect::<Result<Vec<Vec<String>>>>()?;
+        }
+        let mut default_info = nested_info.into_iter().flatten().collect::<Vec<String>>();
+        self.library.write().unwrap().default_templates.append(
+            &mut default_info
+        );
+        Ok(())
     }
 
     /// Renders all pages that do not belong to any sections

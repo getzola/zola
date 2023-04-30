@@ -34,7 +34,9 @@ pub fn check_site_summary(site: &Site) {
 
 /// Display a warning in the console if there are default templates rendered
 pub fn warn_about_default_templates(site: &Site) {
+    println!("CANARY 2");
     let library = site.library.read().unwrap();
+    println!("{:?}", library.default_templates);
     for path_string in &library.default_templates {
         console::warn(&format!("- {} is using the default template", path_string));
     }
