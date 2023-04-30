@@ -3,11 +3,11 @@
 title = "shadharon"
 description = "Simple blog theme powered by Zola"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-05-01T04:58:18+10:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-05-01T04:58:18+10:00
+updated = 2023-05-01T04:58:18+10:00
 repository = "https://github.com/syedzayyan/shadharon"
 homepage = "https://github.com/syedzayyan/shadharon"
 minimum_version = "0.4.0"
