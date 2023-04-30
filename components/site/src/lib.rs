@@ -1121,26 +1121,16 @@ impl Site {
                 .pages
                 .par_iter()
                 .map(|k| {
-                    Ok((self.render_page(self.library.read().unwrap().pages.get(k).unwrap())?,
-                    k.display().to_string()))
+                    Ok((
+                        self.render_page(self.library.read().unwrap().pages.get(k).unwrap())?,
+                        k.display().to_string(),
+                    ))
                 })
-                .filter(|item| {
-                    if let Ok(inner) = item {
-                        inner.0
-                    } else {
-                        false
-                    }
-                })
+                .filter(|item| if let Ok(inner) = item { inner.0 } else { false })
                 .collect::<Result<Vec<(bool, String)>>>()?;
 
-            default_path_strings.append(
-                &mut default_info
-                    .into_iter()
-                    .map(|info| {
-                        info.1
-                    })
-                    .collect::<Vec<String>>()
-            );
+            default_path_strings
+                .append(&mut default_info.into_iter().map(|info| info.1).collect::<Vec<String>>());
         }
 
         if !section.meta.render {
@@ -1188,20 +1178,17 @@ impl Site {
     pub fn render_sections(&self) -> Result<()> {
         let nested_info;
         {
-            nested_info = self.library
+            nested_info = self
+                .library
                 .read()
                 .unwrap()
                 .sections
                 .par_iter()
-                .map(|(_, s)| {
-                    self.render_section(s, true)
-                })
+                .map(|(_, s)| self.render_section(s, true))
                 .collect::<Result<Vec<Vec<String>>>>()?;
         }
         let mut default_info = nested_info.into_iter().flatten().collect::<Vec<String>>();
-        self.library.write().unwrap().default_templates.append(
-            &mut default_info
-        );
+        self.library.write().unwrap().default_templates.append(&mut default_info);
         Ok(())
     }
 
