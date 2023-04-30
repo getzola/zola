@@ -3,11 +3,11 @@
 title = "Seje2"
 description = "A beautiful zola theme"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/eatradish/seje2"
 homepage = "https://github.com/eatradish/Seje2"
 minimum_version = "0.15.0"
@@ -24,13 +24,7 @@ homepage = "https://blog.utopiosphere.net"
 ![screenshot](screenshot.png)
 
 [Demo](https://eatradish.github.io/Seje2)
-
-## Contents
-
-- Installation
-- Options
-  - Top menu
-  - "About" page
+[中文 README](https://github.com/eatradish/Seje2/blob/main/README_zh_cn.md)
 
 ## Installation
 First download this theme to your `themes` directory:
@@ -53,6 +47,17 @@ paginate_by = 5
 
 The posts should therefore be in directly under the `content` folder.
 
+and requires your index section (`about/_index.md`) to be paginated to work:
+
+```toml
+title = "..."
+
+[extra]
+year = 2019
+month = 11
+day = 3
+```
+
 ## Options
 
 ### Top-menu
@@ -70,17 +75,12 @@ seje2_menu_links = [
 If you put `$BASE_URL` in a url, it will automatically be replaced by the actual
 site URL.
 
-### "About"-page
+### License
 
-In a about page (wrap this in +++):
+Set a field in `extra` with a key of `license`:
 
 ```toml
-title = "..."
-
-[extra]
-year = 2019
-month = 11
-day = 03
+license = "@ 宇宙眼睛人"
 ```
 
         

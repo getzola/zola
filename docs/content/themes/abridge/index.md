@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No JS."
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/Jieiku/abridge.git"
-homepage = "https://github.com/jieiku/abridge/"
-minimum_version = "0.16.0"
+homepage = "https://github.com/jieiku/abridge"
+minimum_version = "0.17.1"
 license = "MIT"
 demo = "https://abridge.netlify.app/"
 
@@ -24,9 +24,11 @@ homepage = "https://github.com/jieiku/"
 
 # Abridge Zola Theme
 
-Abridge is a fast and lightweight Zola theme using semantic html, only ~6kb css before the svg icons and syntax highlighting css, no mandatory JS[*](https://github.com/Jieiku/abridge#contributing-and-philosophy), and perfect [Lighthouse](https://web.dev/measure/?url=https%3A%2F%2Fabridge.netlify.app) and [Observatory](https://observatory.mozilla.org/analyze/abridge.netlify.app) scores.
+Abridge is a fast and lightweight Zola theme using semantic html, only ~6kb css before the svg icons and syntax highlighting css, no mandatory JS[*](https://github.com/Jieiku/abridge#contributing-and-philosophy), and perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.netlify.app), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://observatory.mozilla.org/analyze/abridge.netlify.app) scores.
 
 There is also [Abridge-minimal](https://github.com/jieiku/abridge.css) Theme which is used to showcase the [abridge.css framework](https://github.com/Jieiku/abridge.css/tree/master/dist)
+
+Here is a [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md) Page.
 
 Maintenance of this project is made possible by all the <a href="https://github.com/Jieiku/abridge/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/Jieiku">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/Jieiku">click here</a>. 💖
 
@@ -40,7 +42,7 @@ Maintenance of this project is made possible by all the <a href="https://github.
 
 ## Requirements
 
-This theme requires version 0.16.0 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
+This theme requires version 0.17.1 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
 
 ## Quick Start
 
@@ -174,6 +176,10 @@ command = "zola build && npm run abridge && zola build"
 
 Abridge by default uses elasticlunr for the search library (zola's default), but both tinysearch and stork are supported search libraries.
 
+tinysearch demo: https://jieiku.github.io/abridge-tinysearch/
+
+stork demo: https://jieiku.github.io/abridge-stork/
+
 **Switch to tinysearch:**
 
 First you have to install tinysearch so that you can build the index:
@@ -191,6 +197,8 @@ Switch abridge to tinysearch:
 ```shell
 cd ~/.dev/abridge
 sed -i 's/^search_library =.*/search_library = "tinysearch"/' config.toml
+sed -i 's/^draft =.*/draft = true/' content/static/stork_toml.md
+sed -i 's/^draft =.*/draft = false/' content/static/tinysearch_json.md
 zola build
 tinysearch --optimize --path static public/data_tinysearch/index.html
 # zola serve
@@ -213,6 +221,8 @@ Switch abridge to stork:
 ```shell
 cd ~/.dev/abridge
 sed -i 's/^search_library =.*/search_library = "stork"/' config.toml
+sed -i 's/^draft =.*/draft = false/' content/static/stork_toml.md
+sed -i 's/^draft =.*/draft = true/' content/static/tinysearch_json.md
 zola build
 stork build --input public/data_stork/index.html --output static/stork.st
 # zola serve
@@ -224,6 +234,8 @@ abridge as a theme:
 ```shell
 cd ~/.dev/abridge
 sed -i 's/^search_library =.*/search_library = false/' config.toml
+sed -i 's/^draft =.*/draft = true/' themes/abridge/content/static/stork_toml.md
+sed -i 's/^draft =.*/draft = true/' themes/abridge/content/static/tinysearch_json.md
 zola build
 npm run abridge
 zola build
@@ -234,6 +246,8 @@ abridge theme directly:
 ```shell
 cd ~/.dev/abridge
 sed -i 's/^search_library =.*/search_library = false/' config.toml
+sed -i 's/^draft =.*/draft = true/' content/static/stork_toml.md
+sed -i 's/^draft =.*/draft = true/' content/static/tinysearch_json.md
 zola build
 npm run abridge-demo
 zola build
@@ -293,13 +307,22 @@ js_bundle is set to a javascript file with a bundle of multiple javascript files
 
 `uglifyjs prestyle.js theme_button.js elasticlunr.min.js search.js -c -m -o abridge-nofacade.min.js`
 
+All Bundles are defined in [package.json](https://github.com/Jieiku/abridge/blob/master/package.json)
+
+A Bundle can be generated from the package.json scripts using npm, for example:
+
+`npm run noswitchernosearch`
+
 Abridge Default Bundle:
 - abridge-bundle.min.js: includes: prestyle, theme_button, search_facade, email, codecopy
 
 Abridge Alternate Bundles:
+- abridge.min.js: includes: prestyle, search_facade, email, codecopy (same as default but without the theme switcher)
+- abridge-bundle-nofacade.min.js: includes: prestyle, theme_button, email, codecopy, elasticlunr, search
+- abridge-bundle-noswitcher.min.js - includes: prestyle, email, codecopy, elasticlunr, search
+- abridge-bundle-nosearch.min.js - includes: prestyle, theme_button, email, codecopy
+- abridge-bundle-noswitchernosearch.min.js - includes: prestyle, email, codecopy
 - abridge-searchonly.min.js - includes: elasticlunr, search
-- abridge-noswitcher.min.js - includes: prestyle, email, codecopy, elasticlunr, search
-- abridge-nofacade.min.js: includes: prestyle, theme_button, email, codecopy, elasticlunr, search
 
 Support Files:
 - theme.min.js (not a bundle, just a minification of theme.js)
@@ -521,21 +544,28 @@ instead of this: `stylesheets = [ "abridge-switcher.css" ]` do this: `stylesheet
 
 The theme switcher relies on javascript to work, it applies the .light class to the root documentElement. The file that handles this (theme.js) is tiny and optimized and it is the first file loaded in the head, so the performance hit is minimal, but it does still exist. Without the Theme switcher you can still use The automatic Theme, it works by using Browser/OS preference, you can even install a [Firefox plugin](https://addons.mozilla.org/en-US/firefox/addon/theme-switcher-for-firefox/) to quickly switch between the two. By default the demo has the theme switcher enabled so that it can be evaluated.
 
-With the growing number of options and configuration it can get confusing. To disable the Theme Switcher, you would comment out the Switcher section and enable your choice in the No switcher section, for example:
+With the growing number of options and configuration it can get confusing. To disable the Theme Switcher, you would set `js_switcher = false` and comment out the Switcher section and enable your choice in the No switcher section, for example:
 
 ```toml
+#################
+# Resource Files
+#################
+js_switcher = false
+
 ########## Switcher ########## (comment this block out if NOT using switcher):
-#js_theme = "theme.min.js" # Separate Always, comment out if using -auto/-light/-dark stylesheet. (required for switcher)
-#js_themeButton = "theme_button.js"# Bundleable
-#js_bundle = "abridge-switcher.min.js"# Bundle JS File, comment out to disable (includes switcher)
 #stylesheets = [ "abridge-switcher.css" ] # Orange Automatic Dark/Light Theme based on browser/system preference with switcher
 #stylesheets = [ "abridge-blue-switcher.css" ] # Blue Automatic Night/Light Theme based on browser/system preference with switcher
 #stylesheets = [ "abridge-blueshade-switcher.css" ] # BlueShade Automatic Night/Light Theme based on browser/system preference with switcher
+#stylesheets = [ "abridge-switcher.css", "font.css" ] # include your own font!
+#stylesheets = [ "abridge-switcher.css", "iconfont.css" ] # include your own font icons!
+#stylesheets = [ "abridge-switcher.css", "font.css", "iconfont.css" ] # include your own font, and font icons!
 
 ########## No Switcher ##########
-#js_bundle = "search.min.js"# Bundle JS File, comment out to disable (search only: no switcher/prestyle)
-js_bundle = "abridge.min.js"# Bundle JS File, comment out to disable (no switcher)
 stylesheets = [ "abridge.css" ] # Orange Automatic Dark/Light Theme based on browser/system preference
+#stylesheets = [ "abridge-blue.css" ] # Blue Automatic Night/Light Theme based on browser/system preference
+#stylesheets = [ "abridge-blueshade.css" ] # BlueShade Automatic Night/Light Theme based on browser/system preference
+#stylesheets = [ "abridge-dark.css" ] # Orange Dark Theme
+#stylesheets = [ "abridge-light.css" ] # Orange Light Theme
 ```
 
 ### Optimize PNG files:

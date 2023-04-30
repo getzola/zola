@@ -3,16 +3,16 @@
 title = "hyde"
 description = "A classic blog theme"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/getzola/hyde.git"
 homepage = "https://github.com/getzola/hyde"
 minimum_version = "0.11.0"
 license = "MIT"
-demo = "https://zola-hyde.netlify.com"
+demo = "https://zola-hyde.netlify.app"
 
 [extra.author]
 name = "Vincent Prouillet"

@@ -1,27 +1,27 @@
 
 +++
 title = "ataraxia"
-description = "A personal theme focused on ease of reading"
+description = "A personal theme focused on ease of reading."
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-04-30T21:01:54+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-04-30T21:01:54+02:00
+updated = 2023-04-30T21:01:54+02:00
 repository = "https://github.com/gersonbdev/ataraxia-zola"
-homepage = "https://github.com/gersonbdev/ataraxia-zola"
+homepage = "https://github.com/gersonbenavides/ataraxia-zola"
 minimum_version = "0.16.0"
 license = "MPL-2.0"
-demo = "https://gersonbdev.github.io/"
+demo = "https://www.gersonb.dev/"
 
 [extra.author]
 name = "Gerson Benavides"
-homepage = "https://gersonbdev.github.io/"
+homepage = "https://github.com/gersonbenavides/ataraxia-zola"
 +++        
 
 # Ataraxia
 
-[![Ataraxia preview](https://raw.githubusercontent.com/gersonbdev/ataraxia-zola/main/mockup.png "Ataraxia mockup")](https://gersonbdev.github.io/)
+[![Ataraxia preview](https://raw.githubusercontent.com/gersonbenavides/ataraxia-zola/main/mockup.png "Ataraxia mockup")](https://gersonbenavides.github.io/)
 
 A personal theme for [Zola](https://www.getzola.org/) focused on readability that aims to be simple, beautiful, and modern. It is designed to support multiple languages and be highly customizable.
 
@@ -31,19 +31,19 @@ The theme takes visual inspiration from the [Chirpy](https://github.com/cotes202
 
 Open a command terminal at your site path and run:
 
-```console
+```bash
 cd themes
 ```
 
-```console
-git clone https://github.com/gersonbdev/ataraxia-zola.git
+```bash
+git clone https://github.com/gersonbenavides/ataraxia-zola.git ataraxia
 ```
 
 ## Configuration
 
 Copy the `config_sample.toml` file to your site's main path, then rename it to `config.toml` and edit it with your site data.
 
-> You can see the [Gerson's website](https://github.com/gersonbdev/gersonbdev.github.io) repository for theme setup guide.
+> You can see the [Gerson's website](https://github.com/gersonbenavides/gersonbenavides.github.io) repository for theme setup guide.
 
 For the site to work properly you need to create a `_index.md` file within the `content` path with the following structure:
 
@@ -74,7 +74,7 @@ page_template = "blog_page.html"
 
 You can display the result of your website by running:
 
-```console
+```bash
 zola serve
 ```
 
@@ -85,11 +85,11 @@ By default, the theme comes with all the scss styles already compiled, in such a
 
 If you want to edit the theme's styles, you'll need to have a [Node.js](https://nodejs.org/) interpreter and a [Sass compiler](https://sass-lang.com/install) installed. After that, go to the main path of the theme and execute:
 
-```console
+```bash
 npm install
 ```
 
-```console
+```bash
 sass --watch scss/custom.scss:static/assets/css/custom.css
 ```
 
@@ -101,7 +101,10 @@ This theme is mainly built on [Zola](https://www.getzola.org/) and [Bootstrap](h
 
 
 ## Sponsoring
-[![Liberapay](https://img.shields.io/badge/Finance%20the%20project-F6C915?style=flat&logo=liberapay&logoColor=ffffff "Finance the project")](https://liberapay.com/gersonbenavides/donate)
+
+[![Liberapay](https://img.shields.io/badge/Finance%20my%20work-F6C915?style=flat&logo=liberapay&logoColor=ffffff "Finance my work")](https://liberapay.com/gersonbenavides/donate)
+
+[![PayPal](https://img.shields.io/badge/Make%20a%20donation-00457C?style=flat&logo=paypal "Make a donation")](https://paypal.me/gersonbdev?country.x=CO&locale.x=es_XC)
 
 
 ## License
