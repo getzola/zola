@@ -47,9 +47,7 @@ impl Default for Search {
 
 impl Search {
     pub fn serialize(&self) -> SerializedSearch {
-        SerializedSearch {
-            index_format: &self.index_format
-        }
+        SerializedSearch { index_format: &self.index_format }
     }
 }
 
