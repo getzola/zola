@@ -2,7 +2,7 @@ use libs::time::Duration;
 use std::convert::TryInto;
 use std::time::Instant;
 
-use errors::Error;
+use errors::{Error, Result};
 use site::Site;
 
 /// Display in the console the number of pages/sections in the site
@@ -50,6 +50,15 @@ pub fn warn_about_ignored_pages(site: &Site) {
             console::warn(&format!("- {}", path.display()));
         }
     }
+}
+
+/// Display a warning in the console if there are default templates rendered
+pub fn warn_about_default_templates(site: &Site) -> Result<()> {
+    let default_templates = site.get_default_templates()?;
+    for path_string in default_templates.iter() {
+        console::warn(&format!("- {} is using the default template", path_string));
+    }
+    Ok(())
 }
 
 /// Print the time elapsed rounded to 1 decimal

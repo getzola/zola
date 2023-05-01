@@ -33,5 +33,6 @@ pub fn build(
     site.load()?;
     messages::notify_site_size(&site);
     messages::warn_about_ignored_pages(&site);
+    messages::warn_about_default_templates(&site)?;
     site.build()
 }

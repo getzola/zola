@@ -26,7 +26,7 @@ use utils::fs::{
     ensure_directory_exists,
 };
 use utils::net::{get_available_port, is_external_link};
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{is_default_template, render_template, ShortcodeDefinition};
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -360,6 +360,40 @@ impl Site {
         }
 
         Ok(())
+    }
+
+    /// Gather all sites and pages which were rendered with a default template.
+    /// We can later warn the user about possible unexpected defaults.
+    pub fn get_default_templates(&self) -> Result<Vec<String>> {
+        let lib = self.library.read().unwrap();
+        let pages = &lib.pages;
+        let sections = &lib.sections;
+        let mut result: Vec<String> = Vec::with_capacity(pages.len() + sections.len());
+        for (path, page) in pages.iter() {
+            let name;
+            let default_name = "page.html".to_owned();
+            if let Some(template) = &page.meta.template {
+                name = template;
+            } else {
+                name = &default_name;
+            }
+            if is_default_template(&name, &self.tera, &self.config.theme)? {
+                result.push(path.display().to_string());
+            }
+        }
+        for (path, section) in sections.iter() {
+            let name;
+            let default_name = "section.html".to_owned();
+            if let Some(template) = &section.meta.template {
+                name = template;
+            } else {
+                name = &default_name;
+            }
+            if is_default_template(&name, &self.tera, &self.config.theme)? {
+                result.push(path.display().to_string());
+            }
+        }
+        Ok(result)
     }
 
     /// Insert a default index section for each language if necessary so we don't need to create
