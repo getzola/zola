@@ -377,7 +377,7 @@ impl Site {
             } else {
                 name = &default_name;
             }
-            if is_default_template(&name, &self.tera, &self.config.theme)? {
+            if is_default_template(name, &self.tera, &self.config.theme)? {
                 result.push(path.display().to_string());
             }
         }
@@ -389,7 +389,7 @@ impl Site {
             } else {
                 name = &default_name;
             }
-            if is_default_template(&name, &self.tera, &self.config.theme)? {
+            if is_default_template(name, &self.tera, &self.config.theme)? {
                 result.push(path.display().to_string());
             }
         }

@@ -101,7 +101,7 @@ pub fn render_template(
 }
 
 pub fn is_default_template(name: &str, tera: &Tera, theme: &Option<String>) -> Result<bool> {
-    if let Some(_) = check_template_fallbacks(name, tera, theme) {
+    if check_template_fallbacks(name, tera, theme).is_some() { 
         return Ok(false);
     }
     match name {
