@@ -370,7 +370,7 @@ impl Site {
                 if self.config.build_search_index && !index_section.meta.in_search_index {
                     bail!(
                     "You have enabled search in the config but disabled it in the index section: \
-                    either turn off the search in the config or remote `in_search_index = true` from the \
+                    either turn off the search in the config or remove `in_search_index = true` from the \
                     section front-matter."
                     )
                 }
