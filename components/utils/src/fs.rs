@@ -86,7 +86,16 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
     }
 
     if hard_link {
-        std::fs::hard_link(src, dest)?
+        if dest.exists() {
+            if let Err(e) = std::fs::remove_file(dest) {
+               console::error(&format!("File System Error, src: {:?}, dst: {:?}", src, dest)); 
+               return Err(e.into());
+            }
+        }
+        if let Err(e) = std::fs::hard_link(src, dest) {
+           console::error(&format!("File System Error, src: {:?}, dst: {:?}", src, dest)); 
+           return Err(e.into());
+        }
     } else {
         let src_metadata = metadata(src)
             .with_context(|| format!("Failed to get metadata of {}", src.display()))?;
