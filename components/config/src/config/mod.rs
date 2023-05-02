@@ -164,7 +164,6 @@ impl Config {
         if !config.ignored_static.is_empty() {
             let glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
             config.ignored_static_globset = Some(glob_set);
-
         }
 
         Ok(config)

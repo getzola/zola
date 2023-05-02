@@ -141,7 +141,12 @@ pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn copy_directory_with_ignore_globset(src: &Path, dest: &Path, hard_link: bool, gs: &GlobSet) -> Result<()> {
+pub fn copy_directory_with_ignore_globset(
+    src: &Path,
+    dest: &Path,
+    hard_link: bool,
+    gs: &GlobSet,
+) -> Result<()> {
     for entry in
         WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
     {
