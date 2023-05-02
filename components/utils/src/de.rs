@@ -10,36 +10,15 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     // See https://github.com/getzola/zola/issues/2071#issuecomment-1530610650
     let re = Regex::new(r#"^"?([0-9]{4})-([0-9][0-9]?)-([0-9][0-9]?)([Tt]|[ \t]+)([0-9][0-9]?):([0-9]{2}):([0-9]{2})(\.[0-9]*)?Z?([ \t]([-+][0-9][0-9]?)(:([0-9][0-9]?))?Z?|([-+][0-9]{2})?:([0-9]{2})?)?|([0-9]{4})-([0-9]{2})-([0-9]{2})"?$"#).unwrap();
     let captures = re.captures(date_string).unwrap();
-    let year = if let Some(cap) = captures.get(1) {
-        cap
-    } else {
-        captures.get(15).unwrap()
-    }.as_str();
-    let month = if let Some(cap) = captures.get(2) {
-        cap
-    } else {
-        captures.get(16).unwrap()
-    }.as_str();
-    let day = if let Some(cap) = captures.get(3) {
-        cap
-    } else {
-        captures.get(17).unwrap()
-    }.as_str();
-    let hours = if let Some(hours_) = captures.get(5) {
-        hours_.as_str()
-    } else {
-        "0"
-    };
-    let minutes = if let Some(minutes_) = captures.get(6) {
-        minutes_.as_str()
-    } else {
-        "0"
-    };
-    let seconds = if let Some(seconds_) = captures.get(7) {
-        seconds_.as_str()
-    } else {
-        "0"
-    };
+    let year =
+        if let Some(cap) = captures.get(1) { cap } else { captures.get(15).unwrap() }.as_str();
+    let month =
+        if let Some(cap) = captures.get(2) { cap } else { captures.get(16).unwrap() }.as_str();
+    let day =
+        if let Some(cap) = captures.get(3) { cap } else { captures.get(17).unwrap() }.as_str();
+    let hours = if let Some(hours_) = captures.get(5) { hours_.as_str() } else { "0" };
+    let minutes = if let Some(minutes_) = captures.get(6) { minutes_.as_str() } else { "0" };
+    let seconds = if let Some(seconds_) = captures.get(7) { seconds_.as_str() } else { "0" };
     //let fractional_seconds = captures.get(8);
     let maybe_timezone_hour_1 = captures.get(10);
     let maybe_timezone_minute_1 = captures.get(12);
@@ -56,14 +35,15 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     }
 
     let mut offset_datetime = time::OffsetDateTime::UNIX_EPOCH;
-    
+
     if let Some(hour) = maybe_timezone_hour {
-        let minute_str = if let Some(minute_) = maybe_timezone_minute {
-            minute_.as_str()
-        } else {
-            "0"
-        };
-        offset_datetime = offset_datetime.to_offset(time::UtcOffset::from_hms(hour.as_str().parse()?, minute_str.parse()?, 0)?);
+        let minute_str =
+            if let Some(minute_) = maybe_timezone_minute { minute_.as_str() } else { "0" };
+        offset_datetime = offset_datetime.to_offset(time::UtcOffset::from_hms(
+            hour.as_str().parse()?,
+            minute_str.parse()?,
+            0,
+        )?);
     }
 
     // free parse unwraps since we know they're digits courtesy of regex
@@ -174,7 +154,10 @@ mod tests {
         let date = "2002-12-14";
         assert_eq!(parse_yaml_datetime(canonical).unwrap(), datetime!(2001-12-15 2:59:43 +0));
         assert_eq!(parse_yaml_datetime(valid_iso8601).unwrap(), datetime!(2001-12-14 21:59:43 -5));
-        assert_eq!(parse_yaml_datetime(space_separated).unwrap(), datetime!(2001-12-14 21:59:43 -5));
+        assert_eq!(
+            parse_yaml_datetime(space_separated).unwrap(),
+            datetime!(2001-12-14 21:59:43 -5)
+        );
         assert_eq!(parse_yaml_datetime(no_time_zone).unwrap(), datetime!(2001-12-15 2:59:43 +0));
         assert_eq!(parse_yaml_datetime(date).unwrap(), datetime!(2002-12-14 0:00:00 +0));
     }
