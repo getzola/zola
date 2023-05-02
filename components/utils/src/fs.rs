@@ -1,4 +1,5 @@
 use libs::filetime::{set_file_mtime, FileTime};
+use libs::globset::GlobSet;
 use libs::walkdir::WalkDir;
 use std::fs::{copy, create_dir_all, metadata, remove_dir_all, remove_file, File};
 use std::io::prelude::*;
@@ -122,6 +123,34 @@ pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
 
+        if entry.path().is_dir() {
+            if !target_path.exists() {
+                create_directory(&target_path)?;
+            }
+        } else {
+            copy_file(entry.path(), dest, src, hard_link).with_context(|| {
+                format!(
+                    "Was not able to copy {} to {} (hard_link={})",
+                    entry.path().display(),
+                    dest.display(),
+                    hard_link
+                )
+            })?;
+        }
+    }
+    Ok(())
+}
+
+pub fn copy_directory_with_ignore_globset(src: &Path, dest: &Path, hard_link: bool, gs: &GlobSet) -> Result<()> {
+    for entry in
+        WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
+    {
+        let relative_path = entry.path().strip_prefix(src).unwrap();
+        let target_path = dest.join(relative_path);
+
+        if gs.is_match(&target_path) {
+            continue;
+        }
         if entry.path().is_dir() {
             if !target_path.exists() {
                 create_directory(&target_path)?;
