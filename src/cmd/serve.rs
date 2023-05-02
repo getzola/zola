@@ -475,6 +475,12 @@ pub fn serve(
     };
 
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
+        // Do nothing if the file/dir is on the ignore list
+        if let Some(gs) = &site.config.ignored_static_globset {
+            if gs.is_match(path) {
+                return;
+            }
+        }
         // Do nothing if the file/dir was deleted
         if !path.exists() {
             return;
