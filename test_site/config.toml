@@ -3,7 +3,6 @@ base_url = "https://replace-this-with-your-url.com"
 compile_sass = true
 generate_feed = true
 theme = "sample"
-hard_link_static = true
 
 taxonomies = [
     {name = "categories", feed = true},
