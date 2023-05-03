@@ -180,6 +180,8 @@ The type of the output is:
 ```ts
 kind: TaxonomyConfig;
 items: Array<TaxonomyTerm>;
+lang: String;
+permalink: String;
 ```
 
 `lang` (optional) default to `config.default_language` in config.toml
