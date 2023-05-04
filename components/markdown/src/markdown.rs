@@ -252,6 +252,9 @@ pub fn markdown_to_html(
 
     let mut stop_next_end_p = false;
 
+    let lazy_async_image = context.config.markdown.lazy_async_image;
+    let mut is_image_alt = false; // For alt text between Event::Start(Tag::Image(..)) and Event::End(Tag::Image(..))
+
     let mut opts = Options::empty();
     let mut has_summary = false;
     opts.insert(Options::ENABLE_TABLES);
@@ -326,7 +329,13 @@ pub fn markdown_to_html(
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
                 Event::Text(text) => {
-                    if let Some(ref mut _code_block) = code_block {
+                    if lazy_async_image && is_image_alt {
+                        let mut alt = String::new();
+                        cmark::escape::escape_html(&mut alt, &text)
+                            .expect("Could not write to buffer");
+
+                        events.push(Event::Html(alt.into()));
+                    } else if let Some(ref mut _code_block) = code_block {
                         if contains_shortcode(text.as_ref()) {
                             // mark the start of the code block events
                             let stack_start = events.len();
@@ -387,13 +396,38 @@ pub fn markdown_to_html(
                     events.push(Event::Html("</code></pre>\n".into()));
                 }
                 Event::Start(Tag::Image(link_type, src, title)) => {
-                    if is_colocated_asset_link(&src) {
+                    let link = if is_colocated_asset_link(&src) {
                         let link = format!("{}{}", context.current_page_permalink, &*src);
-                        events.push(Event::Start(Tag::Image(link_type, link.into(), title)));
+                        link.into()
                     } else {
-                        events.push(Event::Start(Tag::Image(link_type, src, title)));
-                    }
+                        src
+                    };
+
+                    events.push(if lazy_async_image {
+                        is_image_alt = true;
+
+                        let mut img_before_alt: String = "<img src=\"".to_string();
+                        cmark::escape::escape_href(&mut img_before_alt, &link)
+                            .expect("Could not write to buffer");
+                        if !title.is_empty() {
+                            img_before_alt
+                                .write_str("\" title=\"")
+                                .expect("Could not write to buffer");
+                            cmark::escape::escape_href(&mut img_before_alt, &title)
+                                .expect("Could not write to buffer");
+                        }
+                        img_before_alt.write_str("\" alt=\"").expect("Could not write to buffer");
+                        Event::Html(img_before_alt.into())
+                    } else {
+                        Event::Start(Tag::Image(link_type, link, title))
+                    });
                 }
+                Event::End(Tag::Image(..)) => events.push(if lazy_async_image {
+                    is_image_alt = false;
+                    Event::Html("\" loading=\"lazy\" decoding=\"async\" />".into())
+                } else {
+                    event
+                }),
                 Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
                     error = Some(Error::msg("There is a link that is missing a URL"));
                     events.push(Event::Start(Tag::Link(link_type, "#".into(), title)));
