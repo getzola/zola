@@ -153,7 +153,7 @@ pub fn copy_directory_with_ignore_globset(
         let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
 
-        if gs.is_match(&target_path) {
+        if gs.is_match(&relative_path) {
             continue;
         }
         if entry.path().is_dir() {
