@@ -253,7 +253,6 @@ pub fn markdown_to_html(
     let mut stop_next_end_p = false;
 
     let lazy_async_image = context.config.markdown.lazy_async_image;
-    let mut is_image_alt = false; // For alt text between Event::Start(Tag::Image(..)) and Event::End(Tag::Image(..))
 
     let mut opts = Options::empty();
     let mut has_summary = false;
@@ -329,13 +328,7 @@ pub fn markdown_to_html(
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
                 Event::Text(text) => {
-                    if lazy_async_image && is_image_alt {
-                        let mut alt = String::new();
-                        cmark::escape::escape_html(&mut alt, &text)
-                            .expect("Could not write to buffer");
-
-                        events.push(Event::Html(alt.into()));
-                    } else if let Some(ref mut _code_block) = code_block {
+                    if let Some(ref mut _code_block) = code_block {
                         if contains_shortcode(text.as_ref()) {
                             // mark the start of the code block events
                             let stack_start = events.len();
@@ -404,8 +397,6 @@ pub fn markdown_to_html(
                     };
 
                     events.push(if lazy_async_image {
-                        is_image_alt = true;
-
                         let mut img_before_alt: String = "<img src=\"".to_string();
                         cmark::escape::escape_href(&mut img_before_alt, &link)
                             .expect("Could not write to buffer");
@@ -423,7 +414,6 @@ pub fn markdown_to_html(
                     });
                 }
                 Event::End(Tag::Image(..)) => events.push(if lazy_async_image {
-                    is_image_alt = false;
                     Event::Html("\" loading=\"lazy\" decoding=\"async\" />".into())
                 } else {
                     event
