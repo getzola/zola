@@ -1,0 +1,10 @@
+---
+source: components/markdown/tests/img.rs
+expression: body
+---
+<p><img src="https://example.com/abc.jpg" alt="haha" />
+<img src="https://example.com/abc.jpg" alt="" />
+<img src="https://example.com/abc.jpg" alt="ha&quot;h&gt;a" />
+<img src="https://example.com/abc.jpg" alt="haha" />
+<img src="https://example.com/abc.jpg" alt="haha" /></p>
+

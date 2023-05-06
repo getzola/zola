@@ -252,6 +252,8 @@ pub fn markdown_to_html(
 
     let mut stop_next_end_p = false;
 
+    let lazy_async_image = context.config.markdown.lazy_async_image;
+
     let mut opts = Options::empty();
     let mut has_summary = false;
     opts.insert(Options::ENABLE_TABLES);
@@ -387,13 +389,35 @@ pub fn markdown_to_html(
                     events.push(Event::Html("</code></pre>\n".into()));
                 }
                 Event::Start(Tag::Image(link_type, src, title)) => {
-                    if is_colocated_asset_link(&src) {
+                    let link = if is_colocated_asset_link(&src) {
                         let link = format!("{}{}", context.current_page_permalink, &*src);
-                        events.push(Event::Start(Tag::Image(link_type, link.into(), title)));
+                        link.into()
                     } else {
-                        events.push(Event::Start(Tag::Image(link_type, src, title)));
-                    }
+                        src
+                    };
+
+                    events.push(if lazy_async_image {
+                        let mut img_before_alt: String = "<img src=\"".to_string();
+                        cmark::escape::escape_href(&mut img_before_alt, &link)
+                            .expect("Could not write to buffer");
+                        if !title.is_empty() {
+                            img_before_alt
+                                .write_str("\" title=\"")
+                                .expect("Could not write to buffer");
+                            cmark::escape::escape_href(&mut img_before_alt, &title)
+                                .expect("Could not write to buffer");
+                        }
+                        img_before_alt.write_str("\" alt=\"").expect("Could not write to buffer");
+                        Event::Html(img_before_alt.into())
+                    } else {
+                        Event::Start(Tag::Image(link_type, link, title))
+                    });
                 }
+                Event::End(Tag::Image(..)) => events.push(if lazy_async_image {
+                    Event::Html("\" loading=\"lazy\" decoding=\"async\" />".into())
+                } else {
+                    event
+                }),
                 Event::Start(Tag::Link(link_type, link, title)) if link.is_empty() => {
                     error = Some(Error::msg("There is a link that is missing a URL"));
                     events.push(Event::Start(Tag::Link(link_type, "#".into(), title)));
