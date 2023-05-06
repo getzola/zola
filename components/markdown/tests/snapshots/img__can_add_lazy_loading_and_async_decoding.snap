@@ -1,0 +1,10 @@
+---
+source: components/markdown/tests/img.rs
+expression: body
+---
+<p><img src="https://example.com/abc.jpg" alt="haha" loading="lazy" decoding="async" />
+<img src="https://example.com/abc.jpg" alt="" loading="lazy" decoding="async" />
+<img src="https://example.com/abc.jpg" alt="ha&quot;h&gt;a" loading="lazy" decoding="async" />
+<img src="https://example.com/abc.jpg" alt="<strong>ha</strong><em>ha</em>" loading="lazy" decoding="async" />
+<img src="https://example.com/abc.jpg" alt="ha<a href="https://example.com">ha</a>" loading="lazy" decoding="async" /></p>
+
