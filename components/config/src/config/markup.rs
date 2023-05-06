@@ -51,6 +51,8 @@ pub struct Markdown {
     /// The compiled extra themes into a theme set
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are need
     pub extra_theme_set: Arc<Option<ThemeSet>>,
+    /// Add loading="lazy" decoding="async" to img tags. When turned on, the alt text must be plain text. Defaults to false
+    pub lazy_async_image: bool,
 }
 
 impl Markdown {
@@ -204,6 +206,7 @@ impl Default for Markdown {
             extra_syntaxes_and_themes: vec![],
             extra_syntax_set: None,
             extra_theme_set: Arc::new(None),
+            lazy_async_image: false,
         }
     }
 }
