@@ -46,4 +46,5 @@
 | [castor](https://castorisdead.xyz)                                 | https://github.com/whoisYoges/website                    |
 | [mrkaran](https://mrkaran.dev)                                     | https://github.com/mr-karan/website                      |
 | [giuseppedepalma](https://giuseppedepalma.com/)                    | https://github.com/giusdp/giuseppedepalma.com/           |
+| [Gijs Burghoorn](https://gburghoorn.com)                           | https://github.com/coastalwhite/gburghoorn.com/          |
 
