@@ -197,23 +197,7 @@ Zola does not work in PowerShell ISE.
 
 ## From source
 To build Zola from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/)
-installed. You will also need to meet additional dependencies to compile [libsass](https://github.com/sass/libsass):
-
-- OSX, Linux and other Unix-like operating systems: `make` (`gmake` on BSDs), `g++`, `libssl-dev`
-  - NixOS: Create a `shell.nix` file in the root of the cloned project with the following contents:
-  ```nix
-   with import <nixpkgs> {};
-
-   pkgs.mkShell {
-     buildInputs = [
-       libsass
-       openssl
-       pkgconfig
-    ];
-   }
-  ```
-  - Then, invoke `nix-shell`. This opens a shell with the above dependencies. Then, run `cargo build --release` to build the project.
-- Windows (a bit trickier): updated `MSVC` and overall updated VS installation
+installed.
 
 From a terminal, you can now run the following command:
 
