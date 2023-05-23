@@ -163,3 +163,7 @@ If your site is using a custom domain, you will need to mention it in the `ghp-i
 `ghp-import -c vaporsoft.net -n public` for example.
 
 Credits: The Travis-CI section of this page is based on the article https://vaporsoft.net/publishing-gutenberg-to-github/
+
+## Custom Domain
+
+If you're using a custom domain for your GitHub Pages site, put the CNAME in static/CNAME so that Zola puts it in the root of the public folder which is where GitHub expects it to be.
