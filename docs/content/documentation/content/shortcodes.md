@@ -72,7 +72,7 @@ There are two kinds of shortcodes:
 In both cases, the arguments must be named and they will all be passed to the template. 
 Parentheses are mandatory even if there are no arguments.
 
-Note that while shortcodes look like a normal Tera expression, they are not Tera at all -- they can
+Note that while shortcodes look like normal Tera expressions, they are not Tera at all -- they can
 pretty much just shuttle arguments to their template. Several limitions of note are:
 
 - All arguments are required
