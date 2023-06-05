@@ -72,6 +72,16 @@ There are two kinds of shortcodes:
 In both cases, the arguments must be named and they will all be passed to the template. 
 Parentheses are mandatory even if there are no arguments.
 
+Note that while shortcodes look like normal Tera expressions, they are not Tera at all -- they can
+pretty much just shuttle arguments to their template. Several limitions of note are:
+
+- All arguments are required
+- The shortcode cannot reference Tera variables
+- Concatenation and other operators are unavailable
+
+If the shortcode is invalid, it will not be interpreted by the markdown parser and will instead
+get rendered directly into the final HTML.
+
 Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the argument names
 can only contain numbers, letters and underscores, or in Regex terms `[0-9A-Za-z_]`.
 Although theoretically an argument name could be a number, it will not be possible to use such an argument in the template.
