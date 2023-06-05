@@ -14,7 +14,12 @@ resize_image(path, width, height, op, format, quality)
 
 ### Arguments
 
-- `path`: The path to the source image relative to the `content` directory in the [directory structure](@/documentation/getting-started/directory-structure.md).
+- `path`: The path to the source image. The following directories will be searched, in this order:
+    - `/` (the root of the project; that is, the directory with your `config.toml`)
+    - `/static`
+    - `/content`
+    - `/public`
+    - `/themes/current-theme/static`
 - `width` and `height`: The dimensions in pixels of the resized image. Usage depends on the `op` argument.
 - `op` (_optional_): Resize operation. This can be one of:
     - `"scale"`
