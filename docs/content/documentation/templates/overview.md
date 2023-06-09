@@ -477,7 +477,7 @@ environment variable to the access token you have obtained.
 
 ```jinja2
 {% set token = get_env(name="GITHUB_TOKEN") %}
-{% set postdata = load_data(url="https://api.github.com/graphql", format="json", method="POST" ,content_type="application/json", headers=["accept=application/vnd.github.v4.idl", "authentication=Bearer " ~ token], body='{"query":"query { viewer { login }}"}')%}
+{% set postdata = load_data(url="https://api.github.com/graphql", format="json", method="POST" ,content_type="application/json", headers=["accept=application/vnd.github.v4.idl", "authorization=Bearer " ~ token], body='{"query":"query { viewer { login }}"}')%}
 {{postdata|safe}}
 ```
 
