@@ -13,7 +13,7 @@ Cloudflare is a cloud solutions provider with a huge proprietary content deliver
 4. Click _"Begin setup"_
 5. Enter your project name. Keep in mind that if you would like to use the default Pages domain (pages.dev), this will be your website's future URL ("yourprojectname.pages.dev"). Additionally, select a production branch.
 6. In _Build settings_, select Zola as the _Framework preset_. _Build command_ and _Build output directory_ will be filled automatically. 
-7. Toggle _Environment variables_ below and add `ZOLA_VERSION` as _a variable name_. Use `0.13.0` or a different Zola version as the _value_.
+7. Toggle _Environment variables_ below and add `ZOLA_VERSION` as _a variable name_. Use `0.17.2` or a different Zola version as the _value_.
 8. Finally, save and deploy.
 
 Your website is now built and deployed to Cloudflare's network! You can add a custom domain or modify settings in the Pages dashboard.
