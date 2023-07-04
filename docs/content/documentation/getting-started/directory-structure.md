@@ -49,3 +49,7 @@ and available variables.
 ## `themes`
 Contains themes that can be used for your site. If you are not planning to use themes, leave this directory empty.
 If you want to learn about themes, see the [themes documentation](@/documentation/themes/_index.md).
+
+## `public`
+Contains the built site from [`zola build`](@/documentation/getting-started/cli-usage.md#build).
+Generated automatically when the site is built.
