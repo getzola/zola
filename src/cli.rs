@@ -73,6 +73,10 @@ pub enum Command {
         #[clap(long)]
         drafts: bool,
 
+        /// Avoid appending livereload.js script to HTML, leave generated code the same as the `build` command
+        #[clap(long)]
+        no_livereload_injection: bool,
+
         /// Open site in the default browser
         #[clap(short = 'O', long)]
         open: bool,

@@ -295,6 +295,7 @@ pub fn serve(
     config_file: &Path,
     open: bool,
     include_drafts: bool,
+    no_livereload_injection: bool,
     fast_rebuild: bool,
     no_port_append: bool,
     utc_offset: UtcOffset,
@@ -364,6 +365,11 @@ pub fn serve(
 
     let ws_port = site.live_reload;
     let ws_address = format!("{}:{}", interface, ws_port.unwrap());
+    if no_livereload_injection == true {
+        // site.live_reload is used to determine whether or not to inject livereload.js call to HTML
+        // the `serve` command needed this port to be set until now, so it's safe to Nonify it now to prevent code injection during generation
+        site.live_reload = None;
+    }
     let output_path = site.output_path.clone();
 
     // output path is going to need to be moved later on, so clone it for the
