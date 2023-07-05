@@ -18,6 +18,8 @@ After running `zola init`, you should see the following structure in your direct
 5 directories, 1 file
 ```
 
+You might also see a `public` directory if you are running the default `zola build/serve` commands which contains some output for the site: the full site for `zola build` and only the static assets for `zola serve`. This folder will be deleted/created automatically by `zola serve`.
+
 Here's a high-level overview of each of these directories and `config.toml`.
 
 ## `config.toml`
@@ -49,6 +51,3 @@ and available variables.
 ## `themes`
 Contains themes that can be used for your site. If you are not planning to use themes, leave this directory empty.
 If you want to learn about themes, see the [themes documentation](@/documentation/themes/_index.md).
-
-## `public`
-Contains the built site. Might appear from [`zola build`](@/documentation/getting-started/cli-usage.md#build) and [`zola serve`](@/documentation/getting-started/cli-usage.md#serve) depending on your configuration.
