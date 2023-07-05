@@ -25,6 +25,7 @@ pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
 /// If `recursive` is set to `true`, it will add all subdirectories assets as well. This should
 /// only be set when finding page assets currently.
 /// TODO: remove this flag once sections with assets behave the same as pages with assets
+/// The returned vector with assets is sorted in case-sensitive order (using `to_ascii_lowercase()`)
 pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec<PathBuf> {
     let mut assets = vec![];
 
@@ -49,6 +50,10 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     if let Some(ref globset) = config.ignored_content_globset {
         assets.retain(|p| !globset.is_match(p));
     }
+
+    assets.sort_by(|a, b| {
+        a.to_str().unwrap().to_ascii_lowercase().cmp(&b.to_str().unwrap().to_ascii_lowercase())
+    });
 
     assets
 }
