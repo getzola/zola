@@ -87,13 +87,20 @@ mod tests {
         create_dir(path.join("subdir")).expect("create subdir temp dir");
         File::create(path.join("subdir").join("index.md")).unwrap();
         File::create(path.join("subdir").join("example.js")).unwrap();
+        File::create(path.join("FFF.txt")).unwrap();
+        File::create(path.join("GRAPH.txt")).unwrap();
+        File::create(path.join("subdir").join("GGG.txt")).unwrap();
 
         let assets = find_related_assets(path, &Config::default(), true);
-        assert_eq!(assets.len(), 4);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 4);
+        assert_eq!(assets.len(), 7);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 7);
 
-        for asset in ["example.js", "graph.jpg", "fail.png", "subdir/example.js"] {
+        for asset in ["example.js", "graph.jpg", "fail.png", "subdir/example.js", "FFF.txt", "GRAPH.txt", "subdir/GGG.txt"] {
             assert!(assets.iter().any(|p| p.strip_prefix(path).unwrap() == Path::new(asset)))
+        }
+
+        for w in assets.windows(2) {
+	        assert!(w[0].to_str().unwrap().to_ascii_lowercase() < w[1].to_str().unwrap().to_ascii_lowercase());
         }
     }
 
