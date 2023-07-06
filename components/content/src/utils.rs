@@ -122,12 +122,18 @@ mod tests {
         create_dir(path.join("subdir")).expect("create subdir temp dir");
         File::create(path.join("subdir").join("index.md")).unwrap();
         File::create(path.join("subdir").join("example.js")).unwrap();
-        let assets = find_related_assets(path, &Config::default(), false);
-        assert_eq!(assets.len(), 3);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 3);
+        File::create(path.join("FFF.txt")).unwrap();
+        File::create(path.join("GRAPH.txt")).unwrap();
+        File::create(path.join("subdir").join("GGG.txt")).unwrap();
 
-        for asset in ["example.js", "graph.jpg", "fail.png"] {
-            assert!(assets.iter().any(|p| p.strip_prefix(path).unwrap() == Path::new(asset)))
+        let assets = find_related_assets(path, &Config::default(), false);
+        assert_eq!(assets.len(), 5);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 5);
+
+        let mut assets_iter = assets.iter();
+        // Use case-insensitive ordering
+        for asset in ["example.js", "fail.png", "FFF.txt", "graph.jpg", "GRAPH.txt"] {
+            assert!(assets_iter.next().unwrap().strip_prefix(path).unwrap() == Path::new(asset));
         }
     }
     #[test]
