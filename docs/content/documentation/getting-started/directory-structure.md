@@ -18,6 +18,8 @@ After running `zola init`, you should see the following structure in your direct
 5 directories, 1 file
 ```
 
+You might also see a `public` directory if you are running the default `zola build/serve` commands which contains some output for the site: the full site for `zola build` and only the static assets for `zola serve`. This folder will be deleted/created automatically by `zola serve`.
+
 Here's a high-level overview of each of these directories and `config.toml`.
 
 ## `config.toml`
