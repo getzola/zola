@@ -95,9 +95,8 @@ mod tests {
         assert_eq!(assets.len(), 7);
         assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 7);
 
-        let mut assets_iter = assets.iter();
-        // Use case-insensitive ordering
-        for asset in [
+        // Use case-insensitive ordering for testassets
+        let testassets = [
             "example.js",
             "fail.png",
             "FFF.txt",
@@ -105,8 +104,14 @@ mod tests {
             "GRAPH.txt",
             "subdir/example.js",
             "subdir/GGG.txt",
-        ] {
-            assert!(assets_iter.next().unwrap().strip_prefix(path).unwrap() == Path::new(asset));
+        ];
+        for (asset, testasset) in assets.iter().zip(testassets.iter()) {
+            assert!(
+                asset.strip_prefix(path).unwrap() == Path::new(testasset),
+                "Mismatch between asset {} and testasset {}",
+                asset.to_str().unwrap(),
+                testasset
+            );
         }
     }
 
@@ -130,10 +135,15 @@ mod tests {
         assert_eq!(assets.len(), 5);
         assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 5);
 
-        let mut assets_iter = assets.iter();
-        // Use case-insensitive ordering
-        for asset in ["example.js", "fail.png", "FFF.txt", "graph.jpg", "GRAPH.txt"] {
-            assert!(assets_iter.next().unwrap().strip_prefix(path).unwrap() == Path::new(asset));
+        // Use case-insensitive ordering for testassets
+        let testassets = ["example.js", "fail.png", "FFF.txt", "graph.jpg", "GRAPH.txt"];
+        for (asset, testasset) in assets.iter().zip(testassets.iter()) {
+            assert!(
+                asset.strip_prefix(path).unwrap() == Path::new(testasset),
+                "Mismatch between asset {} and testasset {}",
+                asset.to_str().unwrap(),
+                testasset
+            );
         }
     }
     #[test]
