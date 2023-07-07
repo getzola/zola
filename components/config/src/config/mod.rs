@@ -112,6 +112,13 @@ pub struct SerializedConfig<'a> {
     search: search::SerializedSearch<'a>,
 }
 
+#[derive(Serialize)]
+pub struct SassConfig<'a> {
+    base_url: &'a str,
+    theme: &'a Option<String>,
+    extra: &'a HashMap<String, Toml>,
+}
+
 impl Config {
     // any extra syntax and highlight themes have been loaded and validated already by the from_file method before parsing the config
     /// Parses a string containing TOML to our Config struct
@@ -334,6 +341,10 @@ impl Config {
             markdown: &self.markdown,
             search: self.search.serialize(),
         }
+    }
+
+    pub fn sass_config(&self) -> SassConfig {
+        SassConfig { base_url: &self.base_url, theme: &self.theme, extra: &self.extra }
     }
 }
 

@@ -708,13 +708,13 @@ impl Site {
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
             if theme_path.join("sass").exists() {
-                sass::compile_sass(&theme_path, &self.output_path)?;
+                sass::compile_sass(&theme_path, &self.output_path, &self.config)?;
                 start = log_time(start, "Compiled theme Sass");
             }
         }
 
         if self.config.compile_sass {
-            sass::compile_sass(&self.base_path, &self.output_path)?;
+            sass::compile_sass(&self.base_path, &self.output_path, &self.config)?;
             start = log_time(start, "Compiled own Sass");
         }
 

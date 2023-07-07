@@ -1,24 +1,27 @@
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
+use config::Config;
 use libs::globset::Glob;
 use libs::grass::{from_path as compile_file, Options, OutputStyle};
 use libs::walkdir::{DirEntry, WalkDir};
+use tempfile::{tempdir, TempDir};
 
 use crate::anyhow;
-use errors::{bail, Result};
+use errors::{bail, Context, Result};
 use utils::fs::{create_file, ensure_directory_exists};
 
-pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
+mod serde;
+
+pub fn compile_sass(base_path: &Path, output_path: &Path, config: &Config) -> Result<()> {
     ensure_directory_exists(output_path)?;
 
-    let sass_path = {
-        let mut sass_path = PathBuf::from(base_path);
-        sass_path.push("sass");
-        sass_path
-    };
+    let sass_path = PathBuf::from(base_path).join("sass");
 
-    let options = Options::default().style(OutputStyle::Compressed);
+    let dependencies_dir = build_dependencies_dir_from_config(config)?;
+
+    let options =
+        Options::default().style(OutputStyle::Compressed).load_path(dependencies_dir.path());
     let files = get_non_partial_scss(&sass_path);
     let mut compiled_paths = Vec::new();
 
@@ -50,6 +53,24 @@ pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// write out a subset of the Zola config document to a temporary SCSS file
+/// as an SCSS map variable literal.  this will allow parts of the site's
+/// config to be usable during Sass compilation.  this enables theme configuration
+/// like allowing the site owner to change header color.  this function returns
+/// a tempdir holding a single `.scss` file.  the tempdir should then be used as
+/// a load directory above when compiling the site's Sass files.  the tempdir
+/// and contained `.scss` file will be deleted on drop of the returned `TempDir`
+/// struct, which should happen after Sass compilation finishes.
+fn build_dependencies_dir_from_config(config: &Config) -> Result<TempDir> {
+    let dir = tempdir().context("failed to create tempdir for SASS dependencies")?;
+
+    let config_serialized = serde::serialize_config(config)?;
+
+    std::fs::write(dir.path().join("zola.scss"), format!("$config: {}", config_serialized))?;
+
+    Ok(dir)
 }
 
 fn is_partial_scss(entry: &DirEntry) -> bool {

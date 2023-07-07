@@ -43,3 +43,33 @@ Files with the `scss` extension use "Sassy CSS" syntax,
 while files with the `sass` extension use the "indented" syntax: <https://sass-lang.com/documentation/syntax>.
 Zola will return an error if `scss` and `sass` files with the same
 base name exist in the same folder to avoid confusion -- see the example above.
+
+## Site configuration in Sass
+
+Zola supports referencing a subset of the site's configuration (defined in its `config.toml`) in Sass files.  An example where this might be useful is a theme author allowing the site owner to configure theme colors by defining certain keys in their site `config.toml`.  At build time, Zola generates a Sass file containing the appropriate config expressed as a [Sass map literal](https://sass-lang.com/documentation/values/maps/) and makes that Sass file available to theme-defined and user-defined Sass files when they are compiled.  The config keys that are currently exposed are:
+
+1. `base_url`
+2. `theme`
+3. Everything in `extra`
+
+### Example
+
+`config.toml`
+```
+title = "My Test Site"
+base_url = "https://replace-this-with-your-url.com"
+compile_sass = true
+
+[extra.sass]
+background_color = "red"
+```
+
+`style.scss`
+```
+@use 'zola';
+@use 'sass:map';
+
+body {
+  background: map.get(zola.$config, extra, sass, background_color);
+}
+```
