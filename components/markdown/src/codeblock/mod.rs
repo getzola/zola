@@ -168,10 +168,6 @@ impl<'config> CodeBlock<'config> {
             }
         }
 
-        if let Some(rest) = self.highlighter.finalize() {
-            buffer.push_str(&rest);
-        }
-
         if self.line_numbers {
             buffer.push_str("</tbody></table>");
         }
