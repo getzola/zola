@@ -25,6 +25,7 @@ pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
 /// If `recursive` is set to `true`, it will add all subdirectories assets as well. This should
 /// only be set when finding page assets currently.
 /// TODO: remove this flag once sections with assets behave the same as pages with assets
+/// The returned vector with assets is sorted in case-sensitive order (using `to_ascii_lowercase()`)
 pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec<PathBuf> {
     let mut assets = vec![];
 
@@ -49,6 +50,10 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     if let Some(ref globset) = config.ignored_content_globset {
         assets.retain(|p| !globset.is_match(p));
     }
+
+    assets.sort_by(|a, b| {
+        a.to_str().unwrap().to_ascii_lowercase().cmp(&b.to_str().unwrap().to_ascii_lowercase())
+    });
 
     assets
 }
@@ -82,13 +87,31 @@ mod tests {
         create_dir(path.join("subdir")).expect("create subdir temp dir");
         File::create(path.join("subdir").join("index.md")).unwrap();
         File::create(path.join("subdir").join("example.js")).unwrap();
+        File::create(path.join("FFF.txt")).unwrap();
+        File::create(path.join("GRAPH.txt")).unwrap();
+        File::create(path.join("subdir").join("GGG.txt")).unwrap();
 
         let assets = find_related_assets(path, &Config::default(), true);
-        assert_eq!(assets.len(), 4);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 4);
+        assert_eq!(assets.len(), 7);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 7);
 
-        for asset in ["example.js", "graph.jpg", "fail.png", "subdir/example.js"] {
-            assert!(assets.iter().any(|p| p.strip_prefix(path).unwrap() == Path::new(asset)))
+        // Use case-insensitive ordering for testassets
+        let testassets = [
+            "example.js",
+            "fail.png",
+            "FFF.txt",
+            "graph.jpg",
+            "GRAPH.txt",
+            "subdir/example.js",
+            "subdir/GGG.txt",
+        ];
+        for (asset, testasset) in assets.iter().zip(testassets.iter()) {
+            assert!(
+                asset.strip_prefix(path).unwrap() == Path::new(testasset),
+                "Mismatch between asset {} and testasset {}",
+                asset.to_str().unwrap(),
+                testasset
+            );
         }
     }
 
@@ -104,12 +127,23 @@ mod tests {
         create_dir(path.join("subdir")).expect("create subdir temp dir");
         File::create(path.join("subdir").join("index.md")).unwrap();
         File::create(path.join("subdir").join("example.js")).unwrap();
-        let assets = find_related_assets(path, &Config::default(), false);
-        assert_eq!(assets.len(), 3);
-        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 3);
+        File::create(path.join("FFF.txt")).unwrap();
+        File::create(path.join("GRAPH.txt")).unwrap();
+        File::create(path.join("subdir").join("GGG.txt")).unwrap();
 
-        for asset in ["example.js", "graph.jpg", "fail.png"] {
-            assert!(assets.iter().any(|p| p.strip_prefix(path).unwrap() == Path::new(asset)))
+        let assets = find_related_assets(path, &Config::default(), false);
+        assert_eq!(assets.len(), 5);
+        assert_eq!(assets.iter().filter(|p| p.extension().unwrap_or_default() != "md").count(), 5);
+
+        // Use case-insensitive ordering for testassets
+        let testassets = ["example.js", "fail.png", "FFF.txt", "graph.jpg", "GRAPH.txt"];
+        for (asset, testasset) in assets.iter().zip(testassets.iter()) {
+            assert!(
+                asset.strip_prefix(path).unwrap() == Path::new(testasset),
+                "Mismatch between asset {} and testasset {}",
+                asset.to_str().unwrap(),
+                testasset
+            );
         }
     }
     #[test]
