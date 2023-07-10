@@ -1,0 +1,11 @@
+---
+source: components/markdown/tests/codeblocks.rs
+expression: body
+---
+<pre data-lang="html" class="language-html z-code"><code class="language-html" data-lang="html"><span class="z-text z-html z-basic"><span class="z-meta z-tag z-inline z-any z-html"><span class="z-punctuation z-definition z-tag z-begin z-html">&lt;</span><span class="z-entity z-name z-tag z-inline z-any z-html">link</span>
+</span></span><span class="z-text z-html z-basic"><span class="z-meta z-tag z-inline z-any z-html">    <span class="z-meta z-attribute-with-value z-html"><span class="z-entity z-other z-attribute-name z-html">rel</span><span class="z-punctuation z-separator z-key-value z-html">=</span><span class="z-string z-quoted z-double z-html"><span class="z-punctuation z-definition z-string z-begin z-html">&quot;</span>stylesheet<span class="z-punctuation z-definition z-string z-end z-html">&quot;</span></span></span>
+</span></span><mark><span class="z-text z-html z-basic"><span class="z-meta z-tag z-inline z-any z-html">    <span class="z-meta z-attribute-with-value z-html"><span class="z-entity z-other z-attribute-name z-html">type</span><span class="z-punctuation z-separator z-key-value z-html">=</span><span class="z-string z-quoted z-double z-html"><span class="z-punctuation z-definition z-string z-begin z-html">&quot;</span>text/css<span class="z-punctuation z-definition z-string z-end z-html">&quot;</span></span></span>
+</span></span></mark><mark><span class="z-text z-html z-basic"><span class="z-meta z-tag z-inline z-any z-html">    <span class="z-meta z-attribute-with-value z-html"><span class="z-entity z-other z-attribute-name z-html">href</span><span class="z-punctuation z-separator z-key-value z-html">=</span><span class="z-string z-quoted z-double z-html"><span class="z-punctuation z-definition z-string z-begin z-html">&quot;</span>main.css<span class="z-punctuation z-definition z-string z-end z-html">&quot;</span></span></span>
+</span></span></mark><span class="z-text z-html z-basic"><span class="z-meta z-tag z-inline z-any z-html"><span class="z-punctuation z-definition z-tag z-end z-html">/&gt;</span></span>
+</span></code></pre>
+
