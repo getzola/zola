@@ -6,7 +6,9 @@ use libs::syntect::highlighting::{Color, Theme};
 use libs::syntect::html::{
     line_tokens_to_classed_spans, styled_line_to_highlighted_html, ClassStyle, IncludeBackground,
 };
-use libs::syntect::parsing::{ParseState, ScopeStack, SyntaxReference, SyntaxSet};
+use libs::syntect::parsing::{
+    ParseState, Scope, ScopeStack, SyntaxReference, SyntaxSet, SCOPE_REPO,
+};
 use libs::tera::escape_html;
 
 /// Not public, but from syntect::html
@@ -18,9 +20,28 @@ fn write_css_color(s: &mut String, c: Color) {
     }
 }
 
+/// Not public, but from syntect::html
+fn scope_to_classes(s: &mut String, scope: Scope, style: ClassStyle) {
+    let repo = SCOPE_REPO.lock().unwrap();
+    for i in 0..(scope.len()) {
+        let atom = scope.atom_at(i as usize);
+        let atom_s = repo.atom_str(atom);
+        if i != 0 {
+            s.push(' ')
+        }
+        match style {
+            ClassStyle::Spaced => {}
+            ClassStyle::SpacedPrefixed { prefix } => {
+                s.push_str(prefix);
+            }
+            _ => {} // Non-exhaustive
+        }
+        s.push_str(atom_s);
+    }
+}
+
 pub(crate) struct ClassHighlighter<'config> {
     syntax_set: &'config SyntaxSet,
-    open_spans: isize,
     parse_state: ParseState,
     scope_stack: ScopeStack,
 }
@@ -28,7 +49,7 @@ pub(crate) struct ClassHighlighter<'config> {
 impl<'config> ClassHighlighter<'config> {
     pub fn new(syntax: &SyntaxReference, syntax_set: &'config SyntaxSet) -> Self {
         let parse_state = ParseState::new(syntax);
-        Self { syntax_set, open_spans: 0, parse_state, scope_stack: ScopeStack::new() }
+        Self { syntax_set, parse_state, scope_stack: ScopeStack::new() }
     }
 
     /// Parse the line of code and update the internal HTML buffer with tagged HTML
@@ -39,24 +60,28 @@ impl<'config> ClassHighlighter<'config> {
         debug_assert!(line.ends_with('\n'));
         let parsed_line =
             self.parse_state.parse_line(line, self.syntax_set).expect("failed to parse line");
-        let (formatted_line, delta) = line_tokens_to_classed_spans(
+
+        let mut formatted_line = String::with_capacity(line.len() + self.scope_stack.len() * 8); // A guess
+        for scope in self.scope_stack.as_slice() {
+            formatted_line.push_str("<span class=\"");
+            scope_to_classes(&mut formatted_line, *scope, CLASS_STYLE);
+            formatted_line.push_str("\">");
+        }
+
+        let (formatted_contents, _) = line_tokens_to_classed_spans(
             line,
             parsed_line.as_slice(),
             CLASS_STYLE,
             &mut self.scope_stack,
         )
         .expect("line_tokens_to_classed_spans should not fail");
-        self.open_spans += delta;
-        formatted_line
-    }
+        formatted_line.push_str(&formatted_contents);
 
-    /// Close all open `<span>` tags and return the finished HTML string
-    pub fn finalize(&mut self) -> String {
-        let mut html = String::with_capacity((self.open_spans * 7) as usize);
-        for _ in 0..self.open_spans {
-            html.push_str("</span>");
+        for _ in 0..self.scope_stack.len() {
+            formatted_line.push_str("</span>");
         }
-        html
+
+        formatted_line
     }
 }
 
@@ -127,15 +152,6 @@ impl<'config> SyntaxHighlighter<'config> {
             Inlined(h) => h.highlight_line(line),
             Classed(h) => h.highlight_line(line),
             NoHighlight => escape_html(line),
-        }
-    }
-
-    pub fn finalize(&mut self) -> Option<String> {
-        use SyntaxHighlighter::*;
-
-        match self {
-            Inlined(_) | NoHighlight => None,
-            Classed(h) => Some(h.finalize()),
         }
     }
 
@@ -210,7 +226,6 @@ mod tests {
         for line in LinesWithEndings::from(code) {
             out.push_str(&highlighter.highlight_line(line));
         }
-        out.push_str(&highlighter.finalize());
 
         assert!(out.starts_with("<span class"));
         assert!(out.ends_with("</span>"));

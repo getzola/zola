@@ -2,9 +2,24 @@ use config::Config;
 
 mod common;
 
-fn render_codeblock(content: &str, highlight_code: bool) -> String {
+enum HighlightMode {
+    None,
+    Inlined,
+    Classed,
+}
+
+fn render_codeblock(content: &str, highlight_mode: HighlightMode) -> String {
     let mut config = Config::default_for_test();
-    config.markdown.highlight_code = highlight_code;
+    match highlight_mode {
+        HighlightMode::None => {}
+        HighlightMode::Inlined => {
+            config.markdown.highlight_code = true;
+        }
+        HighlightMode::Classed => {
+            config.markdown.highlight_code = true;
+            config.markdown.highlight_theme = "css".to_owned();
+        }
+    }
     common::render_with_config(content, config).unwrap().body
 }
 
@@ -17,7 +32,7 @@ foo
 bar
 ```
     "#,
-        false,
+        HighlightMode::None,
     );
     insta::assert_snapshot!(body);
 }
@@ -33,7 +48,7 @@ baz
 bat
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -49,7 +64,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -65,7 +80,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -81,7 +96,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -97,7 +112,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     let body2 = render_codeblock(
         r#"
@@ -108,7 +123,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     assert_eq!(body, body2);
 }
@@ -124,7 +139,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -140,7 +155,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -156,7 +171,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -172,7 +187,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -188,7 +203,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -204,7 +219,7 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -220,7 +235,24 @@ bar
 baz
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
+    );
+    insta::assert_snapshot!(body);
+}
+
+#[test]
+fn can_highlight_with_classes() {
+    let body = render_codeblock(
+        r#"
+```html,hl_lines=3-4
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="main.css"
+/>
+```
+    "#,
+        HighlightMode::Classed,
     );
     insta::assert_snapshot!(body);
 }
@@ -234,14 +266,14 @@ foo
 bar
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
 
 #[test]
 fn can_add_line_numbers_windows_eol() {
-    let body = render_codeblock("```linenos\r\nfoo\r\nbar\r\n```\r\n", true);
+    let body = render_codeblock("```linenos\r\nfoo\r\nbar\r\n```\r\n", HighlightMode::Inlined);
     insta::assert_snapshot!(body);
 }
 
@@ -254,7 +286,7 @@ foo
 bar
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -268,7 +300,24 @@ foo
 bar
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
+    );
+    insta::assert_snapshot!(body);
+}
+
+#[test]
+fn can_add_line_numbers_with_classes() {
+    let body = render_codeblock(
+        r#"
+```html,linenos
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="main.css"
+/>
+```
+    "#,
+        HighlightMode::Classed,
     );
     insta::assert_snapshot!(body);
 }
@@ -283,7 +332,7 @@ fn can_render_shortcode_in_codeblock() {
 </div>
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -300,7 +349,7 @@ text2
 text3
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -323,7 +372,7 @@ A quote
 <!-- end text goes here -->
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
@@ -337,7 +386,7 @@ foo
 bar
 ```
     "#,
-        true,
+        HighlightMode::Inlined,
     );
     insta::assert_snapshot!(body);
 }
