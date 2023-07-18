@@ -35,6 +35,7 @@ Let's start with the token. Remember, if you are publishing the site on the same
 For creating the token either click on [here](https://github.com/settings/tokens/new?scopes=public_repo) or go to Settings > Developer Settings > Personal access tokens. Under the *Select Scopes* section, give it *public_repo* permissions and click *Generate token*. Then copy the token, navigate to your repository and add in the Settings tab the *Secret* `TOKEN` and paste your token in it.
 
 Next we need to create the *Github Action*. Here we can make use of the [zola-deploy-action](https://github.com/shalzz/zola-deploy-action). Go to the *Actions* tab of your repository, click on *set up a workflow yourself* to get a blank workflow file. Copy the following script into it and commit it afterwards; note that you may need to change the `github.ref` branch from `main` to `master` or similar, as the action will only run for the branch you choose.
+If you get a permissions denied error, you may need to change the workflow permissions to read and write in Settings > Actions > Workflow permissions.
 
 ```yaml
 # On every push this script is executed
