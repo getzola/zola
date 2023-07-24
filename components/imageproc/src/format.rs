@@ -48,7 +48,7 @@ impl Format {
     }
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl Hash for Format {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         use Format::*;

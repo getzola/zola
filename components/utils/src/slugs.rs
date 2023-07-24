@@ -1,21 +1,16 @@
 use libs::slug;
 use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SlugifyStrategy {
-    /// Classic slugification, the default
+    /// Classic slugification, the default.
+    #[default]
     On,
-    /// No slugification, only remove unsafe characters for filepaths/urls
+    /// No slugification, only remove unsafe characters for filepaths/urls.
     Safe,
     /// Nothing is changed, hope for the best!
     Off,
-}
-
-impl Default for SlugifyStrategy {
-    fn default() -> Self {
-        SlugifyStrategy::On
-    }
 }
 
 fn strip_chars(s: &str, chars: &str) -> String {
