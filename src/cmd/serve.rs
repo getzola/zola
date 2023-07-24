@@ -116,6 +116,14 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
     // otherwise `PathBuf` will interpret it as an absolute path
     root.push(&decoded[1..]);
 
+    // Resolve the root + user supplied path into the absolute path
+    // this should hopefully remove any path traversals
+    // if we fail to resolve path, we should return 404
+    root = match tokio::fs::canonicalize(&root).await {
+        Ok(d) => d,
+        Err(_) => return Ok(not_found())
+    };
+    
     // Ensure we are only looking for things in our public folder
     if !root.starts_with(original_root) {
         return Ok(not_found());
