@@ -680,6 +680,11 @@ fn can_build_feeds() {
     assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Rust"));
     // It doesn't contain articles from other sections
     assert!(!file_contains!(public, "posts/tutorials/programming/atom.xml", "Extra Syntax"));
+
+    // Test Atom feed entry with 3 authors
+    assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Foo Doe"));
+    assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Bar Doe"));
+    assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Baz Doe"));
 }
 
 #[test]
