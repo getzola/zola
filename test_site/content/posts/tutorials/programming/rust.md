@@ -2,6 +2,7 @@
 title = "Rust"
 weight = 2
 date = 2017-01-01
+authors = ["Foo Doe", "Bar Doe", "Baz Doe"]
 +++
 
 A simple page
