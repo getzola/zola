@@ -476,7 +476,6 @@ pub fn serve(
 
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
         // Do nothing if the file/dir is on the ignore list
-        println!("{:?}, partial: {:?}", path, partial_path);
         if let Some(gs) = &site.config.ignored_static_globset {
             if gs.is_match(partial_path) {
                 return;
