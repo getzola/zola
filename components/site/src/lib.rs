@@ -598,6 +598,8 @@ impl Site {
                     self.config.hard_link_static,
                     gs,
                 )?;
+            } else {
+                copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static)?;
             }
         }
 
