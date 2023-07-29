@@ -1,5 +1,8 @@
+@use 'zola';
+@use 'sass:map';
+
 body {
-  background: red;
+  background: map.get(zola.$config, extra, sass, background_color);
 
   .container {
     background: blue;
