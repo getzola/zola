@@ -157,8 +157,12 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     // the ones that have invalid URLs
     for (file_path, links) in external_links {
         for link in links {
-            if should_skip_by_prefix(link, &site.config.link_checker.skip_prefixes) ||
-                should_skip_by_file(file_path, site.config.link_checker.ignored_files_globset.as_ref().unwrap()) {
+            if should_skip_by_prefix(link, &site.config.link_checker.skip_prefixes)
+                || should_skip_by_file(
+                    file_path,
+                    site.config.link_checker.ignored_files_globset.as_ref().unwrap(),
+                )
+            {
                 skipped_link_count += 1;
             } else {
                 match get_link_domain(link) {
