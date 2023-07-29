@@ -759,6 +759,7 @@ pub fn serve(
 }
 
 fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bool {
+    // NOTE: globsets SHOULD be always Some unless config init fails, so we could unwrap
     match ignored_content_globset {
         Some(gs) => gs.is_match(path),
         None => false,

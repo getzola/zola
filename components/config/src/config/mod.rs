@@ -8,13 +8,14 @@ pub mod taxonomies;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use libs::globset::{Glob, GlobSet, GlobSetBuilder};
+use libs::globset::GlobSet;
 use libs::toml::Value as Toml;
 use serde::{Deserialize, Serialize};
 
 use crate::theme::Theme;
 use errors::{anyhow, bail, Result};
 use utils::fs::read_file;
+use utils::globs::build_ignore_glob_set;
 use utils::slugs::slugify_paths;
 
 // We want a default base url for tests
@@ -150,21 +151,10 @@ impl Config {
 
         config.add_default_language()?;
         config.slugify_taxonomies();
+        config.link_checker.resolve_globset()?;
 
-        if !config.ignored_content.is_empty() {
-            // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
-            // at program initialization, rather than for every page, for example. We arrange for the
-            // globset matcher to always exist (even though it has to be an inside an Option at the
-            // moment because of the TOML serializer); if the glob set is empty the `is_match` function
-            // of the globber always returns false.
-            let glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
-            config.ignored_content_globset = Some(glob_set);
-        }
-
-        if !config.ignored_static.is_empty() {
-            let glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
-            config.ignored_static_globset = Some(glob_set);
-        }
+        let glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
+        config.ignored_content_globset = Some(glob_set);
 
         Ok(config)
     }

@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::{cmp, collections::HashMap, collections::HashSet, iter::FromIterator, thread};
 
 use config::LinkCheckerLevel;
+use libs::globset::GlobSet;
 use libs::rayon::prelude::*;
 
 use crate::Site;
@@ -105,6 +106,10 @@ fn should_skip_by_prefix(link: &str, skip_prefixes: &[String]) -> bool {
     skip_prefixes.iter().any(|prefix| link.starts_with(prefix))
 }
 
+fn should_skip_by_file(file_path: &Path, glob_set: &GlobSet) -> bool {
+    glob_set.is_match(file_path)
+}
+
 fn get_link_domain(link: &str) -> Result<String> {
     return match Url::parse(link) {
         Ok(url) => match url.host_str().map(String::from) {
@@ -152,7 +157,8 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     // the ones that have invalid URLs
     for (file_path, links) in external_links {
         for link in links {
-            if should_skip_by_prefix(link, &site.config.link_checker.skip_prefixes) {
+            if should_skip_by_prefix(link, &site.config.link_checker.skip_prefixes) ||
+                should_skip_by_file(file_path, site.config.link_checker.ignored_files_globset.as_ref().unwrap()) {
                 skipped_link_count += 1;
             } else {
                 match get_link_domain(link) {
