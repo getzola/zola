@@ -1,0 +1,11 @@
+{% extends "atom.xml" %}
+
+{% block atom_entry_extra %}
+
+{%- if page.taxonomies and page.taxonomies.tags %}
+{%- for tag in page.taxonomies.tags %}
+<category term="{{ tag }}/">
+{% endfor -%}
+{% endif -%}
+
+{% endblock atom_entry_extra %}

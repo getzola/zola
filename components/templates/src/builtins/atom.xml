@@ -48,6 +48,9 @@
         {% else %}
         <content type="html" xml:base="{{ page.permalink | escape_xml | safe }}">{{ page.content }}</content>
         {% endif %}
+
+        {%- block atom_entry_extra %}
+        {% endblock atom_entry_extra -%}
     </entry>
     {%- endfor %}
 </feed>

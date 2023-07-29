@@ -15,6 +15,13 @@ for `atom.xml` (in the preferred Atom 1.0 format), and `rss.xml` (in the RSS
 2.0 format). If you choose a different filename (e.g. `feed.xml`), you will
 need to provide a template yourself.
 
+Alternatively, instead of providing an entire template for the feed you can
+extend them by [overriding a
+block](@/documentation/themes/extending-a-theme.md#overriding-a-block). The
+Atom template provides a block named `atom_entry_extra`, while the rss template
+has the block `rss_item_extra`. These blocks allow you to extend the content of
+each item that goes into the feed.
+
 **Only pages with a date will be available.**
 
 The feed template gets five variables:
