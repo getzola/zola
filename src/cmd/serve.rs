@@ -43,7 +43,7 @@ use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{Error, anyhow, Context, Result};
+use errors::{anyhow, Context, Error, Result};
 use pathdiff::diff_paths;
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
