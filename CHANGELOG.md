@@ -2,6 +2,17 @@
 
 ## 0.18.0 (unreleased)
 
+- Fix LFI in `zola serve`
+- Do not panic when root directory or config file not found
+- Fix base_url link attributes in atom templates
+- Use all authors for atom templates
+- Always sort page/section assets by filename
+- Allow setting attributes to lazy load all images from Config.toml
+- Fix HTML generated in class based highlighting with line numbers
+- Add a `replace_re` filter
+- Speed up `zola check`
+- Add search.index_format into the serialized config in the templates
+
 ## 0.17.2 (2023-03-19)
 
 - Fix one more invalid error with colocated directories
