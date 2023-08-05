@@ -116,7 +116,12 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
     Ok(())
 }
 
-pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool, ignore_globset: Option<&GlobSet>) -> Result<()> {
+pub fn copy_directory(
+    src: &Path,
+    dest: &Path,
+    hard_link: bool,
+    ignore_globset: Option<&GlobSet>,
+) -> Result<()> {
     for entry in
         WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
     {
