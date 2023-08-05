@@ -116,46 +116,20 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
     Ok(())
 }
 
-pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
+pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool, ignore_globset: Option<&GlobSet>) -> Result<()> {
     for entry in
         WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
     {
         let relative_path = entry.path().strip_prefix(src).unwrap();
-        let target_path = dest.join(relative_path);
 
-        if entry.path().is_dir() {
-            if !target_path.exists() {
-                create_directory(&target_path)?;
+        if let Some(gs) = ignore_globset {
+            if gs.is_match(&relative_path) {
+                continue;
             }
-        } else {
-            copy_file(entry.path(), dest, src, hard_link).with_context(|| {
-                format!(
-                    "Was not able to copy {} to {} (hard_link={})",
-                    entry.path().display(),
-                    dest.display(),
-                    hard_link
-                )
-            })?;
         }
-    }
-    Ok(())
-}
 
-pub fn copy_directory_with_ignore_globset(
-    src: &Path,
-    dest: &Path,
-    hard_link: bool,
-    gs: &GlobSet,
-) -> Result<()> {
-    for entry in
-        WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
-    {
-        let relative_path = entry.path().strip_prefix(src).unwrap();
         let target_path = dest.join(relative_path);
 
-        if gs.is_match(&relative_path) {
-            continue;
-        }
         if entry.path().is_dir() {
             if !target_path.exists() {
                 create_directory(&target_path)?;

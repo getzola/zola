@@ -22,7 +22,7 @@ use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
-    clean_site_output_folder, copy_directory, copy_directory_with_ignore_globset,
+    clean_site_output_folder, copy_directory,
     copy_file_if_needed, create_directory, create_file, ensure_directory_exists,
 };
 use utils::net::{get_available_port, is_external_link};
@@ -587,19 +587,20 @@ impl Site {
                 &self.base_path.join("themes").join(theme).join("static"),
                 &self.output_path,
                 false,
+                None,
             )?;
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
             if let Some(gs) = &self.config.ignored_static_globset {
-                copy_directory_with_ignore_globset(
+                copy_directory(
                     &self.static_path,
                     &self.output_path,
                     self.config.hard_link_static,
                     gs,
                 )?;
             } else {
-                copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static)?;
+                copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static, None)?;
             }
         }
 
