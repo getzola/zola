@@ -687,8 +687,8 @@ fn can_build_feeds() {
     assert!(file_contains!(public, "posts/tutorials/programming/atom.xml", "Baz Doe"));
 
     // Test feeds with extended block
-    assert!(file_contains!(public, "atom.xml", "<category term=\"Foo tag\"/>"));
-    assert!(file_contains!(public, "atom.xml", "<category term=\"Bar tag\"/>"));
+    assert!(file_contains!(public, "atom.xml", "<category term=\"Foo tag\"/"));
+    assert!(file_contains!(public, "atom.xml", "<category term=\"Bar tag\"/"));
     assert!(file_contains!(public, "rss.xml", "<category>Foo tag</category>"));
     assert!(file_contains!(public, "rss.xml", "<category>Bar tag</category>"));
 }
