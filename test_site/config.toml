@@ -7,7 +7,6 @@ theme = "sample"
 taxonomies = [
     {name = "categories", feed = true},
     {name = "podcast_authors", feed = true},
-    {name = "tags", feed = true},
 ]
 
 ignored_content = ["*/ignored.md"]

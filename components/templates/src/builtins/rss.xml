@@ -34,9 +34,6 @@
           <link>{{ page.permalink | escape_xml | safe }}</link>
           <guid>{{ page.permalink | escape_xml | safe }}</guid>
           <description xml:base="{{ page.permalink | escape_xml | safe }}">{% if page.summary %}{{ page.summary }}{% else %}{{ page.content }}{% endif %}</description>
-
-          {%- block rss_item_extra %}
-          {% endblock rss_item_extra -%}
       </item>
       {%- endfor %}
     </channel>
