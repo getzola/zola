@@ -92,6 +92,7 @@ Here is a full list of supported languages and their short names:
 - Linker Script -> ["ld"]
 - Lisp -> ["cl", "clisp", "el", "fasl", "l", "lisp", "lsp", "mud", "scm", "ss"]
 - Literate Haskell -> ["lhs"]
+- LLVM -> ["llvm", "ll"]
 - lrc -> ["lrc", "lyric"]
 - Lua -> ["lua"]
 - Makefile -> ["GNUmakefile", "Makefile", "Makefile.am", "Makefile.in", "OCamlMakefile", "mak", "make", "makefile", "makefile.am", "makefile.in", "mk"]

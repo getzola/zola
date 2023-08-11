@@ -7,6 +7,7 @@
 - Use page.summary for atom.xml if available
 - Fix cachebusting not working with binary files
 - Fix warning message for multilingual sites
+- Add llvm syntax highlighting
 
 ## 0.17.1 (2023-02-24)
 
