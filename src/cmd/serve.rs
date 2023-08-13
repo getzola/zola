@@ -653,6 +653,29 @@ pub fn serve(
                         };
                         messages::report_elapsed_time(start);
                     }
+                    NoticeRemove(path) => {
+                        // Some editors, like those in the vi family, replace the file you're
+                        // working on with a copy, breaking the watcher.
+                        //
+                        // See https://github.com/notify-rs/notify/issues/247
+                        //
+                        // If we need to watch other single required files, should handle them
+                        // here. For now, just config.toml needs special handling
+                        match detect_change_kind(root_dir, &path, &config_path) {
+                            (ChangeKind::Config, _) => {
+                                console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
+
+                                if let Some(s) = recreate_site() {
+                                    site = s;
+                                }
+                                let entry = config_path_rel.to_str().unwrap_or("config.toml");
+                                watcher
+                                    .watch(root_dir.join(entry), RecursiveMode::Recursive)
+                                    .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
+                            }
+                            _ => {}
+                        }
+                    }
                     _ => {}
                 }
             }
