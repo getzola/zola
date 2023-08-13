@@ -15,6 +15,12 @@ for `atom.xml` (in the preferred Atom 1.0 format), and `rss.xml` (in the RSS
 2.0 format). If you choose a different filename (e.g. `feed.xml`), you will
 need to provide a template yourself.
 
+In case you want to extend, or modify, the built-in templates, you can get a
+copy from [the source code here](https://github.com/getzola/zola/tree/master/components/templates/src/builtins)
+and place it in the `templates/` directory with the appropriate name. You can
+check the documentation for the specifications for Atom 1.0 and RSS 2.0 in
+[W3C Feed Validation Service](https://validator.w3.org/feed/docs/).
+
 **Only pages with a date will be available.**
 
 The author in the feed is set as
