@@ -1,4 +1,5 @@
 use libs::filetime::{set_file_mtime, FileTime};
+use libs::globset::GlobSet;
 use libs::walkdir::WalkDir;
 use std::fs::{copy, create_dir_all, metadata, remove_dir_all, remove_file, File};
 use std::io::prelude::*;
@@ -115,11 +116,23 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
     Ok(())
 }
 
-pub fn copy_directory(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
+pub fn copy_directory(
+    src: &Path,
+    dest: &Path,
+    hard_link: bool,
+    ignore_globset: Option<&GlobSet>,
+) -> Result<()> {
     for entry in
         WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
     {
         let relative_path = entry.path().strip_prefix(src).unwrap();
+
+        if let Some(gs) = ignore_globset {
+            if gs.is_match(&relative_path) {
+                continue;
+            }
+        }
+
         let target_path = dest.join(relative_path);
 
         if entry.path().is_dir() {
