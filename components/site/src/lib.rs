@@ -587,11 +587,26 @@ impl Site {
                 &self.base_path.join("themes").join(theme).join("static"),
                 &self.output_path,
                 false,
+                None,
             )?;
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
-            copy_directory(&self.static_path, &self.output_path, self.config.hard_link_static)?;
+            if let Some(gs) = &self.config.ignored_static_globset {
+                copy_directory(
+                    &self.static_path,
+                    &self.output_path,
+                    self.config.hard_link_static,
+                    Some(gs),
+                )?;
+            } else {
+                copy_directory(
+                    &self.static_path,
+                    &self.output_path,
+                    self.config.hard_link_static,
+                    None,
+                )?;
+            }
         }
 
         Ok(())
