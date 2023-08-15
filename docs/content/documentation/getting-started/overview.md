@@ -70,7 +70,7 @@ Let's start the Zola development server within the newly created `myblog` direct
 
 ```bash
 $ cd myblog
-$ zola serve
+$ zola serve --draft
 Building site...
 Checking all internal links with anchors.
 > Successfully checked 0 internal link(s) with anchors.
