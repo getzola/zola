@@ -81,7 +81,7 @@ web browser.
 
 Before starting, Zola will delete the output directory (by default `public` in project root) to start from a clean slate.
 
-If you are specifying the directory however using the `output-dir` flag, Zola will not use the specified directory if it already exists unless the --force flag is used.
+If you are specifying the directory but are also using the `output-dir` flag, Zola will not use the specified directory if it already exists unless the --force flag is used.
 
 ```bash
 $ zola serve
