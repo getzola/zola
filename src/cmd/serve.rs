@@ -43,7 +43,7 @@ use libs::serde_json;
 use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{anyhow, Context, Result};
+use errors::{anyhow, Context, Error, Result};
 use pathdiff::diff_paths;
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
@@ -246,6 +246,7 @@ fn create_new_site(
     interface: &str,
     interface_port: u16,
     output_dir: Option<&Path>,
+    force: bool,
     base_url: &str,
     config_file: &Path,
     include_drafts: bool,
@@ -276,6 +277,12 @@ fn create_new_site(
     site.enable_serve_mode();
     site.set_base_url(base_url);
     if let Some(output_dir) = output_dir {
+        if !force && output_dir.exists() {
+            return Err(Error::msg(format!(
+                "Directory '{}' already exists. Use --force to overwrite.",
+                output_dir.display(),
+            )));
+        }
         site.set_output_path(output_dir);
     }
     if include_drafts {
@@ -299,6 +306,7 @@ pub fn serve(
     interface: &str,
     interface_port: u16,
     output_dir: Option<&Path>,
+    force: bool,
     base_url: &str,
     config_file: &Path,
     open: bool,
@@ -313,6 +321,7 @@ pub fn serve(
         interface,
         interface_port,
         output_dir,
+        force,
         base_url,
         config_file,
         include_drafts,
@@ -521,6 +530,7 @@ pub fn serve(
         interface,
         interface_port,
         output_dir,
+        force,
         base_url,
         config_file,
         include_drafts,
