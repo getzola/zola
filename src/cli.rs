@@ -65,6 +65,10 @@ pub enum Command {
         #[clap(short = 'o', long)]
         output_dir: Option<PathBuf>,
 
+        /// Force use of the directory for serving the site even if output directory is non-empty
+        #[clap(long)]
+        force: bool,
+
         /// Changes the base_url
         #[clap(short = 'u', long, default_value = "127.0.0.1")]
         base_url: String,
