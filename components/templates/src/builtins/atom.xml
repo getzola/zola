@@ -15,7 +15,7 @@
       {%- else -%}
         {{ config.base_url | escape_xml | safe }}
       {%- endif -%}
-    "/>
+    " rel="alternate" type="text/html"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
     <updated>{{ last_updated | date(format="%+") }}</updated>
     <id>{{ feed_url | safe }}</id>
