@@ -1,0 +1,18 @@
+name: Build and deploy GH Pages
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3.0.0
+      - name: build_and_deploy
+        uses: shalzz/zola-deploy-action@v0.17.2
+        env:
+          PAGES_BRANCH: gh-pages
+          BUILD_DIR: docs/
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
