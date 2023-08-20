@@ -3,11 +3,11 @@
 title = "dose"
 description = "a small blog theme"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/oltdaniel/dose.git"
 homepage = "https://github.com/oltdaniel/dose"
 minimum_version = "0.14.0"
@@ -25,11 +25,13 @@ homepage = "https://oltdaniel.eu"
 
 ## Installation
 
-First download this theme to your `themes` directory:
+First install the theme into the `themes` directory with one of these options:
 
 ```bash
-cd themes
-git clone https://github.com/oltdaniel/dose.git
+# If you work with git: 
+git submodule add https://github.com/oltdaniel/dose.git themes/dose
+# or just do a download:
+git clone https://github.com/oltdaniel/dose.git themes/dose
 ```
 
 and then enable it in your `config.toml`:
@@ -38,11 +40,11 @@ and then enable it in your `config.toml`:
 theme = "dose"
 ```
 
-The following taxonomies are enabled:
+You can enable the following taxonomies:
 
 ```toml
 taxonomies = [
-    {name = "tags"},
+    { name = "tags", feed = true },
 ]
 ```
 
@@ -51,13 +53,15 @@ And the theme uses the following extras:
 ```toml
 [extra]
 social_media = [
-    {name = "GitHub", url = "https://github.com/oltdaniel"},
-    {name = "Twitter", url = "https://twitter.com/@twitter"},
+    { name = "GitHub", url = "https://github.com/oltdaniel" },
+    { name = "Twitter", url = "https://twitter.com/@twitter" },
+    { name = "Mastodon", url = "https://mastodon.social/@Mastodon", rel = "me" }
 ]
+default_theme = "dark" # or "light"
 ```
 
 The description of yourself with your image, you can modify by using a template. Just create a new
-file `myblog/parts/me.html`:
+file `myblog/templates/parts/me.html`:
 
 ```html
 <img src="https://via.placeholder.com/50" height="50px" width="50px">
@@ -90,9 +94,13 @@ This theme supports dark and light mode. Currently this will be only switched ba
 
 #### Size
 
-We need about `~2.3KiB` extra stuff aside from images and raw html. This is divided up to `~2.1KiB CSS` and `212B JS`.
+The JavaScript has been moved into the page itself to allow minification. Together this results in the following sizes for the `index.html`:
+- `~ 3kB` JavaScript
+- `~ 3kB` CSS
+- `~ 17kB` Profile Image
+- `~5kB - ~3kB = ~2kB` HTML
 
-Test yourself with `zola build 1>/dev/null; echo "scale=2; $(cat public/**/*.{js,css} | wc -c)/1024" | bc -l`.
+Which results in a total loading size of `3kB + 3kB + 17kB + 2kB = 25kB`.
 
 #### Syntax Highlighting
 
@@ -115,13 +123,9 @@ $target-color: yellow;
 $separator-decoration: "//////";
 ```
 
-### TODO
-
-- [x] introduce sass variables for colors
-- [x] dark/light switch with javascript and store in browser local storage
-
-## License
+## License & Contributors
 
 ![GitHub](https://img.shields.io/github/license/oltdaniel/dose)
 
+This project was created by [Daniel Oltmanns](https://github.com/oltdaniel) and has been imporved by these [contributors](https://github.com/oltdaniel/dose/graphs/contributors).
         

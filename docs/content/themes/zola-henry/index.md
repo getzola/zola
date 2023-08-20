@@ -3,16 +3,16 @@
 title = "henry"
 description = "A timeless blog theme"
 template = "theme.html"
-date = 2023-04-16T21:40:29+02:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-04-16T21:40:29+02:00
-updated = 2023-04-16T21:40:29+02:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/sirodoht/zola-henry.git"
 homepage = "https://github.com/sirodoht/zola-henry"
 minimum_version = "0.4.0"
 license = "MIT"
-demo = ""
+demo = "https://sirodoht.github.io/zola-henry/"
 
 [extra.author]
 name = "sirodoht"
@@ -23,7 +23,13 @@ homepage = ""
 
 Henry is a single-column [Zola](https://github.com/getzola/zola) theme based on the original Jekyll styles.
 
-![Henry screenshot](screenshot.png)
+Demo -> [https://sirodoht.github.io/zola-henry/](https://sirodoht.github.io/zola-henry/)
+
+![screenshot for home page](screenshot.png)
+
+![screenshot for posts](screenshot-post.png)
+
+![screenshot for any other page](screenshot-page.png)
 
 ## Installation
 
@@ -49,8 +55,8 @@ Set a field in `extra` with a key of `henry_links`:
 ```toml
 [extra]
 henry_links = [
-    {url = "/about", name = "About"},
-    {url = "https://github.com/patrick", name = "Projects"},
+    {url = "about", name = "About"},
+    {url = "https://github.com/benbalter", name = "GitHub"},
 ]
 ```
 
@@ -71,7 +77,7 @@ Twitter is too mainstream and a bit lame, but 100% of our users have requested, 
 
 ```toml
 [extra]
-henry_twitter = "https://twitter.com/dhh"
+henry_twitter = "https://twitter.com/benbalter"
 ```
 
 ## License

@@ -3,11 +3,11 @@
 title = "emily_zola_theme"
 description = "a KISS theme for Zola"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/kyoheiu/emily_zola_theme.git"
 homepage = "https://github.com/kyoheiu/emily_zola_theme"
 minimum_version = "0.14.1"
@@ -21,7 +21,7 @@ homepage = "https://github.com/kyoheiu"
 
 # emily_zola_theme
 
-![screenshot01](static/images/ss01.png)
+![screenshot01](/static/images/ss01.png)
 
 
 A KISS theme for Zola (static site generator written in Rust). 
@@ -51,8 +51,6 @@ theme = "emily_zola_theme"
 In `YOUR_SITE_DIRECTORY/themes/emily_zola_theme/content`.
 
 ## MathJax support
-
-![screenshot03](static/images/ss02.png)
 
 To use MathJax, add the following lines to the front matter in `.md` file. `[extra]` is mandatory:
 
