@@ -3,11 +3,11 @@
 title = "tilde"
 description = "Simple theme to match the dracula tilde css"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:33:27+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:33:27+02:00
+updated = 2023-08-20T14:33:27+02:00
 repository = "https://git.sr.ht/~savoy/tilde"
 homepage = "https://git.sr.ht/~savoy/tilde"
 minimum_version = "0.4.0"
