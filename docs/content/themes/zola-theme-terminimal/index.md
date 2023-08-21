@@ -3,11 +3,11 @@
 title = "terminimal"
 description = "A simple, minimal retro theme"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/pawroman/zola-theme-terminimal.git"
 homepage = "https://github.com/pawroman/zola-theme-terminimal"
 minimum_version = "0.11.0"
@@ -29,7 +29,7 @@ homepage = "https://github.com/pawroman"
 See the live demo (of the default configuration) here:
 https://pawroman.github.io/zola-theme-terminimal/
 
-Tested with Zola v0.16.1. Please note that earlier versions might not work because of breaking changes across Zola versions.
+Tested with Zola v0.17.2. Please note that earlier versions might not work because of breaking changes across Zola versions.
 
 #### Fork disclaimer
 
@@ -39,49 +39,18 @@ https://github.com/panr/hugo-theme-terminal
 
 Many thanks for that outstanding original theme, Radek!
 
-## Changes compared to the original theme
+For more information about this fork and the differences to the original theme, please see:
+Changes compared to the original theme below.
 
-- Slight changes in the layout and styling.
-    - Content has been centered (instead of left-aligned).
-    - The header stripes have been spaced out.
-    - Tweaks to pagination, especially on mobile (small screens).
-    - The post title underline is dashed instead of doubly-dotted.
-    - All links are underlined, as per
-      [Brutalist Web Design Guidelines](https://www.brutalist-web.design/).
-    - Tweaks to header font sizes.
-    - Minor footer tweaks.
+## Versioning
 
-- Absolutely **no JavaScript**.
-    - No JavaScript needed to pre-process anything.
-      Zola with its Sass pre-processor is the only dependency.
-    - There's no menu trigger.
-    - Things load crazy fast, as it's all static content.
-    - Prism.js syntax highlighting is not supported (you can use
-      [Zola's](https://www.getzola.org/documentation/content/syntax-highlighting/)).
-      
-- All references to social media (e.g. Twitter, OpenGraph) have been removed.
+This theme used to be non-versioned, e.g. you'd pull the master branch, and occasionally new features or fixes would
+be released.
 
-- All references to external URLs (e.g. Google CDN) have been removed.
-  This theme's static assets are meant to be served from where it's hosted.
-  
-- [Hack](https://github.com/source-foundry/Hack) is the default font.
-  
-- The default color theme is blue (original uses orange).
+Starting from version v1.0.0, the project adopted [Semantic Versioning](https://semver.org/).
 
-### New features
-
-- You can pick the accent color as well as background color.
-  There's a new `dark` background. See Configuration
-  below for details.
-- Active "section" links will change color indicating the
-  active section. This is all static, done at template level. 
-
-## Features retained from the original
-
-- 5 color themes, depending on your preference:
-  blue (default), green, orange, pink, red.
-- The shortcodes `image` and `figure` (See Shortcodes.
-- Fully responsive.
+Please check the [GitHub releases](https://github.com/pawroman/zola-theme-terminimal/releases) to see a change log
+and work out if there's any breaking changes.
 
 ## How to start
 
@@ -170,13 +139,14 @@ of your `config.toml`:
 [extra]
 
 # One of: blue, green, orange, pink, red.
-# Defaults to blue. 
+# Defaults to blue.
+# Append -light for light themes, e.g. blue-light
+# Or append -auto, e.g. blue-auto
 accent_color = "green"
 
-# One of: blue, dark, green, orange, pink, red.
-# Enabling dark background will also modify primary font color
-# to be darker.
-# Defaults to accent color (or, if not accent color specified, to blue). 
+# One of: blue, dark, green, orange, pink, red, light, auto
+# Enabling dark background will also modify primary font color to be darker.
+# Defaults to accent color (or, if not accent color specified, to blue).
 background_color = "dark"
 ```
 
@@ -386,6 +356,52 @@ base template, `index.html`, create file like this in `templates/index.html`:
 
 If you spot any bugs or wish to contribute new features, please create a new
 [Pull Request](https://github.com/pawroman/zola-theme-terminimal/pulls).
+
+## Changes compared to the original theme
+
+This theme has been forked from https://github.com/panr/hugo-theme-terminal
+
+- Slight changes in the layout and styling.
+  - Content has been centered (instead of left-aligned).
+  - The header stripes have been spaced out.
+  - Tweaks to pagination, especially on mobile (small screens).
+  - The post title underline is dashed instead of doubly-dotted.
+  - All links are underlined, as per
+    [Brutalist Web Design Guidelines](https://www.brutalist-web.design/).
+  - Tweaks to header font sizes.
+  - Minor footer tweaks.
+
+- Absolutely **no JavaScript**.
+  - No JavaScript needed to pre-process anything.
+    Zola with its Sass pre-processor is the only dependency.
+  - There's no menu trigger.
+  - Things load crazy fast, as it's all static content.
+  - Prism.js syntax highlighting is not supported (you can use
+    [Zola's](https://www.getzola.org/documentation/content/syntax-highlighting/)).
+
+- All references to social media (e.g. Twitter, OpenGraph) have been removed.
+
+- All references to external URLs (e.g. Google CDN) have been removed.
+  This theme's static assets are meant to be served from where it's hosted.
+
+- [Hack](https://github.com/source-foundry/Hack) is the default font.
+
+- The default color theme is blue (original uses orange).
+
+### New features
+
+- You can pick the accent color as well as background color.
+  There's a new `dark` background. See Configuration
+  below for details.
+- Active "section" links will change color indicating the
+  active section. This is all static, done at template level.
+
+### Features retained from the original
+
+- 5 color themes, depending on your preference:
+  blue (default), green, orange, pink, red.
+- The shortcodes `image` and `figure` (See Shortcodes.
+- Fully responsive.
 
 ## License
 
