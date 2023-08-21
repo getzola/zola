@@ -3,11 +3,11 @@
 title = "zerm"
 description = "A minimalistic and dark theme based on Radek Kozieł's theme for Hugo"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/ejmg/zerm.git"
 homepage = "https://github.com/ejmg/zerm"
 minimum_version = "0.8.0"

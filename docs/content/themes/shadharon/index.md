@@ -3,11 +3,11 @@
 title = "shadharon"
 description = "Simple blog theme powered by Zola"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/syedzayyan/shadharon"
 homepage = "https://github.com/syedzayyan/shadharon"
 minimum_version = "0.4.0"
@@ -21,7 +21,7 @@ homepage = "https://syedzayyan.com"
 
 # Shadharon
 
-Simple blog theme powered by [Zola](getzola.org). See a live preview [here](https://syedzayyan.github.io/shadharon).
+Simple blog theme powered by [Zola](getzola.org). See a live preview [here](https://shadharon.syedzayyan.com/).
 
 > Name derived from the Bengali Word - সাধারণ which translates to "generic"
 

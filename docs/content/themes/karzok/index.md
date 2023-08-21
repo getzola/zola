@@ -3,11 +3,11 @@
 title = "karzok"
 description = "The theme for launching fast documentation sites"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/kogeletey/karzok.git"
 homepage = "https://github.com/kogeletey/karzok"
 minimum_version = "0.15.0"
@@ -20,52 +20,49 @@ homepage = ""
 +++        
 
 <p align="center">
-  <a href="https://github.com/kogeletey/karzok/actions"><img src="https://flat.badgen.net/github/checks/kogeletey/karzok"  alt="github workflows status" /></a>
-  <a href="https://github.com/kogeletey/karzok/blob/develop/LICENSE"><img src="https://flat.badgen.net/github/license/kogeletey/karzok" alt="license a repository" /></a>
+  <a href="https://ci.codeberg.org/kogeletey/karzok" target="_blank"><img src="https://ci.codeberg.org/api/badges/kogeletey/karzok/status.svg" alt="status-badge" /></a>
+  <a href="https://codeberg.org/kogeletey/karzok/blob/develop/LICENSE"><img src="https://flat.badgen.net/github/license/kogeletey/karzok" alt="license a repository, MIT" /></a>
   <a href="https://github.com/kogeletey/karzok/releases"><img src="https://flat.badgen.net/github/release/kogeletey/karzok" alt="latest release as a repository" /></a>
-  <a href="https://framagit.org/kogeletey/nebra"><img alt="pipeline status re128" src="https://framagit.org/kogeletey/nebra/badges/develop/pipeline.svg" /></a>
+</p>
+<p align="center">
+    <a href="https://karzok.re128.org"> Documentation </a>
 </p>
 
 # Karzok
 
-A theme for your documentation. Fast and secure
+- classless and frameworkless
+- Jinja-like templates
+- javascript is optional, needed only for search,math,alerts and dark mode
+- no roundings and other strange design trends
 
 ![screenshot](./screenshot.png)
 
-## Demo
+## Get Started
 
-[Karzok](https://karzok.re128.org)
+- [find out more](https://karzok.re128.org/install/)
 
-## Requirements
+### Requirements
 
 - [Node.js](https://nodejs.org/)
 
-### Optional
-
-- [docker](https://docs.docker.com/engine/install/)
-
-> for packaging container and production
-
-## Get Started
-
 ### 1. Create a new zola site
 
-```zsh
+```sh
 zola init zola_site
 ```
 
 ### 2. Download this theme to you themes directory:
 
-```zsh
-git clone https://git.sr.ht/~kogeletey/karzok zola_site/themes
+```sh
+git clone https://codeberg.org/kogeletey/karzok zola_site/themes
 ```
 
 or install as submodule:
 
-```zsh
+```sh
 cd zola_site
 git init # if your project is a git repository already, ignore this command
-git submodule add https://git.sr.ht/~kogeletey/karzok zola_site/themes
+git submodule add https://codeberg.org/kogeletey/karzok zola_site/themes
 ```
 
 ### 3. Configuration. Open in favorite editor `config.toml`
@@ -81,8 +78,6 @@ See more in [configuration](https://karzok.re128.org/configure/)
 
 ```zsh
     cp ./themes/content/_index.md content/_index.md
-    # a template will appear with which you can quickly start writing
-    # cp ./themes/content/tmpl.md content/filename.md
 ```
 
 how you can give freedom to your creativity
@@ -94,8 +89,8 @@ i. development enviroment
 1. Install node dependencies needed to work
 
 ```zsh
-npm ci
-npm run gen 
+pnpm ci
+pnpm run build
 ```
 
 2. Just run `zola serve` in the root path of the project
@@ -109,7 +104,7 @@ changes live reolad.
 
 ii. production enviroment
 
-- with docker
+- with conainers
 
 1. Write file for container
 
@@ -154,13 +149,13 @@ This program is Free Software: You can use, study share and improve it at your
 will. Specifically you can redistribute and/or modify it under the terms of the
 [MIT](https://mit-license.org/)
 
-# Contribute
+## Contribute
 
 Make sure to read the [Code of Conduct](https://karzok.re128.org/reference/code_of_conduct/)
 
-## Find bugs and come up with features
+### Find bugs and come up with features
 
-On the [todo.sr.ht](https://todo.sr.ht/~kogeletey/karzok) or
+On the [codeberg issues](https://codeberg.org/kogeletey/karzok/issues) or
 [github issues](https://github.com/kogeletey/karzok/issues)
 
         
