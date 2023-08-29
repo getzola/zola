@@ -7,7 +7,7 @@ Zola uses the [Tera](https://tera.netlify.com) template engine, which is very si
 to Jinja2, Liquid and Twig.
 
 As this documentation will only talk about how templates work in Zola, please read
-the [Tera template documentation](https://tera.netlify.com/docs#templates) if you want
+the [Tera template documentation](https://keats.github.io/tera/docs/#templates) if you want
 to learn more about it first.
 
 All templates live in the `templates` directory.  If you are not sure what variables are available in a template,
