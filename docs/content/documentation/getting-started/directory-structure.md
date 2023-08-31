@@ -44,7 +44,7 @@ If your static files are large, you can configure Zola to [hard link](https://en
 instead of copying them by setting `hard_link_static = true` in the config file.
 
 ## `templates`
-Contains all the [Tera](https://tera.netlify.com) templates that will be used to render your site.
+Contains all the [Tera](https://keats.github.io/tera) templates that will be used to render your site.
 Have a look at the [templates documentation](@/documentation/templates/_index.md) to learn more about default templates
 and available variables.
 
