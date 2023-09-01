@@ -6,10 +6,10 @@ edition = "2021"
 [dependencies]
 ahash = "0.8"
 ammonia = "3"
-atty = "0.2.11"
+atty = "0.2.14"
 base64 = "0.21"
 csv = "1"
-elasticlunr-rs = { version = "3.0.0", features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
+elasticlunr-rs = { version = "3.0.2", features = ["da", "no", "de", "du", "es", "fi", "fr", "it", "pt", "ro", "ru", "sv", "tr"] }
 filetime = "0.2"
 gh-emoji = "1"
 glob = "0.3"
@@ -27,19 +27,19 @@ rayon = "1"
 regex = "1"
 relative-path = "1"
 reqwest = { version = "0.11", default-features = false, features = ["blocking"] }
-grass = {version = "0.12.1", default-features = false, features = ["random"]}
+grass = {version = "0.12.4", default-features = false, features = ["random"]}
 serde_json = "1"
 serde_yaml = "0.9"
 sha2 = "0.10"
 slug = "0.1"
 svg_metadata = "0.4"
 syntect = "5"
-tera = { version = "1.17", features = ["preserve_order", "date-locale"] }
-termcolor = "1.0.4"
+tera = { version = "1.19", features = ["preserve_order", "date-locale"] }
+termcolor = "1.2.0"
 time = "0.3"
 toml = "0.7"
 unic-langid = "0.9"
-unicode-segmentation = "1.2"
+unicode-segmentation = "1.10"
 url = "2"
 walkdir = "2"
 webp = "0.2"

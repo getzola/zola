@@ -23,8 +23,8 @@ name = "zola"
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
 # Below is for the serve cmd
-hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }
-tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time"] }
+hyper = { version = "0.14.27", default-features = false, features = ["runtime", "server", "http2", "http1"] }
+tokio = { version = "1.32.0", default-features = false, features = ["rt", "fs", "time"] }
 time = { version = "0.3", features = ["formatting", "macros", "local-offset"] }
 notify = "4"
 ws = "0.9"
@@ -34,7 +34,7 @@ pathdiff = "0.2"
 # For mimetype detection in serve mode
 mime_guess = "2.0"
 # For essence_str() function, see https://github.com/getzola/zola/issues/1845
-mime = "0.3.16"
+mime = "0.3.17"
 
 
 site = { path = "components/site" }
