@@ -3,8 +3,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum SlugifyStrategy {
     /// Classic slugification, the default
+    #[default]
     On,
     /// No slugification, only remove unsafe characters for filepaths/urls
     Safe,
@@ -12,11 +14,7 @@ pub enum SlugifyStrategy {
     Off,
 }
 
-impl Default for SlugifyStrategy {
-    fn default() -> Self {
-        SlugifyStrategy::On
-    }
-}
+
 
 fn strip_chars(s: &str, chars: &str) -> String {
     let mut sanitized_string = s.to_string();

@@ -2,16 +2,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum IndexFormat {
     ElasticlunrJson,
+    #[default]
     ElasticlunrJavascript,
 }
 
-impl Default for IndexFormat {
-    fn default() -> IndexFormat {
-        IndexFormat::ElasticlunrJavascript
-    }
-}
+
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
