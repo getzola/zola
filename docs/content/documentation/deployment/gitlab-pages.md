@@ -55,9 +55,9 @@ pages:
       # Path of our artifacts
       - public
 
-  # This config will only publish changes that are pushed on the master branch
+  # This config will only publish changes that are pushed on the main branch
   only:
-    - master
+    - main
 ```
 
 Push this new file and ... Tada! You're done! If you navigate to `settings > pages`, you should be able to see
