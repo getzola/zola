@@ -3,11 +3,11 @@
 title = "Docsascode_theme"
 description = "A modern simple Zola's theme related to docs as code methodology"
 template = "theme.html"
-date = 2023-08-20T14:37:38+02:00
+date = 2023-09-06T22:57:57+02:00
 
 [extra]
-created = 2023-08-20T14:37:38+02:00
-updated = 2023-08-20T14:37:38+02:00
+created = 2023-09-06T22:57:57+02:00
+updated = 2023-09-06T22:57:57+02:00
 repository = "https://github.com/codeandmedia/zola_docsascode_theme.git"
 homepage = "https://github.com/codeandmedia/zola_docsascode_theme"
 minimum_version = "0.10.0"
