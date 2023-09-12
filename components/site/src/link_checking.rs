@@ -214,13 +214,23 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                     .par_iter()
                     .map(|(_, links)| {
                         let mut num_links_left = links.len();
+                        let mut checked_links : HashMap<&str, Option<link_checker::Result>> = HashMap::new();
                         links
                             .iter()
                             .filter_map(move |link_def| {
                                 num_links_left -= 1;
 
+                                // Avoid double-checking the same url (e.g. for translated pages).
+                                let external_link = link_def.external_link.as_str();
+                                if checked_links.contains_key(external_link) {
+                                    return match &checked_links[external_link] {
+                                        Some(res) => Some((&link_def.file_path, external_link, res.clone())),
+                                        None => None
+                                    }
+                                }
+
                                 let res = link_checker::check_url(
-                                    &link_def.external_link,
+                                    external_link,
                                     &site.config.link_checker,
                                 );
 
@@ -230,9 +240,11 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                                 }
 
                                 if link_checker::is_valid(&res) {
+                                    checked_links.insert(external_link, None);
                                     None
                                 } else {
-                                    Some((&link_def.file_path, &link_def.external_link, res))
+                                    checked_links.insert(external_link, Some(res.clone()));
+                                    return Some((&link_def.file_path, external_link, res));
                                 }
                             })
                             .collect::<Vec<_>>()
