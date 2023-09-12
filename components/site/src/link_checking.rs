@@ -1,6 +1,6 @@
 use core::time;
 use std::path::{Path, PathBuf};
-use std::{cmp, collections::HashMap, thread};
+use std::{cmp, collections::HashMap, collections::HashSet, iter::FromIterator, thread};
 
 use config::LinkCheckerLevel;
 use libs::rayon::prelude::*;
@@ -172,7 +172,11 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
 
     println!(
         "Checking {} external link(s). Skipping {} external link(s).{}",
-        checked_links.len(),
+        // Get unique links count from Vec by creating a temporary HashSet.
+        HashSet::<&str>::from_iter(
+            checked_links.iter().map(|link_def| link_def.external_link.as_str())
+        )
+        .len(),
         skipped_link_count,
         if invalid_url_links == 0 {
             "".to_string()
@@ -201,7 +205,7 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
 
     let cpu_count = match thread::available_parallelism() {
         Ok(count) => count.get(),
-        Err(_) => 1
+        Err(_) => 1,
     };
     // create thread pool with lots of threads so we can fetch
     // (almost) all pages simultaneously, limiting all links for a single
@@ -214,13 +218,28 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                     .par_iter()
                     .map(|(_, links)| {
                         let mut num_links_left = links.len();
+                        let mut checked_links: HashMap<&str, Option<link_checker::Result>> =
+                            HashMap::new();
                         links
                             .iter()
                             .filter_map(move |link_def| {
                                 num_links_left -= 1;
 
+                                // Avoid double-checking the same url (e.g. for translated pages).
+                                let external_link = link_def.external_link.as_str();
+                                if let Some(optional_res) = checked_links.get(external_link) {
+                                    if let Some(res) = optional_res {
+                                        return Some((
+                                            &link_def.file_path,
+                                            external_link,
+                                            res.clone(),
+                                        ));
+                                    }
+                                    return None;
+                                }
+
                                 let res = link_checker::check_url(
-                                    &link_def.external_link,
+                                    external_link,
                                     &site.config.link_checker,
                                 );
 
@@ -230,9 +249,11 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                                 }
 
                                 if link_checker::is_valid(&res) {
+                                    checked_links.insert(external_link, None);
                                     None
                                 } else {
-                                    Some((&link_def.file_path, &link_def.external_link, res))
+                                    checked_links.insert(external_link, Some(res.clone()));
+                                    return Some((&link_def.file_path, external_link, res));
                                 }
                             })
                             .collect::<Vec<_>>()
