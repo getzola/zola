@@ -188,7 +188,7 @@ impl Library {
             if !self.sections[&path].meta.transparent {
                 // Fill siblings
                 for (i, page_path) in sorted.iter().enumerate() {
-                    let mut p = self.pages.get_mut(page_path).unwrap();
+                    let p = self.pages.get_mut(page_path).unwrap();
                     if i > 0 {
                         // lighter / later / title_prev
                         p.lower = Some(sorted[i - 1].clone());
