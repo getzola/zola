@@ -52,7 +52,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
             full_path.push(part);
         }
         // NOTE: This will also match _index.foobar.md where foobar is not a language
-        // as well as any other sring containing "_index." which is now referenced as
+        // as well as any other string containing "_index." which is now referenced as
         // unsupported page path in the docs.
         if md_path.contains("_index.") {
             let section = library.sections.get(&full_path).unwrap_or_else(|| {
