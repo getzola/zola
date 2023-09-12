@@ -1,6 +1,6 @@
 use core::time;
-use std::path::Path;
-use std::{collections::HashMap, path::PathBuf, thread};
+use std::path::{Path, PathBuf};
+use std::{cmp, collections::HashMap, thread};
 
 use config::LinkCheckerLevel;
 use libs::rayon::prelude::*;
@@ -199,11 +199,15 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
         }
     }
 
+    let cpu_count = match thread::available_parallelism() {
+        Ok(count) => count.get(),
+        Err(_) => 1
+    };
     // create thread pool with lots of threads so we can fetch
     // (almost) all pages simultaneously, limiting all links for a single
     // domain to one thread to avoid rate-limiting
-    let threads = std::cmp::min(links_by_domain.len(), 8);
-    match rayon::ThreadPoolBuilder::new().num_threads(threads).build() {
+    let num_threads = cmp::min(links_by_domain.len(), cmp::max(8, cpu_count));
+    match rayon::ThreadPoolBuilder::new().num_threads(num_threads).build() {
         Ok(pool) => {
             let errors = pool.install(|| {
                 links_by_domain
