@@ -170,9 +170,32 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
         }
     }
 
+    // error out if we're in error mode and any external URLs couldn't be parsed
+    if site.config.link_checker.external_level == LinkCheckerLevel::Error && !messages.is_empty() {
+        return messages;
+    }
+
+    let mut dedup_links_by_domain: HashMap<&str, HashMap<&str, Vec<&LinkDef>>> = HashMap::new();
+    for link in checked_links.iter() {
+        if dedup_links_by_domain.contains_key(link.domain.as_str()) {
+            let deduped_links = dedup_links_by_domain.get_mut(link.domain.as_str()).unwrap();
+
+            if deduped_links.contains_key(link.external_link.as_str()) {
+                deduped_links.get_mut(link.external_link.as_str()).unwrap().push(link);
+            } else {
+                deduped_links.insert(&link.external_link, vec![link]);
+            }
+        } else {
+            dedup_links_by_domain.insert(
+                link.domain.as_str(),
+                HashMap::from([(link.external_link.as_str(), vec![link])]),
+            );
+        }
+    }
+
     println!(
         "Checking {} external link(s). Skipping {} external link(s).{}",
-        checked_links.len(),
+        dedup_links_by_domain.values().map(|deduped_links| deduped_links.len()).sum::<usize>(),
         skipped_link_count,
         if invalid_url_links == 0 {
             "".to_string()
@@ -181,42 +204,25 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
         }
     );
 
-    if checked_links.is_empty() {
-        return Vec::new();
-    }
-
-    // error out if we're in error mode and any external URLs couldn't be parsed
-    if site.config.link_checker.external_level == LinkCheckerLevel::Error && !messages.is_empty() {
-        return messages;
-    }
-
-    let mut links_by_domain: HashMap<&str, Vec<&LinkDef>> = HashMap::new();
-    for link in checked_links.iter() {
-        if links_by_domain.contains_key(link.domain.as_str()) {
-            links_by_domain.get_mut(link.domain.as_str()).unwrap().push(link);
-        } else {
-            links_by_domain.insert(link.domain.as_str(), vec![link]);
-        }
-    }
-
     // create thread pool with lots of threads so we can fetch
     // (almost) all pages simultaneously, limiting all links for a single
     // domain to one thread to avoid rate-limiting
-    let threads = std::cmp::min(links_by_domain.len(), 8);
+    let threads = std::cmp::min(dedup_links_by_domain.len(), 8);
     match rayon::ThreadPoolBuilder::new().num_threads(threads).build() {
         Ok(pool) => {
             let errors = pool.install(|| {
-                links_by_domain
+                dedup_links_by_domain
                     .par_iter()
-                    .map(|(_, links)| {
-                        let mut num_links_left = links.len();
-                        links
+                    .map(|(_, deduped_links)| {
+                        let mut num_links_left = deduped_links.len();
+
+                        deduped_links
                             .iter()
-                            .filter_map(move |link_def| {
+                            .filter_map(|(external_link, occurrences)| {
                                 num_links_left -= 1;
 
                                 let res = link_checker::check_url(
-                                    &link_def.external_link,
+                                    external_link,
                                     &site.config.link_checker,
                                 );
 
@@ -228,11 +234,23 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                                 if link_checker::is_valid(&res) {
                                     None
                                 } else {
-                                    Some((&link_def.file_path, &link_def.external_link, res))
+                                    Some(
+                                        occurrences
+                                            .iter()
+                                            .map(|link_def| {
+                                                (
+                                                    &link_def.file_path,
+                                                    &link_def.external_link,
+                                                    res.clone(),
+                                                )
+                                            })
+                                            .collect::<Vec<_>>(),
+                                    )
                                 }
                             })
                             .collect::<Vec<_>>()
                     })
+                    .flatten()
                     .flatten()
                     .collect::<Vec<_>>()
             });
