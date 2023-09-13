@@ -179,17 +179,11 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     for link in checked_links.iter() {
         if dedup_links_by_domain.contains_key(link.domain.as_str()) {
             let deduped_links = dedup_links_by_domain.get_mut(link.domain.as_str()).unwrap();
-
-            if deduped_links.contains_key(link.external_link.as_str()) {
-                deduped_links.get_mut(link.external_link.as_str()).unwrap().push(link);
-            } else {
-                deduped_links.insert(&link.external_link, vec![link]);
-            }
+            deduped_links.entry(&link.external_link).or_insert_with(Vec::default).push(link);
         } else {
-            dedup_links_by_domain.insert(
-                link.domain.as_str(),
-                HashMap::from([(link.external_link.as_str(), vec![link])]),
-            );
+            dedup_links_by_domain
+                .entry(&link.domain)
+                .or_insert_with(|| HashMap::from([(link.external_link.as_str(), vec![link])]));
         }
     }
 
