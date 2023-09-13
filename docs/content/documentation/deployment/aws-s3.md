@@ -9,7 +9,7 @@ Amazon Simple Storage Service (Amazon S3) is an object storage service offering 
 
 [The official AWS developer](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started-cloudfront-overview.html) guide has detailed instruction on how to create your bucket and set it up correctly for static website hosting. In AWS you can not only host the website files, but also buy a domain name and speed up your website via their global CDN (CloudFront).
 
-For GitHub Actions to modify the files in your bucket, you need to create an IAM user in your AWS account that has just enough permissions to perform what we need an no more.
+For GitHub Actions to modify the files in your bucket, you need to create an IAM user in your AWS account that has just enough permissions to perform what we need and no more.
 
 First we need to create a new policy by logging on to AWS Console and going to **IAM** > **Policies** > **Create policy**. Switch from the visual editor to **JSON** and paste the following snippet. Remember to update your bucket name:
 
