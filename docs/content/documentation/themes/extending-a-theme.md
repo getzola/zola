@@ -11,7 +11,7 @@ When your site uses a theme, the generated structure follows the theme's structu
 
 ## Overriding a block
 
-If you don't want to replace a whole template, but override parts of it, you can [extend the template](https://tera.netlify.app/docs/#inheritance) and redefine some specific blocks. For example, if you want to override the `title` block in your theme's page.html, you can create a page.html file in your site templates with the following content:
+If you don't want to replace a whole template, but override parts of it, you can [extend the template](https://keats.github.io/tera/docs/#inheritance) and redefine some specific blocks. For example, if you want to override the `title` block in your theme's page.html, you can create a page.html file in your site templates with the following content:
 
 ```
 {% extends "theme_name/templates/page.html" %}

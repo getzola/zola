@@ -204,14 +204,14 @@ From a terminal, you can now run the following commands:
 ```sh
 $ git clone https://github.com/getzola/zola.git
 $ cd zola
-$ cargo install --path .
+$ cargo install --path . --locked
 $ zola --version
 ```
 
 If you encountered compilation errors like `error: failed to run custom build command for 'ring v0.16.20'`, you can try the command below instead:
 
 ```sh
-$ cargo build --release --no-default-features --features=native-tls
+$ cargo build --release --locked --no-default-features --features=native-tls
 ```
 
 The binary will be available in the `target/release` directory. You can move it in your `$PATH` to have the

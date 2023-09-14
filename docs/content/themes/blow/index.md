@@ -3,11 +3,11 @@
 title = "Blow"
 description = "A Zola theme made with Tailwindcss"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/tchartron/blow.git"
 homepage = "https://github.com/tchartron/blow"
 minimum_version = "0.9.0"
@@ -106,6 +106,8 @@ github = "https://github.com/johndoe"
 gitlab = "https://gitlab.com/johndoe"
 twitter = "https://twitter.com/johndoe"
 linkedin = "https://www.linkedin.com/in/john-doe-b1234567/"
+stackoverflow = "https://stackoverflow.com/users/01234567/johndoe" 
+telegram = "https://t.me/johndoe"
 email = "john.doe@gmail.com"
 
 [extra.favicon]

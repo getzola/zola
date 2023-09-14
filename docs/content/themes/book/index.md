@@ -3,16 +3,16 @@
 title = "book"
 description = "A book theme inspired from GitBook/mdBook"
 template = "theme.html"
-date = 2023-07-10T22:28:41+01:00
+date = 2023-08-20T14:37:38+02:00
 
 [extra]
-created = 2023-07-10T22:28:41+01:00
-updated = 2023-07-10T22:28:41+01:00
+created = 2023-08-20T14:37:38+02:00
+updated = 2023-08-20T14:37:38+02:00
 repository = "https://github.com/getzola/book.git"
 homepage = "https://github.com/getzola/book"
-minimum_version = "0.16.0"
+minimum_version = "0.17.0"
 license = "MIT"
-demo = "https://zola-book.netlify.app"
+demo = "https://getzola.github.io/book/"
 
 [extra.author]
 name = "Vincent Prouillet"

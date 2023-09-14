@@ -108,7 +108,7 @@ pre table td:nth-of-type(1) {
   user-select: none;
 }
 
-p code, li code {
+p code, li code:not(pre code) {
   background-color: #f5f5f5;
   white-space: pre-wrap;
   padding: 5px;
