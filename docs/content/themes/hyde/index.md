@@ -3,11 +3,11 @@
 title = "hyde"
 description = "A classic blog theme"
 template = "theme.html"
-date = 2023-08-20T14:37:38+02:00
+date = 2023-09-15T21:56:17+02:00
 
 [extra]
-created = 2023-08-20T14:37:38+02:00
-updated = 2023-08-20T14:37:38+02:00
+created = 2023-09-15T21:56:17+02:00
+updated = 2023-09-15T21:56:17+02:00
 repository = "https://github.com/getzola/hyde.git"
 homepage = "https://github.com/getzola/hyde"
 minimum_version = "0.11.0"

@@ -3,11 +3,11 @@
 title = "Andromeda"
 description = "Photography journal blog theme"
 template = "theme.html"
-date = 2023-08-20T14:37:38+02:00
+date = 2023-09-15T21:56:17+02:00
 
 [extra]
-created = 2023-08-20T14:37:38+02:00
-updated = 2023-08-20T14:37:38+02:00
+created = 2023-09-15T21:56:17+02:00
+updated = 2023-09-15T21:56:17+02:00
 repository = "https://github.com/Pixadus/andromeda-theme.git"
 homepage = "https://github.com/Pixadus/andromeda-theme"
 minimum_version = "0.16.0"
@@ -43,6 +43,7 @@ Assuming you already have a site set up (see the [Zola guide for setting up a si
     git clone https://github.com/Pixadus/andromeda-theme themes/andromeda
     ```
 3. Duplicate the structure of the the `config.toml` file found in `themes/andromeda/config.toml` or [this repository](https://github.com/Pixadus/andromeda-theme/blob/main/config.toml) within your own `config.toml`.
+4. Set the theme to Andromeda, by including `theme = andromeda` in your `config.toml` file.
 
 ## Creating pages
 

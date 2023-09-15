@@ -3,11 +3,11 @@
 title = "serene"
 description = "A blog theme for zola, simple and clean"
 template = "theme.html"
-date = 2023-08-20T14:37:38+02:00
+date = 2023-09-15T21:56:17+02:00
 
 [extra]
-created = 2023-08-20T14:37:38+02:00
-updated = 2023-08-20T14:37:38+02:00
+created = 2023-09-15T21:56:17+02:00
+updated = 2023-09-15T21:56:17+02:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
 minimum_version = "0.9.0"
@@ -19,9 +19,9 @@ name = "isunjn"
 homepage = "https://github.com/isunjn"
 +++        
 
-![screenshot](https://github.com/isunjn/serene/blob/main/screenshot.png?raw=true)
+<img width="1501" alt="screenshot" src="https://github.com/isunjn/serene/assets/60461730/33516366-3670-497f-bd72-41ebe8f06f1a">
 
-<br />
+<br /><br />
 
 A blog theme for [zola](https://www.getzola.org), simple and clean
 
@@ -50,6 +50,5 @@ A blog theme for [zola](https://www.getzola.org), simple and clean
 ## Contributing
 
 - Before you make any non-trivial changes, you may want to open an issue so we can discuss
-- If you got any idea inspired by another blog theme or website and want to have that in serene, I'd like to hear about it
 
         
