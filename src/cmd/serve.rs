@@ -669,6 +669,25 @@ pub fn serve(
                                     site = s;
                                 }
                                 let entry = config_path_rel.to_str().unwrap_or("config.toml");
+                                let mut path_exists = false;
+                                let mut tries = 0;
+                                let max_attempts = 3;
+                                while tries < max_attempts {
+                                    if config_path.exists() {
+                                        path_exists = true;
+                                        break;
+                                    }
+                                    tries += 1;
+                                    thread::sleep(Duration::from_millis(100));
+                                }
+                                if !path_exists {
+                                    return Err(
+                                        std::io::Error::new(
+                                            std::io::ErrorKind::NotFound,
+                                            "Received NotifyRemove on a required file, and file did not reappear in time",
+                                        ).into()
+                                    );
+                                }
                                 watcher
                                     .watch(root_dir.join(entry), RecursiveMode::Recursive)
                                     .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
