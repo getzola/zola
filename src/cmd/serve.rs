@@ -28,9 +28,10 @@ use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use hyper::header;
+use hyper::http::HeaderValue;
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
+use hyper::{body, header};
 use hyper::{Body, Method, Request, Response, StatusCode};
 use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
@@ -74,6 +75,24 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
+
+async fn handle_request_error_injector(
+    req: Request<Body>,
+    root: PathBuf,
+) -> Result<Response<Body>> {
+    let mut req = handle_request(req, root).await;
+
+    if let Ok(req) = &mut req {
+        if req.headers().get(header::CONTENT_TYPE) == Some(&HeaderValue::from_static("text/html")) {
+            let mut bytes = body::to_bytes(req.body_mut()).await.unwrap().to_vec();
+
+            bytes.extend(br#"<div style="background-color: red;"><b>INJECTED AN ERROR INTO YOUR WEBSITE :)</b></div>"#);
+
+            *req.body_mut() = Body::from(bytes);
+        }
+    }
+    req
+}
 
 async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Response<Body>> {
     let original_root = root.clone();
@@ -384,7 +403,7 @@ pub fn serve(
 
                     async {
                         Ok::<_, hyper::Error>(service_fn(move |req| {
-                            handle_request(req, static_root.clone())
+                            handle_request_error_injector(req, static_root.clone())
                         }))
                     }
                 });
