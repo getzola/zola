@@ -3,16 +3,16 @@
 title = "Bear"
 description = "Bear blog theme"
 template = "theme.html"
-date = 2023-08-20T14:37:38+02:00
+date = 2023-09-15T21:56:17+02:00
 
 [extra]
-created = 2023-08-20T14:37:38+02:00
-updated = 2023-08-20T14:37:38+02:00
+created = 2023-09-15T21:56:17+02:00
+updated = 2023-09-15T21:56:17+02:00
 repository = "https://codeberg.org/alanpearce/zola-bearblog"
-homepage = "https://codeberg.org/alanpearce/zola/bearblog"
+homepage = "https://codeberg.org/alanpearce/zola-bearblog"
 minimum_version = "0.4.0"
 license = "MIT"
-demo = "https://alanpearce.codeberg.page/zola-bearblog"
+demo = "https://zola-bearblog.netlify.app/"
 
 [extra.author]
 name = "Alan Pearce"
@@ -21,21 +21,19 @@ homepage = "https://alanpearce.eu"
 
 # Zola ʕ•ᴥ•ʔ Bear Blog
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/121b53ce-c913-4604-9179-eb3cca31cd2c/deploy-status)](https://app.netlify.com/sites/zola-bearblog/deploys)
+
 🧸 A [Zola](https://www.getzola.org/)-theme based on [Bear Blog](https://bearblog.dev).
 
 > Free, no-nonsense, super-fast blogging.
 
 ## Demo
 
-For a current & working demo of this theme, please check out https://alanpearce.codeberg.page/zola-bearblog/ 🎯.
+For a current & working demo of this theme, please check out <https://zola-bearblog.netlify.app/> 🎯.
 
-## Screenshots
+## Screenshot
 
-⬜️ [Light][light-screenshot]
-![light mode screenshot][light-screenshot]
-
-⬛️ [Dark][dark-screenshot]
-![dark mode screenshot][dark-screenshot]
+![Screenshot][screenshot]
 
 When the user's browser is running »dark mode«, the dark color scheme will be used automatically. The default is the light/white color scheme. Check out the [`style.html`](https://codeberg.org/alanpearce/zola-bearblog/src/branch/main/templates/style.html)-file for the implementation.
 
@@ -50,6 +48,12 @@ git submodule add https://codeberg.org/alanpearce/zola-bearblog themes/zola-bear
 Then, adjust the `config.toml` as detailed below.
 
 For more information, read the official [setup guide][zola-setup-guide] of Zola.
+
+Alternatively, you can quickly deploy a copy of the theme site to Netlify using this button:
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://gitlab.com/alanpearce/zola-bearblog)
+
+(Note that this method makes it harder to keep up-to-date with theme updates, which might be necessary for newer versions of Zola.)
 
 ## Adjust configuration / config.toml
 
@@ -97,7 +101,6 @@ A special thank you goes out to [Herman](https://herman.bearblog.dev), for creat
 [MIT License](http://en.wikipedia.org/wiki/MIT_License) © [Alan Pearce](https://www.alanpearce.eu/)
 
 [zola-setup-guide]: https://www.getzola.org/documentation/getting-started/installation/
-[light-screenshot]: https://codeberg.org/alanpearce/zola-bearblog/raw/branch/main/screenshot.png
-[dark-screenshot]: https://codeberg.org/alanpearce/zola-bearblog/raw/branch/main/screenshot-dark.png
+[screenshot]: https://codeberg.org/alanpearce/zola-bearblog/raw/branch/main/screenshot.png
 
         
