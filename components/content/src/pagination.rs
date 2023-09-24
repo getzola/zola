@@ -130,6 +130,9 @@ impl<'a> Paginator<'a> {
 
         for p in &*self.all_pages {
             let page = &library.pages[p];
+            if !page.meta.render {
+                continue;
+            }
             current_page.push(SerializingPage::new(page, Some(library), false));
 
             if current_page.len() == self.paginate_by {

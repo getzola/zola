@@ -8,6 +8,7 @@
 - Fix resizing for images with EXIF orientation
 - Add MIME type to get_image_metadata
 - Fix hot loading for config.toml in some cases
+- Add `render = false` capability to pages
 
 ## 0.18.0 (2023-12-18)
 
