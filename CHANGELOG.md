@@ -10,8 +10,10 @@
 - Allow setting attributes to lazy load all images from Config.toml
 - Fix HTML generated in class based highlighting with line numbers
 - Add a `replace_re` filter
-- Speed up `zola check`
-- Add search.index_format into the serialized config in the templates
+- Speed up `zola check` and only checks external links once, even if present in multiple languages
+- Add `search.index_format` into the serialized config in the templates
+- Add --force flag in `zola serve` if the directory is not empty
+- Add `ignored_static` to the config to ignore specific files from the static directory
 
 ## 0.17.2 (2023-03-19)
 
