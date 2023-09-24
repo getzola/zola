@@ -21,7 +21,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages.len(), 35);
+    assert_eq!(library.pages.len(), 36);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -44,7 +44,7 @@ fn can_parse_site() {
 
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
-    assert_eq!(posts_section.pages.len(), 10); // 11 with 1 draft == 10
+    assert_eq!(posts_section.pages.len(), 11); // 12 with 1 draft == 11
     assert_eq!(posts_section.ancestors, vec![index_section.file.relative.clone()]);
 
     // Make sure we remove all the pwd + content from the sections
@@ -135,6 +135,9 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "posts/tutorials/devops/nix/index.html"));
     assert!(file_exists!(public, "posts/with-assets/index.html"));
     assert!(file_exists!(public, "posts/no-section/simple/index.html"));
+
+    // "render = false" should not generate an index.html
+    assert!(!file_exists!(public, "posts/render/index.html"));
 
     // Sections
     assert!(file_exists!(public, "posts/index.html"));
