@@ -1,6 +1,6 @@
 use core::time;
-use std::path::Path;
-use std::{collections::HashMap, path::PathBuf, thread};
+use std::path::{Path, PathBuf};
+use std::{cmp, collections::HashMap, collections::HashSet, iter::FromIterator, thread};
 
 use config::LinkCheckerLevel;
 use libs::rayon::prelude::*;
@@ -52,7 +52,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
             full_path.push(part);
         }
         // NOTE: This will also match _index.foobar.md where foobar is not a language
-        // as well as any other sring containing "_index." which is now referenced as
+        // as well as any other string containing "_index." which is now referenced as
         // unsupported page path in the docs.
         if md_path.contains("_index.") {
             let section = library.sections.get(&full_path).unwrap_or_else(|| {
@@ -172,7 +172,11 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
 
     println!(
         "Checking {} external link(s). Skipping {} external link(s).{}",
-        checked_links.len(),
+        // Get unique links count from Vec by creating a temporary HashSet.
+        HashSet::<&str>::from_iter(
+            checked_links.iter().map(|link_def| link_def.external_link.as_str())
+        )
+        .len(),
         skipped_link_count,
         if invalid_url_links == 0 {
             "".to_string()
@@ -199,24 +203,43 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
         }
     }
 
+    let cpu_count = match thread::available_parallelism() {
+        Ok(count) => count.get(),
+        Err(_) => 1,
+    };
     // create thread pool with lots of threads so we can fetch
     // (almost) all pages simultaneously, limiting all links for a single
     // domain to one thread to avoid rate-limiting
-    let threads = std::cmp::min(links_by_domain.len(), 8);
-    match rayon::ThreadPoolBuilder::new().num_threads(threads).build() {
+    let num_threads = cmp::min(links_by_domain.len(), cmp::max(8, cpu_count));
+    match rayon::ThreadPoolBuilder::new().num_threads(num_threads).build() {
         Ok(pool) => {
             let errors = pool.install(|| {
                 links_by_domain
                     .par_iter()
                     .map(|(_, links)| {
                         let mut num_links_left = links.len();
+                        let mut checked_links: HashMap<&str, Option<link_checker::Result>> =
+                            HashMap::new();
                         links
                             .iter()
                             .filter_map(move |link_def| {
                                 num_links_left -= 1;
 
+                                // Avoid double-checking the same url (e.g. for translated pages).
+                                let external_link = link_def.external_link.as_str();
+                                if let Some(optional_res) = checked_links.get(external_link) {
+                                    if let Some(res) = optional_res {
+                                        return Some((
+                                            &link_def.file_path,
+                                            external_link,
+                                            res.clone(),
+                                        ));
+                                    }
+                                    return None;
+                                }
+
                                 let res = link_checker::check_url(
-                                    &link_def.external_link,
+                                    external_link,
                                     &site.config.link_checker,
                                 );
 
@@ -226,9 +249,11 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                                 }
 
                                 if link_checker::is_valid(&res) {
+                                    checked_links.insert(external_link, None);
                                     None
                                 } else {
-                                    Some((&link_def.file_path, &link_def.external_link, res))
+                                    checked_links.insert(external_link, Some(res.clone()));
+                                    return Some((&link_def.file_path, external_link, res));
                                 }
                             })
                             .collect::<Vec<_>>()
