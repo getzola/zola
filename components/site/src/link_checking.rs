@@ -253,7 +253,7 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                                     None
                                 } else {
                                     checked_links.insert(external_link, Some(res.clone()));
-                                    return Some((&link_def.file_path, external_link, res));
+                                    Some((&link_def.file_path, external_link, res))
                                 }
                             })
                             .collect::<Vec<_>>()

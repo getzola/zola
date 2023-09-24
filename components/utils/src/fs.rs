@@ -128,7 +128,7 @@ pub fn copy_directory(
         let relative_path = entry.path().strip_prefix(src).unwrap();
 
         if let Some(gs) = ignore_globset {
-            if gs.is_match(&relative_path) {
+            if gs.is_match(relative_path) {
                 continue;
             }
         }

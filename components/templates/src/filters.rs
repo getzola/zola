@@ -88,7 +88,7 @@ pub struct RegexReplaceFilter {
 
 impl RegexReplaceFilter {
     pub fn new() -> Self {
-        return Self { re_cache: Arc::new(Mutex::new(HashMap::new())) };
+        Self { re_cache: Arc::new(Mutex::new(HashMap::new())) }
     }
 }
 
