@@ -21,16 +21,20 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+use std::cell::Cell;
 use std::fs::read_dir;
+use std::future::IntoFuture;
 use std::net::{SocketAddrV4, TcpListener};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
+use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use hyper::header;
+use hyper::http::HeaderValue;
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
+use hyper::{body, header};
 use hyper::{Body, Method, Request, Response, StatusCode};
 use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
@@ -74,6 +78,19 @@ static NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
+
+static SERVE_ERROR: Mutex<Cell<Option<(&'static str, errors::Error)>>> =
+    Mutex::new(Cell::new(None));
+
+fn clear_serve_error() {
+    let _ = SERVE_ERROR.lock().map(|error| error.swap(&Cell::new(None)));
+}
+
+fn set_serve_error(msg: &'static str, e: errors::Error) {
+    if let Ok(serve_error) = SERVE_ERROR.lock() {
+        serve_error.swap(&Cell::new(Some((msg, e))));
+    }
+}
 
 async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Response<Body>> {
     let original_root = root.clone();
@@ -148,6 +165,61 @@ async fn handle_request(req: Request<Body>, mut root: PathBuf) -> Result<Respons
         .unwrap())
 }
 
+/// Inserts build error message boxes into HTML responses when needed.
+async fn response_error_injector(
+    req: impl IntoFuture<Output = Result<Response<Body>>>,
+) -> Result<Response<Body>> {
+    let req = req.await;
+
+    // return req as-is if the request is Err(), not HTML, or if there are no error messages.
+    if req
+        .as_ref()
+        .map(|req| {
+            req.headers()
+                .get(header::CONTENT_TYPE)
+                .map(|val| val != &HeaderValue::from_static("text/html"))
+                .unwrap_or(true)
+        })
+        .unwrap_or(true)
+        || SERVE_ERROR.lock().unwrap().get_mut().is_none()
+    {
+        return req;
+    }
+
+    let mut req = req.unwrap();
+    let mut bytes = body::to_bytes(req.body_mut()).await.unwrap().to_vec();
+
+    if let Some((msg, error)) = SERVE_ERROR.lock().unwrap().get_mut() {
+        // Generate an error message similar to the CLI version in messages::unravel_errors.
+        let mut error_str = String::new();
+
+        if !msg.is_empty() {
+            error_str.push_str(&format!("Error: {msg}\n"));
+        }
+
+        error_str.push_str(&format!("Error: {error}\n"));
+
+        let mut cause = error.source();
+        while let Some(e) = cause {
+            error_str.push_str(&format!("Reason: {}\n", e));
+            cause = e.source();
+        }
+
+        // Push the error message (wrapped in an HTML dialog box) to the end of the HTML body.
+        //
+        // The message will be outside of <html> and <body> but web browsers are flexible enough
+        // that they will move it to the end of <body> at page load.
+        let html_error = format!(
+            r#"<div style="all:revert;position:fixed;display:flex;align-items:center;justify-content:center;background-color:rgb(0,0,0,0.5);top:0;right:0;bottom:0;left:0;"><div style="background-color:white;padding:0.5rem;border-radius:0.375rem;filter:drop-shadow(0,25px,25px,rgb(0,0,0/0.15));overflow-x:auto;"><p style="font-weight:700;color:black;font-size:1.25rem;margin:0;margin-bottom:0.5rem;">Zola Build Error:</p><pre style="padding:0.5rem;margin:0;border-radius:0.375rem;background-color:#363636;color:#CE4A2F;font-weight:700;">{error_str}</pre></div></div>"#
+        );
+        bytes.extend(html_error.as_bytes());
+
+        *req.body_mut() = Body::from(bytes);
+    }
+
+    Ok(req)
+}
+
 fn livereload_js() -> Response<Body> {
     Response::builder()
         .header(header::CONTENT_TYPE, "text/javascript")
@@ -213,6 +285,7 @@ fn not_found() -> Response<Body> {
 fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
     match res {
         Ok(_) => {
+            clear_serve_error();
             broadcaster
                 .send(format!(
                     r#"
@@ -228,7 +301,12 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                 ))
                 .unwrap();
         }
-        Err(e) => messages::unravel_errors("Failed to build the site", &e),
+        Err(e) => {
+            let msg = "Failed to build the site";
+
+            messages::unravel_errors(msg, &e);
+            set_serve_error(msg, e);
+        }
     }
 }
 
@@ -384,7 +462,7 @@ pub fn serve(
 
                     async {
                         Ok::<_, hyper::Error>(service_fn(move |req| {
-                            handle_request(req, static_root.clone())
+                            response_error_injector(handle_request(req, static_root.clone()))
                         }))
                     }
                 });
@@ -514,11 +592,17 @@ pub fn serve(
         ws_port,
     ) {
         Ok((s, _)) => {
+            clear_serve_error();
             rebuild_done_handling(&broadcaster, Ok(()), "/x.js");
+
             Some(s)
         }
         Err(e) => {
-            messages::unravel_errors("Failed to build the site", &e);
+            let msg = "Failed to build the site";
+
+            messages::unravel_errors(msg, &e);
+            set_serve_error(msg, e);
+
             None
         }
     };
