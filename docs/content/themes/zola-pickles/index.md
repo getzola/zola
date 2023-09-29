@@ -3,11 +3,11 @@
 title = "pickles"
 description = "A modern, simple, clean blog theme for Zola."
 template = "theme.html"
-date = 2023-09-15T21:56:17+02:00
+date = 2023-09-29T13:09:24+02:00
 
 [extra]
-created = 2023-09-15T21:56:17+02:00
-updated = 2023-09-15T21:56:17+02:00
+created = 2023-09-29T13:09:24+02:00
+updated = 2023-09-29T13:09:24+02:00
 repository = "https://github.com/lukehsiao/zola-pickles.git"
 homepage = "https://github.com/lukehsiao/zola-pickles"
 minimum_version = "0.13.0"
