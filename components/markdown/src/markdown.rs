@@ -234,7 +234,7 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
 /// Extracts the footnotes as bottom-notes, in the style of GitHub.
 ///
 /// Adapted from [notriddle](https://github.com/raphlinus/pulldown-cmark/blob/ad19879e6b4f411dbdd78ffa6a9cf429e35afe47/examples/footnote-rewrite.rs).
-fn render_bottom_footnotes<'e>(events: Vec<Event<'e>>) -> Vec<Event<'e>> {
+fn render_bottom_footnotes(events: Vec<Event<'_>>) -> Vec<Event<'_>> {
     // To generate this style, you have to collect the footnotes at the end, while parsing.
     // You also need to count usages.
     let mut footnotes = Vec::new();
@@ -259,7 +259,7 @@ fn render_bottom_footnotes<'e>(events: Vec<Event<'e>>) -> Vec<Event<'e>> {
                     let (n, nr) = footnote_numbers.entry(name.clone()).or_insert((n, 0usize));
                     *nr += 1;
                     let html = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">[{n}]</a></sup>"##).into());
-                    if in_footnote.len() == 0 {
+                    if in_footnote.is_empty() {
                         Some(html)
                     } else {
                         in_footnote.last_mut().unwrap().push(html);
