@@ -355,3 +355,30 @@ and multiple paragraphs.
     .body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn can_render_bottom_footnotes() {
+    let mut cfg = Config::default_for_test();
+    cfg.markdown.bottom_footnotes = true;
+
+    let body = common::render_with_config(
+        r#"
+### Footnotes
+
+Footnote 1 link[^first].
+
+Footnote 2 link[^second].
+
+Duplicated footnote reference[^second].
+
+[^first]: Footnote **can have markup**
+and multiple paragraphs.
+
+[^second]: Footnote text.
+    "#,
+        cfg,
+    )
+    .unwrap()
+    .body;
+    insta::assert_snapshot!(body);
+}

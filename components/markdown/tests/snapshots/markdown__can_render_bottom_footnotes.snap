@@ -1,0 +1,16 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+---
+<h3 id="footnotes">Footnotes</h3>
+<p>Footnote 1 link<sup class="footnote-reference" id="fr-first-1"><a href="#fn-first">[1]</a></sup>.</p>
+<p>Footnote 2 link<sup class="footnote-reference" id="fr-second-1"><a href="#fn-second">[2]</a></sup>.</p>
+<p>Duplicated footnote reference<sup class="footnote-reference" id="fr-second-2"><a href="#fn-second">[2]</a></sup>.</p>
+<hr><ol class="footnotes-list"><li id="fn-first">
+<p>Footnote <strong>can have markup</strong>
+and multiple paragraphs. <a href="#fr-first-1">↩</a></p>
+</li>
+<li id="fn-second">
+<p>Footnote text. <a href="#fr-second-1">↩</a> <a href="#fr-second-2">↩2</a></p>
+</li>
+
