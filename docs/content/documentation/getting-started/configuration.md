@@ -12,6 +12,7 @@ If you are not familiar with TOML, have a look at [the TOML spec](https://github
 ⚠️ If you add keys to your `config.toml`, you must pay attention to which TOML section it belongs to. A TOML section starts with a header, e.g. `[search]`, and ends at the next section or EOF.
 
 Here are the current `config.toml` sections:
+
 1. main (unnamed)
 2. markdown
 3. link_checker
@@ -132,6 +133,9 @@ smart_punctuation = false
 # For example, `![xx](...)` is ok but `![*x*x](...)` isn’t ok
 lazy_async_image = false
 
+# Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain.
+bottom_footnotes = false
+
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes
@@ -188,7 +192,7 @@ index_format = "elasticlunr_javascript"
 [translations]
 
 # Additional languages definition
-# You can define language specific config values and translations: 
+# You can define language specific config values and translations:
 # title, description, generate_feed, feed_filename, taxonomies, build_search_index
 # as well as its own search configuration and translations (see above for details on those)
 [languages]
@@ -252,8 +256,8 @@ Zola currently has the following highlight themes available:
 - [OneHalfDark](https://github.com/sonph/onehalf)
 - [OneHalfLight](https://github.com/sonph/onehalf)
 - [railsbase16-green-screen-dark](https://github.com/tompave/rails_base_16)
-- [solarized-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(dark))
-- [solarized-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(light))
+- [solarized-dark](<https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(dark)>)
+- [solarized-light](<https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(light)>)
 - [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
 - [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
 - [Tomorrow](https://tmtheme-editor.glitch.me/#!/editor/theme/Tomorrow)
