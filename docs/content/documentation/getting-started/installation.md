@@ -178,6 +178,22 @@ You can now browse http://localhost:8080.
 > port between 1024 and 9000 for live reload. The new docker command would be
 > `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 ghcr.io/getzola/zola:v0.17.1 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
 
+#### Multi-stage build
+
+Build current folder content and create a lightweight web server image using static-web-server:
+
+```Dockerfile
+FROM ghcr.io/getzola/zola:v0.17.1 as zola
+
+COPY . /project
+WORKDIR /project
+RUN ["zola", "build"]
+
+FROM ghcr.io/static-web-server/static-web-server:2
+WORKDIR /
+COPY --from=zola /project/public /public
+```
+
 
 ## Windows
 
