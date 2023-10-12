@@ -374,7 +374,9 @@ fn render_bottom_footnotes(events: Vec<Event<'_>>) -> Vec<Event<'_>> {
                 Event::FootnoteReference(_) => unreachable!("converted to HTML earlier"),
                 f => f,
             })
-        }))
+        }));
+
+        events_with_footnotes.push(Event::Html("</ol>".into()));
     }
 
     // No footnotes
