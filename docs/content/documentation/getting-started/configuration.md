@@ -26,7 +26,7 @@ used by Zola as well as their default values are listed below:
 
 ```toml
 # The base URL of the site; the only required configuration variable.
-base_url = "mywebsite.com"
+base_url = "https://mywebsite.com"
 
 # The site title and description; used in feeds by default.
 title = ""
