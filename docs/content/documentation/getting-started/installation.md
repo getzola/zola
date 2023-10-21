@@ -178,6 +178,19 @@ You can now browse http://localhost:8080.
 > port between 1024 and 9000 for live reload. The new docker command would be
 > `$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 ghcr.io/getzola/zola:v0.17.1 serve --interface 0.0.0.0 --port 8080 --base-url localhost`
 
+#### Multi-stage build
+
+Since there is no shell in the Zola docker image, if you want to use it from inside a Dockerfile, you have to use the
+exec form of `RUN`, like:
+
+```Dockerfile
+FROM ghcr.io/getzola/zola:v0.17.1 as zola
+
+COPY . /project
+WORKDIR /project
+RUN ["zola", "build"]
+```
+
 
 ## Windows
 
