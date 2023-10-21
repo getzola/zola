@@ -59,10 +59,14 @@ stages:
               imageName: 'windows-2019'
               rustup_toolchain: stable
               target: 'x86_64-pc-windows-msvc'
-            mac-stable:
+            mac-stable-intel:
               imageName: 'macos-11'
               rustup_toolchain: stable
               target: 'x86_64-apple-darwin'
+            mac-stable-arm:
+              imageName: 'macos-11'
+              rustup_toolchain: stable
+              target: 'aarch64-apple-darwin'
             linux-stable:
               imageName: 'ubuntu-20.04'
               rustup_toolchain: stable
