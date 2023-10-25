@@ -3,11 +3,11 @@
 title = "dinkleberg"
 description = "The Rust BR theme for Gutenberg"
 template = "theme.html"
-date = 2023-09-29T13:09:24+02:00
+date = 2023-10-25T22:06:19+08:00
 
 [extra]
-created = 2023-09-29T13:09:24+02:00
-updated = 2023-09-29T13:09:24+02:00
+created = 2023-10-25T22:06:19+08:00
+updated = 2023-10-25T22:06:19+08:00
 repository = "https://github.com/rust-br/dinkleberg.git"
 homepage = "https://github.com/rust-br/dinkleberg"
 minimum_version = "0.4.0"

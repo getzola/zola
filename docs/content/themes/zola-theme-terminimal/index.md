@@ -3,11 +3,11 @@
 title = "terminimal"
 description = "A simple, minimal retro theme"
 template = "theme.html"
-date = 2023-09-29T13:09:24+02:00
+date = 2023-10-25T22:06:19+08:00
 
 [extra]
-created = 2023-09-29T13:09:24+02:00
-updated = 2023-09-29T13:09:24+02:00
+created = 2023-10-25T22:06:19+08:00
+updated = 2023-10-25T22:06:19+08:00
 repository = "https://github.com/pawroman/zola-theme-terminimal.git"
 homepage = "https://github.com/pawroman/zola-theme-terminimal"
 minimum_version = "0.11.0"
