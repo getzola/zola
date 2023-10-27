@@ -117,7 +117,9 @@ pub(crate) fn render_bottom_footnotes(events: Vec<Event<'_>>) -> Vec<Event<'_>> 
                 Event::Start(Tag::FootnoteDefinition(current_name)) => {
                     name = current_name;
                     has_written_backrefs = false;
-                    Event::Html(format!(r##"<li id="fn-{name}">"##).into())
+                    Event::Html(
+                        format!(r##"<li id="fn-{name}" class="footnote-definition">"##).into(),
+                    )
                 }
                 Event::End(Tag::FootnoteDefinition(_) | Tag::Paragraph)
                     if !has_written_backrefs && i >= fl_len - 2 =>
