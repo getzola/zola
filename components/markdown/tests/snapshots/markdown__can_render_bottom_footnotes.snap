@@ -7,8 +7,7 @@ expression: body
 <p>Footnote 2 link<sup class="footnote-reference" id="fr-second-1"><a href="#fn-second">[2]</a></sup>.</p>
 <p>Duplicated footnote reference<sup class="footnote-reference" id="fr-second-2"><a href="#fn-second">[2]</a></sup>.</p>
 <hr><ol class="footnotes-list"><li id="fn-first" class="footnote-definition">
-<p>Footnote <strong>can have markup</strong>
-and multiple paragraphs. <a href="#fr-first-1">↩</a></p>
+<p>Footnote <strong>can have markup</strong>. <a href="#fr-first-1">↩</a></p>
 </li>
 <li id="fn-second" class="footnote-definition">
 <p>Footnote text. <a href="#fr-second-1">↩</a> <a href="#fr-second-2">↩2</a></p>

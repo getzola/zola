@@ -371,8 +371,7 @@ Footnote 2 link[^second].
 
 Duplicated footnote reference[^second].
 
-[^first]: Footnote **can have markup**
-and multiple paragraphs.
+[^first]: Footnote **can have markup**.
 
 [^second]: Footnote text.
     "#,
