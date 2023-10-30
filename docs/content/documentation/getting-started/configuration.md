@@ -77,6 +77,9 @@ feed_filename = "atom.xml"
 # files are always copied, regardless of this setting.
 hard_link_static = false
 
+# The default author for pages
+author = 
+
 # The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
 #     taxonomies = [
