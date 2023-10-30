@@ -17,6 +17,20 @@ need to provide a template yourself.
 
 **Only pages with a date will be available.**
 
+The author in the feed is set as
+- The first author in `authors` set in the 
+  [front matter](@/documentation/content/page.md#front-matter)
+- If that is not present it falls back to the `author` in the 
+  [Configuration](@/documentation/getting-started/configuration.md)
+- If that is also not preset it is set to `Unknown`.
+
+Note that `atom.xml` and `rss.xml` require different formats for specifying the
+author. According to [RFC 4287][atom_rfc] `atom.xml` requires the author's
+name, for example `"John Doe"`. While according to the 
+[RSS 2.0 Specification][rss_spec] the email address is required, and the name
+optionally included, for example `"lawyer@boyer.net"` or 
+`"lawyer@boyer.net (Lawyer Boyer)"`.
+
 The feed template gets five variables:
 
 - `config`: the site config
@@ -63,3 +77,6 @@ In order to enable the tag feeds as well, you can overload the `block rss` using
 {% endblock rss %}
 ```
 Each tag page will refer to it's dedicated feed.
+
+[atom_rfc]: https://www.rfc-editor.org/rfc/rfc4287
+[rss_spec]: https://www.rssboard.org/rss-specification#ltauthorgtSubelementOfLtitemgt
