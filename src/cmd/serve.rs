@@ -728,6 +728,7 @@ mod tests {
             Path::new("hello.html.__jb_bak___"),
             Path::new("hello.html~"),
             Path::new("#hello.html"),
+            Path::new(".index.md.kate-swp"),
         ];
 
         for t in test_cases {
