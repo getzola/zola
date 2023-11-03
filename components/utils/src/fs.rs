@@ -199,6 +199,8 @@ pub fn is_temp_file(path: &Path) -> bool {
     match ext {
         Some(ex) => match ex.to_str().unwrap() {
             "swp" | "swx" | "tmp" | ".DS_STORE" | ".DS_Store" => true,
+            // kate
+            "kate-swp" => true,
             // jetbrains IDE
             x if x.ends_with("jb_old___") => true,
             x if x.ends_with("jb_tmp___") => true,
