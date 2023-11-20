@@ -14,6 +14,7 @@
 - Add `search.index_format` into the serialized config in the templates
 - Add --force flag in `zola serve` if the directory is not empty
 - Add `ignored_static` to the config to ignore specific files from the static directory
+- Add Hungarian support for search
 
 ## 0.17.2 (2023-03-19)
 
