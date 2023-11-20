@@ -82,9 +82,11 @@ impl Library {
 
     pub fn insert_page(&mut self, page: Page) {
         let file_path = page.file.path.clone();
-        let mut entries = vec![page.path.clone()];
-        entries.extend(page.meta.aliases.to_vec());
-        self.insert_reverse_aliases(&file_path, entries);
+        if page.meta.render {
+            let mut entries = vec![page.path.clone()];
+            entries.extend(page.meta.aliases.to_vec());
+            self.insert_reverse_aliases(&file_path, entries);
+        }
 
         for (taxa_name, terms) in &page.meta.taxonomies {
             for term in terms {
