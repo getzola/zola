@@ -17,6 +17,8 @@ use crate::library::Library;
 use crate::ser::{SectionSerMode, SerializingSection};
 use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
 
+use crate::Page;
+
 // Default is used to create a default index section if there is no _index.md in the root content directory
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Section {
@@ -91,7 +93,25 @@ impl Section {
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
 
-        let path = section.file.components.join("/");
+        let path = {
+            let mut path_components: Vec<String> = Vec::new();
+            for (index, file_component) in section.file.components.iter().enumerate() {
+                let maybe_page_path =
+                    base_path.join("content").join(&section.file.components[0..=index].join("/"));
+                let maybe_page = Page::from_file(
+                    maybe_page_path.join("index.md").as_path(),
+                    &Config::default(),
+                    base_path,
+                );
+                if let Ok(page) = maybe_page {
+                    path_components.push(page.slug);
+                } else {
+                    path_components.push(file_component.to_string());
+                }
+            }
+            path_components.join("/")
+        };
+
         let lang_path = if section.lang != config.default_language {
             format!("/{}", section.lang)
         } else {
@@ -247,6 +267,8 @@ mod tests {
     use super::Section;
     use config::{Config, LanguageOptions};
 
+    use crate::Page;
+
     #[test]
     fn section_with_assets_gets_right_info() {
         let tmp_dir = tempdir().expect("create temp dir");
@@ -271,6 +293,42 @@ mod tests {
         assert_eq!(section.assets.len(), 3);
         assert!(section.serialized_assets[0].starts_with('/'));
         assert_eq!(section.permalink, "http://a-website.com/posts/with-assets/");
+    }
+
+    #[test]
+    fn should_respect_parent_path_of_a_page() {
+        // Create a base directory with `/content/posts` subdirectories
+        let base_dir = tempdir().expect("create temp dir");
+        let base_dir_path = base_dir.path();
+        create_dir(&base_dir_path.join("content")).expect("create content temp dir");
+        create_dir(&base_dir_path.join("content").join("posts")).expect("create posts temp dir");
+
+        // Create a 'post' (page) about my vacation, within a directory that has a date as a name
+        let my_post_path =
+            base_dir_path.join("content").join("posts").join("2013-06-02_my-vacation");
+        create_dir(&my_post_path).expect("create dir for post (page) about my vacation");
+        let mut my_post_file = File::create(my_post_path.join("index.md")).unwrap();
+        my_post_file.write_all(b"+++\n\n+++\n").unwrap();
+        let my_post_page = Page::from_file(
+            my_post_path.join("index.md").as_path(),
+            &Config::default(),
+            base_dir_path,
+        );
+        assert!(my_post_page.is_ok());
+        let my_post_page = my_post_page.unwrap(); // shadow the variable after confirming ok
+
+        // Create a subdirectory named 'comments' (section) within the post about my vacation
+        let comments_path = my_post_path.join("comments");
+        create_dir(&comments_path).unwrap();
+        let mut comments_section_file = File::create(comments_path.join("_index.md")).unwrap();
+        comments_section_file.write_all(b"+++\n\n+++\n").unwrap();
+        let comments_section =
+            Section::from_file(comments_path.join("_index.md"), &Config::default(), base_dir_path);
+        assert!(comments_section.is_ok());
+        let comments_section = comments_section.unwrap(); // shadow the variable after confirming ok
+
+        // Check that that section URL path was created successfully
+        assert_eq!(comments_section.permalink, "http://a-website.com/posts/my-vacation/comments/");
     }
 
     #[test]
