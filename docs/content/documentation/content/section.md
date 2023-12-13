@@ -208,16 +208,13 @@ to newest (at the bottom).
 If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
 
 ## Sorting subsections
-Sorting sections is a bit less flexible: sections can only be sorted by `weight`,
-and do not have variables that point to the heavier/lighter sections.
+Sorting sections is a bit less flexible: sections can only be sorted by `weight`
+and `title`. Similarly to pages, section have `section.lower` and `section.higher`
+variables, pointing to the heavier/lighter sections.
 
 By default, the lightest (lowest `weight`) subsections will be at
 the top of the list and the heaviest (highest `weight`) will be at the bottom;
 the `reverse` filter reverses this order.
 
-**Note**: Unlike pages, permalinks will **not** be used to break ties between
-equally weighted sections. Thus, if the `weight` variable for your section is not set (or if it
-is set in a way that produces ties), then your sections will be sorted in
-**random** order. Moreover, that order is determined at build time and will
-change with each site rebuild.  Thus, if there is any chance that you will
-iterate over your sections, you should always assign them distinct weights.
+**Note**: A section's "transparency" doesn't apply to subsections, so subsections
+will not be visible as direct children of the parent section.
