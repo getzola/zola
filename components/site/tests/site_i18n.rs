@@ -169,6 +169,14 @@ fn can_build_multilingual_site() {
     assert!(file_contains!(public, "fr/tags/index.html", "bonjour"));
     assert!(!file_contains!(public, "fr/tags/index.html", "hello"));
 
+    // sitemap contains per-language taxonomies
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/tags/"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/tags/hello/"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/fr/tags/"));
+    assert!(file_contains!(public, "sitemap.xml", "https://example.com/fr/tags/bonjour/"));
+
+    assert!(!file_contains!(public, "sitemap.xml", "https://example.com/tags/bonjour"));
+
     // one lang index per language
     assert!(file_exists!(public, "search_index.en.js"));
     assert!(file_exists!(public, "search_index.it.js"));

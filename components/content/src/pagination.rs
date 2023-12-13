@@ -107,12 +107,8 @@ impl<'a> Paginator<'a> {
             paginate_reversed: false,
             root: PaginationRoot::Taxonomy(taxonomy, item),
             permalink: item.permalink.clone(),
-            path: format!("/{}/{}/", taxonomy.slug, item.slug),
-            paginate_path: taxonomy
-                .kind
-                .paginate_path
-                .clone()
-                .unwrap_or_else(|| "page".to_string()),
+            path: item.path.clone(),
+            paginate_path: taxonomy.kind.paginate_path().to_owned(),
             is_index: false,
             template: template.to_string(),
         };
