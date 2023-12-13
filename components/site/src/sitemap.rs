@@ -92,14 +92,10 @@ pub fn find_entries<'a>(
         if !taxonomy.kind.render {
             continue;
         }
-        let name = &taxonomy.kind.name;
-        entries.insert(SitemapEntry::new(Cow::Owned(config.make_permalink(name)), &None));
+        entries.insert(SitemapEntry::new(Cow::Borrowed(&taxonomy.permalink), &None));
 
         for item in &taxonomy.items {
-            entries.insert(SitemapEntry::new(
-                Cow::Owned(config.make_permalink(&format!("{}/{}", name, item.slug))),
-                &None,
-            ));
+            entries.insert(SitemapEntry::new(Cow::Borrowed(&item.permalink), &None));
 
             if taxonomy.kind.is_paginated() {
                 let number_pagers = (item.pages.len() as f64
@@ -107,9 +103,8 @@ pub fn find_entries<'a>(
                     .ceil() as isize;
                 for i in 1..=number_pagers {
                     let permalink = config.make_permalink(&format!(
-                        "{}/{}/{}/{}",
-                        name,
-                        item.slug,
+                        "{}{}/{}/",
+                        item.path,
                         taxonomy.kind.paginate_path(),
                         i
                     ));
