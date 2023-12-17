@@ -149,9 +149,7 @@ Here is a full list of supported languages and their short names:
 
 Note: due to some issues with the JavaScript syntax, the TypeScript syntax will be used instead.
 
-If the language you want to highlight is not on this list, please follow our [contribution guidelines](https://github.com/getzola/zola/blob/master/CONTRIBUTING.md)
-to add support for a new language.
-Alternatively, the `extra_syntaxes_and_themes` configuration option can be used to add additional syntax and theme files.
+If the language you want to highlight is not on this list, the `extra_syntaxes_and_themes` configuration option can be used to add additional syntax and theme files.
 
 If your site source is laid out as follows:
 
