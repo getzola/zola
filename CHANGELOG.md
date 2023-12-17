@@ -15,6 +15,8 @@
 - Add --force flag in `zola serve` if the directory is not empty
 - Add `ignored_static` to the config to ignore specific files from the static directory
 - Add Hungarian support for search
+- Actually remove codeblocks from search index
+- Fix taxonomies missing lang in sitemap
 
 ## 0.17.2 (2023-03-19)
 
