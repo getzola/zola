@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.19.0 (unreleased)
+
+
 ## 0.18.0 (2023-12-18)
 
 - Fix LFI in `zola serve`
