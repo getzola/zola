@@ -100,6 +100,16 @@ pub fn render_template(
     }
 }
 
+pub fn is_default_template(name: &str, tera: &Tera, theme: &Option<String>) -> Result<bool> {
+    if check_template_fallbacks(name, tera, theme).is_some() {
+        return Ok(false);
+    }
+    match name {
+        "index.html" | "section.html" | "page.html" | "single.html" | "list.html" => Ok(true),
+        _ => bail!("Template not found for {}", name),
+    }
+}
+
 /// Rewrites the path of duplicate templates to include the complete theme path
 /// Theme templates  will be injected into site templates, with higher priority for site
 /// templates. To keep a copy of the template in case it's being extended from a site template
