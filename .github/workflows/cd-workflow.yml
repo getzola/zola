@@ -11,6 +11,7 @@ name: Create and publish a Docker image
 on:
   push:
     tags: [ 'v*.*.*' ]
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -46,5 +47,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/getzola/zola:v0.18.0
           labels: ${{ steps.meta.outputs.labels }}
