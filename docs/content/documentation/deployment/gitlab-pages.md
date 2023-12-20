@@ -82,7 +82,7 @@ After you push this file to the default branch of your repository
 (e.g. "master" or "main"), your site will be ready. The GitLab CI/CD pipelines
 will ensure your site is published and updated automatically.
 
-On the left sidebar, navigate to **Deploy > Pages**`** to find the URL of your
+On the left sidebar of GitLab, navigate to **Deploy > Pages**`** to find the URL of your
 website inside the **Access pages** section.
 
 More information on how to host your site on GitLab Pages is available
