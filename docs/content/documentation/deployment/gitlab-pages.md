@@ -15,6 +15,10 @@ It is recommended to create a repository on GitLab that contains solely your
 Zola project. The [Zola's directory structure](https://www.getzola.org/documentation/getting-started/directory-structure/)
 should be located in the root directory of your repository.
 
+For information on how to create and manage a repository on GitLab, refer to:
+
+<https://docs.gitlab.com/ee/user/project/repository/>
+
 ## Ensuring that the runner can access your theme
 
 Depending on how you added your theme, your repository may not contain it.
