@@ -638,7 +638,6 @@ impl Site {
         create_dirs: bool,
     ) -> Result<PathBuf> {
         let write_dirs = self.build_mode == BuildMode::Disk || create_dirs;
-        create_directory(&self.output_path)?;
 
         let mut site_path = RelativePathBuf::new();
         let mut current_path = self.output_path.to_path_buf();
@@ -646,10 +645,6 @@ impl Site {
         for component in components {
             current_path.push(component);
             site_path.push(component);
-
-            if !current_path.exists() && write_dirs {
-                create_directory(&current_path)?;
-            }
         }
 
         if write_dirs {
@@ -787,9 +782,13 @@ impl Site {
     }
 
     pub fn render_themes_css(&self) -> Result<()> {
-        create_directory(&self.static_path)?;
+        let themes = &self.config.markdown.highlight_themes_css;
 
-        for t in &self.config.markdown.highlight_themes_css {
+        if !themes.is_empty() {
+            create_directory(&self.static_path)?;
+        }
+
+        for t in themes {
             let p = self.static_path.join(&t.filename);
             if !p.exists() {
                 let content = &self.config.markdown.export_theme_css(&t.theme)?;
@@ -856,7 +855,6 @@ impl Site {
     /// Renders all the aliases for each page/section: a magic HTML template that redirects to
     /// the canonical one
     pub fn render_aliases(&self) -> Result<()> {
-        create_directory(&self.output_path)?;
         let library = self.library.read().unwrap();
         for (_, page) in &library.pages {
             for alias in &page.meta.aliases {
@@ -873,7 +871,6 @@ impl Site {
 
     /// Renders 404.html
     pub fn render_404(&self) -> Result<()> {
-        create_directory(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
         context.insert("lang", &self.config.default_language);
@@ -885,7 +882,6 @@ impl Site {
 
     /// Renders robots.txt
     pub fn render_robots(&self) -> Result<()> {
-        create_directory(&self.output_path)?;
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
         let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
@@ -909,8 +905,6 @@ impl Site {
         if taxonomy.items.is_empty() {
             return Ok(());
         }
-
-        create_directory(&self.output_path)?;
 
         let mut components = Vec::new();
         if taxonomy.lang != self.config.default_language {
@@ -976,8 +970,6 @@ impl Site {
 
     /// What it says on the tin
     pub fn render_sitemap(&self) -> Result<()> {
-        create_directory(&self.output_path)?;
-
         let library = self.library.read().unwrap();
         let all_sitemap_entries =
             { sitemap::find_entries(&library, &self.taxonomies[..], &self.config) };
@@ -1031,8 +1023,6 @@ impl Site {
         lang: &str,
         additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
-        create_directory(&self.output_path)?;
-
         let feed = match feed::render_feed(self, all_pages, lang, base_path, additional_context_fn)?
         {
             Some(v) => v,
@@ -1059,7 +1049,6 @@ impl Site {
 
     /// Renders a single section
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
-        create_directory(&self.output_path)?;
         let mut output_path = self.output_path.clone();
         let mut components: Vec<&str> = Vec::new();
         let create_directories = self.build_mode == BuildMode::Disk || !section.assets.is_empty();
@@ -1067,19 +1056,15 @@ impl Site {
         if section.lang != self.config.default_language {
             components.push(&section.lang);
             output_path.push(&section.lang);
-
-            if !output_path.exists() && create_directories {
-                create_directory(&output_path)?;
-            }
         }
 
         for component in &section.file.components {
             components.push(component);
             output_path.push(component);
+        }
 
-            if !output_path.exists() && create_directories {
-                create_directory(&output_path)?;
-            }
+        if create_directories {
+            create_directory(&output_path)?;
         }
 
         if section.meta.generate_feed {
@@ -1165,7 +1150,6 @@ impl Site {
 
     /// Renders all pages that do not belong to any sections
     pub fn render_orphan_pages(&self) -> Result<()> {
-        create_directory(&self.output_path)?;
         let library = self.library.read().unwrap();
         for page in library.get_all_orphan_pages() {
             self.render_page(page)?;
@@ -1180,8 +1164,6 @@ impl Site {
         components: Vec<&'a str>,
         paginator: &'a Paginator,
     ) -> Result<()> {
-        create_directory(&self.output_path)?;
-
         let index_components = components.clone();
 
         paginator
