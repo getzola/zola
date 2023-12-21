@@ -64,6 +64,10 @@ pub fn find_entries<'a>(
     let mut entries = HashSet::new();
 
     for p in library.pages.values() {
+        if !p.meta.render {
+            continue;
+        }
+
         let mut entry = SitemapEntry::new(
             Cow::Borrowed(&p.permalink),
             if p.meta.updated.is_some() { &p.meta.updated } else { &p.meta.date },
@@ -73,11 +77,13 @@ pub fn find_entries<'a>(
     }
 
     for s in library.sections.values() {
-        if s.meta.render {
-            let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), &None);
-            entry.add_extra(&s.meta.extra);
-            entries.insert(entry);
+        if !s.meta.render {
+            continue;
         }
+
+        let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), &None);
+        entry.add_extra(&s.meta.extra);
+        entries.insert(entry);
 
         if let Some(paginate_by) = s.paginate_by() {
             let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;

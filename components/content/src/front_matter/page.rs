@@ -39,6 +39,11 @@ pub struct PageFrontMatter {
     pub datetime_tuple: Option<(i32, u8, u8)>,
     /// Whether this page is a draft
     pub draft: bool,
+    /// Whether to render the page or not. Defaults to `true`.
+    /// Useful when the page is only there to organize things but is not meant
+    /// to be used directly, like as a component of another page
+    #[serde(skip_serializing)]
+    pub render: bool,
     /// The page slug. Will be used instead of the filename if present
     /// Can't be an empty string if present
     pub slug: Option<String>,
@@ -151,6 +156,7 @@ impl Default for PageFrontMatter {
             datetime: None,
             datetime_tuple: None,
             draft: false,
+            render: true,
             slug: None,
             path: None,
             taxonomies: HashMap::new(),
