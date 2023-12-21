@@ -38,6 +38,8 @@ pub enum BuildMode {
     Disk,
     /// In memory for the content -> `zola serve`
     Memory,
+    /// Don't build; set to not render or not build
+    Skip,
 }
 
 #[derive(Debug)]
@@ -635,20 +637,20 @@ impl Site {
         components: &[&str],
         filename: &str,
         content: String,
-        create_dirs: bool,
+        build_mode: Option<BuildMode>,
     ) -> Result<PathBuf> {
-        let write_dirs = self.build_mode == BuildMode::Disk || create_dirs;
+        let build_mode = build_mode.unwrap_or(self.build_mode);
 
         let mut site_path = RelativePathBuf::new();
         let mut current_path = self.output_path.to_path_buf();
 
+        if build_mode == BuildMode::Skip {
+            return Ok(current_path);
+        }
+
         for component in components {
             current_path.push(component);
             site_path.push(component);
-        }
-
-        if write_dirs {
-            create_directory(&current_path)?;
         }
 
         let final_content = if !filename.ends_with("html") || !self.config.minify_html {
@@ -660,7 +662,7 @@ impl Site {
             }
         };
 
-        match self.build_mode {
+        match build_mode {
             BuildMode::Disk => {
                 let end_path = current_path.join(filename);
                 create_file(&end_path, &final_content)?;
@@ -671,6 +673,7 @@ impl Site {
 
                 SITE_CONTENT.write().unwrap().insert(site_path, final_content);
             }
+            BuildMode::Skip => unreachable!(),
         }
 
         Ok(current_path)
@@ -696,8 +699,7 @@ impl Site {
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
-        let current_path =
-            self.write_content(&components, "index.html", content, !page.assets.is_empty())?;
+        let current_path = self.write_content(&components, "index.html", content, None)?;
 
         // Copy any asset we found previously into the same directory as the index.html
         self.copy_assets(page.file.path.parent().unwrap(), &page.assets, &current_path)?;
@@ -835,7 +837,12 @@ impl Site {
         Ok(())
     }
 
-    fn render_alias(&self, alias: &str, permalink: &str) -> Result<()> {
+    fn render_alias(
+        &self,
+        alias: &str,
+        permalink: &str,
+        build_mode: Option<BuildMode>,
+    ) -> Result<()> {
         let mut split = alias.split('/').collect::<Vec<_>>();
 
         // If the alias ends with an html file name, use that instead of mapping
@@ -849,7 +856,7 @@ impl Site {
             None => "index.html",
         };
         let content = render_redirect_template(permalink, &self.tera)?;
-        self.write_content(&split, page_name, content, false)?;
+        self.write_content(&split, page_name, content, build_mode)?;
         Ok(())
     }
 
@@ -859,12 +866,13 @@ impl Site {
         let library = self.library.read().unwrap();
         for (_, page) in &library.pages {
             for alias in &page.meta.aliases {
-                self.render_alias(alias, &page.permalink)?;
+                self.render_alias(alias, &page.permalink, None)?;
             }
         }
         for (_, section) in &library.sections {
+            let build_mode = if section.meta.render { None } else { Some(BuildMode::Skip) };
             for alias in &section.meta.aliases {
-                self.render_alias(alias, &section.permalink)?;
+                self.render_alias(alias, &section.permalink, None)?;
             }
         }
         Ok(())
@@ -877,7 +885,7 @@ impl Site {
         context.insert("lang", &self.config.default_language);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
-        self.write_content(&[], "404.html", content, false)?;
+        self.write_content(&[], "404.html", content, None)?;
         Ok(())
     }
 
@@ -886,16 +894,13 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
         let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
-        self.write_content(&[], "robots.txt", content, false)?;
+        self.write_content(&[], "robots.txt", content, None)?;
         Ok(())
     }
 
     /// Renders all taxonomies
     pub fn render_taxonomies(&self) -> Result<()> {
         for taxonomy in &self.taxonomies {
-            if !taxonomy.kind.render {
-                continue;
-            }
             self.render_taxonomy(taxonomy)?;
         }
 
@@ -917,7 +922,8 @@ impl Site {
         let list_output =
             taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(list_output);
-        self.write_content(&components, "index.html", content, false)?;
+        let build_mode = if taxonomy.kind.render { None } else { Some(BuildMode::Skip) };
+        self.write_content(&components, "index.html", content, build_mode)?;
 
         let library = self.library.read().unwrap();
         taxonomy
@@ -937,12 +943,13 @@ impl Site {
                             &self.tera,
                             &self.config.theme,
                         ),
+                        build_mode,
                     )?;
                 } else {
                     let single_output =
                         taxonomy.render_term(item, &self.tera, &self.config, &library)?;
                     let content = self.inject_livereload(single_output);
-                    self.write_content(&comp, "index.html", content, false)?;
+                    self.write_content(&comp, "index.html", content, build_mode)?;
                 }
 
                 if taxonomy.kind.feed {
@@ -981,7 +988,7 @@ impl Site {
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
             let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
-            self.write_content(&[], "sitemap.xml", sitemap, false)?;
+            self.write_content(&[], "sitemap.xml", sitemap, None)?;
             return Ok(());
         }
 
@@ -994,7 +1001,7 @@ impl Site {
             context.insert("entries", &chunk);
             let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
-            self.write_content(&[], &file_name, sitemap, false)?;
+            self.write_content(&[], &file_name, sitemap, None)?;
             let mut sitemap_url = self.config.make_permalink(&file_name);
             sitemap_url.pop(); // Remove trailing slash
             sitemap_index.push(sitemap_url);
@@ -1009,7 +1016,7 @@ impl Site {
             main_context,
             &self.config.theme,
         )?;
-        self.write_content(&[], "sitemap.xml", sitemap, false)?;
+        self.write_content(&[], "sitemap.xml", sitemap, None)?;
 
         Ok(())
     }
@@ -1040,10 +1047,10 @@ impl Site {
                 &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
                 feed_filename,
                 feed,
-                false,
+                None,
             )?;
         } else {
-            self.write_content(&[], feed_filename, feed, false)?;
+            self.write_content(&[], feed_filename, feed, None)?;
         }
         Ok(())
     }
@@ -1052,7 +1059,6 @@ impl Site {
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         let mut output_path = self.output_path.clone();
         let mut components: Vec<&str> = Vec::new();
-        let create_directories = self.build_mode == BuildMode::Disk || !section.assets.is_empty();
 
         if section.lang != self.config.default_language {
             components.push(&section.lang);
@@ -1062,10 +1068,6 @@ impl Site {
         for component in &section.file.components {
             components.push(component);
             output_path.push(component);
-        }
-
-        if create_directories {
-            create_directory(&output_path)?;
         }
 
         if section.meta.generate_feed {
@@ -1093,9 +1095,7 @@ impl Site {
                 .collect::<Result<()>>()?;
         }
 
-        if !section.meta.render {
-            return Ok(());
-        }
+        let build_mode = if section.meta.render { None } else { Some(BuildMode::Skip) };
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
             let permalink: Cow<String> = if is_external_link(redirect_to) {
@@ -1107,7 +1107,7 @@ impl Site {
                 &components,
                 "index.html",
                 render_redirect_template(&permalink, &self.tera)?,
-                create_directories,
+                build_mode,
             )?;
 
             return Ok(());
@@ -1117,12 +1117,13 @@ impl Site {
             self.render_paginated(
                 components,
                 &Paginator::from_section(section, &self.library.read().unwrap()),
+                build_mode,
             )?;
         } else {
             let output =
                 section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
             let content = self.inject_livereload(output);
-            self.write_content(&components, "index.html", content, false)?;
+            self.write_content(&components, "index.html", content, build_mode)?;
         }
 
         Ok(())
@@ -1154,6 +1155,7 @@ impl Site {
         &self,
         components: Vec<&'a str>,
         paginator: &'a Paginator,
+        build_mode: Option<BuildMode>,
     ) -> Result<()> {
         let index_components = components.clone();
 
@@ -1174,14 +1176,14 @@ impl Site {
                 let content = self.inject_livereload(output);
 
                 if pager.index > 1 {
-                    self.write_content(&pager_components, "index.html", content, false)?;
+                    self.write_content(&pager_components, "index.html", content, build_mode)?;
                 } else {
-                    self.write_content(&index_components, "index.html", content, false)?;
+                    self.write_content(&index_components, "index.html", content, build_mode)?;
                     self.write_content(
                         &pager_components,
                         "index.html",
                         render_redirect_template(&paginator.permalink, &self.tera)?,
-                        false,
+                        build_mode,
                     )?;
                 }
 
