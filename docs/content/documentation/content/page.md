@@ -112,6 +112,11 @@ weight = 0
 # A draft page is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
 draft = false
 
+# Whether to render the page or not. Defaults to `true`.
+# Useful when the page is only there to organize things but is not meant to be used directly,
+# like as a component of another page
+render = true
+
 # If set, this slug will be used instead of the filename to make the URL.
 # The section path will still be used.
 slug = ""
