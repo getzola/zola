@@ -325,16 +325,25 @@ fn create_new_site(
     interface_port: u16,
     output_dir: Option<&Path>,
     force: bool,
-    base_url: &str,
+    base_url: Option<&str>,
     config_file: &Path,
     include_drafts: bool,
-    no_port_append: bool,
+    mut no_port_append: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, SocketAddr)> {
     SITE_CONTENT.write().unwrap().clear();
 
     let mut site = Site::new(root_dir, config_file)?;
     let address = SocketAddr::new(interface, interface_port);
+
+    // if no base URL provided, use socket address
+    let base_url = base_url.map_or_else(
+        || {
+            no_port_append = true;
+            address.to_string()
+        },
+        |u| u.to_string(),
+    );
 
     let base_url = if base_url == "/" {
         String::from("/")
@@ -385,7 +394,7 @@ pub fn serve(
     interface_port: u16,
     output_dir: Option<&Path>,
     force: bool,
-    base_url: &str,
+    base_url: Option<&str>,
     config_file: &Path,
     open: bool,
     include_drafts: bool,

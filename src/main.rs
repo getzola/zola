@@ -106,7 +106,7 @@ fn main() {
                 port,
                 output_dir.as_deref(),
                 force,
-                &base_url,
+                base_url.as_deref(),
                 &config_file,
                 open,
                 drafts,

@@ -71,8 +71,8 @@ pub enum Command {
         force: bool,
 
         /// Changes the base_url
-        #[clap(short = 'u', long, default_value = "127.0.0.1")]
-        base_url: String,
+        #[clap(short = 'u', long)]
+        base_url: Option<String>,
 
         /// Include drafts when loading the site
         #[clap(long)]
