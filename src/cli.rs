@@ -1,3 +1,4 @@
+use std::net::IpAddr;
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
@@ -54,7 +55,7 @@ pub enum Command {
     Serve {
         /// Interface to bind on
         #[clap(short = 'i', long, default_value = "127.0.0.1")]
-        interface: String,
+        interface: IpAddr,
 
         /// Which port to use
         #[clap(short = 'p', long, default_value_t = 1111)]

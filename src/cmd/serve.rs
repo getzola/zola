@@ -24,7 +24,7 @@
 use std::cell::Cell;
 use std::fs::read_dir;
 use std::future::IntoFuture;
-use std::net::{SocketAddrV4, TcpListener};
+use std::net::{IpAddr, SocketAddr, TcpListener};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use std::sync::mpsc::channel;
 use std::sync::Mutex;
@@ -321,7 +321,7 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
 #[allow(clippy::too_many_arguments)]
 fn create_new_site(
     root_dir: &Path,
-    interface: &str,
+    interface: IpAddr,
     interface_port: u16,
     output_dir: Option<&Path>,
     force: bool,
@@ -330,11 +330,11 @@ fn create_new_site(
     include_drafts: bool,
     no_port_append: bool,
     ws_port: Option<u16>,
-) -> Result<(Site, String)> {
+) -> Result<(Site, SocketAddr)> {
     SITE_CONTENT.write().unwrap().clear();
 
     let mut site = Site::new(root_dir, config_file)?;
-    let address = format!("{}:{}", interface, interface_port);
+    let address = SocketAddr::new(interface, interface_port);
 
     let base_url = if base_url == "/" {
         String::from("/")
@@ -381,7 +381,7 @@ fn create_new_site(
 #[allow(clippy::too_many_arguments)]
 pub fn serve(
     root_dir: &Path,
-    interface: &str,
+    interface: IpAddr,
     interface_port: u16,
     output_dir: Option<&Path>,
     force: bool,
@@ -394,7 +394,7 @@ pub fn serve(
     utc_offset: UtcOffset,
 ) -> Result<()> {
     let start = Instant::now();
-    let (mut site, address) = create_new_site(
+    let (mut site, bind_address) = create_new_site(
         root_dir,
         interface,
         interface_port,
@@ -409,12 +409,8 @@ pub fn serve(
     messages::report_elapsed_time(start);
 
     // Stop right there if we can't bind to the address
-    let bind_address: SocketAddrV4 = match address.parse() {
-        Ok(a) => a,
-        Err(_) => return Err(anyhow!("Invalid address: {}.", address)),
-    };
     if (TcpListener::bind(bind_address)).is_err() {
-        return Err(anyhow!("Cannot start server on address {}.", address));
+        return Err(anyhow!("Cannot start server on address {}.", bind_address));
     }
 
     let config_path = PathBuf::from(config_file);
@@ -466,8 +462,6 @@ pub fn serve(
     let static_root = output_path.clone();
     let broadcaster = {
         thread::spawn(move || {
-            let addr = address.parse().unwrap();
-
             let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
@@ -484,11 +478,11 @@ pub fn serve(
                     }
                 });
 
-                let server = Server::bind(&addr).serve(make_service);
+                let server = Server::bind(&bind_address).serve(make_service);
 
-                println!("Web server is available at http://{}\n", &address);
+                println!("Web server is available at http://{}\n", bind_address);
                 if open {
-                    if let Err(err) = open::that(format!("http://{}", &address)) {
+                    if let Err(err) = open::that(format!("http://{}", bind_address)) {
                         eprintln!("Failed to open URL in your browser: {}", err);
                     }
                 }
