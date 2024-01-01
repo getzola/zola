@@ -10,7 +10,7 @@ use utils::net::is_external_link;
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
 use libs::pulldown_cmark::escape::escape_html;
-use libs::regex::Regex;
+use libs::regex::{Regex, RegexBuilder};
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
 use utils::table_of_contents::{make_table_of_contents, Heading};
@@ -23,6 +23,10 @@ use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
+
+/// Set as a regex to help match some extra cases. This way, spaces and case don't matter.
+static MORE_DIVIDER_RE: Lazy<Regex> =
+    Lazy::new(|| RegexBuilder::new(r#"<!--\s*more\s*-->"#).case_insensitive(true).build().unwrap());
 
 /// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
 /// private schemes. This regex checks if the given string starts with something that just looks
@@ -485,7 +489,7 @@ pub fn markdown_to_html(
                     });
                 }
                 Event::Html(text) => {
-                    if text.contains("<!-- more -->") {
+                    if MORE_DIVIDER_RE.is_match(&text) {
                         has_summary = true;
                         events.push(Event::Html(CONTINUE_READING.into()));
                         continue;
