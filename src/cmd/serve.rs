@@ -461,9 +461,9 @@ pub fn serve(
     let ws_address = format!("{}:{}", interface, ws_port.unwrap());
     let output_path = site.output_path.clone();
 
-    // output path is going to need to be moved later on, so clone it for the
-    // http closure to avoid contention.
-    let static_root = output_path.clone();
+    // static_root needs to be canonicalized because we do the same for the http server.
+    let static_root = std::fs::canonicalize(&output_path).unwrap();
+
     let broadcaster = {
         thread::spawn(move || {
             let addr = address.parse().unwrap();
