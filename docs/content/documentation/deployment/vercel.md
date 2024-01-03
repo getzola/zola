@@ -23,3 +23,76 @@ You can learn more about how to setup a custom domain and how to get the most ou
 [via their documentation.](https://vercel.com/docs) 
 
 After you click the blue "Deploy" button, it's off to the races!
+
+## Troubleshooting
+
+### `GLIBC_X.XX` not found
+
+This is because Vercel's build images comes with an older glibc version whereas Zola 
+depends on a newer glibc. However, Vercel provides a newer build image which can be used in
+deployments by setting Node.js version to "20.x", allowing Zola to work properly.
+
+## Additional options
+
+### Enable trailing slashes
+
+Visiting a page without trailing slash may break relative paths, so you might want to configure
+Vercel to always redirect paths with a trailing slash. By default, redirecting to a trailing
+slash is not enabled on Vercel.
+
+If enabled, for example the `/about` path will redirect to `/about/`. Paths with a file extension 
+will not redirect to a trailing slash, for example `/styles.css` will stay as-is.
+
+To do that, create a file in the root of your git repository named `vercel.json`
+(if it doesn't exists already), and set this option:
+
+```json
+{
+    "trailingSlash": true
+}
+```
+
+### Prefer clean URLs
+
+When enabled, all HTML files will be served without their file extension, so visitors will see
+`/about` instead of `/about.html` while navigating through your website.
+
+To do that, create a file in the root of your git repository named `vercel.json`
+(if it doesn't exists already), and set this option:
+
+```json
+{
+    "cleanUrls": true
+}
+```
+
+### Using a newer Zola version
+
+Vercel's built-in Zola support may be outdated, so you may want to use the latest Zola version.
+To do that, set "Framework Preset" to "Other", and override "Install Command" to:
+
+```bash
+curl -fsS https://api.github.com/repos/getzola/zola/releases/latest | grep -oP '"browser_download_url": ?"\K(.+linux-gnu.tar.gz)' | xargs -n 1 curl -fsSL -o zola.tar.gz && tar -xzvf zola.tar.gz
+```
+
+This command will fetch the latest release from GitHub, download the archive and extract it.
+
+Then, set "Build Command" to `./zola build`. Now Vercel will use the downloaded Zola 
+binary to build the documentation instead of using the built-in one.
+
+If you prefer to use `vercel.json` instead, (which overrides the options set in the dashboard)
+you can use this configuration.
+
+```json
+{
+    "framework": null,
+    "installCommand": "curl -fsS https://api.github.com/repos/getzola/zola/releases/latest | grep -oP '\"browser_download_url\": ?\"\\K(.+linux-gnu.tar.gz)' | xargs -n 1 curl -fsSL -o zola.tar.gz && tar -xzvf zola.tar.gz",
+    "buildCommand": "./zola build",
+    "outputDirectory": "public"
+}
+```
+
+## See also
+
+See [Vercel's own documentation](https://vercel.com/docs/projects/project-configuration) 
+for all available options in `vercel.json`.
