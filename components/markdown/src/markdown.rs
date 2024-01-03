@@ -25,8 +25,13 @@ const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
 
 /// Set as a regex to help match some extra cases. This way, spaces and case don't matter.
-static MORE_DIVIDER_RE: Lazy<Regex> =
-    Lazy::new(|| RegexBuilder::new(r#"<!--\s*more\s*-->"#).case_insensitive(true).build().unwrap());
+static MORE_DIVIDER_RE: Lazy<Regex> = Lazy::new(|| {
+    RegexBuilder::new(r#"<!--\s*more\s*-->"#)
+        .case_insensitive(true)
+        .dot_matches_new_line(true)
+        .build()
+        .unwrap()
+});
 
 /// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
 /// private schemes. This regex checks if the given string starts with something that just looks
@@ -489,6 +494,7 @@ pub fn markdown_to_html(
                     });
                 }
                 Event::Html(text) => {
+                    dbg!(&text);
                     if MORE_DIVIDER_RE.is_match(&text) {
                         has_summary = true;
                         events.push(Event::Html(CONTINUE_READING.into()));
@@ -604,6 +610,8 @@ pub fn markdown_to_html(
 
 #[cfg(test)]
 mod tests {
+    use config::Config;
+
     use super::*;
     #[test]
 
@@ -646,6 +654,32 @@ mod tests {
         let links: [&str; 2] = ["/other-dir/file.md", "../sub-dir/file.md"];
         for link in links {
             assert!(!is_colocated_asset_link(link));
+        }
+    }
+
+    #[test]
+    // Tests for summary being split out
+    fn test_summary_split() {
+        let top = "Here's a compelling summary.";
+        let top_rendered = format!("<p>{top}</p>");
+        let bottom = "Here's the compelling conclusion.";
+        let bottom_rendered = format!("<p>{bottom}</p>");
+        // FIXME: would add a test that includes newlines, but due to the way pulldown-cmark parses HTML nodes, these are passed as separate HTML events. see: https://github.com/raphlinus/pulldown-cmark/issues/803
+        let mores = ["<!-- more -->", "<!--more-->", "<!-- MORE -->", "<!--MORE-->", "<!--\t MoRe \t-->"];
+        let config = Config::default();
+        let context = RenderContext::from_config(&config);
+        for more in mores {
+            let content = format!("{top}\n\n{more}\n\n{bottom}");
+            let rendered = markdown_to_html(&content, &context, vec![]).unwrap();
+            assert!(rendered.summary_len.is_some(), "no summary when splitting on {more}");
+            let summary_len = rendered.summary_len.unwrap();
+            let summary = &rendered.body[..summary_len].trim();
+            let body = &rendered.body[summary_len..].trim();
+            let continue_reading = &body[..CONTINUE_READING.len()];
+            let body = &body[CONTINUE_READING.len()..].trim();
+            assert_eq!(summary, &top_rendered);
+            assert_eq!(continue_reading, CONTINUE_READING);
+            assert_eq!(body, &bottom_rendered);
         }
     }
 }
