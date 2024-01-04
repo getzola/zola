@@ -744,7 +744,6 @@ impl Site {
         start = log_time(start, "Rendered orphan pages");
         self.render_sitemap()?;
         start = log_time(start, "Rendered sitemap");
-
         self.render_all_feeds()?;
         self.render_themes_css()?;
         start = log_time(start, "Rendered themes css");
