@@ -32,8 +32,6 @@ use utils::types::InsertAnchor;
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
     Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
 
-static DEFAULT_FEED_FILENAME: &str = "atom.xml";
-
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum BuildMode {
@@ -1030,7 +1028,7 @@ impl Site {
         self.config.languages.get(lang)
             .and_then(|l| l.feed_filename.as_ref().map_or_else(|| self.config.feed_filename.clone(), |ff| Some(ff.clone())))
             .or_else(|| self.config.feed_filename.clone())
-            .unwrap_or(String::from(DEFAULT_FEED_FILENAME))
+            .unwrap_or(String::from(config::DEFAULT_FEED_FILENAME))
     }
 
     /// Renders a feed for the given path and at the given path

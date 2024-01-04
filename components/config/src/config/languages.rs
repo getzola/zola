@@ -114,7 +114,7 @@ mod tests {
             title: Some("Site's title".to_string()),
             description: None,
             generate_feed: true,
-            feed_filename: Some("atom.xml".to_string()),
+            feed_filename: None,
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),

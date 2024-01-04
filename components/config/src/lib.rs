@@ -12,6 +12,7 @@ pub use crate::config::{
     slugify::Slugify,
     taxonomies::TaxonomyConfig,
     Config,
+    DEFAULT_FEED_FILENAME,
 };
 use errors::Result;
 
