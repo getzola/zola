@@ -32,6 +32,8 @@ use utils::types::InsertAnchor;
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
     Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
 
+static DEFAULT_FEED_FILENAME: &str = "atom.xml";
+
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum BuildMode {
@@ -749,22 +751,17 @@ impl Site {
         start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
-        if self.config.generate_feed {
-            let is_multilingual = self.config.is_multilingual();
-            let pages: Vec<_> = if is_multilingual {
-                library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
-            } else {
-                library.pages.values().collect()
-            };
-            self.render_feed(pages, None, &self.config.default_language, |c| c)?;
-            start = log_time(start, "Generated feed in default language");
-        }
 
-        for (code, language) in &self.config.other_languages() {
-            if !language.generate_feed {
+        for (code, language) in &self.config.languages {
+            let is_default_language = code == &self.config.default_language;
+            if (is_default_language && !self.config.generate_feed && !language.generate_feed) || (!is_default_language && !language.generate_feed) {
                 continue;
             }
-            let pages: Vec<_> = library.pages.values().filter(|p| &p.lang == code).collect();
+            let pages: Vec<_> = if is_default_language && !self.config.is_multilingual() {
+                library.pages.values().collect()
+            } else {
+                library.pages.values().filter(|p| &p.lang == code).collect()
+            };
             self.render_feed(pages, Some(&PathBuf::from(code)), code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
@@ -1022,6 +1019,13 @@ impl Site {
         Ok(())
     }
 
+    pub fn language_feed_filename(&self, lang: &str) -> String {
+        self.config.languages.get(lang)
+            .and_then(|l| l.feed_filename.as_ref().map_or_else(|| self.config.feed_filename.clone(), |ff| Some(ff.clone())))
+            .or_else(|| self.config.feed_filename.clone())
+            .unwrap_or(String::from(DEFAULT_FEED_FILENAME))
+    }
+
     /// Renders a feed for the given path and at the given path
     /// If both arguments are `None`, it will render only the feed for the whole
     /// site at the root folder.
@@ -1039,7 +1043,7 @@ impl Site {
             Some(v) => v,
             None => return Ok(()),
         };
-        let feed_filename = &self.config.feed_filename;
+        let feed_filename = self.language_feed_filename(lang);
 
         if let Some(base) = base_path {
             let mut components = Vec::new();
@@ -1048,12 +1052,12 @@ impl Site {
             }
             self.write_content(
                 &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
-                feed_filename,
+                &feed_filename,
                 feed,
                 false,
             )?;
         } else {
-            self.write_content(&[], feed_filename, feed, false)?;
+            self.write_content(&[], &feed_filename, feed, false)?;
         }
         Ok(())
     }

@@ -66,7 +66,7 @@ pub struct Config {
     pub feed_limit: Option<usize>,
     /// The filename to use for feeds. Used to find the template, too.
     /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
-    pub feed_filename: String,
+    pub feed_filename: Option<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
@@ -120,7 +120,7 @@ pub struct SerializedConfig<'a> {
     languages: HashMap<&'a String, &'a languages::LanguageOptions>,
     default_language: &'a str,
     generate_feed: bool,
-    feed_filename: &'a str,
+    feed_filename: &'a Option<String>,
     taxonomies: &'a [taxonomies::TaxonomyConfig],
     author: &'a Option<String>,
     build_search_index: bool,
@@ -203,7 +203,7 @@ impl Config {
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
         let trailing_bit =
-            if path.ends_with('/') || path.ends_with(&self.feed_filename) || path.is_empty() {
+            if path.ends_with('/') || self.feed_filename.as_ref().map(|ff| path.ends_with(ff)).unwrap_or(false) || path.is_empty() {
                 ""
             } else {
                 "/"
@@ -390,7 +390,7 @@ impl Default for Config {
             languages: HashMap::new(),
             generate_feed: false,
             feed_limit: None,
-            feed_filename: "atom.xml".to_string(),
+            feed_filename: None,
             hard_link_static: false,
             taxonomies: Vec::new(),
             author: None,

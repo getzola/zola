@@ -73,7 +73,7 @@ pub fn render_feed(
     context.insert("config", &site.config.serialize(lang));
     context.insert("lang", lang);
 
-    let feed_filename = &site.config.feed_filename;
+    let feed_filename = &site.language_feed_filename(lang);
     let feed_url = if let Some(base) = base_path {
         site.config.make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
     } else {
