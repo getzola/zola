@@ -24,6 +24,9 @@ You can learn more about how to setup a custom domain and how to get the most ou
 
 After you click the blue "Deploy" button, it's off to the races!
 
+To use a specific version of Zola, set [`ZOLA_VERSION`](https://vercel.com/docs/deployments/environments#specifying-framework-versions) environment variable in project settings to a valid
+release tag, for example `0.17.2`.
+
 ## Troubleshooting
 
 ### `GLIBC_X.XX` not found
@@ -40,10 +43,12 @@ Visiting a page without trailing slash may break relative paths, so you might wa
 Vercel to always redirect paths with a trailing slash. By default, redirecting to a trailing
 slash is not enabled on Vercel.
 
-If enabled, for example the `/about` path will redirect to `/about/`. Paths with a file extension 
-will not redirect to a trailing slash, for example `/styles.css` will stay as-is.
+For example if you have an `about.md` file, and when visiting the path without a trailing
+slash, like `/about`, Vercel will redirect with trailing slash, resulting in `/about/`.
+Paths with a file extension will not redirect to a trailing slash, for example if you
+have a static file named `favicon.ico`, it will stay as-is.
 
-To do that, create a file in the root of your git repository named `vercel.json`
+To enable that, create a file in the root of your git repository named `vercel.json`
 (if it doesn't exists already), and set this option:
 
 ```json
@@ -54,10 +59,11 @@ To do that, create a file in the root of your git repository named `vercel.json`
 
 ### Prefer clean URLs
 
-When enabled, all HTML files will be served without their file extension, so visitors will see
-`/about` instead of `/about.html` while navigating through your website.
+When enabled, all HTML files will be served without their file extension. For example
+if you have an `about.md` file, Zola will generate a `about.html` file, but Vercel
+will serve the file as `/about`, without its `.html` suffix.
 
-To do that, create a file in the root of your git repository named `vercel.json`
+To enable that, create a file in the root of your git repository named `vercel.json`
 (if it doesn't exists already), and set this option:
 
 ```json
@@ -66,13 +72,16 @@ To do that, create a file in the root of your git repository named `vercel.json`
 }
 ```
 
-### Using a newer Zola version
+### Using a custom Zola binary
 
-Vercel's built-in Zola support may be outdated, so you may want to use the latest Zola version.
+If you want to use your own Zola binary that published on GitHub, or if you want to
+always use the latest version of Zola, you can run a shell command to grab the
+latest release from GitHub.
+
 To do that, set "Framework Preset" to "Other", and override "Install Command" to:
 
 ```bash
-curl -fsS https://api.github.com/repos/getzola/zola/releases/latest | grep -oP '"browser_download_url": ?"\K(.+linux-gnu.tar.gz)' | xargs -n 1 curl -fsSL -o zola.tar.gz && tar -xzvf zola.tar.gz
+REPO="getzola/zola"; curl -fsS https://api.github.com/repos/${REPO}/releases/latest | grep -oP '"browser_download_url": ?"\K(.+linux-gnu.tar.gz)' | xargs -n 1 curl -fsSL -o zola.tar.gz && tar -xzvf zola.tar.gz
 ```
 
 This command will fetch the latest release from GitHub, download the archive and extract it.
@@ -86,7 +95,7 @@ you can use this configuration.
 ```json
 {
     "framework": null,
-    "installCommand": "curl -fsS https://api.github.com/repos/getzola/zola/releases/latest | grep -oP '\"browser_download_url\": ?\"\\K(.+linux-gnu.tar.gz)' | xargs -n 1 curl -fsSL -o zola.tar.gz && tar -xzvf zola.tar.gz",
+    "installCommand": "REPO=\"getzola/zola\"; curl -fsS https://api.github.com/repos/${REPO}/releases/latest | grep -oP '\"browser_download_url\": ?\"\\K(.+linux-gnu.tar.gz)' | xargs -n 1 curl -fsSL -o zola.tar.gz && tar -xzvf zola.tar.gz",
     "buildCommand": "./zola build",
     "outputDirectory": "public"
 }
