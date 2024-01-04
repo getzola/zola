@@ -751,20 +751,27 @@ impl Site {
         start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
+        if self.config.generate_feed || self.config.languages.get(&self.config.default_language).map_or(false, |lang_opt| lang_opt.generate_feed) {
+            println!("Rendering Default Feed");
+            let is_multilingual = self.config.is_multilingual();
+            let pages: Vec<_> = if is_multilingual {
+                library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
+            } else {
+                library.pages.values().collect()
+            };
+            self.render_feed(pages, None, &self.config.default_language, |c| c)?;
+            start = log_time(start, "Generated feed in default language");
+        }
 
-        for (code, language) in &self.config.languages {
-            let is_default_language = code == &self.config.default_language;
-            if (is_default_language && !self.config.generate_feed && !language.generate_feed) || (!is_default_language && !language.generate_feed) {
+        for (code, language) in &self.config.other_languages() {
+            if !language.generate_feed {
                 continue;
             }
-            let pages: Vec<_> = if is_default_language && !self.config.is_multilingual() {
-                library.pages.values().collect()
-            } else {
-                library.pages.values().filter(|p| &p.lang == code).collect()
-            };
+            let pages: Vec<_> = library.pages.values().filter(|p| &p.lang == code).collect();
             self.render_feed(pages, Some(&PathBuf::from(code)), code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
+
         self.render_themes_css()?;
         start = log_time(start, "Rendered themes css");
         self.render_404()?;
