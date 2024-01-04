@@ -749,7 +749,13 @@ impl Site {
         start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
-        if self.config.generate_feed || self.config.languages.get(&self.config.default_language).map_or(false, |lang_opt| lang_opt.generate_feed) {
+        if self.config.generate_feed
+            || self
+                .config
+                .languages
+                .get(&self.config.default_language)
+                .map_or(false, |lang_opt| lang_opt.generate_feed)
+        {
             println!("Rendering Default Feed");
             let is_multilingual = self.config.is_multilingual();
             let pages: Vec<_> = if is_multilingual {
@@ -1025,8 +1031,14 @@ impl Site {
     }
 
     pub fn language_feed_filename(&self, lang: &str) -> String {
-        self.config.languages.get(lang)
-            .and_then(|l| l.feed_filename.as_ref().map_or_else(|| self.config.feed_filename.clone(), |ff| Some(ff.clone())))
+        self.config
+            .languages
+            .get(lang)
+            .and_then(|l| {
+                l.feed_filename
+                    .as_ref()
+                    .map_or_else(|| self.config.feed_filename.clone(), |ff| Some(ff.clone()))
+            })
             .or_else(|| self.config.feed_filename.clone())
             .unwrap_or(String::from(config::DEFAULT_FEED_FILENAME))
     }

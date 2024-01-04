@@ -65,11 +65,7 @@ impl LanguageOptions {
         }
         merge_field!(self.title, other.title, "title");
         merge_field!(self.description, other.description, "description");
-        merge_field!(
-            self.feed_filename,
-            other.feed_filename,
-            "feed_filename"
-        );
+        merge_field!(self.feed_filename, other.feed_filename, "feed_filename");
         merge_field!(self.taxonomies.is_empty(), self.taxonomies, other.taxonomies, "taxonomies");
         merge_field!(
             self.translations.is_empty(),
