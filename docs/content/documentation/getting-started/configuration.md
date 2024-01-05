@@ -169,6 +169,8 @@ paths_keep_dates = false
 include_title = true
 # Whether to include the description of the page/section in the index
 include_description = false
+# Whether to include the RFC3339 datetime of the page in the search index
+include_date = false
 # Whether to include the path of the page/section in the index
 include_path = false
 # Whether to include the rendered content of the page/section in the index
