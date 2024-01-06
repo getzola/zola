@@ -665,7 +665,8 @@ mod tests {
         let bottom = "Here's the compelling conclusion.";
         let bottom_rendered = format!("<p>{bottom}</p>");
         // FIXME: would add a test that includes newlines, but due to the way pulldown-cmark parses HTML nodes, these are passed as separate HTML events. see: https://github.com/raphlinus/pulldown-cmark/issues/803
-        let mores = ["<!-- more -->", "<!--more-->", "<!-- MORE -->", "<!--MORE-->", "<!--\t MoRe \t-->"];
+        let mores =
+            ["<!-- more -->", "<!--more-->", "<!-- MORE -->", "<!--MORE-->", "<!--\t MoRe \t-->"];
         let config = Config::default();
         let context = RenderContext::from_config(&config);
         for more in mores {
