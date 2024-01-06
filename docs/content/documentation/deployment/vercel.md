@@ -60,8 +60,8 @@ To enable that, create a file in the root of your git repository named `vercel.j
 ### Prefer clean URLs
 
 When enabled, all HTML files will be served without their file extension. For example
-if you have an `about.md` file, Zola will generate a `about.html` file, but Vercel
-will serve the file as `/about`, without its `.html` suffix.
+if you have an `about.md` file, Zola will generate a `about/index.html` file, but Vercel
+will serve the file as `/about`, without its `index.html` suffix.
 
 To enable that, create a file in the root of your git repository named `vercel.json`
 (if it doesn't exists already), and set this option:
