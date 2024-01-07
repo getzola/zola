@@ -494,8 +494,7 @@ pub fn markdown_to_html(
                     });
                 }
                 Event::Html(text) => {
-                    dbg!(&text);
-                    if MORE_DIVIDER_RE.is_match(&text) {
+                    if !has_summary && MORE_DIVIDER_RE.is_match(&text) {
                         has_summary = true;
                         events.push(Event::Html(CONTINUE_READING.into()));
                         continue;
