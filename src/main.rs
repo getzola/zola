@@ -102,11 +102,11 @@ fn main() {
             console::info("Building site...");
             if let Err(e) = cmd::serve(
                 &root_dir,
-                &interface,
+                interface,
                 port,
                 output_dir.as_deref(),
                 force,
-                &base_url,
+                base_url.as_deref(),
                 &config_file,
                 open,
                 drafts,
