@@ -3,11 +3,11 @@
 title = "tranquil"
 description = "A blog theme for zola, simple and clean"
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/TeaDrinkingProgrammer/tranquil.git"
 homepage = "https://github.com/TeaDrinkingProgrammer/tranquil"
 minimum_version = "0.9.0"
@@ -27,6 +27,7 @@ A blog theme for [Zola](https://www.getzola.org). Simple, elegant and uses Tailw
 ## Demo
 
 -  <https://teadrinkingprogrammer.github.io/tranquil-demo/>
+-  My own blog: <https://teadrinkingprogrammer.github.io>
 
 ## Features
 

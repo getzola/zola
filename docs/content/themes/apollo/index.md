@@ -3,11 +3,11 @@
 title = "apollo"
 description = "Modern and minimalistic blog theme"
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/not-matthias/apollo.git"
 homepage = "https://github.com/not-matthias/apollo"
 minimum_version = "0.14.0"
@@ -28,13 +28,13 @@ Modern and minimalistic blog theme powered by [Zola](https://getzola.org). See a
 <details open>
   <summary>Dark theme</summary>
 
-  ![blog-dark](https://user-images.githubusercontent.com/26800596/168986771-4ed049e2-e123-4d0e-8a24-7bf43f47551f.png)
+  ![blog-dark](./screenshot-dark.png)
 </details>
 
 <details>
   <summary>Light theme</summary>
 
-![blog-light](https://user-images.githubusercontent.com/26800596/168986766-72a48517-7122-465d-8108-3ae33e1e88b1.png)
+![blog-light](./screenshot.png)
 </details>
 
 ## Features
@@ -42,9 +42,10 @@ Modern and minimalistic blog theme powered by [Zola](https://getzola.org). See a
 - [X] Pagination
 - [X] Themes (light, dark, auto)
 - [X] Projects page
-- [X] Analytics using [GoatCounter](https://www.goatcounter.com/)
+- [X] Analytics using [GoatCounter](https://www.goatcounter.com/) / [Umami](https://umami.is/)
 - [x] Social Links
 - [x] MathJax Rendering
+- [x] Taxonomies
 - [x] Meta Tags For Individual Pages
 - [ ] Search
 - [ ] Categories

@@ -3,11 +3,11 @@
 title = "terminimal"
 description = "A simple, minimal retro theme"
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/pawroman/zola-theme-terminimal.git"
 homepage = "https://github.com/pawroman/zola-theme-terminimal"
 minimum_version = "0.11.0"
@@ -107,7 +107,7 @@ Example:
 
 Same as `image`, but with a few extra optional arguments:
 
-- **`caption`**
+- **`caption`** (supports markdown)
 - **`caption_position`** (center \[default\] | left | right)
 - **`caption_style`**
 
@@ -118,11 +118,43 @@ Example:
           style="width: 25%;",
           position="right",
           caption_position="left",
-          caption="Ferris, the (unofficial) Rust mascot",
-          caption_style="font-weight: bold; font-style: italic;") */}}
+          caption="**Ferris**, the (unofficial) Rust mascot",
+          caption_style="font-style: italic;") */}}
+```
+
+## OpenGraph
+
+To add an image to a post, set the `og_image` extra option to the desired image
+in the same directory of the markdown file:
+
+```toml
+[extra]
+og_image = "colocated_image.png"
+```
+
+Additionally, for the section pages and for posts to have a fallback image, add
+`default_og_image` to the `[extra]` section:
+
+```toml
+[extra]
+default_og_image = "static/ocean.jpg"
 ```
 
 ## Configuration
+
+### Only show the post's description
+
+On each post you can specify the following:
+
+```toml
+description = "test description"
+
+[extra]
+show_only_description = true
+```
+
+This will render `test description` under this
+particular post on the homepage instead of a summary.
 
 ### Colors
 
@@ -379,7 +411,7 @@ This theme has been forked from https://github.com/panr/hugo-theme-terminal
   - Prism.js syntax highlighting is not supported (you can use
     [Zola's](https://www.getzola.org/documentation/content/syntax-highlighting/)).
 
-- All references to social media (e.g. Twitter, OpenGraph) have been removed.
+- All references to social media (e.g. Twitter) have been removed.
 
 - All references to external URLs (e.g. Google CDN) have been removed.
   This theme's static assets are meant to be served from where it's hosted.
