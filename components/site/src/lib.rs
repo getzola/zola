@@ -756,7 +756,6 @@ impl Site {
                 .get(&self.config.default_language)
                 .map_or(false, |lang_opt| lang_opt.generate_feed)
         {
-            println!("Rendering Default Feed");
             let is_multilingual = self.config.is_multilingual();
             let pages: Vec<_> = if is_multilingual {
                 library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
