@@ -106,6 +106,21 @@ impl GetSection {
     pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
         Self { base_path: base_path.join("content"), library }
     }
+
+    fn add_lang_to_path(path: &str, lang: &str) -> Result<String> {
+        match path.rfind('.') {
+            Some(period_offset) => {
+                let prefix = path.get(0..period_offset);
+                let suffix = path.get(period_offset..);
+                if prefix.is_none() || suffix.is_none() {
+                    Err(format!("Error adding language code to {}", path).into())
+                } else {
+                    Ok(format!("{}.{}{}", prefix.unwrap(), lang, suffix.unwrap()))
+                }
+            }
+            None => Ok(format!("{}.{}", path, lang)),
+        }
+    }
 }
 impl TeraFn for GetSection {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
@@ -119,7 +134,14 @@ impl TeraFn for GetSection {
             .get("metadata_only")
             .map_or(false, |c| from_value::<bool>(c.clone()).unwrap_or(false));
 
-        let full_path = self.base_path.join(&path);
+        let lang =
+            optional_arg!(String, args.get("lang"), "`get_section`: `lang` must be a string");
+
+        let calculated_path = lang.as_ref().map_or_else(
+            || Ok(path.clone()),
+            |lang_code| Self::add_lang_to_path(&path, lang_code),
+        )?;
+        let full_path = self.base_path.join(calculated_path);
         let library = self.library.read().unwrap();
 
         match library.sections.get(&full_path) {
@@ -130,7 +152,13 @@ impl TeraFn for GetSection {
                     Ok(to_value(s.serialize(&library)).unwrap())
                 }
             }
-            None => Err(format!("Section `{}` not found.", path).into()),
+            None => match lang {
+                Some(lang_code) => {
+                    Err(format!("Section `{}` not found for language `{}`.", path, lang_code)
+                        .into())
+                }
+                None => Err(format!("Section `{}` not found.", path).into()),
+            },
         }
     }
 }
@@ -273,7 +301,73 @@ impl TeraFn for GetTaxonomyTerm {
 mod tests {
     use super::*;
     use config::{Config, TaxonomyConfig};
-    use content::TaxonomyTerm;
+    use content::{FileInfo, Library, Section, SortBy, TaxonomyTerm};
+    use std::path::Path;
+    use std::sync::{Arc, RwLock};
+
+    fn create_section(title: &str, file_path: &str, lang: &str) -> Section {
+        let mut section = Section{
+            lang: lang.to_owned(),
+            ..Section::default()
+        };
+        section.file = FileInfo::new_section(
+            Path::new(format!("/test/base/path/{}", file_path).as_str()),
+            &PathBuf::new(),
+        );
+        section.meta.title = Some(title.to_string());
+        section.meta.weight = 1;
+        section.meta.transparent = false;
+        section.meta.sort_by = SortBy::None;
+        section.meta.page_template = Some("new_page.html".to_owned());
+        section.file.find_language("en", &["fr"]).unwrap();
+        section
+    }
+
+    #[test]
+    fn can_get_section() {
+        let mut library = Library::default();
+        let sections = vec![
+            ("Homepage", "content/_index.md", "en"),
+            ("Page D'Accueil", "content/_index.fr.md", "fr"),
+            ("Blog", "content/blog/_index.md", "en"),
+            ("Wiki", "content/wiki/_index.md", "en"),
+            ("Wiki", "content/wiki/_index.fr.md", "fr"),
+            ("Recipes", "content/wiki/recipes/_index.md", "en"),
+            ("Recettes", "content/wiki/recipes/_index.fr.md", "fr"),
+            ("Programming", "content/wiki/programming/_index.md", "en"),
+            ("La Programmation", "content/wiki/programming/_index.fr.md", "fr"),
+            ("Novels", "content/novels/_index.md", "en"),
+            ("Des Romans", "content/novels/_index.fr.md", "fr"),
+        ];
+        for (t, f, l) in sections.clone() {
+            library.insert_section(create_section(t, f, l));
+        }
+        let base_path = "/test/base/path".into();
+
+        let static_fn = GetSection::new(base_path, Arc::new(RwLock::new(library)));
+
+        // Find with lang argument
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("wiki/recipes/_index.md").unwrap());
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        let res = static_fn.call(&args).unwrap();
+        let res_obj = res.as_object().unwrap();
+        assert_eq!(res_obj["title"], to_value("Recettes").unwrap());
+
+        // Find with lang in path for legacy support
+        args = HashMap::new();
+        args.insert("path".to_string(), to_value("wiki/recipes/_index.fr.md").unwrap());
+        let res = static_fn.call(&args).unwrap();
+        let res_obj = res.as_object().unwrap();
+        assert_eq!(res_obj["title"], to_value("Recettes").unwrap());
+
+        // Find with default lang
+        args = HashMap::new();
+        args.insert("path".to_string(), to_value("wiki/recipes/_index.md").unwrap());
+        let res = static_fn.call(&args).unwrap();
+        let res_obj = res.as_object().unwrap();
+        assert_eq!(res_obj["title"], to_value("Recipes").unwrap());
+    }
 
     #[test]
     fn can_get_taxonomy() {

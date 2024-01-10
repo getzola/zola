@@ -154,6 +154,12 @@ If you only need the metadata of the section, you can pass `metadata_only=true` 
 {% set section = get_section(path="blog/_index.md", metadata_only=true) %}
 ```
 
+If selecting a specific language for the section, you can pass `lang` with the language code to the function:
+
+```jinja2
+{% set section = get_section(path="blog/_index.md", lang="fr") %}
+```
+
 ### `get_taxonomy_url`
 Gets the permalink for the taxonomy item found.
 
