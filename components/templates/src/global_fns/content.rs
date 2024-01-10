@@ -100,11 +100,12 @@ impl TeraFn for GetPage {
 #[derive(Debug)]
 pub struct GetSection {
     base_path: PathBuf,
+    default_lang: String,
     library: Arc<RwLock<Library>>,
 }
 impl GetSection {
-    pub fn new(base_path: PathBuf, library: Arc<RwLock<Library>>) -> Self {
-        Self { base_path: base_path.join("content"), library }
+    pub fn new(base_path: PathBuf, default_lang: &str, library: Arc<RwLock<Library>>) -> Self {
+        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), library }
     }
 
     fn add_lang_to_path(path: &str, lang: &str) -> Result<String> {
@@ -139,7 +140,10 @@ impl TeraFn for GetSection {
 
         let calculated_path = lang.as_ref().map_or_else(
             || Ok(path.clone()),
-            |lang_code| Self::add_lang_to_path(&path, lang_code),
+            |lang_code| match self.default_lang.as_str() == lang_code {
+                true => Ok(path.clone()),
+                false => Self::add_lang_to_path(&path, lang_code),
+            },
         )?;
         let full_path = self.base_path.join(calculated_path);
         let library = self.library.read().unwrap();
@@ -344,7 +348,7 @@ mod tests {
         }
         let base_path = "/test/base/path".into();
 
-        let static_fn = GetSection::new(base_path, Arc::new(RwLock::new(library)));
+        let static_fn = GetSection::new(base_path, "en", Arc::new(RwLock::new(library)));
 
         // Find with lang argument
         let mut args = HashMap::new();
@@ -364,6 +368,14 @@ mod tests {
         // Find with default lang
         args = HashMap::new();
         args.insert("path".to_string(), to_value("wiki/recipes/_index.md").unwrap());
+        let res = static_fn.call(&args).unwrap();
+        let res_obj = res.as_object().unwrap();
+        assert_eq!(res_obj["title"], to_value("Recipes").unwrap());
+
+        // Find with default lang when default lang passed
+        args = HashMap::new();
+        args.insert("path".to_string(), to_value("wiki/recipes/_index.md").unwrap());
+        args.insert("lang".to_string(), to_value("en").unwrap());
         let res = static_fn.call(&args).unwrap();
         let res_obj = res.as_object().unwrap();
         assert_eq!(res_obj["title"], to_value("Recipes").unwrap());
