@@ -203,18 +203,13 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        let trailing_bit = if path.ends_with('/')
-            || self
-                .feed_filename
-                .as_ref()
-                .map(|ff| path.ends_with(ff))
-                .unwrap_or_else(|| path.ends_with(DEFAULT_FEED_FILENAME))
-            || path.is_empty()
-        {
-            ""
-        } else {
-            "/"
-        };
+        let is_feed_file = self
+            .feed_filename
+            .as_ref()
+            .map(|ff| path.ends_with(ff))
+            .unwrap_or_else(|| path.ends_with(DEFAULT_FEED_FILENAME));
+        let trailing_bit =
+            if path.ends_with('/') || is_feed_file || path.is_empty() { "" } else { "/" };
 
         // Index section with a base url that has a trailing slash
         if self.base_url.ends_with('/') && path == "/" {

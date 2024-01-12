@@ -749,13 +749,15 @@ impl Site {
         start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
-        if self.config.generate_feed
-            || self
-                .config
-                .languages
-                .get(&self.config.default_language)
-                .map_or(false, |lang_opt| lang_opt.generate_feed)
-        {
+
+        let generate_feed_for_default = self
+            .config
+            .languages
+            .get(&self.config.default_language)
+            .map(|lang_opt| lang_opt.generate_feed)
+            .or(Some(self.config.generate_feed))
+            .unwrap_or(false);
+        if generate_feed_for_default {
             let is_multilingual = self.config.is_multilingual();
             let pages: Vec<_> = if is_multilingual {
                 library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
@@ -1029,17 +1031,13 @@ impl Site {
         Ok(())
     }
 
-    pub fn language_feed_filename(&self, lang: &str) -> String {
+    pub fn language_feed_filename(&self, lang: &str) -> &str {
         self.config
             .languages
             .get(lang)
-            .and_then(|l| {
-                l.feed_filename
-                    .as_ref()
-                    .map_or_else(|| self.config.feed_filename.clone(), |ff| Some(ff.clone()))
-            })
-            .or_else(|| self.config.feed_filename.clone())
-            .unwrap_or(String::from(config::DEFAULT_FEED_FILENAME))
+            .and_then(|l| l.feed_filename.as_ref().or(self.config.feed_filename.as_ref()))
+            .or(self.config.feed_filename.as_ref())
+            .map_or_else(|| config::DEFAULT_FEED_FILENAME, |ff| ff.as_str())
     }
 
     /// Renders a feed for the given path and at the given path
