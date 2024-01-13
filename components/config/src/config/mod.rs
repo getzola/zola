@@ -642,32 +642,18 @@ title = "A title"
     }
 
     #[test]
-    fn missing_ignored_content_results_in_empty_vector_and_empty_globset() {
+    fn missing_ignored_content_results_in_empty_vector() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
         "#;
 
         let config = Config::parse(config_str).unwrap();
-        let v = config.ignored_content;
-        assert_eq!(v.len(), 0);
-        assert!(config.ignored_content_globset.is_none());
+        assert_eq!(config.ignored_content.len(), 0);
     }
 
     #[test]
-    fn missing_ignored_static_results_in_empty_vector_and_empty_globset() {
-        let config_str = r#"
-title = "My site"
-base_url = "example.com"
-        "#;
-        let config = Config::parse(config_str).unwrap();
-        let v = config.ignored_static;
-        assert_eq!(v.len(), 0);
-        assert!(config.ignored_static_globset.is_none());
-    }
-
-    #[test]
-    fn empty_ignored_content_results_in_empty_vector_and_empty_globset() {
+    fn empty_ignored_content_results_in_empty_vector() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
@@ -676,7 +662,6 @@ ignored_content = []
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.ignored_content.len(), 0);
-        assert!(config.ignored_content_globset.is_none());
     }
 
     #[test]
