@@ -1,5 +1,6 @@
 use content::{Library, Taxonomy, TaxonomyTerm};
 use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
@@ -108,7 +109,7 @@ impl GetSection {
         Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), library }
     }
 
-    fn add_lang_to_path(path: &str, lang: &str) -> Result<String> {
+    fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, String>> {
         match path.rfind('.') {
             Some(period_offset) => {
                 let prefix = path.get(0..period_offset);
@@ -116,10 +117,10 @@ impl GetSection {
                 if prefix.is_none() || suffix.is_none() {
                     Err(format!("Error adding language code to {}", path).into())
                 } else {
-                    Ok(format!("{}.{}{}", prefix.unwrap(), lang, suffix.unwrap()))
+                    Ok(Cow::Owned(format!("{}.{}{}", prefix.unwrap(), lang, suffix.unwrap())))
                 }
             }
-            None => Ok(format!("{}.{}", path, lang)),
+            None => Ok(Cow::Owned(format!("{}.{}", path, lang))),
         }
     }
 }
@@ -138,31 +139,36 @@ impl TeraFn for GetSection {
         let lang =
             optional_arg!(String, args.get("lang"), "`get_section`: `lang` must be a string");
 
-        let calculated_path = lang.as_ref().map_or_else(
-            || Ok(path.clone()),
+        let calculated_path_result = lang.as_ref().map_or_else(
+            || Ok(Cow::Borrowed(&path)),
             |lang_code| match self.default_lang.as_str() == lang_code {
-                true => Ok(path.clone()),
+                true => Ok(Cow::Borrowed(&path)),
                 false => Self::add_lang_to_path(&path, lang_code),
             },
-        )?;
-        let full_path = self.base_path.join(calculated_path);
-        let library = self.library.read().unwrap();
+        );
+        match calculated_path_result {
+            Ok(calculated_path) => {
+                let full_path = self.base_path.join(calculated_path.as_ref());
+                let library = self.library.read().unwrap();
 
-        match library.sections.get(&full_path) {
-            Some(s) => {
-                if metadata_only {
-                    Ok(to_value(s.serialize_basic(&library)).unwrap())
-                } else {
-                    Ok(to_value(s.serialize(&library)).unwrap())
+                match library.sections.get(&full_path) {
+                    Some(s) => {
+                        if metadata_only {
+                            Ok(to_value(s.serialize_basic(&library)).unwrap())
+                        } else {
+                            Ok(to_value(s.serialize(&library)).unwrap())
+                        }
+                    }
+                    None => match lang {
+                        Some(lang_code) => {
+                            Err(format!("Section `{}` not found for language `{}`.", path, lang_code)
+                                .into())
+                        }
+                        None => Err(format!("Section `{}` not found.", path).into()),
+                    },
                 }
-            }
-            None => match lang {
-                Some(lang_code) => {
-                    Err(format!("Section `{}` not found for language `{}`.", path, lang_code)
-                        .into())
-                }
-                None => Err(format!("Section `{}` not found.", path).into()),
             },
+            Err(e) => Err(e),
         }
     }
 }
