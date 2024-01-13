@@ -80,7 +80,11 @@ pub fn register_tera_global_fns(site: &mut Site) {
     );
     site.tera.register_function(
         "get_section",
-        global_fns::GetSection::new(site.base_path.clone(), &site.config.default_language, site.library.clone()),
+        global_fns::GetSection::new(
+            site.base_path.clone(),
+            &site.config.default_language,
+            site.library.clone(),
+        ),
     );
     site.tera.register_function(
         "get_taxonomy",

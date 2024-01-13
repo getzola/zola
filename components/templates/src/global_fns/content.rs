@@ -106,7 +106,11 @@ pub struct GetSection {
 }
 impl GetSection {
     pub fn new(base_path: PathBuf, default_lang: &str, library: Arc<RwLock<Library>>) -> Self {
-        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), library }
+        Self {
+            base_path: base_path.join("content"),
+            default_lang: default_lang.to_string(),
+            library,
+        }
     }
 
     fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, String>> {
@@ -160,14 +164,15 @@ impl TeraFn for GetSection {
                         }
                     }
                     None => match lang {
-                        Some(lang_code) => {
-                            Err(format!("Section `{}` not found for language `{}`.", path, lang_code)
-                                .into())
-                        }
+                        Some(lang_code) => Err(format!(
+                            "Section `{}` not found for language `{}`.",
+                            path, lang_code
+                        )
+                        .into()),
                         None => Err(format!("Section `{}` not found.", path).into()),
                     },
                 }
-            },
+            }
             Err(e) => Err(e),
         }
     }
@@ -316,10 +321,7 @@ mod tests {
     use std::sync::{Arc, RwLock};
 
     fn create_section(title: &str, file_path: &str, lang: &str) -> Section {
-        let mut section = Section{
-            lang: lang.to_owned(),
-            ..Section::default()
-        };
+        let mut section = Section { lang: lang.to_owned(), ..Section::default() };
         section.file = FileInfo::new_section(
             Path::new(format!("/test/base/path/{}", file_path).as_str()),
             &PathBuf::new(),
