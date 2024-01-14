@@ -141,8 +141,11 @@ impl Config {
         config.slugify_taxonomies();
         config.link_checker.resolve_globset()?;
 
-        let glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
-        config.ignored_content_globset = Some(glob_set);
+        let content_glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
+        config.ignored_content_globset = Some(content_glob_set);
+
+        let static_glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
+        config.ignored_static_globset = Some(static_glob_set);
 
         Ok(config)
     }
@@ -653,7 +656,7 @@ ignored_content = []
     }
 
     #[test]
-    fn empty_ignored_static_results_in_empty_vector_and_empty_globset() {
+    fn empty_ignored_static_results_in_empty_vector() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
@@ -662,7 +665,6 @@ ignored_static = []
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.ignored_static.len(), 0);
-        assert!(config.ignored_static_globset.is_none());
     }
 
     #[test]
