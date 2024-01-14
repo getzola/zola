@@ -50,6 +50,9 @@ Replace `<your-github-repo-url>` with the URL of your GitHub repository.
 
 Zeabur will automatically detect that you're deploying a Zola project and will handle the deployment process for you without any additional configuration needed.
 
+To use a specific version of Zola, set [`ZOLA_VERSION`](https://zeabur.com/docs/environment/variables) environment variable in project settings to a valid
+release tag, for example `0.17.2`.
+
 ## Step 6: Domain Binding
 
 1. Once the deployment is complete, bind a domain name to your service.
