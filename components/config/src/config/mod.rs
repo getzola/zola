@@ -29,18 +29,6 @@ pub enum Mode {
     Check,
 }
 
-fn build_ignore_glob_set(ignore: &Vec<String>, name: &str) -> Result<GlobSet> {
-    let mut glob_set_builder = GlobSetBuilder::new();
-    for pat in ignore {
-        let glob = match Glob::new(pat) {
-            Ok(g) => g,
-            Err(e) => bail!("Invalid ignored_{} glob pattern: {}, error = {}", name, pat, e),
-        };
-        glob_set_builder.add(glob);
-    }
-    Ok(glob_set_builder.build().unwrap_or_else(|_| panic!("Bad ignored_{} in config file.", name)))
-}
-
 #[derive(Clone, Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
