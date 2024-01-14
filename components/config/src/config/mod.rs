@@ -656,6 +656,17 @@ ignored_content = []
     }
 
     #[test]
+    fn missing_ignored_static_results_in_empty_vector() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.ignored_static.len(), 0);
+    }
+
+    #[test]
     fn empty_ignored_static_results_in_empty_vector() {
         let config_str = r#"
 title = "My site"
@@ -665,6 +676,31 @@ ignored_static = []
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.ignored_static.len(), 0);
+    }
+
+    #[test]
+    fn missing_link_checker_ignored_files_results_in_empty_vector() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.link_checker.ignored_files.len(), 0);
+    }
+
+    #[test]
+    fn empty_link_checker_ignored_files_results_in_empty_vector() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+[link_checker]
+ignored_files = []
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.link_checker.ignored_files.len(), 0);
+
     }
 
     #[test]
@@ -709,6 +745,36 @@ ignored_static = ["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]
         assert_eq!(v, vec!["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]);
 
         let g = config.ignored_static_globset.unwrap();
+        assert_eq!(g.len(), 3);
+        assert!(g.is_match("foo.graphml"));
+        assert!(g.is_match("foo/bar/foo.graphml"));
+        assert!(g.is_match("foo.iso"));
+        assert!(!g.is_match("foo.png"));
+        assert!(g.is_match("foo.py2"));
+        assert!(g.is_match("foo.py3"));
+        assert!(!g.is_match("foo.py"));
+        assert!(g.is_match("foo/bar/target"));
+        assert!(g.is_match("foo/bar/baz/temp_folder"));
+        assert!(g.is_match("foo/bar/baz/temp_folder/target"));
+        assert!(g.is_match("temp_folder"));
+        assert!(g.is_match("my/isos/foo.iso"));
+        assert!(g.is_match("content/poetry/zen.py2"));
+    }
+
+    #[test]
+    fn non_empty_link_checker_ignored_pages_results_in_vector_of_patterns_and_configured_globset() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+[link_checker]
+ignored_files = ["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        let v = config.link_checker.ignored_files;
+        assert_eq!(v, vec!["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]);
+
+        let g = config.link_checker.ignored_files_globset.unwrap();
         assert_eq!(g.len(), 3);
         assert!(g.is_match("foo.graphml"));
         assert!(g.is_match("foo/bar/foo.graphml"));
