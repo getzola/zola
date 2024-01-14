@@ -700,7 +700,6 @@ ignored_files = []
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.link_checker.ignored_files.len(), 0);
-
     }
 
     #[test]
