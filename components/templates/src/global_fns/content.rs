@@ -143,34 +143,36 @@ impl TeraFn for GetSection {
         let lang =
             optional_arg!(String, args.get("lang"), "`get_section`: `lang` must be a string");
 
-        lang.as_ref().map_or_else(
-            || Ok(Cow::Borrowed(&path)),
-            |lang_code| match self.default_lang.as_str() == lang_code {
-                true => Ok(Cow::Borrowed(&path)),
-                false => Self::add_lang_to_path(&path, lang_code),
-            },
-        ).and_then(|calculated_path| {
-            let full_path = self.base_path.join(calculated_path.as_ref());
-            let library = self.library.read().unwrap();
-
-            match library.sections.get(&full_path) {
-                Some(s) => {
-                    if metadata_only {
-                        Ok(to_value(s.serialize_basic(&library)).unwrap())
-                    } else {
-                        Ok(to_value(s.serialize(&library)).unwrap())
-                    }
-                }
-                None => match lang {
-                    Some(lang_code) => Err(format!(
-                        "Section `{}` not found for language `{}`.",
-                        path, lang_code
-                    )
-                    .into()),
-                    None => Err(format!("Section `{}` not found.", path).into()),
+        lang.as_ref()
+            .map_or_else(
+                || Ok(Cow::Borrowed(&path)),
+                |lang_code| match self.default_lang.as_str() == lang_code {
+                    true => Ok(Cow::Borrowed(&path)),
+                    false => Self::add_lang_to_path(&path, lang_code),
                 },
-            }
-        })
+            )
+            .and_then(|calculated_path| {
+                let full_path = self.base_path.join(calculated_path.as_ref());
+                let library = self.library.read().unwrap();
+
+                match library.sections.get(&full_path) {
+                    Some(s) => {
+                        if metadata_only {
+                            Ok(to_value(s.serialize_basic(&library)).unwrap())
+                        } else {
+                            Ok(to_value(s.serialize(&library)).unwrap())
+                        }
+                    }
+                    None => match lang {
+                        Some(lang_code) => Err(format!(
+                            "Section `{}` not found for language `{}`.",
+                            path, lang_code
+                        )
+                        .into()),
+                        None => Err(format!("Section `{}` not found.", path).into()),
+                    },
+                }
+            })
     }
 }
 
