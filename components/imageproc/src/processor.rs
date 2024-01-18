@@ -177,7 +177,7 @@ impl Processor {
     /// Run the enqueued image operations
     pub fn do_process(&mut self) -> Result<()> {
         if !self.img_ops.is_empty() {
-            ufs::ensure_directory_exists(&self.output_dir)?;
+            ufs::create_directory(&self.output_dir)?;
         }
 
         self.img_ops
@@ -197,7 +197,7 @@ impl Processor {
             return Ok(());
         }
 
-        ufs::ensure_directory_exists(&self.output_dir)?;
+        ufs::create_directory(&self.output_dir)?;
         let output_paths: HashSet<_> = self
             .img_ops
             .iter()
