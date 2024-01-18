@@ -194,7 +194,13 @@ RUN ["zola", "build"]
 
 ## Windows
 
-Zola is available on [Scoop](https://scoop.sh):
+Zola could be installed using official Winget command:
+
+```sh
+$ winget install getzola.zola
+```
+
+Also it is available on [Scoop](https://scoop.sh):
 
 ```sh
 $ scoop install zola
