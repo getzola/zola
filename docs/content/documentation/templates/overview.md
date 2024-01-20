@@ -141,6 +141,12 @@ Takes a path to an `.md` file and returns the associated page. The base path is 
 {% set page = get_page(path="blog/page2.md") %}
 ```
 
+If selecting a specific language for the page, you can pass `lang` with the language code to the function:
+
+```jinja2
+{% set page = get_page(path="blog/page2.md", lang="fr") %}
+```
+
 ### `get_section`
 Takes a path to an `_index.md` file and returns the associated section. The base path is the `content` directory.
 
