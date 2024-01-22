@@ -676,8 +676,19 @@ impl Site {
         Ok(current_path)
     }
 
-    fn copy_asset(&self, src: &Path, dest: &Path) -> Result<()> {
-        copy_file_if_needed(src, dest, self.config.hard_link_static)
+    fn copy_assets(&self, parent: &Path, assets: &[impl AsRef<Path>], dest: &Path) -> Result<()> {
+        for asset in assets {
+            let asset_path = asset.as_ref();
+            copy_file_if_needed(
+                asset_path,
+                &dest.join(
+                    asset_path.strip_prefix(parent).expect("Couldn't get filename from page asset"),
+                ),
+                self.config.hard_link_static,
+            )?;
+        }
+
+        Ok(())
     }
 
     /// Renders a single content page
@@ -689,17 +700,7 @@ impl Site {
             self.write_content(&components, "index.html", content, !page.assets.is_empty())?;
 
         // Copy any asset we found previously into the same directory as the index.html
-        for asset in &page.assets {
-            let asset_path = asset.as_path();
-            self.copy_asset(
-                asset_path,
-                &current_path.join(
-                    asset_path
-                        .strip_prefix(page.file.path.parent().unwrap())
-                        .expect("Couldn't get filename from page asset"),
-                ),
-            )?;
-        }
+        self.copy_assets(page.file.path.parent().unwrap(), &page.assets, &current_path)?;
 
         Ok(())
     }
@@ -1082,17 +1083,7 @@ impl Site {
         }
 
         // Copy any asset we found previously into the same directory as the index.html
-        for asset in &section.assets {
-            let asset_path = asset.as_path();
-            self.copy_asset(
-                asset_path,
-                &output_path.join(
-                    asset_path
-                        .strip_prefix(section.file.path.parent().unwrap())
-                        .expect("Failed to get asset filename for section"),
-                ),
-            )?;
-        }
+        self.copy_assets(&section.file.path.parent().unwrap(), &section.assets, &output_path)?;
 
         if render_pages {
             section
