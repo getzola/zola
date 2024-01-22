@@ -3,11 +3,11 @@
 title = "Kita"
 description = "Kita is a clean, elegant and simple blog theme for Zola."
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/st1020/kita.git"
 homepage = "https://github.com/st1020/kita"
 minimum_version = "0.17.0"
@@ -25,17 +25,24 @@ Kita is a clean, elegant and simple blog theme for Zola.
 
 This theme is based on Hugo theme [hugo-paper](https://github.com/nanxiaobei/hugo-paper) with some features added.
 
-![Screenshot](https://github.com/st1020/kita/blob/main/screenshot.png)
+![Screenshot](https://raw.githubusercontent.com/st1020/kita/main/screenshot.png)
 
 ## Features
 
 - Easy to use and modify
+- No preset limits (This theme does not limit your content directory structure, taxonomy names, etc. Applicable to all zola sites.)
 - Dark mode
+- Responsive design
 - Social icons
 - Taxonomies support
-- SEO Friendly
+- Projects page
+- Archive page
+- Table of Content
+- Admonition shortcode
+- SEO friendly
 - Comments using [Giscus](https://giscus.app/)
 - Mathematical notations using [KaTeX](https://katex.org/)
+- Diagrams and charts using [Mermaid](https://mermaid.js.org/)
 
 ## Installation
 
@@ -65,6 +72,6 @@ See the `extra` section in [config.toml](https://github.com/st1020/kita/blob/mai
 
 [MIT License](https://github.com/st1020/kita/blob/main/LICENSE)
 
-Copyright (c) 2013-present, st1020
+Copyright (c) 2023-present, st1020
 
         

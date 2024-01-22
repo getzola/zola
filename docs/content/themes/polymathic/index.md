@@ -3,11 +3,11 @@
 title = "polymathic"
 description = "A portfolio theme for person of many talents"
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/anvlkv/polymathic"
 homepage = "https://github.com/anvlkv/polymathic"
 minimum_version = "0.17.2"
@@ -21,7 +21,7 @@ homepage = "https://a.nvlkv.xyz"
 
 # polymathic
 
-> The theme is in active development
+<a href="https://www.producthunt.com/posts/polymathic?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-polymathic" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=422530&theme=light" alt="polymathic - Zola&#0032;portfolio&#0032;theme&#0032;for&#0032;those&#0032;with&#0032;many&#0032;talents | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 polymathic is a [Zola](https://www.getzola.org/) portfolio theme. 
 

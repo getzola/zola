@@ -3,26 +3,26 @@
 title = "no style, please!"
 description = "A (nearly) no-CSS, fast, minimalist Zola theme"
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://gitlab.com/4bcx/no-style-please.git"
-homepage = "https://gitlab.com/4bcx/no-style-please"
+homepage = "https://gitlab.com/atgumx/no-style-please"
 minimum_version = "0.4.0"
 license = "MIT"
-demo = "https://4bcx.gitlab.io/no-style-please"
+demo = "https://atgumx.gitlab.io/no-style-please"
 
 [extra.author]
 name = "Ahmed Alaa"
-homepage = "https://4b.cx"
+homepage = "https://gumx.cc"
 +++        
 
 # no style, please!
 
 A (nearly) no-CSS, fast, minimalist [Zola](https://www.getzola.org/) theme.
-Ported from from [riggraz](https://riggraz.dev/)'s [no style, please! Jekyll theme](https://riggraz.dev/no-style-please/), and I use it for [my site](https://4b.cx/)
+Ported from from [riggraz](https://riggraz.dev/)'s [no style, please! Jekyll theme](https://riggraz.dev/no-style-please/), and you can find the demo [here](https://atgumx.gitlab.io/no-style-please/)
 
 ![screenshot](./screenshot.png)
 
@@ -63,6 +63,12 @@ To enable listing of pages in homepage add the following in `config.toml`
 ```toml
 [extra]
 list_pages = true
+```
+
+If you do not want the date of the post added next to the title in the list, add the following as well:
+
+```toml
+no_list_date = true
 ```
 
 ### Header and footer nav links

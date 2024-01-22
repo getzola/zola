@@ -3,11 +3,11 @@
 title = "anemone"
 description = "A minimalist Zola theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas."
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/Speyll/anemone"
 homepage = "https://github.com/Speyll/anemone"
 minimum_version = "0.4.0"
@@ -74,23 +74,11 @@ list_pages = true
 The theme has a built-in feature that allows you to use multiple languages. For detailed instructions on how to use this feature, you can refer to the [Zola Multilingual documentation](https://www.getzola.org/documentation/content/multilingual/). This documentation provides additional information on how to make the most out of this multilingual capability.
 
 ```toml
-[languages.en]
-weight = 1
-title = "anemone"
-languageName = "English"
-languageCode = "en"
-relativeURL = false
-
 [languages.fr]
 weight = 2
 title = "anemone"
 languageName = "Français"
 languageCode = "fr"
-relativeURL = false
-
-taxonomies = [
-    {name = "tags", feed = true},
-]
 ```
 #### Multilanguage-Ready Navigation Bar
 
@@ -99,21 +87,30 @@ Customize the header navigation links with the following code in the `extra` sec
 ```toml
 [extra]
 
-[[extra.header_nav]]
-en = { name = "/home/", url = "/" }
-fr = { name = "/accueil/", url = "/fr" }
+header_nav = [
+  { url = "/", name_en = "/home/", name_fr = "/accueil/" },
+  { url = "/about", name_en = "/about/", name_fr = "/concernant/" },
+  { url = "/journal", name_en = "/journal/", name_fr = "/journal/" },
+  { url = "/blog", name_en = "/blog/", name_fr = "/blog/" }
+]
+```
 
-[[extra.header_nav]]
-en = { name = "/about/", url = "/about" }
-fr = { name = "/concernant/", url = "/about" }
+#### Default Theme
 
-[[extra.header_nav]]
-en = { name = "/journal/", url = "/journal" }
-fr = { name = "/journal/", url = "/journal" }
+To configure the default theme, simply utilize the `default_theme` variable and set it to either `light` or `dark`:
 
-[[extra.header_nav]]
-en = { name = "/blog/", url = "/blog" }
-fr = { name = "/blog/", url = "/blog" }
+```toml
+[extra]
+default_theme = "light"
+```
+
+#### Display Author Name in Blog Posts
+
+Customize the display of the author's name in your blog posts by toggling the `display_author` variable to either `true` or `false`:
+
+```toml
+[extra]
+display_author = true
 ```
 
 ### Webrings
@@ -150,6 +147,6 @@ twitter_card = true
 
 ### License
 
-The Anemone theme is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The Anemone theme is available as open source under the terms of the [MIT License](LICENSE).
 
         

@@ -3,11 +3,11 @@
 title = "Anpu"
 description = "A port of the Hugo Anubis theme"
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/zbrox/anpu-zola-theme.git"
 homepage = "https://github.com/zbrox/anpu-zola-theme"
 minimum_version = "0.11.0"
@@ -23,7 +23,11 @@ homepage = "https://zbrox.com"
 
 This is a port of the Hugo theme [Anubis](https://github.com/Mitrichius/hugo-theme-anubis/tree/master/layouts) for [Zola](https://getzola.org).
 
-![screenshot](screenshot.png)
+## Screenshots
+
+| Light mode | Dark mode |
+| :------: | :-----------: |
+| ![light mode website screenshot](screenshot-light.png) | ![dark mode website screenshot](screenshot-dark.png) |
 
 ## Usage
 
@@ -82,5 +86,13 @@ anpu_date_format = "%e %B %Y"
 ```
 
 The formatting uses the standart `date` filter in Tera. The date format options you can use are listed in the [chrono crate documentation](https://tera.netlify.app/docs/#date).
+
+## Attributions
+
+The icons used are part of [UXWing](https://uxwing.com/license/)'s collection.
+
+## License
+
+Source code is available under [MIT](LICENSE).
 
         

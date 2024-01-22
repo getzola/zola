@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
-minimum_version = "0.17.0"
+minimum_version = "0.18.0"
 license = "MIT"
 demo = "https://pureandroid.com"
 
@@ -25,14 +25,19 @@ homepage = "https://weitzel.dev"
 
 Welcome to Zolarwind, the simple Zola blog theme with Tailwind CSS and KaTex support.
 This theme is for Zola users aiming to have a nice blog design powered by Tailwind CSS.
+It seamlessly integrates with [Mermaid](https://mermaid.js.org), enabling the creation of various diagrams
+directly within your blog posts using a Markdown-inspired syntax.
 Additionally, the theme smoothly integrates math formulas using [KaTex](https://katex.org).
-Most importantly, while the theme is designed to be easily localizable, you can choose your preferred language setting for a consistent blog experience.
+Most importantly, while the theme is designed to be easily localizable,
+you can choose your preferred language setting for a consistent blog experience.
 
 ---
 
 ## Features:
 
 - **Tailwind CSS**: Utilize the utility-first CSS framework for rapid UI development.
+
+- **Mermaid Integration**: Create diverse diagrams using simple text.
 
 - **KaTex Integration**: Integrate and display math formulas seamlessly in your blog posts.
 
@@ -136,7 +141,7 @@ The `[extra]` section is where you can place any custom variables you want to be
 
 - **generator**: Optional.
   Specifies the generator used for creating the static website.
-  This site is generated using `Zola v0.17.2`.
+  This site is generated using `Zola v0.18.0`.
 
 - **path_language_resources**: The path to the directory containing language resource files.
   In this config, it's set to `i18n/`.
@@ -189,6 +194,11 @@ If you do not provide an image under `extra.image`, a default image is used inst
 - **extra.math**: either `false` (default) or `true`.
   If set to `true`, the post will be rendered with KaTex support for displaying math formulas.
   If the entry is omitted or set to `false`, the post will not have KaTex support.
+
+- **extra.diagram**: either `false` (default) or `true`.
+  Controls loading of the necessary JavaScript to render the Mermaid diagram.
+  If set to `true`, the post will be rendered with Mermaid support for displaying diagrams
+  by using the `diagram()` shortcode.
 
 - **extra.image**: an optional image for the post.
   If omitted, a default image is used instead.

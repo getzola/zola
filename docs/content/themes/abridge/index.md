@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
-minimum_version = "0.17.2"
+minimum_version = "0.18.0"
 license = "MIT"
 demo = "https://abridge.netlify.app/"
 
@@ -68,15 +68,15 @@ The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml]
 - [x] Categories. (similar to Tags, disabled/commented out by default)
 - [x] Social icon links in footer.
 - [X] Responsive design. (mobile first)
-- [X] Video Shortcodes: [Youtube](https://abridge.netlify.app/overview-embed-youtube/), [Vimeo](https://abridge.netlify.app/overview-embed-vimeo/), [Streamable](https://abridge.netlify.app/overview-embed-streamable/).
+- [X] Video Shortcodes: [Youtube](https://abridge.netlify.app/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.netlify.app/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.netlify.app/video-streaming-sites/overview-embed-streamable/).
 - [X] Media Shortcodes: [video](https://abridge.netlify.app/overview-rich-content/#video), [img](https://abridge.netlify.app/overview-images/#img-shortcode), [imgswap](https://abridge.netlify.app/overview-images/#imgswap-shortcode), [image](https://abridge.netlify.app/overview-rich-content/#image), [gif](https://abridge.netlify.app/overview-rich-content/#gif), [audio](https://abridge.netlify.app/overview-rich-content/#audio).
 - [X] Other Shortcodes: [showdata](https://abridge.netlify.app/overview-showdata/), [katex](https://abridge.netlify.app/overview-math/#usage-1).
 
-**[Complete Documentation is availabe here](https://abridge.netlify.app/overview-abridge/)**
+**[Complete Documentation is available here](https://abridge.netlify.app/overview-abridge/)**
 
 ## Quick Start
 
-This theme requires version 0.17.2 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
+This theme requires version 0.18.0 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
 
 ```bash
 git clone https://github.com/jieiku/abridge.git
@@ -92,7 +92,7 @@ The Quick Start shows how to run the theme directly. Next we will use abridge as
 ### 1: Create a new zola site
 
 ```bash
-zola init mysite
+yes "" | zola init mysite
 cd mysite
 ```
 
@@ -103,6 +103,8 @@ Add the theme as a git submodule:
 ```bash
 git init  # if your project is a git repository already, ignore this command
 git submodule add https://github.com/jieiku/abridge.git themes/abridge
+git submodule update --init --recursive
+git submodule update --remote --merge
 ```
 
 Or clone the theme into your themes directory:
@@ -116,16 +118,15 @@ git clone https://github.com/jieiku/abridge.git themes/abridge
 Copy some files from the theme directory to your project's root directory:
 
 ```bash
-touch templates/.gitkeep
+rsync themes/abridge/.gitignore .gitignore
 rsync themes/abridge/config.toml config.toml
 rsync themes/abridge/content/_index.md content/
-rsync themes/abridge/COPY-TO-ROOT-SASS/* sass/
+rsync -r themes/abridge/COPY-TO-ROOT-SASS/* sass/
 rsync themes/abridge/netlify.toml netlify.toml
 rsync themes/abridge/package_abridge.js package_abridge.js
 rsync themes/abridge/package.json package.json
 ```
 
-- `templates/.gitkeep` the templates directory is required in your base site. [#2150](https://github.com/getzola/zola/issues/2150)
 - `config.toml` base configuration with all config values.
 - `content/_index.md` required to set pagination.
 - `COPY-TO-ROOT-SASS/abridge.scss` overrides to customize Abridge variables.

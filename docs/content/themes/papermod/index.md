@@ -3,11 +3,11 @@
 title = "PaperMod"
 description = "A fast, clean, responsive theme ported to Zola."
 template = "theme.html"
-date = 2023-11-11T02:14:17+03:00
+date = 2024-01-09T08:33:22+01:00
 
 [extra]
-created = 2023-11-11T02:14:17+03:00
-updated = 2023-11-11T02:14:17+03:00
+created = 2024-01-09T08:33:22+01:00
+updated = 2024-01-09T08:33:22+01:00
 repository = "https://github.com/cydave/zola-theme-papermod.git"
 homepage = "https://github.com/cydave/zola-theme-papermod"
 minimum_version = "0.4.0"
@@ -42,7 +42,7 @@ Demo @ https://cydave.github.io/zola-theme-papermod/
     + [ ] Regular Mode
     + [ ] Home-Info Mode
     + [ ] Profile Mode
-+ [ ] Code copy buttons
++ [x] Code copy buttons
 + [ ] Search page
 + [ ] SEO Metadata
 + [ ] Language switcher (multi-language support)
