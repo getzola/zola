@@ -87,7 +87,7 @@ fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, String>> {
     }
 }
 
-fn calculate_path<'a>(
+fn get_path_with_lang<'a>(
     path: &'a String,
     lang: &Option<String>,
     default_lang: &str,
@@ -139,9 +139,9 @@ impl TeraFn for GetPage {
         let lang =
             optional_arg!(String, args.get("lang"), "`get_section`: `lang` must be a string");
 
-        calculate_path(&path, &lang, &self.default_lang, &self.supported_languages).and_then(
-            |calculated_path| {
-                let full_path = self.base_path.join(calculated_path.as_ref());
+        get_path_with_lang(&path, &lang, &self.default_lang, &self.supported_languages).and_then(
+            |path_with_lang| {
+                let full_path = self.base_path.join(path_with_lang.as_ref());
                 let library = self.library.read().unwrap();
 
                 match library.pages.get(&full_path) {
@@ -196,9 +196,9 @@ impl TeraFn for GetSection {
         let lang =
             optional_arg!(String, args.get("lang"), "`get_section`: `lang` must be a string");
 
-        calculate_path(&path, &lang, self.default_lang.as_str(), &self.supported_languages)
-            .and_then(|calculated_path| {
-                let full_path = self.base_path.join(calculated_path.as_ref());
+        get_path_with_lang(&path, &lang, self.default_lang.as_str(), &self.supported_languages)
+            .and_then(|path_with_lang| {
+                let full_path = self.base_path.join(path_with_lang.as_ref());
                 let library = self.library.read().unwrap();
 
                 match library.sections.get(&full_path) {
