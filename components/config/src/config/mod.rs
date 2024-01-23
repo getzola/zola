@@ -66,7 +66,8 @@ pub struct Config {
     /// The number of articles to include in the feed. Defaults to including all items.
     pub feed_limit: Option<usize>,
     /// The filename to use for feeds. Used to find the template, too.
-    /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
+    /// Defaults to None, with "atom.xml" and "rss.xml" having templates provided out of the box.
+    /// If None, "atom.xml" is used for feed.  Defined by DEFAULT_FEED_FILENAME
     pub feed_filename: Option<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,

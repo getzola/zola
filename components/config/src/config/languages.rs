@@ -17,7 +17,8 @@ pub struct LanguageOptions {
     /// Whether to generate a feed for that language, defaults to `false`
     pub generate_feed: bool,
     /// The filename to use for feeds. Used to find the template, too.
-    /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
+    /// Defaults to None, with "atom.xml" and "rss.xml" having templates provided out of the box.
+    /// If None, site config feed filename is used.
     pub feed_filename: Option<String>,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
     /// Whether to generate search index for that language, defaults to `false`
