@@ -16,5 +16,5 @@ pub fn build_ignore_glob_set(ignore: &Vec<String>, name: &str) -> Result<GlobSet
         };
         glob_set_builder.add(glob);
     }
-    Ok(glob_set_builder.build().expect(&format!("Bad ignored_{} in config file.", name)))
+    Ok(glob_set_builder.build()?)
 }
