@@ -155,12 +155,13 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     let mut invalid_url_links: u32 = 0;
     // First we look at all the external links, skip those the user wants to skip and record
     // the ones that have invalid URLs
+    let ignored_files_globset = site.config.link_checker.ignored_files_globset.as_ref().unwrap();
     for (file_path, links) in external_links {
         for link in links {
             if should_skip_by_prefix(link, &site.config.link_checker.skip_prefixes)
                 || should_skip_by_file(
                     file_path,
-                    site.config.link_checker.ignored_files_globset.as_ref().unwrap(),
+                    ignored_files_globset,
                 )
             {
                 skipped_link_count += 1;
