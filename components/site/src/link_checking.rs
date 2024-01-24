@@ -159,10 +159,7 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     for (file_path, links) in external_links {
         for link in links {
             if should_skip_by_prefix(link, &site.config.link_checker.skip_prefixes)
-                || should_skip_by_file(
-                    file_path,
-                    ignored_files_globset,
-                )
+                || should_skip_by_file(file_path, ignored_files_globset)
             {
                 skipped_link_count += 1;
             } else {
