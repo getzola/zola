@@ -3,11 +3,11 @@
 title = "polymathic"
 description = "A portfolio theme for person of many talents"
 template = "theme.html"
-date = 2024-01-09T08:33:22+01:00
+date = 2024-01-25T10:41:35+02:00
 
 [extra]
-created = 2024-01-09T08:33:22+01:00
-updated = 2024-01-09T08:33:22+01:00
+created = 2024-01-25T10:41:35+02:00
+updated = 2024-01-25T10:41:35+02:00
 repository = "https://github.com/anvlkv/polymathic"
 homepage = "https://github.com/anvlkv/polymathic"
 minimum_version = "0.17.2"
