@@ -49,7 +49,7 @@ $ sudo dpkg -i zola_<version>_amd64_debian_<debian_version>.deb
 
 ### Fedora
 
-On Fedora, Zola is avialable via [COPR](https://fedoraproject.org/wiki/Category:Copr).
+On Fedora, Zola is available via [COPR](https://fedoraproject.org/wiki/Category:Copr).
 
 ```sh
 $ sudo dnf copr enable fz0x1/zola
