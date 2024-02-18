@@ -1,8 +1,6 @@
 ---
-source: components/rendering/tests/shortcodes.rs
-assertion_line: 104
+source: components/markdown/tests/shortcodes.rs
 expression: body
-
 ---
-<p>{{ youtube(id=&quot;w7Ft2ymGmfc&quot;) }}</p>
+<p>{{ youtube(id="w7Ft2ymGmfc") }}</p>
 

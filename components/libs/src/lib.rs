@@ -23,6 +23,7 @@ pub use num_format;
 pub use once_cell;
 pub use percent_encoding;
 pub use pulldown_cmark;
+pub use pulldown_cmark_escape;
 pub use quickxml_to_serde;
 pub use rayon;
 pub use regex;

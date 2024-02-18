@@ -1,12 +1,10 @@
 ---
-source: components/rendering/tests/markdown.rs
-assertion_line: 84
+source: components/markdown/tests/markdown.rs
 expression: body
-
 ---
 <h1 id="Hello">Hello</h1>
 <h1 id="Hello-1">Hello</h1>
-<h1 id="L'écologie_et_vous">L'écologie et vous</h1>
+<h1 id="L&#39;écologie_et_vous">L'écologie et vous</h1>
 <h1 id="hello">Hello</h1>
 <h1 id="hello">Hello</h1>
 <h1 id="Something_else">Hello</h1>
@@ -22,6 +20,6 @@ expression: body
 <h1 id="text__there">text <sup class="footnote-reference"><a href="#1">1</a></sup> there</h1>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p>footnote</p>
-<h1 id="classes" class="bold another">Classes</h1>
 </div>
+<h1 id="classes" class="bold another">Classes</h1>
 
