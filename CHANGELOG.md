@@ -2,6 +2,7 @@
 
 ## 0.19.0 (unreleased)
 
+- Updates the pulldown-cmark dependency to v0.10.0. This improves footnote handling, and may also introduce some minor behavior changes such as reducing the amount of unnecessary HTML-escaping of text content.
 
 ## 0.18.0 (2023-12-18)
 
