@@ -525,7 +525,11 @@ pub fn serve(
 
                     async {
                         Ok::<_, hyper::Error>(service_fn(move |req| {
-                            response_error_injector(handle_request(req, static_root.clone(), base_path.clone()))
+                            response_error_injector(handle_request(
+                                req,
+                                static_root.clone(),
+                                base_path.clone(),
+                            ))
                         }))
                     }
                 });
