@@ -269,6 +269,8 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(data["height"], to_value(380).unwrap());
         assert_eq!(data["width"], to_value(300).unwrap());
+        assert_eq!(data["format"], to_value("jpg").unwrap());
+        assert_eq!(data["mime"], to_value("image/jpeg").unwrap());
 
         // 2. a call to something in `static` with an absolute path is handled currently the same as the above
         let mut args = HashMap::new();
@@ -276,6 +278,8 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(data["height"], to_value(380).unwrap());
         assert_eq!(data["width"], to_value(300).unwrap());
+        assert_eq!(data["format"], to_value("jpg").unwrap());
+        assert_eq!(data["mime"], to_value("image/jpeg").unwrap());
 
         // 3. a call to something in `content` with a relative path
         let mut args = HashMap::new();
@@ -283,6 +287,8 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(data["height"], to_value(380).unwrap());
         assert_eq!(data["width"], to_value(300).unwrap());
+        assert_eq!(data["format"], to_value("jpg").unwrap());
+        assert_eq!(data["mime"], to_value("image/jpeg").unwrap());
 
         // 4. a call to something in `content` with a @/ path corresponds to
         let mut args = HashMap::new();
@@ -290,5 +296,7 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(data["height"], to_value(380).unwrap());
         assert_eq!(data["width"], to_value(300).unwrap());
+        assert_eq!(data["format"], to_value("jpg").unwrap());
+        assert_eq!(data["mime"], to_value("image/jpeg").unwrap());
     }
 }
