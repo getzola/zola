@@ -1,59 +1,41 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 
-use crate::{Page, SortBy};
-use libs::lexical_sort::natural_lexical_cmp;
+use crate::SortBy;
 use libs::rayon::prelude::*;
+
+pub trait Sortable: Sync {
+    fn can_be_sorted(&self, by: SortBy) -> bool;
+    fn cmp(&self, other: &Self, by: SortBy) -> Ordering;
+    fn get_permalink(&self) -> &str;
+    fn get_filepath(&self) -> PathBuf;
+}
 
 /// Sort by the field picked by the function.
 /// The pages permalinks are used to break the ties
-pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBuf>) {
-    let (mut can_be_sorted, cannot_be_sorted): (Vec<&Page>, Vec<_>) =
-        pages.par_iter().partition(|page| match sort_by {
-            SortBy::Date => page.meta.datetime.is_some(),
-            SortBy::UpdateDate => {
-                page.meta.datetime.is_some() || page.meta.updated_datetime.is_some()
-            }
-            SortBy::Title | SortBy::TitleBytes => page.meta.title.is_some(),
-            SortBy::Weight => page.meta.weight.is_some(),
-            SortBy::Slug => true,
-            SortBy::None => unreachable!(),
-        });
+pub fn sort_pages<S: Sortable>(pages: &[&S], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBuf>) {
+    let (mut can_be_sorted, cannot_be_sorted): (Vec<&S>, Vec<_>) =
+        pages.into_par_iter().partition(|page| page.can_be_sorted(sort_by));
 
     can_be_sorted.par_sort_unstable_by(|a, b| {
-        let ord = match sort_by {
-            SortBy::Date => b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap()),
-            SortBy::UpdateDate => std::cmp::max(b.meta.datetime, b.meta.updated_datetime)
-                .unwrap()
-                .cmp(&std::cmp::max(a.meta.datetime, a.meta.updated_datetime).unwrap()),
-            SortBy::Title => {
-                natural_lexical_cmp(a.meta.title.as_ref().unwrap(), b.meta.title.as_ref().unwrap())
-            }
-            SortBy::TitleBytes => {
-                a.meta.title.as_ref().unwrap().cmp(b.meta.title.as_ref().unwrap())
-            }
-            SortBy::Weight => a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()),
-            SortBy::Slug => natural_lexical_cmp(&a.slug, &b.slug),
-            SortBy::None => unreachable!(),
-        };
-
+        let ord = a.cmp(b, sort_by);
         if ord == Ordering::Equal {
-            a.permalink.cmp(&b.permalink)
+            a.get_permalink().cmp(&b.get_permalink())
         } else {
             ord
         }
     });
 
     (
-        can_be_sorted.iter().map(|p| p.file.path.clone()).collect(),
-        cannot_be_sorted.iter().map(|p: &&Page| p.file.path.clone()).collect(),
+        can_be_sorted.into_iter().map(|p| p.get_filepath().to_path_buf()).collect(),
+        cannot_be_sorted.into_iter().map(|p: &S| p.get_filepath().to_path_buf()).collect(),
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::PageFrontMatter;
+    use crate::{Page, PageFrontMatter};
 
     fn create_page_with_date(date: &str, updated_date: Option<&str>) -> Page {
         let mut front_matter = PageFrontMatter {

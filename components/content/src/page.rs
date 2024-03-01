@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use libs::lexical_sort::natural_lexical_cmp;
 use libs::once_cell::sync::Lazy;
 use libs::regex::Regex;
 use libs::tera::{Context as TeraContext, Tera};
@@ -18,8 +19,10 @@ use crate::file_info::FileInfo;
 use crate::front_matter::{split_page_content, PageFrontMatter};
 use crate::library::Library;
 use crate::ser::SerializingPage;
+use crate::sorting::Sortable;
 use crate::utils::get_reading_analytics;
 use crate::utils::{find_related_assets, has_anchor};
+use crate::SortBy;
 use utils::anchors::has_anchor_id;
 use utils::fs::read_file;
 
@@ -86,6 +89,48 @@ pub struct Page {
     pub internal_links: Vec<(String, Option<String>)>,
     /// The list of all links to external webpages. They can be validated by the `link_checker`.
     pub external_links: Vec<String>,
+}
+
+impl Sortable for Page {
+    fn can_be_sorted(&self, by: SortBy) -> bool {
+        match by {
+            SortBy::Date => self.meta.datetime.is_some(),
+            SortBy::UpdateDate => {
+                self.meta.datetime.is_some() || self.meta.updated_datetime.is_some()
+            }
+            SortBy::Title | SortBy::TitleBytes => self.meta.title.is_some(),
+            SortBy::Weight => self.meta.weight.is_some(),
+            SortBy::Slug => true,
+            SortBy::None => unreachable!(),
+        }
+    }
+
+    fn cmp(&self, other: &Self, by: crate::SortBy) -> std::cmp::Ordering {
+        match by {
+            SortBy::Date => other.meta.datetime.unwrap().cmp(&self.meta.datetime.unwrap()),
+            SortBy::UpdateDate => std::cmp::max(other.meta.datetime, other.meta.updated_datetime)
+                .unwrap()
+                .cmp(&std::cmp::max(self.meta.datetime, self.meta.updated_datetime).unwrap()),
+            SortBy::Title => natural_lexical_cmp(
+                self.meta.title.as_ref().unwrap(),
+                other.meta.title.as_ref().unwrap(),
+            ),
+            SortBy::TitleBytes => {
+                self.meta.title.as_ref().unwrap().cmp(other.meta.title.as_ref().unwrap())
+            }
+            SortBy::Weight => self.meta.weight.unwrap().cmp(&other.meta.weight.unwrap()),
+            SortBy::Slug => natural_lexical_cmp(&self.slug, &other.slug),
+            SortBy::None => unreachable!(),
+        }
+    }
+
+    fn get_permalink(&self) -> &str {
+        &self.permalink
+    }
+
+    fn get_filepath(&self) -> PathBuf {
+        self.file.path.clone()
+    }
 }
 
 impl Page {

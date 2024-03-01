@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use libs::lexical_sort::natural_lexical_cmp;
 use libs::tera::{Context as TeraContext, Tera};
 
 use config::Config;
@@ -15,7 +16,9 @@ use crate::file_info::FileInfo;
 use crate::front_matter::{split_section_content, SectionFrontMatter};
 use crate::library::Library;
 use crate::ser::{SectionSerMode, SerializingSection};
+use crate::sorting::Sortable;
 use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
+use crate::SortBy;
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -30,6 +33,10 @@ pub struct Section {
     pub components: Vec<String>,
     /// The full URL for that page
     pub permalink: String,
+    /// The previous section when sorting: earlier/earlier_updated/lighter/prev
+    pub lower: Option<PathBuf>,
+    /// The next section when sorting: later/later_updated/heavier/next
+    pub higher: Option<PathBuf>,
     /// The actual content of the page, in markdown
     pub raw_content: String,
     /// The HTML rendered of the page
@@ -46,6 +53,8 @@ pub struct Section {
     pub ancestors: Vec<String>,
     /// All direct subsections
     pub subsections: Vec<PathBuf>,
+    /// All subsection that cannot be sorted in this section
+    pub ignored_subsections: Vec<PathBuf>,
     /// Toc made from the headings of the markdown file
     pub toc: Vec<Heading>,
     /// How many words in the raw content
@@ -62,6 +71,44 @@ pub struct Section {
     pub internal_links: Vec<(String, Option<String>)>,
     /// The list of all links to external webpages. They can be validated by the `link_checker`.
     pub external_links: Vec<String>,
+}
+
+impl Sortable for Section {
+    fn can_be_sorted(&self, by: SortBy) -> bool {
+        match by {
+            SortBy::Date => false,
+            SortBy::UpdateDate => false,
+            SortBy::Title | SortBy::TitleBytes => self.meta.title.is_some(),
+            SortBy::Weight => true,
+            SortBy::Slug => false,
+            SortBy::None => unreachable!(),
+        }
+    }
+
+    fn cmp(&self, other: &Self, by: SortBy) -> std::cmp::Ordering {
+        match by {
+            SortBy::Date => unreachable!(),
+            SortBy::UpdateDate => unreachable!(),
+            SortBy::Title => natural_lexical_cmp(
+                self.meta.title.as_ref().unwrap(),
+                other.meta.title.as_ref().unwrap(),
+            ),
+            SortBy::TitleBytes => {
+                self.meta.title.as_ref().unwrap().cmp(other.meta.title.as_ref().unwrap())
+            }
+            SortBy::Weight => self.meta.weight.cmp(&other.meta.weight),
+            SortBy::Slug => unreachable!(),
+            SortBy::None => unreachable!(),
+        }
+    }
+
+    fn get_permalink(&self) -> &str {
+        &self.permalink
+    }
+
+    fn get_filepath(&self) -> PathBuf {
+        self.file.path.clone()
+    }
 }
 
 impl Section {
