@@ -135,6 +135,7 @@ Here is a full list of supported languages and their short names:
 - Stylus -> ["styl", "stylus"]
 - SWI-Prolog -> ["pro"]
 - Swift -> ["swift"]
+- SystemVerilog -> ["sv", "svh", "v", "vh"]
 - Tcl -> ["tcl"]
 - TeX -> ["cls", "sty"]
 - Textile -> ["textile"]
