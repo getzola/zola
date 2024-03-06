@@ -22,6 +22,7 @@ date: String?;
 updated: String?;
 slug: String;
 path: String;
+authors: Array<String>;
 draft: Bool;
 // the path, split on '/'
 components: Array<String>;
