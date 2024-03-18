@@ -89,7 +89,7 @@ jobs:
           bucket-region: us-east-1
           # Use the next two only if you have created a CloudFront distribution
           dist-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-          invalidation: /
+          invalidation: /*
 ```
 
 Note, that you may need to change the branch name in the above snippet if you desire a different behavior.
