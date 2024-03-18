@@ -16,6 +16,9 @@ with dart-sass.
 
 ## Using Sass in Zola
 
+Zola always compiles Sass files in theme directories.
+However, for Zola to process files in the `sass` folder, you need to set `compile_sass = true` in your `config.toml`.
+
 Zola processes any files with the `sass` or `scss` extension in the `sass`
 folder, and places the processed output into a `css` file with the same folder
 structure and base name into the `public` folder:
