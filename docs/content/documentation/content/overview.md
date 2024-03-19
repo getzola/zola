@@ -3,9 +3,7 @@ title = "Overview"
 weight = 10
 +++
 
-Zola uses the directory structure to determine the site structure.
-Each child directory in the `content` directory represents a [section](@/documentation/content/section.md)
-that contains [pages](@/documentation/content/page.md) (your `.md` files).
+Zola determines your site's structure from its directories. Each child folder in the `content` directory represents a separate [section](@/documentation/content/section.md)[^1]that contains [pages](@/documentation/content/page.md) (your `.md` files).
 
 ```bash
 .
@@ -22,11 +20,11 @@ that contains [pages](@/documentation/content/page.md) (your `.md` files).
         └── _index.md // -> https://mywebsite.com/landing/
 ```
 
-Each page path (the part after `base_url`, for example `blog/cli-usage/`) can be customised by changing the `path` or
+Each page path (the part after `base_url`, for example `blog/cli-usage/`) can be customized by changing the `path` or
 `slug` attribute of the [page front-matter](@/documentation/content/page.md#front-matter).
 
 You might have noticed a file named `_index.md` in the example above.
-This file is used to store both the metadata and content of the section itself and is not considered a page.
+This file is used to store both the metadata and content of the section itself, and is not considered a page.
 
 To ensure that the terminology used in the rest of the documentation is understood, let's go over the example above.
 
@@ -38,15 +36,14 @@ Sections can be nested indefinitely.
 
 ## Asset colocation
 
-The `content` directory is not limited to markup files. It's natural to want to co-locate a page and some related
+The `content` directory is not limited to markup files. It's natural to want to colocate a page and some related
 assets, such as images or spreadsheets. Zola supports this pattern out of the box for both sections and pages.
 
 All non-Markdown files you add in a page/section directory will be copied alongside the generated page when the site is
 built, which allows us to use a relative path to access them.
 
-Pages with co-located assets should not be placed directly in their section directory (such as `latest-experiment.md`), but
+Pages with colocated assets should not be placed directly in their section directory (such as `latest-experiment.md`), but
 as an `index.md` file in a dedicated directory (`latest-experiment/index.md`), like so:
-
 
 ```bash
 └── research
@@ -72,10 +69,11 @@ It is possible to ignore selected asset files using the
 [ignored_content](@/documentation/getting-started/configuration.md) setting in the config file.
 For example, say that you have several code files which you are linking to on your website.
 For maintainability, you want to keep your code in the same directory as the Markdown file,
-but you don't want to copy the build folders to the public web site. You can achieve this by setting `ignored_content` in the config file:
+but you don't want to copy the build folders to the public website. You can achieve this by setting `ignored_content` in the config file:
 
 (Note of caution: `{Cargo.lock,target}` is _not_ the same as `{Cargo.lock, target}`)
-```
+
+```toml
 ignored_content = ["code_articles/**/{Cargo.lock,target}, *.rs"]
 ```
 
@@ -90,7 +88,7 @@ JavaScript) in the root of the static directory. You can also place any HTML or 
 you wish to be included without modification (that is, without being parsed as Markdown files)
 into the static directory.
 
-Note that the static directory provides an _alternative_ to co-location.  For example, imagine that you
+Note that the static directory provides an _alternative_ to colocation. For example, imagine that you
 had the following directory structure (a simplified version of the structure presented above):
 
 ```bash
@@ -103,15 +101,18 @@ had the following directory structure (a simplified version of the structure pre
 ```
 
 To add an image to the `https://mywebsite.com/blog/configuration` page, you have three options:
- *  You could save the image to the `content/blog/configuration` directory and then link to it with a
- relative path from the `index.md` page.  This is the approach described under **co-location**
+
+* You could save the image to the `content/blog/configuration` directory and then link to it with a
+ relative path from the `index.md` page.  This is the approach described under **colocation**
  above.
- *  You could save the image to a `static/blog/configuration` directory and link to it in exactly the
- same way as if you had co-located it. If you do this, the generated files will be identical to those
- obtained if you had co-located the image; the only difference will be that all static files will be saved in the
+* You could save the image to a `static/blog/configuration` directory and link to it in the same way as if you had colocated it.
+ If you do this, the generated files will be identical to those
+ obtained if you had colocated the image; the only difference will be that all static files will be saved in the
  static directory rather than in the content directory. The choice depends on your organizational needs.
- *  Or you could save the image to some arbitrary directory within the static directory. For example,
- you could save all images to `static/images`.  Using this approach, you can no longer use relative links. Instead,
+* Or you could save the image to some arbitrary directory within the static directory. For example,
+ you could save all the images to `static/images`.  Using this approach, you can no longer use relative links. Instead,
  you must use an absolute link to `images/[filename]` to access your
  image. This might be preferable for small sites or for sites that associate images with
  multiple pages (e.g., logo images that appear on every page).
+
+[^1]: Zola only considers content folders as sections if they contain an `_index.md` file.
