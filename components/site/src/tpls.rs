@@ -1,5 +1,6 @@
 use crate::Site;
 use libs::tera::Result as TeraResult;
+use std::sync::Arc;
 use templates::{filters, global_fns};
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
@@ -74,13 +75,25 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
 
 /// Functions filled once we have parsed all the pages/sections only, so not available in shortcodes
 pub fn register_tera_global_fns(site: &mut Site) {
+    let language_list: Arc<Vec<String>> =
+        Arc::new(site.config.languages.keys().map(|s| s.to_string()).collect());
     site.tera.register_function(
         "get_page",
-        global_fns::GetPage::new(site.base_path.clone(), site.library.clone()),
+        global_fns::GetPage::new(
+            site.base_path.clone(),
+            &site.config.default_language,
+            Arc::clone(&language_list),
+            site.library.clone(),
+        ),
     );
     site.tera.register_function(
         "get_section",
-        global_fns::GetSection::new(site.base_path.clone(), site.library.clone()),
+        global_fns::GetSection::new(
+            site.base_path.clone(),
+            &site.config.default_language,
+            Arc::clone(&language_list),
+            site.library.clone(),
+        ),
     );
     site.tera.register_function(
         "get_taxonomy",

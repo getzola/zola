@@ -7,10 +7,10 @@ use libs::walkdir::{DirEntry, WalkDir};
 
 use crate::anyhow;
 use errors::{bail, Result};
-use utils::fs::{create_file, ensure_directory_exists};
+use utils::fs::{create_directory, create_file};
 
 pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
-    ensure_directory_exists(output_path)?;
+    create_directory(output_path)?;
 
     let sass_path = {
         let mut sass_path = PathBuf::from(base_path);

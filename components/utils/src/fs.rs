@@ -27,14 +27,6 @@ pub fn create_file(path: &Path, content: &str) -> Result<()> {
     Ok(())
 }
 
-/// Create a directory at the given path if it doesn't exist already
-pub fn ensure_directory_exists(path: &Path) -> Result<()> {
-    if !path.exists() {
-        create_directory(path)?;
-    }
-    Ok(())
-}
-
 /// Very similar to `create_dir` from the std except it checks if the folder
 /// exists before creating it
 pub fn create_directory(path: &Path) -> Result<()> {

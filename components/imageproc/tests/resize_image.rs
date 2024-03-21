@@ -136,7 +136,12 @@ fn resize_image_webp_jpg() {
 fn read_image_metadata_jpg() {
     assert_eq!(
         image_meta_test("jpg.jpg"),
-        ImageMetaResponse { width: 300, height: 380, format: Some("jpg") }
+        ImageMetaResponse {
+            width: 300,
+            height: 380,
+            format: Some("jpg"),
+            mime: Some("image/jpeg")
+        }
     );
 }
 
@@ -144,7 +149,7 @@ fn read_image_metadata_jpg() {
 fn read_image_metadata_png() {
     assert_eq!(
         image_meta_test("png.png"),
-        ImageMetaResponse { width: 300, height: 380, format: Some("png") }
+        ImageMetaResponse { width: 300, height: 380, format: Some("png"), mime: Some("image/png") }
     );
 }
 
@@ -152,7 +157,12 @@ fn read_image_metadata_png() {
 fn read_image_metadata_svg() {
     assert_eq!(
         image_meta_test("svg.svg"),
-        ImageMetaResponse { width: 300, height: 300, format: Some("svg") }
+        ImageMetaResponse {
+            width: 300,
+            height: 300,
+            format: Some("svg"),
+            mime: Some("text/svg+xml")
+        }
     );
 }
 
@@ -160,7 +170,12 @@ fn read_image_metadata_svg() {
 fn read_image_metadata_webp() {
     assert_eq!(
         image_meta_test("webp.webp"),
-        ImageMetaResponse { width: 300, height: 380, format: Some("webp") }
+        ImageMetaResponse {
+            width: 300,
+            height: 380,
+            format: Some("webp"),
+            mime: Some("image/webp")
+        }
     );
 }
 

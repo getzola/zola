@@ -8,13 +8,14 @@ pub mod taxonomies;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use libs::globset::{Glob, GlobSet, GlobSetBuilder};
+use libs::globset::GlobSet;
 use libs::toml::Value as Toml;
 use serde::{Deserialize, Serialize};
 
 use crate::theme::Theme;
 use errors::{anyhow, bail, Result};
 use utils::fs::read_file;
+use utils::globs::build_ignore_glob_set;
 use utils::slugs::slugify_paths;
 
 // We want a default base url for tests
@@ -26,18 +27,6 @@ pub enum Mode {
     Build,
     Serve,
     Check,
-}
-
-fn build_ignore_glob_set(ignore: &Vec<String>, name: &str) -> Result<GlobSet> {
-    let mut glob_set_builder = GlobSetBuilder::new();
-    for pat in ignore {
-        let glob = match Glob::new(pat) {
-            Ok(g) => g,
-            Err(e) => bail!("Invalid ignored_{} glob pattern: {}, error = {}", name, pat, e),
-        };
-        glob_set_builder.add(glob);
-    }
-    Ok(glob_set_builder.build().unwrap_or_else(|_| panic!("Bad ignored_{} in config file.", name)))
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -150,21 +139,13 @@ impl Config {
 
         config.add_default_language()?;
         config.slugify_taxonomies();
+        config.link_checker.resolve_globset()?;
 
-        if !config.ignored_content.is_empty() {
-            // Convert the file glob strings into a compiled glob set matcher. We want to do this once,
-            // at program initialization, rather than for every page, for example. We arrange for the
-            // globset matcher to always exist (even though it has to be an inside an Option at the
-            // moment because of the TOML serializer); if the glob set is empty the `is_match` function
-            // of the globber always returns false.
-            let glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
-            config.ignored_content_globset = Some(glob_set);
-        }
+        let content_glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
+        config.ignored_content_globset = Some(content_glob_set);
 
-        if !config.ignored_static.is_empty() {
-            let glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
-            config.ignored_static_globset = Some(glob_set);
-        }
+        let static_glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
+        config.ignored_static_globset = Some(static_glob_set);
 
         Ok(config)
     }
@@ -652,32 +633,18 @@ title = "A title"
     }
 
     #[test]
-    fn missing_ignored_content_results_in_empty_vector_and_empty_globset() {
+    fn missing_ignored_content_results_in_empty_vector() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
         "#;
 
         let config = Config::parse(config_str).unwrap();
-        let v = config.ignored_content;
-        assert_eq!(v.len(), 0);
-        assert!(config.ignored_content_globset.is_none());
+        assert_eq!(config.ignored_content.len(), 0);
     }
 
     #[test]
-    fn missing_ignored_static_results_in_empty_vector_and_empty_globset() {
-        let config_str = r#"
-title = "My site"
-base_url = "example.com"
-        "#;
-        let config = Config::parse(config_str).unwrap();
-        let v = config.ignored_static;
-        assert_eq!(v.len(), 0);
-        assert!(config.ignored_static_globset.is_none());
-    }
-
-    #[test]
-    fn empty_ignored_content_results_in_empty_vector_and_empty_globset() {
+    fn empty_ignored_content_results_in_empty_vector() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
@@ -686,11 +653,21 @@ ignored_content = []
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.ignored_content.len(), 0);
-        assert!(config.ignored_content_globset.is_none());
     }
 
     #[test]
-    fn empty_ignored_static_results_in_empty_vector_and_empty_globset() {
+    fn missing_ignored_static_results_in_empty_vector() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.ignored_static.len(), 0);
+    }
+
+    #[test]
+    fn empty_ignored_static_results_in_empty_vector() {
         let config_str = r#"
 title = "My site"
 base_url = "example.com"
@@ -699,7 +676,30 @@ ignored_static = []
 
         let config = Config::parse(config_str).unwrap();
         assert_eq!(config.ignored_static.len(), 0);
-        assert!(config.ignored_static_globset.is_none());
+    }
+
+    #[test]
+    fn missing_link_checker_ignored_files_results_in_empty_vector() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.link_checker.ignored_files.len(), 0);
+    }
+
+    #[test]
+    fn empty_link_checker_ignored_files_results_in_empty_vector() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+[link_checker]
+ignored_files = []
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        assert_eq!(config.link_checker.ignored_files.len(), 0);
     }
 
     #[test]
@@ -744,6 +744,36 @@ ignored_static = ["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]
         assert_eq!(v, vec!["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]);
 
         let g = config.ignored_static_globset.unwrap();
+        assert_eq!(g.len(), 3);
+        assert!(g.is_match("foo.graphml"));
+        assert!(g.is_match("foo/bar/foo.graphml"));
+        assert!(g.is_match("foo.iso"));
+        assert!(!g.is_match("foo.png"));
+        assert!(g.is_match("foo.py2"));
+        assert!(g.is_match("foo.py3"));
+        assert!(!g.is_match("foo.py"));
+        assert!(g.is_match("foo/bar/target"));
+        assert!(g.is_match("foo/bar/baz/temp_folder"));
+        assert!(g.is_match("foo/bar/baz/temp_folder/target"));
+        assert!(g.is_match("temp_folder"));
+        assert!(g.is_match("my/isos/foo.iso"));
+        assert!(g.is_match("content/poetry/zen.py2"));
+    }
+
+    #[test]
+    fn non_empty_link_checker_ignored_pages_results_in_vector_of_patterns_and_configured_globset() {
+        let config_str = r#"
+title = "My site"
+base_url = "example.com"
+[link_checker]
+ignored_files = ["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]
+        "#;
+
+        let config = Config::parse(config_str).unwrap();
+        let v = config.link_checker.ignored_files;
+        assert_eq!(v, vec!["*.{graphml,iso}", "*.py?", "**/{target,temp_folder}"]);
+
+        let g = config.link_checker.ignored_files_globset.unwrap();
         assert_eq!(g.len(), 3);
         assert!(g.is_match("foo.graphml"));
         assert!(g.is_match("foo/bar/foo.graphml"));

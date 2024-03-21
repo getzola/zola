@@ -37,11 +37,12 @@ pub struct ImageMetaResponse {
     pub width: u32,
     pub height: u32,
     pub format: Option<&'static str>,
+    pub mime: Option<&'static str>,
 }
 
 impl ImageMetaResponse {
     pub fn new_svg(width: u32, height: u32) -> Self {
-        Self { width, height, format: Some("svg") }
+        Self { width, height, format: Some("svg"), mime: Some("text/svg+xml") }
     }
 }
 
@@ -51,6 +52,7 @@ impl From<ImageMeta> for ImageMetaResponse {
             width: im.size.0,
             height: im.size.1,
             format: im.format.and_then(|f| f.extensions_str().first()).copied(),
+            mime: im.format.map(|f| f.to_mime_type()),
         }
     }
 }

@@ -1,8 +1,6 @@
 ---
-source: components/rendering/tests/markdown.rs
-assertion_line: 358
+source: components/markdown/tests/markdown.rs
 expression: body
-
 ---
 <!-- Adapted from https://markdown-it.github.io/ -->
 <h1 id="h1-heading">h1 Heading</h1>
@@ -83,7 +81,7 @@ line 1 of code
 line 2 of code
 line 3 of code
 </code></pre>
-<p>Block code &quot;fences&quot;</p>
+<p>Block code "fences"</p>
 <pre><code>Sample text here...
 </code></pre>
 <p>Syntax highlighting</p>

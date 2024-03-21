@@ -3,6 +3,8 @@ use std::collections::{HashMap, HashSet};
 use libs::ammonia;
 use libs::elasticlunr::{lang, Index, IndexBuilder};
 use libs::once_cell::sync::Lazy;
+use libs::time::format_description::well_known::Rfc3339;
+use libs::time::OffsetDateTime;
 
 use config::{Config, Search};
 use content::{Library, Section};
@@ -35,6 +37,10 @@ fn build_fields(search_config: &Search, mut index: IndexBuilder) -> IndexBuilder
         index = index.add_field("description");
     }
 
+    if search_config.include_date {
+        index = index.add_field("date")
+    }
+
     if search_config.include_path {
         index = index.add_field_with_tokenizer("path", Box::new(path_tokenizer));
     }
@@ -57,6 +63,7 @@ fn fill_index(
     search_config: &Search,
     title: &Option<String>,
     description: &Option<String>,
+    datetime: &Option<OffsetDateTime>,
     path: &str,
     content: &str,
 ) -> Vec<String> {
@@ -68,6 +75,14 @@ fn fill_index(
 
     if search_config.include_description {
         row.push(description.clone().unwrap_or_default());
+    }
+
+    if search_config.include_date {
+        if let Some(date) = datetime {
+            if let Ok(d) = date.format(&Rfc3339) {
+                row.push(d);
+            }
+        }
     }
 
     if search_config.include_path {
@@ -133,6 +148,7 @@ fn add_section_to_index(
                 search_config,
                 &section.meta.title,
                 &section.meta.description,
+                &None,
                 &section.path,
                 &section.content,
             ),
@@ -151,6 +167,7 @@ fn add_section_to_index(
                 search_config,
                 &page.meta.title,
                 &page.meta.description,
+                &page.meta.datetime,
                 &page.path,
                 &page.content,
             ),
@@ -192,7 +209,7 @@ mod tests {
         let path = "/a/page/".to_string();
         let content = "Some content".to_string();
 
-        let res = fill_index(&config.search, &title, &description, &path, &content);
+        let res = fill_index(&config.search, &title, &description, &None, &path, &content);
         assert_eq!(res.len(), 2);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], content);
@@ -207,7 +224,7 @@ mod tests {
         let path = "/a/page/".to_string();
         let content = "Some content".to_string();
 
-        let res = fill_index(&config.search, &title, &description, &path, &content);
+        let res = fill_index(&config.search, &title, &description, &None, &path, &content);
         assert_eq!(res.len(), 3);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], description.unwrap());
@@ -223,9 +240,26 @@ mod tests {
         let path = "/a/page/".to_string();
         let content = "Some content".to_string();
 
-        let res = fill_index(&config.search, &title, &description, &path, &content);
+        let res = fill_index(&config.search, &title, &description, &None, &path, &content);
         assert_eq!(res.len(), 2);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], content[..5]);
+    }
+
+    #[test]
+    fn can_fill_index_date() {
+        let mut config = Config::default();
+        config.search.include_date = true;
+        let title = Some("A title".to_string());
+        let description = Some("A description".to_string());
+        let path = "/a/page/".to_string();
+        let content = "Some content".to_string();
+        let datetime = Some(OffsetDateTime::parse("2023-01-31T00:00:00Z", &Rfc3339).unwrap());
+
+        let res = fill_index(&config.search, &title, &description, &datetime, &path, &content);
+        assert_eq!(res.len(), 3);
+        assert_eq!(res[0], title.unwrap());
+        assert_eq!(res[1], "2023-01-31T00:00:00Z");
+        assert_eq!(res[2], content);
     }
 }
