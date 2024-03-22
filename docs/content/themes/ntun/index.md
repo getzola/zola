@@ -3,11 +3,11 @@
 title = "ntun-zola-theme"
 description = "A classic resume theme"
 template = "theme.html"
-date = 2024-01-25T10:41:35+02:00
+date = 2024-02-12T06:21:53-08:00
 
 [extra]
-created = 2024-01-25T10:41:35+02:00
-updated = 2024-01-25T10:41:35+02:00
+created = 2024-02-12T06:21:53-08:00
+updated = 2024-02-12T06:21:53-08:00
 repository = "https://github.com/Netoun/ntun.git"
 homepage = "https://github.com/netoun/ntun"
 minimum_version = "0.1.0"
