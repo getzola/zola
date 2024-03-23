@@ -20,6 +20,7 @@ use utils::slugs::slugify_paths;
 
 // We want a default base url for tests
 static DEFAULT_BASE_URL: &str = "http://a-website.com";
+pub static DEFAULT_FEED_FILENAME: &str = "atom.xml";
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -54,8 +55,9 @@ pub struct Config {
     /// The number of articles to include in the feed. Defaults to including all items.
     pub feed_limit: Option<usize>,
     /// The filename to use for feeds. Used to find the template, too.
-    /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
-    pub feed_filename: String,
+    /// Defaults to None, with "atom.xml" and "rss.xml" having templates provided out of the box.
+    /// If None, "atom.xml" is used for feed.  Defined by DEFAULT_FEED_FILENAME
+    pub feed_filename: Option<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
@@ -109,7 +111,7 @@ pub struct SerializedConfig<'a> {
     languages: HashMap<&'a String, &'a languages::LanguageOptions>,
     default_language: &'a str,
     generate_feed: bool,
-    feed_filename: &'a str,
+    feed_filename: &'a Option<String>,
     taxonomies: &'a [taxonomies::TaxonomyConfig],
     author: &'a Option<String>,
     build_search_index: bool,
@@ -183,12 +185,13 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
+        let is_feed_file = self
+            .feed_filename
+            .as_ref()
+            .map(|ff| path.ends_with(ff))
+            .unwrap_or_else(|| path.ends_with(DEFAULT_FEED_FILENAME));
         let trailing_bit =
-            if path.ends_with('/') || path.ends_with(&self.feed_filename) || path.is_empty() {
-                ""
-            } else {
-                "/"
-            };
+            if path.ends_with('/') || is_feed_file || path.is_empty() { "" } else { "/" };
 
         // Index section with a base url that has a trailing slash
         if self.base_url.ends_with('/') && path == "/" {
@@ -371,7 +374,7 @@ impl Default for Config {
             languages: HashMap::new(),
             generate_feed: false,
             feed_limit: None,
-            feed_filename: "atom.xml".to_string(),
+            feed_filename: None,
             hard_link_static: false,
             taxonomies: Vec::new(),
             author: None,

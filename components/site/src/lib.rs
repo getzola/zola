@@ -744,7 +744,15 @@ impl Site {
         start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
-        if self.config.generate_feed {
+
+        let generate_feed_for_default = self
+            .config
+            .languages
+            .get(&self.config.default_language)
+            .map(|lang_opt| lang_opt.generate_feed)
+            .or(Some(self.config.generate_feed))
+            .unwrap_or(false);
+        if generate_feed_for_default {
             let is_multilingual = self.config.is_multilingual();
             let pages: Vec<_> = if is_multilingual {
                 library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
@@ -763,6 +771,7 @@ impl Site {
             self.render_feed(pages, Some(&PathBuf::from(code)), code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
+
         self.render_themes_css()?;
         start = log_time(start, "Rendered themes css");
         self.render_404()?;
@@ -1014,6 +1023,15 @@ impl Site {
         Ok(())
     }
 
+    pub fn language_feed_filename(&self, lang: &str) -> &str {
+        self.config
+            .languages
+            .get(lang)
+            .and_then(|l| l.feed_filename.as_ref().or(self.config.feed_filename.as_ref()))
+            .or(self.config.feed_filename.as_ref())
+            .map_or_else(|| config::DEFAULT_FEED_FILENAME, |ff| ff.as_str())
+    }
+
     /// Renders a feed for the given path and at the given path
     /// If both arguments are `None`, it will render only the feed for the whole
     /// site at the root folder.
@@ -1029,7 +1047,7 @@ impl Site {
             Some(v) => v,
             None => return Ok(()),
         };
-        let feed_filename = &self.config.feed_filename;
+        let feed_filename = self.language_feed_filename(lang);
 
         if let Some(base) = base_path {
             let mut components = Vec::new();
@@ -1038,12 +1056,12 @@ impl Site {
             }
             self.write_content(
                 &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
-                feed_filename,
+                &feed_filename,
                 feed,
                 false,
             )?;
         } else {
-            self.write_content(&[], feed_filename, feed, false)?;
+            self.write_content(&[], &feed_filename, feed, false)?;
         }
         Ok(())
     }

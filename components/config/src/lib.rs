@@ -11,7 +11,7 @@ pub use crate::config::{
     search::{IndexFormat, Search},
     slugify::Slugify,
     taxonomies::TaxonomyConfig,
-    Config,
+    Config, DEFAULT_FEED_FILENAME,
 };
 use errors::Result;
 

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::search;
 use crate::config::taxonomies;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct LanguageOptions {
     /// Title of the site. Defaults to None
@@ -17,8 +17,9 @@ pub struct LanguageOptions {
     /// Whether to generate a feed for that language, defaults to `false`
     pub generate_feed: bool,
     /// The filename to use for feeds. Used to find the template, too.
-    /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
-    pub feed_filename: String,
+    /// Defaults to None, with "atom.xml" and "rss.xml" having templates provided out of the box.
+    /// If None, site config feed filename is used.
+    pub feed_filename: Option<String>,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
     /// Whether to generate search index for that language, defaults to `false`
     pub build_search_index: bool,
@@ -65,12 +66,7 @@ impl LanguageOptions {
         }
         merge_field!(self.title, other.title, "title");
         merge_field!(self.description, other.description, "description");
-        merge_field!(
-            self.feed_filename == "atom.xml",
-            self.feed_filename,
-            other.feed_filename,
-            "feed_filename"
-        );
+        merge_field!(self.feed_filename, other.feed_filename, "feed_filename");
         merge_field!(self.taxonomies.is_empty(), self.taxonomies, other.taxonomies, "taxonomies");
         merge_field!(
             self.translations.is_empty(),
@@ -96,21 +92,6 @@ impl LanguageOptions {
     }
 }
 
-impl Default for LanguageOptions {
-    fn default() -> LanguageOptions {
-        LanguageOptions {
-            title: None,
-            description: None,
-            generate_feed: false,
-            feed_filename: "atom.xml".to_string(),
-            taxonomies: vec![],
-            build_search_index: false,
-            search: search::Search::default(),
-            translations: HashMap::new(),
-        }
-    }
-}
-
 /// We want to ensure the language codes are valid ones
 pub fn validate_code(code: &str) -> Result<()> {
     if LanguageIdentifier::from_bytes(code.as_bytes()).is_err() {
@@ -130,7 +111,7 @@ mod tests {
             title: Some("Site's title".to_string()),
             description: None,
             generate_feed: true,
-            feed_filename: "atom.xml".to_string(),
+            feed_filename: None,
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
@@ -141,7 +122,7 @@ mod tests {
             title: None,
             description: Some("Site's description".to_string()),
             generate_feed: false,
-            feed_filename: "rss.xml".to_string(),
+            feed_filename: Some("rss.xml".to_string()),
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
@@ -157,7 +138,7 @@ mod tests {
             title: Some("Site's title".to_string()),
             description: Some("Duplicate site description".to_string()),
             generate_feed: true,
-            feed_filename: "".to_string(),
+            feed_filename: Some("".to_string()),
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
@@ -168,7 +149,7 @@ mod tests {
             title: None,
             description: Some("Site's description".to_string()),
             generate_feed: false,
-            feed_filename: "Some feed_filename".to_string(),
+            feed_filename: Some("Some feed_filename".to_string()),
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
