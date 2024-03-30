@@ -41,6 +41,7 @@
 | [Der Corona-Effekt](https://corona-effekt.orgatalk.de/)            | https://github.com/orgatalk/corona-effekt                |
 | [Table Dog](https://table.dog/blog/)                               |                                                          |
 | [146 Parks](https://146parks.blog/)                                | https://github.com/scouten/146parks.blog                 |
+| [Nintil.com](https://nintil.com/)                                  |                                                          |
 | [films.mlcdf.fr](https://films.mlcdf.fr)                           | https://github.com/mlcdf/films                           |
 | [Mish Ushakov](https://mish.co)                                    |                                                          |
 | [castor](https://castorisdead.xyz)                                 | https://github.com/whoisYoges/website                    |
