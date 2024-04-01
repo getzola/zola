@@ -248,3 +248,25 @@ fn check_img(img: DynamicImage) -> bool {
     // bottom right is white
         && img.get_pixel(15, 15).channels() == [255, 255, 255, 255]
 }
+
+#[test]
+fn asymmetric_resize_with_exif_orientations() {
+    // No exif metadata
+    image_op_test("exif_0.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 1: Horizontal (normal)
+    image_op_test("exif_1.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 2: Mirror horizontal
+    image_op_test("exif_2.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 3: Rotate 180
+    image_op_test("exif_3.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 4: Mirror vertical
+    image_op_test("exif_4.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 5: Mirror horizontal and rotate 270 CW
+    image_op_test("exif_5.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 6: Rotate 90 CW
+    image_op_test("exif_6.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 7: Mirror horizontal and rotate 90 CW
+    image_op_test("exif_7.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    // 8: Rotate 270 CW
+    image_op_test("exif_8.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+}
