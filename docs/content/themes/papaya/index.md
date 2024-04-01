@@ -3,11 +3,11 @@
 title = "Papaya"
 description = "A clean Zola theme for blogging and projects"
 template = "theme.html"
-date = 2024-01-25T10:41:35+02:00
+date = 2024-04-02T04:09:32+10:00
 
 [extra]
-created = 2024-01-25T10:41:35+02:00
-updated = 2024-01-25T10:41:35+02:00
+created = 2024-04-02T04:09:32+10:00
+updated = 2024-04-02T04:09:32+10:00
 repository = "https://github.com/justint/papaya.git"
 homepage = "https://github.com/justint/papaya"
 minimum_version = "0.16.1"
