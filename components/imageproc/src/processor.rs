@@ -38,7 +38,8 @@ impl ImageOp {
             return Ok(());
         }
 
-        let mut img = image::open(&self.input_path)?;
+        let img = image::open(&self.input_path)?;
+        let mut img = fix_orientation(&img, &self.input_path).unwrap_or(img);
 
         let img = match self.instr.crop_instruction {
             Some((x, y, w, h)) => img.crop(x, y, w, h),
@@ -48,8 +49,6 @@ impl ImageOp {
             Some((w, h)) => img.resize_exact(w, h, FilterType::Lanczos3),
             None => img,
         };
-
-        let img = fix_orientation(&img, &self.input_path).unwrap_or(img);
 
         let f = File::create(&self.output_path)?;
         let mut buffered_f = BufWriter::new(f);
