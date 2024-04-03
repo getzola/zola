@@ -178,9 +178,12 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
         }
     }
 
+    // Get unique links count from Vec by creating a temporary HashSet.
     let unique_links_count = HashSet::<&str>::from_iter(
         checked_links.iter().map(|link_def| link_def.external_link.as_str()),
-    ).len();
+    )
+    .len();
+
     println!(
         "Checking {} external link(s). Skipping {} external link(s).{}",
         unique_links_count,
