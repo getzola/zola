@@ -4,13 +4,13 @@ weight = 50
 aliases = ["/documentation/templates/rss/"]
 +++
 
-If the site `config.toml` file sets `generate_feed = true`, then Zola will
-generate a feed file for the site, named according to the `feed_filename`
+If the site `config.toml` file sets `generate_feeds = true`, then Zola will
+generate feed files for the site, named according to the `feed_filenames`
 setting in `config.toml`, which defaults to `atom.xml`. Given the feed filename
 `atom.xml`, the generated file will live at `base_url/atom.xml`, based upon the
 `atom.xml` file in the `templates` directory, or the built-in Atom template.
 
-`feed_filename` can be set to any value, but built-in templates are provided
+`feed_filenames` can be set to any value, but built-in templates are provided
 for `atom.xml` (in the preferred Atom 1.0 format), and `rss.xml` (in the RSS
 2.0 format). If you choose a different filename (e.g. `feed.xml`), you will
 need to provide a template yourself.
@@ -54,7 +54,7 @@ Feeds for taxonomy terms get two more variables, using types from the
 - `term`: of type `TaxonomyTerm`, but without `term.pages` (use `pages` instead)
 
 You can also enable separate feeds for each section by setting the
-`generate_feed` variable to true in the respective section's front matter.
+`generate_feeds` variable to true in the respective section's front matter.
 Section feeds will use the same template as indicated in the `config.toml` file.
 Section feeds, in addition to the five feed template variables, get the
 `section` variable from the [section

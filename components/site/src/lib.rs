@@ -1,4 +1,4 @@
-pub mod feed;
+pub mod feeds;
 pub mod link_checking;
 mod minify;
 pub mod sass;
@@ -746,23 +746,23 @@ impl Site {
         start = log_time(start, "Rendered sitemap");
 
         let library = self.library.read().unwrap();
-        if self.config.generate_feed {
+        if self.config.generate_feeds {
             let is_multilingual = self.config.is_multilingual();
             let pages: Vec<_> = if is_multilingual {
                 library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
             } else {
                 library.pages.values().collect()
             };
-            self.render_feed(pages, None, &self.config.default_language, |c| c)?;
+            self.render_feeds(pages, None, &self.config.default_language, |c| c)?;
             start = log_time(start, "Generated feed in default language");
         }
 
         for (code, language) in &self.config.other_languages() {
-            if !language.generate_feed {
+            if !language.generate_feeds {
                 continue;
             }
             let pages: Vec<_> = library.pages.values().filter(|p| &p.lang == code).collect();
-            self.render_feed(pages, Some(&PathBuf::from(code)), code, |c| c)?;
+            self.render_feeds(pages, Some(&PathBuf::from(code)), code, |c| c)?;
             start = log_time(start, "Generated feed in other language");
         }
         self.render_themes_css()?;
@@ -965,14 +965,16 @@ impl Site {
                     } else {
                         PathBuf::from(format!("{}/{}/{}", taxonomy.lang, taxonomy.slug, item.slug))
                     };
-                    self.render_feed(
+                    self.render_feeds(
                         item.pages.iter().map(|p| library.pages.get(p).unwrap()).collect(),
                         Some(&tax_path),
                         &taxonomy.lang,
                         |mut context: Context| {
                             context.insert("taxonomy", &taxonomy.kind);
-                            context
-                                .insert("term", &feed::SerializedFeedTaxonomyItem::from_item(item));
+                            context.insert(
+                                "term",
+                                &feeds::SerializedFeedTaxonomyItem::from_item(item),
+                            );
                             context
                         },
                     )
@@ -1028,36 +1030,38 @@ impl Site {
         Ok(())
     }
 
-    /// Renders a feed for the given path and at the given path
-    /// If both arguments are `None`, it will render only the feed for the whole
+    /// Renders feeds for the given path and at the given path
+    /// If both arguments are `None`, it will render only the feeds for the whole
     /// site at the root folder.
-    pub fn render_feed(
+    pub fn render_feeds(
         &self,
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
         lang: &str,
         additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
-        let feed = match feed::render_feed(self, all_pages, lang, base_path, additional_context_fn)?
-        {
-            Some(v) => v,
-            None => return Ok(()),
-        };
-        let feed_filename = &self.config.feed_filename;
+        let feeds =
+            match feeds::render_feeds(self, all_pages, lang, base_path, additional_context_fn)? {
+                Some(v) => v,
+                None => return Ok(()),
+            };
 
-        if let Some(base) = base_path {
-            let mut components = Vec::new();
-            for component in base.components() {
-                components.push(component.as_os_str().to_string_lossy());
+        for (feed, feed_filename) in feeds.into_iter().zip(self.config.feed_filenames.iter()) {
+            if let Some(base) = base_path {
+                let mut components = Vec::new();
+                for component in base.components() {
+                    components.push(component.as_os_str().to_string_lossy());
+                }
+                self.write_content(
+                    &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
+                    feed_filename,
+                    feed,
+                )?;
+            } else {
+                self.write_content(&[], feed_filename, feed)?;
             }
-            self.write_content(
-                &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
-                feed_filename,
-                feed,
-            )?;
-        } else {
-            self.write_content(&[], feed_filename, feed)?;
         }
+
         Ok(())
     }
 
@@ -1076,10 +1080,10 @@ impl Site {
             output_path.push(component);
         }
 
-        if section.meta.generate_feed {
+        if section.meta.generate_feeds {
             let library = &self.library.read().unwrap();
             let pages = section.pages.iter().map(|k| library.pages.get(k).unwrap()).collect();
-            self.render_feed(
+            self.render_feeds(
                 pages,
                 Some(&PathBuf::from(&section.path[1..])),
                 &section.lang,

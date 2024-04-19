@@ -11,7 +11,7 @@ to your `config.toml`. For example:
 
 ```toml
 [languages.fr]
-generate_feed = true # there will be a feed for French content
+generate_feeds = true # there will be a feed for French content
 build_search_index = true
 taxonomies = [
     {name = "auteurs"},

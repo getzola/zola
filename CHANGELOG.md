@@ -11,6 +11,9 @@
 - Add `render = false` capability to pages
 - Handle string dates in YAML front-matter
 - Add support for fuse.js search format
+- Added support for generating multiple kinds of feeds at once
+- Changed config options named `generate_feed` to `generate_feeds` (both in config.toml and in section front-matter)
+- Changed config option `feed_filename: String` to `feed_filenames: Vec<String>`
 
 ## 0.18.0 (2023-12-18)
 

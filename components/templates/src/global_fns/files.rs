@@ -467,7 +467,7 @@ title = "A title"
         let static_fn =
             GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
+        args.insert("path".to_string(), to_value(config.feed_filenames).unwrap());
         args.insert("lang".to_string(), to_value("fr").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/atom.xml");
     }
@@ -479,7 +479,7 @@ title = "A title"
         let static_fn =
             GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
         let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
+        args.insert("path".to_string(), to_value(config.feed_filenames).unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/en/atom.xml");
     }

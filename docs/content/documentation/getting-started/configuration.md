@@ -65,12 +65,12 @@ ignored_content = []
 ignored_static = []
 
 # When set to "true", a feed is automatically generated.
-generate_feed = false
+generate_feeds = false
 
-# The filename to use for the feed. Used as the template filename, too.
-# Defaults to "atom.xml", which has a built-in template that renders an Atom 1.0 feed.
+# The filenames to use for the feeds. Used as the template filenames, too.
+# Defaults to ["atom.xml"], which has a built-in template that renders an Atom 1.0 feed.
 # There is also a built-in template "rss.xml" that renders an RSS 2.0 feed.
-feed_filename = "atom.xml"
+feed_filenames = ["atom.xml"]
 
 # The number of articles to include in the feed. All items are included if
 # this limit is not set (the default).
@@ -199,13 +199,13 @@ index_format = "elasticlunr_javascript"
 
 # Additional languages definition
 # You can define language specific config values and translations: 
-# title, description, generate_feed, feed_filename, taxonomies, build_search_index
+# title, description, generate_feeds, feed_filenames, taxonomies, build_search_index
 # as well as its own search configuration and translations (see above for details on those)
 [languages]
 # For example
 # [languages.fr]
 # title = "Mon blog"
-# generate_feed = true
+# generate_feeds = true
 # taxonomies = [
 #    {name = "auteurs"},
 #    {name = "tags"},
