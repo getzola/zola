@@ -1,5 +1,7 @@
+use std::collections::HashMap;
 use std::fmt::Write;
 
+use crate::markdown::cmark::CowStr;
 use errors::bail;
 use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
@@ -237,6 +239,158 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
     }
 
     heading_refs
+}
+
+fn fix_github_style_footnotes(old_events: &mut Vec<Event>) {
+    let events = std::mem::take(old_events);
+    // step 1: We need to extract footnotes from the event stream and tweak footnote references
+
+    // footnotes bodies are stored in a stack of vectors, because it is possible to have footnotes
+    // inside footnotes
+    let mut footnote_bodies_stack = Vec::new();
+    let mut footnotes = Vec::new();
+    // this will allow to create a multiple back references
+    let mut footnote_numbers = HashMap::new();
+    let filtered_events = events.into_iter().filter_map(|event| {
+        match event {
+            // New footnote definition is pushed to the stack
+            Event::Start(Tag::FootnoteDefinition(_)) => {
+                footnote_bodies_stack.push(vec![event]);
+                None
+            }
+            // The topmost footnote definition is popped from the stack
+            Event::End(TagEnd::FootnoteDefinition) => {
+                // unwrap will newer fail, because Tag::FootnoteDefinition start always comes before
+                // TagEnd::FootnoteDefinition
+                let mut footnote_body = footnote_bodies_stack.pop().unwrap();
+                footnote_body.push(event);
+                footnotes.push(footnote_body);
+                None
+            }
+            Event::FootnoteReference(name) => {
+                // n will be a unique index of the footnote
+                let n = footnote_numbers.len() + 1;
+                // nr is a number of references to this footnote
+                let (n, nr) = footnote_numbers.entry(name.clone()).or_insert((n, 0usize));
+                *nr += 1;
+                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">[{n}]</a></sup>"##).into());
+
+                if footnote_bodies_stack.is_empty() {
+                    // we are in the main text, just output the reference
+                    Some(reference)
+                } else {
+                    // we are inside other footnote, we have to push that reference into that
+                    // footnote
+                    footnote_bodies_stack.last_mut().unwrap().push(reference);
+                    None
+                }
+            }
+            _ if !footnote_bodies_stack.is_empty() => {
+                footnote_bodies_stack.last_mut().unwrap().push(event);
+                None
+            }
+            _ => Some(event),
+        }
+    }
+    );
+
+    old_events.extend(filtered_events);
+
+    if footnotes.is_empty() {
+        return;
+    }
+
+    old_events.push(Event::Html("<hr><ol class=\"footnotes-list\">\n".into()));
+
+    // Step 2: retain only footnotes which was actually referenced
+    footnotes.retain(|f| match f.first() {
+        Some(Event::Start(Tag::FootnoteDefinition(name))) => {
+            footnote_numbers.get(name).unwrap_or(&(0, 0)).1 != 0
+        }
+        _ => false,
+    });
+
+    // Step 3: Sort footnotes in the order of their appearance
+    footnotes.sort_by_cached_key(|f| match f.first() {
+        Some(Event::Start(Tag::FootnoteDefinition(name))) => {
+            footnote_numbers.get(name).unwrap_or(&(0, 0)).0
+        }
+        _ => unreachable!(),
+    });
+
+    // Step 4: Add backreferences to footnotes
+    let footnotes = footnotes.into_iter().flat_map(|fl| {
+        // To write backrefs, the name needs kept until the end of the footnote definition.
+        let mut name = CowStr::from("");
+        // Backrefs are included in the final paragraph of the footnote, if it's normal text.
+        // For example, this DOM can be produced:
+        //
+        // Markdown:
+        //
+        //     five [^feet].
+        //
+        //     [^feet]:
+        //         A foot is defined, in this case, as 0.3048 m.
+        //
+        //         Historically, the foot has not been defined this way, corresponding to many
+        //         subtly different units depending on the location.
+        //
+        // HTML:
+        //
+        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">[1]</a></sup>.</p>
+        //
+        //     <ol class="footnotes-list">
+        //     <li id="fn-feet">
+        //     <p>A foot is defined, in this case, as 0.3048 m.</p>
+        //     <p>Historically, the foot has not been defined this way, corresponding to many
+        //     subtly different units depending on the location. <a href="#fr-feet-1">↩</a></p>
+        //     </li>
+        //     </ol>
+        //
+        // This is mostly a visual hack, so that footnotes use less vertical space.
+        //
+        // If there is no final paragraph, such as a tabular, list, or image footnote, it gets
+        // pushed after the last tag instead.
+        let mut has_written_backrefs = false;
+        let fl_len = fl.len();
+        let footnote_numbers = &footnote_numbers;
+        fl.into_iter().enumerate().map(move |(i, f)| match f {
+            Event::Start(Tag::FootnoteDefinition(current_name)) => {
+                name = current_name;
+                has_written_backrefs = false;
+                Event::Html(format!(r##"<li id="fn-{name}">"##).into())
+            }
+            Event::End(TagEnd::FootnoteDefinition) | Event::End(TagEnd::Paragraph)
+                if !has_written_backrefs && i >= fl_len - 2 =>
+            {
+                let usage_count = footnote_numbers.get(&name).unwrap().1;
+                let mut end = String::with_capacity(
+                    name.len() + (r##" <a href="#fr--1">↩</a></li>"##.len() * usage_count),
+                );
+                for usage in 1..=usage_count {
+                    if usage == 1 {
+                        write!(&mut end, r##" <a href="#fr-{name}-{usage}">↩</a>"##).unwrap();
+                    } else {
+                        write!(&mut end, r##" <a href="#fr-{name}-{usage}">↩{usage}</a>"##)
+                            .unwrap();
+                    }
+                }
+                has_written_backrefs = true;
+                if f == Event::End(TagEnd::FootnoteDefinition) {
+                    end.push_str("</li>\n");
+                } else {
+                    end.push_str("</p>\n");
+                }
+                Event::Html(end.into())
+            }
+            Event::End(TagEnd::FootnoteDefinition) => Event::Html("</li>\n".into()),
+            Event::FootnoteReference(_) => unreachable!("converted to HTML earlier"),
+            f => f,
+        })
+    });
+
+    old_events.extend(footnotes);
+    old_events.push(Event::Html("</ol>\n".into()));
 }
 
 pub fn markdown_to_html(
@@ -621,6 +775,10 @@ pub fn markdown_to_html(
 
         if context.insert_anchor != InsertAnchor::None {
             insert_many(&mut events, anchors_to_insert);
+        }
+
+        if context.config.markdown.bottom_footnotes {
+            fix_github_style_footnotes(&mut events);
         }
 
         cmark::html::push_html(&mut html, events.into_iter());
