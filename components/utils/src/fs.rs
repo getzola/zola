@@ -19,8 +19,17 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
     Ok(canonical_path.starts_with(canonical_parent))
 }
 
+/// Creates the parent of a directory, if needed.
+fn create_parent(path: &Path) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        create_directory(parent)?;
+    }
+    Ok(())
+}
+
 /// Create a file with the content given
 pub fn create_file(path: &Path, content: &str) -> Result<()> {
+    create_parent(path)?;
     let mut file =
         File::create(path).with_context(|| format!("Failed to create file {}", path.display()))?;
     file.write_all(content.as_bytes())?;
@@ -58,12 +67,7 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
     let relative_path = src.strip_prefix(base_path).unwrap();
     let target_path = dest.join(relative_path);
 
-    if let Some(parent_directory) = target_path.parent() {
-        create_dir_all(parent_directory).with_context(|| {
-            format!("Failed to create directory {}", parent_directory.display())
-        })?;
-    }
-
+    create_parent(&target_path)?;
     copy_file_if_needed(src, &target_path, hard_link)
 }
 
@@ -72,11 +76,7 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
 /// 2. Its modification timestamp is identical to that of the src file.
 /// 3. Its filesize is identical to that of the src file.
 pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
-    if let Some(parent_directory) = dest.parent() {
-        create_dir_all(parent_directory).with_context(|| {
-            format!("Failed to create directory {}", parent_directory.display())
-        })?;
-    }
+    create_parent(&dest)?;
 
     if hard_link {
         if dest.exists() {
