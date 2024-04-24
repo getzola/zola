@@ -241,7 +241,7 @@ fn get_heading_refs(events: &[Event]) -> Vec<HeadingRef> {
     heading_refs
 }
 
-fn fix_github_style_footnotes(old_events: &mut Vec<Event>) {
+fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     let events = std::mem::take(old_events);
     // step 1: We need to extract footnotes from the event stream and tweak footnote references
 
@@ -778,7 +778,7 @@ pub fn markdown_to_html(
         }
 
         if context.config.markdown.bottom_footnotes {
-            fix_github_style_footnotes(&mut events);
+            convert_footnotes_to_github_style(&mut events);
         }
 
         cmark::html::push_html(&mut html, events.into_iter());
