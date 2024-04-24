@@ -1,0 +1,60 @@
+---
+source: components/markdown/src/markdown.rs
+expression: events
+---
+[
+    Start(
+        Paragraph,
+    ),
+    Text(
+        Borrowed(
+            "Some text ",
+        ),
+    ),
+    Start(
+        Emphasis,
+    ),
+    Text(
+        Borrowed(
+            "without",
+        ),
+    ),
+    End(
+        Emphasis,
+    ),
+    Text(
+        Borrowed(
+            " footnotes.",
+        ),
+    ),
+    End(
+        Paragraph,
+    ),
+    Start(
+        Paragraph,
+    ),
+    Text(
+        Borrowed(
+            "Only ",
+        ),
+    ),
+    Start(
+        Strikethrough,
+    ),
+    Text(
+        Borrowed(
+            "fancy",
+        ),
+    ),
+    End(
+        Strikethrough,
+    ),
+    Text(
+        Borrowed(
+            " formatting.",
+        ),
+    ),
+    End(
+        Paragraph,
+    ),
+]
