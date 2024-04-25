@@ -68,7 +68,7 @@ pub struct SectionFrontMatter {
     #[serde(skip_serializing)]
     pub aliases: Vec<String>,
     /// Whether to generate a feed for the current section
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, alias = "generate_feed")]
     pub generate_feeds: bool,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,

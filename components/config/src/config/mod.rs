@@ -10,7 +10,8 @@ use std::path::{Path, PathBuf};
 
 use libs::globset::GlobSet;
 use libs::toml::Value as Toml;
-use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::theme::Theme;
 use errors::{anyhow, bail, Result};
@@ -50,11 +51,13 @@ pub struct Config {
     translations: HashMap<String, String>,
 
     /// Whether to generate feeds. Defaults to false.
+    #[serde(alias = "generate_feed")]
     pub generate_feeds: bool,
     /// The number of articles to include in the feed. Defaults to including all items.
     pub feed_limit: Option<usize>,
     /// The filenames to use for feeds. Used to find the templates, too.
     /// Defaults to ["atom.xml"], with "rss.xml" also having a template provided out of the box.
+    #[serde(deserialize_with = "might_be_single")]
     pub feed_filenames: Vec<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
@@ -977,5 +980,47 @@ author = "person@example.com (Some Person)"
 "#;
         let config = Config::parse(config).unwrap();
         assert_eq!(config.author, Some("person@example.com (Some Person)".to_owned()))
+    }
+}
+
+/// Used for deserializing values that can be either a single value or a vec of values
+pub(crate) fn might_be_single<'de, T, D>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    T: DeserializeOwned,
+    D: Deserializer<'de>,
+{
+    let v = MightBeSingle::deserialize(deserializer)?;
+    Ok(v.into())
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub(crate) enum MightBeSingle<T> {
+    Multiple(Vec<T>),
+    One(T),
+    None,
+}
+
+impl<T> From<MightBeSingle<T>> for Vec<T> {
+    fn from(x: MightBeSingle<T>) -> Vec<T> {
+        use MightBeSingle::*;
+
+        match x {
+            Multiple(v) => v,
+            One(v) => vec![v],
+            None => vec![],
+        }
+    }
+}
+
+impl<T> From<Vec<T>> for MightBeSingle<T> {
+    fn from(value: Vec<T>) -> Self {
+        Self::Multiple(value)
+    }
+}
+
+impl<T> Default for MightBeSingle<T> {
+    fn default() -> Self {
+        Self::None
     }
 }
