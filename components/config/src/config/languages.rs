@@ -4,9 +4,9 @@ use errors::{bail, Result};
 use libs::unic_langid::LanguageIdentifier;
 use serde::{Deserialize, Serialize};
 
+use crate::config::might_be_single;
 use crate::config::search;
 use crate::config::taxonomies;
-use crate::config::might_be_single;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
@@ -20,7 +20,7 @@ pub struct LanguageOptions {
     pub generate_feeds: bool,
     /// The filenames to use for feeds. Used to find the templates, too.
     /// Defaults to ["atom.xml"], with "rss.xml" also having a template provided out of the box.
-    #[serde(deserialize_with = "might_be_single")]
+    #[serde(alias = "feed_filename", deserialize_with = "might_be_single")]
     pub feed_filenames: Vec<String>,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
     /// Whether to generate search index for that language, defaults to `false`
@@ -69,7 +69,8 @@ impl LanguageOptions {
         merge_field!(self.title, other.title, "title");
         merge_field!(self.description, other.description, "description");
         merge_field!(
-            self.feed_filenames.is_empty(),
+            self.feed_filenames.is_empty()
+                || self.feed_filenames == LanguageOptions::default().feed_filenames,
             self.feed_filenames,
             other.feed_filenames,
             "feed_filename"
