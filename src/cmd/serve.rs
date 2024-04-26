@@ -398,7 +398,7 @@ fn create_new_site(
 
     let mut constructed_base_url = construct_url(&base_url, no_port_append, interface_port);
 
-    if !site.config.base_url.ends_with("/") {
+    if !site.config.base_url.ends_with("/") && constructed_base_url != "/" {
         constructed_base_url.truncate(constructed_base_url.len() - 1);
     }
 
