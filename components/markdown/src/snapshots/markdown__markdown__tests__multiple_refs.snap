@@ -1,65 +1,10 @@
 ---
 source: components/markdown/src/markdown.rs
-expression: events
+expression: html
 ---
-[
-    Start(
-        Paragraph,
-    ),
-    Text(
-        Borrowed(
-            "This text has two",
-        ),
-    ),
-    Html(
-        Boxed(
-            "<sup class=\"footnote-reference\" id=\"fr-1-1\"><a href=\"#fn-1\">[1]</a></sup>",
-        ),
-    ),
-    Text(
-        Borrowed(
-            " identical footnotes",
-        ),
-    ),
-    Html(
-        Boxed(
-            "<sup class=\"footnote-reference\" id=\"fr-1-2\"><a href=\"#fn-1\">[1]</a></sup>",
-        ),
-    ),
-    End(
-        Paragraph,
-    ),
-    Html(
-        Borrowed(
-            "<hr><ol class=\"footnotes-list\">\n",
-        ),
-    ),
-    Html(
-        Boxed(
-            "<li id=\"fn-1\">",
-        ),
-    ),
-    Start(
-        Paragraph,
-    ),
-    Text(
-        Borrowed(
-            "So one is present.",
-        ),
-    ),
-    Html(
-        Boxed(
-            " <a href=\"#fr-1-1\">↩</a> <a href=\"#fr-1-2\">↩2</a></p>\n",
-        ),
-    ),
-    Html(
-        Borrowed(
-            "</li>\n",
-        ),
-    ),
-    Html(
-        Borrowed(
-            "</ol>\n",
-        ),
-    ),
-]
+<p>This text has two<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup> identical footnotes<sup class="footnote-reference" id="fr-1-2"><a href="#fn-1">[1]</a></sup></p>
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>So one is present. <a href="#fr-1-1">↩</a> <a href="#fr-1-2">↩2</a></p>
+</li>
+</ol>

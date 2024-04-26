@@ -1,55 +1,10 @@
 ---
 source: components/markdown/src/markdown.rs
-expression: events
+expression: html
 ---
-[
-    Start(
-        Paragraph,
-    ),
-    Text(
-        Borrowed(
-            "This text has a footnote",
-        ),
-    ),
-    Html(
-        Boxed(
-            "<sup class=\"footnote-reference\" id=\"fr-1-1\"><a href=\"#fn-1\">[1]</a></sup>",
-        ),
-    ),
-    End(
-        Paragraph,
-    ),
-    Html(
-        Borrowed(
-            "<hr><ol class=\"footnotes-list\">\n",
-        ),
-    ),
-    Html(
-        Boxed(
-            "<li id=\"fn-1\">",
-        ),
-    ),
-    Start(
-        Paragraph,
-    ),
-    Text(
-        Borrowed(
-            "But it is meaningless.",
-        ),
-    ),
-    Html(
-        Boxed(
-            " <a href=\"#fr-1-1\">↩</a></p>\n",
-        ),
-    ),
-    Html(
-        Borrowed(
-            "</li>\n",
-        ),
-    ),
-    Html(
-        Borrowed(
-            "</ol>\n",
-        ),
-    ),
-]
+<p>This text has a footnote<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup></p>
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>But it is meaningless. <a href="#fr-1-1">↩</a></p>
+</li>
+</ol>

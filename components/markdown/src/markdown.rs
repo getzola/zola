@@ -801,7 +801,7 @@ pub fn markdown_to_html(
 mod tests {
     use super::*;
     use config::Config;
-    use insta::assert_debug_snapshot;
+    use insta::assert_snapshot;
 
     #[test]
     fn insert_many_works() {
@@ -885,7 +885,9 @@ mod tests {
         let content = "Some text *without* footnotes.\n\nOnly ~~fancy~~ formatting.";
         let mut events: Vec<_> = Parser::new_ext(&content, opts).collect();
         convert_footnotes_to_github_style(&mut events);
-        assert_debug_snapshot!(events);
+        let mut html = String::new();
+        cmark::html::push_html(&mut html, events.into_iter());
+        assert_snapshot!(html);
     }
 
     #[test]
@@ -900,7 +902,9 @@ mod tests {
         let content = "This text has a footnote[^1]\n [^1]:But it is meaningless.";
         let mut events: Vec<_> = Parser::new_ext(&content, opts).collect();
         convert_footnotes_to_github_style(&mut events);
-        assert_debug_snapshot!(events);
+        let mut html = String::new();
+        cmark::html::push_html(&mut html, events.into_iter());
+        assert_snapshot!(html);
     }
 
     #[test]
@@ -915,7 +919,9 @@ mod tests {
         let content = "This text has two[^2] footnotes[^1]\n[^1]: not sorted.\n[^2]: But they are";
         let mut events: Vec<_> = Parser::new_ext(&content, opts).collect();
         convert_footnotes_to_github_style(&mut events);
-        assert_debug_snapshot!(events);
+        let mut html = String::new();
+        cmark::html::push_html(&mut html, events.into_iter());
+        assert_snapshot!(html);
     }
 
     #[test]
@@ -930,7 +936,9 @@ mod tests {
         let content = "[^1]:It's before the reference.\n\n There is footnote definition?[^1]";
         let mut events: Vec<_> = Parser::new_ext(&content, opts).collect();
         convert_footnotes_to_github_style(&mut events);
-        assert_debug_snapshot!(events);
+        let mut html = String::new();
+        cmark::html::push_html(&mut html, events.into_iter());
+        assert_snapshot!(html);
     }
 
     #[test]
@@ -945,7 +953,9 @@ mod tests {
         let content = "This text has two[^1] identical footnotes[^1]\n[^1]: So one is present.\n[^2]: But another in not.";
         let mut events: Vec<_> = Parser::new_ext(&content, opts).collect();
         convert_footnotes_to_github_style(&mut events);
-        assert_debug_snapshot!(events);
+        let mut html = String::new();
+        cmark::html::push_html(&mut html, events.into_iter());
+        assert_snapshot!(html);
     }
 
     #[test]
@@ -960,6 +970,8 @@ mod tests {
         let content = "This text has a footnote[^1]\n[^1]: But the footnote has another footnote[^2].\n[^2]: That's it.";
         let mut events: Vec<_> = Parser::new_ext(&content, opts).collect();
         convert_footnotes_to_github_style(&mut events);
-        assert_debug_snapshot!(events);
+        let mut html = String::new();
+        cmark::html::push_html(&mut html, events.into_iter());
+        assert_snapshot!(html);
     }
 }

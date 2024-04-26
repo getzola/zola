@@ -1,55 +1,10 @@
 ---
 source: components/markdown/src/markdown.rs
-expression: events
+expression: html
 ---
-[
-    Start(
-        Paragraph,
-    ),
-    Text(
-        Borrowed(
-            "There is footnote definition?",
-        ),
-    ),
-    Html(
-        Boxed(
-            "<sup class=\"footnote-reference\" id=\"fr-1-1\"><a href=\"#fn-1\">[1]</a></sup>",
-        ),
-    ),
-    End(
-        Paragraph,
-    ),
-    Html(
-        Borrowed(
-            "<hr><ol class=\"footnotes-list\">\n",
-        ),
-    ),
-    Html(
-        Boxed(
-            "<li id=\"fn-1\">",
-        ),
-    ),
-    Start(
-        Paragraph,
-    ),
-    Text(
-        Borrowed(
-            "It's before the reference.",
-        ),
-    ),
-    Html(
-        Boxed(
-            " <a href=\"#fr-1-1\">↩</a></p>\n",
-        ),
-    ),
-    Html(
-        Borrowed(
-            "</li>\n",
-        ),
-    ),
-    Html(
-        Borrowed(
-            "</ol>\n",
-        ),
-    ),
-]
+<p>There is footnote definition?<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup></p>
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>It's before the reference. <a href="#fr-1-1">↩</a></p>
+</li>
+</ol>
