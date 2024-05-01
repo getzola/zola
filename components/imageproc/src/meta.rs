@@ -1,6 +1,7 @@
 use errors::{anyhow, Context, Result};
 use libs::image::io::Reader as ImgReader;
-use libs::image::{ImageFormat, ImageResult};
+use libs::image::ImageFormat;
+use libs::jpegxl_rs::decoder_builder;
 use libs::svg_metadata::Metadata as SvgMetadata;
 use serde::Serialize;
 use std::ffi::OsStr;
@@ -15,12 +16,23 @@ pub struct ImageMeta {
 }
 
 impl ImageMeta {
-    pub fn read(path: &Path) -> ImageResult<Self> {
-        let reader = ImgReader::open(path).and_then(ImgReader::with_guessed_format)?;
-        let format = reader.format();
-        let size = reader.into_dimensions()?;
+    pub fn read(path: &Path) -> Result<Self> {
+        if path.extension().is_some_and(|ext| ext == "jxl") {
+            Self::read_jxl(path)
+        } else {
+            let reader = ImgReader::open(path).and_then(ImgReader::with_guessed_format)?;
+            let format = reader.format();
+            let size = reader.into_dimensions()?;
 
-        Ok(Self { size, format })
+            Ok(Self { size, format })
+        }
+    }
+
+    fn read_jxl(path: &Path) -> Result<Self> {
+        let input = std::fs::read(path)?;
+        let decoder = decoder_builder().build()?;
+        let (meta, _) = decoder.decode(&input)?;
+        Ok(ImageMeta { size: (meta.width, meta.height), format: None })
     }
 
     pub fn is_lossy(&self) -> bool {
@@ -43,6 +55,9 @@ pub struct ImageMetaResponse {
 impl ImageMetaResponse {
     pub fn new_svg(width: u32, height: u32) -> Self {
         Self { width, height, format: Some("svg"), mime: Some("text/svg+xml") }
+    }
+    pub fn new_jxl(width: u32, height: u32) -> Self {
+        Self { width, height, format: Some("jxl"), mime: Some("image/jxl") }
     }
 }
 
@@ -74,6 +89,10 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
             }
             // this is not a typo, this returns the correct values for width and height.
             .map(|(h, w)| ImageMetaResponse::new_svg(w as u32, h as u32))
+        }
+        "jxl" => {
+            let meta = ImageMeta::read(path)?;
+            Ok(ImageMetaResponse::new_jxl(meta.size.0, meta.size.1))
         }
         _ => ImageMeta::read(path).map(ImageMetaResponse::from).with_context(err_context),
     }

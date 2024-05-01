@@ -44,6 +44,7 @@ unicode-segmentation = "1.2"
 url = "2"
 walkdir = "2"
 webp = "0.3"
+jpegxl-rs = { version = "0.10.3", features = ["vendored"] }
 
 
 [features]
