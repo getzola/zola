@@ -396,7 +396,11 @@ fn create_new_site(
         |u| u.to_string(),
     );
 
-    let constructed_base_url = construct_url(&base_url, no_port_append, interface_port);
+    let mut constructed_base_url = construct_url(&base_url, no_port_append, interface_port);
+
+    if !site.config.base_url.ends_with("/") && constructed_base_url != "/" {
+        constructed_base_url.truncate(constructed_base_url.len() - 1);
+    }
 
     site.enable_serve_mode();
     site.set_base_url(constructed_base_url.clone());
