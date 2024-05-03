@@ -3,11 +3,11 @@
 title = "tabi"
 description = "A fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score"
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -19,6 +19,26 @@ name = "Óscar Fernández"
 homepage = "https://osc.garden"
 +++        
 
+<p align="center">
+    <a href="CONTRIBUTING.md#pull-requests">
+        <img src="https://img.shields.io/badge/PRs-welcome-0?style=flat-square&labelColor=202b2d&color=087e96" alt="PRs welcome"></a>
+    <a href="https://github.com/welpo/tabi/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Contributors"></a>
+    <a href="https://github.com/welpo/tabi/forks">
+        <img src="https://img.shields.io/github/forks/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Forks"></a>
+    <a hfref="https://github.com/welpo/tabi/commits/main/">
+        <img src="https://img.shields.io/github/last-commit/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Last commit"></a>
+    <br>
+    <a href="https://github.com/welpo/tabi/releases">
+        <img src="https://img.shields.io/github/v/release/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Latest release"></a>
+    <a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/">
+        <img src="https://img.shields.io/website?url=https%3A%2F%2Fwelpo.github.io%2Ftabi&style=flat-square&label=docs&labelColor=202b2d&color=087e96" alt="Documentation"></a>
+    <a href="https://github.com/welpo/tabi/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="License"></a>
+    <a href="https://github.com/welpo/git-sumi">
+        <img src="https://img.shields.io/badge/clean_commits-git--sumi-0?style=flat-square&labelColor=202b2d&color=087e96" alt="Clean commits"></a>
+</p>
+
 # tabi
 
 A fast, lightweight, and modern [Zola](https://www.getzola.org) theme with multi-language support. It aims to be a personal page and home to blog posts.
@@ -27,7 +47,7 @@ See a live preview (and the theme's documentation) [here](https://welpo.github.i
 
 Explore the Sites Using tabi section to see real-world applications.
 
-> tabi (旅): Journey.
+> tabi (旅, /<span title="/t/: 't' in 'sty'">t</span><span title="/ɐ/: a sound between 'a' in 'sofa' and 'u' in 'nut'">ɐ</span><span title="/ˈ/: primary stress mark, indicating that the following syllable is pronounced with greater emphasis">ˈ</span><span title="/b/: 'b' in 'cab'">b</span><span title="/i/: 'i' in 'fleece'">i</span>/): Journey.
 
 ![tabi](https://github.com/welpo/tabi/raw/main/light_dark_screenshot.png)
 
@@ -38,7 +58,7 @@ tabi has a perfect score on Google's Lighthouse audit:
 ## Features
 
 - [X] [Set any language as default](https://welpo.github.io/tabi/blog/faq-languages/#how-do-i-set-a-default-language-for-my-site). Set your base site to Chinese, Spanish, French, Hindi… or any [other supported language](/i18n). The theme's interface will be translated accordingly.
-- [X] [Integration with remote repositories](https://welpo.github.io/tabi/mastering-tabi-settings/#git-repository-integration) on GitHub, GitLab, Gitea & Codeberg for commit history and showing the site source.
+- [X] [Integration with remote repositories](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#git-repository-integration) on GitHub, GitLab, Gitea & Codeberg for commit history and showing the site source.
 - [X] Dark and light themes. Defaults to the OS setting, with a switcher in the navigation bar.
 - [X] Thorough documentation. See [Mastering tabi Settings: A Comprehensive Guide](https://welpo.github.io/tabi/blog/mastering-tabi-settings/).
 - [X] Perfect Lighthouse score (Performance, Accessibility, Best Practices and SEO).
@@ -66,18 +86,6 @@ tabi has a perfect score on Google's Lighthouse audit:
 - [X] [Archive page](https://welpo.github.io/tabi/archive/).
 - [X] [Social links](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#social-media-icons).
 - [X] [Tags](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#tags).
-
-## Quick start
-
-Once you have installed Zola 0.17.0 or newer:
-
-```bash
-git clone https://github.com/welpo/tabi.git
-cd tabi
-zola serve
-```
-
-Open http://127.0.0.1:1111 in the browser.
 
 ## Installation
 
@@ -115,7 +123,15 @@ theme = "tabi"
 title = "Your Site Title"
 ```
 
-4. Create a `content/_index.md` file with the following content:
+4. Configure code block highlighting in your `config.toml`:
+
+```toml
+[markdown]
+highlight_code = true
+highlight_theme = "css"
+```
+
+5. Create a `content/_index.md` file with the following content:
 
 ```
 +++
@@ -132,7 +148,7 @@ If you want to serve your blog posts from a different path, such as `blog/`, add
 section_path = "blog/_index.md"
 ```
 
-5. If you want an introduction section (see screenshot above), add these lines to `content/_index.md`:
+6. If you want an introduction section (see screenshot above), add these lines to `content/_index.md`:
 
 ```
 [extra]
@@ -141,7 +157,7 @@ header = {title = "Hello! I'm tabi~", img = "img/main.webp", img_alt = "Your Nam
 
 The content outside the front matter will be rendered between the header title and the posts listing. In the screenshot above, it's the text that reads "tabi is a fast, lightweight, and modern Zola theme…".
 
-6. If you want a multilingual site, you will need to set up each language. In `config.toml`, set the title and taxonomies for each language, like:
+7. If you want a multilingual site, you will need to set up each language. In `config.toml`, set the title and taxonomies for each language, like:
 
 ```toml
 [languages.es]
@@ -164,9 +180,9 @@ To learn more about multilingual support, see the [Frequently Asked Questions](h
 | [osc.garden](https://osc.garden) | Óscar Fernández ([welpo](https://github.com/welpo)) | Data science, psychology, and Zola | [Source](https://github.com/welpo/osc.garden) |
 | [sandip.live](https://sandip.live) | Sandip G ([sandman](https://github.com/sandman)) | Startups, tech and the good life | [Source](https://github.com/sandman/sandman.github.io) |
 | [seadve.github.io](https://seadve.github.io/) | Dave Patrick Caberto ([SeaDve](https://github.com/SeaDve/)) | Personal blog and portfolio with custom CSS | [Source](https://github.com/SeaDve/seadve.github.io) |
-| [donovan.is](https://donovan.is) | [Donovan Glover](https://github.com/donovanglover) | Linux, Rust, and Full Stack Web Development | [Source](https://github.com/donovanglover/donovan.is) |
 | [mikufan.page](https://mikufan.page) | [Nadia](https://github.com/nyadiia) | Personal blog | [Source](https://github.com/nyadiia/mikufan.page) |
 | [tim-boettcher.online](https://tim-boettcher.online/) | [Tim Böttcher](https://codeberg.org/Tim-Boettcher/) | Insights and ramblings of a deafblind programmer | [Source](https://codeberg.org/Tim-Boettcher/tim-boettcher-online/) |
+| [www.richtman.au](https://www.richtman.au) | [Ariel Richtman](https://github.com/arichtman) | Personal tech blog | [Source](https://github.com/arichtman/www.richtman.au) |
 
 Using tabi? Feel free to create a PR and add your site to this list.
 

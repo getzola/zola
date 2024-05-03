@@ -3,11 +3,11 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.18.0"
@@ -30,7 +30,7 @@ A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing [abr
 
 Maintenance of this project is made possible by all the <a href="https://github.com/Jieiku/abridge/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/Jieiku">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/Jieiku">click here</a>. 💖
 
-<!-- sponsors --><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/yugfletcher"><img src="https://github.com/yugfletcher.png" width="60px" alt="" /></a><a href="https://github.com/samueloph"><img src="https://github.com/samueloph.png" width="60px" alt="Samuel Henrique" /></a><!-- sponsors -->
 
 ---
 

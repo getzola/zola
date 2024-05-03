@@ -3,31 +3,32 @@
 title = "serene"
 description = "A blog theme for zola, simple and clean"
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
 minimum_version = "0.9.0"
 license = "MIT"
-demo = "https://serene-demo-site.vercel.app"
+demo = "https://serene-demo.pages.dev"
 
 [extra.author]
 name = "isunjn"
 homepage = "https://github.com/isunjn"
 +++        
 
-<img width="1501" alt="screenshot" src="https://github.com/isunjn/serene/assets/60461730/33516366-3670-497f-bd72-41ebe8f06f1a">
+<img width="1501" alt="screenshot" src="https://github.com/isunjn/serene/assets/60461730/61b9ff3d-6ed3-4062-8872-1f3a3d9b60a7">
 
-<br /><br />
+<br />
+<br />
 
 A blog theme for [zola](https://www.getzola.org), simple and clean
 
 ## Demo
 
--  <https://serene-demo-site.vercel.app>
+-  <https://serene-demo.pages.dev>
 
 ## Features
 
@@ -37,18 +38,14 @@ A blog theme for [zola](https://www.getzola.org), simple and clean
 - Image zooming
 - Out-of-date alert
 - Sticky table-of-contents
-- Callouts (note, warning, alert, etc.)
+- Callout (note, warning, alert, etc.)
 - Comments using [Giscus](https://giscus.app)
-- Mathematical notations using [KaTeX](https://katex.org)
+- Mathematical notations using [KaTeX](https://katex.org) or [Typst](https://typst.app)
 - Diagrams and visualizations using [Mermaid](https://github.com/mermaid-js/mermaid)
 
 ## Usage
 
 - Check the [USAGE.md](https://github.com/isunjn/serene/blob/latest/USAGE.md) of `latest` branch
 - Also available in Simplified Chinese: [USAGE-zh_CN.md](https://github.com/isunjn/serene/blob/latest/USAGE-zh_CN.md) (简体中文)
-
-## Contributing
-
-- Before you make any non-trivial changes, you may want to open an issue so we can discuss
 
         

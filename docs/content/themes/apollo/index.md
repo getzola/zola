@@ -3,11 +3,11 @@
 title = "apollo"
 description = "Modern and minimalistic blog theme"
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
 repository = "https://github.com/not-matthias/apollo.git"
 homepage = "https://github.com/not-matthias/apollo"
 minimum_version = "0.14.0"
@@ -65,6 +65,17 @@ cp -r themes/apollo/content content
 ```
 
 ## Options
+
+### Comment
+
+You can enable comment (Giscus) for each page:
+
+```toml
+[extra]
+comment = true
+```
+
+And then save your script from [Giscus](https://giscus.app) to `templates/_giscus_script.html`.
 
 ### Additional stylesheets
 
