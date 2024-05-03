@@ -123,11 +123,11 @@ logic applies.
 1. The base directory is the Zola root directory, where the `config.toml` is
 2. For the given path: if it starts with `@/`, replace that with `content/` instead and trim any leading `/`
 3. Search in the following locations in this order, returning the first where the file exists:
-   1. $base_directory + $path
-   2. $base_directory + "static/" + $path
-   3. $base_directory + "content/" + $path
-   4. $base_directory + $output_path + $path
-   5. $base_directory + "themes" + $theme + "static/" + $path (only if using a theme)
+   1. `$base_directory` + `$path`
+   2. `$base_directory` + `"static/"` + `$path`
+   3. `$base_directory` + `"content/"` + `$path`
+   4. `$base_directory` + `$output_path` + `$path`
+   5. `$base_directory` + `"themes"` + `$theme` + `"static/"` + `$path` (only if using a theme)
 
 In practice this means that `@/some/image.jpg`, `/content/some/image.jpg` and `content/some/image.jpg` will point to the
 same thing.
