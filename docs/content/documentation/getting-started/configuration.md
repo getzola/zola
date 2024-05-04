@@ -135,7 +135,7 @@ smart_punctuation = false
 # For example, `![xx](...)` is ok but `![*x*x](...)` isn’t ok
 lazy_async_image = false
 
-# Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain.
+# Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain (in the place, where they are defined)
 bottom_footnotes = false
 
 # Configuration of the link checker.

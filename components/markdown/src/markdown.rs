@@ -260,7 +260,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
             }
             // The topmost footnote definition is popped from the stack
             Event::End(TagEnd::FootnoteDefinition) => {
-                // unwrap will newer fail, because Tag::FootnoteDefinition start always comes before
+                // unwrap will never fail, because Tag::FootnoteDefinition always comes before
                 // TagEnd::FootnoteDefinition
                 let mut footnote_body = footnote_bodies_stack.pop().unwrap();
                 footnote_body.push(event);
