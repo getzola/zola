@@ -3,16 +3,16 @@
 title = "pickles"
 description = "A modern, simple, clean blog theme for Zola."
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
 repository = "https://github.com/lukehsiao/zola-pickles.git"
 homepage = "https://github.com/lukehsiao/zola-pickles"
 minimum_version = "0.13.0"
 license = "BlueOak-1.0.0"
-demo = "https://effervescent-chebakia-056748.netlify.app/"
+demo = "https://zola-pickles.pages.dev/"
 
 [extra.author]
 name = "Luke Hsiao"
@@ -28,7 +28,7 @@ homepage = "https://luke.hsiao.dev"
 </div>
 <br>
 <div align="center">
-  <a href="https://effervescent-chebakia-056748.netlify.app/">
+  <a href="https://zola-pickles.pages.dev/">
     <img src="https://img.shields.io/badge/demo-website-forestgreen" alt="demo website"></a>
   <a href="https://github.com/lukehsiao/zola-pickles/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-BlueOak--1.0.0-blue" alt="License">

@@ -3,12 +3,12 @@
 title = "Zplit"
 description = "A single page theme for a professional online presence."
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
-repository = "https://github.com/gicrisf/zplit"
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
+repository = "https://github.com/gicrisf/zplit.git"
 homepage = "https://github.com/gicrisf/zplit"
 minimum_version = "0.15.0"
 license = "Creative Commons Attribution 3.0 License"
@@ -21,7 +21,7 @@ homepage = "https://github.com/gicrisf"
 
 # Zplit
 
-Zplit is a single page, centrally-divided layout for a professional online presence with a big image or video left with alongside content. It is a port of [Split](//onepagelove.com/split) by [One Page Love](//onepagelove.com) for [Zola](https://www.getzola.org/).
+Zplit is a single-page, centrally-divided layout designed for a professional online presence. It features a large image or video on the left, accompanied by content on the right. Zplit is a port of [Split](//onepagelove.com/split) by [One Page Love](//onepagelove.com) for [Zola](https://www.getzola.org/).
 
 ![Zola Zplit Theme screenshot](screenshot.png)
 
@@ -29,7 +29,7 @@ Zplit is a single page, centrally-divided layout for a professional online prese
 
 ## Installation
 
-Download this theme to your `themes` directory:
+Download the theme to your `themes` directory:
 
 ```bash
 $ cd themes
@@ -39,17 +39,16 @@ $ git clone https://github.com/gicrisf/zplit.git
 Then, enable the theme editing your `config.toml`:
 
 ```toml
-theme = "zhuia"
+theme = "zplit"
 ```
 
 ## Getting started
 
-You can find the most important file of the theme in the root directory. It's called `config.toml`.
-Edit it, specifying your personal preferences. Go through this (small) file to set some self-explaining variable, such as `author` under `[extra]` or `intro_tagline` under `[extra.content]`. 
+The most important file of the theme is located in the root directory and is named =config.toml=. Edit this file to customize your preferences. Look for sections like `[extra]` to set variables like `author`, or `[extra.content]` to modify intro_tagline.
 
-If something appears not that evident, maybe you missed the ["configuration" paragraph of the Zola official documentation](https://www.getzola.org/documentation/getting-started/configuration/). Even if this is your first time with a static site generator, don't be scared and go through the docs, because it's very basic stuff.
+If something is unclear or not obvious, you might have missed [the "configuration" section of the Zola official documentation](https://www.getzola.org/documentation/getting-started/configuration/). Even if you're new to static site generators, don't worry and take some time to go through the documentation, as it covers fundamental concepts.
 
-Here, we'll see in more detail two more section, that are peculiar for this theme:
+Here after, we will discuss two specific sections in more detail, because those are unique for the Zplit theme:
 - Background image
 - Lists (of links)
 
@@ -96,24 +95,24 @@ Remember to set the `url` field with the link itself you want to direct your use
 
 ## Posts
 
-You could add new posts, by adding markdown files to the `content` directory.
-To sort the post index by date, enable sort in your index section `content/_index.md`:
+To add new posts, simply place markdown files in the `content` directory. In order to sort the post index by date, you need to enable the `sort_by` option in the `content/_index.md` file within the index section.
 
 ```toml
 sort_by = "date"
 ```
 
-This theme wasn't written with blogging in mind, but more as a landing page for professionals. If you want to blog some stuff, though, you can, absolutely. If you add a new section in the content directory, you just have to add it to the main menu through the config file and it will be immediately accessible to the user.
 
-The theme doesn't support taxonomies or other advanced stuff: just simple pages. If you want to extend the blogging features, feel free to tweak the code or open an issue with a specific request.
+This theme was not specifically designed for blogging, but rather as a landing page for professionals. However, if you wish to blog using this theme, you certainly can. To do so, simply add a new section in the content directory and include it in the main menu through the config file. This will make it readily accessible to the user.
+
+The theme does not offer support for taxonomies or other advanced features. It is focused on providing simple pages. If you wish to enhance the blogging functionality, you are welcome to customize the code or submit a specific request as an issue.
 
 ## Custom CSS
 
-Add a `custom.css` file in `static` directory and add all the changes you want to the original stylesheets. 
+To make custom changes to the original stylesheets, you can create a `custom.css` file in the `static` directory. In this file, you can add any modifications or additions you desire.
 
 ## Custom colors
 
-If you want to tweak the colors or grid dimensions, though, it could be easier to directly edit the `_01-content.scss` file frontmatter, where the variables are easily exposed at the top of the file:
+If you need to make adjustments to the colors or grid dimensions, it may be easier to modify the frontmatter of the `_01-content.scss` file directly. In this file, you will find variables conveniently located at the top:
 
 ``` scss
 //-------------------------------------------------------------------------------
@@ -134,8 +133,6 @@ $bp-tablet        : 800px;
 $bp-mobile        : 500px;
 ```
 
-If you choose this way, you don't have to care about anything else in that file. Just look at the variables.
-
 ## Features
 
 - [x] Lightweight and minimal
@@ -154,7 +151,7 @@ If you choose this way, you don't have to care about anything else in that file.
 
 ## Support me!
 
-Do you love this theme? Was it useful to you? Make a donation and support new features!
+Do you love Zplit? Did you find it enjoyable and useful? If so, consider showing your support by making a donation. Your contribution will help fund the development of new features and improvements for this theme.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/V7V425BFU)
 

@@ -3,12 +3,12 @@
 title = "Bear"
 description = "Bear blog theme"
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
-repository = "https://codeberg.org/alanpearce/zola-bearblog"
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
+repository = "https://codeberg.org/alanpearce/zola-bearblog.git"
 homepage = "https://codeberg.org/alanpearce/zola-bearblog"
 minimum_version = "0.4.0"
 license = "MIT"
@@ -66,6 +66,10 @@ Please check out the included [config.toml](https://codeberg.org/alanpearce/zola
 Create an array in `extra` with a key of `main_menu`. `url` is passed to [`get_url`](https://www.getzola.org/documentation/templates/overview/#get-url)
 
 ```toml
+[[extra.main_menu]]
+name = "Home"
+url = "/"
+
 [[extra.main_menu]]
 name = "Bear"
 url = "@/bear.md"

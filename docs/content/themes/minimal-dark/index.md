@@ -3,13 +3,13 @@
 title = "minimal-dark"
 description = "Clean and minimalistic dark theme"
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
 repository = "https://github.com/kuznetsov17/minimal-dark.git"
-homepage = "https://github.com/getzola/minimal-dark"
+homepage = "https://github.com/kuznetsov17/minimal-dark"
 minimum_version = "0.18.0"
 license = "MIT"
 demo = "https://kuznetsov17.github.io/minimal-dark/"
@@ -19,11 +19,17 @@ name = "Vitaliy Kuznetsov"
 homepage = "https://viku.me"
 +++        
 
+[![Deploy Zola with GitHub Pages](https://github.com/kuznetsov17/minimal-dark/actions/workflows/zola-build.yml/badge.svg)](https://github.com/kuznetsov17/minimal-dark/actions/workflows/zola-build.yml)
+
 
 # General
 
 I am not the best webmaster, but should be somewhat responsive.
-I intentionally using the bigger fonts to make, feel free to change it in main.css
+I intentionally using the bigger fonts to make, feel free to change it in main.scss
+
+
+# Light mode
+Now light mode also supported. 
 
 # Important
 Please make sure to set up your base_url with trailing slash:
@@ -49,9 +55,10 @@ crossorigin="anonymous"
 nonce=""
 ```
 
-# Page configurations
+# Page onfigurations
 Customize the page blocks by setting configuration in **[extra]** section:
 ```toml
+copyright_string = "Сreated in %YEAR% for fun." # the string displayed in footer. %YEAR% is replaced by current year on build
 show_copyright = true / false # enables / disables footer with copyright
 show_comments = true / false # enables / disables comments
 show_shares = true / false # enables / disables section with social share buttons
@@ -74,6 +81,40 @@ top_menu = ["index","features","notes"] # Menu items
 copyright_string = "Сreated by John Doe in 2024 – %YEAR% for fun." # footer content. %YEAR% will be replaced with current year
 nonce = "${SOME_HASH_VALUE}" # used for JavaScript src nonce
 ```
+
+# Shortcodes
+
+## Callouts
+```
+{%/* callout(type = 'warning') */%}
+This is an example of **Warning** callout. [Some link](#)
+{%/* end */%}
+{%/* callout(type = 'alert') */%}
+This is an example of **Alert** callout. [Some link](#)
+{%/* end */%}
+{%/* callout(type = 'info') */%}
+This is an example of **Info** callout. [Some link](#)
+{%/* end */%}
+```
+## Timeline
+```
+{%/* timeline() */%}
+[{
+    "title":"Lorem Ipsum Event",
+    "body":"Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+    "date":"Jul-2023"
+},
+{
+    "title":"Lorem Ipsum event 2",
+    "body":"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+    "date":"Jun-2022"
+}]
+{%/* end */%}
+```
+
+# Thanks to
+ - [Giscuss](https://giscuss.app) for excellent comments system
+ - [bootstrap icons](https://icons.getbootstrap.com) for great social icons 
 
 # Screenshot
 ![Screenshot](https://github.com/kuznetsov17/minimal-dark/blob/main/screenshot.png?raw=true)

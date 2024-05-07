@@ -3,12 +3,12 @@
 title = "anemone"
 description = "A minimalist Zola theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas."
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
-repository = "https://github.com/Speyll/anemone"
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
+repository = "https://github.com/Speyll/anemone.git"
 homepage = "https://github.com/Speyll/anemone"
 minimum_version = "0.4.0"
 license = "MIT"
@@ -30,7 +30,7 @@ Anemone is a versatile Zola theme that comes with both light and dark variants. 
 
 ![Anemone Light and Dark Theme](screenshot.png)
 
-### Installation
+## Installation
 
 To get started with Anemone, follow these simple steps:
 
@@ -47,7 +47,23 @@ git clone https://github.com/Speyll/anemone
 theme = "anemone"
 ```
 
-### Options
+## Release Notes
+
+#### 02-03-2024
+This release brings several improvements and enhancements, focusing mainly on optimizing performance and user experience. Here's a summary of the key changes:
+
+- **suCSS Integration:** The core CSS now leverages the lightweight [suCSS framework](https://speyll.github.io/suCSS/) made by yours truly, providing better maintainability, robustness, and scalability. With suCSS, the theme should maintain consistent appearance across different browsers.
+
+- **Enhanced Theme Toggle:** The dark and light theme toggle has been revamped for more consistency. Now, the website respects the user's system-wide theme settings, ensuring a seamless experience. Additionally, the toggle retains the selected theme for future visits, offering improved usability.
+
+- **Smooth Transition and Sound Effect:** Enjoy a smoother transition between the dark and light mode accompanied by a subtle sound effect. Rest assured, the added sound effect incurs minimal performance overhead, with the file size being just 1kb.
+
+- **Class Names and Shortcodes Update:** Some class names and shortcodes have been modified for better organization and clarity. I apologize for any inconvenience this may cause.
+
+- **Slight change in Color Choice:** Some dark mode colors have been changed for the sake of readability, still using [veqev](https://github.com/Speyll/veqev).
+
+
+## Options
 
 Anemone provides various options to customize your website:
 
@@ -95,13 +111,13 @@ header_nav = [
 ]
 ```
 
-#### Default Theme
+#### Add Table of Contents (TOC) to Pages
 
-To configure the default theme, simply utilize the `default_theme` variable and set it to either `light` or `dark`:
+In a page's frontmatter, set `extra.toc` to `true`:
 
 ```toml
 [extra]
-default_theme = "light"
+toc = true
 ```
 
 #### Display Author Name in Blog Posts
@@ -121,20 +137,12 @@ Add a webring with a shortcode:
 {{/* webring(prev="#", webring="#", webringName="Random Webring", next="#") */}}
 ```
 
-#### Add Table of Contents (TOC) to Pages
-
-In a page's frontmatter, set `extra.toc` to `true`:
-
-```toml
-[extra]
-toc = true
-```
-
 ### Extra Data
 
-- Set the `author` in both the main config and in pages' metadata.
+- Set the `author` in both the main config and in pages metadata.
 - Use the `image` variable in pages to add an image to HTML `<meta>` tags.
 - Similarly, set `favicon` in the main config, and it will be used as the site icon.
+- Set `footer_content_license` and `footer_content_license_link` if you wish to display content license information in the footer.
 
 #### Disable Twitter Card
 

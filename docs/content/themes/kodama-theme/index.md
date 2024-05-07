@@ -3,11 +3,11 @@
 title = "kodama"
 description = "Theme insipired by wowchemy academic."
 template = "theme.html"
-date = 2024-04-02T04:09:32+10:00
+date = 2024-05-03T12:02:37-07:00
 
 [extra]
-created = 2024-04-02T04:09:32+10:00
-updated = 2024-04-02T04:09:32+10:00
+created = 2024-05-03T12:02:37-07:00
+updated = 2024-05-03T12:02:37-07:00
 repository = "https://github.com/adfaure/kodama-theme.git"
 homepage = "https://github.com/adfaure/kodama-theme"
 minimum_version = "0.15"
@@ -181,7 +181,7 @@ The section `blog` is the most standard section. It show a list of article with 
 To use the blog template, configure the section with the following front matter:
 
 ```toml
-template = "blog.html"
+template = "section.html"
 page_template = "blog-page.html"
 ```
 
