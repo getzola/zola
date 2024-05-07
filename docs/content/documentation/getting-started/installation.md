@@ -56,6 +56,16 @@ $ sudo dnf copr enable fz0x1/zola
 $ sudo dnf install zola
 ```
 
+### Gentoo
+
+Zola is available via [GURU](https://wiki.gentoo.org/wiki/Project:GURU).
+
+```sh
+$ sudo eselect repository enable guru
+$ sudo emaint sync --repo guru
+$ sudo emerge --ask www-apps/zola
+```
+
 ### Void Linux
 
 Zola is available in the official Void Linux repositories.
@@ -191,7 +201,6 @@ WORKDIR /project
 RUN ["zola", "build"]
 ```
 
-
 ## Windows
 
 Zola could be installed using official Winget command:
@@ -215,6 +224,7 @@ $ choco install zola
 Zola does not work in PowerShell ISE.
 
 ## From source
+
 To build Zola from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/)
 installed.
 
