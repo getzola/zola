@@ -7,10 +7,11 @@ use config::Config;
 use errors::{anyhow, Context, Result};
 use libs::ahash::{HashMap, HashSet};
 use libs::image::imageops::FilterType;
-use libs::image::{EncodableLayout, ImageOutputFormat};
+use libs::image::{EncodableLayout, ImageFormat};
 use libs::rayon::prelude::*;
 use libs::{image, webp};
 use serde::{Deserialize, Serialize};
+use libs::image::codecs::jpeg::JpegEncoder;
 use utils::fs as ufs;
 
 use crate::format::Format;
@@ -55,10 +56,11 @@ impl ImageOp {
 
         match self.format {
             Format::Png => {
-                img.write_to(&mut buffered_f, ImageOutputFormat::Png)?;
+                img.write_to(&mut buffered_f, ImageFormat::Png)?;
             }
             Format::Jpeg(q) => {
-                img.write_to(&mut buffered_f, ImageOutputFormat::Jpeg(q))?;
+                let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, q);
+                encoder.encode_image(&img)?;
             }
             Format::WebP(q) => {
                 let encoder = webp::Encoder::from_image(&img)
