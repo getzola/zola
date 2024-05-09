@@ -1,0 +1,6 @@
+---
+source: components/markdown/src/markdown.rs
+expression: html
+---
+<p>Some text <em>without</em> footnotes.</p>
+<p>Only <del>fancy</del> formatting.</p>

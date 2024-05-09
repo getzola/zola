@@ -1,0 +1,10 @@
+---
+source: components/markdown/src/markdown.rs
+expression: html
+---
+<p>This text has two<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup> identical footnotes<sup class="footnote-reference" id="fr-1-2"><a href="#fn-1">[1]</a></sup></p>
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>So one is present. <a href="#fr-1-1">↩</a> <a href="#fr-1-2">↩2</a></p>
+</li>
+</ol>

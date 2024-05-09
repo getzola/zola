@@ -1,0 +1,36 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+---
+<p>This text has a footnote<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup></p>
+<p>This text has two<sup class="footnote-reference" id="fr-3-1"><a href="#fn-3">[2]</a></sup> footnotes<sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">[3]</a></sup>.</p>
+<p>There is footnote definition?<sup class="footnote-reference" id="fr-4-1"><a href="#fn-4">[4]</a></sup></p>
+<p>This text has two<sup class="footnote-reference" id="fr-5-1"><a href="#fn-5">[5]</a></sup> identical footnotes<sup class="footnote-reference" id="fr-5-2"><a href="#fn-5">[5]</a></sup></p>
+<p>This text has a footnote<sup class="footnote-reference" id="fr-7-1"><a href="#fn-7">[6]</a></sup></p>
+<p>Footnotes can also be referenced with identifiers<sup class="footnote-reference" id="fr-first-1"><a href="#fn-first">[8]</a></sup>.</p>
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>But it is meaningless. <a href="#fr-1-1">↩</a></p>
+</li>
+<li id="fn-3">
+<p>But they are <a href="#fr-3-1">↩</a></p>
+</li>
+<li id="fn-2">
+<p>not sorted. <a href="#fr-2-1">↩</a></p>
+</li>
+<li id="fn-4">
+<p>It's before the reference. <a href="#fr-4-1">↩</a></p>
+</li>
+<li id="fn-5">
+<p>So one is present. <a href="#fr-5-1">↩</a> <a href="#fr-5-2">↩2</a></p>
+</li>
+<li id="fn-7">
+<p>But the footnote has another footnote<sup class="footnote-reference" id="fr-8-1"><a href="#fn-8">[7]</a></sup>. <a href="#fr-7-1">↩</a></p>
+</li>
+<li id="fn-8">
+<p>That's it. <a href="#fr-8-1">↩</a></p>
+</li>
+<li id="fn-first">
+<p>Like this: <code>[^first]</code>. <a href="#fr-first-1">↩</a></p>
+</li>
+</ol>

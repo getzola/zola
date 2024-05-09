@@ -355,3 +355,40 @@ and multiple paragraphs.
     .body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn github_style_footnotes() {
+    let mut config = Config::default_for_test();
+    config.markdown.bottom_footnotes = true;
+
+    let markdown = r#"This text has a footnote[^1]
+
+[^1]:But it is meaningless.
+
+This text has two[^3] footnotes[^2].
+
+[^2]: not sorted.
+[^3]: But they are
+
+[^4]:It's before the reference.
+
+There is footnote definition?[^4]
+
+This text has two[^5] identical footnotes[^5]
+[^5]: So one is present.
+[^6]: But another in not.
+
+This text has a footnote[^7]
+
+[^7]: But the footnote has another footnote[^8].
+
+[^8]: That's it.
+
+Footnotes can also be referenced with identifiers[^first].
+
+[^first]: Like this: `[^first]`.
+"#;
+
+    let body = common::render_with_config(&markdown, config).unwrap().body;
+    insta::assert_snapshot!(body);
+}
