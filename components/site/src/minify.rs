@@ -108,7 +108,7 @@ mod tests {
 </body>
 </html>
 "#;
-        let expected = r#"<!doctype html><html><head><meta charset=utf-8><style>p{color:white;margin-left:10000px}</style><body><p>Example blog post</p> FOO BAR"#;
+        let expected = r#"<!doctype html><html><head><meta charset=utf-8><style>p{color:#fff;margin-left:10000px}</style><body><p>Example blog post</p> FOO BAR"#;
         let res = html(input.to_owned()).unwrap();
         assert_eq!(res, expected);
     }
@@ -135,7 +135,7 @@ mod tests {
 </body>
 </html>
 "#;
-        let expected = r#"<!doctype html><html><head><meta charset=utf-8><script>alert("Hello World!");console.log("Some information: %o",information)</script><body><p>Example blog post</p> FOO BAR"#;
+        let expected = r#"<!doctype html><html><head><meta charset=utf-8><script>alert(`Hello World!`);console.log(`Some information: %o`,information)</script><body><p>Example blog post</p> FOO BAR"#;
         let res = html(input.to_owned()).unwrap();
         assert_eq!(res, expected);
     }
