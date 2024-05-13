@@ -6,12 +6,12 @@ use std::path::{Path, PathBuf};
 use config::Config;
 use errors::{anyhow, Context, Result};
 use libs::ahash::{HashMap, HashSet};
+use libs::image::codecs::jpeg::JpegEncoder;
 use libs::image::imageops::FilterType;
 use libs::image::{EncodableLayout, ImageFormat};
 use libs::rayon::prelude::*;
 use libs::{image, webp};
 use serde::{Deserialize, Serialize};
-use libs::image::codecs::jpeg::JpegEncoder;
 use utils::fs as ufs;
 
 use crate::format::Format;
