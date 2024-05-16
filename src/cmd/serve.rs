@@ -48,7 +48,6 @@ use notify::{watcher, RecursiveMode, Watcher};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Error, Result};
-use pathdiff::diff_paths;
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
 use utils::fs::{clean_site_output_folder, copy_file, is_temp_file};
@@ -469,18 +468,21 @@ pub fn serve(
     }
 
     let config_path = PathBuf::from(config_file);
-    let config_path_rel = diff_paths(&config_path, root_dir).unwrap_or_else(|| config_path.clone());
+    let root_dir_str = root_dir.to_str().expect("Project root dir is not valid UTF-8.");
 
-    // An array of (path, WatchMode) where the path should be watched for changes,
-    // and the WatchMode value indicates whether this file/folder must exist for
-    // zola serve to operate
+    // An array of (path, WatchMode, RecursiveMode) where the path is watched for changes,
+    // the WatchMode value indicates whether this path must exist for zola serve to operate,
+    // and the RecursiveMode value indicates whether to watch nested directories.
     let watch_this = vec![
-        (config_path_rel.to_str().unwrap_or("config.toml"), WatchMode::Required),
-        ("content", WatchMode::Required),
-        ("sass", WatchMode::Condition(site.config.compile_sass)),
-        ("static", WatchMode::Optional),
-        ("templates", WatchMode::Optional),
-        ("themes", WatchMode::Condition(site.config.theme.is_some())),
+        // The first entry is ultimtely to watch config.toml in a more robust manner on Linux when
+        // the file changes by way of a caching strategy used by editors such as vim.
+        // https://github.com/getzola/zola/issues/2266
+        (root_dir_str, WatchMode::Required, RecursiveMode::NonRecursive),
+        ("content", WatchMode::Required, RecursiveMode::Recursive),
+        ("sass", WatchMode::Condition(site.config.compile_sass), RecursiveMode::Recursive),
+        ("static", WatchMode::Optional, RecursiveMode::Recursive),
+        ("templates", WatchMode::Optional, RecursiveMode::Recursive),
+        ("themes", WatchMode::Condition(site.config.theme.is_some()), RecursiveMode::Recursive),
     ];
 
     // Setup watchers
@@ -493,16 +495,16 @@ pub fn serve(
     //   - the path exists but has incorrect permissions
     // watchers will contain the paths we're actually watching
     let mut watchers = Vec::new();
-    for (entry, mode) in watch_this {
+    for (entry, watch_mode, recursive_mode) in watch_this {
         let watch_path = root_dir.join(entry);
-        let should_watch = match mode {
+        let should_watch = match watch_mode {
             WatchMode::Required => true,
             WatchMode::Optional => watch_path.exists(),
             WatchMode::Condition(b) => b && watch_path.exists(),
         };
         if should_watch {
             watcher
-                .watch(root_dir.join(entry), RecursiveMode::Recursive)
+                .watch(root_dir.join(entry), recursive_mode)
                 .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());
         }
@@ -586,12 +588,17 @@ pub fn serve(
         broadcaster
     };
 
-    println!(
-        "Listening for changes in {}{}{{{}}}",
-        root_dir.display(),
-        MAIN_SEPARATOR,
-        watchers.join(",")
-    );
+    // We watch for changes in the config by monitoring the parent directory, but we ignore all
+    // ordinary peer files. Map the parent directory back to the config file name to not confuse
+    // the end user.
+    let config_name =
+        config_path.file_name().unwrap().to_str().expect("Config name is not valid UTF-8.");
+    let watch_list = watchers
+        .iter()
+        .map(|w| if w == root_dir_str { config_name } else { w })
+        .collect::<Vec<&str>>()
+        .join(",");
+    println!("Listening for changes in {}{}{{{}}}", root_dir.display(), MAIN_SEPARATOR, watch_list);
 
     let preserve_dotfiles_in_output = site.config.preserve_dotfiles_in_output;
 
@@ -707,6 +714,12 @@ pub fn serve(
 
                         // We only care about changes in non-empty folders
                         if path.is_dir() && is_folder_empty(&path) {
+                            continue;
+                        }
+
+                        // Ignore files peer to config.toml. This assumes all other files we care
+                        // about are nested more deeply than config.toml.
+                        if path != config_path && path.parent() == config_path.parent() {
                             continue;
                         }
 
