@@ -82,7 +82,7 @@ impl ImageOp {
                 };
                 buffered_f.write_all(memory.as_bytes())?;
             }
-            Format::JXL(q) => {
+            Format::JpegXL(q) => {
                 let mut encoder = jpegxl_rs::encoder_builder();
                 if let Some(q) = q {
                     if q == 100 {

@@ -13,7 +13,7 @@ pub enum Format {
     /// WebP, The `u8` argument is WebP quality (1..100), None meaning lossless.
     WebP(Option<u8>),
     /// JPEG XL, The `u8` argument is quality (1..100), None meaning lossless.
-    JXL(Option<u8>),
+    JpegXL(Option<u8>),
 }
 
 impl Format {
@@ -34,7 +34,7 @@ impl Format {
             "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
             "png" => Ok(Png),
             "webp" => Ok(WebP(quality)),
-            "jxl" => Ok(JXL(quality)),
+            "jxl" => Ok(JpegXL(quality)),
             _ => Err(anyhow!("Invalid image format: {}", format)),
         }
     }
@@ -47,7 +47,7 @@ impl Format {
             Png => "png",
             Jpeg(_) => "jpg",
             WebP(_) => "webp",
-            JXL(_) => "jxl",
+            JpegXL(_) => "jxl",
         }
     }
 }
@@ -62,8 +62,8 @@ impl Hash for Format {
             Jpeg(q) => 1001 + q as u16,
             WebP(None) => 2000,
             WebP(Some(q)) => 2001 + q as u16,
-            JXL(None) => 3000,
-            JXL(Some(q)) => 3001 + q as u16,
+            JpegXL(None) => 3000,
+            JpegXL(Some(q)) => 3001 + q as u16,
         };
 
         hasher.write_u16(q);
