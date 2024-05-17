@@ -44,7 +44,9 @@ use libs::globset::GlobSet;
 use libs::percent_encoding;
 use libs::relative_path::{RelativePath, RelativePathBuf};
 use libs::serde_json;
-use notify::{watcher, RecursiveMode, Watcher};
+use notify_debouncer_full::{
+    new_debouncer, notify::event::*, notify::RecursiveMode, notify::Watcher,
+};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Error, Result};
@@ -487,7 +489,7 @@ pub fn serve(
 
     // Setup watchers
     let (tx, rx) = channel();
-    let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
+    let mut debouncer = new_debouncer(Duration::from_secs(1), /*tick_rate=*/ None, tx).unwrap();
 
     // We watch for changes on the filesystem for every entry in watch_this
     // Will fail if either:
@@ -503,8 +505,8 @@ pub fn serve(
             WatchMode::Condition(b) => b && watch_path.exists(),
         };
         if should_watch {
-            watcher
-                .watch(root_dir.join(entry), recursive_mode)
+            debouncer.watcher()
+                .watch(&root_dir.join(entry), recursive_mode)
                 .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());
         }
@@ -613,8 +615,6 @@ pub fn serve(
     })
     .expect("Error setting Ctrl-C handler");
 
-    use notify::DebouncedEvent::*;
-
     let reload_sass = |site: &Site, path: &Path, partial_path: &Path| {
         let msg = if path.is_dir() {
             format!("-> Directory in `sass` folder changed {}", path.display())
@@ -697,127 +697,175 @@ pub fn serve(
 
     loop {
         match rx.recv() {
-            Ok(event) => {
-                let can_do_fast_reload = !matches!(event, Remove(_));
+            Ok(events) => {
+                // Site updates done in the loop are naive, could be optimized by batching.
+                for event in events.unwrap() {
+                    let can_do_fast_reload = !matches!(event.event.kind, EventKind::Remove(_));
 
-                match event {
-                    // Intellij does weird things on edit, chmod is there to count those changes
-                    // https://github.com/passcod/notify/issues/150#issuecomment-494912080
-                    Rename(_, path) | Create(path) | Write(path) | Remove(path) | Chmod(path) => {
-                        if is_ignored_file(&site.config.ignored_content_globset, &path) {
-                            continue;
-                        }
-
-                        if is_temp_file(&path) {
-                            continue;
-                        }
-
-                        // We only care about changes in non-empty folders
-                        if path.is_dir() && is_folder_empty(&path) {
-                            continue;
-                        }
-
-                        // Ignore files peer to config.toml. This assumes all other files we care
-                        // about are nested more deeply than config.toml.
-                        if path != config_path && path.parent() == config_path.parent() {
-                            continue;
-                        }
-
-                        let format =
-                            format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
-                        let current_time =
-                            OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
-                        if let Ok(time_str) = current_time {
-                            println!("Change detected @ {}", time_str);
-                        } else {
-                            // if formatting fails for some reason
-                            println!("Change detected");
-                        };
-
-                        let start = Instant::now();
-                        match detect_change_kind(root_dir, &path, &config_path) {
-                            (ChangeKind::Content, _) => {
-                                console::info(&format!("-> Content changed {}", path.display()));
-
-                                if fast_rebuild {
-                                    if can_do_fast_reload {
-                                        let filename = path
-                                            .file_name()
-                                            .unwrap_or_else(|| OsStr::new(""))
-                                            .to_string_lossy();
-                                        let res = if filename == "_index.md" {
-                                            site.add_and_render_section(&path)
-                                        } else if filename.ends_with(".md") {
-                                            site.add_and_render_page(&path)
-                                        } else {
-                                            // an asset changed? a folder renamed?
-                                            // should we make it smarter so it doesn't reload the whole site?
-                                            Err(anyhow!("dummy"))
-                                        };
-
-                                        if res.is_err() {
-                                            if let Some(s) = recreate_site() {
-                                                site = s;
-                                            }
-                                        } else {
-                                            rebuild_done_handling(
-                                                &broadcaster,
-                                                res,
-                                                &path.to_string_lossy(),
-                                            );
+                    // Figure out whether we should ignore the event. Explicitly match the cases we
+                    // don't want to ignore.
+                    match event.event.kind {
+                        EventKind::Create(create_kind) => match create_kind {
+                            CreateKind::File | CreateKind::Folder => {}
+                            _ => {
+                                continue;
+                            }
+                        },
+                        EventKind::Modify(modify_kind) => {
+                            match modify_kind {
+                                ModifyKind::Data(data_change) => match data_change {
+                                    DataChange::Size | DataChange::Content => {}
+                                    _ => {
+                                        continue;
+                                    }
+                                },
+                                ModifyKind::Metadata(metadata_kind) => {
+                                    // Intellij does weird things on edit; account for those here.
+                                    // https://github.com/passcod/notify/issues/150#issuecomment-494912080
+                                    match metadata_kind {
+                                        MetadataKind::WriteTime
+                                        | MetadataKind::Permissions
+                                        | MetadataKind::Ownership => {}
+                                        _ => {
+                                            continue;
                                         }
+                                    }
+                                }
+                                ModifyKind::Name(rename_mode) => match rename_mode {
+                                    RenameMode::To => {}
+                                    _ => {
+                                        continue;
+                                    }
+                                },
+                                _ => {
+                                    continue;
+                                }
+                            }
+                        }
+                        EventKind::Remove(remove_kind) => match remove_kind {
+                            RemoveKind::File | RemoveKind::Folder => {}
+                            _ => {
+                                continue;
+                            }
+                        },
+                        _ => {}
+                    }
+
+                    // Naively assume we have only 1 path for the event.
+                    let path = event.event.paths[0].clone();
+
+                    if is_ignored_file(&site.config.ignored_content_globset, &path) {
+                        continue;
+                    }
+
+                    if is_temp_file(&path) {
+                        continue;
+                    }
+
+                    // We only care about changes in non-empty folders
+                    if path.is_dir() && is_folder_empty(&path) {
+                        continue;
+                    }
+
+                    // Ignore files peer to config.toml. This assumes all other files we care
+                    // about are nested more deeply than config.toml.
+                    if path != config_path && path.parent() == config_path.parent() {
+                        continue;
+                    }
+
+                    let format =
+                        format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+                    let current_time =
+                        OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
+                    if let Ok(time_str) = current_time {
+                        println!("Change detected @ {}", time_str);
+                    } else {
+                        // if formatting fails for some reason
+                        println!("Change detected");
+                    };
+
+                    let start = Instant::now();
+                    match detect_change_kind(root_dir, &path, &config_path) {
+                        (ChangeKind::Content, _) => {
+                            console::info(&format!("-> Content changed {}", path.display()));
+
+                            if fast_rebuild {
+                                if can_do_fast_reload {
+                                    let filename = path
+                                        .file_name()
+                                        .unwrap_or_else(|| OsStr::new(""))
+                                        .to_string_lossy();
+                                    let res = if filename == "_index.md" {
+                                        site.add_and_render_section(&path)
+                                    } else if filename.ends_with(".md") {
+                                        site.add_and_render_page(&path)
                                     } else {
-                                        // Should we be smarter than that? Is it worth it?
+                                        // an asset changed? a folder renamed?
+                                        // should we make it smarter so it doesn't reload the whole site?
+                                        Err(anyhow!("dummy"))
+                                    };
+
+                                    if res.is_err() {
                                         if let Some(s) = recreate_site() {
                                             site = s;
                                         }
+                                    } else {
+                                        rebuild_done_handling(
+                                            &broadcaster,
+                                            res,
+                                            &path.to_string_lossy(),
+                                        );
                                     }
-                                } else if let Some(s) = recreate_site() {
-                                    site = s;
-                                }
-                            }
-                            (ChangeKind::Templates, partial_path) => {
-                                let msg = if path.is_dir() {
-                                    format!(
-                                        "-> Directory in `templates` folder changed {}",
-                                        path.display()
-                                    )
                                 } else {
-                                    format!("-> Template changed {}", path.display())
-                                };
-                                console::info(&msg);
-
-                                // A shortcode changed, we need to rebuild everything
-                                if partial_path.starts_with("/templates/shortcodes") {
+                                    // Should we be smarter than that? Is it worth it?
                                     if let Some(s) = recreate_site() {
                                         site = s;
                                     }
-                                } else {
-                                    println!("Reloading only template");
-                                    // A normal template changed, no need to re-render Markdown.
-                                    reload_templates(&mut site, &path)
                                 }
+                            } else if let Some(s) = recreate_site() {
+                                site = s;
                             }
-                            (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
-                            (ChangeKind::Sass, p) => reload_sass(&site, &path, &p),
-                            (ChangeKind::Themes, _) => {
-                                console::info("-> Themes changed.");
+                        }
+                        (ChangeKind::Templates, partial_path) => {
+                            let msg = if path.is_dir() {
+                                format!(
+                                    "-> Directory in `templates` folder changed {}",
+                                    path.display()
+                                )
+                            } else {
+                                format!("-> Template changed {}", path.display())
+                            };
+                            console::info(&msg);
 
+                            // A shortcode changed, we need to rebuild everything
+                            if partial_path.starts_with("/templates/shortcodes") {
                                 if let Some(s) = recreate_site() {
                                     site = s;
                                 }
+                            } else {
+                                println!("Reloading only template");
+                                // A normal template changed, no need to re-render Markdown.
+                                reload_templates(&mut site, &path)
                             }
-                            (ChangeKind::Config, _) => {
-                                console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
+                        }
+                        (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
+                        (ChangeKind::Sass, p) => reload_sass(&site, &path, &p),
+                        (ChangeKind::Themes, _) => {
+                            console::info("-> Themes changed.");
 
-                                if let Some(s) = recreate_site() {
-                                    site = s;
-                                }
+                            if let Some(s) = recreate_site() {
+                                site = s;
                             }
-                        };
-                        messages::report_elapsed_time(start);
-                    }
-                    _ => {}
+                        }
+                        (ChangeKind::Config, _) => {
+                            console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
+
+                            if let Some(s) = recreate_site() {
+                                site = s;
+                            }
+                        }
+                    };
+                    messages::report_elapsed_time(start);
                 }
             }
             Err(e) => console::error(&format!("Watch error: {:?}", e)),
