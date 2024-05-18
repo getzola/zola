@@ -57,7 +57,7 @@ pub struct Config {
     pub feed_limit: Option<usize>,
     /// The filenames to use for feeds. Used to find the templates, too.
     /// Defaults to ["atom.xml"], with "rss.xml" also having a template provided out of the box.
-    #[serde(alias = "feed_filename", deserialize_with = "might_be_single")]
+    #[serde(alias = "feed_filename", deserialize_with = "single_or_vec")]
     pub feed_filenames: Vec<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
@@ -401,26 +401,26 @@ impl Default for Config {
 }
 
 /// Used for deserializing values that can be either a single value or a vec of values
-pub(crate) fn might_be_single<'de, T, D>(deserializer: D) -> Result<Vec<T>, D::Error>
+pub(crate) fn single_or_vec<'de, T, D>(deserializer: D) -> Result<Vec<T>, D::Error>
 where
     T: DeserializeOwned,
     D: Deserializer<'de>,
 {
-    let v = MightBeSingle::deserialize(deserializer)?;
+    let v = SingleOrVec::deserialize(deserializer)?;
     Ok(v.into())
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
-pub(crate) enum MightBeSingle<T> {
+pub(crate) enum SingleOrVec<T> {
     Multiple(Vec<T>),
     One(T),
     None,
 }
 
-impl<T> From<MightBeSingle<T>> for Vec<T> {
-    fn from(x: MightBeSingle<T>) -> Vec<T> {
-        use MightBeSingle::*;
+impl<T> From<SingleOrVec<T>> for Vec<T> {
+    fn from(x: SingleOrVec<T>) -> Vec<T> {
+        use SingleOrVec::*;
 
         match x {
             Multiple(v) => v,
@@ -430,13 +430,13 @@ impl<T> From<MightBeSingle<T>> for Vec<T> {
     }
 }
 
-impl<T> From<Vec<T>> for MightBeSingle<T> {
+impl<T> From<Vec<T>> for SingleOrVec<T> {
     fn from(value: Vec<T>) -> Self {
         Self::Multiple(value)
     }
 }
 
-impl<T> Default for MightBeSingle<T> {
+impl<T> Default for SingleOrVec<T> {
     fn default() -> Self {
         Self::None
     }
