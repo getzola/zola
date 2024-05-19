@@ -52,7 +52,9 @@ pub struct Site {
     pub live_reload: Option<u16>,
     pub output_path: PathBuf,
     content_path: PathBuf,
+    pub sass_path: PathBuf,
     pub static_path: PathBuf,
+    pub templates_path: PathBuf,
     pub taxonomies: Vec<Taxonomy>,
     /// A map of all .md files (section and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
@@ -82,7 +84,9 @@ impl Site {
         let shortcode_definitions = utils::templates::get_shortcodes(&tera);
 
         let content_path = path.join("content");
+        let sass_path = path.join("sass");
         let static_path = path.join("static");
+        let templates_path = path.join("templates");
         let imageproc = imageproc::Processor::new(path.to_path_buf(), &config);
         let output_path = path.join(config.output_dir.clone());
 
@@ -94,7 +98,9 @@ impl Site {
             live_reload: None,
             output_path,
             content_path,
+            sass_path,
             static_path,
+            templates_path,
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
             include_drafts: false,
