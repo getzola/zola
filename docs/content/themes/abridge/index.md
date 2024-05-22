@@ -3,16 +3,16 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2024-05-03T12:02:37-07:00
+date = 2024-05-22T18:27:08+02:00
 
 [extra]
-created = 2024-05-03T12:02:37-07:00
-updated = 2024-05-03T12:02:37-07:00
+created = 2024-05-22T18:27:08+02:00
+updated = 2024-05-22T18:27:08+02:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.18.0"
 license = "MIT"
-demo = "https://abridge.netlify.app/"
+demo = "https://abridge.pages.dev/"
 
 [extra.author]
 name = "Jake G (jieiku)"
@@ -24,7 +24,7 @@ homepage = "https://github.com/jieiku/"
 
 # Abridge Zola Theme
 
-A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing [abridge.css](https://github.com/Jieiku/abridge.css) (a class-light semantic HTML CSS Framework). Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.netlify.app), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://observatory.mozilla.org/analyze/abridge.netlify.app) scores. Here is a [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md) Page.
+A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing [abridge.css](https://github.com/Jieiku/abridge.css) (a class-light semantic HTML CSS Framework). Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://observatory.mozilla.org/analyze/abridge.pages.dev) scores. Here is a [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md) Page.
 
 ![Lighthouse Score](https://raw.githubusercontent.com/Jieiku/abridge/master/content/overview-abridge/lighthouse.png)
 
@@ -34,28 +34,28 @@ Maintenance of this project is made possible by all the <a href="https://github.
 
 ---
 
-**[View Abridge demo](https://abridge.netlify.app/overview-abridge/)**
+**[View Abridge demo](https://abridge.pages.dev/overview-abridge/)**
 
-**[View Abridge.css demo](https://abridgecss.netlify.app/overview-abridge/)** [[abridge.css framework](https://github.com/Jieiku/abridge.css/tree/master/dist)]
+**[View Abridge.css demo](https://abridge-css.pages.dev/overview-abridge/)** [[abridge.css framework](https://github.com/Jieiku/abridge.css/tree/master/dist)]
 
 The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml](https://github.com/Jieiku/abridge.css/blob/master/config.toml), [sass/abridge.scss](https://github.com/Jieiku/abridge.css/blob/master/sass/abridge.scss)
 </div>
 
 ## Features
 
-- [X] Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.netlify.app), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://observatory.mozilla.org/analyze/abridge.netlify.app) scores.
-- [X] [PWA support](https://abridge.netlify.app/overview-abridge/#pwa-progressive-web-app) (Progressive Web Application).
-- [X] All JavaScript can be [fully disabled](https://abridge.netlify.app/overview-abridge/#javascript-files).
+- [X] Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://observatory.mozilla.org/analyze/abridge.pages.dev) scores.
+- [X] [PWA support](https://abridge.pages.dev/overview-abridge/#pwa-progressive-web-app) (Progressive Web Application).
+- [X] All JavaScript can be [fully disabled](https://abridge.pages.dev/overview-abridge/#javascript-files).
 - [X] Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)
-- [X] Code [syntax highlighting](https://abridge.netlify.app/overview-code-blocks/). (colors can be customized, css variables)
-- [X] Numbered code blocks with [line highlighting](https://abridge.netlify.app/overview-code-blocks/#toml).
+- [X] Code [syntax highlighting](https://abridge.pages.dev/overview-code-blocks/). (colors can be customized, css variables)
+- [X] Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
 - [X] Entirely Offline Site by using the PWA **or** by setting `offline = true` in `config.toml` (full search support).
 - [X] Multi-language support.
 - [X] Search support. (elasticlunr, tinysearch, stork)
 - [X] Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.
 - [X] Search Results Page, type search query then hit `Enter Key` or `click` the search button icon.
-- [X] [SEO](https://abridge.netlify.app/overview-abridge/#seo-and-header-tags) support. (Search Engine Optimization)
-- [X] [Pagination](https://abridge.netlify.app/overview-abridge/#pagination) with numbered paginator on index.
+- [X] [SEO](https://abridge.pages.dev/overview-abridge/#seo-and-header-tags) support. (Search Engine Optimization)
+- [X] [Pagination](https://abridge.pages.dev/overview-abridge/#pagination) with numbered paginator on index.
 - [X] Title Based Previous and Next Article links at bottom of Article.
 - [X] Table of Contents in page Index (Optional, clickable links)
 - [X] Recent Posts Block. (Optional)
@@ -63,16 +63,16 @@ The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml]
 - [X] Code Blocks copy button.
 - [X] Email link in footer obfuscation. (anti-spam)
 - [X] [KaTeX](https://katex.org/) support.
-- [X] [Archive page](https://abridge.netlify.app/archive/).
-- [x] [Tags](https://abridge.netlify.app/tags/).
+- [X] [Archive page](https://abridge.pages.dev/archive/).
+- [x] [Tags](https://abridge.pages.dev/tags/).
 - [x] Categories. (similar to Tags, disabled/commented out by default)
 - [x] Social icon links in footer.
 - [X] Responsive design. (mobile first)
-- [X] Video Shortcodes: [Youtube](https://abridge.netlify.app/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.netlify.app/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.netlify.app/video-streaming-sites/overview-embed-streamable/).
-- [X] Media Shortcodes: [video](https://abridge.netlify.app/overview-rich-content/#video), [img](https://abridge.netlify.app/overview-images/#img-shortcode), [imgswap](https://abridge.netlify.app/overview-images/#imgswap-shortcode), [image](https://abridge.netlify.app/overview-rich-content/#image), [gif](https://abridge.netlify.app/overview-rich-content/#gif), [audio](https://abridge.netlify.app/overview-rich-content/#audio).
-- [X] Other Shortcodes: [showdata](https://abridge.netlify.app/overview-showdata/), [katex](https://abridge.netlify.app/overview-math/#usage-1).
+- [X] Video Shortcodes: [Youtube](https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/).
+- [X] Media Shortcodes: [video](https://abridge.pages.dev/overview-rich-content/#video), [img](https://abridge.pages.dev/overview-images/#img-shortcode), [imgswap](https://abridge.pages.dev/overview-images/#imgswap-shortcode), [image](https://abridge.pages.dev/overview-rich-content/#image), [gif](https://abridge.pages.dev/overview-rich-content/#gif), [audio](https://abridge.pages.dev/overview-rich-content/#audio).
+- [X] Other Shortcodes: [showdata](https://abridge.pages.dev/overview-showdata/), [katex](https://abridge.pages.dev/overview-math/#usage-1).
 
-**[Complete Documentation is available here](https://abridge.netlify.app/overview-abridge/)**
+**[Complete Documentation is available here](https://abridge.pages.dev/overview-abridge/)**
 
 ## Quick Start
 
@@ -132,7 +132,7 @@ rsync themes/abridge/package.json package.json
 - `COPY-TO-ROOT-SASS/abridge.scss` overrides to customize Abridge variables.
 - `netlify.toml` settings to deploy your repo with netlfiy.
 - `package_abridge.js` node script to: update cache files list in PWA, minify js, bundle js
-- `package.json` to switch between nosearch, elasticlunr, tinysearch, stork.
+- `package.json` to facilitate use of package_abridge.js
 
 Uncomment the theme line in your project's root config.toml:
 
@@ -162,7 +162,7 @@ Saved changes will live reload in the browser. (press `ctrl+f5`, or while develo
 
 ## Customization
 
-For further customization be sure to [check the docs](https://abridge.netlify.app/overview-abridge/).
+For further customization be sure to [check the docs](https://abridge.pages.dev/overview-abridge/).
 
 ## Sponsor
 
