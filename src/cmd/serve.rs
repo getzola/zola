@@ -22,6 +22,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::cell::Cell;
+use std::collections::HashMap;
 use std::fs::read_dir;
 use std::future::IntoFuture;
 use std::net::{IpAddr, SocketAddr, TcpListener};
@@ -44,7 +45,7 @@ use libs::globset::GlobSet;
 use libs::percent_encoding;
 use libs::relative_path::{RelativePath, RelativePathBuf};
 use libs::serde_json;
-use notify::{watcher, RecursiveMode, Watcher};
+use notify_debouncer_full::{new_debouncer, notify::RecursiveMode, notify::Watcher};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Error, Result};
@@ -53,10 +54,11 @@ use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
 use utils::fs::{clean_site_output_folder, copy_file, is_temp_file};
 
+use crate::fs_event_utils::{get_relevant_event_kind, SimpleFSEventKind};
 use crate::messages;
 use std::ffi::OsStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq)]
 enum ChangeKind {
     Content,
     Templates,
@@ -65,6 +67,7 @@ enum ChangeKind {
     Sass,
     Config,
 }
+impl Eq for ChangeKind {}
 
 #[derive(Debug, PartialEq)]
 enum WatchMode {
@@ -485,7 +488,7 @@ pub fn serve(
 
     // Setup watchers
     let (tx, rx) = channel();
-    let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
+    let mut debouncer = new_debouncer(Duration::from_secs(1), /*tick_rate=*/ None, tx).unwrap();
 
     // We watch for changes on the filesystem for every entry in watch_this
     // Will fail if either:
@@ -501,8 +504,8 @@ pub fn serve(
             WatchMode::Condition(b) => b && watch_path.exists(),
         };
         if should_watch {
-            watcher
-                .watch(root_dir.join(entry), RecursiveMode::Recursive)
+            debouncer.watcher()
+                .watch(&root_dir.join(entry), RecursiveMode::Recursive)
                 .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());
         }
@@ -606,24 +609,24 @@ pub fn serve(
     })
     .expect("Error setting Ctrl-C handler");
 
-    use notify::DebouncedEvent::*;
-
-    let reload_sass = |site: &Site, path: &Path, partial_path: &Path| {
-        let msg = if path.is_dir() {
-            format!("-> Directory in `sass` folder changed {}", path.display())
-        } else {
-            format!("-> Sass file changed {}", path.display())
-        };
+    let reload_sass = |site: &Site, paths: &Vec<&PathBuf>| {
+        let combined_paths =
+            paths.iter().map(|p| p.display().to_string()).collect::<Vec<String>>().join(", ");
+        let msg = format!("-> Sass file(s) changed {}", combined_paths);
         console::info(&msg);
         rebuild_done_handling(
             &broadcaster,
             compile_sass(&site.base_path, &site.output_path),
-            &partial_path.to_string_lossy(),
+            &site.sass_path.to_string_lossy(),
         );
     };
 
-    let reload_templates = |site: &mut Site, path: &Path| {
-        rebuild_done_handling(&broadcaster, site.reload_templates(), &path.to_string_lossy());
+    let reload_templates = |site: &mut Site| {
+        rebuild_done_handling(
+            &broadcaster,
+            site.reload_templates(),
+            &site.templates_path.to_string_lossy(),
+        );
     };
 
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
@@ -690,52 +693,99 @@ pub fn serve(
 
     loop {
         match rx.recv() {
-            Ok(event) => {
-                let can_do_fast_reload = !matches!(event, Remove(_));
+            Ok(Ok(mut events)) => {
+                // Arrange events from oldest to newest.
+                events.sort_by(|e1, e2| e1.time.cmp(&e2.time));
 
-                match event {
-                    // Intellij does weird things on edit, chmod is there to count those changes
-                    // https://github.com/passcod/notify/issues/150#issuecomment-494912080
-                    Rename(_, path) | Create(path) | Write(path) | Remove(path) | Chmod(path) => {
-                        if is_ignored_file(&site.config.ignored_content_globset, &path) {
-                            continue;
-                        }
+                // Use a map to keep only the last event that occurred for a particular path.
+                // Map `full_path -> (partial_path, simple_event_kind, change_kind)`.
+                let mut meaningful_events: HashMap<
+                    PathBuf,
+                    (PathBuf, SimpleFSEventKind, ChangeKind),
+                > = HashMap::new();
 
-                        if is_temp_file(&path) {
-                            continue;
-                        }
+                for event in events.iter() {
+                    let simple_kind = get_relevant_event_kind(&event.event.kind);
+                    if simple_kind.is_none() {
+                        continue;
+                    }
 
-                        // We only care about changes in non-empty folders
-                        if path.is_dir() && is_folder_empty(&path) {
-                            continue;
-                        }
+                    // We currently only handle notify events that report a single path per event.
+                    if event.event.paths.len() != 1 {
+                        console::error(&format!(
+                            "Skipping unsupported file system event with multiple paths: {:?}",
+                            event.event.kind
+                        ));
+                        continue;
+                    }
+                    let path = event.event.paths[0].clone();
 
-                        let format =
-                            format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
-                        let current_time =
-                            OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
-                        if let Ok(time_str) = current_time {
-                            println!("Change detected @ {}", time_str);
-                        } else {
-                            // if formatting fails for some reason
-                            println!("Change detected");
-                        };
+                    if is_ignored_file(&site.config.ignored_content_globset, &path) {
+                        continue;
+                    }
 
-                        let start = Instant::now();
-                        match detect_change_kind(root_dir, &path, &config_path) {
-                            (ChangeKind::Content, _) => {
-                                console::info(&format!("-> Content changed {}", path.display()));
+                    if is_temp_file(&path) {
+                        continue;
+                    }
+
+                    // We only care about changes in non-empty folders
+                    if path.is_dir() && is_folder_empty(&path) {
+                        continue;
+                    }
+
+                    let (change_k, partial_p) = detect_change_kind(&root_dir, &path, &config_path);
+                    meaningful_events.insert(path, (partial_p, simple_kind.unwrap(), change_k));
+                }
+
+                if meaningful_events.is_empty() {
+                    continue;
+                }
+
+                // Bin changes by change kind to support later iteration over batches of changes.
+                // Map of change_kind -> (partial_path, full_path, event_kind).
+                let mut changes: HashMap<
+                    ChangeKind,
+                    Vec<(&PathBuf, &PathBuf, &SimpleFSEventKind)>,
+                > = HashMap::new();
+                for (full_path, (partial_path, event_kind, change_kind)) in meaningful_events.iter()
+                {
+                    let c = changes.entry(*change_kind).or_insert(vec![]);
+                    c.push((partial_path, full_path, event_kind));
+                }
+
+                let format = format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+
+                for (change_kind, change_group) in changes.iter() {
+                    let current_time =
+                        OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
+                    if let Ok(time_str) = current_time {
+                        println!("Change detected @ {}", time_str);
+                    } else {
+                        // if formatting fails for some reason
+                        println!("Change detected");
+                    };
+
+                    let start = Instant::now();
+                    match change_kind {
+                        ChangeKind::Content => {
+                            for (_, full_path, event_kind) in change_group.iter() {
+                                console::info(&format!(
+                                    "-> Content changed {}",
+                                    full_path.display()
+                                ));
+
+                                let can_do_fast_reload = **event_kind != SimpleFSEventKind::Remove;
 
                                 if fast_rebuild {
                                     if can_do_fast_reload {
-                                        let filename = path
+                                        let filename = full_path
                                             .file_name()
                                             .unwrap_or_else(|| OsStr::new(""))
                                             .to_string_lossy();
                                         let res = if filename == "_index.md" {
-                                            site.add_and_render_section(&path)
+                                            site.add_and_render_section(&full_path)
                                         } else if filename.ends_with(".md") {
-                                            site.add_and_render_page(&path)
+                                            site.add_and_render_page(&full_path)
                                         } else {
                                             // an asset changed? a folder renamed?
                                             // should we make it smarter so it doesn't reload the whole site?
@@ -750,7 +800,7 @@ pub fn serve(
                                             rebuild_done_handling(
                                                 &broadcaster,
                                                 res,
-                                                &path.to_string_lossy(),
+                                                &full_path.to_string_lossy(),
                                             );
                                         }
                                     } else {
@@ -763,51 +813,64 @@ pub fn serve(
                                     site = s;
                                 }
                             }
-                            (ChangeKind::Templates, partial_path) => {
-                                let msg = if path.is_dir() {
-                                    format!(
-                                        "-> Directory in `templates` folder changed {}",
-                                        path.display()
-                                    )
-                                } else {
-                                    format!("-> Template changed {}", path.display())
-                                };
-                                console::info(&msg);
+                        }
+                        ChangeKind::Templates => {
+                            let partial_paths: Vec<&PathBuf> =
+                                change_group.iter().map(|(p, _, _)| *p).collect();
+                            let full_paths: Vec<&PathBuf> =
+                                change_group.iter().map(|(_, p, _)| *p).collect();
+                            let combined_paths = full_paths
+                                .iter()
+                                .map(|p| p.display().to_string())
+                                .collect::<Vec<String>>()
+                                .join(", ");
+                            let msg = format!("-> Template file(s) changed {}", combined_paths);
+                            console::info(&msg);
 
-                                // A shortcode changed, we need to rebuild everything
-                                if partial_path.starts_with("/templates/shortcodes") {
-                                    if let Some(s) = recreate_site() {
-                                        site = s;
-                                    }
-                                } else {
-                                    println!("Reloading only template");
-                                    // A normal template changed, no need to re-render Markdown.
-                                    reload_templates(&mut site, &path)
-                                }
-                            }
-                            (ChangeKind::StaticFiles, p) => copy_static(&site, &path, &p),
-                            (ChangeKind::Sass, p) => reload_sass(&site, &path, &p),
-                            (ChangeKind::Themes, _) => {
-                                console::info("-> Themes changed.");
-
+                            let shortcodes_updated = partial_paths
+                                .iter()
+                                .any(|p| p.starts_with("/templates/shortcodes"));
+                            // Rebuild site if shortcodes change; otherwise, just update template.
+                            if shortcodes_updated {
                                 if let Some(s) = recreate_site() {
                                     site = s;
                                 }
+                            } else {
+                                println!("Reloading only template");
+                                reload_templates(&mut site)
                             }
-                            (ChangeKind::Config, _) => {
-                                console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
+                        }
+                        ChangeKind::StaticFiles => {
+                            for (partial_path, full_path, _) in change_group.iter() {
+                                copy_static(&site, &full_path, &partial_path);
+                            }
+                        }
+                        ChangeKind::Sass => {
+                            let full_paths = change_group.iter().map(|(_, p, _)| *p).collect();
+                            reload_sass(&site, &full_paths);
+                        }
+                        ChangeKind::Themes => {
+                            // No need to iterate over change group since we're rebuilding the site.
+                            console::info("-> Themes changed.");
 
-                                if let Some(s) = recreate_site() {
-                                    site = s;
-                                }
+                            if let Some(s) = recreate_site() {
+                                site = s;
                             }
-                        };
-                        messages::report_elapsed_time(start);
-                    }
-                    _ => {}
+                        }
+                        ChangeKind::Config => {
+                            // No need to iterate over change group since we're rebuilding the site.
+                            console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
+
+                            if let Some(s) = recreate_site() {
+                                site = s;
+                            }
+                        }
+                    };
+                    messages::report_elapsed_time(start);
                 }
             }
-            Err(e) => console::error(&format!("Watch error: {:?}", e)),
+            Ok(Err(e)) => console::error(&format!("File system event errors: {:?}", e)),
+            Err(e) => console::error(&format!("File system event receiver errors: {:?}", e)),
         };
     }
 }
