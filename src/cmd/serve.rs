@@ -22,8 +22,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::cell::Cell;
-use std::collections::HashMap;
-use std::fs::read_dir;
 use std::future::IntoFuture;
 use std::net::{IpAddr, SocketAddr, TcpListener};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
@@ -41,7 +39,6 @@ use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 
-use libs::globset::GlobSet;
 use libs::percent_encoding;
 use libs::relative_path::{RelativePath, RelativePathBuf};
 use libs::serde_json;
@@ -52,22 +49,11 @@ use errors::{anyhow, Context, Error, Result};
 use pathdiff::diff_paths;
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
-use utils::fs::{clean_site_output_folder, copy_file, is_temp_file};
+use utils::fs::{clean_site_output_folder, copy_file};
 
-use crate::fs_event_utils::{get_relevant_event_kind, SimpleFSEventKind};
+use crate::fs_utils::{filter_events, ChangeKind, SimpleFileSystemEventKind};
 use crate::messages;
 use std::ffi::OsStr;
-
-#[derive(Clone, Copy, Debug, Hash, PartialEq)]
-enum ChangeKind {
-    Content,
-    Templates,
-    Themes,
-    StaticFiles,
-    Sass,
-    Config,
-}
-impl Eq for ChangeKind {}
 
 #[derive(Debug, PartialEq)]
 enum WatchMode {
@@ -206,7 +192,7 @@ async fn response_error_injector(
         .map(|req| {
             req.headers()
                 .get(header::CONTENT_TYPE)
-                .map(|val| val != &HeaderValue::from_static("text/html"))
+                .map(|val| val != HeaderValue::from_static("text/html"))
                 .unwrap_or(true)
         })
         .unwrap_or(true)
@@ -401,7 +387,7 @@ fn create_new_site(
 
     let mut constructed_base_url = construct_url(&base_url, no_port_append, interface_port);
 
-    if !site.config.base_url.ends_with("/") && constructed_base_url != "/" {
+    if !site.config.base_url.ends_with('/') && constructed_base_url != "/" {
         constructed_base_url.truncate(constructed_base_url.len() - 1);
     }
 
@@ -548,7 +534,7 @@ pub fn serve(
                     &constructed_base_url, &bind_address
                 );
                 if open {
-                    if let Err(err) = open::that(format!("{}", &constructed_base_url)) {
+                    if let Err(err) = open::that(&constructed_base_url) {
                         eprintln!("Failed to open URL in your browser: {}", err);
                     }
                 }
@@ -693,66 +679,16 @@ pub fn serve(
 
     loop {
         match rx.recv() {
-            Ok(Ok(mut events)) => {
-                // Arrange events from oldest to newest.
-                events.sort_by(|e1, e2| e1.time.cmp(&e2.time));
-
-                // Use a map to keep only the last event that occurred for a particular path.
-                // Map `full_path -> (partial_path, simple_event_kind, change_kind)`.
-                let mut meaningful_events: HashMap<
-                    PathBuf,
-                    (PathBuf, SimpleFSEventKind, ChangeKind),
-                > = HashMap::new();
-
-                for event in events.iter() {
-                    let simple_kind = get_relevant_event_kind(&event.event.kind);
-                    if simple_kind.is_none() {
-                        continue;
-                    }
-
-                    // We currently only handle notify events that report a single path per event.
-                    if event.event.paths.len() != 1 {
-                        console::error(&format!(
-                            "Skipping unsupported file system event with multiple paths: {:?}",
-                            event.event.kind
-                        ));
-                        continue;
-                    }
-                    let path = event.event.paths[0].clone();
-
-                    if is_ignored_file(&site.config.ignored_content_globset, &path) {
-                        continue;
-                    }
-
-                    if is_temp_file(&path) {
-                        continue;
-                    }
-
-                    // We only care about changes in non-empty folders
-                    if path.is_dir() && is_folder_empty(&path) {
-                        continue;
-                    }
-
-                    let (change_k, partial_p) = detect_change_kind(&root_dir, &path, &config_path);
-                    meaningful_events.insert(path, (partial_p, simple_kind.unwrap(), change_k));
-                }
-
-                if meaningful_events.is_empty() {
+            Ok(Ok(events)) => {
+                let changes = filter_events(
+                    events,
+                    root_dir,
+                    &config_path,
+                    &site.config.ignored_content_globset,
+                );
+                if changes.is_empty() {
                     continue;
                 }
-
-                // Bin changes by change kind to support later iteration over batches of changes.
-                // Map of change_kind -> (partial_path, full_path, event_kind).
-                let mut changes: HashMap<
-                    ChangeKind,
-                    Vec<(&PathBuf, &PathBuf, &SimpleFSEventKind)>,
-                > = HashMap::new();
-                for (full_path, (partial_path, event_kind, change_kind)) in meaningful_events.iter()
-                {
-                    let c = changes.entry(*change_kind).or_insert(vec![]);
-                    c.push((partial_path, full_path, event_kind));
-                }
-
                 let format = format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
 
                 for (change_kind, change_group) in changes.iter() {
@@ -774,7 +710,8 @@ pub fn serve(
                                     full_path.display()
                                 ));
 
-                                let can_do_fast_reload = **event_kind != SimpleFSEventKind::Remove;
+                                let can_do_fast_reload =
+                                    *event_kind != SimpleFileSystemEventKind::Remove;
 
                                 if fast_rebuild {
                                     if can_do_fast_reload {
@@ -783,9 +720,9 @@ pub fn serve(
                                             .unwrap_or_else(|| OsStr::new(""))
                                             .to_string_lossy();
                                         let res = if filename == "_index.md" {
-                                            site.add_and_render_section(&full_path)
+                                            site.add_and_render_section(full_path)
                                         } else if filename.ends_with(".md") {
-                                            site.add_and_render_page(&full_path)
+                                            site.add_and_render_page(full_path)
                                         } else {
                                             // an asset changed? a folder renamed?
                                             // should we make it smarter so it doesn't reload the whole site?
@@ -816,9 +753,9 @@ pub fn serve(
                         }
                         ChangeKind::Templates => {
                             let partial_paths: Vec<&PathBuf> =
-                                change_group.iter().map(|(p, _, _)| *p).collect();
+                                change_group.iter().map(|(p, _, _)| p).collect();
                             let full_paths: Vec<&PathBuf> =
-                                change_group.iter().map(|(_, p, _)| *p).collect();
+                                change_group.iter().map(|(_, p, _)| p).collect();
                             let combined_paths = full_paths
                                 .iter()
                                 .map(|p| p.display().to_string())
@@ -842,11 +779,11 @@ pub fn serve(
                         }
                         ChangeKind::StaticFiles => {
                             for (partial_path, full_path, _) in change_group.iter() {
-                                copy_static(&site, &full_path, &partial_path);
+                                copy_static(&site, full_path, partial_path);
                             }
                         }
                         ChangeKind::Sass => {
-                            let full_paths = change_group.iter().map(|(_, p, _)| *p).collect();
+                            let full_paths = change_group.iter().map(|(_, p, _)| p).collect();
                             reload_sass(&site, &full_paths);
                         }
                         ChangeKind::Themes => {
@@ -875,141 +812,9 @@ pub fn serve(
     }
 }
 
-fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bool {
-    match ignored_content_globset {
-        Some(gs) => gs.is_match(path),
-        None => false,
-    }
-}
-
-/// Detect what changed from the given path so we have an idea what needs
-/// to be reloaded
-fn detect_change_kind(pwd: &Path, path: &Path, config_path: &Path) -> (ChangeKind, PathBuf) {
-    let mut partial_path = PathBuf::from("/");
-    partial_path.push(path.strip_prefix(pwd).unwrap_or(path));
-
-    let change_kind = if partial_path.starts_with("/templates") {
-        ChangeKind::Templates
-    } else if partial_path.starts_with("/themes") {
-        ChangeKind::Themes
-    } else if partial_path.starts_with("/content") {
-        ChangeKind::Content
-    } else if partial_path.starts_with("/static") {
-        ChangeKind::StaticFiles
-    } else if partial_path.starts_with("/sass") {
-        ChangeKind::Sass
-    } else if path == config_path {
-        ChangeKind::Config
-    } else {
-        unreachable!("Got a change in an unexpected path: {}", partial_path.display());
-    };
-
-    (change_kind, partial_path)
-}
-
-/// Check if the directory at path contains any file
-fn is_folder_empty(dir: &Path) -> bool {
-    // Can panic if we don't have the rights I guess?
-
-    read_dir(dir).expect("Failed to read a directory to see if it was empty").next().is_none()
-}
-
 #[cfg(test)]
 mod tests {
-    use std::path::{Path, PathBuf};
-
-    use super::{construct_url, detect_change_kind, is_temp_file, ChangeKind};
-
-    #[test]
-    fn can_recognize_temp_files() {
-        let test_cases = vec![
-            Path::new("hello.swp"),
-            Path::new("hello.swx"),
-            Path::new(".DS_STORE"),
-            Path::new("hello.tmp"),
-            Path::new("hello.html.__jb_old___"),
-            Path::new("hello.html.__jb_tmp___"),
-            Path::new("hello.html.__jb_bak___"),
-            Path::new("hello.html~"),
-            Path::new("#hello.html"),
-            Path::new(".index.md.kate-swp"),
-        ];
-
-        for t in test_cases {
-            assert!(is_temp_file(t));
-        }
-    }
-
-    #[test]
-    fn can_detect_kind_of_changes() {
-        let test_cases = vec![
-            (
-                (ChangeKind::Templates, PathBuf::from("/templates/hello.html")),
-                Path::new("/home/vincent/site"),
-                Path::new("/home/vincent/site/templates/hello.html"),
-                Path::new("/home/vincent/site/config.toml"),
-            ),
-            (
-                (ChangeKind::Themes, PathBuf::from("/themes/hello.html")),
-                Path::new("/home/vincent/site"),
-                Path::new("/home/vincent/site/themes/hello.html"),
-                Path::new("/home/vincent/site/config.toml"),
-            ),
-            (
-                (ChangeKind::StaticFiles, PathBuf::from("/static/site.css")),
-                Path::new("/home/vincent/site"),
-                Path::new("/home/vincent/site/static/site.css"),
-                Path::new("/home/vincent/site/config.toml"),
-            ),
-            (
-                (ChangeKind::Content, PathBuf::from("/content/posts/hello.md")),
-                Path::new("/home/vincent/site"),
-                Path::new("/home/vincent/site/content/posts/hello.md"),
-                Path::new("/home/vincent/site/config.toml"),
-            ),
-            (
-                (ChangeKind::Sass, PathBuf::from("/sass/print.scss")),
-                Path::new("/home/vincent/site"),
-                Path::new("/home/vincent/site/sass/print.scss"),
-                Path::new("/home/vincent/site/config.toml"),
-            ),
-            (
-                (ChangeKind::Config, PathBuf::from("/config.toml")),
-                Path::new("/home/vincent/site"),
-                Path::new("/home/vincent/site/config.toml"),
-                Path::new("/home/vincent/site/config.toml"),
-            ),
-            (
-                (ChangeKind::Config, PathBuf::from("/config.staging.toml")),
-                Path::new("/home/vincent/site"),
-                Path::new("/home/vincent/site/config.staging.toml"),
-                Path::new("/home/vincent/site/config.staging.toml"),
-            ),
-        ];
-
-        for (expected, pwd, path, config_filename) in test_cases {
-            assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
-        }
-    }
-
-    #[test]
-    #[cfg(windows)]
-    fn windows_path_handling() {
-        let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
-        let pwd = Path::new(r#"C:\Users\johan\site"#);
-        let path = Path::new(r#"C:\Users\johan\site\templates\hello.html"#);
-        let config_filename = Path::new(r#"C:\Users\johan\site\config.toml"#);
-        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
-    }
-
-    #[test]
-    fn relative_path() {
-        let expected = (ChangeKind::Templates, PathBuf::from("/templates/hello.html"));
-        let pwd = Path::new("/home/johan/site");
-        let path = Path::new("templates/hello.html");
-        let config_filename = Path::new("config.toml");
-        assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
-    }
+    use super::construct_url;
 
     #[test]
     fn test_construct_url_base_url_is_slash() {
