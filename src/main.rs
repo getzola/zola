@@ -10,6 +10,7 @@ use time::UtcOffset;
 
 mod cli;
 mod cmd;
+mod fs_event_utils;
 mod messages;
 mod prompt;
 
