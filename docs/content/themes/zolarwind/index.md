@@ -3,11 +3,11 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2024-05-03T12:02:37-07:00
+date = 2024-05-22T18:27:08+02:00
 
 [extra]
-created = 2024-05-03T12:02:37-07:00
-updated = 2024-05-03T12:02:37-07:00
+created = 2024-05-22T18:27:08+02:00
+updated = 2024-05-22T18:27:08+02:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.18.0"
@@ -132,6 +132,8 @@ Here's a breakdown of the configuration settings tailored for this theme:
 
 - **highlight_theme**: Specifies the theme to be used for code highlighting. The chosen theme in this configuration is `1337`.
 
+- **extra_syntaxes_and_themes**: directory for additional syntax highlighting configuration files for languages not directly supported by Zola.
+
 ### Extra Configuration:
 
 The `[extra]` section is where you can place any custom variables you want to be accessible in your templates.
@@ -253,6 +255,7 @@ This is the directory structure of the stand-alone site, where the theme is in t
 │   ├── css
 │   ├── img
 │   └── js
+├── syntaxes
 ├── templates
 └── theme.toml
 ```
@@ -270,6 +273,7 @@ Create a new directory `themes/zolarwind` and move the following files and direc
         ├── static
         │   ├── img
         │   └── js
+        ├── syntaxes
         ├── templates
         └── theme.toml
 ```
