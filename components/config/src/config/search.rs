@@ -13,11 +13,16 @@ pub enum IndexFormat {
 
 impl IndexFormat {
     /// file extension which ought to be used for this index format.
-    pub fn extension(&self) -> &'static str {
+    fn extension(&self) -> &'static str {
         match *self {
             IndexFormat::ElasticlunrJavascript | IndexFormat::FuseJavascript => "js",
             IndexFormat::ElasticlunrJson | IndexFormat::FuseJson => "json",
         }
+    }
+
+    /// the filename which ought to be used for this format and language `lang`
+    pub fn filename(&self, lang: &str) -> String {
+        format!("search_index.{}.{}", lang, self.extension())
     }
 }
 

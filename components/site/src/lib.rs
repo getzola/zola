@@ -799,8 +799,7 @@ impl Site {
     }
 
     fn index_for_lang(&self, lang: &str) -> Result<()> {
-        let extension = self.config.search.index_format.extension();
-        let path = &self.output_path.join(format!("search_index.{}.{}", lang, extension));
+        let path = &self.output_path.join(self.config.search.index_format.filename(lang));
         let library = self.library.read().unwrap();
         let content = match &self.config.search.index_format {
             IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
