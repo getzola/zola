@@ -3754,7 +3754,6 @@ dependencies = [
  "errors",
  "libs",
  "serde",
- "serde_json",
 ]
 
 [[package]]

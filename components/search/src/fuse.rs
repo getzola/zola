@@ -1,5 +1,6 @@
 use config::Search;
 use content::Library;
+use libs::serde_json;
 
 /// build index in Fuse.js format.
 pub fn build_index(lang: &str, library: &Library, config: &Search) -> super::Result<String> {
