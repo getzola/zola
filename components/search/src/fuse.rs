@@ -4,10 +4,10 @@ use content::Library;
 /// build index in Fuse.js format.
 pub fn build_index(lang: &str, library: &Library, config: &Search) -> super::Result<String> {
     #[derive(serde::Serialize)]
-    struct Item {
-        title: Option<String>,
-        body: Option<String>,
-        path: String,
+    struct Item<'a> {
+        path: &'a str,
+        title: Option<&'a str>,
+        body: Option<String>, // AMMONIA.clean has to allocate anyway
     }
     let mut items: Vec<Item> = Vec::new();
     for (_, section) in &library.sections {
@@ -16,9 +16,9 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> super::Res
             && section.meta.in_search_index
         {
             items.push(Item {
-                path: section.path.clone(),
+                path: &section.path,
                 title: if config.include_title {
-                    Some(section.meta.title.clone().unwrap_or_default())
+                    Some(&section.meta.title.as_deref().unwrap_or_default())
                 } else {
                     None
                 },
@@ -33,7 +33,7 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> super::Res
                 if page.meta.in_search_index {
                     items.push(Item {
                         title: if config.include_title {
-                            Some(page.meta.title.clone().unwrap_or_default())
+                            Some(&page.meta.title.as_deref().unwrap_or_default())
                         } else {
                             None
                         },
@@ -42,7 +42,7 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> super::Res
                         } else {
                             None
                         },
-                        path: page.path.clone(),
+                        path: &page.path,
                     })
                 }
             }
