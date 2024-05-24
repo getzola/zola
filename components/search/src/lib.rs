@@ -1,3 +1,5 @@
+pub mod fuse;
+
 use std::collections::{HashMap, HashSet};
 
 use libs::ammonia;

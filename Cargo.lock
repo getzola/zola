@@ -3753,6 +3753,8 @@ dependencies = [
  "content",
  "errors",
  "libs",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -3932,7 +3934,6 @@ dependencies = [
  "path-slash",
  "search",
  "serde",
- "serde_json",
  "tempfile",
  "templates",
  "utils",
