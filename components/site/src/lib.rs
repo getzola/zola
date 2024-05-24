@@ -803,7 +803,7 @@ impl Site {
         let library = self.library.read().unwrap();
         let content = match &self.config.search.index_format {
             IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
-                search::build_index(lang, &library, &self.config)?
+                search::elasticlunr::build_index(lang, &library, &self.config)?
             }
             IndexFormat::FuseJson | IndexFormat::FuseJavascript => {
                 search::fuse::build_index(lang, &library, &self.config.search)?

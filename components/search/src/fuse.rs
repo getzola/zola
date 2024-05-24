@@ -1,9 +1,10 @@
 use config::Search;
 use content::Library;
+use errors::Result;
 use libs::serde_json;
 
 /// build index in Fuse.js format.
-pub fn build_index(lang: &str, library: &Library, config: &Search) -> super::Result<String> {
+pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<String> {
     #[derive(serde::Serialize)]
     struct Item<'a> {
         path: &'a str,
