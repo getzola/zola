@@ -96,6 +96,12 @@ pub fn filter_events(
             continue;
         }
 
+        // Ignore ordinary files peer to config.toml. This assumes all other files we care
+        // about are nested more deeply than config.toml or are directories peer to config.toml.
+        if path != config_path && path.is_file() && path.parent() == config_path.parent() {
+            continue;
+        }
+
         let (change_k, partial_p) = detect_change_kind(root_dir, &path, config_path);
         meaningful_events.insert(path, (partial_p, simple_kind.unwrap(), change_k));
     }
