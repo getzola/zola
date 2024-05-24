@@ -11,6 +11,16 @@ pub enum IndexFormat {
     FuseJavascript,
 }
 
+impl IndexFormat {
+    /// file extension which ought to be used for this index format.
+    pub fn extension(&self) -> &'static str {
+        match *self {
+            IndexFormat::ElasticlunrJavascript | IndexFormat::FuseJavascript => "js",
+            IndexFormat::ElasticlunrJson | IndexFormat::FuseJson => "json",
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Search {
