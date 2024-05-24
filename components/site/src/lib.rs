@@ -799,27 +799,22 @@ impl Site {
     }
 
     fn index_for_lang(&self, lang: &str) -> Result<()> {
-        let (path, content) = match &self.config.search.index_format {
-            format @ IndexFormat::ElasticlunrJavascript | format @ IndexFormat::ElasticlunrJson => {
-                let index_json =
-                    search::build_index(lang, &self.library.read().unwrap(), &self.config)?;
-                if *format == IndexFormat::ElasticlunrJson {
-                    let path = self.output_path.join(format!("search_index.{}.json", lang));
-                    (path, index_json)
-                } else {
-                    let path = self.output_path.join(format!("search_index.{}.js", lang));
-                    let content = format!("window.searchIndex = {};", index_json);
-                    (path, content)
-                }
+        let extension = match &self.config.search.index_format {
+            IndexFormat::ElasticlunrJavascript | IndexFormat::FuseJavascript => "js",
+            IndexFormat::ElasticlunrJson | IndexFormat::FuseJson => "json",
+        };
+        let path = &self.output_path.join(format!("search_index.{}.{}", lang, extension));
+        let content = match &self.config.search.index_format {
+            IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
+                search::build_index(lang, &self.library.read().unwrap(), &self.config)?
             }
-            IndexFormat::FuseJson => {
+            IndexFormat::FuseJson | IndexFormat::FuseJavascript => {
                 #[derive(serde::Serialize)]
                 struct Item {
                     title: String,
                     body: String,
                     url: String,
                 }
-                let path = self.output_path.join(format!("search_index.{}.json", lang));
                 let mut items: Vec<Item> = Vec::new();
                 let library = self.library.read().unwrap();
                 for (_, section) in &library.sections {
@@ -844,11 +839,18 @@ impl Site {
                         }
                     }
                 }
-                let content = serde_json::to_string(&items)?;
-                (path, content)
+                serde_json::to_string(&items)?
             }
         };
-        create_file(&path, &content)
+        create_file(
+            path,
+            match self.config.search.index_format {
+                IndexFormat::ElasticlunrJson | IndexFormat::FuseJson => content,
+                IndexFormat::ElasticlunrJavascript | IndexFormat::FuseJavascript => {
+                    format!("window.searchIndex = {}", content)
+                }
+            },
+        )
     }
 
     pub fn build_search_index(&self) -> Result<()> {

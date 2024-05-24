@@ -8,6 +8,7 @@ pub enum IndexFormat {
     #[default]
     ElasticlunrJavascript,
     FuseJson,
+    FuseJavascript,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

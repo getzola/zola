@@ -28,11 +28,12 @@ fn create_parent(path: &Path) -> Result<()> {
 }
 
 /// Create a file with the content given
-pub fn create_file(path: &Path, content: &str) -> Result<()> {
+/// `content`` can be `&str`, `String`, or `&String` (and probably others)
+pub fn create_file(path: &Path, content: impl AsRef<str>) -> Result<()> {
     create_parent(path)?;
     let mut file =
         File::create(path).with_context(|| format!("Failed to create file {}", path.display()))?;
-    file.write_all(content.as_bytes())?;
+    file.write_all(content.as_ref().as_bytes())?;
     Ok(())
 }
 
