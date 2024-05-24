@@ -17,6 +17,8 @@ highlight_theme = "kronuz"
 #  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
 #]
 
+[link_checker]
+internal_level = "warn"
 
 [extra]
 author = "Vincent Prouillet"
