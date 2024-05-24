@@ -799,15 +799,52 @@ impl Site {
     }
 
     fn index_for_lang(&self, lang: &str) -> Result<()> {
-        let index_json = search::build_index(lang, &self.library.read().unwrap(), &self.config)?;
         let (path, content) = match &self.config.search.index_format {
-            IndexFormat::ElasticlunrJson => {
-                let path = self.output_path.join(format!("search_index.{}.json", lang));
-                (path, index_json)
+            format @ IndexFormat::ElasticlunrJavascript | format @ IndexFormat::ElasticlunrJson => {
+                let index_json =
+                    search::build_index(lang, &self.library.read().unwrap(), &self.config)?;
+                if *format == IndexFormat::ElasticlunrJson {
+                    let path = self.output_path.join(format!("search_index.{}.json", lang));
+                    (path, index_json)
+                } else {
+                    let path = self.output_path.join(format!("search_index.{}.js", lang));
+                    let content = format!("window.searchIndex = {};", index_json);
+                    (path, content)
+                }
             }
-            IndexFormat::ElasticlunrJavascript => {
-                let path = self.output_path.join(format!("search_index.{}.js", lang));
-                let content = format!("window.searchIndex = {};", index_json);
+            IndexFormat::FuseJson => {
+                #[derive(serde::Serialize)]
+                struct Item {
+                    title: String,
+                    body: String,
+                    url: String,
+                }
+                let path = self.output_path.join(format!("search_index.{}.json", lang));
+                let mut items: Vec<Item> = Vec::new();
+                let library = self.library.read().unwrap();
+                for (_, section) in &library.sections {
+                    if section.lang == lang
+                        && section.meta.redirect_to.is_none()
+                        && section.meta.in_search_index
+                    {
+                        items.push(Item {
+                            title: section.meta.title.clone().unwrap_or_default(),
+                            body: search::AMMONIA.clean(&section.content).to_string(),
+                            url: section.permalink.clone(),
+                        });
+                        for page in &section.pages {
+                            let page = &library.pages[page];
+                            if page.meta.in_search_index {
+                                items.push(Item {
+                                    title: page.meta.title.clone().unwrap_or_default(),
+                                    body: search::AMMONIA.clean(&page.content).to_string(),
+                                    url: page.permalink.clone(),
+                                })
+                            }
+                        }
+                    }
+                }
+                let content = serde_json::to_string(&items)?;
                 (path, content)
             }
         };

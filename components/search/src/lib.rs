@@ -12,7 +12,7 @@ use errors::{bail, Result};
 
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
 
-static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
+pub static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
     let mut clean_content = HashSet::new();
     clean_content.insert("script");
     clean_content.insert("style");

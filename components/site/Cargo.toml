@@ -18,6 +18,7 @@ imageproc = { path = "../imageproc" }
 link_checker = { path = "../link_checker" }
 libs = { path = "../libs" }
 content = { path = "../content" }
+serde_json = "1.0.117"
 
 [dev-dependencies]
 tempfile = "3"
