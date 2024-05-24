@@ -811,29 +811,46 @@ impl Site {
             IndexFormat::FuseJson | IndexFormat::FuseJavascript => {
                 #[derive(serde::Serialize)]
                 struct Item {
-                    title: String,
-                    body: String,
-                    url: String,
+                    title: Option<String>,
+                    body: Option<String>,
+                    path: String,
                 }
                 let mut items: Vec<Item> = Vec::new();
                 let library = self.library.read().unwrap();
+                let config = &self.config.search;
                 for (_, section) in &library.sections {
                     if section.lang == lang
                         && section.meta.redirect_to.is_none()
                         && section.meta.in_search_index
                     {
                         items.push(Item {
-                            title: section.meta.title.clone().unwrap_or_default(),
-                            body: search::AMMONIA.clean(&section.content).to_string(),
-                            url: section.permalink.clone(),
+                            path: section.path.clone(),
+                            title: if config.include_title {
+                                Some(section.meta.title.clone().unwrap_or_default())
+                            } else {
+                                None
+                            },
+                            body: if config.include_content {
+                                Some(search::AMMONIA.clean(&section.content).to_string())
+                            } else {
+                                None
+                            },
                         });
                         for page in &section.pages {
                             let page = &library.pages[page];
                             if page.meta.in_search_index {
                                 items.push(Item {
-                                    title: page.meta.title.clone().unwrap_or_default(),
-                                    body: search::AMMONIA.clean(&page.content).to_string(),
-                                    url: page.permalink.clone(),
+                                    title: if config.include_title {
+                                        Some(page.meta.title.clone().unwrap_or_default())
+                                    } else {
+                                        None
+                                    },
+                                    body: if config.include_content {
+                                        Some(search::AMMONIA.clean(&page.content).to_string())
+                                    } else {
+                                        None
+                                    },
+                                    path: page.path.clone(),
                                 })
                             }
                         }
