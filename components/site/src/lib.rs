@@ -834,8 +834,13 @@ impl Site {
             }
         }
 
-        // then elasticlunr.min.js
-        create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
+        match self.config.search.index_format {
+            IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
+                // then elasticlunr.min.js
+                create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
+            }
+            _ => {}
+        }
 
         Ok(())
     }
