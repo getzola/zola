@@ -3,11 +3,11 @@
 title = "Albatros"
 description = "A feature rich theme originally made for Duniter website."
 template = "theme.html"
-date = 2024-05-22T18:27:08+02:00
+date = 2024-05-27T05:58:59Z
 
 [extra]
-created = 2024-05-22T18:27:08+02:00
-updated = 2024-05-22T18:27:08+02:00
+created = 2024-05-27T05:58:59Z
+updated = 2024-05-27T05:58:59Z
 repository = "https://git.42l.fr/HugoTrentesaux/Albatros.git"
 homepage = "https://git.42l.fr/HugoTrentesaux/Albatros"
 minimum_version = "0.16.0"
