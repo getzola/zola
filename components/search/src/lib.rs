@@ -1,11 +1,12 @@
-pub mod elasticlunr;
-pub mod fuse;
+mod elasticlunr;
+mod fuse;
 
 use libs::ammonia;
 use libs::once_cell::sync::Lazy;
 use std::collections::{HashMap, HashSet};
 
-pub use elasticlunr::ELASTICLUNR_JS;
+pub use elasticlunr::{build_index as build_elasticlunr, ELASTICLUNR_JS};
+pub use fuse::build_index as build_fuse;
 
 pub static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
     let mut clean_content = HashSet::new();

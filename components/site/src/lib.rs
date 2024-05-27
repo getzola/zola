@@ -803,10 +803,10 @@ impl Site {
         let library = self.library.read().unwrap();
         let content = match &self.config.search.index_format {
             IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
-                search::elasticlunr::build_index(lang, &library, &self.config)?
+                search::build_elasticlunr(lang, &library, &self.config)?
             }
             IndexFormat::FuseJson | IndexFormat::FuseJavascript => {
-                search::fuse::build_index(lang, &library, &self.config.search)?
+                search::build_fuse(lang, &library, &self.config.search)?
             }
         };
         drop(library); // no need to hold on to this guard while writing
