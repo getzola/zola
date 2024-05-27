@@ -5,6 +5,8 @@ use libs::elasticlunr::{lang, Index, IndexBuilder};
 use libs::time::format_description::well_known::Rfc3339;
 use libs::time::OffsetDateTime;
 
+pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
+
 fn build_fields(search_config: &Search, mut index: IndexBuilder) -> IndexBuilder {
     if search_config.include_title {
         index = index.add_field("title");

@@ -5,7 +5,7 @@ use libs::ammonia;
 use libs::once_cell::sync::Lazy;
 use std::collections::{HashMap, HashSet};
 
-pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
+pub use elasticlunr::ELASTICLUNR_JS;
 
 pub static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
     let mut clean_content = HashSet::new();
