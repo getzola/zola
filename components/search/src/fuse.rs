@@ -3,6 +3,8 @@ use content::Library;
 use errors::Result;
 use libs::serde_json;
 
+use crate::clean_and_truncate_body;
+
 /// build index in Fuse.js format.
 pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<String> {
     #[derive(serde::Serialize)]
@@ -30,7 +32,10 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
                     false => None,
                 },
                 body: match config.include_content {
-                    true => Some(super::AMMONIA.clean(&section.content).to_string()),
+                    true => Some(clean_and_truncate_body(
+                        config.truncate_content_length,
+                        &section.content,
+                    )),
                     false => None,
                 },
                 path: match config.include_path {
@@ -52,7 +57,10 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
                             false => None,
                         },
                         body: match config.include_content {
-                            true => Some(super::AMMONIA.clean(&page.content).to_string()),
+                            true => Some(super::clean_and_truncate_body(
+                                config.truncate_content_length,
+                                &page.content,
+                            )),
                             false => None,
                         },
                         path: match config.include_path {

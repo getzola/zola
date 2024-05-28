@@ -5,6 +5,8 @@ use libs::elasticlunr::{lang, Index, IndexBuilder};
 use libs::time::format_description::well_known::Rfc3339;
 use libs::time::OffsetDateTime;
 
+use crate::clean_and_truncate_body;
+
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
 
 fn build_fields(search_config: &Search, mut index: IndexBuilder) -> IndexBuilder {
@@ -69,17 +71,7 @@ fn fill_index(
     }
 
     if search_config.include_content {
-        let body = super::AMMONIA.clean(content).to_string();
-        if let Some(truncate_len) = search_config.truncate_content_length {
-            // Not great for unicode
-            // TODO: fix it like the truncate in Tera
-            match body.char_indices().nth(truncate_len) {
-                None => row.push(body),
-                Some((idx, _)) => row.push((body[..idx]).to_string()),
-            };
-        } else {
-            row.push(body);
-        };
+        row.push(clean_and_truncate_body(search_config.truncate_content_length, content));
     }
     row
 }
