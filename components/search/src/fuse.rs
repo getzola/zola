@@ -9,6 +9,7 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
     struct Item<'a> {
         url: &'a str,
         title: Option<&'a str>,
+        description: Option<&'a str>,
         body: Option<String>, // AMMONIA.clean has to allocate anyway
         path: Option<&'a str>,
     }
@@ -22,6 +23,10 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
                 url: &section.permalink,
                 title: match config.include_title {
                     true => Some(&section.meta.title.as_deref().unwrap_or_default()),
+                    false => None,
+                },
+                description: match config.include_description {
+                    true => Some(&section.meta.description.as_deref().unwrap_or_default()),
                     false => None,
                 },
                 body: match config.include_content {
@@ -40,6 +45,10 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
                         url: &page.permalink,
                         title: match config.include_title {
                             true => Some(&page.meta.title.as_deref().unwrap_or_default()),
+                            false => None,
+                        },
+                        description: match config.include_description {
+                            true => Some(&page.meta.description.as_deref().unwrap_or_default()),
                             false => None,
                         },
                         body: match config.include_content {
