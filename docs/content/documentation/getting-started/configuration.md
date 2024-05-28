@@ -178,7 +178,7 @@ include_date = false
 include_path = false
 # Whether to include the rendered content of the page/section in the index
 include_content = true
-# At which character to truncate the content to. Useful if you have a lot of pages and the index would
+# At which code point to truncate the content to. Useful if you have a lot of pages and the index would
 # become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
 

@@ -34,7 +34,7 @@ pub struct Search {
     /// Includes the whole content in the search index. Ok for small sites but becomes
     /// too big on large sites. `true` by default.
     pub include_content: bool,
-    /// Optionally truncate the content down to `n` chars. This might cut content in a word
+    /// Optionally truncate the content down to `n` code points. This might cut content in a word
     pub truncate_content_length: Option<usize>,
     /// Includes the description in the search index. When the site becomes too large, you can switch
     /// to that instead. `false` by default
