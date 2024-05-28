@@ -174,7 +174,7 @@ include_title = true
 include_description = false
 # Whether to include the RFC3339 datetime of the page in the search index
 include_date = false
-# Whether to include the path of the page/section in the index (the full url is always included)
+# Whether to include the path of the page/section in the index (the permalink is always included)
 include_path = false
 # Whether to include the rendered content of the page/section in the index
 include_content = true
