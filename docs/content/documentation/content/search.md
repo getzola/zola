@@ -38,12 +38,10 @@ See <https://github.com/weixsong/lunr-languages#in-a-web-browser> for details.
 
 ### Fuse
 
-Compatible with [fuse.js](https://www.fusejs.io/), [tinysearch](https://github.com/tinysearch/tinysearch), and almost
-compatible with [stork](https://stork-search.net/)
+Compatible with [fuse.js](https://www.fusejs.io/) and [tinysearch](https://github.com/tinysearch/tinysearch).
 
 ```toml
 # config.toml
 [search]
 index_format = "fuse_javascript" # or "fuse_json"
 ```
-
