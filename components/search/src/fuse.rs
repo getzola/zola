@@ -20,34 +20,36 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
         {
             items.push(Item {
                 url: &section.permalink,
-                title: if config.include_title {
-                    Some(&section.meta.title.as_deref().unwrap_or_default())
-                } else {
-                    None
+                title: match config.include_title {
+                    true => Some(&section.meta.title.as_deref().unwrap_or_default()),
+                    false => None,
                 },
-                body: if config.include_content {
-                    Some(super::AMMONIA.clean(&section.content).to_string())
-                } else {
-                    None
+                body: match config.include_content {
+                    true => Some(super::AMMONIA.clean(&section.content).to_string()),
+                    false => None,
                 },
-                path: if config.include_path { Some(&section.path) } else { None },
+                path: match config.include_path {
+                    true => Some(&section.path),
+                    false => None,
+                },
             });
             for page in &section.pages {
                 let page = &library.pages[page];
                 if page.meta.in_search_index {
                     items.push(Item {
                         url: &page.permalink,
-                        title: if config.include_title {
-                            Some(&page.meta.title.as_deref().unwrap_or_default())
-                        } else {
-                            None
+                        title: match config.include_title {
+                            true => Some(&page.meta.title.as_deref().unwrap_or_default()),
+                            false => None,
                         },
-                        body: if config.include_content {
-                            Some(super::AMMONIA.clean(&page.content).to_string())
-                        } else {
-                            None
+                        body: match config.include_content {
+                            true => Some(super::AMMONIA.clean(&page.content).to_string()),
+                            false => None,
                         },
-                        path: if config.include_path { Some(&page.path) } else { None },
+                        path: match config.include_path {
+                            true => Some(&page.path),
+                            false => None,
+                        },
                     })
                 }
             }
