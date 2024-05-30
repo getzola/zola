@@ -5,22 +5,19 @@ use libs::unic_langid::LanguageIdentifier;
 use serde::{Deserialize, Serialize};
 
 use crate::config::search;
-use crate::config::single_or_vec;
 use crate::config::taxonomies;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct LanguageOptions {
     /// Title of the site. Defaults to None
     pub title: Option<String>,
     /// Description of the site. Defaults to None
     pub description: Option<String>,
     /// Whether to generate feeds for that language, defaults to `false`
-    #[serde(alias = "generate_feed")]
     pub generate_feeds: bool,
     /// The filenames to use for feeds. Used to find the templates, too.
     /// Defaults to ["atom.xml"], with "rss.xml" also having a template provided out of the box.
-    #[serde(alias = "feed_filename", deserialize_with = "single_or_vec")]
     pub feed_filenames: Vec<String>,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
     /// Whether to generate search index for that language, defaults to `false`

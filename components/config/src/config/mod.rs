@@ -10,8 +10,7 @@ use std::path::{Path, PathBuf};
 
 use libs::globset::GlobSet;
 use libs::toml::Value as Toml;
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::theme::Theme;
 use errors::{anyhow, bail, Result};
@@ -31,7 +30,7 @@ pub enum Mode {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
     pub base_url: String,
@@ -51,13 +50,11 @@ pub struct Config {
     translations: HashMap<String, String>,
 
     /// Whether to generate feeds. Defaults to false.
-    #[serde(alias = "generate_feed")]
     pub generate_feeds: bool,
     /// The number of articles to include in the feed. Defaults to including all items.
     pub feed_limit: Option<usize>,
     /// The filenames to use for feeds. Used to find the templates, too.
     /// Defaults to ["atom.xml"], with "rss.xml" also having a template provided out of the box.
-    #[serde(alias = "feed_filename", deserialize_with = "single_or_vec")]
     pub feed_filenames: Vec<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
@@ -397,48 +394,6 @@ impl Default for Config {
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
         }
-    }
-}
-
-/// Used for deserializing values that can be either a single value or a vec of values
-pub(crate) fn single_or_vec<'de, T, D>(deserializer: D) -> Result<Vec<T>, D::Error>
-where
-    T: DeserializeOwned,
-    D: Deserializer<'de>,
-{
-    let v = SingleOrVec::deserialize(deserializer)?;
-    Ok(v.into())
-}
-
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
-#[serde(untagged)]
-pub(crate) enum SingleOrVec<T> {
-    Multiple(Vec<T>),
-    One(T),
-    None,
-}
-
-impl<T> From<SingleOrVec<T>> for Vec<T> {
-    fn from(x: SingleOrVec<T>) -> Vec<T> {
-        use SingleOrVec::*;
-
-        match x {
-            Multiple(v) => v,
-            One(v) => vec![v],
-            None => vec![],
-        }
-    }
-}
-
-impl<T> From<Vec<T>> for SingleOrVec<T> {
-    fn from(value: Vec<T>) -> Self {
-        Self::Multiple(value)
-    }
-}
-
-impl<T> Default for SingleOrVec<T> {
-    fn default() -> Self {
-        Self::None
     }
 }
 
@@ -1025,15 +980,14 @@ author = "person@example.com (Some Person)"
     }
 
     #[test]
-    fn test_backwards_compatibility_for_feeds() {
+    #[should_panic]
+    fn test_backwards_incompatibility_for_feeds() {
         let config = r#"
 base_url = "example.com"
 generate_feed = true
 feed_filename = "test.xml"
         "#;
 
-        let config = Config::parse(config).unwrap();
-        assert_eq!(config.generate_feeds, true);
-        assert_eq!(config.feed_filenames, vec!["test.xml".to_owned()]);
+        Config::parse(config).unwrap();
     }
 }
