@@ -8,3 +8,4 @@ errors = { path = "../errors" }
 content = { path = "../content" }
 config = { path = "../config" }
 libs = { path = "../libs" }
+serde = { version = "1.0", features = ["derive"] }

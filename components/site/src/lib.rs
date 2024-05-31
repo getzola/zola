@@ -799,19 +799,26 @@ impl Site {
     }
 
     fn index_for_lang(&self, lang: &str) -> Result<()> {
-        let index_json = search::build_index(lang, &self.library.read().unwrap(), &self.config)?;
-        let (path, content) = match &self.config.search.index_format {
-            IndexFormat::ElasticlunrJson => {
-                let path = self.output_path.join(format!("search_index.{}.json", lang));
-                (path, index_json)
+        let path = &self.output_path.join(self.config.search.index_format.filename(lang));
+        let library = self.library.read().unwrap();
+        let content = match &self.config.search.index_format {
+            IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
+                search::build_elasticlunr(lang, &library, &self.config)?
             }
-            IndexFormat::ElasticlunrJavascript => {
-                let path = self.output_path.join(format!("search_index.{}.js", lang));
-                let content = format!("window.searchIndex = {};", index_json);
-                (path, content)
+            IndexFormat::FuseJson | IndexFormat::FuseJavascript => {
+                search::build_fuse(lang, &library, &self.config.search)?
             }
         };
-        create_file(&path, &content)
+        drop(library); // no need to hold on to this guard while writing
+        create_file(
+            path,
+            match self.config.search.index_format {
+                IndexFormat::ElasticlunrJson | IndexFormat::FuseJson => content,
+                IndexFormat::ElasticlunrJavascript | IndexFormat::FuseJavascript => {
+                    format!("window.searchIndex = {}", content)
+                }
+            },
+        )
     }
 
     pub fn build_search_index(&self) -> Result<()> {
@@ -827,8 +834,13 @@ impl Site {
             }
         }
 
-        // then elasticlunr.min.js
-        create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
+        match self.config.search.index_format {
+            IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
+                // then elasticlunr.min.js
+                create_file(&self.output_path.join("elasticlunr.min.js"), search::ELASTICLUNR_JS)?;
+            }
+            _ => {}
+        }
 
         Ok(())
     }
