@@ -174,16 +174,18 @@ include_title = true
 include_description = false
 # Whether to include the RFC3339 datetime of the page in the search index
 include_date = false
-# Whether to include the path of the page/section in the index
+# Whether to include the path of the page/section in the index (the permalink is always included)
 include_path = false
 # Whether to include the rendered content of the page/section in the index
 include_content = true
-# At which character to truncate the content to. Useful if you have a lot of pages and the index would
+# At which code point to truncate the content to. Useful if you have a lot of pages and the index would
 # become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
 
 # Wether to produce the search index as a javascript file or as a JSON file
-# Accepted value "elasticlunr_javascript" or "elasticlunr_json"
+# Accepted values:
+# - "elasticlunr_javascript", "elasticlunr_json"
+# - "fuse_javascript", "fuse_json"
 index_format = "elasticlunr_javascript"
 
 # Optional translation object for the default language
