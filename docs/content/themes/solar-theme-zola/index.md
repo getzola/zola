@@ -3,11 +3,11 @@
 title = "solar-theme-zola"
 description = "A port of solar-theme-hugo for zola"
 template = "theme.html"
-date = 2024-05-27T05:58:59Z
+date = 2024-06-03T05:59:01Z
 
 [extra]
-created = 2024-05-27T05:58:59Z
-updated = 2024-05-27T05:58:59Z
+created = 2024-06-03T05:59:01Z
+updated = 2024-06-03T05:59:01Z
 repository = "https://github.com/hulufei/solar-theme-zola.git"
 homepage = "https://github.com/hulufei/solar-theme-zola"
 minimum_version = "0.4.0"

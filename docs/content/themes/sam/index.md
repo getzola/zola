@@ -3,11 +3,11 @@
 title = "sam"
 description = "A Simple and Minimalist theme with a focus on typography and content."
 template = "theme.html"
-date = 2024-05-27T05:58:59Z
+date = 2024-06-03T05:59:01Z
 
 [extra]
-created = 2024-05-27T05:58:59Z
-updated = 2024-05-27T05:58:59Z
+created = 2024-06-03T05:59:01Z
+updated = 2024-06-03T05:59:01Z
 repository = "https://github.com/janbaudisch/zola-sam.git"
 homepage = "https://github.com/janbaudisch/zola-sam"
 minimum_version = "0.4.0"
