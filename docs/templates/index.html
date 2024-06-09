@@ -13,13 +13,14 @@
     <body>
 
         <header>
-            <nav class="{% block extra_nav_class %}container{% endblock extra_nav_class %}">
-                <a class="header__logo white" href="{{ config.base_url }}">Zola</a>
-                <a class="white" href="{{ get_url(path="@/documentation/_index.md") }}" class="nav-link">Docs</a>
-                <a class="white" href="{{ get_url(path="@/themes/_index.md") }}" class="nav-link">Themes</a>
-                <a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a>
-                <a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a>
-
+            <a class="header__logo white" href="{{ config.base_url }}">Zola</a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="{{ get_url(path='@/documentation/_index.md') }}" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="{{ get_url(path='@/themes/_index.md') }}" class="nav-link">Themes</a></li>
+                    <li><a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
                 <div class="search-container">
                     <input id="search" type="search" placeholder="🔎 Search the docs">
 
