@@ -3,11 +3,11 @@
 title = "tabi"
 description = "A fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score"
 template = "theme.html"
-date = 2024-05-27T05:58:59Z
+date = 2024-06-10T05:58:57Z
 
 [extra]
-created = 2024-05-27T05:58:59Z
-updated = 2024-05-27T05:58:59Z
+created = 2024-06-10T05:58:57Z
+updated = 2024-06-10T05:58:57Z
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -173,7 +173,22 @@ This configuration allows the language switcher to take the user to the translat
 
 To learn more about multilingual support, see the [Frequently Asked Questions](https://welpo.github.io/tabi/blog/faq-languages/).
 
-## Sites Using tabi
+### Updating tabi
+
+If you added the theme as a git submodule, run:
+
+```bash
+git submodule update --recursive --remote
+```
+
+If you cloned it:
+
+```bash
+cd themes/tabi
+git pull
+```
+
+## Sites using tabi
 
 | Website | Creator | Description  | Site Source   |
 | - | - | - | - |
