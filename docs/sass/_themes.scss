@@ -1,4 +1,3 @@
-
 .themes-container {
   padding: 3rem;
   width: 80%;
@@ -9,7 +8,7 @@
   }
 }
 
-@media only screen and (max-width: 1000px)  {
+@media only screen and (max-width: 1000px) {
   .themes-container {
     width: 100%;
     margin: 0 1rem;
@@ -32,6 +31,7 @@
 
     img {
       width: 100%;
+      aspect-ratio: 16 / 9;
       height: 90%;
       object-fit: cover;
     }
@@ -54,21 +54,21 @@
     margin-right: 2rem;
   }
 
-  h1, p {
+  h1,
+  p {
     margin: 0;
   }
 
   padding: 1rem;
 }
 
-
-@media only screen and (max-width: 1000px)  {
+@media only screen and (max-width: 1000px) {
   .themes .theme {
     width: 100%;
   }
 }
 
-@media only screen and (max-width: 1000px)  {
+@media only screen and (max-width: 1000px) {
   .theme-info {
     flex-direction: column;
     align-items: center;
