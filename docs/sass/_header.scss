@@ -3,8 +3,15 @@ header {
     border-bottom: none;
   }
 
-  nav a {
-    margin-right: 2rem;
+  ul {
+    padding-inline-start: 0;
+    display: flex;
+    gap: 1ch 2rem;
+    margin: 0;
+  }
+
+  li {
+    list-style: none;
   }
 
   .header__logo {
@@ -27,7 +34,8 @@ header {
 
     .header__logo {
       // to force menu links to be on a line below
-      display: block;
+      text-align: center;
+      width: 100%;
     }
   }
 }

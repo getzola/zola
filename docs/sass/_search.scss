@@ -1,7 +1,9 @@
 .search-container {
   display: inline-block;
   position: relative;
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
 
   input {
     width: 100%;
@@ -43,5 +45,11 @@
       display: inline-block;
       margin-bottom: 0.5rem;
     }
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  .search-container {
+    margin-left: 0;
   }
 }

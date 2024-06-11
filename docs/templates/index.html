@@ -7,19 +7,20 @@
         <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}">
         <meta name="author" content="{{ config.extra.author }}">
         <title>{% block title %}{{ config.title }}{% endblock title %}</title>
-        <link rel="stylesheet" href="{{ get_url(path="site.css") }}"/>
-        <link rel="icon" href="{{ get_url(path="favicon.ico") }}">
+        <link rel="stylesheet" href="{{ get_url(path='site.css') }}">
+        <link rel="icon" href="{{ get_url(path='favicon.ico') }}">
     </head>
     <body>
 
         <header>
-            <nav class="{% block extra_nav_class %}container{% endblock extra_nav_class %}">
-                <a class="header__logo white" href="{{ config.base_url }}">Zola</a>
-                <a class="white" href="{{ get_url(path="@/documentation/_index.md") }}" class="nav-link">Docs</a>
-                <a class="white" href="{{ get_url(path="@/themes/_index.md") }}" class="nav-link">Themes</a>
-                <a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a>
-                <a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a>
-
+            <a class="header__logo white" href="{{ config.base_url }}">Zola</a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="{{ get_url(path='@/documentation/_index.md') }}" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="{{ get_url(path='@/themes/_index.md') }}" class="nav-link">Themes</a></li>
+                    <li><a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
                 <div class="search-container">
                     <input id="search" type="search" placeholder="🔎 Search the docs">
 
@@ -37,7 +38,7 @@
                     <p class="hero__tagline">
                         Forget dependencies. Everything you need in one binary.
                     </p>
-                    <a href="{{ get_url(path="@/documentation/_index.md") }}" class="button">Get started</a>
+                    <a href="{{ get_url(path='@/documentation/_index.md') }}" class="button">Get started</a>
                 </div>
 
                 <div class="inverted-colours selling-points">
@@ -73,7 +74,7 @@
                             <p>
                                 From the CLI to the template engine, everything is designed to be intuitive.
                                 Don't take my word for it though, look at the
-                                <a href="{{ get_url(path="@/documentation/_index.md") }}">documentation</a> and see for yourself.
+                                <a href="{{ get_url(path='@/documentation/_index.md') }}">documentation</a> and see for yourself.
                             </p>
                         </div>
 
@@ -88,8 +89,8 @@
                         <div class="selling-point">
                             <h2>Augmented Markdown</h2>
                             <p>
-                                Zola comes with <a href="{{ get_url(path="@/documentation/content/shortcodes.md") }}">shortcodes</a> and
-                                <a href="{{ get_url(path="@/documentation/content/linking.md") }}">internal links</a>
+                                Zola comes with <a href="{{ get_url(path='@/documentation/content/shortcodes.md') }}">shortcodes</a> and
+                                <a href="{{ get_url(path='@/documentation/content/linking.md') }}">internal links</a>
                                 to make it easier to write your content.
                             </p>
                         </div>
@@ -102,7 +103,7 @@
             ©2017-{{ now() | date(format="%Y") }} — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
         </footer>
 
-        <script type="text/javascript" src="{{ get_url(path="elasticlunr.min.js") }}"></script>
-        <script type="text/javascript" src="{{ get_url(path="search.js") }}"></script>
+        <script type="text/javascript" src="{{ get_url(path='elasticlunr.min.js') }}"></script>
+        <script type="text/javascript" src="{{ get_url(path='search.js') }}"></script>
     </body>
 </html>
