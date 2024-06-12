@@ -8,13 +8,6 @@ use utils::fs::is_temp_file;
 use utils::table_of_contents::Heading;
 
 pub fn has_anchor(headings: &[Heading], anchor: &str) -> bool {
-    // HTML specs state a special anchor: "top" (case-insensitive)
-    // which is used to refer to the start of the page
-    // https://html.spec.whatwg.org/#select-the-indicated-part
-    if anchor.eq_ignore_ascii_case("top") {
-        return true;
-    }
-
     for heading in headings {
         if heading.id == anchor {
             return true;
@@ -222,14 +215,6 @@ mod tests {
         }];
 
         assert!(has_anchor(&input, "1-2"));
-    }
-
-    #[test]
-    fn can_find_special_anchors() {
-        let input = vec![];
-
-        assert!(has_anchor(&input, "top"));
-        assert!(has_anchor(&input, "Top"));
     }
 
     #[test]
