@@ -3,12 +3,16 @@ title = "Section"
 weight = 20
 +++
 
-A section is created whenever a directory (or subdirectory) in the `content` section contains an
-`_index.md` file.  If a directory does not contain an `_index.md` file, no section will be
-created, but Markdown files within that directory will still create pages (known as orphan pages).
+A section is a collection of pages that's located within the `content/` folder. For example, on a blog, you may have a `content/posts/` folder. This `posts` folder would contain your blog posts.
+
+In addition to containing posts, every section has its own `_index.md` file that describes it and its posts. Like other parts of Zola, you can easily add different localizations by adding another file. For example, sites aiming to support French may give `_index.md` a matching `_index.fr.md`.
+
+If a folder is created in the `content/` directory, but it doesn't contain an `_index.md` file, Markdown files inside will still be rendered. However, no section will be created. The resulting pages are known as *orphan pages*.
+
+## Creation
 
 The homepage (i.e., the page displayed when a user browses to your `base_url`) is a section,
-which is created whether or not you add an `_index.md` file at the root of your `content` directory.
+which is created regardless of whether you add an `_index.md` file at the root of your `content` directory.
 If you do not create an `_index.md` file in your content directory, this main content section will
 not have any content or metadata.  If you would like to add content or metadata, you can add an
 `_index.md` file at the root of the `content` directory and edit it just as you would edit any other
@@ -19,14 +23,15 @@ Any non-Markdown file in a section directory is added to the `assets` collection
 Markdown file using relative links.
 
 ## Drafting
-Just like pages sections can be drafted by setting the `draft` option in the front matter. By default this is not done. When a section is drafted it's descendants like pages, subsections and assets will not be processed unless the `--drafts` flag is passed. Note that even pages that don't have a `draft` status will not be processed if one of their parent sections is drafted.
+
+Just like pages, sections can be drafted by setting the `draft` option in the front matter. Sections are not drafted by default. When Zola encounters a drafted section, it will not process its descendants, including pages, subsections, and assets. Please note that even pages that don't have a `draft` status will not be processed if one of their parent sections is drafted.
 
 ## Front matter
 
 The `_index.md` file within a directory defines the content and metadata for that section.  To set
 the metadata, add front matter to the file.
 
-The TOML front matter is a set of metadata embedded in a file at the beginning of the file enclosed by triple pluses (`+++`).
+The TOML front matter is a set of metadata embedded in a file at the beginning of the file, enclosed by triple pluses (`+++`).
 
 After the closing `+++`, you can add content, which will be parsed as Markdown and made available
 to your templates through the `section.content` variable.
@@ -34,11 +39,10 @@ to your templates through the `section.content` variable.
 Although none of the front matter variables are mandatory, the opening and closing `+++` are required.
 
 Note that even though the use of TOML is encouraged, YAML front matter is also supported to ease porting
-legacy content. In this case the embedded metadata must be enclosed by triple minuses (`---`).
+legacy content. In this case, the embedded metadata must be enclosed by triple minuses (`---`).
 
 Here is an example `_index.md` with all the available variables. The values provided below are the
 default values.
-
 
 ```toml
 title = ""
@@ -130,7 +134,7 @@ by setting the `paginate_path` variable, which defaults to `page`.
 ## Sorting
 
 It is very common for Zola templates to iterate over pages or sections
-to display all pages/sections in a given directory.  Consider a very simple
+to display all pages/sections in a given directory.  Consider a basic
 example: a `blog` directory with three files: `blog/Post_1.md`,
 `blog/Post_2.md` and `blog/Post_3.md`.  To iterate over these posts and
 create a list of links to the posts, a simple template might look like this:
@@ -156,22 +160,26 @@ If several pages have the same date/weight/order, their permalink will be used
 to break the tie based on alphabetical order.
 
 ## Sorting pages
+
 The `sort_by` front-matter variable can have the following values:
 
 ### `date`
+
 This will sort all pages by their `date` field, from the most recent (at the
 top of the list) to the oldest (at the bottom of the list). Each page will
 get `page.lower` and `page.higher` variables that contain the pages with
 earlier and later dates, respectively.
 
 ### `update_date`
-Same as `date` except it will take into account any `updated` date for the pages.
+
+Same as `date` except it will account for any `updated` date for the pages.
 
 ### `title`
+
 This will sort all pages by their `title` field in natural lexical order, as
-defined  by `natural_lexical_cmp` in the [lexical-sort] crate. Each page will
+defined by `natural_lexical_cmp` in the [lexical-sort] crate. Each page will
 get `page.lower` and `page.higher` variables that contain the pages
-with  previous and next titles, respectively.
+with previous and next titles, respectively.
 
 For example, here is a natural lexical ordering: "bachata, BART, bolero,
 μ-kernel, meter, Métro, Track-2, Track-3, Track-13, underground". Notice how
@@ -180,23 +188,27 @@ special characters and numbers are sorted reasonably.
 [lexical-sort]: https://docs.rs/lexical-sort
 
 ### `title_bytes`
+
 Same as `title` except it uses the bytes directly to sort.
-Natural sorting treats non-ascii
-characters like their closest ascii character. This can lead to unexpected
+Natural sorting treats non-ASCII
+characters like their closest ASCII character. This can lead to unexpected
 results for languages with different character sets. The last three characters
-of the Swedish alphabet, åäö, for example would be considered by the natural
-sort as aao. In that case the standard byte-order sort may be more suitable.
+of the Swedish alphabet, åäö, for example, would be considered by the natural
+sort as aao. In that case, the standard byte-order sort may be more suitable.
 
 ### `weight`
+
 This will sort all pages by their `weight` field, from the lightest weight
 (at the top of the list) to the heaviest (at the bottom of the list). Each
 page gets `page.lower` and `page.higher` variables that contain the
 pages with lighter and heavier weights, respectively.
 
 ### `slug`
+
 This will sort pages or sections by their slug in natural lexical order.
 
 ### Reversed sorting
+
 When iterating through pages, you may wish to use the Tera `reverse` filter,
 which reverses the order of the pages.  For example, after using the `reverse` filter,
 pages sorted by weight will be sorted from lightest (at the top) to heaviest
@@ -205,9 +217,10 @@ to newest (at the bottom).
 
 `reverse` has no effect on `page.lower` / `page.higher`.
 
-If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
+If the section is paginated, the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
 
 ## Sorting subsections
+
 Sorting sections is a bit less flexible: sections can only be sorted by `weight`,
 and do not have variables that point to the heavier/lighter sections.
 
