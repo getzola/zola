@@ -10,6 +10,7 @@ use crate::Site;
 use errors::{bail, Result};
 use libs::rayon;
 use libs::url::Url;
+use utils::anchors::is_special_anchor;
 
 /// Check whether all internal links pointing to explicit anchor fragments are valid.
 ///
@@ -40,6 +41,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
             (md_path, Some(anchor)) => Some((page_path, md_path, anchor)),
             _ => None,
         })
+        .filter(|(_, _, anchor)| !is_special_anchor(anchor))
         .inspect(|_| anchors_total = anchors_total.saturating_add(1));
 
     // Check for targets existence (including anchors), then keep only the faulty
