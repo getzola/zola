@@ -59,7 +59,7 @@ This will create a shortcode `books` with the argument `path` pointing to a `.to
 titles and descriptions. They will flow with the rest of the document in which `books` is called.
 
 Shortcodes are rendered before the page's Markdown is parsed so they don't have access to the page's table of contents.
-Because of that, you also cannot use the [`get_page`](@/documentation/templates/overview.md#get-page)/[`get_section`](@/documentation/templates/overview.md#get-section)/[`get_taxonomy`](@/documentation/templates/overview.md#get-taxonomy)/[`get_taxonomy_term`](@/documentation/templates/overview.md#get-taxonomy-term) global functions. It might work while
+Because of that, you also cannot use the [`get_page`](@/documentation/templates/overview.md#get-page) / [`get_section`](@/documentation/templates/overview.md#get-section) / [`get_taxonomy`](@/documentation/templates/overview.md#get-taxonomy) / [`get_taxonomy_term`](@/documentation/templates/overview.md#get-taxonomy-term) global functions. It might work while
 running `zola serve` because it has been loaded but it will fail during `zola build`.
 
 ## Using shortcodes

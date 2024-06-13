@@ -18,6 +18,9 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+
+  // Stop long words from breaking mobile
+  overflow-wrap: break-word;
 }
 
 img {
