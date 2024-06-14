@@ -3,11 +3,11 @@
 title = "Seagull"
 description = "A Zola theme."
 template = "theme.html"
-date = 2024-06-10T05:58:57Z
+date = 2024-06-13T08:07:01-05:00
 
 [extra]
-created = 2024-06-10T05:58:57Z
-updated = 2024-06-10T05:58:57Z
+created = 2024-06-13T08:07:01-05:00
+updated = 2024-06-13T08:07:01-05:00
 repository = "https://git.42l.fr/HugoTrentesaux/seagull.git"
 homepage = "https://git.42l.fr/HugoTrentesaux/seagull"
 minimum_version = "0.17.0"
