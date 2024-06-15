@@ -692,6 +692,10 @@ impl Site {
 
     /// Renders a single content page
     pub fn render_page(&self, page: &Page) -> Result<()> {
+        if !page.meta.render {
+            return Ok(());
+        }
+
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
@@ -1087,7 +1091,7 @@ impl Site {
         }
 
         // Copy any asset we found previously into the same directory as the index.html
-        self.copy_assets(&section.file.path.parent().unwrap(), &section.assets, &output_path)?;
+        self.copy_assets(section.file.path.parent().unwrap(), &section.assets, &output_path)?;
 
         if render_pages {
             section

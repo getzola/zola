@@ -295,6 +295,9 @@ impl Library {
 
         // Then once we took care of the sections, we find the pages of each section
         for (path, page) in self.pages.iter_mut() {
+            if !page.meta.render {
+                continue;
+            }
             let parent_filename = &index_filename_by_lang[&page.lang];
             add_translation(&page.file.canonical, path);
             let mut parent_section_path = page.file.parent.join(parent_filename);
