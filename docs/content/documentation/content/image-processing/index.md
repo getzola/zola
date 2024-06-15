@@ -179,7 +179,37 @@ Here is the result:
 </small>
 
 
-## Get image size
+## Get image size and relative resizing
 
 Sometimes when building a gallery it is useful to know the dimensions of each asset.  You can get this information with
 [get_image_metadata](@/documentation/templates/overview.md#get-image-metadata).
+
+This can also be useful in combination with `resize_image()` to do a relative resizing. So we can create a relative image resizing function with the following shortcode named `resize_image_relative.html`:
+
+```jinja2
+{% set mdata = get_image_metadata(path=path) %}
+{% set image = resize_image(path=path, width=(mdata.width * scale)|int, op="fit_width") %}
+<img src="{{ image.url }}" />
+```
+
+It can be invoked from Markdown like this:
+
+`resize_image_relative(..., scale=0.5)`
+
+{{ resize_image_relative(path="documentation/content/image-processing/01-zola.png", scale=0.5) }}
+
+## Creating scaled-down versions of high-resolution images
+
+With the above, we can also create a shortcode that creates a 50% scaled-down version of a high-resolution image (e.g. screenshots taken on Retina Macs), along with the proper HTML5 `srcset` for the original image to be displayed on high-resolution / retina displays.
+
+Consider the following shortcode named `high_res_image.html`:
+
+```jinja2
+{% set mdata = get_image_metadata(path=path) %}
+{% set w = (mdata.width / 2) | int %}
+{% set h = (mdata.height / 2) | int %}
+{% set image = resize_image(path=path, width=w, height=h, op="fit_width") %}
+<img src="{{ image.url }}" srcset="/{{path}} 2x"/>
+```
+
+{{ high_res_image(path="documentation/content/image-processing/08-example.jpg") }}
