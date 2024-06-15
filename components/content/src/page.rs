@@ -115,10 +115,6 @@ impl Page {
         page.word_count = Some(word_count);
         page.reading_time = Some(reading_time);
 
-        if !page.meta.render {
-            return Ok(page);
-        }
-
         let mut slug_from_dated_filename = None;
 
         let file_path_for_slug = if page.file.name == "index" {
@@ -926,26 +922,5 @@ Bonjour le monde"#
         assert_eq!(page.lang, "fr".to_string());
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/bonjour/");
-    }
-
-    #[test]
-    fn page_without_physical_path() {
-        let config = Config::default();
-        let content = r#"
-+++
-render = false
-+++
-Hello world
-"#
-        .to_string();
-
-        let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
-        assert!(res.is_ok());
-        let page = res.unwrap();
-        println!("{:#?}", page);
-        assert_eq!(page.slug, "");
-        assert_eq!(page.path, "");
-        assert_eq!(page.permalink, "");
-        assert_eq!(page.raw_content, "Hello world\n".to_string());
     }
 }
