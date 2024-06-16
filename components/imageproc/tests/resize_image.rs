@@ -133,6 +133,16 @@ fn resize_image_webp_jpg() {
 }
 
 #[test]
+fn resize_image_png_jxl() {
+    image_op_test("png.png", "scale", Some(150), Some(150), "jxl", "jxl", 150, 150, 300, 380);
+}
+
+#[test]
+fn resize_image_jxl_png() {
+    image_op_test("jxl.jxl", "scale", Some(150), Some(150), "png", "png", 150, 150, 300, 380);
+}
+
+#[test]
 fn read_image_metadata_jpg() {
     assert_eq!(
         image_meta_test("jpg.jpg"),

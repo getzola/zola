@@ -4,13 +4,16 @@ use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 
 use config::Config;
-use errors::{anyhow, Context, Result};
+use errors::{anyhow, bail, Context, Result};
 use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::jpeg::JpegEncoder;
 use libs::image::imageops::FilterType;
-use libs::image::{EncodableLayout, ImageFormat};
+use libs::image::{ColorType, EncodableLayout, ImageFormat};
+use libs::jpegxl_rs::decoder_builder;
+use libs::jpegxl_rs::encode::EncoderFrame;
+use libs::jpegxl_rs::image::ToDynamic;
 use libs::rayon::prelude::*;
-use libs::{image, webp};
+use libs::{image, jpegxl_rs, webp};
 use serde::{Deserialize, Serialize};
 use utils::fs as ufs;
 
@@ -39,7 +42,15 @@ impl ImageOp {
             return Ok(());
         }
 
-        let img = image::open(&self.input_path)?;
+        let img = if self.input_path.extension().is_some_and(|ext| ext == "jxl") {
+            let input = std::fs::read(&self.input_path)?;
+            let decoder = decoder_builder().build()?;
+            decoder
+                .decode_to_image(&input)?
+                .context("jxl image could not be represented in an Image")?
+        } else {
+            image::open(&self.input_path)?
+        };
         let mut img = fix_orientation(&img, &self.input_path).unwrap_or(img);
 
         let img = match self.instr.crop_instruction {
@@ -70,6 +81,40 @@ impl ImageOp {
                     None => encoder.encode_lossless(),
                 };
                 buffered_f.write_all(memory.as_bytes())?;
+            }
+            Format::JpegXL(q) => {
+                let mut encoder = jpegxl_rs::encoder_builder();
+                if let Some(q) = q {
+                    if q == 100 {
+                        encoder.uses_original_profile(true);
+                        encoder.lossless(true);
+                    } else {
+                        encoder.set_jpeg_quality(q as f32);
+                    }
+                } else {
+                    encoder.uses_original_profile(true);
+                    encoder.lossless(true);
+                }
+                let frame = EncoderFrame::new(img.as_bytes());
+                let frame = match img.color() {
+                    ColorType::L8 => frame.num_channels(1),
+                    ColorType::La8 => {
+                        encoder.has_alpha(true);
+                        frame.num_channels(2)
+                    }
+                    ColorType::Rgb8 => frame.num_channels(3),
+                    ColorType::Rgba8 => {
+                        encoder.has_alpha(true);
+                        frame.num_channels(4)
+                    }
+                    _ => {
+                        bail!("Unsupported pixel type {:?}", img.color());
+                    }
+                };
+                let mut encoder = encoder.build()?;
+                buffered_f.write_all(
+                    &encoder.encode_frame::<u8, u8>(&frame, img.width(), img.height())?.data,
+                )?;
             }
         }
 

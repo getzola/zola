@@ -34,6 +34,7 @@ resize_image(path, width, height, op, format, quality)
     - `"jpg"`
     - `"png"`
     - `"webp"`
+    - `"jxl"`
 
   The default is `"auto"`, this means that the format is chosen based on input image format.
   JPEG is chosen for JPEGs and other lossy formats, and PNG is chosen for PNGs and other lossless formats.
