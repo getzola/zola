@@ -2,13 +2,15 @@
 
 ## 0.19.0 (unreleased)
 
-- Updates the pulldown-cmark dependency to v0.10.0. This improves footnote handling, and may also introduce some minor behavior changes such as reducing the amount of unnecessary HTML-escaping of text content.
+- Updates the pulldown-cmark dependency to v0.11.0. This improves footnote handling, and may also introduce some minor behavior changes such as reducing the amount of unnecessary HTML-escaping of text content.
 - Add bottom footnotes with backreference option
 - Fix link check report inconsistency
 - Fix resizing for images with EXIF orientation
 - Add MIME type to get_image_metadata
 - Fix hot loading for config.toml in some cases
 - Add `render = false` capability to pages
+- Handle string dates in YAML front-matter
+- Add support for fuse.js search format
 
 ## 0.18.0 (2023-12-18)
 
