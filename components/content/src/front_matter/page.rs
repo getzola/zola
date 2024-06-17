@@ -129,7 +129,6 @@ impl PageFrontMatter {
     /// Converts the TOML datetime to a time::OffsetDateTime
     /// Also grabs the year/month/day tuple that will be used in serialization
     pub fn date_to_datetime(&mut self) {
-        println!("{:?}", self.date);
         self.datetime = self.date.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
         self.datetime_tuple = self.datetime.map(|dt| (dt.year(), dt.month().into(), dt.day()));
 
