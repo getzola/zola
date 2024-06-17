@@ -1,5 +1,5 @@
 use core::convert::TryFrom;
-use errors::{Result, anyhow};
+use errors::{anyhow, Result};
 use libs::regex::Regex;
 use libs::tera::{Map, Value};
 use libs::time;
@@ -10,7 +10,11 @@ use serde::{Deserialize, Deserializer};
 pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     // See https://github.com/getzola/zola/issues/2071#issuecomment-1530610650
     let re = Regex::new(r#"^"?([0-9]{4})-([0-9][0-9]?)-([0-9][0-9]?)([Tt]|[ \t]+)([0-9][0-9]?):([0-9]{2}):([0-9]{2})\.([0-9]*)?Z?([ \t]([-+][0-9][0-9]?)(:([0-9][0-9]?))?Z?|([-+][0-9]{2})?:([0-9]{2})?)?|([0-9]{4})-([0-9]{2})-([0-9]{2})"?$"#).unwrap();
-    let captures = if let Some(captures_) = re.captures(date_string) { Ok(captures_) } else { Err(anyhow!("Error parsing YAML datetime")) }?;
+    let captures = if let Some(captures_) = re.captures(date_string) {
+        Ok(captures_)
+    } else {
+        Err(anyhow!("Error parsing YAML datetime"))
+    }?;
     let year =
         if let Some(cap) = captures.get(1) { cap } else { captures.get(15).unwrap() }.as_str();
     let month =
@@ -20,11 +24,14 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     let hours = if let Some(hours_) = captures.get(5) { hours_.as_str() } else { "0" };
     let minutes = if let Some(minutes_) = captures.get(6) { minutes_.as_str() } else { "0" };
     let seconds = if let Some(seconds_) = captures.get(7) { seconds_.as_str() } else { "0" };
-    let fractional_seconds_raw = if let Some(fractionals) = captures.get(8) { fractionals.as_str() } else { "" };
+    let fractional_seconds_raw =
+        if let Some(fractionals) = captures.get(8) { fractionals.as_str() } else { "" };
     let fractional_seconds_intermediate = fractional_seconds_raw.trim_end_matches("0");
     //
     // Prepare for eventual conversion into nanoseconds
-    let fractional_seconds = if fractional_seconds_intermediate.len() > 0 && fractional_seconds_intermediate.len() <= 9 {
+    let fractional_seconds = if fractional_seconds_intermediate.len() > 0
+        && fractional_seconds_intermediate.len() <= 9
+    {
         fractional_seconds_intermediate
     } else {
         "0"
@@ -167,7 +174,10 @@ mod tests {
         let no_time_zone = "2001-12-15 2:59:43.10";
         let date = "2002-12-14";
         assert_eq!(parse_yaml_datetime(canonical).unwrap(), datetime!(2001-12-15 2:59:43.1 +0));
-        assert_eq!(parse_yaml_datetime(valid_iso8601).unwrap(), datetime!(2001-12-14 21:59:43.1 -5));
+        assert_eq!(
+            parse_yaml_datetime(valid_iso8601).unwrap(),
+            datetime!(2001-12-14 21:59:43.1 -5)
+        );
         assert_eq!(
             parse_yaml_datetime(space_separated).unwrap(),
             datetime!(2001-12-14 21:59:43.1 -5)
@@ -175,7 +185,7 @@ mod tests {
         assert_eq!(parse_yaml_datetime(no_time_zone).unwrap(), datetime!(2001-12-15 2:59:43.1 +0));
         assert_eq!(parse_yaml_datetime(date).unwrap(), datetime!(2002-12-14 0:00:00 +0));
     }
-    
+
     #[test]
     fn yaml_spec_invalid_dates_fail() {
         let invalid_month = "2001-13-15";
