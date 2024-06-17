@@ -1,7 +1,6 @@
 use libs::tera::{Map, Value};
 use serde::{Deserialize, Serialize};
 
-use config::{Deprecated, DeprecationReason};
 use errors::Result;
 use utils::de::fix_toml_dates;
 use utils::types::InsertAnchor;
@@ -13,7 +12,7 @@ static DEFAULT_PAGINATE_PATH: &str = "page";
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct SectionFrontMatter {
     /// <title> of the page
     pub title: Option<String>,
@@ -68,21 +67,11 @@ pub struct SectionFrontMatter {
     /// redirect to this
     #[serde(skip_serializing)]
     pub aliases: Vec<String>,
-    /// Deprecated
-    #[serde(skip_serializing)]
-    pub generate_feed: Deprecated<DeprecatedGenerateFeed>,
     /// Whether to generate a feed for the current section
     #[serde(skip_serializing)]
     pub generate_feeds: bool,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct DeprecatedGenerateFeed {}
-
-impl DeprecationReason for DeprecatedGenerateFeed {
-    const REASON: &'static str = "generate_feed is deprecated, please use generate_feeds instead";
 }
 
 impl SectionFrontMatter {
@@ -124,7 +113,6 @@ impl Default for SectionFrontMatter {
             transparent: false,
             page_template: None,
             aliases: Vec::new(),
-            generate_feed: Deprecated::new(),
             generate_feeds: false,
             extra: Map::new(),
             draft: false,

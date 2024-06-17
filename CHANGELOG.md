@@ -14,7 +14,7 @@
 - Added support for generating multiple kinds of feeds at once
 - Changed config options named `generate_feed` to `generate_feeds` (both in config.toml and in section front-matter)
 - Changed config option `feed_filename: String` to `feed_filenames: Vec<String>`
-- The config file no longer allows arbitrary fields outside the `[extra]` section (front-matter is unaffected)
+- The config file no longer allows arbitrary fields outside the `[extra]` section
 
 ## 0.18.0 (2023-12-18)
 
