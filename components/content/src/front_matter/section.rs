@@ -12,7 +12,7 @@ static DEFAULT_PAGINATE_PATH: &str = "page";
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct SectionFrontMatter {
     /// <title> of the page
     pub title: Option<String>,
@@ -69,7 +69,7 @@ pub struct SectionFrontMatter {
     pub aliases: Vec<String>,
     /// Whether to generate a feed for the current section
     #[serde(skip_serializing)]
-    pub generate_feed: bool,
+    pub generate_feeds: bool,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,
 }
@@ -113,7 +113,7 @@ impl Default for SectionFrontMatter {
             transparent: false,
             page_template: None,
             aliases: Vec::new(),
-            generate_feed: false,
+            generate_feeds: false,
             extra: Map::new(),
             draft: false,
         }

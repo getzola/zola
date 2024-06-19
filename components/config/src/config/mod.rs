@@ -30,7 +30,7 @@ pub enum Mode {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct Config {
     /// Base URL of the site, the only required config argument
     pub base_url: String,
@@ -49,13 +49,13 @@ pub struct Config {
     /// The translations strings for the default language
     translations: HashMap<String, String>,
 
-    /// Whether to generate a feed. Defaults to false.
-    pub generate_feed: bool,
+    /// Whether to generate feeds. Defaults to false.
+    pub generate_feeds: bool,
     /// The number of articles to include in the feed. Defaults to including all items.
     pub feed_limit: Option<usize>,
-    /// The filename to use for feeds. Used to find the template, too.
-    /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
-    pub feed_filename: String,
+    /// The filenames to use for feeds. Used to find the templates, too.
+    /// Defaults to ["atom.xml"], with "rss.xml" also having a template provided out of the box.
+    pub feed_filenames: Vec<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
@@ -109,7 +109,7 @@ pub struct SerializedConfig<'a> {
     languages: HashMap<&'a String, &'a languages::LanguageOptions>,
     default_language: &'a str,
     generate_feed: bool,
-    feed_filename: &'a str,
+    feed_filenames: &'a [String],
     taxonomies: &'a [taxonomies::TaxonomyConfig],
     author: &'a Option<String>,
     build_search_index: bool,
@@ -183,12 +183,14 @@ impl Config {
 
     /// Makes a url, taking into account that the base url might have a trailing slash
     pub fn make_permalink(&self, path: &str) -> String {
-        let trailing_bit =
-            if path.ends_with('/') || path.ends_with(&self.feed_filename) || path.is_empty() {
-                ""
-            } else {
-                "/"
-            };
+        let trailing_bit = if path.ends_with('/')
+            || self.feed_filenames.iter().any(|feed_filename| path.ends_with(feed_filename))
+            || path.is_empty()
+        {
+            ""
+        } else {
+            "/"
+        };
 
         // Index section with a base url that has a trailing slash
         if self.base_url.ends_with('/') && path == "/" {
@@ -212,8 +214,8 @@ impl Config {
         let mut base_language_options = languages::LanguageOptions {
             title: self.title.clone(),
             description: self.description.clone(),
-            generate_feed: self.generate_feed,
-            feed_filename: self.feed_filename.clone(),
+            generate_feeds: self.generate_feeds,
+            feed_filenames: self.feed_filenames.clone(),
             build_search_index: self.build_search_index,
             taxonomies: self.taxonomies.clone(),
             search: self.search.clone(),
@@ -320,8 +322,8 @@ impl Config {
             description: &options.description,
             languages: self.languages.iter().filter(|(k, _)| k.as_str() != lang).collect(),
             default_language: &self.default_language,
-            generate_feed: options.generate_feed,
-            feed_filename: &options.feed_filename,
+            generate_feed: options.generate_feeds,
+            feed_filenames: &options.feed_filenames,
             taxonomies: &options.taxonomies,
             author: &self.author,
             build_search_index: options.build_search_index,
@@ -369,9 +371,9 @@ impl Default for Config {
             theme: None,
             default_language: "en".to_string(),
             languages: HashMap::new(),
-            generate_feed: false,
+            generate_feeds: false,
             feed_limit: None,
-            feed_filename: "atom.xml".to_string(),
+            feed_filenames: vec!["atom.xml".to_string()],
             hard_link_static: false,
             taxonomies: Vec::new(),
             author: None,
@@ -428,8 +430,8 @@ mod tests {
             languages::LanguageOptions {
                 title: None,
                 description: description_lang_section.clone(),
-                generate_feed: true,
-                feed_filename: config.feed_filename.clone(),
+                generate_feeds: true,
+                feed_filenames: config.feed_filenames.clone(),
                 taxonomies: config.taxonomies.clone(),
                 build_search_index: false,
                 search: search::Search::default(),
@@ -456,8 +458,8 @@ mod tests {
             languages::LanguageOptions {
                 title: title_lang_section.clone(),
                 description: None,
-                generate_feed: true,
-                feed_filename: config.feed_filename.clone(),
+                generate_feeds: true,
+                feed_filenames: config.feed_filenames.clone(),
                 taxonomies: config.taxonomies.clone(),
                 build_search_index: false,
                 search: search::Search::default(),
@@ -975,5 +977,17 @@ author = "person@example.com (Some Person)"
 "#;
         let config = Config::parse(config).unwrap();
         assert_eq!(config.author, Some("person@example.com (Some Person)".to_owned()))
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_backwards_incompatibility_for_feeds() {
+        let config = r#"
+base_url = "example.com"
+generate_feed = true
+feed_filename = "test.xml"
+        "#;
+
+        Config::parse(config).unwrap();
     }
 }

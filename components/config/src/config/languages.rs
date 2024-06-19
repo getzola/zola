@@ -8,17 +8,17 @@ use crate::config::search;
 use crate::config::taxonomies;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct LanguageOptions {
     /// Title of the site. Defaults to None
     pub title: Option<String>,
     /// Description of the site. Defaults to None
     pub description: Option<String>,
-    /// Whether to generate a feed for that language, defaults to `false`
-    pub generate_feed: bool,
-    /// The filename to use for feeds. Used to find the template, too.
-    /// Defaults to "atom.xml", with "rss.xml" also having a template provided out of the box.
-    pub feed_filename: String,
+    /// Whether to generate feeds for that language, defaults to `false`
+    pub generate_feeds: bool,
+    /// The filenames to use for feeds. Used to find the templates, too.
+    /// Defaults to ["atom.xml"], with "rss.xml" also having a template provided out of the box.
+    pub feed_filenames: Vec<String>,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
     /// Whether to generate search index for that language, defaults to `false`
     pub build_search_index: bool,
@@ -66,9 +66,10 @@ impl LanguageOptions {
         merge_field!(self.title, other.title, "title");
         merge_field!(self.description, other.description, "description");
         merge_field!(
-            self.feed_filename == "atom.xml",
-            self.feed_filename,
-            other.feed_filename,
+            self.feed_filenames.is_empty()
+                || self.feed_filenames == LanguageOptions::default().feed_filenames,
+            self.feed_filenames,
+            other.feed_filenames,
             "feed_filename"
         );
         merge_field!(self.taxonomies.is_empty(), self.taxonomies, other.taxonomies, "taxonomies");
@@ -79,7 +80,7 @@ impl LanguageOptions {
             "translations"
         );
 
-        self.generate_feed = self.generate_feed || other.generate_feed;
+        self.generate_feeds = self.generate_feeds || other.generate_feeds;
         self.build_search_index = self.build_search_index || other.build_search_index;
 
         if self.search == search::Search::default() {
@@ -101,8 +102,8 @@ impl Default for LanguageOptions {
         LanguageOptions {
             title: None,
             description: None,
-            generate_feed: false,
-            feed_filename: "atom.xml".to_string(),
+            generate_feeds: false,
+            feed_filenames: vec!["atom.xml".to_string()],
             taxonomies: vec![],
             build_search_index: false,
             search: search::Search::default(),
@@ -129,8 +130,8 @@ mod tests {
         let mut base_default_language_options = LanguageOptions {
             title: Some("Site's title".to_string()),
             description: None,
-            generate_feed: true,
-            feed_filename: "atom.xml".to_string(),
+            generate_feeds: true,
+            feed_filenames: vec!["atom.xml".to_string()],
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
@@ -140,8 +141,8 @@ mod tests {
         let section_default_language_options = LanguageOptions {
             title: None,
             description: Some("Site's description".to_string()),
-            generate_feed: false,
-            feed_filename: "rss.xml".to_string(),
+            generate_feeds: false,
+            feed_filenames: vec!["rss.xml".to_string()],
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
@@ -156,8 +157,8 @@ mod tests {
         let mut base_default_language_options = LanguageOptions {
             title: Some("Site's title".to_string()),
             description: Some("Duplicate site description".to_string()),
-            generate_feed: true,
-            feed_filename: "".to_string(),
+            generate_feeds: true,
+            feed_filenames: vec![],
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
@@ -167,8 +168,8 @@ mod tests {
         let section_default_language_options = LanguageOptions {
             title: None,
             description: Some("Site's description".to_string()),
-            generate_feed: false,
-            feed_filename: "Some feed_filename".to_string(),
+            generate_feeds: false,
+            feed_filenames: vec!["Some feed_filename".to_string()],
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
