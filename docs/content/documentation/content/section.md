@@ -106,11 +106,11 @@ transparent = false
 # current one. This takes an array of paths, not URLs.
 aliases = []
 
-# If set to "true", a feed file will be generated for this section at the
+# If set to "true", feed files will be generated for this section at the
 # section's root path. This is independent of the site-wide variable of the same
 # name. The section feed will only include posts from that respective feed, and
 # not from any other sections, including sub-sections under that section.
-generate_feed = false
+generate_feeds = false
 
 # Your own data.
 [extra]

@@ -9,7 +9,7 @@ build_search_index = true
 
 default_language = "en"
 
-generate_feed = true
+generate_feeds = true
 
 taxonomies = [
     {name = "authors", feed = true},
@@ -17,7 +17,7 @@ taxonomies = [
 ]
 
 [languages.fr]
-generate_feed = true
+generate_feeds = true
 taxonomies = [
     {name = "auteurs", feed = true},
     {name = "tags"},

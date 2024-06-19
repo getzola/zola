@@ -27,13 +27,13 @@ impl<'a> SerializedFeedTaxonomyItem<'a> {
     }
 }
 
-pub fn render_feed(
+pub fn render_feeds(
     site: &Site,
     all_pages: Vec<&Page>,
     lang: &str,
     base_path: Option<&PathBuf>,
     additional_context_fn: impl Fn(Context) -> Context,
-) -> Result<Option<String>> {
+) -> Result<Option<Vec<String>>> {
     let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
 
     // Don't generate a feed if none of the pages has a date
@@ -73,18 +73,23 @@ pub fn render_feed(
     context.insert("config", &site.config.serialize(lang));
     context.insert("lang", lang);
 
-    let feed_filename = &site.config.feed_filename;
-    let feed_url = if let Some(base) = base_path {
-        site.config.make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
-    } else {
-        site.config.make_permalink(feed_filename)
-    };
+    let mut feeds = Vec::new();
+    for feed_filename in &site.config.feed_filenames {
+        let mut context = context.clone();
 
-    context.insert("feed_url", &feed_url);
+        let feed_url = if let Some(base) = base_path {
+            site.config
+                .make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
+        } else {
+            site.config.make_permalink(feed_filename)
+        };
 
-    context = additional_context_fn(context);
+        context.insert("feed_url", &feed_url);
 
-    let feed = render_template(feed_filename, &site.tera, context, &site.config.theme)?;
+        context = additional_context_fn(context);
 
-    Ok(Some(feed))
+        feeds.push(render_template(feed_filename, &site.tera, context, &site.config.theme)?);
+    }
+
+    Ok(Some(feeds))
 }

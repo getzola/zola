@@ -1,5 +1,5 @@
 +++
 title = "My blog"
 sort_by = "date"
-insert_anchors = "left"
+insert_anchor_links = "left"
 +++

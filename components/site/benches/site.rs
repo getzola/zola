@@ -42,7 +42,7 @@ fn bench_render_feed(b: &mut test::Bencher) {
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
     b.iter(|| {
-        site.render_feed(
+        site.render_feeds(
             site.library.read().unwrap().pages.values().collect(),
             None,
             &site.config.default_language,

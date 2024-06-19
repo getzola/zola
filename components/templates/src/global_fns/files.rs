@@ -461,27 +461,34 @@ title = "A title"
     }
 
     #[test]
-    fn can_get_feed_url_with_default_language() {
+    fn can_get_feed_urls_with_default_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
         let static_fn =
             GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
-        args.insert("lang".to_string(), to_value("fr").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/atom.xml");
+        for feed_filename in &config.feed_filenames {
+            let mut args = HashMap::new();
+            args.insert("path".to_string(), to_value(feed_filename).unwrap());
+            args.insert("lang".to_string(), to_value("fr").unwrap());
+            assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/atom.xml");
+        }
     }
 
     #[test]
-    fn can_get_feed_url_with_other_language() {
+    fn can_get_feed_urls_with_other_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
         let static_fn =
             GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value(config.feed_filename).unwrap());
-        args.insert("lang".to_string(), to_value("en").unwrap());
-        assert_eq!(static_fn.call(&args).unwrap(), "https://remplace-par-ton-url.fr/en/atom.xml");
+        for feed_filename in &config.feed_filenames {
+            let mut args = HashMap::new();
+            args.insert("path".to_string(), to_value(feed_filename).unwrap());
+            args.insert("lang".to_string(), to_value("en").unwrap());
+            assert_eq!(
+                static_fn.call(&args).unwrap(),
+                "https://remplace-par-ton-url.fr/en/atom.xml"
+            );
+        }
     }
 
     #[test]

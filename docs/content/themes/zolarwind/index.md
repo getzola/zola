@@ -120,7 +120,7 @@ Here's a breakdown of the configuration settings tailored for this theme:
 - **build_search_index**: If set to `true`, a search index will be built from the pages and section content for the `default_language`.
   In this configuration and for this theme, it's disabled (`false`).
 
-- **generate_feed**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
+- **generate_feeds**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
   It's set to `true`, meaning a feed will be generated.
 
 - **taxonomies**: An array of taxonomies (classification systems) used for the site.

@@ -1,7 +1,7 @@
 +++
 title = "Mon blog"
 sort_by = "date"
-insert_anchors = "right"
+insert_anchor_links = "right"
 +++
 
 [Dernières nouvelles](#news)

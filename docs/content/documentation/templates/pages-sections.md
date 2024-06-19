@@ -108,8 +108,8 @@ lang: String;
 translations: Array<TranslatedContent>;
 // All the pages/sections linking this page: their permalink and a title if there is one
 backlinks: Array<{permalink: String, title: String?}>;
-// Whether this section generates a feed or not. Taken from the front-matter if set
-generate_feed: bool;
+// Whether this section generates feeds or not. Taken from the front-matter if set
+generate_feeds: bool;
 // Whether this section is transparent. Taken from the front-matter if set
 transparent: bool;
 ```
