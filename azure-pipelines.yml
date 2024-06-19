@@ -11,10 +11,10 @@ stages:
         strategy:
           matrix:
             windows-stable:
-              imageName: 'windows-2019'
+              imageName: 'windows-2022'
               rustup_toolchain: stable
             mac-stable:
-              imageName: 'macos-11'
+              imageName: 'macos-13'
               rustup_toolchain: stable
             linux-stable:
               imageName: 'ubuntu-20.04'
