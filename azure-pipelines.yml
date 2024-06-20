@@ -56,15 +56,15 @@ stages:
         strategy:
           matrix:
             windows-stable:
-              imageName: 'windows-2019'
+              imageName: 'windows-2022'
               rustup_toolchain: stable
               target: 'x86_64-pc-windows-msvc'
             mac-stable-intel:
-              imageName: 'macos-11'
+              imageName: 'macos-13'
               rustup_toolchain: stable
               target: 'x86_64-apple-darwin'
             mac-stable-arm:
-              imageName: 'macos-11'
+              imageName: 'macos-13'
               rustup_toolchain: stable
               target: 'aarch64-apple-darwin'
             linux-stable:
