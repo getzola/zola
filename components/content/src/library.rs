@@ -210,6 +210,45 @@ impl Library {
         }
     }
 
+    /// Sort all subsections according to sorting method given
+    pub fn sort_section_subsections(&mut self) {
+        let mut updates = AHashMap::new();
+        for (path, section) in &self.sections {
+            let subsections: Vec<_> =
+                section.subsections.iter().map(|p| &self.sections[p]).collect();
+            let (sorted_subsections, cannot_be_sorted_subsections) = match section.meta.sort_by {
+                SortBy::None => continue,
+                _ => sort_pages(&subsections, section.meta.sort_by),
+            };
+
+            updates.insert(
+                path.clone(),
+                (sorted_subsections, cannot_be_sorted_subsections, section.meta.sort_by),
+            );
+        }
+
+        for (path, (sorted, unsortable, _)) in updates {
+            // Fill siblings
+            for (i, subsection_path) in sorted.iter().enumerate() {
+                let p = self.sections.get_mut(subsection_path).unwrap();
+                if i > 0 {
+                    // lighter / later / title_prev
+                    p.lower = Some(sorted[i - 1].clone());
+                }
+
+                if i < sorted.len() - 1 {
+                    // heavier / earlier / title_next
+                    p.higher = Some(sorted[i + 1].clone());
+                }
+            }
+
+            if let Some(s) = self.sections.get_mut(&path) {
+                s.subsections = sorted;
+                s.ignored_subsections = unsortable;
+            }
+        }
+    }
+
     /// Find out the direct subsections of each subsection if there are some
     /// as well as the pages for each section
     pub fn populate_sections(&mut self, config: &Config, content_path: &Path) {
@@ -336,6 +375,7 @@ impl Library {
 
         // And once we have all the pages assigned to their section, we sort them
         self.sort_section_pages();
+        self.sort_section_subsections();
     }
 
     /// Find all the orphan pages: pages that are in a folder without an `_index.md`
@@ -783,5 +823,108 @@ mod tests {
             set! {PathBuf::from("page1.md"), PathBuf::from("_index.md")}
         );
         assert_eq!(library.backlinks["_index.md"], set! {PathBuf::from("page2.md")});
+    }
+
+    #[test]
+    fn can_sort_sections_by_weight() {
+        let config = Config::default_for_test();
+        let mut library = Library::default();
+        let sections = vec![
+            ("content/_index.md", "en", 0, false, SortBy::Weight),
+            ("content/blog/_index.md", "en", 0, false, SortBy::Weight),
+            ("content/novels/_index.md", "en", 3, false, SortBy::Weight),
+            ("content/novels/first/_index.md", "en", 2, false, SortBy::Weight),
+            ("content/novels/second/_index.md", "en", 1, false, SortBy::Weight),
+            // Transparency does not apply to sections as of now!
+            ("content/wiki/_index.md", "en", 4, true, SortBy::Weight),
+            ("content/wiki/recipes/_index.md", "en", 1, false, SortBy::Weight),
+            ("content/wiki/programming/_index.md", "en", 2, false, SortBy::Weight),
+        ];
+        for (p, l, w, t, s) in sections.clone() {
+            library.insert_section(create_section(p, l, w, t, s));
+        }
+
+        library.populate_sections(&config, Path::new("content"));
+        assert_eq!(library.sections.len(), sections.len());
+        let root_section = &library.sections[&PathBuf::from("content/_index.md")];
+        assert_eq!(root_section.lower, None);
+        assert_eq!(root_section.higher, None);
+
+        let blog_section = &library.sections[&PathBuf::from("content/blog/_index.md")];
+        assert_eq!(blog_section.lower, None);
+        assert_eq!(blog_section.higher, Some(PathBuf::from("content/novels/_index.md")));
+
+        let novels_section = &library.sections[&PathBuf::from("content/novels/_index.md")];
+        assert_eq!(novels_section.lower, Some(PathBuf::from("content/blog/_index.md")));
+        assert_eq!(novels_section.higher, Some(PathBuf::from("content/wiki/_index.md")));
+        assert_eq!(
+            novels_section.subsections,
+            vec![
+                PathBuf::from("content/novels/second/_index.md"),
+                PathBuf::from("content/novels/first/_index.md"),
+            ]
+        );
+
+        let first_novel_section =
+            &library.sections[&PathBuf::from("content/novels/first/_index.md")];
+        assert_eq!(
+            first_novel_section.lower,
+            Some(PathBuf::from("content/novels/second/_index.md"))
+        );
+        assert_eq!(first_novel_section.higher, None);
+
+        let second_novel_section =
+            &library.sections[&PathBuf::from("content/novels/second/_index.md")];
+        assert_eq!(second_novel_section.lower, None);
+        assert_eq!(
+            second_novel_section.higher,
+            Some(PathBuf::from("content/novels/first/_index.md"))
+        );
+    }
+
+    #[test]
+    fn can_sort_sections_by_title() {
+        fn create_section(file_path: &str, title: &str, weight: usize, sort_by: SortBy) -> Section {
+            let mut section = Section::default();
+            section.lang = "en".to_owned();
+            section.file = FileInfo::new_section(Path::new(file_path), &PathBuf::new());
+            section.meta.title = Some(title.to_owned());
+            section.meta.weight = weight;
+            section.meta.transparent = false;
+            section.meta.sort_by = sort_by;
+            section.meta.page_template = Some("new_page.html".to_owned());
+            section
+        }
+
+        let config = Config::default_for_test();
+        let mut library = Library::default();
+        let sections = vec![
+            ("content/_index.md", "root", 0, SortBy::Title),
+            ("content/a_first/_index.md", "1", 1, SortBy::Title),
+            ("content/b_third/_index.md", "3", 2, SortBy::Title),
+            ("content/c_second/_index.md", "2", 2, SortBy::Title),
+        ];
+        for (p, l, w, s) in sections.clone() {
+            library.insert_section(create_section(p, l, w, s));
+        }
+
+        library.populate_sections(&config, Path::new("content"));
+        assert_eq!(library.sections.len(), sections.len());
+
+        let root_section = &library.sections[&PathBuf::from("content/_index.md")];
+        assert_eq!(root_section.lower, None);
+        assert_eq!(root_section.higher, None);
+
+        let first = &library.sections[&PathBuf::from("content/a_first/_index.md")];
+        assert_eq!(first.lower, None);
+        assert_eq!(first.higher, Some(PathBuf::from("content/c_second/_index.md")));
+
+        let second = &library.sections[&PathBuf::from("content/c_second/_index.md")];
+        assert_eq!(second.lower, Some(PathBuf::from("content/a_first/_index.md")));
+        assert_eq!(second.higher, Some(PathBuf::from("content/b_third/_index.md")));
+
+        let third = &library.sections[&PathBuf::from("content/b_third/_index.md")];
+        assert_eq!(third.lower, Some(PathBuf::from("content/c_second/_index.md")));
+        assert_eq!(third.higher, None);
     }
 }

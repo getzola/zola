@@ -43,7 +43,7 @@ fn can_parse_site() {
     assert!(index_section.ancestors.is_empty());
 
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
-    assert_eq!(posts_section.subsections.len(), 2);
+    assert_eq!(posts_section.ignored_subsections.len(), 2);
     assert_eq!(posts_section.pages.len(), 10); // 11 with 1 draft == 10
     assert_eq!(posts_section.ancestors, vec![index_section.file.relative.clone()]);
 
