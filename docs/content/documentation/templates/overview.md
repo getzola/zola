@@ -233,7 +233,7 @@ See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for 
 
 ### `get_url`
 Gets the permalink for the given path.
-If the path starts with `@/`, it will be treated as an internal link like the ones used in Markdown, 
+If the path starts with `@/`, it will be treated as an [internal link](@/documentation/content/linking.md#internal-links) to a Markdown file, 
 starting from the root `content` directory as well as validated.
 
 ```jinja2
