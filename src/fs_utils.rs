@@ -38,8 +38,7 @@ fn get_relevant_event_kind(event_kind: &EventKind) -> Option<SimpleFileSystemEve
         EventKind::Create(CreateKind::File) | EventKind::Create(CreateKind::Folder) => {
             Some(SimpleFileSystemEventKind::Create)
         }
-        EventKind::Modify(ModifyKind::Data(DataChange::Size))
-        | EventKind::Modify(ModifyKind::Data(DataChange::Content))
+        EventKind::Modify(ModifyKind::Data(_))
         // Intellij modifies file metadata on edit.
         // https://github.com/passcod/notify/issues/150#issuecomment-494912080
         | EventKind::Modify(ModifyKind::Metadata(MetadataKind::WriteTime))
@@ -182,6 +181,14 @@ mod tests {
                 Some(SimpleFileSystemEventKind::Modify),
             ),
             (
+                EventKind::Modify(ModifyKind::Data(DataChange::Any)),
+                Some(SimpleFileSystemEventKind::Modify),
+            ),
+            (
+                EventKind::Modify(ModifyKind::Data(DataChange::Other)),
+                Some(SimpleFileSystemEventKind::Modify),
+            ),
+            (
                 EventKind::Modify(ModifyKind::Metadata(MetadataKind::WriteTime)),
                 Some(SimpleFileSystemEventKind::Modify),
             ),
@@ -202,7 +209,7 @@ mod tests {
         ];
         for (case, expected) in cases.iter() {
             let ek = get_relevant_event_kind(&case);
-            assert_eq!(ek, *expected);
+            assert_eq!(ek, *expected, "case: {:?}", case);
         }
     }
 
