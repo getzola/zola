@@ -3,11 +3,11 @@
 title = "emily_zola_theme"
 description = "a KISS theme for Zola"
 template = "theme.html"
-date = 2024-06-13T08:07:01-05:00
+date = 2024-06-23T14:35:54-04:00
 
 [extra]
-created = 2024-06-13T08:07:01-05:00
-updated = 2024-06-13T08:07:01-05:00
+created = 2024-06-23T14:35:54-04:00
+updated = 2024-06-23T14:35:54-04:00
 repository = "https://github.com/kyoheiu/emily_zola_theme.git"
 homepage = "https://github.com/kyoheiu/emily_zola_theme"
 minimum_version = "0.14.1"

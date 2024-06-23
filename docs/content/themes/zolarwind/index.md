@@ -3,11 +3,11 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2024-06-13T08:07:01-05:00
+date = 2024-06-23T14:35:54-04:00
 
 [extra]
-created = 2024-06-13T08:07:01-05:00
-updated = 2024-06-13T08:07:01-05:00
+created = 2024-06-23T14:35:54-04:00
+updated = 2024-06-23T14:35:54-04:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.18.0"
@@ -120,7 +120,7 @@ Here's a breakdown of the configuration settings tailored for this theme:
 - **build_search_index**: If set to `true`, a search index will be built from the pages and section content for the `default_language`.
   In this configuration and for this theme, it's disabled (`false`).
 
-- **generate_feeds**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
+- **generate_feed**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
   It's set to `true`, meaning a feed will be generated.
 
 - **taxonomies**: An array of taxonomies (classification systems) used for the site.
