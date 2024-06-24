@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.19.1 (unreleased)
+## 0.19.1 (2024-06-24)
 
-- Fix `config.generate_feeds` being still serialized as `config.generate_feed`
+- Fix `config.generate_feeds` being still serialized as `config.generate_feed`. Both are available for now
+- Fix `zola serve` not reacting to changes on some OSes
 
 ## 0.19.0 (2024-06-20)
 
