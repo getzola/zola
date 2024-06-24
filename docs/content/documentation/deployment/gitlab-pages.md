@@ -50,8 +50,6 @@ stages:
 
 default:
   image: debian:stable-slim
-  tags:
-    - docker
 
 variables:
   # The runner will be able to pull your Zola theme when the strategy is
