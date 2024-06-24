@@ -3,11 +3,11 @@
 title = "feather"
 description = "A fuzzy blog theme"
 template = "theme.html"
-date = 2024-06-13T08:07:01-05:00
+date = 2024-06-24T05:58:05Z
 
 [extra]
-created = 2024-06-13T08:07:01-05:00
-updated = 2024-06-13T08:07:01-05:00
+created = 2024-06-24T05:58:05Z
+updated = 2024-06-24T05:58:05Z
 repository = "https://github.com/piedoom/feather.git"
 homepage = "https://github.com/piedoom/feather"
 minimum_version = "0.11.0"
