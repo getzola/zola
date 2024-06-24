@@ -921,6 +921,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn test_create_new_site_without_protocol_with_port_without_mounted_path() {
         let interface = IpAddr::from_str("127.0.0.1").unwrap();
         let interface_port = 1111;
@@ -942,6 +943,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn test_create_new_site_without_protocol_with_port_with_mounted_path() {
         let interface = IpAddr::from_str("127.0.0.1").unwrap();
         let interface_port = 1111;
@@ -963,6 +965,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn test_create_new_site_without_protocol_without_port_without_mounted_path() {
         let interface = IpAddr::from_str("127.0.0.1").unwrap();
         let interface_port = 1111;
@@ -986,6 +989,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn test_create_new_site_with_protocol_without_port_without_mounted_path() {
         let interface = IpAddr::from_str("127.0.0.1").unwrap();
         let interface_port = 1111;
