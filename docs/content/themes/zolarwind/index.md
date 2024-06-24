@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2024-06-13T08:07:01-05:00
+date = 2024-06-24T05:58:05Z
 
 [extra]
-created = 2024-06-13T08:07:01-05:00
-updated = 2024-06-13T08:07:01-05:00
+created = 2024-06-24T05:58:05Z
+updated = 2024-06-24T05:58:05Z
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
-minimum_version = "0.18.0"
+minimum_version = "0.19.0"
 license = "MIT"
 demo = "https://pureandroid.com"
 
@@ -120,7 +120,7 @@ Here's a breakdown of the configuration settings tailored for this theme:
 - **build_search_index**: If set to `true`, a search index will be built from the pages and section content for the `default_language`.
   In this configuration and for this theme, it's disabled (`false`).
 
-- **generate_feeds**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
+- **generate_feed**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
   It's set to `true`, meaning a feed will be generated.
 
 - **taxonomies**: An array of taxonomies (classification systems) used for the site.
@@ -143,7 +143,7 @@ The `[extra]` section is where you can place any custom variables you want to be
 
 - **generator**: Optional.
   Specifies the generator used for creating the static website.
-  This site is generated using `Zola v0.18.0`.
+  This site is generated using `Zola v0.19.0`.
 
 - **path_language_resources**: The path to the directory containing language resource files.
   In this config, it's set to `i18n/`.

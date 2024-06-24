@@ -3,11 +3,11 @@
 title = "Zplit"
 description = "A single page theme for a professional online presence."
 template = "theme.html"
-date = 2024-06-13T08:07:01-05:00
+date = 2024-06-24T05:58:05Z
 
 [extra]
-created = 2024-06-13T08:07:01-05:00
-updated = 2024-06-13T08:07:01-05:00
+created = 2024-06-24T05:58:05Z
+updated = 2024-06-24T05:58:05Z
 repository = "https://github.com/gicrisf/zplit.git"
 homepage = "https://github.com/gicrisf/zplit"
 minimum_version = "0.15.0"
