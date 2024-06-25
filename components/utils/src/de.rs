@@ -9,23 +9,22 @@ use serde::{Deserialize, Deserializer};
 
 pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     // See https://github.com/getzola/zola/issues/2071#issuecomment-1530610650
-    let re = Regex::new(r#"^"?([0-9]{4})-([0-9][0-9]?)-([0-9][0-9]?)([Tt]|[ \t]+)([0-9][0-9]?):([0-9]{2}):([0-9]{2})\.([0-9]*)?Z?([ \t]([-+][0-9][0-9]?)(:([0-9][0-9]?))?Z?|([-+][0-9]{2})?:([0-9]{2})?)?|([0-9]{4})-([0-9]{2})-([0-9]{2})"?$"#).unwrap();
+    let re = Regex::new(r#"^"?(?P<year>[0-9]{4})-(?P<month>[0-9][0-9]?)-(?P<day>[0-9][0-9]?)(?:(?:[Tt]|[ \t]+)(?P<hour>[0-9][0-9]?):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})(?P<fraction>\.[0-9]{0,9})?[ \t]*(?:(?P<utc>Z)|(?P<offset>(?P<offset_hour>[-+][0-9][0-9]?)(?::(?P<offset_minute>[0-9][0-9]))?))?)?"?$"#).unwrap();
     let captures = if let Some(captures_) = re.captures(date_string) {
         Ok(captures_)
     } else {
         Err(anyhow!("Error parsing YAML datetime"))
     }?;
-    let year =
-        if let Some(cap) = captures.get(1) { cap } else { captures.get(15).unwrap() }.as_str();
-    let month =
-        if let Some(cap) = captures.get(2) { cap } else { captures.get(16).unwrap() }.as_str();
-    let day =
-        if let Some(cap) = captures.get(3) { cap } else { captures.get(17).unwrap() }.as_str();
-    let hours = if let Some(hours_) = captures.get(5) { hours_.as_str() } else { "0" };
-    let minutes = if let Some(minutes_) = captures.get(6) { minutes_.as_str() } else { "0" };
-    let seconds = if let Some(seconds_) = captures.get(7) { seconds_.as_str() } else { "0" };
+    let year = captures.name("year").unwrap().as_str();
+    let month = captures.name("month").unwrap().as_str();
+    let day = captures.name("day").unwrap().as_str();
+    let hours = if let Some(hours_) = captures.name("hour") { hours_.as_str() } else { "0" };
+    let minutes =
+        if let Some(minutes_) = captures.name("minute") { minutes_.as_str() } else { "0" };
+    let seconds =
+        if let Some(seconds_) = captures.name("second") { seconds_.as_str() } else { "0" };
     let fractional_seconds_raw =
-        if let Some(fractionals) = captures.get(8) { fractionals.as_str() } else { "" };
+        if let Some(fractionals) = captures.name("fraction") { fractionals.as_str() } else { "" };
     let fractional_seconds_intermediate = fractional_seconds_raw.trim_end_matches("0");
     //
     // Prepare for eventual conversion into nanoseconds
@@ -36,19 +35,8 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     } else {
         "0"
     };
-    let maybe_timezone_hour_1 = captures.get(10);
-    let maybe_timezone_minute_1 = captures.get(12);
-    let maybe_timezone_hour_2 = captures.get(13);
-    let maybe_timezone_minute_2 = captures.get(14);
-    let maybe_timezone_hour;
-    let maybe_timezone_minute;
-    if maybe_timezone_hour_2.is_some() {
-        maybe_timezone_hour = maybe_timezone_hour_2;
-        maybe_timezone_minute = maybe_timezone_minute_2;
-    } else {
-        maybe_timezone_hour = maybe_timezone_hour_1;
-        maybe_timezone_minute = maybe_timezone_minute_1;
-    }
+    let maybe_timezone_hour = captures.name("offset_hour");
+    let maybe_timezone_minute = captures.name("offset_minute");
 
     let mut offset_datetime = time::OffsetDateTime::UNIX_EPOCH;
 
