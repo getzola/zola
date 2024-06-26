@@ -36,6 +36,8 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     for entry in builder.into_iter().filter_map(std::result::Result::ok) {
         let entry_path = entry.path();
 
+        println!("Entry path: {}", entry_path.display());
+
         if entry_path.is_file() && !is_temp_file(entry_path) {
             match entry_path.extension() {
                 Some(e) => match e.to_str() {
