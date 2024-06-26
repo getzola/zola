@@ -23,18 +23,12 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
         if let Some(minutes_) = captures.name("minute") { minutes_.as_str() } else { "0" };
     let seconds =
         if let Some(seconds_) = captures.name("second") { seconds_.as_str() } else { "0" };
-    let fractional_seconds_raw =
-        if let Some(fractionals) = captures.name("fraction") { fractionals.as_str() } else { "" };
-    let fractional_seconds_intermediate = fractional_seconds_raw.trim_end_matches("0");
+    let fraction_raw =
+        if let Some(fraction_) = captures.name("fraction") { fraction_.as_str() } else { "" };
+    let fraction_intermediate = fraction_raw.trim_end_matches("0");
     //
     // Prepare for eventual conversion into nanoseconds
-    let fractional_seconds = if fractional_seconds_intermediate.len() > 0
-        && fractional_seconds_intermediate.len() <= 9
-    {
-        fractional_seconds_intermediate
-    } else {
-        "0"
-    };
+    let fraction = if fraction_intermediate.len() > 0 { fraction_intermediate } else { "0" };
     let maybe_timezone_hour = captures.name("offset_hour");
     let maybe_timezone_minute = captures.name("offset_minute");
 
@@ -58,7 +52,7 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
         .replace_hour(hours.parse().unwrap())?
         .replace_minute(minutes.parse().unwrap())?
         .replace_second(seconds.parse().unwrap())?
-        .replace_nanosecond(fractional_seconds.parse::<u32>().unwrap() * 100_000_000)?)
+        .replace_nanosecond((fraction.parse::<f64>().unwrap_or(0.0) * 1_000_000_000.0) as u32)?)
 }
 
 /// Used as an attribute when we want to convert from TOML to a string date
