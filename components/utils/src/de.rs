@@ -18,11 +18,9 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     let year = captures.name("year").unwrap().as_str();
     let month = captures.name("month").unwrap().as_str();
     let day = captures.name("day").unwrap().as_str();
-    let hours = if let Some(hours_) = captures.name("hour") { hours_.as_str() } else { "0" };
-    let minutes =
-        if let Some(minutes_) = captures.name("minute") { minutes_.as_str() } else { "0" };
-    let seconds =
-        if let Some(seconds_) = captures.name("second") { seconds_.as_str() } else { "0" };
+    let hour = if let Some(hour_) = captures.name("hour") { hour_.as_str() } else { "0" };
+    let minute = if let Some(minute_) = captures.name("minute") { minute_.as_str() } else { "0" };
+    let second = if let Some(second_) = captures.name("second") { second_.as_str() } else { "0" };
     let fraction_raw =
         if let Some(fraction_) = captures.name("fraction") { fraction_.as_str() } else { "" };
     let fraction_intermediate = fraction_raw.trim_end_matches("0");
@@ -49,9 +47,9 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
         .replace_year(year.parse().unwrap())?
         .replace_month(time::Month::try_from(month.parse::<u8>().unwrap())?)?
         .replace_day(day.parse().unwrap())?
-        .replace_hour(hours.parse().unwrap())?
-        .replace_minute(minutes.parse().unwrap())?
-        .replace_second(seconds.parse().unwrap())?
+        .replace_hour(hour.parse().unwrap())?
+        .replace_minute(minute.parse().unwrap())?
+        .replace_second(second.parse().unwrap())?
         .replace_nanosecond((fraction.parse::<f64>().unwrap_or(0.0) * 1_000_000_000.0) as u32)?)
 }
 
