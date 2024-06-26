@@ -147,23 +147,31 @@ mod tests {
     use time::macros::datetime;
 
     #[test]
-    fn yaml_spec_examples_pass() {
+    fn yaml_draft_timestamp_pass() {
+        // tests only the values from the YAML 1.1 Timestamp Draft
+        // See https://yaml.org/type/timestamp.html
         let canonical = "2001-12-15T02:59:43.1Z";
         let valid_iso8601 = "2001-12-14t21:59:43.10-05:00";
         let space_separated = "2001-12-14 21:59:43.10 -5";
         let no_time_zone = "2001-12-15 2:59:43.10";
         let date = "2002-12-14";
-        assert_eq!(parse_yaml_datetime(canonical).unwrap(), datetime!(2001-12-15 2:59:43.1 +0));
+        assert_eq!(
+            parse_yaml_datetime(canonical).unwrap(),
+            datetime!(2001-12-15 02:59:43.100 +00:00)
+        );
         assert_eq!(
             parse_yaml_datetime(valid_iso8601).unwrap(),
-            datetime!(2001-12-14 21:59:43.1 -5)
+            datetime!(2001-12-14 21:59:43.100 -05:00)
         );
         assert_eq!(
             parse_yaml_datetime(space_separated).unwrap(),
-            datetime!(2001-12-14 21:59:43.1 -5)
+            datetime!(2001-12-14 21:59:43.100 -05:00)
         );
-        assert_eq!(parse_yaml_datetime(no_time_zone).unwrap(), datetime!(2001-12-15 2:59:43.1 +0));
-        assert_eq!(parse_yaml_datetime(date).unwrap(), datetime!(2002-12-14 0:00:00 +0));
+        assert_eq!(
+            parse_yaml_datetime(no_time_zone).unwrap(),
+            datetime!(2001-12-15 02:59:43.100 +00:00)
+        );
+        assert_eq!(parse_yaml_datetime(date).unwrap(), datetime!(2002-12-14 00:00:00.000 +00:00));
     }
 
     #[test]
@@ -197,5 +205,126 @@ mod tests {
 
         let unparseable_time = "2001-12-15:59:4x.1Z";
         assert!(parse_yaml_datetime(unparseable_time).is_err());
+    }
+
+    #[test]
+    fn toml_test_pass() {
+        // tests subset from toml-test
+        // Taken from https://github.com/toml-lang/toml-test/tree/a80ce8268cbcf5ea95f02b2e6d6cc38406ce28c9/tests/valid/datetime
+        let space = "1987-07-05 17:45:00Z";
+        // Z is not allowed to be lowercase
+        let lower = "1987-07-05t17:45:00Z";
+
+        let first_offset = "0001-01-01 00:00:00Z";
+        let first_local = "0001-01-01 00:00:00";
+        let first_date = "0001-01-01";
+        let last_offset = "9999-12-31 23:59:59Z";
+        let last_local = "9999-12-31 23:59:59";
+        let last_date = "9999-12-31";
+
+        // valid leap years
+        let datetime_2000 = "2000-02-29 15:15:15Z";
+        let datetime_2024 = "2024-02-29 15:15:15Z";
+
+        // milliseconds
+        let ms1 = "1987-07-05T17:45:56.123Z";
+        let ms2 = "1987-07-05T17:45:56.6Z";
+
+        // timezones
+        let utc = "1987-07-05T17:45:56Z";
+        let pdt = "1987-07-05T17:45:56-05:00";
+        let nzst = "1987-07-05T17:45:56+12:00";
+        let nzdt = "1987-07-05T17:45:56+13:00"; // DST
+
+        assert_eq!(parse_yaml_datetime(space).unwrap(), datetime!(1987-07-05 17:45:00.000 +00:00));
+        assert_eq!(parse_yaml_datetime(lower).unwrap(), datetime!(1987-07-05 17:45:00.000 +00:00));
+
+        assert_eq!(
+            parse_yaml_datetime(first_offset).unwrap(),
+            datetime!(0001-01-01 00:00:00.000 +00:00)
+        );
+        assert_eq!(
+            parse_yaml_datetime(first_local).unwrap(),
+            datetime!(0001-01-01 00:00:00.000 +00:00)
+        );
+        assert_eq!(
+            parse_yaml_datetime(first_date).unwrap(),
+            datetime!(0001-01-01 00:00:00.000 +00:00)
+        );
+        assert_eq!(
+            parse_yaml_datetime(last_offset).unwrap(),
+            datetime!(9999-12-31 23:59:59.000 +00:00)
+        );
+        assert_eq!(
+            parse_yaml_datetime(last_local).unwrap(),
+            datetime!(9999-12-31 23:59:59.000 +00:00)
+        );
+        assert_eq!(
+            parse_yaml_datetime(last_date).unwrap(),
+            datetime!(9999-12-31 00:00:00.000 +00:00)
+        );
+
+        assert_eq!(
+            parse_yaml_datetime(datetime_2000).unwrap(),
+            datetime!(2000-02-29 15:15:15.000 +00:00)
+        );
+        assert_eq!(
+            parse_yaml_datetime(datetime_2024).unwrap(),
+            datetime!(2024-02-29 15:15:15.000 +00:00)
+        );
+
+        assert_eq!(parse_yaml_datetime(ms1).unwrap(), datetime!(1987-07-05 17:45:56.123 +00:00));
+        assert_eq!(parse_yaml_datetime(ms2).unwrap(), datetime!(1987-07-05 17:45:56.600 +00:00));
+
+        assert_eq!(parse_yaml_datetime(utc).unwrap(), datetime!(1987-07-05 17:45:56.000 +00:00));
+        assert_eq!(parse_yaml_datetime(pdt).unwrap(), datetime!(1987-07-05 22:45:56.000 +00:00));
+        assert_eq!(parse_yaml_datetime(nzst).unwrap(), datetime!(1987-07-05 05:45:56.000 +00:00));
+        assert_eq!(parse_yaml_datetime(nzdt).unwrap(), datetime!(1987-07-05 04:45:56.000 +00:00));
+    }
+
+    #[test]
+    fn toml_test_fail() {
+        let not_a_leap_year = "2100-02-29T15:15:15Z";
+        assert!(parse_yaml_datetime(not_a_leap_year).is_err());
+
+        let feb_30 = "1988-02-30T15:15:15Z";
+        assert!(parse_yaml_datetime(feb_30).is_err());
+
+        let hour_over = "2006-01-01T24:00:00-00:00";
+        assert!(parse_yaml_datetime(hour_over).is_err());
+
+        let mday_over = "2006-01-32T00:00:00-00:00";
+        assert!(parse_yaml_datetime(mday_over).is_err());
+
+        let mday_under = "2006-01-00T00:00:00-00:00";
+        assert!(parse_yaml_datetime(mday_under).is_err());
+
+        let minute_over = "2006-01-01T00:60:00-00:00";
+        assert!(parse_yaml_datetime(minute_over).is_err());
+
+        let month_over = "2006-13-01T00:00:00-00:00";
+        assert!(parse_yaml_datetime(month_over).is_err());
+
+        let month_under = "2007-00-01T00:00:00-00:00";
+        assert!(parse_yaml_datetime(month_under).is_err());
+
+        let no_secs = "1987-07-05T17:45Z";
+        assert!(parse_yaml_datetime(no_secs).is_err());
+
+        let no_sep = "1987-07-0517:45:00Z";
+        assert!(parse_yaml_datetime(no_sep).is_err());
+
+        // 'time' supports up until ±25:59:59
+        let offset_overflow = "1985-06-18 17:04:07+26:00";
+        assert!(parse_yaml_datetime(offset_overflow).is_err());
+
+        let offset_overflow = "1985-06-18 17:04:07+12:61";
+        assert!(parse_yaml_datetime(offset_overflow).is_err());
+
+        let second_overflow = "2006-01-01T00:00:61-00:00";
+        assert!(parse_yaml_datetime(second_overflow).is_err());
+
+        let y10k = "10000-01-01 00:00:00z";
+        assert!(parse_yaml_datetime(y10k).is_err());
     }
 }
