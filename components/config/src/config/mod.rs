@@ -98,6 +98,9 @@ pub struct Config {
     pub markdown: markup::Markdown,
     /// All user params set in `[extra]` in the config
     pub extra: HashMap<String, Toml>,
+
+    /// Whether to exclude paginated pages in sitemap
+    pub exclude_paginated_pages_in_sitemap: bool,
 }
 
 #[derive(Serialize)]
@@ -117,6 +120,7 @@ pub struct SerializedConfig<'a> {
     extra: &'a HashMap<String, Toml>,
     markdown: &'a markup::Markdown,
     search: search::SerializedSearch<'a>,
+    exclude_paginated_pages_in_sitemap: bool,
 }
 
 impl Config {
@@ -332,6 +336,7 @@ impl Config {
             extra: &self.extra,
             markdown: &self.markdown,
             search: self.search.serialize(),
+            exclude_paginated_pages_in_sitemap: self.exclude_paginated_pages_in_sitemap,
         }
     }
 }
@@ -395,6 +400,7 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
+            exclude_paginated_pages_in_sitemap: false,
         }
     }
 }
@@ -992,4 +998,6 @@ feed_filename = "test.xml"
 
         Config::parse(config).unwrap();
     }
+
+    // TODO: add a test for excluding paginated pages
 }
