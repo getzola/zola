@@ -1046,7 +1046,7 @@ impl Site {
                 None => return Ok(()),
             };
 
-        for (feed, feed_filename) in feeds.into_iter().zip(self.config.feed_filenames.iter()) {
+        for (feed, feed_filename) in feeds.into_iter().zip(self.config.languages[lang].feed_filenames.iter()) {
             if let Some(base) = base_path {
                 let mut components = Vec::new();
                 for component in base.components() {
