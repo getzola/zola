@@ -51,7 +51,10 @@
   <content_rating type="oars-1.1" />
 
   <releases>
-    <release version="0.19.0" date="2024-06-24">
+    <release version="0.19.1" date="2024-06-24">
+      <url>https://github.com/getzola/zola/releases/tag/v0.19.1</url>
+    </release>
+    <release version="0.19.0" date="2024-06-20">
       <url>https://github.com/getzola/zola/releases/tag/v0.19.0</url>
     </release>
     <release version="0.18.0" date="2023-12-18">
