@@ -3,11 +3,11 @@
 title = "tale-zola"
 description = "Tala-Zola is a minimal Zola theme helping you to build a nice and seo-ready blog."
 template = "theme.html"
-date = 2024-06-24T05:58:05Z
+date = 2024-07-01T05:58:26Z
 
 [extra]
-created = 2024-06-24T05:58:05Z
-updated = 2024-06-24T05:58:05Z
+created = 2024-07-01T05:58:26Z
+updated = 2024-07-01T05:58:26Z
 repository = "https://github.com/aaranxu/tale-zola.git"
 homepage = "https://github.com/aaranxu/tale-zola"
 minimum_version = "0.13.0"

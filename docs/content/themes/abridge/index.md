@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2024-06-24T05:58:05Z
+date = 2024-07-01T05:58:26Z
 
 [extra]
-created = 2024-06-24T05:58:05Z
-updated = 2024-06-24T05:58:05Z
+created = 2024-07-01T05:58:26Z
+updated = 2024-07-01T05:58:26Z
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
-minimum_version = "0.18.0"
+minimum_version = "0.19.1"
 license = "MIT"
 demo = "https://abridge.pages.dev/"
 
@@ -76,7 +76,7 @@ The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml]
 
 ## Quick Start
 
-This theme requires version 0.18.0 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
+This theme requires version 0.19.1 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
 
 ```bash
 git clone https://github.com/jieiku/abridge.git
