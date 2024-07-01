@@ -226,6 +226,7 @@ mod tests {
             Path::new("hello.html~"),
             Path::new("#hello.html"),
             Path::new(".index.md.kate-swp"),
+            Path::new("smtp.md0HlVyu.bck"),
         ];
 
         for t in test_cases {

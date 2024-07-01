@@ -5,6 +5,7 @@
 - Fix some of YAML date parsing
 - Fix feed generation for languages not working in some cases (it was taking the value from the root of the config for
 feed_filenames)
+- Ignore `.bck` files in `zola serve`
 
 ## 0.19.1 (2024-06-24)
 
