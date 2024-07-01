@@ -74,7 +74,7 @@ pub fn render_feeds(
     context.insert("lang", lang);
 
     let mut feeds = Vec::new();
-    for feed_filename in &site.config.feed_filenames {
+    for feed_filename in &site.config.languages[lang].feed_filenames {
         let mut context = context.clone();
 
         let feed_url = if let Some(base) = base_path {
@@ -85,9 +85,7 @@ pub fn render_feeds(
         };
 
         context.insert("feed_url", &feed_url);
-
         context = additional_context_fn(context);
-
         feeds.push(render_template(feed_filename, &site.tera, context, &site.config.theme)?);
     }
 

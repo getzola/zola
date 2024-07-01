@@ -200,6 +200,8 @@ pub fn is_temp_file(path: &Path) -> bool {
             x if x.ends_with("jb_bak___") => true,
             // vim & jetbrains
             x if x.ends_with('~') => true,
+            // helix
+            x if x.ends_with("bck") => true,
             _ => {
                 if let Some(filename) = path.file_stem() {
                     // emacs

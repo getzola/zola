@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.20.0 (unreleased)
+
+- Fix some of YAML date parsing
+- Fix feed generation for languages not working in some cases (it was taking the value from the root of the config for
+feed_filenames)
+- Ignore `.bck` files in `zola serve`
+
 ## 0.19.1 (2024-06-24)
 
 - Fix `config.generate_feeds` being still serialized as `config.generate_feed`. Both are available for now
