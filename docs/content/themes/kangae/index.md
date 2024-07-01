@@ -3,11 +3,11 @@
 title = "kangae"
 description = "a lightweight microblog theme for zola"
 template = "theme.html"
-date = 2024-06-24T05:58:05Z
+date = 2024-07-01T05:58:26Z
 
 [extra]
-created = 2024-06-24T05:58:05Z
-updated = 2024-06-24T05:58:05Z
+created = 2024-07-01T05:58:26Z
+updated = 2024-07-01T05:58:26Z
 repository = "https://github.com/ayushnix/kangae.git"
 homepage = "https://github.com/ayushnix/kangae"
 minimum_version = "0.15.0"

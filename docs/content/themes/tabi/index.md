@@ -3,11 +3,11 @@
 title = "tabi"
 description = "A fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score"
 template = "theme.html"
-date = 2024-06-24T05:58:05Z
+date = 2024-07-01T05:58:26Z
 
 [extra]
-created = 2024-06-24T05:58:05Z
-updated = 2024-06-24T05:58:05Z
+created = 2024-07-01T05:58:26Z
+updated = 2024-07-01T05:58:26Z
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
