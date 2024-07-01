@@ -76,3 +76,6 @@
 [submodule "sublime/syntaxes/extra/protobuf-syntax-highlighting"]
 	path = sublime/syntaxes/extra/protobuf-syntax-highlighting
 	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
+[submodule "sublime/syntaxes/extra/SystemVerilog"]
+	path = sublime/syntaxes/extra/SystemVerilog
+	url = https://github.com/TheClams/SystemVerilog
