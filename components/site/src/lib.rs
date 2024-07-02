@@ -771,8 +771,10 @@ impl Site {
         for (code, language) in &self.config.languages {
             let is_default_language = code == &self.config.default_language;
 
-            let skip_default_language_feed_generation = is_default_language && !self.config.generate_feeds && !language.generate_feeds;
-            let skip_other_language_feed_generation = !is_default_language && !language.generate_feeds;
+            let skip_default_language_feed_generation =
+                is_default_language && !self.config.generate_feeds && !language.generate_feeds;
+            let skip_other_language_feed_generation =
+                !is_default_language && !language.generate_feeds;
             if skip_default_language_feed_generation || skip_other_language_feed_generation {
                 continue;
             }
@@ -784,11 +786,7 @@ impl Site {
             };
 
             let code_path = PathBuf::from(code);
-            let base_path = if is_default_language {
-                None
-            } else {
-                Some(&code_path)
-            };
+            let base_path = if is_default_language { None } else { Some(&code_path) };
 
             self.render_feeds(pages, base_path, code, |c| c)?;
             let debug_message = if is_default_language {
@@ -1063,7 +1061,9 @@ impl Site {
                 None => return Ok(()),
             };
 
-        for (feed, feed_filename) in feeds.into_iter().zip(self.config.languages[lang].feed_filenames.iter()) {
+        for (feed, feed_filename) in
+            feeds.into_iter().zip(self.config.languages[lang].feed_filenames.iter())
+        {
             if let Some(base) = base_path {
                 let mut components = Vec::new();
                 for component in base.components() {
@@ -1230,8 +1230,8 @@ fn log_time(start: Instant, message: &str) -> Instant {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use content::{FileInfo, Library, Page};
     use config::Config;
+    use content::{FileInfo, Library, Page};
     use tempfile::{tempdir, TempDir};
 
     fn create_page(title: &str, file_path: &str, lang: &str, config: &Config) -> Page {
@@ -1244,14 +1244,15 @@ mod tests {
         page.meta.date = Some("2016-03-01".to_string());
         page.meta.weight = Some(1);
         page.lang = lang.to_string();
-        page.file.find_language(
-            &config.default_language, 
-            &config.other_languages_codes()).unwrap();
+        page.file.find_language(&config.default_language, &config.other_languages_codes()).unwrap();
         page.permalink = config.make_permalink(file_path);
         page
     }
 
-    fn create_site_from_config_and_pages(config_raw: &str, pages: &[(&str, &str, &str)]) -> (TempDir, Site) {
+    fn create_site_from_config_and_pages(
+        config_raw: &str,
+        pages: &[(&str, &str, &str)],
+    ) -> (TempDir, Site) {
         let config = Config::parse(config_raw).unwrap();
         let mut library = Library::default();
         for (t, f, l) in pages {
@@ -1291,9 +1292,7 @@ base_url = "https://replace-this-with-your-url.com"
 generate_feeds = true
 
         "#;
-        let pages = vec![
-            ("My En Article", "content/my-article.md", "en"),
-        ];
+        let pages = vec![("My En Article", "content/my-article.md", "en")];
 
         let (tmp_dir, site) = create_site_from_config_and_pages(config_raw, &pages);
         let public_dir = site.output_path;
@@ -1301,7 +1300,9 @@ generate_feeds = true
         assert!(tmp_dir.path().exists());
         assert!(public_dir.exists());
         assert!(public_dir.join("atom.xml").exists());
-        assert!(std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My En Article"));
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
     }
 
     #[test]
@@ -1330,8 +1331,12 @@ generate_feeds = false
         assert!(tmp_dir.path().exists());
         assert!(public_dir.exists());
         assert!(public_dir.join("atom.xml").exists());
-        assert!(std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My En Article"));
-        assert!(!std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My Fr Article"));
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
     }
 
     #[test]
@@ -1362,10 +1367,18 @@ feed_filenames = ["rss.xml"]
         assert!(public_dir.exists());
         assert!(public_dir.join("atom.xml").exists());
         assert!(public_dir.join("fr").join("rss.xml").exists());
-        assert!(std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My En Article"));
-        assert!(!std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My Fr Article"));
-        assert!(!std::fs::read_to_string(public_dir.join("fr").join("rss.xml")).unwrap().contains("My En Article"));
-        assert!(std::fs::read_to_string(public_dir.join("fr").join("rss.xml")).unwrap().contains("My Fr Article"));
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("fr").join("rss.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(std::fs::read_to_string(public_dir.join("fr").join("rss.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
     }
 
     #[test]
@@ -1396,9 +1409,17 @@ generate_feeds = true
         assert!(public_dir.exists());
         assert!(public_dir.join("atom.xml").exists());
         assert!(public_dir.join("fr").join("atom.xml").exists());
-        assert!(std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My En Article"));
-        assert!(!std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My Fr Article"));
-        assert!(!std::fs::read_to_string(public_dir.join("fr").join("atom.xml")).unwrap().contains("My En Article"));
-        assert!(std::fs::read_to_string(public_dir.join("fr").join("atom.xml")).unwrap().contains("My Fr Article"));
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("fr").join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(std::fs::read_to_string(public_dir.join("fr").join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
     }
 }
