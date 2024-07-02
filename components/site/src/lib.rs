@@ -1367,4 +1367,38 @@ feed_filenames = ["rss.xml"]
         assert!(!std::fs::read_to_string(public_dir.join("fr").join("rss.xml")).unwrap().contains("My En Article"));
         assert!(std::fs::read_to_string(public_dir.join("fr").join("rss.xml")).unwrap().contains("My Fr Article"));
     }
+
+    #[test]
+    fn can_render_feed_for_multi_language_with_language_level_feed_flag_preferred_for_default() {
+        let config_raw = r#"
+base_url = "https://replace-this-with-your-url.com"
+default_language = "en"
+generate_feeds = false
+
+[languages.en]
+title = "My English site"
+generate_feeds = true
+
+[languages.fr]
+title = "My French site"
+generate_feeds = true
+
+        "#;
+        let pages = vec![
+            ("My En Article", "content/my-article.md", "en"),
+            ("My Fr Article", "content/my-article.fr.md", "fr"),
+        ];
+
+        let (tmp_dir, site) = create_site_from_config_and_pages(config_raw, &pages);
+        let public_dir = site.output_path;
+
+        assert!(tmp_dir.path().exists());
+        assert!(public_dir.exists());
+        assert!(public_dir.join("atom.xml").exists());
+        assert!(public_dir.join("fr").join("atom.xml").exists());
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My En Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("atom.xml")).unwrap().contains("My Fr Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("fr").join("atom.xml")).unwrap().contains("My En Article"));
+        assert!(std::fs::read_to_string(public_dir.join("fr").join("atom.xml")).unwrap().contains("My Fr Article"));
+    }
 }
