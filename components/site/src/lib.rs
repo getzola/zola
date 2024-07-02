@@ -1047,7 +1047,7 @@ impl Site {
         Ok(())
     }
 
-    /// Renders a feeds for the given path and at the given path
+    /// Renders feeds for the given path and at the given path
     /// If both arguments are `None`, it will render only the feeds for the whole
     /// site at the root folder.
     pub fn render_feeds(
