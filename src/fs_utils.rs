@@ -82,6 +82,12 @@ pub fn filter_events(
         }
         let path = event.event.paths[0].clone();
 
+        // Since we debounce things, some files might already not exist anymore by the
+        // time we get to them
+        if !path.exists() {
+            continue;
+        }
+
         if is_ignored_file(ignored_content_globset, &path) {
             continue;
         }
