@@ -90,6 +90,26 @@ Zola is available in the official package repository.
 $ doas pkg_add zola
 ```
 
+### openSUSE
+
+#### openSUSE Tumbleweed
+
+Zola is [available](https://software.opensuse.org/package/zola?baseproject=ALL) in the official openSUSE Tumbleweed main OSS repository.
+
+```sh
+$ sudo zypper install zola
+```
+
+#### openSUSE Leap
+
+Zola is [available](https://software.opensuse.org/package/zola?baseproject=ALL) in the official experimental _utilities_ repository.
+
+```sh
+$ sudo zypper addrepo https://download.opensuse.org/repositories/utilities/15.6/utilities.repo
+$ sudo zypper refresh
+$ sudo zypper install zola
+```
+
 ### pkgsrc
 
 Zola is available in the official package repository, with [pkgin](https://pkgin.net/).
