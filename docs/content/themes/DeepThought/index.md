@@ -3,11 +3,11 @@
 title = "DeepThought"
 description = "A simple blog theme focused on writing powered by Bulma and Zola."
 template = "theme.html"
-date = 2024-07-01T05:58:26Z
+date = 2024-07-15T05:58:02Z
 
 [extra]
-created = 2024-07-01T05:58:26Z
-updated = 2024-07-01T05:58:26Z
+created = 2024-07-15T05:58:02Z
+updated = 2024-07-15T05:58:02Z
 repository = "https://github.com/RatanShreshtha/DeepThought.git"
 homepage = "https://github.com/RatanShreshtha/DeepThought"
 minimum_version = "0.14.1"

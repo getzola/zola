@@ -3,11 +3,11 @@
 title = "Course"
 description = "A zola theme designed for online courses or tutorials"
 template = "theme.html"
-date = 2024-07-01T05:58:26Z
+date = 2024-07-15T05:58:02Z
 
 [extra]
-created = 2024-07-01T05:58:26Z
-updated = 2024-07-01T05:58:26Z
+created = 2024-07-15T05:58:02Z
+updated = 2024-07-15T05:58:02Z
 repository = "https://github.com/elegaanz/zola-theme-course.git"
 homepage = "https://github.com/elegaanz/zola-theme-course"
 minimum_version = "0.17.1"
