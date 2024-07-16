@@ -52,16 +52,16 @@ as an `index.md` file in a dedicated directory (`latest-experiment/index.md`), l
 └── research
     ├── latest-experiment
     │   ├── index.md
-    │   └── yavascript.js
+    │   └── javascript.js
     ├── _index.md
     └── research.jpg
 ```
 
 With this setup, you may access `research.jpg` from your 'research' section
-and `yavascript.js` from your 'latest-experiment' page directly within the Markdown:
+and `javascript.js` from your 'latest-experiment' page directly within the Markdown:
 
 ```Markdown
-Check out the complete program [here](yavascript.js). It's **really cool free-software**!
+Check out the complete program [here](javascript.js). It's **really cool free-software**!
 ```
 
 By default, this page's slug will be the directory name and thus its permalink will be `https://example.com/research/latest-experiment/`.
