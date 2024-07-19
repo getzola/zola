@@ -98,6 +98,10 @@ pub struct Config {
     pub markdown: markup::Markdown,
     /// All user params set in `[extra]` in the config
     pub extra: HashMap<String, Toml>,
+    /// Disable the generation of Sitemap.xml
+    pub no_sitemap: bool,
+    /// Disable the generation of robots.txt
+    pub no_robots: bool,
 }
 
 #[derive(Serialize)]
@@ -117,6 +121,8 @@ pub struct SerializedConfig<'a> {
     extra: &'a HashMap<String, Toml>,
     markdown: &'a markup::Markdown,
     search: search::SerializedSearch<'a>,
+    no_sitemap: bool,
+    no_robots: bool,
 }
 
 impl Config {
@@ -332,6 +338,8 @@ impl Config {
             extra: &self.extra,
             markdown: &self.markdown,
             search: self.search.serialize(),
+            no_sitemap: self.no_sitemap,
+            no_robots: self.no_robots,
         }
     }
 }
@@ -395,6 +403,8 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
+            no_sitemap: false,
+            no_robots: false,
         }
     }
 }
@@ -991,5 +1001,36 @@ feed_filename = "test.xml"
         "#;
 
         Config::parse(config).unwrap();
+    }
+
+    #[test]
+    fn parse_no_sitemap() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+no_sitemap = true
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.no_sitemap);
+    }
+
+    #[test]
+    fn default_no_sitemap_false() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(!config.no_sitemap);
+    }
+
+    #[test]
+    fn default_no_robots_false() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(!config.no_robots);
     }
 }
