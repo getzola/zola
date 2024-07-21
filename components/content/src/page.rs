@@ -302,8 +302,8 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use libs::globset::{Glob, GlobSetBuilder};
-    use libs::tera::Tera;
     use tempfile::tempdir;
+    use templates::ZOLA_TERA;
 
     use crate::Page;
     use config::{Config, LanguageOptions};
@@ -325,7 +325,7 @@ Hello world"#;
         let mut page = res.unwrap();
         page.render_markdown(
             &HashMap::default(),
-            &Tera::default(),
+            &ZOLA_TERA,
             &config,
             InsertAnchor::None,
             &HashMap::new(),
@@ -353,7 +353,7 @@ Hello world"#;
         let mut page = res.unwrap();
         page.render_markdown(
             &HashMap::default(),
-            &Tera::default(),
+            &ZOLA_TERA,
             &config,
             InsertAnchor::None,
             &HashMap::new(),
@@ -523,13 +523,13 @@ Hello world
         let mut page = res.unwrap();
         page.render_markdown(
             &HashMap::default(),
-            &Tera::default(),
+            &ZOLA_TERA,
             &config,
             InsertAnchor::None,
             &HashMap::new(),
         )
         .unwrap();
-        assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
+        assert_eq!(page.summary, Some("<p>Hello world</p>".to_string()));
     }
 
     #[test]
@@ -557,7 +557,7 @@ And here's another. [^3]
         let mut page = res.unwrap();
         page.render_markdown(
             &HashMap::default(),
-            &Tera::default(),
+            &ZOLA_TERA,
             &config,
             InsertAnchor::None,
             &HashMap::new(),
@@ -565,7 +565,7 @@ And here's another. [^3]
         .unwrap();
         assert_eq!(
             page.summary,
-            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>\n".to_string())
+            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>".to_string())
         );
     }
 
