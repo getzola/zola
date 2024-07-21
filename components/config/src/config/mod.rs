@@ -1057,7 +1057,6 @@ generate_robots_txt = false
         assert!(!config.generate_robots_txt);
     }
 
-
     #[test]
     fn default_no_robots_true() {
         let config = r#"

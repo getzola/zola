@@ -742,7 +742,7 @@ impl Site {
         start = log_time(start, "Rendered sections");
         self.render_orphan_pages()?;
         start = log_time(start, "Rendered orphan pages");
-        if self.config.generate_sitemap{
+        if self.config.generate_sitemap {
             self.render_sitemap()?;
             start = log_time(start, "Rendered sitemap");
         }
