@@ -742,7 +742,7 @@ impl Site {
         start = log_time(start, "Rendered sections");
         self.render_orphan_pages()?;
         start = log_time(start, "Rendered orphan pages");
-        if !self.config.no_sitemap {
+        if self.config.generate_sitemap{
             self.render_sitemap()?;
             start = log_time(start, "Rendered sitemap");
         }
@@ -771,7 +771,7 @@ impl Site {
         start = log_time(start, "Rendered themes css");
         self.render_404()?;
         start = log_time(start, "Rendered 404");
-        if !self.config.no_robots {
+        if self.config.generate_robots_txt {
             self.render_robots()?;
             start = log_time(start, "Rendered robots.txt");
         }
