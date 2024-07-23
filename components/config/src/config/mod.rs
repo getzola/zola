@@ -98,9 +98,9 @@ pub struct Config {
     pub markdown: markup::Markdown,
     /// All user params set in `[extra]` in the config
     pub extra: HashMap<String, Toml>,
-    /// Disable the generation of Sitemap.xml
+    /// Enables the generation of Sitemap.xml
     pub generate_sitemap: bool,
-    /// Disable the generation of robots.txt
+    /// Enables the generation of robots.txt
     pub generate_robots_txt: bool,
 }
 
