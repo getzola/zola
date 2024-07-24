@@ -744,27 +744,7 @@ impl Site {
         start = log_time(start, "Rendered orphan pages");
         self.render_sitemap()?;
         start = log_time(start, "Rendered sitemap");
-
-        let library = self.library.read().unwrap();
-        if self.config.generate_feeds {
-            let is_multilingual = self.config.is_multilingual();
-            let pages: Vec<_> = if is_multilingual {
-                library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
-            } else {
-                library.pages.values().collect()
-            };
-            self.render_feeds(pages, None, &self.config.default_language, |c| c)?;
-            start = log_time(start, "Generated feed in default language");
-        }
-
-        for (code, language) in &self.config.other_languages() {
-            if !language.generate_feeds {
-                continue;
-            }
-            let pages: Vec<_> = library.pages.values().filter(|p| &p.lang == code).collect();
-            self.render_feeds(pages, Some(&PathBuf::from(code)), code, |c| c)?;
-            start = log_time(start, "Generated feed in other language");
-        }
+        self.render_all_feeds()?;
         self.render_themes_css()?;
         start = log_time(start, "Rendered themes css");
         self.render_404()?;
@@ -781,6 +761,41 @@ impl Site {
         self.copy_static_directories()?;
         log_time(start, "Copied static dir");
 
+        Ok(())
+    }
+
+    pub fn render_all_feeds(&self) -> Result<()> {
+        let mut start = Instant::now();
+        let library = self.library.read().unwrap();
+
+        for (code, language) in &self.config.languages {
+            let is_default_language = code == &self.config.default_language;
+
+            let skip_default_language_feed_generation =
+                is_default_language && !self.config.generate_feeds && !language.generate_feeds;
+            let skip_other_language_feed_generation =
+                !is_default_language && !language.generate_feeds;
+            if skip_default_language_feed_generation || skip_other_language_feed_generation {
+                continue;
+            }
+
+            let pages: Vec<_> = if is_default_language && !self.config.is_multilingual() {
+                library.pages.values().collect()
+            } else {
+                library.pages.values().filter(|p| &p.lang == code).collect()
+            };
+
+            let code_path = PathBuf::from(code);
+            let base_path = if is_default_language { None } else { Some(&code_path) };
+
+            self.render_feeds(pages, base_path, code, |c| c)?;
+            let debug_message = if is_default_language {
+                "Generated feed in default language"
+            } else {
+                "Generated feed in other language"
+            };
+            start = log_time(start, debug_message);
+        }
         Ok(())
     }
 
@@ -1210,4 +1225,201 @@ fn log_time(start: Instant, message: &str) -> Instant {
         println!("{} took {}ms", message, now.duration_since(start).as_millis());
     }
     now
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use config::Config;
+    use content::{FileInfo, Library, Page};
+    use tempfile::{tempdir, TempDir};
+
+    fn create_page(title: &str, file_path: &str, lang: &str, config: &Config) -> Page {
+        let mut page = Page { lang: lang.to_owned(), ..Page::default() };
+        page.file = FileInfo::new_page(
+            Path::new(format!("/test/base/path/{}", file_path).as_str()),
+            &PathBuf::new(),
+        );
+        page.meta.title = Some(title.to_string());
+        page.meta.date = Some("2016-03-01".to_string());
+        page.meta.weight = Some(1);
+        page.lang = lang.to_string();
+        page.file.find_language(&config.default_language, &config.other_languages_codes()).unwrap();
+        page.permalink = config.make_permalink(file_path);
+        page
+    }
+
+    fn create_site_from_config_and_pages(
+        config_raw: &str,
+        pages: &[(&str, &str, &str)],
+    ) -> (TempDir, Site) {
+        let config = Config::parse(config_raw).unwrap();
+        let mut library = Library::default();
+        for (t, f, l) in pages {
+            library.insert_page(create_page(t, f, l, &config));
+        }
+
+        let tmp_dir = tempdir().unwrap();
+        let path = tmp_dir.path();
+        let public_dir = path.join("public");
+        let site = Site {
+            config: config.clone(),
+            library: Arc::new(RwLock::new(library)),
+            base_path: path.into(),
+            tera: load_tera(path, &config).unwrap(),
+            imageproc: Arc::new(Mutex::new(imageproc::Processor::new(path.to_path_buf(), &config))),
+            live_reload: None,
+            output_path: public_dir.clone(),
+            content_path: path.into(),
+            sass_path: path.into(),
+            static_path: path.into(),
+            templates_path: path.into(),
+            taxonomies: vec![],
+            permalinks: HashMap::new(),
+            include_drafts: false,
+            build_mode: BuildMode::Disk,
+            shortcode_definitions: HashMap::new(),
+        };
+        site.render_all_feeds().unwrap();
+        (tmp_dir, site)
+    }
+
+    #[test]
+    fn can_render_feed_for_single_language_with_global_feed_flag() {
+        let config_raw = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+generate_feeds = true
+
+        "#;
+        let pages = vec![("My En Article", "content/my-article.md", "en")];
+
+        let (tmp_dir, site) = create_site_from_config_and_pages(config_raw, &pages);
+        let public_dir = site.output_path;
+
+        assert!(tmp_dir.path().exists());
+        assert!(public_dir.exists());
+        assert!(public_dir.join("atom.xml").exists());
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+    }
+
+    #[test]
+    fn can_render_feed_for_multi_language_with_language_level_feed_flag() {
+        let config_raw = r#"
+base_url = "https://replace-this-with-your-url.com"
+default_language = "en"
+
+[languages.en]
+title = "My English site"
+generate_feeds = true
+
+[languages.fr]
+title = "My French site"
+generate_feeds = false
+
+        "#;
+        let pages = vec![
+            ("My En Article", "content/my-article.md", "en"),
+            ("My Fr Article", "content/my-article.fr.md", "fr"),
+        ];
+
+        let (tmp_dir, site) = create_site_from_config_and_pages(config_raw, &pages);
+        let public_dir = site.output_path;
+
+        assert!(tmp_dir.path().exists());
+        assert!(public_dir.exists());
+        assert!(public_dir.join("atom.xml").exists());
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
+    }
+
+    #[test]
+    fn can_render_feed_for_multi_language_with_language_level_feed_flag_and_feed_files() {
+        let config_raw = r#"
+base_url = "https://replace-this-with-your-url.com"
+default_language = "en"
+
+[languages.en]
+title = "My English site"
+generate_feeds = true
+
+[languages.fr]
+title = "My French site"
+generate_feeds = true
+feed_filenames = ["rss.xml"]
+
+        "#;
+        let pages = vec![
+            ("My En Article", "content/my-article.md", "en"),
+            ("My Fr Article", "content/my-article.fr.md", "fr"),
+        ];
+
+        let (tmp_dir, site) = create_site_from_config_and_pages(config_raw, &pages);
+        let public_dir = site.output_path;
+
+        assert!(tmp_dir.path().exists());
+        assert!(public_dir.exists());
+        assert!(public_dir.join("atom.xml").exists());
+        assert!(public_dir.join("fr").join("rss.xml").exists());
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("fr").join("rss.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(std::fs::read_to_string(public_dir.join("fr").join("rss.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
+    }
+
+    #[test]
+    fn can_render_feed_for_multi_language_with_language_level_feed_flag_preferred_for_default() {
+        let config_raw = r#"
+base_url = "https://replace-this-with-your-url.com"
+default_language = "en"
+generate_feeds = false
+
+[languages.en]
+title = "My English site"
+generate_feeds = true
+
+[languages.fr]
+title = "My French site"
+generate_feeds = true
+
+        "#;
+        let pages = vec![
+            ("My En Article", "content/my-article.md", "en"),
+            ("My Fr Article", "content/my-article.fr.md", "fr"),
+        ];
+
+        let (tmp_dir, site) = create_site_from_config_and_pages(config_raw, &pages);
+        let public_dir = site.output_path;
+
+        assert!(tmp_dir.path().exists());
+        assert!(public_dir.exists());
+        assert!(public_dir.join("atom.xml").exists());
+        assert!(public_dir.join("fr").join("atom.xml").exists());
+        assert!(std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
+        assert!(!std::fs::read_to_string(public_dir.join("fr").join("atom.xml"))
+            .unwrap()
+            .contains("My En Article"));
+        assert!(std::fs::read_to_string(public_dir.join("fr").join("atom.xml"))
+            .unwrap()
+            .contains("My Fr Article"));
+    }
 }
