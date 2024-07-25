@@ -100,6 +100,12 @@ taxonomies = []
 # content for `default_language`.
 build_search_index = false
 
+# When set to "false", Sitemap.xml is not generated
+generate_sitemap = true
+
+# When set to "false", robots.txt is not generated
+generate_robots_txt = true
+
 # Configuration of the Markdown rendering
 [markdown]
 # When set to "true", all code blocks are highlighted.
