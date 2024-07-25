@@ -742,8 +742,10 @@ impl Site {
         start = log_time(start, "Rendered sections");
         self.render_orphan_pages()?;
         start = log_time(start, "Rendered orphan pages");
-        self.render_sitemap()?;
-        start = log_time(start, "Rendered sitemap");
+        if self.config.generate_sitemap {
+            self.render_sitemap()?;
+            start = log_time(start, "Rendered sitemap");
+        }
 
         let library = self.library.read().unwrap();
         if self.config.generate_feeds {
@@ -769,8 +771,10 @@ impl Site {
         start = log_time(start, "Rendered themes css");
         self.render_404()?;
         start = log_time(start, "Rendered 404");
-        self.render_robots()?;
-        start = log_time(start, "Rendered robots.txt");
+        if self.config.generate_robots_txt {
+            self.render_robots()?;
+            start = log_time(start, "Rendered robots.txt");
+        }
         self.render_taxonomies()?;
         start = log_time(start, "Rendered taxonomies");
         // We process images at the end as we might have picked up images to process from markdown

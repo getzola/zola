@@ -98,6 +98,10 @@ pub struct Config {
     pub markdown: markup::Markdown,
     /// All user params set in `[extra]` in the config
     pub extra: HashMap<String, Toml>,
+    /// Enables the generation of Sitemap.xml
+    pub generate_sitemap: bool,
+    /// Enables the generation of robots.txt
+    pub generate_robots_txt: bool,
 }
 
 #[derive(Serialize)]
@@ -117,6 +121,8 @@ pub struct SerializedConfig<'a> {
     extra: &'a HashMap<String, Toml>,
     markdown: &'a markup::Markdown,
     search: search::SerializedSearch<'a>,
+    generate_sitemap: bool,
+    generate_robots_txt: bool,
 }
 
 impl Config {
@@ -332,6 +338,8 @@ impl Config {
             extra: &self.extra,
             markdown: &self.markdown,
             search: self.search.serialize(),
+            generate_sitemap: self.generate_sitemap,
+            generate_robots_txt: self.generate_robots_txt,
         }
     }
 }
@@ -395,6 +403,8 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
+            generate_sitemap: true,
+            generate_robots_txt: true,
         }
     }
 }
@@ -991,5 +1001,69 @@ feed_filename = "test.xml"
         "#;
 
         Config::parse(config).unwrap();
+    }
+
+    #[test]
+    fn parse_generate_sitemap_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_sitemap = true
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_sitemap);
+    }
+
+    #[test]
+    fn parse_generate_sitemap_false() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_sitemap = false
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(!config.generate_sitemap);
+    }
+
+    #[test]
+    fn default_no_sitemap_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_sitemap);
+    }
+
+    #[test]
+    fn parse_generate_robots_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_robots_txt = true
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_robots_txt);
+    }
+
+    #[test]
+    fn parse_generate_robots_false() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_robots_txt = false
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(!config.generate_robots_txt);
+    }
+
+    #[test]
+    fn default_no_robots_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_robots_txt);
     }
 }
