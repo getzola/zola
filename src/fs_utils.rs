@@ -39,6 +39,8 @@ fn get_relevant_event_kind(event_kind: &EventKind) -> Option<SimpleFileSystemEve
             Some(SimpleFileSystemEventKind::Create)
         }
         EventKind::Modify(ModifyKind::Data(_))
+        // Windows 10 only reports modify events at the `Any` granularity.
+        | EventKind::Modify(ModifyKind::Any)
         // Intellij modifies file metadata on edit.
         // https://github.com/passcod/notify/issues/150#issuecomment-494912080
         | EventKind::Modify(ModifyKind::Metadata(MetadataKind::WriteTime))
@@ -178,6 +180,7 @@ mod tests {
         let cases = vec![
             (EventKind::Create(CreateKind::File), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Create(CreateKind::Folder), Some(SimpleFileSystemEventKind::Create)),
+            (EventKind::Modify(ModifyKind::Any), Some(SimpleFileSystemEventKind::Modify)),
             (
                 EventKind::Modify(ModifyKind::Data(DataChange::Size)),
                 Some(SimpleFileSystemEventKind::Modify),
