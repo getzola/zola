@@ -3,11 +3,11 @@
 title = "zallery"
 description = "Gallery theme for zola"
 template = "theme.html"
-date = 2024-07-01T05:58:26Z
+date = 2024-07-31T14:47:30-04:00
 
 [extra]
-created = 2024-07-01T05:58:26Z
-updated = 2024-07-01T05:58:26Z
+created = 2024-07-31T14:47:30-04:00
+updated = 2024-07-31T14:47:30-04:00
 repository = "https://github.com/gamingrobot/zallery.git"
 homepage = "https://github.com/gamingrobot/zallery"
 minimum_version = "0.19.0"
@@ -39,9 +39,11 @@ Personal Portfolio: [gamingrobot.art](https://gamingrobot.art/)
 - Auto creation of thumbnails
 - Auto conversion of images
 - Maximize button on images
+- [medium-zoom](https://github.com/francoischalifour/medium-zoom) support
+- [ModelViewer](https://modelviewer.dev/) and [Sketchfab](https://sketchfab.com/) support
 - Video embed support
-- ModelViewer and Sketchfab support
-- Responsive and Mobile friendly
+- OpenGraph and Twitter embed support
+- Responsive and mobile friendly
 
 ## Installation
 
@@ -102,6 +104,15 @@ Url used for the name in the copyright
 author_url = "https://example.com"
 ```
 
+### Cover Image
+
+Cover image to use on the main gallery pages for opengraph and twitter embeds
+
+```toml
+[extra]
+cover_image = "img/cover.webp"
+```
+
 ### Copyright and Powered by
 
 To hide the copyright set this to `true`
@@ -155,11 +166,20 @@ modelviewer = true # enable modelviewer javascript for this artwork
 
 #### ModelViewer
 
-Set to `true` to enable [modelviewer](https://modelviewer.dev/) support. This can be set in the artwork frontmatter or in `config.toml`
+Set to `true` to enable [modelviewer](https://modelviewer.dev/) support. This can also be set in the artwork frontmatter or in `config.toml`
 
 ```toml
 [extra]
 modelviewer = true
+```
+
+#### JSZoom
+
+Set to `true` to enable [javascript zoom](https://github.com/francoischalifour/medium-zoom) support.
+
+```toml
+[extra]
+jszoom = true
 ```
 
 #### GoatCounter

@@ -3,11 +3,11 @@
 title = "tabi"
 description = "A fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score"
 template = "theme.html"
-date = 2024-07-01T05:58:26Z
+date = 2024-07-31T14:47:30-04:00
 
 [extra]
-created = 2024-07-01T05:58:26Z
-updated = 2024-07-01T05:58:26Z
+created = 2024-07-31T14:47:30-04:00
+updated = 2024-07-31T14:47:30-04:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -66,6 +66,7 @@ tabi has a perfect score on Google's Lighthouse audit:
 - [X] Support for [comments using giscus, utterances, Hyvor Talk, or Isso](https://welpo.github.io/tabi/blog/comments/).
 - [X] Code syntax highlighting with colours based on [Catppuccin](https://github.com/catppuccin/catppuccin) Frappé.
 - [X] [Local search](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#search) with an accessible, multi-lingual interface.
+- [X] [Custom Twitter card](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#social-media-cards) and automatic Open Graph tags.
 - [X] [KaTeX](https://katex.org/) support for mathematical notation.
 - [X] [Stylized and human readable Atom feed](https://welpo.github.io/tabi/atom.xml).
 - [X] [Stylized and human readable sitemap](https://welpo.github.io/tabi/sitemap.xml).
@@ -79,7 +80,6 @@ tabi has a perfect score on Google's Lighthouse audit:
 - [X] [Custom canonical URLs](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#canonical-url).
 - [X] [Custom shortcodes](https://welpo.github.io/tabi/blog/shortcodes/).
 - [X] [Customizable skins](https://welpo.github.io/tabi/blog/customise-tabi/).
-- [X] [Footnote backlinks](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#footnote-backlinks).
 - [X] [Social media cards](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#social-media-cards).
 - [X] Responsive design.
 - [X] [Projects page](https://welpo.github.io/tabi/projects/).
