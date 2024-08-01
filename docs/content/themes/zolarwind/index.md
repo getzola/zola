@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2024-07-01T05:58:26Z
+date = 2024-07-31T14:47:30-04:00
 
 [extra]
-created = 2024-07-01T05:58:26Z
-updated = 2024-07-01T05:58:26Z
+created = 2024-07-31T14:47:30-04:00
+updated = 2024-07-31T14:47:30-04:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
-minimum_version = "0.19.0"
+minimum_version = "0.19.1"
 license = "MIT"
 demo = "https://pureandroid.com"
 
@@ -138,35 +138,44 @@ Here's a breakdown of the configuration settings tailored for this theme:
 
 The `[extra]` section is where you can place any custom variables you want to be accessible in your templates.
 
-- **title**: The title of the site.
+- **title**: Required.
+  The title of the site.
   Here, it's set to "Zolarwind".
+
+- **path_language_resources**: Required.
+  The path to the directory containing language resource files.
+  In this config, it's set to `i18n/`.
+  If you move the theme to the `themes/zolarwind` directory, use `themes/zolarwind/i18n/` for this entry.
 
 - **generator**: Optional.
   Specifies the generator used for creating the static website.
   This site is generated using `Zola v0.19.0`.
 
-- **path_language_resources**: The path to the directory containing language resource files.
-  In this config, it's set to `i18n/`.
-  If you move the theme to the `themes/zolarwind` directory, use `themes/zolarwind/i18n/` for this entry.
-
-- **favicon_svg**: Provides a path to the site's favicon in SVG format.
+- **favicon_svg**: Optional.
+  Provides a path to the site's favicon in SVG format.
   The provided path points to `/img/yin-yang.svg`.
 
-- **copyright**: A template for the copyright notice.
+- **copyright**: Optional.
+  A template for the copyright notice.
   It includes a placeholder `{year}` which is dynamically replaced with the current year of your `zola build` run.
 
-- **site_description**: A brief description displayed on the site's banner.
+- **site_description**: Optional.
+  A brief description is displayed on the site's banner.
 
-- **quote**: A structure defining a quote and its author.
+- **quote**: Optional.
+  A structure defining a quote and its author.
   This quote is from Yoda.
 
-- **menu_pages**: An array of main navigation menu items.
+- **menu_pages**: Optional.
+  An array of main navigation menu items.
   Each item has a `title` and a `url`.
 
-- **footer_pages**: An array of pages that will appear in the site's footer.
+- **footer_pages**: Optional.
+  An array of pages that will appear in the site's footer.
   Each item has a `title` and a `url`.
 
-- **social_links**: An array of social media links.
+- **social_links**: Optional.
+  An array of social media links.
   Each link has a name, a boolean indicating if it's enabled, a URL, and an SVG icon.
 
 ---
@@ -177,7 +186,7 @@ For blog posts (Markdown files in folder `content/blog`), this theme uses a dire
 This way, I have all resources for a post in one place.
 It can include images, videos, and other files.
 
-Each post is associated with an image, that is displayed on the blog's main page and on the posts detail page.
+Each post is associated with an image that is displayed on the blog's main page and on the posts detail page.
 If you do not provide an image under `extra.image`, a default image is used instead.
 
 - **date**: the date of the blog posts, e.g. `2020-06-11`.

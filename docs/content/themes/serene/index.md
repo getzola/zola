@@ -3,11 +3,11 @@
 title = "serene"
 description = "A blog theme for zola, simple and clean"
 template = "theme.html"
-date = 2024-07-01T05:58:26Z
+date = 2024-07-31T14:47:30-04:00
 
 [extra]
-created = 2024-07-01T05:58:26Z
-updated = 2024-07-01T05:58:26Z
+created = 2024-07-31T14:47:30-04:00
+updated = 2024-07-31T14:47:30-04:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
 minimum_version = "0.9.0"
