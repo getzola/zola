@@ -12,6 +12,7 @@ pub(crate) use fence::FenceSettings;
 
 fn opening_html(
     language: Option<&str>,
+    path: Option<&str>,
     pre_style: Option<String>,
     pre_class: Option<String>,
     line_numbers: bool,
@@ -29,6 +30,12 @@ fn opening_html(
 
         html.push_str(" data-lang=\"");
         html.push_str(lang);
+        html.push('"');
+    }
+
+    if let Some(path) = path {
+        html.push_str(" data-path=\"");
+        html.push_str(path);
         html.push('"');
     }
 
@@ -54,6 +61,12 @@ fn opening_html(
         html.push_str(lang);
         html.push_str("\" data-lang=\"");
         html.push_str(lang);
+        html.push('"');
+    }
+
+    if let Some(path) = path {
+        html.push_str(" data-path=\"");
+        html.push_str(path);
         html.push('"');
     }
     html.push('>');
@@ -89,6 +102,7 @@ impl<'config> CodeBlock<'config> {
 
         let html_start = opening_html(
             fence.language,
+            fence.path,
             highlighter.pre_style(),
             highlighter.pre_class(),
             fence.line_numbers,
