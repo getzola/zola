@@ -83,7 +83,7 @@ feed_filenames = ["atom.xml"]
 hard_link_static = false
 
 # The default author for pages
-author = 
+author =
 
 # The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
@@ -143,6 +143,9 @@ lazy_async_image = false
 
 # Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain (in the place, where they are defined)
 bottom_footnotes = false
+
+# Whether text in code blocks counts towards the word count of the page/section
+count_code_block_words = true
 
 # Configuration of the link checker.
 [link_checker]
