@@ -55,6 +55,8 @@ pub struct Markdown {
     pub extra_theme_set: Arc<Option<ThemeSet>>,
     /// Add loading="lazy" decoding="async" to img tags. When turned on, the alt text must be plain text. Defaults to false
     pub lazy_async_image: bool,
+    /// Whether or not text in code blocks counts towards the word count. Defaults to true
+    pub count_code_block_words: bool,
 }
 
 impl Markdown {
@@ -210,6 +212,7 @@ impl Default for Markdown {
             extra_syntax_set: None,
             extra_theme_set: Arc::new(None),
             lazy_async_image: false,
+            count_code_block_words: true,
         }
     }
 }

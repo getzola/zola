@@ -87,7 +87,7 @@ impl Section {
             .file
             .find_language(&config.default_language, &config.other_languages_codes())?;
         section.raw_content = content.to_string();
-        let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
+        let (word_count, reading_time) = get_reading_analytics(&section.raw_content, config);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
 

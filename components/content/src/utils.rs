@@ -59,8 +59,15 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
 }
 
 /// Get word count and estimated reading time
-pub fn get_reading_analytics(content: &str) -> (usize, usize) {
-    let word_count: usize = content.unicode_words().count();
+pub fn get_reading_analytics(content: &str, config: &Config) -> (usize, usize) {
+    let word_count = if config.markdown.count_code_block_words {
+        content.unicode_words().count()
+    } else {
+        // code fences "toggle" the state from non-code to code, so anything inbetween the first
+        // fence and the next can be ignored
+        let split = content.split("```");
+        split.step_by(2).map(|section| section.unicode_words().count()).sum()
+    };
 
     // https://help.medium.com/hc/en-us/articles/214991667-Read-time
     // 275 seems a bit too high though
@@ -219,14 +226,15 @@ mod tests {
 
     #[test]
     fn reading_analytics_empty_text() {
-        let (word_count, reading_time) = get_reading_analytics("  ");
+        let (word_count, reading_time) = get_reading_analytics("  ", &Config::default());
         assert_eq!(word_count, 0);
         assert_eq!(reading_time, 0);
     }
 
     #[test]
     fn reading_analytics_short_text() {
-        let (word_count, reading_time) = get_reading_analytics("Hello World");
+        let (word_count, reading_time) =
+            get_reading_analytics("Hello World", &Config::default_for_test());
         assert_eq!(word_count, 2);
         assert_eq!(reading_time, 1);
     }
@@ -237,8 +245,26 @@ mod tests {
         for _ in 0..1000 {
             content.push_str(" Hello world");
         }
-        let (word_count, reading_time) = get_reading_analytics(&content);
+        let (word_count, reading_time) =
+            get_reading_analytics(&content, &Config::default_for_test());
         assert_eq!(word_count, 2000);
         assert_eq!(reading_time, 10);
+    }
+
+    #[test]
+    fn reading_analytics_no_code() {
+        let mut config = Config::default_for_test();
+        config.markdown.count_code_block_words = false;
+        let (word_count, reading_time) =
+            get_reading_analytics("hello world ``` code goes here ``` goodbye world", &config);
+        assert_eq!(word_count, 4);
+        assert_eq!(reading_time, 1);
+
+        let (word_count, reading_time) = get_reading_analytics(
+            "hello world ``` code goes here ``` goodbye world ``` dangling fence",
+            &config,
+        );
+        assert_eq!(word_count, 4);
+        assert_eq!(reading_time, 1);
     }
 }
