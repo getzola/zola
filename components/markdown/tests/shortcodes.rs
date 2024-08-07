@@ -311,3 +311,12 @@ fn can_use_shortcodes_in_quotes() {
     .body;
     insta::assert_snapshot!(body);
 }
+
+// https://github.com/getzola/zola/issues/2565
+#[test]
+fn can_use_shortcodes_in_inline_elements() {
+    let body = common::render(
+        r#"<a href="{{ out_put_id(id="top") }}">top</a>"#
+    ).unwrap().body;
+    insta::assert_snapshot!(body);
+}

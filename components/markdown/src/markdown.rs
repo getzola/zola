@@ -679,7 +679,7 @@ pub fn markdown_to_html(
                         event
                     });
                 }
-                Event::Html(text) => {
+                Event::Html(text) | Event::InlineHtml(text) => {
                     if !has_summary && MORE_DIVIDER_RE.is_match(&text) {
                         has_summary = true;
                         events.push(Event::Html(CONTINUE_READING.into()));
