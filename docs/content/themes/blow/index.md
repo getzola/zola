@@ -3,11 +3,11 @@
 title = "Blow"
 description = "A Zola theme made with Tailwindcss"
 template = "theme.html"
-date = 2024-07-31T14:47:30-04:00
+date = 2024-08-05T05:57:45Z
 
 [extra]
-created = 2024-07-31T14:47:30-04:00
-updated = 2024-07-31T14:47:30-04:00
+created = 2024-08-05T05:57:45Z
+updated = 2024-08-05T05:57:45Z
 repository = "https://github.com/tchartron/blow.git"
 homepage = "https://github.com/tchartron/blow"
 minimum_version = "0.9.0"
@@ -135,6 +135,17 @@ highlight_themes_css = [
   { theme = "ayu-dark", filename = "syntax-dark.css" },
   { theme = "ayu-light", filename = "syntax-light.css" },
 ]
+```
+
+## Custom Footer Content
+To overwrite the default footer (copyright notice), extend the `layout.html` template of the theme as described in the [Zola documentation](https://www.getzola.org/documentation/themes/extending-a-theme/#overriding-a-block) by creating a `layout.html` with the following content in your `templates` directory:
+
+```jinja
+{%/* extends "blow/templates/layout.html" */%}
+
+{%/* block content_footer */%}
+Here is my own footer with a <a href="http://example.com">link</a>.
+{%/* endblock */%}
 ```
 
 ## Features
