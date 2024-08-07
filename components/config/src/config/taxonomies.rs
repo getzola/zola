@@ -32,18 +32,10 @@ impl Default for TaxonomyConfig {
 
 impl TaxonomyConfig {
     pub fn is_paginated(&self) -> bool {
-        if let Some(paginate_by) = self.paginate_by {
-            paginate_by > 0
-        } else {
-            false
-        }
+        self.paginate_by.is_some_and(|paginate_by| paginate_by > 0)
     }
 
     pub fn paginate_path(&self) -> &str {
-        if let Some(ref path) = self.paginate_path {
-            path
-        } else {
-            "page"
-        }
+        self.paginate_path.as_deref().unwrap_or("page")
     }
 }
