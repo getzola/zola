@@ -3,11 +3,11 @@
 title = "Hook"
 description = "Clean and simple personal site/blog theme"
 template = "theme.html"
-date = 2024-08-05T05:57:45Z
+date = 2024-08-08T06:22:35+10:00
 
 [extra]
-created = 2024-08-05T05:57:45Z
-updated = 2024-08-05T05:57:45Z
+created = 2024-08-08T06:22:35+10:00
+updated = 2024-08-08T06:22:35+10:00
 repository = "https://github.com/InputUsername/zola-hook.git"
 homepage = "https://github.com/InputUsername/zola-hook"
 minimum_version = "0.15.2"
