@@ -48,7 +48,7 @@ use ws::{Message, Sender, WebSocket};
 use errors::{anyhow, Context, Error, Result};
 use site::sass::compile_sass;
 use site::{Site, SITE_CONTENT};
-use utils::fs::{clean_site_output_folder, copy_file};
+use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
 use crate::fs_utils::{filter_events, ChangeKind, SimpleFileSystemEventKind};
 use crate::messages;
@@ -502,6 +502,7 @@ pub fn serve(
     let ws_port = site.live_reload;
     let ws_address = format!("{}:{}", interface, ws_port.unwrap());
     let output_path = site.output_path.clone();
+    create_directory(&output_path)?;
 
     // static_root needs to be canonicalized because we do the same for the http server.
     let static_root = std::fs::canonicalize(&output_path).unwrap();
