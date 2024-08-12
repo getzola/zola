@@ -1,7 +1,11 @@
 mod common;
 
 fn get_summary(content: &str) -> String {
-    common::render(content).expect("couldn't render").summary.expect("had no summary")
+    get_rendered(content).summary.expect("had no summary")
+}
+
+fn get_rendered(content: &str) -> markdown::Rendered {
+    common::render(content).expect("couldn't render")
 }
 
 #[test]
@@ -44,8 +48,8 @@ And some content after
 }
 
 #[test]
-fn truncated_summary() {
-    let body = get_summary(
+fn no_truncated_summary() {
+    let rendered = get_rendered(
         r#"
 Things to do:
 * Program <!-- more --> something
@@ -53,7 +57,8 @@ Things to do:
 * Sleep
     "#,
     );
-    insta::assert_snapshot!(body);
+    assert!(rendered.summary.is_none());
+    insta::assert_snapshot!(rendered.body);
 }
 
 #[test]
