@@ -38,7 +38,7 @@ The Theme features:
 
 ## Basic Setup
 
-1. [Install Zola](https://getzola.com)
+1. [Install Zola](https://getzola.org)
 2. Clone the particle theme: `git clone https://github.com/svavs/particle-zola.git`
 3. Edit `config.toml` to personalize your site.
 
