@@ -82,7 +82,7 @@ Then add the following secrets to [Woodpecker](https://ci.codeberg.org/):
 - `mail`: Your email address as used by Codeberg.
 - `codeberg_token`: [Codeberg access token](https://docs.codeberg.org/advanced/access-token/) with `write:repository` permission.
 
-Once done, you can trigger the CI by pushing something to the repository, and Woodpecker will build the site and copy the resulting site to the `pages` branch and it will be available at `https://<repository>.<user>.codeberg.page`.
+Once done, you can trigger the CI by pushing something to the repository, and Woodpecker will build the site and copy the resulting site to the `pages` branch and it will be available at `https://<user>.codeberg.page/<repository>`.
 
 For [custom domain](https://docs.codeberg.org/codeberg-pages/using-custom-domain/), create the `.domains` file inside the `./static/` directory so that it will be copied to the resulting build.
 
