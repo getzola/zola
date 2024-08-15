@@ -1,10 +1,11 @@
 mod common;
 
 fn get_summary(content: &str) -> String {
-    let rendered = common::render(content).unwrap();
-    assert!(rendered.summary_len.is_some());
-    let summary_len = rendered.summary_len.unwrap();
-    rendered.body[..summary_len].to_owned()
+    get_rendered(content).summary.expect("had no summary")
+}
+
+fn get_rendered(content: &str) -> markdown::Rendered {
+    common::render(content).expect("couldn't render")
 }
 
 #[test]
@@ -41,6 +42,36 @@ some code;
 <!-- more -->
 
 And some content after
+    "#,
+    );
+    insta::assert_snapshot!(body);
+}
+
+#[test]
+fn no_truncated_summary() {
+    let rendered = get_rendered(
+        r#"
+Things to do:
+* Program <!-- more --> something
+* Eat
+* Sleep
+    "#,
+    );
+    assert!(rendered.summary.is_none());
+    insta::assert_snapshot!(rendered.body);
+}
+
+#[test]
+fn footnotes_summary() {
+    let body = get_summary(
+        r#"
+Hello world[^1].
+
+<!-- more -->
+
+Good bye.
+
+[^1]: "World" is a placeholder.
     "#,
     );
     insta::assert_snapshot!(body);

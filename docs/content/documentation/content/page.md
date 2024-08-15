@@ -155,7 +155,7 @@ template = "page.html"
 You can ask Zola to create a summary if, for example, you only want to show the first
 paragraph of the page content in a list.
 
-To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
+To do so, add `<!-- more -->` in your content at the point
 where you want the summary to end. The content up to that point will be
 available separately in the
 [template](@/documentation/templates/pages-sections.md#page-variables) via `page.summary`.
