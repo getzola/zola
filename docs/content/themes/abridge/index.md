@@ -3,11 +3,11 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2024-08-05T05:57:45Z
+date = 2024-08-12T05:57:54Z
 
 [extra]
-created = 2024-08-05T05:57:45Z
-updated = 2024-08-05T05:57:45Z
+created = 2024-08-12T05:57:54Z
+updated = 2024-08-12T05:57:54Z
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.19.1"
@@ -51,7 +51,7 @@ The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml]
 - [X] Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
 - [X] Entirely Offline Site by using the PWA **or** by setting `offline = true` in `config.toml` (full search support).
 - [X] Multi-language support.
-- [X] Search support. (elasticlunr, tinysearch, stork)
+- [X] Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/))
 - [X] Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.
 - [X] Search Results Page, type search query then hit `Enter Key` or `click` the search button icon.
 - [X] [SEO](https://abridge.pages.dev/overview-abridge/#seo-and-header-tags) support. (Search Engine Optimization)

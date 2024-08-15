@@ -3,11 +3,11 @@
 title = "Hermit_Zola"
 description = "Minimal Zola theme"
 template = "theme.html"
-date = 2024-08-05T05:57:45Z
+date = 2024-08-12T05:57:54Z
 
 [extra]
-created = 2024-08-05T05:57:45Z
-updated = 2024-08-05T05:57:45Z
+created = 2024-08-12T05:57:54Z
+updated = 2024-08-12T05:57:54Z
 repository = "https://github.com/VersBinarii/hermit_zola.git"
 homepage = "https://github.com/VersBinarii/hermit_zola"
 minimum_version = "0.4.0"
