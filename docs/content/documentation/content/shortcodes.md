@@ -35,8 +35,8 @@ following:
 ```
 
 This template is very straightforward: an iframe pointing to the YouTube embed URL wrapped in a `<div>`.
-In terms of input, this shortcode expects at least one variable: `id`. Because the other variables
-are in an `if` statement, they are optional.
+In terms of input, this shortcode expects at least one variable: `id` ([example here](#shortcodes-without-body)).
+Because the other variables are in an `if` statement, they are optional.
 
 That's it. Zola will now recognise this template as a shortcode named `youtube` (the filename minus the `.html` extension).
 
