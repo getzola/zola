@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.20.0 (unreleased)
+
 ## 0.19.2 (2024-08-15)
 
 - Fix some of YAML date parsing
