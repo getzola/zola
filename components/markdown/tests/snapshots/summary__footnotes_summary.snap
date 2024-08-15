@@ -1,0 +1,5 @@
+---
+source: components/markdown/tests/summary.rs
+expression: body
+---
+<p>Hello world.</p>
