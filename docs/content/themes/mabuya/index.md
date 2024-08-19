@@ -3,11 +3,11 @@
 title = "Mabuya"
 description = "🦎 A minimal Zola theme for building light and SEO-ready blogs."
 template = "theme.html"
-date = 2024-08-12T05:57:54Z
+date = 2024-08-19T05:58:10Z
 
 [extra]
-created = 2024-08-12T05:57:54Z
-updated = 2024-08-12T05:57:54Z
+created = 2024-08-19T05:58:10Z
+updated = 2024-08-19T05:58:10Z
 repository = "https://github.com/semanticdata/mabuya.git"
 homepage = "https://github.com/semanticdata/mabuya"
 minimum_version = "0.18.0"
