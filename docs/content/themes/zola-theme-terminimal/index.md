@@ -3,11 +3,11 @@
 title = "terminimal"
 description = "A simple, minimal retro theme"
 template = "theme.html"
-date = 2024-08-12T05:57:54Z
+date = 2024-08-19T05:58:10Z
 
 [extra]
-created = 2024-08-12T05:57:54Z
-updated = 2024-08-12T05:57:54Z
+created = 2024-08-19T05:58:10Z
+updated = 2024-08-19T05:58:10Z
 repository = "https://github.com/pawroman/zola-theme-terminimal.git"
 homepage = "https://github.com/pawroman/zola-theme-terminimal"
 minimum_version = "0.11.0"
@@ -29,7 +29,9 @@ homepage = "https://github.com/pawroman"
 See the live demo (of the default configuration) here:
 https://pawroman.github.io/zola-theme-terminimal/
 
-Tested with Zola v0.17.2. Please note that earlier versions might not work because of breaking changes across Zola versions.
+Tested with Zola v0.19.2.
+
+Please note that earlier (and older) versions might not work because of breaking changes across Zola versions.
 
 #### Fork disclaimer
 
