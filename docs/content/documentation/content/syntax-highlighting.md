@@ -311,10 +311,10 @@ highlight(code);
 ```
 ````
 
-- `path` to specify a path the code block is associated with.
+- `name` to specify a name the code block is associated with.
   
 ````
-```rust,path=mod.rs
+```rust,name=mod.rs
 use highlighter::highlight;
 let code = "...";
 highlight(code);

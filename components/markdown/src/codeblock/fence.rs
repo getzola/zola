@@ -24,7 +24,7 @@ pub struct FenceSettings<'a> {
     pub line_number_start: usize,
     pub highlight_lines: Vec<RangeInclusive<usize>>,
     pub hide_lines: Vec<RangeInclusive<usize>>,
-    pub path: Option<&'a str>,
+    pub name: Option<&'a str>,
 }
 
 impl<'a> FenceSettings<'a> {
@@ -35,7 +35,7 @@ impl<'a> FenceSettings<'a> {
             line_number_start: 1,
             highlight_lines: Vec::new(),
             hide_lines: Vec::new(),
-            path: None,
+            name: None,
         };
 
         for token in FenceIter::new(fence_info) {
@@ -45,7 +45,7 @@ impl<'a> FenceSettings<'a> {
                 FenceToken::InitialLineNumber(l) => me.line_number_start = l,
                 FenceToken::HighlightLines(lines) => me.highlight_lines.extend(lines),
                 FenceToken::HideLines(lines) => me.hide_lines.extend(lines),
-                FenceToken::Path(p) => me.path = Some(p),
+                FenceToken::Name(n) => me.name = Some(n),
             }
         }
 
@@ -60,7 +60,7 @@ enum FenceToken<'a> {
     InitialLineNumber(usize),
     HighlightLines(Vec<RangeInclusive<usize>>),
     HideLines(Vec<RangeInclusive<usize>>),
-    Path(&'a str),
+    Name(&'a str),
 }
 
 struct FenceIter<'a> {
@@ -107,9 +107,9 @@ impl<'a> Iterator for FenceIter<'a> {
                     let ranges = Self::parse_ranges(tok_split.next());
                     return Some(FenceToken::HideLines(ranges));
                 }
-                "path" => {
-                    if let Some(p) = tok_split.next() {
-                        return Some(FenceToken::Path(p));
+                "name" => {
+                    if let Some(n) = tok_split.next() {
+                        return Some(FenceToken::Name(n));
                     }
                 }
                 lang => {
