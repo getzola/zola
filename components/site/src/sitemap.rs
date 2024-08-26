@@ -83,10 +83,12 @@ pub fn find_entries<'a>(
         }
 
         if let Some(paginate_by) = s.paginate_by() {
-            let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
-            for i in 1..=number_pagers {
-                let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
-                entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
+            if !config.should_exclude_paginated_pages_in_sitemap() {
+                let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
+                for i in 1..=number_pagers {
+                    let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
+                    entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
+                }
             }
         }
     }
@@ -100,7 +102,7 @@ pub fn find_entries<'a>(
         for item in &taxonomy.items {
             entries.insert(SitemapEntry::new(Cow::Borrowed(&item.permalink), &None));
 
-            if taxonomy.kind.is_paginated() {
+            if taxonomy.kind.is_paginated() && !config.should_exclude_paginated_pages_in_sitemap() {
                 let number_pagers = (item.pages.len() as f64
                     / taxonomy.kind.paginate_by.unwrap() as f64)
                     .ceil() as isize;
