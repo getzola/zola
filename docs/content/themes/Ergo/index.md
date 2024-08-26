@@ -3,11 +3,11 @@
 title = "Ergo"
 description = "A simple blog Theme focused on writing, inspired by svbtle"
 template = "theme.html"
-date = 2024-08-19T05:58:10Z
+date = 2024-08-26T05:58:06Z
 
 [extra]
-created = 2024-08-19T05:58:10Z
-updated = 2024-08-19T05:58:10Z
+created = 2024-08-26T05:58:06Z
+updated = 2024-08-26T05:58:06Z
 repository = "https://github.com/insipx/Ergo.git"
 homepage = "https://github.com/insipx/Ergo"
 minimum_version = "0.4.1"

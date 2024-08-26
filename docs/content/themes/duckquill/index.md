@@ -3,11 +3,11 @@
 title = "Duckquill"
 description = "Modern, pretty, and clean theme"
 template = "theme.html"
-date = 2024-08-19T05:58:10Z
+date = 2024-08-26T05:58:06Z
 
 [extra]
-created = 2024-08-19T05:58:10Z
-updated = 2024-08-19T05:58:10Z
+created = 2024-08-26T05:58:06Z
+updated = 2024-08-26T05:58:06Z
 repository = "https://codeberg.org/daudix/duckquill.git"
 homepage = "https://codeberg.org/daudix/duckquill"
 minimum_version = "0.19.0"
@@ -23,7 +23,7 @@ homepage = "https://daudix.one"
 [![MIT license](https://img.shields.io/badge/License-MIT-blue)](https://mit-license.org)
 [![status-badge](https://ci.codeberg.org/api/badges/13032/status.svg)](https://ci.codeberg.org/repos/13032)
 
-# [Duckquill](https://duckquill.daudix.one) <img src="logo.png" alt="Logo" width="96" align="right"/>
+# [Duckquill](https://duckquill.daudix.one)
 
 Duckquill is a modern, pretty, and clean (and opinionated) [Zola](https://www.getzola.org) theme that has the purpose of greatly simplifying the process of rolling up your blog. It aims to provide all the needed options for comfortable writing, keeping the balance of it being simple.
 

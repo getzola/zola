@@ -3,11 +3,11 @@
 title = "Soapstone"
 description = "A bare bones dark theme with some color tweakability"
 template = "theme.html"
-date = 2024-08-19T05:58:10Z
+date = 2024-08-26T05:58:06Z
 
 [extra]
-created = 2024-08-19T05:58:10Z
-updated = 2024-08-19T05:58:10Z
+created = 2024-08-26T05:58:06Z
+updated = 2024-08-26T05:58:06Z
 repository = "https://github.com/MattyRad/soapstone.git"
 homepage = "https://github.com/MattyRad/soapstone"
 minimum_version = "0.4.0"
