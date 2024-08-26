@@ -28,6 +28,7 @@ impl ResizeImage {
 
 static DEFAULT_OP: &str = "fill";
 static DEFAULT_FMT: &str = "auto";
+static DEFAULT_FILTER: &str = "lanczos3";
 
 impl TeraFn for ResizeImage {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
@@ -60,7 +61,12 @@ impl TeraFn for ResizeImage {
                 return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
             }
         }
-        let resize_op = imageproc::ResizeOperation::from_args(&op, width, height)
+
+        let filter =
+            optional_arg!(String, args.get("filter"), "`resize_image`: `filter` must be a string")
+                .unwrap_or_else(|| DEFAULT_FILTER.to_string());
+
+        let resize_op = imageproc::ResizeOperation::from_args(&op, width, height, &filter)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         let mut imageproc = self.imageproc.lock().unwrap();
         let (file_path, unified_path) =
