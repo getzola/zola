@@ -1,0 +1,74 @@
+name: Build & Test
+
+on:
+  push:
+    branches: ["*"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+
+jobs:
+  Tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - x86_64-pc-windows-msvc
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+        rustup_toolchain: [stable]
+        include:
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-20.04
+            target: aarch64-unknown-linux-gnu
+          - os: macos-13
+            target: x86_64-apple-darwin
+          - os: macos-14
+            target: aarch64-apple-darwin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust (UNIX)
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${{ matrix.rustup_toolchain }}
+          echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+          # We need to crossconfigure for arm64 linux for now
+          if [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
+            echo "Adding aarch64-unknown-linux-gnu target"
+            sudo apt-get update -y
+            sudo apt-get install -y make g++ libssl-dev gcc-aarch64-linux-gnu
+            rustup target add aarch64-unknown-linux-gnu
+          else
+            echo "Compiling for ${{matrix.target}}"
+          fi
+        if: ${{ ! startsWith(matrix.os, 'windows') }}
+
+      - name: Install Rust (Windows)
+        run: |
+          curl -sSf -o rustup-init.exe https://win.rustup.rs
+          ./rustup-init.exe -y --default-toolchain ${{ matrix.rustup_toolchain }} --default-host x86_64-pc-windows-msvc
+          echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
+        if: ${{ startsWith(matrix.os, 'windows') }}
+
+      - name: Cargo build (Native TLS)
+        run: cargo build --all --no-default-features --features=native-tls && cargo clean
+
+      - name: Cargo build (Rust TLS)
+        run: cargo build --all
+
+      - name: Cargo test
+        run: cargo test --all
+
+      - name: Cargo fmt
+        run: cargo fmt --check

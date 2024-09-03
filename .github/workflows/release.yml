@@ -1,0 +1,156 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+
+jobs:
+  Release-Build:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - x86_64-pc-windows-msvc
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+        rustup_toolchain: [stable]
+        include:
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-20.04
+            target: aarch64-unknown-linux-gnu
+          - os: macos-13
+            target: x86_64-apple-darwin
+          - os: macos-14
+            target: aarch64-apple-darwin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust (UNIX)
+        if: ${{ ! startsWith(matrix.os, 'windows') }}
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${{ matrix.rustup_toolchain }}
+          echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+          # We need to crossconfigure for arm64 linux for now
+          if [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
+            echo "Adding aarch64-unknown-linux-gnu target"
+            sudo apt-get update -y
+            sudo apt-get install -y make g++ libssl-dev gcc-aarch64-linux-gnu
+            rustup target add aarch64-unknown-linux-gnu
+          else
+            echo "Compiling for ${{matrix.target}}"
+          fi
+
+      - name: Install Rust (Windows)
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        run: |
+          curl -sSf -o rustup-init.exe https://win.rustup.rs
+          ./rustup-init.exe -y --default-toolchain ${{ matrix.rustup_toolchain }} --default-host ${{ matrix.target }}
+          echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
+
+      - name: Cargo build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Archive (UNIX)
+        run: |
+          mkdir -p artifacts
+          cp -av target/${{ matrix.target }}/release/zola .
+          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz zola
+        if: ${{ ! startsWith(matrix.os, 'windows') }}
+
+      - name: Archive (Windows)
+        run: |
+          mkdir -p artifacts
+          cp target/${{ matrix.target }}/release/zola.exe .
+          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.zip zola.exe
+        if: ${{ startsWith(matrix.os, 'windows') }}
+
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v1
+        continue-on-error: true
+        with:
+          subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}
+          path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
+          if-no-files-found: error
+          retention-days: 7
+
+  Release:
+    needs: [Release-Build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Ensure artifacts dir exists
+        run: mkdir -p artifacts
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: true
+          body: |
+            Hello there!
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: artifacts/*
+
+  Release-Container-Image:
+    needs: [Release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: latest=false
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          build-args: USE_GH_RELEASE=true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
