@@ -111,14 +111,23 @@ jobs:
           merge-multiple: true
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191
         with:
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
           fail_on_unmatched_files: true
           body: |
-            Hello there!
+            Welcome to this new release of Zola ${{ github.ref_name }}!
+
+            All artifacts are signed with this repos identity using Sigstore.
+            You can verify the signatures using the `GitHub` CLI.
+
+            ```shell
+            gh attestation verify --owner ${{ github.repository_owner }} <my-artifact>
+            ```
           token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{ contains(github.ref, '-pre') }}
           files: artifacts/*
 
   Release-Container-Image:
