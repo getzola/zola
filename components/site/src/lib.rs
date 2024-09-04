@@ -706,7 +706,8 @@ impl Site {
             return Ok(());
         }
 
-        let output = page.render_html(&*self.tera()?, &self.config, &self.library.read().unwrap())?;
+        let output =
+            page.render_html(&*self.tera()?, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
         let current_path = self.write_content(&components, "index.html", content)?;
@@ -942,8 +943,11 @@ impl Site {
 
         components.push(taxonomy.slug.as_ref());
 
-        let list_output =
-            taxonomy.render_all_terms(&*self.tera()?, &self.config, &self.library.read().unwrap())?;
+        let list_output = taxonomy.render_all_terms(
+            &*self.tera()?,
+            &self.config,
+            &self.library.read().unwrap(),
+        )?;
         let content = self.inject_livereload(list_output);
         self.write_content(&components, "index.html", content)?;
 
@@ -1010,7 +1014,8 @@ impl Site {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = render_template("sitemap.xml", &*self.tera()?, context, &self.config.theme)?;
+            let sitemap =
+                render_template("sitemap.xml", &*self.tera()?, context, &self.config.theme)?;
             self.write_content(&[], "sitemap.xml", sitemap)?;
             return Ok(());
         }
@@ -1022,7 +1027,8 @@ impl Site {
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = render_template("sitemap.xml", &*self.tera()?, context, &self.config.theme)?;
+            let sitemap =
+                render_template("sitemap.xml", &*self.tera()?, context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
             self.write_content(&[], &file_name, sitemap)?;
             let mut sitemap_url = self.config.make_permalink(&file_name);

@@ -43,7 +43,10 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.output_path.clone(),
         ),
     );
-    site.tera.write().unwrap_or_else(PoisonError::into_inner).register_function("trans", global_fns::Trans::new(site.config.clone()));
+    site.tera
+        .write()
+        .unwrap_or_else(PoisonError::into_inner)
+        .register_function("trans", global_fns::Trans::new(site.config.clone()));
     site.tera.write().unwrap_or_else(PoisonError::into_inner).register_function(
         "get_taxonomy_url",
         global_fns::GetTaxonomyUrl::new(

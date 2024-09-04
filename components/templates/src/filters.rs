@@ -21,7 +21,11 @@ pub struct MarkdownFilter {
 }
 
 impl MarkdownFilter {
-    pub fn new(config: Config, permalinks: HashMap<String, String>, tera: Arc<RwLock<Tera>>) -> Self {
+    pub fn new(
+        config: Config,
+        permalinks: HashMap<String, String>,
+        tera: Arc<RwLock<Tera>>,
+    ) -> Self {
         Self { config, permalinks, tera }
     }
 }
@@ -34,9 +38,7 @@ impl TeraFilter for MarkdownFilter {
         // markdown respecting language preferences.
         let mut context = RenderContext::from_config(&self.config);
         context.permalinks = Cow::Borrowed(&self.permalinks);
-        let tera = self.tera.read().map_err(|lock_err| {
-            TeraError::msg(lock_err.to_string())
-        })?;
+        let tera = self.tera.read().map_err(|lock_err| TeraError::msg(lock_err.to_string()))?;
         context.tera = Cow::Borrowed(&tera);
         let def = utils::templates::get_shortcodes(&tera);
         context.set_shortcode_definitions(&def);
@@ -163,7 +165,10 @@ impl TeraFilter for NumFormatFilter {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, sync::{Arc, RwLock}};
+    use std::{
+        collections::HashMap,
+        sync::{Arc, RwLock},
+    };
 
     use libs::tera::{to_value, Filter, Tera};
 
@@ -174,8 +179,12 @@ mod tests {
 
     #[test]
     fn markdown_filter() {
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Arc::new(RwLock::new(Tera::default())))
-            .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+        )
+        .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
     }
@@ -201,11 +210,12 @@ mod tests {
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Arc::new(RwLock::new(Tera::default())))
-            .filter(
-                &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
-                &args,
-            );
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+        )
+        .filter(&to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(), &args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
     }
@@ -215,19 +225,23 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Arc::new(RwLock::new(Tera::default())))
-            .filter(
-                &to_value(
-                    &r#"
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+        )
+        .filter(
+            &to_value(
+                &r#"
 |id|author_id|       timestamp_created|title                 |content           |
 |-:|--------:|-----------------------:|:---------------------|:-----------------|
 | 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
 | 2|        1|2018-08-22 13:11:50.050Z|How to bake a nice pie|Badly written blog|
         "#,
-                )
-                .unwrap(),
-                &args,
-            );
+            )
+            .unwrap(),
+            &args,
+        );
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<table>"));
     }
@@ -241,14 +255,19 @@ mod tests {
         config.markdown.external_links_target_blank = true;
 
         let md = "Hello <https://google.com> :smile: ...";
-        let result = MarkdownFilter::new(config.clone(), HashMap::new(), Arc::new(RwLock::new(Tera::default())))
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(
+            config.clone(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+        )
+        .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
-        let result = MarkdownFilter::new(config, HashMap::new(), Arc::new(RwLock::new(Tera::default())))
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result =
+            MarkdownFilter::new(config, HashMap::new(), Arc::new(RwLock::new(Tera::default())))
+                .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("style"));
     }
@@ -258,8 +277,12 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
-        let result = MarkdownFilter::new(Config::default(), permalinks, Arc::new(RwLock::new(Tera::default())))
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(
+            Config::default(),
+            permalinks,
+            Arc::new(RwLock::new(Tera::default())),
+        )
+        .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),

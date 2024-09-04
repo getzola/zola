@@ -497,13 +497,7 @@ mod tests {
             "Hello World {% outer() %} Inside-Outside! {% inner() %} Inside-Inside! {% end %} Inside-Outside {% end %}",
         )
         .unwrap();
-        assert_eq!(
-            out,
-            format!(
-                "Hello World {}",
-                SHORTCODE_PLACEHOLDER
-            )
-        );
+        assert_eq!(out, format!("Hello World {}", SHORTCODE_PLACEHOLDER));
         assert_eq!(shortcodes.len(), 1);
     }
 }

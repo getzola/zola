@@ -327,7 +327,8 @@ Here is <span>{{ ex1(page="") }}</span> example.
 #[test]
 fn can_render_markdown_in_nested_shortcodes_with_bodies() {
     let config = Config::default_for_test();
-    let body = common::render_with_config(r#"
+    let body = common::render_with_config(
+        r#"
 # Begin level 0  
 
 {% render_md() %}
@@ -350,7 +351,7 @@ fn can_render_markdown_in_nested_shortcodes_with_bodies() {
 
 # End level 0
     "#,
-        config
+        config,
     )
     .unwrap()
     .body;

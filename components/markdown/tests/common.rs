@@ -1,6 +1,9 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, sync::{Arc, RwLock}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
 use libs::tera::Tera;
 
@@ -58,7 +61,11 @@ fn configurable_render(
 
     tera.register_filter(
         "markdown",
-        templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), shared_tera.clone()),
+        templates::filters::MarkdownFilter::new(
+            config.clone(),
+            permalinks.clone(),
+            shared_tera.clone(),
+        ),
     );
     drop(tera);
     let tera = shared_tera.read().unwrap();
