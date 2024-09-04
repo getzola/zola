@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::{Arc, RwLock}};
 
 use libs::tera::Tera;
 
@@ -15,7 +15,8 @@ fn configurable_render(
     config: Config,
     insert_anchor: InsertAnchor,
 ) -> Result<Rendered> {
-    let mut tera = Tera::default();
+    let shared_tera = Arc::new(RwLock::new(Tera::default()));
+    let mut tera = shared_tera.write().unwrap();
     tera.extend(&ZOLA_TERA).unwrap();
 
     // out_put_id looks like a markdown string
@@ -57,8 +58,10 @@ fn configurable_render(
 
     tera.register_filter(
         "markdown",
-        templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), tera.clone()),
+        templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), shared_tera.clone()),
     );
+    drop(tera);
+    let tera = shared_tera.read().unwrap();
     let mut context = RenderContext::new(
         &tera,
         &config,

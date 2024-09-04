@@ -490,4 +490,20 @@ mod tests {
         .unwrap();
         assert_eq!(shortcodes.len(), 5);
     }
+
+    #[test]
+    fn can_parse_nested_shortcodes() {
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Hello World {% outer() %} Inside-Outside! {% inner() %} Inside-Inside! {% end %} Inside-Outside {% end %}",
+        )
+        .unwrap();
+        assert_eq!(
+            out,
+            format!(
+                "Hello World {}",
+                SHORTCODE_PLACEHOLDER
+            )
+        );
+        assert_eq!(shortcodes.len(), 1);
+    }
 }
