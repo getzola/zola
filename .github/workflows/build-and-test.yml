@@ -5,8 +5,8 @@ on:
     branches: ["*"]
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # Cross-compilation for aarch64 requires a different linker
+  CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
 permissions:
   contents: read
@@ -43,7 +43,7 @@ jobs:
         run: |
           curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${{ matrix.rustup_toolchain }}
           echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
-          # We need to crossconfigure for arm64 linux for now
+          # We need to crosscompile for arm64 linux for now
           if [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
             echo "Adding aarch64-unknown-linux-gnu target"
             sudo apt-get update -y
