@@ -3,11 +3,11 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2024-08-19T05:58:10Z
+date = 2024-09-02T05:58:27Z
 
 [extra]
-created = 2024-08-19T05:58:10Z
-updated = 2024-08-19T05:58:10Z
+created = 2024-09-02T05:58:27Z
+updated = 2024-09-02T05:58:27Z
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.19.1"
@@ -43,34 +43,34 @@ The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml]
 
 ## Features
 
-- [X] Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://observatory.mozilla.org/analyze/abridge.pages.dev) scores.
-- [X] [PWA support](https://abridge.pages.dev/overview-abridge/#pwa-progressive-web-app) (Progressive Web Application).
-- [X] All JavaScript can be [fully disabled](https://abridge.pages.dev/overview-abridge/#javascript-files).
-- [X] Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)
-- [X] Code [syntax highlighting](https://abridge.pages.dev/overview-code-blocks/). (colors can be customized, css variables)
-- [X] Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
-- [X] Entirely Offline Site by using the PWA **or** by setting `offline = true` in `config.toml` (full search support).
-- [X] Multi-language support.
-- [X] Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/))
-- [X] Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.
-- [X] Search Results Page, type search query then hit `Enter Key` or `click` the search button icon.
-- [X] [SEO](https://abridge.pages.dev/overview-abridge/#seo-and-header-tags) support. (Search Engine Optimization)
-- [X] [Pagination](https://abridge.pages.dev/overview-abridge/#pagination) with numbered paginator on index.
-- [X] Title Based Previous and Next Article links at bottom of Article.
-- [X] Table of Contents in page Index (Optional, clickable links)
-- [X] Recent Posts Block. (Optional)
-- [X] Back to Top button. (uses css only)
-- [X] Code Blocks copy button.
-- [X] Email link in footer obfuscation. (anti-spam)
-- [X] [KaTeX](https://katex.org/) support.
-- [X] [Archive page](https://abridge.pages.dev/archive/).
-- [x] [Tags](https://abridge.pages.dev/tags/).
-- [x] Categories. (similar to Tags, disabled/commented out by default)
-- [x] Social icon links in footer.
-- [X] Responsive design. (mobile first)
-- [X] Video Shortcodes: [Youtube](https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/).
-- [X] Media Shortcodes: [video](https://abridge.pages.dev/overview-rich-content/#video), [img](https://abridge.pages.dev/overview-images/#img-shortcode), [imgswap](https://abridge.pages.dev/overview-images/#imgswap-shortcode), [image](https://abridge.pages.dev/overview-rich-content/#image), [gif](https://abridge.pages.dev/overview-rich-content/#gif), [audio](https://abridge.pages.dev/overview-rich-content/#audio).
-- [X] Other Shortcodes: [showdata](https://abridge.pages.dev/overview-showdata/), [katex](https://abridge.pages.dev/overview-math/#usage-1).
+- Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://observatory.mozilla.org/analyze/abridge.pages.dev) scores.
+- [PWA support](https://abridge.pages.dev/overview-abridge/#pwa-progressive-web-app) (Progressive Web Application).
+- All JavaScript can be [fully disabled](https://abridge.pages.dev/overview-abridge/#javascript-files).
+- Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)
+- Code [syntax highlighting](https://abridge.pages.dev/overview-code-blocks/). (colors can be customized, css variables)
+- Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
+- Entirely Offline Site by using the PWA **or** by setting `offline = true` in `config.toml` (full search support).
+- Multi-language support.
+- Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/))
+- Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.
+- Search Results Page, type search query then hit `Enter Key` or `click` the search button icon.
+- [SEO](https://abridge.pages.dev/overview-abridge/#seo-and-header-tags) support. (Search Engine Optimization)
+- [Pagination](https://abridge.pages.dev/overview-abridge/#pagination) with numbered paginator on index.
+- Title Based Previous and Next Article links at bottom of Article.
+- Table of Contents in page Index (Optional, clickable links)
+- Recent Posts Block. (Optional)
+- Back to Top button. (uses css only)
+- Code Blocks copy button.
+- Email link in footer obfuscation. (anti-spam)
+- [KaTeX](https://katex.org/) support.
+- [Archive page](https://abridge.pages.dev/archive/).
+- [Tags](https://abridge.pages.dev/tags/).
+- Categories. (similar to Tags, disabled/commented out by default)
+- Social icon links in footer.
+- Responsive design. (mobile first)
+- Video Shortcodes: [Youtube](https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/).
+- Media Shortcodes: [video](https://abridge.pages.dev/overview-rich-content/#video), [img](https://abridge.pages.dev/overview-images/#img-shortcode), [imgswap](https://abridge.pages.dev/overview-images/#imgswap-shortcode), [image](https://abridge.pages.dev/overview-rich-content/#image), [gif](https://abridge.pages.dev/overview-rich-content/#gif), [audio](https://abridge.pages.dev/overview-rich-content/#audio).
+- Other Shortcodes: [showdata](https://abridge.pages.dev/overview-showdata/), [katex](https://abridge.pages.dev/overview-math/#usage-1).
 
 **[Complete Documentation is available here](https://abridge.pages.dev/overview-abridge/)**
 

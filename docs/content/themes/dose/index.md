@@ -3,11 +3,11 @@
 title = "dose"
 description = "a small blog theme"
 template = "theme.html"
-date = 2024-08-19T05:58:10Z
+date = 2024-09-02T05:58:27Z
 
 [extra]
-created = 2024-08-19T05:58:10Z
-updated = 2024-08-19T05:58:10Z
+created = 2024-09-02T05:58:27Z
+updated = 2024-09-02T05:58:27Z
 repository = "https://github.com/oltdaniel/dose.git"
 homepage = "https://github.com/oltdaniel/dose"
 minimum_version = "0.14.0"

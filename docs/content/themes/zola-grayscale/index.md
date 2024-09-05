@@ -3,11 +3,11 @@
 title = "zola-grayscale"
 description = "A port of the Start Bootrap Grayscale theme, for Zola."
 template = "theme.html"
-date = 2024-08-19T05:58:10Z
+date = 2024-09-02T05:58:27Z
 
 [extra]
-created = 2024-08-19T05:58:10Z
-updated = 2024-08-19T05:58:10Z
+created = 2024-09-02T05:58:27Z
+updated = 2024-09-02T05:58:27Z
 repository = "https://github.com/mattimustang/zola-grayscale.git"
 homepage = "https://github.com/mattimustang/zola-grayscale"
 minimum_version = "0.19.0"
