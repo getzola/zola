@@ -70,7 +70,7 @@ jobs:
         run: |
           mkdir -p artifacts
           cp target/${{ matrix.target }}/release/zola.exe .
-          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.zip zola.exe
+          Compress-Archive zola.exe ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.zip
         if: ${{ startsWith(matrix.os, 'windows') }}
 
       - name: Attest Build Provenance
@@ -88,7 +88,7 @@ jobs:
 
   Release:
     needs: [Release-Build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
 
@@ -124,7 +124,7 @@ jobs:
 
   Release-Container-Image:
     needs: [Release]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
@@ -157,7 +157,9 @@ jobs:
         with:
           context: .
           push: true
-          build-args: USE_GH_RELEASE=true
+          build-args: |
+            USE_GH_RELEASE=true
+            ZOLA_RELEASE_VERSION=${{ github.ref_name }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

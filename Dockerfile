@@ -2,7 +2,8 @@ FROM rust:slim-bookworm AS builder
 
 ARG USE_GH_RELEASE=false
 ARG ZOLA_RELEASE_VERSION=latest
-RUN apt-get update -y && apt-get install -y pkg-config make g++ libssl-dev curl jq tar gzip
+RUN apt-get update -y && \
+  apt-get install -y pkg-config make g++ libssl-dev curl jq tar gzip
 
 WORKDIR /app
 COPY . .
