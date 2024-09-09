@@ -165,7 +165,7 @@ impl Processor {
         let url = format!("{}{}", self.base_url, filename);
         let static_path = Path::new("static").join(RESIZED_SUBDIR).join(&filename);
         let output_path = self.output_dir.join(&filename);
-        let instr = ResizeInstructions::new(op, meta.size, FilterType::Lanczos3);
+        let instr = ResizeInstructions::new(op, meta.size);
         let enqueue_response = EnqueueResponse::new(url, static_path, meta, &instr);
         let img_op = ImageOp {
             ignore: output_path.exists() && !ufs::file_stale(&input_path, &output_path),

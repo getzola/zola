@@ -83,7 +83,7 @@ pub struct ResizeInstructions {
 }
 
 impl ResizeInstructions {
-    pub fn new(args: ResizeOperation, (orig_w, orig_h): (u32, u32), filter: FilterType) -> Self {
+    pub fn new(args: ResizeOperation, (orig_w, orig_h): (u32, u32)) -> Self {
         use ResizeOperation::*;
 
         let res = ResizeInstructions::default();
@@ -107,9 +107,9 @@ impl ResizeInstructions {
                 let orig_h_w = orig_h as u64 * w as u64;
 
                 if orig_w_h > orig_h_w {
-                    Self::new(FitWidth(w, filter), (orig_w, orig_h), filter)
+                    Self::new(FitWidth(w, filter), (orig_w, orig_h))
                 } else {
-                    Self::new(FitHeight(h, filter), (orig_w, orig_h), filter)
+                    Self::new(FitHeight(h, filter), (orig_w, orig_h))
                 }
             }
             Fill(w, h, filter) => {
