@@ -20,7 +20,7 @@ jobs:
         env:
           BUILD_DIR: docs/
           BUILD_ONLY: true
-          
+
   build_and_deploy:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
