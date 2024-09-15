@@ -10,7 +10,6 @@
 | [j1m.net](https://j1m.net)                                         | https://gitlab.com/jwcampbell/j1mnet                     |
 | [vaporsoft.net](http://vaporsoft.net)                              | https://github.com/piedoom/vaporsoft                     |
 | [tuckersiemens.com](https://tuckersiemens.com)                     | https://github.com/reillysiemens/tuckersiemens.com       |
-| [andrewzah.com](https://andrewzah.com)                             | https://git.sr.ht/~andrewzah/personal-site/tree          |
 | [Axiomatic Semantics](https://axiomatic.neophilus.net)             | https://github.com/Libbum/AxiomaticSemantics             |
 | [Tinkering](https://tinkering.xyz)                                 |                                                          |
 | [Daniel Sockwell's codesections.com](https://www.codesections.com) | https://gitlab.com/codesections/codesections-website     |
