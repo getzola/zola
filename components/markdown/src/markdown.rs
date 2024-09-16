@@ -277,7 +277,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
                 // nr is a number of references to this footnote
                 let (n, nr) = footnote_numbers.entry(name.clone()).or_insert((n, 0usize));
                 *nr += 1;
-                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">[{n}]</a></sup>"##).into());
+                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">{n}</a></sup>"##).into());
 
                 if footnote_bodies_stack.is_empty() {
                     // we are in the main text, just output the reference
