@@ -341,7 +341,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
         //
         // HTML:
         //
-        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">[1]</a></sup>.</p>
+        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">1</a></sup>.</p>
         //
         //     <ol class="footnotes-list">
         //     <li id="fn-feet">
