@@ -9,7 +9,7 @@ use markdown::{render_content, RenderContext};
 use utils::fs::read_file;
 use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{render_template, ShortcodeDefinition, ShortcodeInvocationCounter};
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{split_section_content, SectionFrontMatter};
@@ -150,14 +150,17 @@ impl Section {
         tera: &Tera,
         config: &Config,
         shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
+        shortcode_invoke_counter: &ShortcodeInvocationCounter,
     ) -> Result<()> {
+        shortcode_invoke_counter.reset();
         let mut context = RenderContext::new(
             tera,
             config,
-            &self.lang,
+            Some(&self.lang),
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links,
+            &shortcode_invoke_counter,
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);

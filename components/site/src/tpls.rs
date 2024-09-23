@@ -69,6 +69,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.config.clone(),
             site.permalinks.clone(),
             site.tera.clone(),
+            site.shortcode_invoke_counter.clone(),
         ),
     );
     Ok(())

@@ -357,3 +357,43 @@ fn can_render_markdown_in_nested_shortcodes_with_bodies() {
     .body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn can_render_nested_shortcodes_with_bodies_with_nth() {
+    let config = Config::default_for_test();
+    let body = common::render_with_config(
+        r#"
+{{ a() }}
+
+{{ a() }}
+
+{% render_md() %}
+
+{{ a() }}
+
+{{ a() }}
+
+{% render_md() %}
+
+{{ a() }}
+
+{{ a() }}
+
+{% end %}
+
+{{ a() }}
+
+{{ a() }}
+
+{% end %}
+
+{{ a() }}
+
+{{ a() }}
+    "#,
+        config,
+    )
+    .unwrap()
+    .body;
+    insta::assert_snapshot!(body);
+}

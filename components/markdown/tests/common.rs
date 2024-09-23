@@ -11,7 +11,7 @@ use config::Config;
 use errors::Result;
 use markdown::{render_content, RenderContext, Rendered};
 use templates::ZOLA_TERA;
-use utils::types::InsertAnchor;
+use utils::{templates::ShortcodeInvocationCounter, types::InsertAnchor};
 
 fn configurable_render(
     content: &str,
@@ -19,6 +19,7 @@ fn configurable_render(
     insert_anchor: InsertAnchor,
 ) -> Result<Rendered> {
     let shared_tera = Arc::new(RwLock::new(Tera::default()));
+    let invoke_counter = ShortcodeInvocationCounter::new();
     let mut tera = shared_tera.write().unwrap();
     tera.extend(&ZOLA_TERA).unwrap();
 
@@ -55,6 +56,7 @@ fn configurable_render(
     )
     .unwrap();
     tera.add_raw_template("shortcodes/md_passthrough.md", "{{body}}").unwrap();
+    tera.add_raw_template("shortcodes/nth.html", "{{ nth }}").unwrap();
 
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_owned(), "https://getzola.org/about/".to_owned());
@@ -65,6 +67,7 @@ fn configurable_render(
             config.clone(),
             permalinks.clone(),
             shared_tera.clone(),
+            invoke_counter.clone(),
         ),
     );
     drop(tera);
@@ -72,10 +75,11 @@ fn configurable_render(
     let mut context = RenderContext::new(
         &tera,
         &config,
-        &config.default_language,
+        None,
         "https://www.getzola.org/test/",
         &permalinks,
         insert_anchor,
+        &invoke_counter,
     );
     let shortcode_def = utils::templates::get_shortcodes(&tera);
     context.set_shortcode_definitions(&shortcode_def);
