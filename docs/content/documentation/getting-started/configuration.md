@@ -114,6 +114,9 @@ generate_robots_txt = true
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
 
+# When set to "true", missing highlight languages are treated as errors. Defaults to false.
+error_on_missing_highlight = false
+
 # A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
 extra_syntaxes_and_themes = []
 
