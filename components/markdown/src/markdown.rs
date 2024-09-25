@@ -559,7 +559,13 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = CodeBlock::new(fence, context.config, path);
+                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
+                        Ok(cb) => cb,
+                        Err(e) => {
+                            error = Some(e);
+                            break;
+                        }
+                    };
                     code_block = Some(block);
                     events.push(Event::Html(begin.into()));
                 }
