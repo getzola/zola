@@ -42,3 +42,4 @@
 | [Peter Todorov](https://peterprototypes.com/)                      | https://github.com/peterprototypes/peterprototypes.com   |
 | [failsafe.monster](https://failsafe.monster/)                      |                                                          |
 | [Joshua Gawley](https://www.joshuagawley.com/)                     | https://github.com/joshuagawley/joshuagawley.github.io   |
+| [dmarcoux.com](https://dmarcoux.com)                               | https://github.com/dmarcoux/dmarcoux.com                 |
