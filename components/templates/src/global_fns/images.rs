@@ -28,6 +28,7 @@ impl ResizeImage {
 
 static DEFAULT_OP: &str = "fill";
 static DEFAULT_FMT: &str = "auto";
+static DEFAULT_FILTER: &str = "lanczos3";
 
 impl TeraFn for ResizeImage {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
@@ -60,7 +61,12 @@ impl TeraFn for ResizeImage {
                 return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
             }
         }
-        let resize_op = imageproc::ResizeOperation::from_args(&op, width, height)
+
+        let filter =
+            optional_arg!(String, args.get("filter"), "`resize_image`: `filter` must be a string")
+                .unwrap_or_else(|| DEFAULT_FILTER.to_string());
+
+        let resize_op = imageproc::ResizeOperation::from_args(&op, width, height, &filter)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         let mut imageproc = self.imageproc.lock().unwrap();
         let (file_path, unified_path) =
@@ -193,12 +199,12 @@ mod tests {
 
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("gutenberg.da10f4be4f1c441e.jpg").display()))
+            to_value(&format!("{}", static_path.join("gutenberg.0f3574be3a01d6f1.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/gutenberg.da10f4be4f1c441e.jpg")
+            to_value("http://a-website.com/processed_images/gutenberg.0f3574be3a01d6f1.jpg")
                 .unwrap()
         );
 
@@ -207,12 +213,12 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("gutenberg.3301b37eed389d2e.jpg").display()))
+            to_value(&format!("{}", static_path.join("gutenberg.16c7c7c4d4bf998b.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/gutenberg.3301b37eed389d2e.jpg")
+            to_value("http://a-website.com/processed_images/gutenberg.16c7c7c4d4bf998b.jpg")
                 .unwrap()
         );
 
@@ -231,12 +237,12 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("asset.d2fde9a750b68471.jpg").display()))
+            to_value(&format!("{}", static_path.join("asset.08b6a9e588035492.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/asset.d2fde9a750b68471.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/asset.08b6a9e588035492.jpg").unwrap()
         );
 
         // 6. Looking up a file in the theme
@@ -244,12 +250,12 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("in-theme.9b0d29e07d588b60.jpg").display()))
+            to_value(&format!("{}", static_path.join("in-theme.38343d88b102bc9b.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/in-theme.9b0d29e07d588b60.jpg")
+            to_value("http://a-website.com/processed_images/in-theme.38343d88b102bc9b.jpg")
                 .unwrap()
         );
     }

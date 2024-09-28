@@ -7,13 +7,13 @@ use config::Config;
 use errors::{anyhow, Context, Result};
 use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::jpeg::JpegEncoder;
-use libs::image::imageops::FilterType;
 use libs::image::{EncodableLayout, ImageFormat};
 use libs::rayon::prelude::*;
 use libs::{image, webp};
 use serde::{Deserialize, Serialize};
 use utils::fs as ufs;
 
+use crate::filter::FilterType;
 use crate::format::Format;
 use crate::helpers::get_processed_filename;
 use crate::{fix_orientation, ImageMeta, ResizeInstructions, ResizeOperation};
@@ -46,8 +46,9 @@ impl ImageOp {
             Some((x, y, w, h)) => img.crop(x, y, w, h),
             None => img,
         };
+
         let img = match self.instr.resize_instruction {
-            Some((w, h)) => img.resize_exact(w, h, FilterType::Lanczos3),
+            Some((w, h, filter)) => img.resize_exact(w, h, filter.into()),
             None => img,
         };
 
@@ -91,6 +92,8 @@ pub struct EnqueueResponse {
     pub orig_width: u32,
     /// Original image height
     pub orig_height: u32,
+    /// Resize filter
+    pub filter: FilterType,
 }
 
 impl EnqueueResponse {
@@ -101,10 +104,11 @@ impl EnqueueResponse {
         instr: &ResizeInstructions,
     ) -> Self {
         let static_path = static_path.to_string_lossy().into_owned();
-        let (width, height) = instr.resize_instruction.unwrap_or(meta.size);
+        let (width, height, filter) =
+            instr.resize_instruction.unwrap_or((meta.size.0, meta.size.1, FilterType::Lanczos3));
         let (orig_width, orig_height) = meta.size;
 
-        Self { url, static_path, width, height, orig_width, orig_height }
+        Self { url, static_path, width, height, orig_width, orig_height, filter }
     }
 }
 
