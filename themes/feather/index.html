@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>feather | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+            <a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;">Zola</a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;feather&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>feather</h1>
+            <p>A fuzzy blog theme</p>
+            <p><b>Author:</b> doomy</p>
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;piedoom&#x2F;feather">https:&#x2F;&#x2F;github.com&#x2F;piedoom&#x2F;feather</a></p>
+            
+              <p><b>Live Demo:</b> <a href="http:&#x2F;&#x2F;feather.doomy.org&#x2F;">http:&#x2F;&#x2F;feather.doomy.org&#x2F;</a></p>
+            
+            <p><b>Last updated:</b> 2024-09-02T05:58:27Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="feather">feather</h1>
+<p>A lightweight blog theme for <a href="https://www.getzola.org/">Zola</a> (and to my knowledge the first of now
+many themes created specifically for Zola).</p>
+<h1 id="live-demo-link"><a href="https://feather.doomy.org/">Live demo 🔗</a></h1>
+<p><a href="https://feather.doomy.org/"><img src="https://www.getzola.org/themes/feather/screenshot.png" alt="screenshot" /></a></p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Fully responsive</li>
+<li>Designed for legibility</li>
+<li>All JS is non-critical and fails gracefully</li>
+</ul>
+<h2 id="options">Options</h2>
+<p>Zola allows themes to <a href="https://www.getzola.org/documentation/getting-started/configuration/">define <code>[extra]</code> variables</a>
+in the config. Here's a full list of theme variables with example values and comments.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># Regular variables you might want to set...
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;My site&quot; </span><span style="color:#95815e;"># Otherwise, this will read &quot;Home&quot; in the nav
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># Specify a theme
+</span><span style="color:#95815e;"># Default: unset
+</span><span style="color:#95815e;">#
+</span><span style="color:#95815e;"># by default, feather enables light and dark mode
+</span><span style="color:#95815e;"># (and switching when javascript is enabled.)
+</span><span style="color:#95815e;"># However, if you prefer to only allow one mode,
+</span><span style="color:#95815e;"># set this to &quot;dark&quot; or &quot;light&quot;.
+</span><span style="color:#e8bf6a;">feather_theme </span><span>= </span><span style="color:#c1be91;">&quot;dark&quot;
+</span><span>
+</span><span style="color:#95815e;"># Quickly insert into `&lt;head&gt;`
+</span><span style="color:#95815e;"># Default: unset
+</span><span style="color:#e8bf6a;">feather_head </span><span>= </span><span style="color:#c1be91;">&quot;&lt;script&gt;alert()&lt;/script&gt;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Add Disqus comments
+</span><span style="color:#95815e;"># Default: unset
+</span><span style="color:#95815e;">#
+</span><span style="color:#95815e;"># Adds comments to pages by providing your
+</span><span style="color:#95815e;"># disqus domain. Comments will not appear on
+</span><span style="color:#95815e;"># index pages, etc.
+</span><span style="color:#e8bf6a;">feather_disqus_domain </span><span>= </span><span style="color:#c1be91;">&quot;mysite-com&quot;
+</span><span>
+</span><span style="color:#95815e;"># Hide the nav bottom border/background image
+</span><span style="color:#95815e;"># Default: false
+</span><span style="color:#e8bf6a;">feather_hide_nav_image </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h1 id="usage">Usage</h1>
+<p>Using feather is easy.  Install <a href="https://www.getzola.org/">Zola</a> and follow
+<a href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">the guide for creating a site and using a theme</a>.  Then,
+add <code>theme = &quot;feather&quot;</code> to your <code>config.toml</code> file.</p>
+<p>If you intend to publish your site to GitHub Pages, please check out <a href="https://www.getzola.org/documentation/deployment/github-pages/">this
+tutorial</a>.</p>
+<p>You can specify <code>tags</code> taxonomies .</p>
+<h1 id="developing-contributing">Developing &amp; Contributing</h1>
+<p>Because feather comes with example content, you can run the theme just like any Zola
+blog with <code>zola serve</code>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2024 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

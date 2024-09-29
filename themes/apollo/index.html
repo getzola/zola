@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>apollo | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+            <a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;">Zola</a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;apollo&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>apollo</h1>
+            <p>Modern and minimalistic blog theme</p>
+            <p><b>Author:</b> not-matthias</p>
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;not-matthias&#x2F;apollo">https:&#x2F;&#x2F;github.com&#x2F;not-matthias&#x2F;apollo</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;not-matthias.github.io&#x2F;apollo">https:&#x2F;&#x2F;not-matthias.github.io&#x2F;apollo</a></p>
+            
+            <p><b>Last updated:</b> 2024-09-02T05:58:27Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="apollo">apollo</h1>
+<p>Modern and minimalistic blog theme powered by <a href="https://getzola.org">Zola</a>. See a live preview <a href="https://not-matthias.github.io/apollo">here</a>.</p>
+<p><sub><sup>Named after the greek god of knowledge, wisdom and intellect</sup></sub></p>
+<details open>
+  <summary>Dark theme</summary>
+<p><img src="https://www.getzola.org/themes/apollo/./screenshot-dark.png" alt="blog-dark" /></p>
+</details>
+<details>
+  <summary>Light theme</summary>
+<p><img src="https://www.getzola.org/themes/apollo/./screenshot.png" alt="blog-light" /></p>
+</details>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Pagination</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Themes (light, dark, auto)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Projects page</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Analytics using <a href="https://www.goatcounter.com/">GoatCounter</a> / <a href="https://umami.is/">Umami</a></li>
+<li><input disabled="" type="checkbox" checked=""/>
+Social Links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+MathJax Rendering</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Taxonomies</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Meta Tags For Individual Pages</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Custom homepage</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Comments</li>
+<li><input disabled="" type="checkbox"/>
+Search</li>
+<li><input disabled="" type="checkbox"/>
+Categories</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<ol>
+<li>Download the theme</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git submodule add https://github.com/not-matthias/apollo themes/apollo
+</span></code></pre>
+<ol start="2">
+<li>Add the following to the top of your <code>config.toml</code></li>
+</ol>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;apollo&quot;
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [{ </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot; </span><span>}]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;auto&quot;
+</span><span style="color:#e8bf6a;">socials </span><span>= [
+</span><span>  </span><span style="color:#95815e;"># Configure socials here
+</span><span>]
+</span><span style="color:#e8bf6a;">menu </span><span>= [
+</span><span>  </span><span style="color:#95815e;"># Configure menu bar here
+</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># See this for more options: https://github.com/not-matthias/apollo/blob/main/config.toml#L14
+</span></code></pre>
+<ol start="3">
+<li>Copy the example content</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>cp -r themes/apollo/content/* content/
+</span></code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>You can find all the configuration options <a href="https://www.getzola.org/themes/apollo/./content/posts/configuration.md">here</a></p>
+<h2 id="references">References</h2>
+<p>This theme is based on <a href="https://github.com/XXXMrG/archie-zola/">archie-zola</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2024 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

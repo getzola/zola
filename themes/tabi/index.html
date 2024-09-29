@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>tabi | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+            <a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;">Zola</a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;tabi&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>tabi</h1>
+            <p>A fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score</p>
+            <p><b>Author:</b> Óscar Fernández</p>
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;welpo&#x2F;tabi">https:&#x2F;&#x2F;github.com&#x2F;welpo&#x2F;tabi</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;welpo.github.io&#x2F;tabi">https:&#x2F;&#x2F;welpo.github.io&#x2F;tabi</a></p>
+            
+            <p><b>Last updated:</b> 2024-09-02T05:58:27Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <p align="center">
+    <a href="CONTRIBUTING.md#pull-requests">
+        <img src="https://img.shields.io/badge/PRs-welcome-0?style=flat-square&labelColor=202b2d&color=087e96" alt="PRs welcome"></a>
+    <a href="https://github.com/welpo/tabi/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Contributors"></a>
+    <a href="https://github.com/welpo/tabi/forks">
+        <img src="https://img.shields.io/github/forks/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Forks"></a>
+    <a hfref="https://github.com/welpo/tabi/commits/main/">
+        <img src="https://img.shields.io/github/last-commit/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Last commit"></a>
+    <br>
+    <a href="https://github.com/welpo/tabi/releases">
+        <img src="https://img.shields.io/github/v/release/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Latest release"></a>
+    <a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/">
+        <img src="https://img.shields.io/website?url=https%3A%2F%2Fwelpo.github.io%2Ftabi&style=flat-square&label=docs&labelColor=202b2d&color=087e96" alt="Documentation"></a>
+    <a href="https://github.com/welpo/tabi/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="License"></a>
+    <a href="https://github.com/welpo/git-sumi">
+        <img src="https://img.shields.io/badge/clean_commits-git--sumi-0?style=flat-square&labelColor=202b2d&color=087e96" alt="Clean commits"></a>
+</p>
+<h1 id="tabi">tabi</h1>
+<p>A fast, lightweight, and modern <a href="https://www.getzola.org">Zola</a> theme with multi-language support. It aims to be a personal page and home to blog posts.</p>
+<p>See a live preview (and the theme's documentation) <a href="https://welpo.github.io/tabi">here</a>.</p>
+<p>Explore the Sites Using tabi section to see real-world applications.</p>
+<blockquote>
+<p>tabi (旅, /<span title="/t/: 't' in 'sty'">t</span><span title="/ɐ/: a sound between 'a' in 'sofa' and 'u' in 'nut'">ɐ</span><span title="/ˈ/: primary stress mark, indicating that the following syllable is pronounced with greater emphasis">ˈ</span><span title="/b/: 'b' in 'cab'">b</span><span title="/i/: 'i' in 'fleece'">i</span>/): Journey.</p>
+</blockquote>
+<p><img src="https://github.com/welpo/tabi/raw/main/light_dark_screenshot.png" alt="tabi" /></p>
+<p>tabi has a perfect score on Google's Lighthouse audit:</p>
+<p><img src="https://raw.githubusercontent.com/welpo/tabi/main/lighthouse_score.png" alt="lighthouse" /></p>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/faq-languages/#how-do-i-set-a-default-language-for-my-site">Set any language as default</a>. Set your base site to Chinese, Spanish, French, Hindi… or any <a href="/i18n">other supported language</a>. The theme's interface will be translated accordingly.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#git-repository-integration">Integration with remote repositories</a> on GitHub, GitLab, Gitea &amp; Codeberg for commit history and showing the site source.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Dark and light themes. Defaults to the OS setting, with a switcher in the navigation bar.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Thorough documentation. See <a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/">Mastering tabi Settings: A Comprehensive Guide</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Perfect Lighthouse score (Performance, Accessibility, Best Practices and SEO).</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/faq-languages/#how-does-tabi-handle-multilingual-support">Comprehensive multi-language support</a>. Add as many languages as you wish.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Support for <a href="https://welpo.github.io/tabi/blog/comments/">comments using giscus, utterances, Hyvor Talk, or Isso</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Code syntax highlighting with colours based on <a href="https://github.com/catppuccin/catppuccin">Catppuccin</a> Frappé.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/shortcodes/#mermaid-diagrams">Mermaid support</a> to create diagrams and charts with text.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#search">Local search</a> with an accessible, multi-lingual interface.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#social-media-cards">Custom Twitter card</a> and automatic Open Graph tags.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://katex.org/">KaTeX</a> support for mathematical notation.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/atom.xml">Stylized and human readable Atom feed</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/sitemap.xml">Stylized and human readable sitemap</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#encoded-email">Mail encoding</a> for spam protection.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+All JavaScript can be <a href="https://welpo.github.io/tabi/blog/javascript/">fully disabled</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/toc/">Customizable Table of Contents</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/security/">Customizable secure headers</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#copy-button-on-code-blocks">Copy button for code blocks</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#quick-navigation-buttons">Quick navigation buttons</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#copyright">Custom copyright notice</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#canonical-url">Custom canonical URLs</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/shortcodes/">Custom shortcodes</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/customise-tabi/">Customizable skins</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#social-media-cards">Social media cards</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Responsive design.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/projects/">Projects page</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/archive/">Archive page</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#social-media-icons">Social links</a>.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+<a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/#tags">Tags</a>.</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>To add tabi to you existing Zola site:</p>
+<ol start="0">
+<li>Initialize a Git repository in your project directory (if you haven't already):</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git init
+</span></code></pre>
+<ol>
+<li>Add the theme as a git submodule:</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git submodule add https://github.com/welpo/tabi.git themes/tabi
+</span></code></pre>
+<p>Or clone the theme into your themes directory:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git clone https://github.com/welpo/tabi.git themes/tabi
+</span></code></pre>
+<h3 id="required-configuration">Required configuration</h3>
+<ol start="2">
+<li>Enable the theme in your <code>config.toml</code>:</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>theme = &quot;tabi&quot;
+</span></code></pre>
+<ol start="3">
+<li>Set a <code>title</code> in your <code>config.toml</code>:</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>title = &quot;Your Site Title&quot;
+</span></code></pre>
+<ol start="4">
+<li>Configure code block highlighting in your <code>config.toml</code>:</li>
+</ol>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">markdown</span><span>]
+</span><span style="color:#e8bf6a;">highlight_code </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">highlight_theme </span><span>= </span><span style="color:#c1be91;">&quot;css&quot;
+</span></code></pre>
+<ol start="5">
+<li>Create a <code>content/_index.md</code> file with the following content:</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span>title = &quot;Home&quot;
+</span><span>paginate_by = 5 # Set the number of posts per page
+</span><span>template = &quot;index.html&quot;
+</span><span>+++
+</span></code></pre>
+<p>If you want to serve your blog posts from a different path, such as <code>blog/</code>, add a <code>section_path</code> in the <code>[extra]</code> section of <code>content/_index.md</code> (this file will need pagination):</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>[extra]
+</span><span>section_path = &quot;blog/_index.md&quot;
+</span></code></pre>
+<p><strong>Note</strong>: use the full path to the section's <code>_index.md</code> file. Simply using <code>section_path = &quot;blog/&quot;</code> will not work.</p>
+<ol start="6">
+<li>If you want an introduction section (see screenshot above), add these lines to <code>content/_index.md</code>:</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>[extra]
+</span><span>header = {title = &quot;Hello! I&#39;m tabi~&quot;, img = &quot;img/main.webp&quot;, img_alt = &quot;Your Name&quot; }
+</span></code></pre>
+<p>The content outside the front matter will be rendered between the header title and the posts listing. In the screenshot above, it's the text that reads &quot;tabi is a fast, lightweight, and modern Zola theme…&quot;.</p>
+<ol start="7">
+<li>If you want a multilingual site, you will need to set up each language. In <code>config.toml</code>, set the title and taxonomies for each language, like:</li>
+</ol>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">languages.es</span><span>]
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;~/tabi&quot;
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [{</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>}]
+</span></code></pre>
+<p>You will need an <code>_index.{language_code}.md</code> per language for each section (e.g. /blog or /projects) that you want to enable in that language.</p>
+<p>The same is true for individual posts, which should have the exact same name as the default language, with an extra <code>.{code}</code> before the extension (e.g. the Spanish version of <code>security.md</code> would be <code>security.es.md</code>).</p>
+<p>This configuration allows the language switcher to take the user to the translation of the current URL. If a translation doesn't exist, the 404 page will be displayed, with an explanation in each language set in the config.</p>
+<p>To learn more about multilingual support, see the <a href="https://welpo.github.io/tabi/blog/faq-languages/">Frequently Asked Questions</a>.</p>
+<h3 id="updating-tabi">Updating tabi</h3>
+<p>If you added the theme as a git submodule, run:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --remote</span><span> themes/tabi
+</span></code></pre>
+<p>If you cloned it:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes/tabi
+</span><span>git pull
+</span></code></pre>
+<h2 id="sites-using-tabi">Sites using tabi</h2>
+<table><thead><tr><th>Website</th><th>Creator</th><th>Description</th><th>Site Source</th></tr></thead><tbody>
+<tr><td><a href="https://osc.garden">osc.garden</a></td><td>Óscar Fernández (<a href="https://github.com/welpo">welpo</a>)</td><td>Data science, psychology, and Zola</td><td><a href="https://github.com/welpo/osc.garden">Source</a></td></tr>
+<tr><td><a href="https://sandip.live">sandip.live</a></td><td>Sandip G (<a href="https://github.com/sandman">sandman</a>)</td><td>Startups, tech and the good life</td><td><a href="https://github.com/sandman/sandman.github.io">Source</a></td></tr>
+<tr><td><a href="https://seadve.github.io/">seadve.github.io</a></td><td>Dave Patrick Caberto (<a href="https://github.com/SeaDve/">SeaDve</a>)</td><td>Personal blog and portfolio with custom CSS</td><td><a href="https://github.com/SeaDve/seadve.github.io">Source</a></td></tr>
+<tr><td><a href="https://mikufan.page">mikufan.page</a></td><td><a href="https://github.com/nyadiia">Nadia</a></td><td>Personal blog</td><td><a href="https://github.com/nyadiia/mikufan.page">Source</a></td></tr>
+<tr><td><a href="https://tim-boettcher.online/">tim-boettcher.online</a></td><td><a href="https://codeberg.org/Tim-Boettcher/">Tim Böttcher</a></td><td>Insights and ramblings of a deafblind programmer</td><td><a href="https://codeberg.org/Tim-Boettcher/tim-boettcher-online/">Source</a></td></tr>
+<tr><td><a href="https://www.richtman.au">www.richtman.au</a></td><td><a href="https://github.com/arichtman">Ariel Richtman</a></td><td>Personal tech blog</td><td><a href="https://github.com/arichtman/www.richtman.au">Source</a></td></tr>
+</tbody></table>
+<p>Using tabi? Feel free to create a PR and add your site to this list.</p>
+<h2 id="inspiration">Inspiration</h2>
+<p>This theme was inspired by:</p>
+<ul>
+<li><a href="https://github.com/syedzayyan/shadharon">shadharon</a> — tabi started as a fork of <a href="https://github.com/syedzayyan">syedzayyan</a>'s theme;</li>
+<li><a href="https://github.com/timlrx/tailwind-nextjs-starter-blog">tailwind-nextjs-starter-blog</a>;</li>
+<li><a href="https://github.com/Jieiku/abridge">abridge</a>;</li>
+<li><a href="https://internetvin.ghost.io">internetVin's blog</a>.</li>
+</ul>
+<h2 id="contributing">Contributing</h2>
+<p>Please do! We appreciate bug reports, improvements to translations or documentation (however minor), feature requests…</p>
+<p>Take a look at the <a href="/CONTRIBUTING.md">Contributing Guidelines</a> to learn more.</p>
+<h2 id="license">License</h2>
+<p>The code is available under the <a href="https://www.getzola.org/themes/tabi/./LICENSE">MIT license</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2024 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

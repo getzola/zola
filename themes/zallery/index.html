@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>zallery | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+            <a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;">Zola</a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zallery&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>zallery</h1>
+            <p>Gallery theme for zola</p>
+            <p><b>Author:</b> Morgan Creekmore</p>
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;gamingrobot&#x2F;zallery">https:&#x2F;&#x2F;github.com&#x2F;gamingrobot&#x2F;zallery</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;gamingrobot.github.io&#x2F;zallery-demo">https:&#x2F;&#x2F;gamingrobot.github.io&#x2F;zallery-demo</a></p>
+            
+            <p><b>Last updated:</b> 2024-09-02T05:58:27Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zallery-theme-for-zola">Zallery theme for Zola</h1>
+<p>Gallery and portfolio theme for <a href="https://getzola.org">Zola</a>.</p>
+<p>Demo Site: <a href="https://gamingrobot.github.io/zallery-demo/">gamingrobot.github.io/zallery-demo</a><br />
+Personal Portfolio: <a href="https://gamingrobot.art/">gamingrobot.art</a></p>
+<h2 id="screenshots">Screenshots</h2>
+<table><thead><tr><th style="text-align: center">Light mode</th><th style="text-align: center">Dark mode</th></tr></thead><tbody>
+<tr><td style="text-align: center"><img src="https://www.getzola.org/themes/zallery/screenshot-light.jpg" alt="light mode" /></td><td style="text-align: center"><img src="https://www.getzola.org/themes/zallery/screenshot-dark.jpg" alt="dark mode" /></td></tr>
+</tbody></table>
+<h2 id="features">Features</h2>
+<ul>
+<li>Dark and Light mode</li>
+<li>Auto creation of mobile friendly images</li>
+<li>Auto creation of thumbnails</li>
+<li>Auto conversion of images</li>
+<li>Maximize button on images</li>
+<li><a href="https://github.com/francoischalifour/medium-zoom">medium-zoom</a> support</li>
+<li><a href="https://modelviewer.dev/">ModelViewer</a> and <a href="https://sketchfab.com/">Sketchfab</a> support</li>
+<li>Video embed support</li>
+<li>OpenGraph and Twitter embed support</li>
+<li>Responsive and mobile friendly</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>Clone the theme into the themes folder:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/gamingrobot/zallery.git themes/zallery
+</span></code></pre>
+<p>Note: It is recomended that you copy the <code>config.toml</code> from the <code>themes/zallery</code> folder to the root folder of your site.</p>
+<p>Then set your theme setting in <code>config.toml</code> to <code>zallery</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zallery&quot;
+</span></code></pre>
+<h2 id="customization">Customization</h2>
+<p>To customize the theme's colors you will need to copy the <code>_variables.scss</code> into your sites <code>sass</code> folder and create a <code>zallery.scss</code> file with:</p>
+<pre data-lang="scss" style="background-color:#383838;color:#e6e1dc;" class="language-scss "><code class="language-scss" data-lang="scss"><span style="color:#cc7833;">@import </span><span style="color:#a5c261;">&#39;variables&#39;</span><span>;
+</span><span style="color:#cc7833;">@import </span><span style="color:#a5c261;">&#39;../themes/zallery/sass/imports&#39;</span><span>;
+</span></code></pre>
+<p>See the demo site for an example: <a href="https://github.com/gamingrobot/zallery-demo/tree/master/sass">github.com/gamingrobot/zallery-demo/tree/master/sass</a></p>
+<h2 id="options">Options</h2>
+<h3 id="menu-items">Menu Items</h3>
+<p>Customize the header navigation links</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">menu </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;atom.xml&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Feed&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/gamingrobot/zallery&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Github&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="browser-bar-theme-color">Browser Bar Theme Color</h3>
+<p>Customize color to set the browser's url bar on mobile</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">theme_color </span><span>= </span><span style="color:#c1be91;">&quot;#313131&quot;
+</span></code></pre>
+<h3 id="author-url">Author Url</h3>
+<p>Url used for the name in the copyright</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author_url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot;
+</span></code></pre>
+<h3 id="cover-image">Cover Image</h3>
+<p>Cover image to use on the main gallery pages for opengraph and twitter embeds</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">cover_image </span><span>= </span><span style="color:#c1be91;">&quot;img/cover.webp&quot;
+</span></code></pre>
+<h3 id="copyright-and-powered-by">Copyright and Powered by</h3>
+<p>To hide the copyright set this to <code>true</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">hide_copyright </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+<p>To hide the &quot;Powered by Zola &amp; Zallery&quot; set this to <code>true</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">hide_poweredby </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+<h3 id="gallery">Gallery</h3>
+<p>Settings for the gallery view's thumbnails</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">thumbnail_size </span><span>= </span><span style="color:#a5c261;">400 </span><span style="color:#95815e;"># size in pixels, you may need to adjust the media queries in _gallery.scss
+</span><span style="color:#e8bf6a;">thumbnail_format </span><span>= </span><span style="color:#c1be91;">&quot;webp&quot; </span><span style="color:#95815e;"># auto, jpg, png, webp
+</span><span style="color:#e8bf6a;">thumbnail_quality </span><span>= </span><span style="color:#a5c261;">100 </span><span style="color:#95815e;"># value in percentage, only for webp and jpg
+</span></code></pre>
+<h3 id="img-shortcode-settings"><code>img</code> shortcode settings</h3>
+<p>Settings for the <code>img</code> shortcode, allowing for automatic conversion and creating mobile friendly images</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">covert_images </span><span>= </span><span style="color:#6e9cbe;">false </span><span style="color:#95815e;"># set to true to convert images to to the format in the image_format setting
+</span><span style="color:#e8bf6a;">create_mobile_images </span><span>= </span><span style="color:#6e9cbe;">false </span><span style="color:#95815e;"># set to true to create mobile friendly versions of the image
+</span><span style="color:#e8bf6a;">image_format </span><span>= </span><span style="color:#c1be91;">&quot;webp&quot; </span><span style="color:#95815e;"># auto, jpg, png, webp
+</span><span style="color:#e8bf6a;">image_quality </span><span>= </span><span style="color:#a5c261;">90 </span><span style="color:#95815e;"># value in percentage, only for webp and jpg
+</span></code></pre>
+<h3 id="frontmatter-settings">Frontmatter settings</h3>
+<p>These settings are for the frontmatter on each artwork</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">thumbnail </span><span>= </span><span style="color:#c1be91;">&quot;image.jpg&quot; </span><span style="color:#95815e;"># image to resize into a thumbnail and cover image
+</span><span style="color:#e8bf6a;">modelviewer </span><span>= </span><span style="color:#6e9cbe;">true </span><span style="color:#95815e;"># enable modelviewer javascript for this artwork
+</span></code></pre>
+<h3 id="javascript-libraries">Javascript libraries</h3>
+<h4 id="modelviewer">ModelViewer</h4>
+<p>Set to <code>true</code> to enable <a href="https://modelviewer.dev/">modelviewer</a> support. This can also be set in the artwork frontmatter or in <code>config.toml</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">modelviewer </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h4 id="jszoom">JSZoom</h4>
+<p>Set to <code>true</code> to enable <a href="https://github.com/francoischalifour/medium-zoom">javascript zoom</a> support.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">jszoom </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h4 id="goatcounter">GoatCounter</h4>
+<p>Set to the goatcounter tag to enable <a href="https://www.goatcounter.com/">goatcounter</a> support</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">goatcounter </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span></code></pre>
+<h2 id="shortcodes">Shortcodes</h2>
+<h3 id="img"><code>img</code></h3>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">img</span><span>(</span><span style="color:#d0d0ff;">src</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image.jpg&quot;</span><span>, </span><span style="color:#d0d0ff;">mobile_src</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image-mobile.jpg&quot;</span><span>, </span><span style="color:#d0d0ff;">alt</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;alt text&quot;</span><span>, </span><span style="color:#d0d0ff;">text</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;text&quot;</span><span>, </span><span style="color:#d0d0ff;">fit</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;&quot;</span><span>) }}
+</span></code></pre>
+<ul>
+<li><code>src</code> (required) - Image path</li>
+<li><code>mobile_src</code> (optional) - Mobile friendly version</li>
+<li><code>alt</code> (optional) - Alt text</li>
+<li><code>text</code> (optional) - Text to put under the image (if <code>alt</code> is not specified, text will be use for alt text)</li>
+<li><code>fit</code> (optioanl) - Defaults to <code>fit-view</code>, can be set to <code>max-width</code> to make the image fill the width of the page</li>
+</ul>
+<h3 id="video"><code>video</code></h3>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">video</span><span>(</span><span style="color:#d0d0ff;">src</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image.jpg&quot;</span><span>, </span><span style="color:#d0d0ff;">autoplay</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">false</span><span>) }}
+</span></code></pre>
+<ul>
+<li><code>src</code> (required) - Video path</li>
+<li><code>autoplay</code> (optional) - Set to <code>true</code> to enable autoplay</li>
+</ul>
+<h3 id="youtube-vimeo"><code>youtube</code> / <code>vimeo</code></h3>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">youtube</span><span>(</span><span style="color:#d0d0ff;">id</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#d0d0ff;">autoplay</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">false</span><span>) }}
+</span><span>{{ </span><span style="color:#d0d0ff;">vimeo</span><span>(</span><span style="color:#d0d0ff;">id</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#d0d0ff;">autoplay</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">false</span><span>) }}
+</span></code></pre>
+<ul>
+<li><code>id</code> (required) - Id of the video</li>
+<li><code>autoplay</code> (optional) - Set to <code>true</code> to enable autoplay</li>
+</ul>
+<h3 id="model"><code>model</code></h3>
+<p>Note: Requires <code>modelviewer</code> to be enabled in <code>config.toml</code></p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">model</span><span>(</span><span style="color:#d0d0ff;">src</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image.jpg&quot;</span><span>, </span><span style="color:#d0d0ff;">skybox</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#d0d0ff;">poster</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;&quot;</span><span>) }}
+</span></code></pre>
+<ul>
+<li><code>src</code> (required) - Model path</li>
+<li><code>skybox</code> (optional) -  Skybox HDR</li>
+<li><code>poster</code> (optional) - Image to show when loading</li>
+<li><code>alt</code> (optional) - Alt text</li>
+</ul>
+<h3 id="sketchfab"><code>sketchfab</code></h3>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">sketchfab</span><span>(</span><span style="color:#d0d0ff;">id</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;&quot;</span><span>) }}
+</span></code></pre>
+<ul>
+<li><code>id</code> (required) - Id of the model</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2024 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
