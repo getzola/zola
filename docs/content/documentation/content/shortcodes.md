@@ -82,9 +82,9 @@ pretty much just shuttle arguments to their template. Several limitions of note 
 If the shortcode is invalid, it will not be interpreted by the markdown parser and will instead
 get rendered directly into the final HTML.
 
-Lastly, a shortcode name (and thus the corresponding `.html` file) as well as the argument names
-can only contain numbers, letters and underscores, or in Regex terms `[0-9A-Za-z_]`.
-Although theoretically an argument name could be a number, it will not be possible to use such an argument in the template.
+Lastly, a shortcode name (and thus the corresponding `.html` file) as well as any argument names
+can only contain numbers, letters and underscores, and must start with a letter or underscore.
+In Regex terms, `^[A-Za-z_][0-9A-Za-z_]+$`.
 
 Argument values can be of one of five types:
 
