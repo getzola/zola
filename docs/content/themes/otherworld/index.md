@@ -3,11 +3,11 @@
 title = "otherworld"
 description = "Vaporwave aesthetic theme"
 template = "theme.html"
-date = 2024-09-02T05:58:27Z
+date = 2024-09-30T05:59:01Z
 
 [extra]
-created = 2024-09-02T05:58:27Z
-updated = 2024-09-02T05:58:27Z
+created = 2024-09-30T05:59:01Z
+updated = 2024-09-30T05:59:01Z
 repository = "https://git.blek.codes/blek/otherworld.git"
 homepage = "https://git.blek.codes/blek/otherworld"
 minimum_version = "0.1.0"
