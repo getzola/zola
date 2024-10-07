@@ -3,11 +3,11 @@
 title = "neovim"
 description = "A only keyboard theme with tabs and file browser"
 template = "theme.html"
-date = 2024-09-02T05:58:27Z
+date = 2024-10-07T05:57:53Z
 
 [extra]
-created = 2024-09-02T05:58:27Z
-updated = 2024-09-02T05:58:27Z
+created = 2024-10-07T05:57:53Z
+updated = 2024-10-07T05:57:53Z
 repository = "https://github.com/Super-Botman/neovim-theme.git"
 homepage = "https://github.com/super-botman/zola-theme"
 minimum_version = "0.4"
