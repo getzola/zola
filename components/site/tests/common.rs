@@ -22,7 +22,7 @@ macro_rules! file_exists {
 
 #[macro_export]
 macro_rules! file_contains {
-    ($root: expr, $path: expr, $text: expr) => {{
+    (@impl $root: expr, $path: expr) => {{
         use std::io::prelude::*;
         let mut path = $root.clone();
         for component in $path.split('/') {
@@ -31,8 +31,21 @@ macro_rules! file_contains {
         let mut file = std::fs::File::open(&path).expect(&format!("Failed to open {:?}", $path));
         let mut s = String::new();
         file.read_to_string(&mut s).unwrap();
-        println!("{}", s);
+        println!("{path:?} {s}");
+        s
+    }};
+    ($root: expr, $path: expr, $text: expr) => {{
+        let s = file_contains!(@impl $root, $path);
         s.contains($text)
+    }};
+}
+
+#[macro_export]
+macro_rules! file_contains_regex {
+    ($root: expr, $path: expr, $pat: expr) => {{
+        let s = file_contains!(@impl $root, $path);
+        let re = libs::regex::Regex::new($pat).unwrap();
+        re.is_match(&s)
     }};
 }
 

@@ -23,6 +23,7 @@ updated: String?;
 slug: String;
 path: String;
 authors: Array<String>;
+render: Bool;
 draft: Bool;
 // the path, split on '/'
 components: Array<String>;
@@ -77,6 +78,8 @@ content: String;
 title: String?;
 description: String?;
 path: String;
+render: Bool;
+draft: Bool;
 // the path, split on '/'
 components: Array<String>;
 permalink: String;
