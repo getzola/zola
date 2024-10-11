@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+
+{% block content %}
+    {% set unrendered_page = get_page(path='posts/render.md') %}
+    {% set section_with_unrendered = get_section(path='posts/_index.md') %}
+    {% set unrendered_section = get_section(path='posts/2018/_index.md') %}
+    Path of unrendered page: {{ unrendered_page.path | safe }}
+    Pages in section with unrendered page: <ul>{% for page in section_with_unrendered.pages -%}
+        <li>{{ page.path | safe }}</li>
+    {%- endfor %}</ul>
+    Pages in unrendered section: <ul>{% for page in unrendered_section.pages -%}
+        <li>{{ page.path | safe }}</li>
+    {%- endfor %}</ul>
+{% endblock content %}
+
