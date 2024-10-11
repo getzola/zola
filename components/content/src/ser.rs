@@ -162,9 +162,8 @@ pub struct SerializingSection<'a> {
     backlinks: Vec<BackLink<'a>>,
     generate_feeds: bool,
     transparent: bool,
-    paginated: bool,
-    paginate_by: Option<usize>,
-    paginate_reversed: Option<bool>,
+    paginate_by: &'a Option<usize>,
+    paginate_reversed: bool,
 }
 
 #[derive(Debug)]
@@ -206,19 +205,6 @@ impl<'a> SerializingSection<'a> {
             }
         }
 
-        let paginated;
-        let paginate_by;
-        let paginate_reversed;
-        if let Some(_) = section.meta.paginate_by.filter(|nb_pages| *nb_pages > 0) {
-            paginated = true;
-            paginate_by = section.meta.paginate_by;
-            paginate_reversed = Some(section.meta.paginate_reversed);
-        } else {
-            paginated = false;
-            paginate_by = None;
-            paginate_reversed = None;
-        }
-
         Self {
             relative_path: &section.file.relative,
             colocated_path: &section.file.colocated_path,
@@ -242,9 +228,8 @@ impl<'a> SerializingSection<'a> {
             subsections,
             translations,
             backlinks,
-            paginated,
-            paginate_by,
-            paginate_reversed,
+            paginate_by: &section.meta.paginate_by,
+            paginate_reversed: section.meta.paginate_reversed,
         }
     }
 }
