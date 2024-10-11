@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use errors::{Error, Result};
 use libs::tera;
-use utils::templates::{ShortcodeDefinition, ShortcodeFileType};
+use utils::templates::{ShortcodeDefinition, ShortcodeFileType, ShortcodeInvocationCounter};
 
 mod parser;
 
@@ -12,8 +12,9 @@ pub(crate) use parser::{parse_for_shortcodes, Shortcode, SHORTCODE_PLACEHOLDER};
 pub fn extract_shortcodes(
     source: &str,
     definitions: &HashMap<String, ShortcodeDefinition>,
+    invocation_counter: &ShortcodeInvocationCounter,
 ) -> Result<(String, Vec<Shortcode>)> {
-    let (out, mut shortcodes) = parse_for_shortcodes(source)?;
+    let (out, mut shortcodes) = parse_for_shortcodes(source, invocation_counter)?;
 
     for sc in &mut shortcodes {
         if let Some(def) = definitions.get(&sc.name) {

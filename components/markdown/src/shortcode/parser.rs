@@ -5,8 +5,7 @@ use libs::tera::{to_value, Context, Map, Tera, Value};
 use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::Parser;
-use std::collections::HashMap;
-use utils::templates::ShortcodeFileType;
+use utils::templates::{ShortcodeFileType, ShortcodeInvocationCounter};
 
 pub const SHORTCODE_PLACEHOLDER: &str = "@@ZOLA_SC_PLACEHOLDER@@";
 
@@ -152,14 +151,11 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Value) {
     (name.unwrap(), Value::Object(args))
 }
 
-pub fn parse_for_shortcodes(content: &str) -> Result<(String, Vec<Shortcode>)> {
+pub fn parse_for_shortcodes(
+    content: &str,
+    invocation_counter: &ShortcodeInvocationCounter,
+) -> Result<(String, Vec<Shortcode>)> {
     let mut shortcodes = Vec::new();
-    let mut nths = HashMap::new();
-    let mut get_invocation_count = |name: &str| {
-        let nth = nths.entry(String::from(name)).or_insert(0);
-        *nth += 1;
-        *nth
-    };
     let mut output = String::with_capacity(content.len());
 
     let mut pairs = match ContentParser::parse(Rule::page, content) {
@@ -207,7 +203,7 @@ pub fn parse_for_shortcodes(content: &str) -> Result<(String, Vec<Shortcode>)> {
             Rule::inline_shortcode => {
                 let start = output.len();
                 let (name, args) = parse_shortcode_call(p);
-                let nth = get_invocation_count(&name);
+                let nth = invocation_counter.get(&name);
                 shortcodes.push(Shortcode {
                     name,
                     args,
@@ -225,7 +221,7 @@ pub fn parse_for_shortcodes(content: &str) -> Result<(String, Vec<Shortcode>)> {
                 // we don't care about the closing tag
                 let (name, args) = parse_shortcode_call(inner.next().unwrap());
                 let body = inner.next().unwrap().as_span().as_str().trim();
-                let nth = get_invocation_count(&name);
+                let nth = invocation_counter.get(&name);
                 shortcodes.push(Shortcode {
                     name,
                     args,
@@ -403,6 +399,7 @@ mod tests {
     fn can_extract_basic_inline_shortcode_with_args() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Inline shortcode: {{ hello(string='hey', int=1, float=2.1, bool=true, array=[true, false]) }} hey",
+            &ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(out, format!("Inline shortcode: {} hey", SHORTCODE_PLACEHOLDER));
@@ -423,8 +420,11 @@ mod tests {
 
     #[test]
     fn can_unignore_ignored_inline_shortcode() {
-        let (out, shortcodes) =
-            parse_for_shortcodes("Hello World {{/* youtube() */}} hey").unwrap();
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Hello World {{/* youtube() */}} hey",
+            &ShortcodeInvocationCounter::new(),
+        )
+        .unwrap();
         assert_eq!(out, "Hello World {{ youtube() }} hey");
         assert_eq!(shortcodes.len(), 0);
     }
@@ -433,6 +433,7 @@ mod tests {
     fn can_extract_shortcode_with_body() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Body shortcode\n {% quote(author='Bobby', array=[[true]]) %}DROP TABLES;{% end %} \n hey",
+            &ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(out, format!("Body shortcode\n {} \n hey", SHORTCODE_PLACEHOLDER));
@@ -451,9 +452,11 @@ mod tests {
 
     #[test]
     fn can_unignore_ignored_shortcode_with_body() {
-        let (out, shortcodes) =
-            parse_for_shortcodes("Hello World {%/* youtube() */%} Somebody {%/* end */%} hey")
-                .unwrap();
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Hello World {%/* youtube() */%} Somebody {%/* end */%} hey",
+            &ShortcodeInvocationCounter::new(),
+        )
+        .unwrap();
         assert_eq!(out, "Hello World {% youtube() %} Somebody {% end %} hey");
         assert_eq!(shortcodes.len(), 0);
     }
@@ -462,6 +465,7 @@ mod tests {
     fn can_extract_multiple_shortcodes_and_increment_nth() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Hello World {% youtube() %} Somebody {% end %} {{ hello() }}\n {{hello()}}",
+            &ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(
@@ -486,8 +490,20 @@ mod tests {
         {{ vimeo(id="210073083#hello", n_a_me="hello") }}
         {{ streamable(id="c0ic", n1=true) }}
         {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}"#,
+            &ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(shortcodes.len(), 5);
+    }
+
+    #[test]
+    fn can_parse_nested_shortcodes() {
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Hello World {% outer() %} Inside-Outside! {% inner() %} Inside-Inside! {% end %} Inside-Outside {% end %}",
+            &ShortcodeInvocationCounter::new(),
+        )
+        .unwrap();
+        assert_eq!(out, format!("Hello World {}", SHORTCODE_PLACEHOLDER));
+        assert_eq!(shortcodes.len(), 1);
     }
 }

@@ -1,0 +1,6 @@
+---
+source: components/markdown/tests/shortcodes.rs
+assertion_line: 398
+expression: body
+---
+<p>a: 1</p><p>a: 2</p><div><p>a: 5</p><p>a: 6</p><div><p>a: 9</p><p>a: 10</p></div><p>a: 7</p><p>a: 8</p></div><p>a: 3</p><p>a: 4</p>

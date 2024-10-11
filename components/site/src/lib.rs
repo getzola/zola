@@ -8,7 +8,7 @@ pub mod tpls;
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use libs::once_cell::sync::Lazy;
 use libs::rayon::prelude::*;
@@ -25,7 +25,7 @@ use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
 use utils::net::{get_available_port, is_external_link};
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{render_template, ShortcodeDefinition, ShortcodeInvocationCounter};
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -46,7 +46,7 @@ pub struct Site {
     pub base_path: PathBuf,
     /// The parsed config for the site
     pub config: Config,
-    pub tera: Tera,
+    pub tera: Arc<RwLock<Tera>>,
     imageproc: Arc<Mutex<imageproc::Processor>>,
     // the live reload port to be used if there is one
     pub live_reload: Option<u16>,
@@ -65,6 +65,7 @@ pub struct Site {
     include_drafts: bool,
     build_mode: BuildMode,
     shortcode_definitions: HashMap<String, ShortcodeDefinition>,
+    shortcode_invoke_counter: ShortcodeInvocationCounter,
 }
 
 impl Site {
@@ -93,7 +94,7 @@ impl Site {
         let site = Site {
             base_path: path.to_path_buf(),
             config,
-            tera,
+            tera: Arc::new(RwLock::new(tera)),
             imageproc: Arc::new(Mutex::new(imageproc)),
             live_reload: None,
             output_path,
@@ -108,9 +109,20 @@ impl Site {
             library: Arc::new(RwLock::new(Library::default())),
             build_mode: BuildMode::Disk,
             shortcode_definitions,
+            shortcode_invoke_counter: ShortcodeInvocationCounter::new(),
         };
 
         Ok(site)
+    }
+    pub fn tera(&self) -> Result<RwLockReadGuard<'_, Tera>> {
+        self.tera.read().map_err(|_| {
+            anyhow!("site::Site::tera(): self.tera has been poisoned due to a panicked thread")
+        })
+    }
+    pub fn tera_mut(&mut self) -> Result<RwLockWriteGuard<'_, Tera>> {
+        self.tera.write().map_err(|_| {
+            anyhow!("site::Site::tera_mut(): self.tera has been poisoned due to a panicked thread")
+        })
     }
 
     /// Enable some `zola serve` related options
@@ -150,7 +162,7 @@ impl Site {
 
     /// Reloads the templates and rebuild the site without re-markdown the Markdown.
     pub fn reload_templates(&mut self) -> Result<()> {
-        self.tera.full_reload()?;
+        self.tera_mut()?.full_reload()?;
         // TODO: be smarter than that, no need to recompile sass for example
         self.build()
     }
@@ -420,7 +432,7 @@ impl Site {
         // Another silly thing needed to not borrow &self in parallel and
         // make the borrow checker happy
         let permalinks = &self.permalinks;
-        let tera = &self.tera;
+        let tera = &self.tera()?;
         let config = &self.config;
 
         // This is needed in the first place because of silly borrow checker
@@ -446,6 +458,7 @@ impl Site {
                     config,
                     insert_anchor,
                     &self.shortcode_definitions,
+                    &self.shortcode_invoke_counter,
                 )
             })
             .collect::<Result<()>>()?;
@@ -456,7 +469,13 @@ impl Site {
             .collect::<Vec<_>>()
             .par_iter_mut()
             .map(|section| {
-                section.render_markdown(permalinks, tera, config, &self.shortcode_definitions)
+                section.render_markdown(
+                    permalinks,
+                    tera,
+                    config,
+                    &self.shortcode_definitions,
+                    &self.shortcode_invoke_counter,
+                )
             })
             .collect::<Result<()>>()?;
 
@@ -482,10 +501,11 @@ impl Site {
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
             page.render_markdown(
                 &self.permalinks,
-                &self.tera,
+                &*self.tera()?,
                 &self.config,
                 insert_anchor,
                 &self.shortcode_definitions,
+                &self.shortcode_invoke_counter,
             )?;
         }
 
@@ -515,9 +535,10 @@ impl Site {
         if render_md {
             section.render_markdown(
                 &self.permalinks,
-                &self.tera,
+                &*self.tera()?,
                 &self.config,
                 &self.shortcode_definitions,
+                &self.shortcode_invoke_counter,
             )?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");
@@ -696,7 +717,8 @@ impl Site {
             return Ok(());
         }
 
-        let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+        let output =
+            page.render_html(&*self.tera()?, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
         let current_path = self.write_content(&components, "index.html", content)?;
@@ -866,7 +888,7 @@ impl Site {
             }
             None => "index.html",
         };
-        let content = render_redirect_template(permalink, &self.tera)?;
+        let content = render_redirect_template(permalink, &*self.tera()?)?;
         self.write_content(&split, page_name, content)?;
         Ok(())
     }
@@ -893,7 +915,7 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
         context.insert("lang", &self.config.default_language);
-        let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
+        let output = render_template("404.html", &*self.tera()?, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
         self.write_content(&[], "404.html", content)?;
         Ok(())
@@ -903,7 +925,7 @@ impl Site {
     pub fn render_robots(&self) -> Result<()> {
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
-        let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
+        let content = render_template("robots.txt", &*self.tera()?, context, &self.config.theme)?;
         self.write_content(&[], "robots.txt", content)?;
         Ok(())
     }
@@ -932,8 +954,11 @@ impl Site {
 
         components.push(taxonomy.slug.as_ref());
 
-        let list_output =
-            taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
+        let list_output = taxonomy.render_all_terms(
+            &*self.tera()?,
+            &self.config,
+            &self.library.read().unwrap(),
+        )?;
         let content = self.inject_livereload(list_output);
         self.write_content(&components, "index.html", content)?;
 
@@ -952,13 +977,13 @@ impl Site {
                             taxonomy,
                             item,
                             &library,
-                            &self.tera,
+                            &*self.tera()?,
                             &self.config.theme,
                         ),
                     )?;
                 } else {
                     let single_output =
-                        taxonomy.render_term(item, &self.tera, &self.config, &library)?;
+                        taxonomy.render_term(item, &*self.tera()?, &self.config, &library)?;
                     let content = self.inject_livereload(single_output);
                     self.write_content(&comp, "index.html", content)?;
                 }
@@ -1000,7 +1025,8 @@ impl Site {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap =
+                render_template("sitemap.xml", &*self.tera()?, context, &self.config.theme)?;
             self.write_content(&[], "sitemap.xml", sitemap)?;
             return Ok(());
         }
@@ -1012,7 +1038,8 @@ impl Site {
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap =
+                render_template("sitemap.xml", &*self.tera()?, context, &self.config.theme)?;
             let file_name = format!("sitemap{}.xml", i + 1);
             self.write_content(&[], &file_name, sitemap)?;
             let mut sitemap_url = self.config.make_permalink(&file_name);
@@ -1025,7 +1052,7 @@ impl Site {
         main_context.insert("sitemaps", &sitemap_index);
         let sitemap = render_template(
             "split_sitemap_index.xml",
-            &self.tera,
+            &*self.tera()?,
             main_context,
             &self.config.theme,
         )?;
@@ -1124,7 +1151,7 @@ impl Site {
             self.write_content(
                 &components,
                 "index.html",
-                render_redirect_template(&permalink, &self.tera)?,
+                render_redirect_template(&permalink, &*self.tera()?)?,
             )?;
 
             return Ok(());
@@ -1137,7 +1164,7 @@ impl Site {
             )?;
         } else {
             let output =
-                section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
+                section.render_html(&*self.tera()?, &self.config, &self.library.read().unwrap())?;
             let content = self.inject_livereload(output);
             self.write_content(&components, "index.html", content)?;
         }
@@ -1185,7 +1212,7 @@ impl Site {
                 let output = paginator.render_pager(
                     pager,
                     &self.config,
-                    &self.tera,
+                    &*self.tera()?,
                     &self.library.read().unwrap(),
                 )?;
                 let content = self.inject_livereload(output);
@@ -1197,7 +1224,7 @@ impl Site {
                     self.write_content(
                         &pager_components,
                         "index.html",
-                        render_redirect_template(&paginator.permalink, &self.tera)?,
+                        render_redirect_template(&paginator.permalink, &*self.tera()?)?,
                     )?;
                 }
 
