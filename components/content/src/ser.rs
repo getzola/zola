@@ -162,6 +162,8 @@ pub struct SerializingSection<'a> {
     backlinks: Vec<BackLink<'a>>,
     generate_feeds: bool,
     transparent: bool,
+    paginate_by: &'a Option<usize>,
+    paginate_reversed: bool,
 }
 
 #[derive(Debug)]
@@ -226,6 +228,8 @@ impl<'a> SerializingSection<'a> {
             subsections,
             translations,
             backlinks,
+            paginate_by: &section.meta.paginate_by,
+            paginate_reversed: section.meta.paginate_reversed,
         }
     }
 }

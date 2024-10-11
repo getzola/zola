@@ -3,6 +3,7 @@ mod highlight;
 
 use std::ops::RangeInclusive;
 
+use errors::{bail, Result};
 use libs::syntect::util::LinesWithEndings;
 
 use crate::codeblock::highlight::SyntaxHighlighter;
@@ -75,14 +76,19 @@ impl<'config> CodeBlock<'config> {
         config: &'config Config,
         // path to the current file if there is one, to point where the error is
         path: Option<&'config str>,
-    ) -> (Self, String) {
+    ) -> Result<(Self, String)> {
         let syntax_and_theme = resolve_syntax_and_theme(fence.language, config);
         if syntax_and_theme.source == HighlightSource::NotFound && config.markdown.highlight_code {
             let lang = fence.language.unwrap();
-            if let Some(p) = path {
-                eprintln!("Warning: Highlight language {} not found in {}", lang, p);
+            let msg = if let Some(p) = path {
+                format!("Highlight language {} not found in {}", lang, p)
             } else {
-                eprintln!("Warning: Highlight language {} not found", lang);
+                format!("Highlight language {} not found", lang)
+            };
+            if config.markdown.error_on_missing_highlight {
+                bail!(msg);
+            } else {
+                eprintln!("Warning: {}", msg);
             }
         }
         let highlighter = SyntaxHighlighter::new(config.markdown.highlight_code, syntax_and_theme);
@@ -93,7 +99,7 @@ impl<'config> CodeBlock<'config> {
             highlighter.pre_class(),
             fence.line_numbers,
         );
-        (
+        Ok((
             Self {
                 highlighter,
                 line_numbers: fence.line_numbers,
@@ -102,7 +108,7 @@ impl<'config> CodeBlock<'config> {
                 hide_lines: fence.hide_lines,
             },
             html_start,
-        )
+        ))
     }
 
     pub fn highlight(&mut self, content: &str) -> String {

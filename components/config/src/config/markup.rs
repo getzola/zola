@@ -27,6 +27,8 @@ pub struct ThemeCss {
 pub struct Markdown {
     /// Whether to highlight all code blocks found in markdown files. Defaults to false
     pub highlight_code: bool,
+    /// Emit an error for missing highlight languages. Defaults to false
+    pub error_on_missing_highlight: bool,
     /// Which themes to use for code highlighting. See Readme for supported themes
     /// Defaults to "base16-ocean-dark"
     pub highlight_theme: String,
@@ -198,6 +200,7 @@ impl Default for Markdown {
     fn default() -> Markdown {
         Markdown {
             highlight_code: false,
+            error_on_missing_highlight: false,
             highlight_theme: DEFAULT_HIGHLIGHT_THEME.to_owned(),
             highlight_themes_css: Vec::new(),
             render_emoji: false,

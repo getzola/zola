@@ -19,7 +19,7 @@ pub fn extract_shortcodes(
         if let Some(def) = definitions.get(&sc.name) {
             sc.tera_name = def.tera_name.clone();
         } else {
-            return Err(Error::msg(format!("Found usage of a shortcode named `{}` but we do not know about. Make sure it's not a typo and that a field name `{}.{{html,md}} exists in the `templates/shortcodes` directory.", sc.name, sc.name)));
+            return Err(Error::msg(format!("Found usage of a shortcode named `{}` but we do not know about. Make sure it's not a typo and that a field name `{}.{{html,md}}` exists in the `templates/shortcodes` directory.", sc.name, sc.name)));
         }
     }
 
