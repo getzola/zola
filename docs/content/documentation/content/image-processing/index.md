@@ -9,7 +9,7 @@ which is available in template code as well as in shortcodes.
 The function usage is as follows:
 
 ```jinja2
-resize_image(path, width, height, op, format, quality)
+resize_image(path, width, height, op, format, quality, filter)
 ```
 
 ### Arguments
@@ -38,6 +38,14 @@ resize_image(path, width, height, op, format, quality)
   The default is `"auto"`, this means that the format is chosen based on input image format.
   JPEG is chosen for JPEGs and other lossy formats, and PNG is chosen for PNGs and other lossless formats.
 - `quality` (_optional_): JPEG or WebP quality of the resized image, in percent. Only used when encoding JPEGs or WebPs; for JPEG default value is `75`, for WebP default is lossless.
+- `filter` (_optional_): Resize filter. This can be one of:
+    - `"lanczos3"`
+    - `"nearest"`
+    - `"triangle"`
+    - `"catmullrom"`
+    - `"gaussian"`
+
+  The default is `"lanczos3"`, which produces smooth resizing generally free of visible artifacts. The filters are further detailed in a later section.
 
 ### Image processing and return value
 
@@ -73,6 +81,8 @@ orig_height: u32,
 The source for all examples is this 300 pixel × 380 pixel image:
 
 ![zola](01-zola.png)
+
+These examples all use the default `"lanczos3"` resize filter.
 
 ### **`"scale"`**
   Simply scales the image to the specified dimensions (`width` & `height`) irrespective of the aspect ratio.
@@ -123,6 +133,14 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
   {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=150, height=150, op="fill") }}
 
+
+## Reize filters
+
+Depending on the image content, different filters may produce better results. Below are all the filters applied to two images. From left to right, the filters are `lanczos3`, `nearest`, `triangle`, `catmullrom`, and `gaussian`. It can be seen that `gaussian` and `triangle` filters tend to have softer results, whereas `lanczos3` and `catmullrom` better preserve small details. `nearest` is a good option for images of a pixel art style, as no interpolation is performed between neighboring pixels.
+
+{{ filters(path="documentation/content/image-processing/01-zola.png") }}
+
+{{ filters(path="documentation/content/image-processing/knight.png") }}
 
 ## Using `resize_image` in markdown via shortcodes
 
