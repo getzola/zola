@@ -3,11 +3,11 @@
 title = "anemone"
 description = "A minimalist Zola theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas."
 template = "theme.html"
-date = 2024-09-02T05:58:27Z
+date = 2024-10-14T05:58:11Z
 
 [extra]
-created = 2024-09-02T05:58:27Z
-updated = 2024-09-02T05:58:27Z
+created = 2024-10-14T05:58:11Z
+updated = 2024-10-14T05:58:11Z
 repository = "https://github.com/Speyll/anemone.git"
 homepage = "https://github.com/Speyll/anemone"
 minimum_version = "0.4.0"
@@ -91,10 +91,8 @@ The theme has a built-in feature that allows you to use multiple languages. For 
 
 ```toml
 [languages.fr]
-weight = 2
-title = "anemone"
-languageName = "Français"
-languageCode = "fr"
+generate_feeds = true
+build_search_index = true
 ```
 #### Multilanguage-Ready Navigation Bar
 
