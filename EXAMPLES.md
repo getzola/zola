@@ -10,7 +10,6 @@
 | [j1m.net](https://j1m.net)                                         | https://gitlab.com/jwcampbell/j1mnet                     |
 | [vaporsoft.net](http://vaporsoft.net)                              | https://github.com/piedoom/vaporsoft                     |
 | [tuckersiemens.com](https://tuckersiemens.com)                     | https://github.com/reillysiemens/tuckersiemens.com       |
-| [andrewzah.com](https://andrewzah.com)                             | https://git.sr.ht/~andrewzah/personal-site/tree          |
 | [Axiomatic Semantics](https://axiomatic.neophilus.net)             | https://github.com/Libbum/AxiomaticSemantics             |
 | [Tinkering](https://tinkering.xyz)                                 |                                                          |
 | [Daniel Sockwell's codesections.com](https://www.codesections.com) | https://gitlab.com/codesections/codesections-website     |
@@ -43,3 +42,4 @@
 | [Peter Todorov](https://peterprototypes.com/)                      | https://github.com/peterprototypes/peterprototypes.com   |
 | [failsafe.monster](https://failsafe.monster/)                      |                                                          |
 | [Joshua Gawley](https://www.joshuagawley.com/)                     | https://github.com/joshuagawley/joshuagawley.github.io   |
+| [dmarcoux.com](https://dmarcoux.com)                               | https://github.com/dmarcoux/dmarcoux.com                 |
