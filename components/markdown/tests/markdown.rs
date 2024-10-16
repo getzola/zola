@@ -126,6 +126,25 @@ fn can_customise_anchor_template() {
 }
 
 #[test]
+fn can_customise_summary_template() {
+    let mut tera = Tera::default();
+    tera.extend(&ZOLA_TERA).unwrap();
+    tera.add_raw_template("summary-cutoff.html", " (in {{ lang }})").unwrap();
+    let permalinks_ctx = HashMap::new();
+    let config = Config::default_for_test();
+    let context = RenderContext::new(
+        &tera,
+        &config,
+        &config.default_language,
+        "",
+        &permalinks_ctx,
+        InsertAnchor::Right,
+    );
+    let summary = render_content("Hello <!-- more --> World!", &context).unwrap().summary.unwrap();
+    insta::assert_snapshot!(summary);
+}
+
+#[test]
 fn can_use_smart_punctuation() {
     let mut config = Config::default_for_test();
     config.markdown.smart_punctuation = true;
