@@ -162,3 +162,13 @@ available separately in the
 
 A span element in this position with a `continue-reading` id is created, so you can link directly to it if needed. For example:
 `<a href="{{ page.permalink }}#continue-reading">Continue Reading</a>`.
+
+The `<!-- more -->` marker can also exist in the middle of a line, and it will ensure that this does not emit unclosed HTML tags.
+You can use the `summary-cutoff.html` to show text after the summary (but before these closing tags) based
+upon the summary before the cutoff.
+
+By default, it will show an ellipsis (…) regardless of the content of the summary, but you can use a different template if you want to only show an ellipsis if the summary does not end in any punctuation:
+
+```jinja
+{% if summary is matching("\PP$") %}&hellip;{% endif %}
+```
