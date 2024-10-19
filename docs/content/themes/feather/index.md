@@ -3,14 +3,14 @@
 title = "feather"
 description = "A fuzzy blog theme"
 template = "theme.html"
-date = 2024-09-02T05:58:27Z
+date = 2024-10-14T05:58:11Z
 
 [extra]
-created = 2024-09-02T05:58:27Z
-updated = 2024-09-02T05:58:27Z
+created = 2024-10-14T05:58:11Z
+updated = 2024-10-14T05:58:11Z
 repository = "https://github.com/piedoom/feather.git"
 homepage = "https://github.com/piedoom/feather"
-minimum_version = "0.11.0"
+minimum_version = "0.19.0"
 license = "MIT"
 demo = "http://feather.doomy.org/"
 
@@ -41,31 +41,26 @@ in the config. Here's a full list of theme variables with example values and com
 # Regular variables you might want to set...
 title = "My site" # Otherwise, this will read "Home" in the nav
 
-[extra]
-# Specify a theme
-# Default: unset
-#
-# by default, feather enables light and dark mode
-# (and switching when javascript is enabled.)
-# However, if you prefer to only allow one mode,
-# set this to "dark" or "light".
-feather_theme = "dark"
+[extra.feather]
+# Specify a specific theme to use, or use system prefs
+# If set, the theme switcher button is hidden
+theme = "light"
+head = "<script></script>" # add anything to the head
+hide_nav_image = false # hide the navigation image
+disqus_id = "my-site-com" # site domain if you want disqus comments
+cusdis_id = "12312-31231123-123123123" # cusdis id if you use their comment service
+social =  { url = "https://mastodon.social/@doomy", display = "@doomy@mastodon.social" } # generic social to show on pages
+timezone = "America/New_York" # timezone to calculate article post times
 
-# Quickly insert into `<head>`
-# Default: unset
-feather_head = "<script>alert()</script>"
+[extra.feather.analytics]
+goatcounter_id = "mydomain-com" # privacy-focused analytics https://www.goatcounter.com
+```
 
-# Add Disqus comments
-# Default: unset
-#
-# Adds comments to pages by providing your
-# disqus domain. Comments will not appear on
-# index pages, etc.
-feather_disqus_domain = "mysite-com"
+Per post, these options are available:
 
-# Hide the nav bottom border/background image
-# Default: false
-feather_hide_nav_image = true
+```toml
+[extra.feather.opengraph]
+image = "my_image.jpg" # Assumes asset colocation
 ```
 
 # Usage

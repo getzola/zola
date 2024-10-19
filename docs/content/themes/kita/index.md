@@ -3,11 +3,11 @@
 title = "Kita"
 description = "Kita is a clean, elegant and simple blog theme for Zola."
 template = "theme.html"
-date = 2024-09-02T05:58:27Z
+date = 2024-10-14T05:58:11Z
 
 [extra]
-created = 2024-09-02T05:58:27Z
-updated = 2024-09-02T05:58:27Z
+created = 2024-10-14T05:58:11Z
+updated = 2024-10-14T05:58:11Z
 repository = "https://github.com/st1020/kita.git"
 homepage = "https://github.com/st1020/kita"
 minimum_version = "0.17.0"
@@ -33,6 +33,7 @@ This theme is based on Hugo theme [hugo-paper](https://github.com/nanxiaobei/hug
 
 - Easy to use and modify
 - No preset limits (This theme does not limit your content directory structure, taxonomy names, etc. It's applicable to all zola sites.)
+- Inject support
 - Dark mode
 - Responsive design
 - Social icons
@@ -69,6 +70,20 @@ theme = "kita"
 ## Configuration
 
 See the `extra` section in [config.toml](https://github.com/st1020/kita/blob/main/config.toml) as a example.
+
+## Inject support
+
+You can easily use inject to add new features to your side without modifying the theme itself.
+
+To use inject, you need to add some HTML files to the `templates/injects` directory.
+
+The available inject points are: `head`, `header_nav`, `body_start`, `body_end`, `page_start`, `page_end`, `footer`, `page_info`.
+
+For example, to load a custom script, you can add a `templates/injects/head.html` file:
+
+```html
+<script src="js-file-path-or-cdn-url.js"></script>
+```
 
 ## License
 
