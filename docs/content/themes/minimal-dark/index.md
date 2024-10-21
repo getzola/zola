@@ -3,11 +3,11 @@
 title = "minimal-dark"
 description = "Clean and minimalistic dark theme"
 template = "theme.html"
-date = 2024-10-14T05:58:11Z
+date = 2024-10-21T05:59:30Z
 
 [extra]
-created = 2024-10-14T05:58:11Z
-updated = 2024-10-14T05:58:11Z
+created = 2024-10-21T05:59:30Z
+updated = 2024-10-21T05:59:30Z
 repository = "https://github.com/kuznetsov17/minimal-dark.git"
 homepage = "https://github.com/kuznetsov17/minimal-dark"
 minimum_version = "0.18.0"
