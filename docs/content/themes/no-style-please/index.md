@@ -3,11 +3,11 @@
 title = "no style, please!"
 description = "A (nearly) no-CSS, fast, minimalist Zola theme"
 template = "theme.html"
-date = 2024-10-14T05:58:11Z
+date = 2024-11-04T05:59:13Z
 
 [extra]
-created = 2024-10-14T05:58:11Z
-updated = 2024-10-14T05:58:11Z
+created = 2024-11-04T05:59:13Z
+updated = 2024-11-04T05:59:13Z
 repository = "https://gitlab.com/4bcx/no-style-please.git"
 homepage = "https://gitlab.com/atgumx/no-style-please"
 minimum_version = "0.4.0"
