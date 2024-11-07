@@ -3,11 +3,11 @@
 title = "tabi"
 description = "A fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score"
 template = "theme.html"
-date = 2024-10-14T05:58:11Z
+date = 2024-11-04T05:59:13Z
 
 [extra]
-created = 2024-10-14T05:58:11Z
-updated = 2024-10-14T05:58:11Z
+created = 2024-11-04T05:59:13Z
+updated = 2024-11-04T05:59:13Z
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -132,26 +132,44 @@ highlight_code = true
 highlight_theme = "css"
 ```
 
-5. Create a `content/_index.md` file with the following content:
+5. Create a `content/_index.md` file. This file controls how your home page looks and behaves. Choose one of the following options:
 
-```
-+++
-title = "Home"
-paginate_by = 5 # Set the number of posts per page
-template = "index.html"
-+++
-```
+   **Option A: Serve posts from `/`**:
 
-If you want to serve your blog posts from a different path, such as `blog/`, add a `section_path` in the `[extra]` section of `content/_index.md` (this file will need pagination):
+   ```
+   +++
+   title = "Home"
+   paginate_by = 5  # Show 5 posts per page.
+   template = "section.html"
+   +++
+   ```
 
-```
-[extra]
-section_path = "blog/_index.md"
-```
+   - This will display posts in `content/` with pagination.
 
-**Note**: use the full path to the section's `_index.md` file. Simply using `section_path = "blog/"` will not work.
+   **Option B: Serve posts from a different path (e.g., `blog/`)**:
 
-6. If you want an introduction section (see screenshot above), add these lines to `content/_index.md`:
+   ```
+   +++
+   title = "Home"
+   # Note we're not setting `paginate_by` here.
+   template = "section.html"
+
+   [extra]
+   section_path = "blog/_index.md"  # Where to find your posts.
+   max_posts = 5  # Show 5 posts on the home page.
+   +++
+   ```
+
+    - This will display the latest 5 posts from the `blog/` section.
+    - Do not set `paginate_by` if you choose this option.
+    - Use the full path to the section's `_index.md` file. Using `section_path = "blog/"` will not work.
+
+> [!WARNING]
+> Do not set both `paginate_by` and `section_path` in `content/_index.md`.
+>
+> These settings are mutually exclusive and using both may result in no posts being displayed.
+
+1. If you want an introduction section (see screenshot above), add these lines to `content/_index.md`:
 
 ```
 [extra]

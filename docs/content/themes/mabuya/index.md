@@ -3,11 +3,11 @@
 title = "Mabuya"
 description = "🦎 A minimal Zola theme for building light and SEO-ready blogs."
 template = "theme.html"
-date = 2024-10-14T05:58:11Z
+date = 2024-11-04T05:59:13Z
 
 [extra]
-created = 2024-10-14T05:58:11Z
-updated = 2024-10-14T05:58:11Z
+created = 2024-11-04T05:59:13Z
+updated = 2024-11-04T05:59:13Z
 repository = "https://github.com/semanticdata/mabuya.git"
 homepage = "https://github.com/semanticdata/mabuya"
 minimum_version = "0.18.0"
@@ -16,7 +16,7 @@ demo = "https://mabuya.vercel.app/"
 
 [extra.author]
 name = "Miguel Pimentel"
-homepage = "https://miguelpimentel.do/"
+homepage = "https://github.com/semanticdata"
 +++        
 
 <div align="center">
@@ -26,68 +26,80 @@ homepage = "https://miguelpimentel.do/"
   <img src="https://img.shields.io/github/commit-activity/t/semanticdata/mabuya" />
   <img src="https://img.shields.io/github/last-commit/semanticdata/mabuya" />
   <img src="https://img.shields.io/website/https/mabuya.vercel.app.svg" />
-</div>
 <br />
 
-<div align="center">
-
-[Mabuya](https://mabuya.vercel.app/) is a minimal [Zola](https://www.getzola.org) theme for building light and SEO-ready blogs.  
+[Mabuya](https://mabuya.vercel.app/) is a lightweight [Zola](https://www.getzola.org) theme for creating fast, SEO-optimized blogs.  
 Put your work front and center with Mabuya as the base of your project.
 
 <a href="https://mabuya.vercel.app/">
 <img src="https://img.shields.io/badge/Check out the Demo-F0E68C?style=for-the-badge&link=https://semanticdata.github.io/nullboard/" alt="demo" height="32px"; /></a>
-</div>
 
 <br />
-<div align="center">
-<img alt="Mabuya screenshot" src="screenshot.png" />
+<br />
+
+<img alt="screenshot" src="screenshot.png" />
 </div>
 
 ## ⓘ Background
 
-While searching for themes, I came across [Zola Tale](https://github.com/aaranxu/tale-zola). Sadly, the project's last update was on Dec, 2021. Shortly after, I decided to fork the project and add my own touches to it.
+While searching for themes, I stumbled upon [Tale](https://github.com/aaranxu/tale-zola). Unfortunately, the last update was on December, 2021. Soon after, I decided to fork the project and add my own touches to it.
 
 The name **Mabuya** comes from the [Mabuya hispaniolae](https://en.wikipedia.org/wiki/Mabuya_hispaniolae?useskin=vector), a possibly extinct[^1] species of skink endemic to the Dominican Republic, my home country.
 
-## ✨ Features and Improvements
+## ✨ Features
+
+- ✅ Simple Blog
+- ✅ Pagination
+- ✅ Tags
+- ✅ Dark Theme and Toggle
+- ✅ Back-to-Top Button
+
+## 📈 Improvements
 
 While working on the theme, I have added new functionality and made many quality of life improvements. Here's a short list:
 
-- Refactored stylesheets.
-- Added Dark theme and color theme toggle.
+- Refactored stylesheets to make it easier to [grok](https://www.merriam-webster.com/dictionary/grok).
+- Added a dark theme and toggle.
 - Added new footer navigation.
-- Created a custom GitHub Action to deploy Zola sites faster than any other GitHub Actions using Docker.
+- Created a custom GitHub Action to deploy Zola sites faster than any other GitHub Actions without using Docker.
 - Refined page transitions from desktop to mobile and viceversa.
-- Centralized custom variables–made it easier to customize the site's colors.
+- Centralized custom variables to make it easier to customize the site's colors.
 - Addressed PR [#7](https://github.com/aaranxu/tale-zola/pull/7) fixing the pagination problem present in the original Zola theme.
 - Addressed Issue [#4](https://github.com/aaranxu/tale-zola/issues/4) fixing custom text not being used correctly.
 - Addressed (temporarily) Issue [#1](https://github.com/aaranxu/tale-zola/issues/1) by removing the erroneous pinned marker.
 - Optimized for speed and accessibility. Subtle color changes to make the text more readable, etc.
-- Many other small improvements...
+- Many other small improvements eventually resulting in a perfect [PageSpeed Insights](https://developers.google.com/speed/docs/insights/v5/about) score:
+
+<div align=center>
+
+| ![PageSpeed Insights Results](pagespeed-results.svg) |
+| --- |
+
+</div>
 
 ## 🚀 Quick Start
 
-Before using the theme, you need to install [Zola](https://www.getzola.org/documentation/getting-started/installation/) ≥ v0.18.0.
+Before using the theme, you need to install [Zola](https://www.getzola.org/documentation/getting-started/installation/) ≥ v0.18.0. After which you'll need to:
 
-### 1. Clone the repo
+1. Clone the repository:
 
-```sh
+```shell
 git clone git@github.com:semanticdata/mabuya.git
 ```
 
-### 2. Change directory into clone
+2. Change directory into new cloned repository:
 
-```sh
+```shell
 cd mabuya
 ```
 
-### 3. Serve the site locally
+3. Serve the site locally:
 
-```sh
+```shell
 zola serve
 ```
 
-For more detailed instructions, visit the [Documentation](https://www.getzola.org/documentation/themes/installing-and-using-themes/) page about installing and using themes.
+For more detailed instructions, visit the [documentation](https://www.getzola.org/documentation/themes/installing-and-using-themes/) page about installing and using themes.
 
 ## 🎨 Customization
 
@@ -139,7 +151,7 @@ We use GitHub Issues as the official bug tracker for **Mabuya**. Please search [
 
 ## 🤝 Contributing
 
-We'd love your help! Please see [CONTRIBUTING](./CONTRIBUTING.md) and our [Code of Conduct](.github/CODE_OF_CONDUCT.md) before contributing.
+We'd love your help! Please see [CONTRIBUTING](./CONTRIBUTING.md) and our [Code of Conduct](.github/CODE_OF_CONDUCT.md) before submitting a Pull Request.
 
 ## 💜 Acknowledgements
 
