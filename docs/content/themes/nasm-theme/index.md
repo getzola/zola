@@ -3,11 +3,11 @@
 title = "nasm-theme"
 description = "A robust, elegant blue theme"
 template = "theme.html"
-date = 2024-11-04T05:59:13Z
+date = 2024-11-11T05:58:25Z
 
 [extra]
-created = 2024-11-04T05:59:13Z
-updated = 2024-11-04T05:59:13Z
+created = 2024-11-11T05:58:25Z
+updated = 2024-11-11T05:58:25Z
 repository = "https://github.com/lucasnasm/nasm-theme.git"
 homepage = "https://github.com/lucasnasm/nasm-theme"
 minimum_version = "0.1.0"
