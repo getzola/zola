@@ -3,11 +3,11 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2024-11-04T05:59:13Z
+date = 2024-11-12T19:22:37+09:00
 
 [extra]
-created = 2024-11-04T05:59:13Z
-updated = 2024-11-04T05:59:13Z
+created = 2024-11-12T19:22:37+09:00
+updated = 2024-11-12T19:22:37+09:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -56,8 +56,9 @@ A clean and elegant blog theme for [Zola](https://www.getzola.org/). Linkita is 
 ## Linkita features
 
 - i18n
-- Author profiles
 - Improved SEO
+- Author profiles
+- Search (elasticlunr_javascript)
 
 ## Installing
 
@@ -94,7 +95,7 @@ npm run switch-to-latest
 
 ## Usage
 
-### TOML front matter
+### TOML frontmatter
 
 ```toml
 +++
@@ -112,11 +113,10 @@ authors = []
 [extra.cover]
 # image = ""
 # alt = ""
-[extra.open_graph]
 +++
 ```
 
-### YAML front matter
+### YAML frontmatter
 
 ```yaml
 ---
@@ -135,30 +135,46 @@ extra:
   cover:
     image: ""
     alt: ""
-  open_graph:
 ---
 ```
 
-### Open Graph options for pages
+### Open Graph frontmatter options
 
-| key | type | example | comment |
-| --- | --- | --- | --- |
-| `cover_type` | string | `image/jpeg`, `image/gif`, `image/png` | MIME type of the cover image |
-| `cover_width` | string |  | Width of the cover image in pixels |
-| `cover_height` | string |  | Height of the cover image in pixels |
-| `expiration_time` | string | `"2024-02-29"` | When the article is out of date after |
-| `content_tier` | string | `"free"`, `"locked"`, or `"metered"` | Describes the tier status for an article |
-| `locations` | array of strings | `["county:COUNTY"]` or `["city:CITY,COUNTY"]` | Defines the location to target for the article |
-| `section` | string |  | A high-level section name. E.g. Technology |
-| `tags` | array of strings |  | Tag words associated with this article. |
-| `opinion` | string | `"true"` or `"false"` | Indicates whether the article is an opinion piece or not |
-| `audio` | string |  | The URL for the audio |
-| `audio_type` | string | `audio/vnd.facebook.bridge`, `audio/mpeg` | MIME type of the audio |
-| `video` | string |  | The URL for the video |
-| `video_type` | string | `application/x-shockwave-flash`, `video/mp4` | MIME type of the video |
-| `video_width` | string |  | Width of the video in pixels |
-| `video_height` | string |  | Height of the video in pixels |
-| `url` | string |  | Set only if different from canonical page URL |
+```toml
+[extra.open_graph]
+# MIME type of the cover image. e.g. `image/jpeg`, `image/gif`, `image/png`
+cover_type = ""
+# Width of the cover image in pixels
+cover_width = ""
+# Height of the cover image in pixels
+cover_height = ""
+# When the article is out of date after. e.g. `2024-02-29`
+expiration_time = ""
+# Describes the tier status for an article. e.g. `free`, `locked`, or `metered`
+content_tier = ""
+# Defines the location to target for the article. e.g. `["county:COUNTY"]` or `["city:CITY,COUNTY"]`
+locations = []
+# A high-level section name. e.g. `Technology`
+section = ""
+# Tag words associated with this article
+tags = [""]
+# Indicates whether the article is an opinion piece or not. e.g. `"true"` or `"false"`
+opinion = "" 
+# The URL for the audio
+audio = ""
+# MIME type of the audio. e.g. `audio/vnd.facebook.bridge`, `audio/mpeg`
+audio_type = ""
+# The URL for the video
+video = ""
+# MIME type of the video. e.g. `application/x-shockwave-flash`, `video/mp4`
+video_type = ""
+# Width of the video in pixels
+video_width = ""
+# Height of the video in pixels
+video_height = ""
+# Set only if different from canonical page URL
+url = ""
+```
 
 ### Home page profile
 
@@ -167,7 +183,7 @@ Create `content/_index.md` file in your blog and set `extra.profile` to your use
 ```toml
 +++
 sort_by = "date"
-paginate_by = 5
+paginate_by = 10
 [extra]
 profile = "your_username"
 +++
@@ -212,6 +228,15 @@ authors = ["author_username"]
 
 *TODO*
 
+### Archive page
+
+```toml
+title = "Archive"
+template = "archive.html"
+[extra]
+section = "_index.md"
+```
+
 ### Inject support
 
 You can easily use inject to add new features to your side without modifying the theme itself.
@@ -241,6 +266,7 @@ All configuration options used by this theme are listed in tables.
 | `description` | string |
 | `generate_feeds` | boolean |
 | `feed_filenames` | array of strings |
+| `build_search_index` | boolean |
 | `extra` | table |
 
 Taxonomies with translated names are `tags`, `categories`, and `authors`.
@@ -263,6 +289,8 @@ generate_feeds = true
 
 # The filenames to use for the feeds
 feed_filenames = ["atom.xml"] # or ["rss.xml"]
+
+# build_search_index = true
 ```
 
 ```toml
@@ -303,18 +331,25 @@ paginate_by = 5
 | `extra.mermaid` | boolean | Enable Mermaid support globally |
 | `extra.comment` | boolean | Enable comment support globally |
 | `extra.title_separator` | string | Title Separator |
+| `extra.disable_default_favicon` | boolean | Disable default favicons |
 | `extra.page_info` | array of strings | Show page date, reading time, author names |
 | `extra.style` | table | The theme style config |
 | `extra.profiles` | table | Author profiles |
-| `extra.menu` | array of tables | The top menu |
+| `extra.header_menu_name` | string | The top menu |
+| `extra.header_buttons` | array of strings | Buttons |
+| `extra.menus` | table | Menus |
 | `extra.footer` | table | The page footer options |
-| `extra.locales` | table | Locale codes and date formats |
+| `extra.languages` | table | Locale codes and date formats |
 | `extra.goatcounter` | table | Enable web analytics |
 | `extra.giscus` | table | The giscus comment options |
 
 Strings in `extra.page_info` that are not one of the following, will be displayed directly in the UI:
 `"date"`, `"date_updated"`, `"reading_time"`, `"word_count"`, `"authors"`.
 Default `extra.page_info` value is `["date", "date_updated", "reading_time", "authors"]`.
+You can replace `reading_time` with `word_count` if you want.
+
+Default `extra.header_buttons` value is `["site_title", "theme_button", "search_button", "translations_button"]`.
+You can replace `site_title` with `home_button` if you want.
 
 ```toml
 [extra]
@@ -322,7 +357,7 @@ math = false
 mermaid = false
 comment = false
 title_separator = " | "
-# page_info = ["date", "date_updated", "reading_time", "word_count", "authors"]
+header_menu_name = "menu_name"
 ```
 
 ### Style config (`extra.style`)
@@ -344,6 +379,50 @@ header_color = "#e4e4e7"
 header_dark_color = "#27272a"
 ```
 
+### Menus (`extra.menus`)
+
+| key | type |
+| --- | --- |
+| `extra.menus[menu_name].menu[].url` | string |
+| `extra.menus[menu_name].menu[].name` | string |
+| `extra.menus[menu_name].menu[].names` | table |
+| `extra.menus[menu_name].menu[].names[lang]` | string |
+| `extra.menus[menu_name].menu[].names_i18n` | string |
+
+`$BASE_URL` will be automatically translated into the language specific base url.
+You can use `names_i18n` instead of `names[lang]`, see the `static/i18n.json` file,
+set `names_i18n` to a `common_` key.
+
+```toml
+[[extra.menus.menu_name]]
+url = "$BASE_URL/projects/"
+# name = "Projects"
+[extra.menus.menu_name.names]
+en = "Projects"
+# fr = "Projects in French"
+
+[[extra.menus.menu_name]]
+url = "$BASE_URL/archive/"
+# name = "Archive"
+[extra.menus.menu_name.names]
+en = "Archive"
+# fr = "Archive in French"
+
+[[extra.menus.menu_name]]
+url = "$BASE_URL/tags/"
+# name = "Tags"
+[extra.menus.menu_name.names]
+en = "Tags"
+# fr = "Tags in French"
+
+[[extra.menus.menu_name]]
+url = "$BASE_URL/about/"
+# name = "About"
+[extra.menus.menu_name.names]
+en = "About"
+# fr = "About in French"
+```
+
 ### Profiles (`extra.profiles`)
 
 | key | type | comment |
@@ -356,7 +435,7 @@ header_dark_color = "#27272a"
 | `extra.profiles[username].bio` | string | Profile bio for all languages |
 | `extra.profiles[username].email` | string | Profile email |
 | `extra.profiles[username].url` | string | Profile website |
-| `extra.profiles[username].translations` | table | Profile name and bio translations |
+| `extra.profiles[username].languages` | table | Profile name and bio translations |
 | `extra.profiles[username].social` | array of tables | The social icons below the profile |
 | `extra.profiles[username].open_graph` | table | Open Graph |
 
@@ -369,18 +448,18 @@ avatar_invert = true
 # bio = ""
 ```
 
-### Profile translations (`extra.profiles[username].translations`)
+### Profile translations (`extra.profiles[username].languages`)
 
 | key | type |
 | --- | --- |
-| `extra.profiles[username].translations[lang]` | table |
-| `extra.profiles[username].translations[lang].name` | string |
-| `extra.profiles[username].translations[lang].bio` | string |
-| `extra.profiles[username].translations[lang].url` | string |
-| `extra.profiles[username].translations[lang].avatar_alt` | string |
+| `extra.profiles[username].languages[lang]` | table |
+| `extra.profiles[username].languages[lang].name` | string |
+| `extra.profiles[username].languages[lang].bio` | string |
+| `extra.profiles[username].languages[lang].url` | string |
+| `extra.profiles[username].languages[lang].avatar_alt` | string |
 
 ```toml
-[extra.profiles.your_username.translations.fr]
+[extra.profiles.your_username.languages.fr]
 name = "Profile name in French"
 bio = "Profile bio in French"
 ```
@@ -425,7 +504,7 @@ url = "$BASE_URL/atom.xml"
 | `extra.profiles[username].open_graph.fediverse_creator.handle` | string | Your Fediverse handle |
 | `extra.profiles[username].open_graph.fediverse_creator.domain` | string | Your Fediverse instance |
 | `extra.profiles[username].open_graph.fediverse_creator.url` | string | Your Fediverse account URL |
-| `extra.profiles[username].open_graph.translations[lang].image_alt` | string | A description of what is in the social image |
+| `extra.profiles[username].open_graph.languages[lang].image_alt` | string | A description of what is in the social image |
 
 See [the Open Graph protocol](https://ogp.me/).
 
@@ -456,50 +535,6 @@ fb_admins = ["YOUR_USER_ID"]
 # image_alt = ""
 ```
 
-### The top menu (`extra.menu`)
-
-| key | type |
-| --- | --- |
-| `extra.menu[].url` | string |
-| `extra.menu[].name` | string |
-| `extra.menu[].names` | table |
-| `extra.menu[].names[lang]` | string |
-| `extra.menu[].names_i18n` | string |
-
-`$BASE_URL` will be automatically translated into the language specific base url.
-You can use `names_i18n` instead of `names[lang]`, see the `static/i18n.json` file,
-set `names_i18n` to a `common_` key.
-
-```toml
-[[extra.menu]]
-url = "$BASE_URL/projects/"
-# name = "Projects"
-[extra.menu.names]
-en = "Projects"
-# fr = "Projects in French"
-
-[[extra.menu]]
-url = "$BASE_URL/archive/"
-# name = "Archive"
-[extra.menu.names]
-en = "Archive"
-# fr = "Archive in French"
-
-[[extra.menu]]
-url = "$BASE_URL/tags/"
-# name = "Tags"
-[extra.menu.names]
-en = "Tags"
-# fr = "Tags in French"
-
-[[extra.menu]]
-url = "$BASE_URL/about/"
-# name = "About"
-[extra.menu.names]
-en = "About"
-# fr = "About in French"
-```
-
 ### The page footer (`extra.footer`)
 
 | key | type |
@@ -512,7 +547,7 @@ en = "About"
 | `extra.footer.terms_of_service_url` | string |
 | `extra.footer.search_page_url` | string |
 
-Currently `privacy_policy_url`, `terms_of_service_url`, and `search_page_url` are only used in `<head>`.
+Currently `privacy_policy_url`, `terms_of_service_url`, and `search_page_url` are only used inside head.
 
 `$BASE_URL` is supported in the `_url` options.
 
@@ -526,23 +561,26 @@ license_url = "https://creativecommons.org/licenses/by-sa/4.0/deed"
 # search_page_url = "$BASE_URL/search/"
 ```
 
-### Locale and Date format (`extra.locales`)
+### Locale and Date format (`extra.languages`)
 
 | key | type | default value |
 | --- | --- | --- |
-| `extra.locales[lang].locale` | string |  |
-| `extra.locales[lang].date_format` | string | `%F` |
-| `extra.locales[lang].date_format_archive` | string | `%m-%d` |
+| `extra.languages[lang].locale` | string |  |
+| `extra.languages[lang].date_format` | string | `%F` |
+| `extra.languages[lang].date_format_archive` | string | `%m-%d` |
+| `extra.languages[lang].header_menu_name` | string |  |
+| `extra.languages[lang].header_buttons` | array of strings |  |
+| `extra.languages[lang].art_x_lang` | string |  |
 
 For date format, see [chrono docs](https://docs.rs/chrono/0.4/chrono/format/strftime/index.html).
 
 ```toml
-[extra.locales.en]
+[extra.languages.en]
 locale = "en_US"
 date_format = "%x"
 date_format_archive = "%m-%d"
 
-[extra.locales.fr]
+[extra.languages.fr]
 locale = "fr_FR"
 date_format = "%x"
 date_format_archive = "%m-%d"
@@ -606,8 +644,6 @@ See the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICE
 
 Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
 Open *bug reports* and *feature requests* on [Codeberg](https://codeberg.org/salif/linkita/issues).
-
-If you want to add new translations or correct existing ones, please find another person who speaks the language to confirm your translations are good, by adding a comment or review on your pull request.
 
 ## Blogs using this theme
 

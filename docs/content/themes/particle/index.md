@@ -3,11 +3,11 @@
 title = "particle"
 description = "Particle theme for Zola"
 template = "theme.html"
-date = 2024-11-04T05:59:13Z
+date = 2024-11-12T19:22:37+09:00
 
 [extra]
-created = 2024-11-04T05:59:13Z
-updated = 2024-11-04T05:59:13Z
+created = 2024-11-12T19:22:37+09:00
+updated = 2024-11-12T19:22:37+09:00
 repository = "https://github.com/svavs/particle-zola.git"
 homepage = "https://github.com/svavs/particle-zola"
 minimum_version = "0.16.1"
