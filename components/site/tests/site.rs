@@ -577,6 +577,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.config.languages.get_mut("en").unwrap().taxonomies.push(TaxonomyConfig {
             name: "tags".to_string(),
+            prefix: None,
             slug: "tags".to_string(),
             paginate_by: Some(2),
             paginate_path: None,
