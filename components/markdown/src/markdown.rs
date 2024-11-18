@@ -446,6 +446,9 @@ pub fn markdown_to_html(
     if context.config.markdown.definition_list {
         opts.insert(Options::ENABLE_DEFINITION_LIST);
     }
+    if context.config.markdown.math {
+        opts.insert(Options::ENABLE_MATH);
+    }
     if context.config.markdown.github_alerts {
         opts.insert(Options::ENABLE_GFM);
     }

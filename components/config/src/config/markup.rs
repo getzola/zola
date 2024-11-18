@@ -153,6 +153,8 @@ pub struct Markdown {
     pub smart_punctuation: bool,
     /// Whether parsing of definition lists is enabled
     pub definition_list: bool,
+    /// Whether to enable latex math rendering
+    pub math: bool,
     /// Whether footnotes are rendered at the bottom in the style of GitHub.
     pub bottom_footnotes: bool,
     /// Add loading="lazy" decoding="async" to img tags. When turned on, the alt text must be plain text. Defaults to false
@@ -229,6 +231,7 @@ impl Default for Markdown {
             external_links_external: true,
             smart_punctuation: false,
             definition_list: false,
+            math: false,
             bottom_footnotes: false,
             lazy_async_image: false,
             insert_anchor_links: InsertAnchor::None,
