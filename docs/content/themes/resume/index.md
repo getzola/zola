@@ -3,11 +3,11 @@
 title = "resume"
 description = "A resume theme"
 template = "theme.html"
-date = 2024-11-04T05:59:13Z
+date = 2024-11-18T05:58:26Z
 
 [extra]
-created = 2024-11-04T05:59:13Z
-updated = 2024-11-04T05:59:13Z
+created = 2024-11-18T05:58:26Z
+updated = 2024-11-18T05:58:26Z
 repository = "https://github.com/AlongWY/zola-resume.git"
 homepage = "https://github.com/alongwy/zola-resume"
 minimum_version = "0.11.0"

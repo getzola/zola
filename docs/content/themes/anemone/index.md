@@ -3,11 +3,11 @@
 title = "anemone"
 description = "A minimalist Zola theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas."
 template = "theme.html"
-date = 2024-11-04T05:59:13Z
+date = 2024-11-18T05:58:26Z
 
 [extra]
-created = 2024-11-04T05:59:13Z
-updated = 2024-11-04T05:59:13Z
+created = 2024-11-18T05:58:26Z
+updated = 2024-11-18T05:58:26Z
 repository = "https://github.com/Speyll/anemone.git"
 homepage = "https://github.com/Speyll/anemone"
 minimum_version = "0.4.0"
