@@ -86,7 +86,7 @@ feed_filenames = ["atom.xml"]
 hard_link_static = false
 
 # The default author for pages
-author = 
+author =
 
 # The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
@@ -141,6 +141,10 @@ external_links_no_referrer = false
 # Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
 # For example, `...` into `…`, `"quote"` into `“curly”` etc
 smart_punctuation = false
+
+# Whether math delimitered by `$` and `$$` are rendered into `<span class="math math-inline">`
+# and `<span class="math math-display">` respectively.
+math = false
 
 # Whether to set decoding="async" and loading="lazy" for all images
 # When turned on, the alt text must be plain text.
@@ -210,7 +214,7 @@ index_format = "elasticlunr_javascript"
 [translations]
 
 # Additional languages definition
-# You can define language specific config values and translations: 
+# You can define language specific config values and translations:
 # title, description, generate_feeds, feed_filenames, taxonomies, build_search_index
 # as well as its own search configuration and translations (see above for details on those)
 [languages]
