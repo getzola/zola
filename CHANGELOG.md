@@ -4,6 +4,7 @@
 
 - Update deps to fix some JPEG decoding issue + highlighting speed
 - Make sure all content is included in fuse search backend
+- Add a `math` option in the `[markdown]` section in `zola.toml` to render `$` and `$$` delimited math blocks. This is disabled by default.
 
 ## 0.22.0 (2026-01-09)
 
@@ -95,7 +96,6 @@ error_on_missing_language = true
 - Add avif support to the `resize_image` filter
 - Allow `insert_anchor_links` at config.toml level
 
-
 ## 0.19.2 (2024-08-15)
 
 - Fix some of YAML date parsing
@@ -171,7 +171,7 @@ feed_filenames)
 - `get_file_hash` is removed, use `get_hash` instead. Arguments do not change
 - Replace libsass by a Rust implementation: [grass](https://github.com/connorskees/grass). See https://sass-lang.com/documentation/breaking-changes
 for breaking changes with libsass: look for "beginning in Dart Sass"
-- Merge settings for the default language set in the root of `config.toml` and in the `[languages.{default_lang}]` section. 
+- Merge settings for the default language set in the root of `config.toml` and in the `[languages.{default_lang}]` section.
 This will error if the same keys are defined multiple times
 - Code blocks content are no longer included in the search index
 - Remove built-ins shortcodes
@@ -292,9 +292,9 @@ any pages related to that taxonomy
   object
   3. Search settings are now language specific
   4. Translations are now nested in the languages table
-- Paths unification: 
+- Paths unification:
   1. `get_url` does not load automatically from the `static` folder anymore
-  2. New path resolving logic for all on-disk files: replace `@/` by `content/`, trim leading `/` and 
+  2. New path resolving logic for all on-disk files: replace `@/` by `content/`, trim leading `/` and
      search in $BASE_DIR + $path, $BASE_DIR + static + $path and $BASE_DIR + content + $path
   3. `get_file_hash` now returns base64 encoded hash by default
   4. all functions working on files can now only load files in the Zola directory
@@ -339,7 +339,7 @@ any pages related to that taxonomy
 - Add a `[markdown]` section to `config.toml` to configure rendering
 - Add `highlight_code` and `highlight_theme` to a `[markdown]` section in `config.toml`
 - Add `external_links_target_blank`, `external_links_no_follow` and `external_links_no_referrer`
-- Add a `smart_punctuation` option in the `[markdown]` section in `config.toml` to turn elements like dots and dashes 
+- Add a `smart_punctuation` option in the `[markdown]` section in `config.toml` to turn elements like dots and dashes
 into their typographic forms
 - Add iteration count variable `nth` for shortcodes to know how many times a shortcode has been invoked in a given
 content
@@ -366,7 +366,7 @@ content
 ### Breaking
 
 - All paths like `current_path`, `page.path`, `section.path` (except colocated assets) now have a leading `/`
-- Search index generation for Chinese and Japanese has been disabled by default as it leads to a big increase in 
+- Search index generation for Chinese and Japanese has been disabled by default as it leads to a big increase in
 binary size
 
 ### Other

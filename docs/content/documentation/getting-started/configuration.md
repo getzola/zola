@@ -144,6 +144,10 @@ smart_punctuation = false
 # Whether parsing of definition lists is enabled
 definition_list = false
 
+# Whether math delimitered by `$` and `$$` are rendered into `<span class="math math-inline">`
+# and `<span class="math math-display">` respectively.
+math = false
+
 # Whether to set decoding="async" and loading="lazy" for all images
 # When turned on, the alt text must be plain text.
 # For example, `![xx](...)` is ok but `![*x*x](...)` isn’t ok

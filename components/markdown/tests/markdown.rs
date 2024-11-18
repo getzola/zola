@@ -191,6 +191,15 @@ fn can_use_external_links_class() {
 }
 
 #[test]
+fn can_use_math() {
+    let mut config = Config::default_for_test();
+    config.markdown.math = true;
+    let body =
+        common::render_with_config(r#"Test inline $\sum_{e_k} \pi^i$ math."#, config).unwrap().body;
+    insta::assert_snapshot!(body);
+}
+
+#[test]
 fn can_use_external_links_options() {
     let mut config = Config::default_for_test();
 
