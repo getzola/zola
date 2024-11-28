@@ -3,11 +3,11 @@
 title = "Minimal"
 description = "📚 Minimal is a Zola port of the Jekyll theme with the same name."
 template = "theme.html"
-date = 2024-11-18T05:58:26Z
+date = 2024-11-28T11:24:32-08:00
 
 [extra]
-created = 2024-11-18T05:58:26Z
-updated = 2024-11-18T05:58:26Z
+created = 2024-11-28T11:24:32-08:00
+updated = 2024-11-28T11:24:32-08:00
 repository = "https://github.com/semanticdata/zola-minimal.git"
 homepage = "https://github.com/semanticdata/zola-minimal/"
 minimum_version = "0.18.0"
