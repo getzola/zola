@@ -134,6 +134,32 @@ fn can_use_smart_punctuation() {
 }
 
 #[test]
+fn can_use_external_links_class() {
+    let mut config = Config::default_for_test();
+
+    // external link class only
+    config.markdown.external_links_class = Some("external".to_string());
+    let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
+    insta::assert_snapshot!(body);
+
+    // internal link (should not add class)
+    let body =
+        common::render_with_config("[about](@/pages/about.md)", config.clone()).unwrap().body;
+    insta::assert_snapshot!(body);
+
+    // reset class, set target blank only
+    config.markdown.external_links_class = None;
+    config.markdown.external_links_target_blank = true;
+    let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
+    insta::assert_snapshot!(body);
+
+    // both class and target blank
+    config.markdown.external_links_class = Some("external".to_string());
+    let body = common::render_with_config("<https://google.com>", config).unwrap().body;
+    insta::assert_snapshot!(body);
+}
+
+#[test]
 fn can_use_external_links_options() {
     let mut config = Config::default_for_test();
 

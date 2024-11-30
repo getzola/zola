@@ -36,6 +36,8 @@ pub struct Markdown {
     pub highlight_themes_css: Vec<ThemeCss>,
     /// Whether to render emoji aliases (e.g.: :smile: => 😄) in the markdown files
     pub render_emoji: bool,
+    /// CSS class to add to external links
+    pub external_links_class: Option<String>,
     /// Whether external links are to be opened in a new tab
     /// If this is true, a `rel="noopener"` will always automatically be added for security reasons
     pub external_links_target_blank: bool,
@@ -168,12 +170,18 @@ impl Markdown {
         self.external_links_target_blank
             || self.external_links_no_follow
             || self.external_links_no_referrer
+            || self.external_links_class.is_some()
     }
 
     pub fn construct_external_link_tag(&self, url: &str, title: &str) -> String {
         let mut rel_opts = Vec::new();
         let mut target = "".to_owned();
         let title = if title.is_empty() { "".to_owned() } else { format!("title=\"{}\" ", title) };
+
+        let class = self
+            .external_links_class
+            .as_ref()
+            .map_or("".to_owned(), |c| format!("class=\"{}\" ", c));
 
         if self.external_links_target_blank {
             // Security risk otherwise
@@ -192,7 +200,7 @@ impl Markdown {
             format!("rel=\"{}\" ", rel_opts.join(" "))
         };
 
-        format!("<a {}{}{}href=\"{}\">", rel, target, title, url)
+        format!("<a {}{}{}{}href=\"{}\">", class, rel, target, title, url)
     }
 }
 
@@ -204,6 +212,7 @@ impl Default for Markdown {
             highlight_theme: DEFAULT_HIGHLIGHT_THEME.to_owned(),
             highlight_themes_css: Vec::new(),
             render_emoji: false,
+            external_links_class: None,
             external_links_target_blank: false,
             external_links_no_follow: false,
             external_links_no_referrer: false,

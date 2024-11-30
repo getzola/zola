@@ -1,0 +1,6 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+snapshot_kind: text
+---
+<p><a rel="noopener" target="_blank" href="https://google.com">https://google.com</a></p>
