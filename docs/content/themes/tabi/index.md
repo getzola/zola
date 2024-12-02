@@ -1,13 +1,13 @@
 
 +++
 title = "tabi"
-description = "A fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score"
+description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2024-11-18T05:58:26Z
+date = 2024-12-02T05:58:20Z
 
 [extra]
-created = 2024-11-18T05:58:26Z
-updated = 2024-11-18T05:58:26Z
+created = 2024-12-02T05:58:20Z
+updated = 2024-12-02T05:58:20Z
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -32,16 +32,23 @@ homepage = "https://osc.garden"
     <a href="https://github.com/welpo/tabi/releases">
         <img src="https://img.shields.io/github/v/release/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Latest release"></a>
     <a href="https://welpo.github.io/tabi/blog/mastering-tabi-settings/">
-        <img src="https://img.shields.io/website?url=https%3A%2F%2Fwelpo.github.io%2Ftabi&style=flat-square&label=docs&labelColor=202b2d&color=087e96" alt="Documentation"></a>
+        <img src="https://img.shields.io/website?url=https%3A%2F%2Fwelpo.github.io%2Ftabi&style=flat-square&label=docs&labelColor=202b2d" alt="Documentation"></a>
     <a href="https://github.com/welpo/tabi/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="License"></a>
     <a href="https://github.com/welpo/git-sumi">
         <img src="https://img.shields.io/badge/clean_commits-git--sumi-0?style=flat-square&labelColor=202b2d&color=087e96" alt="Clean commits"></a>
+    <a href="https://isitmaintained.com/project/welpo/tabi">
+        <img src="https://isitmaintained.com/badge/resolution/welpo/tabi.svg" alt="Average time to resolve an issue"></a>
+    <a href="https://isitmaintained.com/project/welpo/tabi">
+        <img src="https://isitmaintained.com/badge/open/welpo/tabi.svg" alt="Percentage of issues still open"></a>
 </p>
 
-# tabi
+# 🌱 tabi
 
-A fast, lightweight, and modern [Zola](https://www.getzola.org) theme with multi-language support. It aims to be a personal page and home to blog posts.
+An accessible [Zola](https://www.getzola.org) theme with [search](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#search), [multi-language support](https://welpo.github.io/tabi/blog/faq-languages/), [optional JavaScript](https://welpo.github.io/tabi/blog/javascript/), a perfect Lighthouse score, and [comprehensive documentation](https://welpo.github.io/tabi). Crafted for personal websites and blogs.
+
+> [!TIP]
+> Want to start blogging right away? Use the [tabi-start template](https://github.com/welpo/tabi-start) to get a complete site up and running in minutes.
 
 See a live preview (and the theme's documentation) [here](https://welpo.github.io/tabi).
 
@@ -91,6 +98,11 @@ tabi has a perfect score on Google's Lighthouse audit:
 - [X] [Tags](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#tags).
 
 ## Installation
+
+> [!NOTE]
+> The fastest way to create a new site is to use the [tabi-start template](https://github.com/welpo/tabi-start). This gives you a complete blog setup with all the essential configuration ready to go.
+
+### Manual installation
 
 To add tabi to you existing Zola site:
 
