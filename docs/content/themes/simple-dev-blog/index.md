@@ -3,11 +3,11 @@
 title = "simple-dev-blog"
 description = "A simple dev blog theme with no javascript, prerendered linked pages and SEO tags."
 template = "theme.html"
-date = 2024-11-18T05:58:26Z
+date = 2024-12-02T05:58:20Z
 
 [extra]
-created = 2024-11-18T05:58:26Z
-updated = 2024-11-18T05:58:26Z
+created = 2024-12-02T05:58:20Z
+updated = 2024-12-02T05:58:20Z
 repository = "https://github.com/bennetthardwick/simple-dev-blog-zola-starter.git"
 homepage = "https://github.com/bennetthardwick/simple-dev-blog-zola-starter"
 minimum_version = "0.4.0"

@@ -3,11 +3,11 @@
 title = "HayFlow"
 description = "HayFlow is a minimal and completely modular Zola theme for anyone wishing to have their own landing page."
 template = "theme.html"
-date = 2024-11-18T05:58:26Z
+date = 2024-12-02T05:58:20Z
 
 [extra]
-created = 2024-11-18T05:58:26Z
-updated = 2024-11-18T05:58:26Z
+created = 2024-12-02T05:58:20Z
+updated = 2024-12-02T05:58:20Z
 repository = "https://gitlab.com/cyril-marpaud/hayflow.git"
 homepage = "https://gitlab.com/cyril-marpaud/hayflow"
 minimum_version = "0.4.0"
