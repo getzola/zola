@@ -3,11 +3,14 @@
 title = "Toucan"
 description = "Inspired from Pelican default theme"
 template = "theme.html"
-date = 2024-12-02T05:58:20Z
+date = 2024-12-03T21:37:50+06:30
+
+[taxonomies]
+tags = []
 
 [extra]
-created = 2024-12-02T05:58:20Z
-updated = 2024-12-02T05:58:20Z
+created = 2024-12-03T21:37:50+06:30
+updated = 2024-12-03T21:37:50+06:30
 repository = "https://git.42l.fr/HugoTrentesaux/toucan.git"
 homepage = "https://git.42l.fr/HugoTrentesaux/toucan"
 minimum_version = "0.8.0"
