@@ -6,7 +6,7 @@ compile_sass = true
 build_search_index = true
 
 taxonomies = [
-  { name = "theme-tags"}
+  { name = "tags"}
 ]
 
 [search]
