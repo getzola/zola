@@ -9,7 +9,7 @@
 <h1>Tags</h1>
 {% set section = get_section(path = "themes/_index.md") %}
 <p><a href="{{ get_url(path = "themes") }}">All themes ({{ section.pages | length }}</a></p>
-<ul>
+<ul style="list-style-type: none;">
 {% for t in terms %}
 <li><a href="{{ t.permalink }}">{{ t.name }}({{ t.page_count }}</a></li>
 {% endfor %}
