@@ -62,6 +62,16 @@ pub struct Markdown {
 }
 
 impl Markdown {
+    pub fn validate_external_links_class(&self) -> Result<()> {
+        // Validate external link class doesn't contain quotes which would break HTML and aren't valid in CSS
+        if let Some(class) = &self.external_links_class {
+            if class.contains('"') || class.contains('\'') {
+                bail!("External link class '{}' cannot contain quotes", class)
+            }
+        }
+        Ok(())
+    }
+
     /// Gets the configured highlight theme from the THEME_SET or the config's extra_theme_set
     /// Returns None if the configured highlighting theme is set to use css
     pub fn get_highlight_theme(&self) -> Option<&Theme> {
