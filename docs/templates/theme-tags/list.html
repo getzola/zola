@@ -1,0 +1,17 @@
+{% extends "index.html" %}
+
+{% block extra_nav_class %}{% endblock extra_nav_class %}
+{% block extra_content_class %}content--reversed{% endblock extra_content_class %}
+
+{% block title %}Themes | {{ super() }} {% endblock title %}
+
+{% block content %}
+<h1>Tags</h1>
+{% set section = get_section(path = "themes/_index.md") %}
+<p><a href="{{ get_url(path = "themes") }}">All themes ({{ section.pages | length }}</a></p>
+<ul style="list-style-type: none;">
+{% for t in terms %}
+<li><a href="{{ t.permalink }}">{{ t.name }}({{ t.page_count }}</a></li>
+{% endfor %}
+</ul>
+{% endblock content %}

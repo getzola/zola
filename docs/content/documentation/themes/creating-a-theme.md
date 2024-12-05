@@ -16,6 +16,8 @@ following fields:
 ```toml
 name = "my theme name"
 description = "A classic blog theme"
+# An optional tags to allow quick search
+tags = []
 license = "MIT"
 homepage = "https://github.com/getzola/hyde"
 # The minimum version of Zola required

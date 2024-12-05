@@ -5,6 +5,10 @@ description = "Everything you need to make a static site engine in one binary."
 compile_sass = true
 build_search_index = true
 
+taxonomies = [
+  { name = "theme-tags"}
+]
+
 [search]
 index_format = "elasticlunr_json"
 
