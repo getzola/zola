@@ -3,11 +3,14 @@
 title = "UI Navigation"
 description = "A multilingual theme designed for accessibility rather than visual."
 template = "theme.html"
-date = 2024-12-02T05:58:20Z
+date = 2024-12-01T14:33:12+06:30
+
+[taxonomies]
+theme-tags = ['blind', 'multilingual', 'accessible', 'responsive']
 
 [extra]
-created = 2024-12-02T05:58:20Z
-updated = 2024-12-02T05:58:20Z
+created = 2024-12-01T14:33:12+06:30
+updated = 2024-12-01T14:33:12+06:30
 repository = "https://github.com/harrymkt/zluinav"
 homepage = "https://github.com/harrymkt/zluinav"
 minimum_version = "0.19.2"
