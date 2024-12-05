@@ -9,7 +9,10 @@
     <div class="themes-container">
         {% block theme_content %}
             <h1>Zola themes</h1>
-            <p><a href="{{ get_url(path = "theme-tags") }}">Search by tags</a></p>
+            {% set tax = get_taxonomy(kind = "theme-tags") %}
+            {% if tax and tax.items | length > 0 %}
+              <p><a href="{{ get_url(path = "theme-tags") }}">Search by tags</a></p>
+            {% endif %}
             <div class="themes">
                 {% for theme in section.pages %}
                     <a class="theme" href="{{theme.permalink}}">
