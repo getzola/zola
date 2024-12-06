@@ -1,8 +1,6 @@
 ---
-source: components/rendering/tests/markdown.rs
-assertion_line: 144
+source: components/markdown/tests/markdown.rs
 expression: body
-
+snapshot_kind: text
 ---
 <p><a href="https://google.com">https://google.com</a></p>
-
