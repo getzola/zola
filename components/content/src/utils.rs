@@ -58,6 +58,32 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     assets
 }
 
+/// Serializes assets source path for assets colocated with a section or a page
+pub fn serialize_assets(
+    assets: &Vec<PathBuf>,
+    parent_path: Option<&Path>,
+    colocated_path: Option<&String>,
+) -> Vec<String> {
+    assets
+        .iter()
+        .filter_map(|asset| asset.strip_prefix(parent_path.unwrap()).ok())
+        .map(|asset_relative_path| {
+            asset_relative_path
+                .components()
+                .map(|component| component.as_os_str().to_string_lossy().to_string())
+                .collect::<Vec<String>>()
+                .join("/")
+        })
+        .map(|asset_relative_path_as_string| {
+            format!(
+                "/{}{}",
+                colocated_path.expect("Should have colocated path for assets"),
+                asset_relative_path_as_string
+            )
+        })
+        .collect()
+}
+
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
     // code fences "toggle" the state from non-code to code and back, so anything inbetween the
@@ -149,6 +175,53 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn can_serialize_assets() {
+        let parent_path = Path::new("/tmp/test");
+        let page_folder_path = parent_path.join("content").join("posts").join("my-article");
+        let assets = vec![
+            page_folder_path.join("example.js"),
+            page_folder_path.join("graph.jpg"),
+            page_folder_path.join("fail.png"),
+            page_folder_path.join("extensionless"),
+            page_folder_path.join("subdir").join("example.js"),
+            page_folder_path.join("FFF.txt"),
+            page_folder_path.join("GRAPH.txt"),
+            page_folder_path.join("subdir").join("GGG.txt"),
+        ];
+        let colocated_path = "posts/my-article/".to_string();
+        let expected_serialized_assets = vec![
+            "/posts/my-article/example.js",
+            "/posts/my-article/graph.jpg",
+            "/posts/my-article/fail.png",
+            "/posts/my-article/extensionless",
+            "/posts/my-article/subdir/example.js",
+            "/posts/my-article/FFF.txt",
+            "/posts/my-article/GRAPH.txt",
+            "/posts/my-article/subdir/GGG.txt",
+        ];
+
+        let serialized_assets =
+            serialize_assets(&assets, Some(&page_folder_path), Some(&colocated_path));
+
+        assert_eq!(
+            serialized_assets, expected_serialized_assets,
+            "Serialized assets (left) are different from expected (right)",
+        );
+    }
+
+    #[test]
+    fn can_serialize_empty_assets() {
+        let parent_path = Path::new("/tmp/test");
+        let page_folder_path = parent_path.join("content").join("posts").join("my-article");
+        let assets: Vec<PathBuf> = vec![];
+
+        let serialized_assets = serialize_assets(&assets, Some(&page_folder_path), None);
+
+        assert!(serialized_assets.is_empty());
+    }
+
     #[test]
     fn can_find_anchor_at_root() {
         let input = vec![
