@@ -109,6 +109,18 @@ impl FileInfo {
             format!("{}.md", name)
         };
         let grand_parent = parent.parent().map(|p| p.to_path_buf());
+        let mut colocated_path = None;
+
+        // If we have a folder with an asset, don't consider it as a component
+        // Splitting on `.` as we might have a language so it isn't *only* index but also index.fr
+        // etc
+        if !components.is_empty() && name.split('.').collect::<Vec<_>>()[0] == "_index" {
+            colocated_path = Some({
+                let mut val = components.join("/");
+                val.push('/');
+                val
+            });
+        }
 
         FileInfo {
             filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
@@ -119,7 +131,7 @@ impl FileInfo {
             name,
             components,
             relative,
-            colocated_path: None,
+            colocated_path: colocated_path,
         }
     }
 
@@ -288,5 +300,27 @@ mod tests {
             file.canonical,
             Path::new("/home/vincent/code/site/content/posts/tutorials/python/index")
         );
+    }
+
+    #[test]
+    fn correct_colocated_path() {
+        let files = vec![
+            FileInfo::new_page(
+                Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+                &PathBuf::new(),
+            ),
+            FileInfo::new_section(
+                Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
+                &PathBuf::new(),
+            ),
+        ];
+
+        for file in files {
+            assert!(file.colocated_path.is_some());
+            if let Some(colocated_path) = file.colocated_path {
+                assert!(!colocated_path.starts_with('/'));
+                assert!(colocated_path.ends_with('/'));
+            }
+        }
     }
 }
