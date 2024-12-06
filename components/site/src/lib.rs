@@ -56,9 +56,12 @@ pub struct Site {
     pub static_path: PathBuf,
     pub templates_path: PathBuf,
     pub taxonomies: Vec<Taxonomy>,
-    /// A map of all .md files (section and pages) and their permalink
+    /// A map of all .md files (sections and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
     pub permalinks: HashMap<String, String>,
+    /// A map of all assets (non .md files colocated to sections and pages) and their permalink, distributed per lang
+    /// We need that if there are relative links in the content that need to be resolved
+    pub assets_permalinks: HashMap<String, HashMap<String, String>>,
     /// Contains all pages and sections of the site
     pub library: Arc<RwLock<Library>>,
     /// Whether to load draft pages
@@ -103,6 +106,7 @@ impl Site {
             templates_path,
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
+            assets_permalinks: HashMap::new(),
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(RwLock::new(Library::default())),
@@ -477,6 +481,10 @@ impl Site {
         }
 
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
+        let assets_permalinks =
+            self.assets_permalinks.entry(page.lang.to_string()).or_insert(HashMap::new());
+        assets_permalinks.extend(page.assets_permalinks.clone().into_iter());
+
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
@@ -512,6 +520,10 @@ impl Site {
     /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
+        let assets_permalinks =
+            self.assets_permalinks.entry(section.lang.to_string()).or_insert(HashMap::new());
+        assets_permalinks.extend(section.assets_permalinks.clone().into_iter());
+
         if render_md {
             section.render_markdown(
                 &self.permalinks,
