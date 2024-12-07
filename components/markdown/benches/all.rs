@@ -8,7 +8,7 @@ use libs::tera::Tera;
 use markdown::{render_content, RenderContext};
 use utils::types::InsertAnchor;
 
-static CONTENT: &str = r#"
+const CONTENT: &str = r#"
 # Modus cognitius profanam ne duae virtutis mundi
 
 ## Ut vita

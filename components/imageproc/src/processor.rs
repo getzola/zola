@@ -18,7 +18,7 @@ use crate::format::Format;
 use crate::helpers::get_processed_filename;
 use crate::{fix_orientation, ImageMeta, ResizeInstructions, ResizeOperation};
 
-pub static RESIZED_SUBDIR: &str = "processed_images";
+pub const RESIZED_SUBDIR: &str = "processed_images";
 
 /// Holds all data needed to perform a resize operation
 #[derive(Debug, PartialEq, Eq, Hash)]
