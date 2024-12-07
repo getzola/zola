@@ -19,7 +19,7 @@ use utils::globs::build_ignore_glob_set;
 use utils::slugs::slugify_paths;
 
 // We want a default base url for tests
-static DEFAULT_BASE_URL: &str = "http://a-website.com";
+const DEFAULT_BASE_URL: &str = "http://a-website.com";
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
