@@ -186,6 +186,7 @@ impl Config {
 
         // this is the step at which missing extra syntax and highlighting themes are raised as errors
         config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
+        config.markdown.validate_external_links_class()?;
 
         Ok(config)
     }
