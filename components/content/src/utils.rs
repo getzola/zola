@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use libs::unicode_segmentation::UnicodeSegmentation;
@@ -56,6 +57,53 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     });
 
     assets
+}
+
+/// Serializes assets source path for assets colocated with a section or a page
+pub fn serialize_assets(
+    assets: &Vec<PathBuf>,
+    parent_path: Option<&Path>,
+    colocated_path: Option<&String>,
+) -> Vec<String> {
+    assets
+        .iter()
+        .filter_map(|asset| asset.strip_prefix(parent_path.unwrap()).ok())
+        .map(|asset_relative_path| {
+            asset_relative_path
+                .components()
+                .map(|component| component.as_os_str().to_string_lossy().to_string())
+                .collect::<Vec<String>>()
+                .join("/")
+        })
+        .map(|asset_relative_path_as_string| {
+            format!(
+                "/{}{}",
+                colocated_path.expect("Should have colocated path for assets"),
+                asset_relative_path_as_string
+            )
+        })
+        .collect()
+}
+
+/// Create assets permalinks based on the permalin of the section or the page they are colocated with
+pub fn get_assets_permalinks(
+    serialized_assets: &Vec<String>,
+    parent_permalink: &str,
+    colocated_path: Option<&String>,
+) -> HashMap<String, String> {
+    let mut permalinks = HashMap::new();
+    if !serialized_assets.is_empty() {
+        let colocated_path = colocated_path.expect("Should have a colocated path for assets");
+        for asset in serialized_assets {
+            let asset_file_path = asset.strip_prefix("/").unwrap_or(asset);
+            let page_relative_asset_path = asset_file_path
+                .strip_prefix(colocated_path)
+                .expect("Should be able to stripe colocated path from asset path");
+            let asset_permalink = format!("{}{}", parent_permalink, page_relative_asset_path);
+            permalinks.insert(asset_file_path.to_string(), asset_permalink.to_string());
+        }
+    }
+    permalinks
 }
 
 /// Get word count and estimated reading time
@@ -149,6 +197,120 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn can_serialize_assets() {
+        let parent_path = Path::new("/tmp/test");
+        let page_folder_path = parent_path.join("content").join("posts").join("my-article");
+        let assets = vec![
+            page_folder_path.join("example.js"),
+            page_folder_path.join("graph.jpg"),
+            page_folder_path.join("fail.png"),
+            page_folder_path.join("extensionless"),
+            page_folder_path.join("subdir").join("example.js"),
+            page_folder_path.join("FFF.txt"),
+            page_folder_path.join("GRAPH.txt"),
+            page_folder_path.join("subdir").join("GGG.txt"),
+        ];
+        let colocated_path = "posts/my-article/".to_string();
+        let expected_serialized_assets = vec![
+            "/posts/my-article/example.js",
+            "/posts/my-article/graph.jpg",
+            "/posts/my-article/fail.png",
+            "/posts/my-article/extensionless",
+            "/posts/my-article/subdir/example.js",
+            "/posts/my-article/FFF.txt",
+            "/posts/my-article/GRAPH.txt",
+            "/posts/my-article/subdir/GGG.txt",
+        ];
+
+        let serialized_assets =
+            serialize_assets(&assets, Some(&page_folder_path), Some(&colocated_path));
+
+        assert_eq!(
+            serialized_assets, expected_serialized_assets,
+            "Serialized assets (left) are different from expected (right)",
+        );
+    }
+
+    #[test]
+    fn can_serialize_empty_assets() {
+        let parent_path = Path::new("/tmp/test");
+        let page_folder_path = parent_path.join("content").join("posts").join("my-article");
+        let assets: Vec<PathBuf> = vec![];
+
+        let serialized_assets = serialize_assets(&assets, Some(&page_folder_path), None);
+
+        assert!(serialized_assets.is_empty());
+    }
+
+    #[test]
+    fn can_get_assets_permalinks() {
+        let serialized_assets = vec![
+            "/posts/my-article/example.js".to_string(),
+            "/posts/my-article/graph.jpg".to_string(),
+            "/posts/my-article/fail.png".to_string(),
+            "/posts/my-article/extensionless".to_string(),
+            "/posts/my-article/subdir/example.js".to_string(),
+            "/posts/my-article/FFF.txt".to_string(),
+            "/posts/my-article/GRAPH.txt".to_string(),
+            "/posts/my-article/subdir/GGG.txt".to_string(),
+        ];
+        let parent_permalink = "https://remplace-par-ton-url.fr/posts/my-super-article/";
+        let colocated_path = "posts/my-article/".to_string();
+        let mut expected_assets_permalinks = HashMap::<String, String>::new();
+        expected_assets_permalinks.insert(
+            "posts/my-article/example.js".to_string(),
+            format!("{}{}", parent_permalink, "example.js"),
+        );
+        expected_assets_permalinks.insert(
+            "posts/my-article/graph.jpg".to_string(),
+            format!("{}{}", parent_permalink, "graph.jpg"),
+        );
+        expected_assets_permalinks.insert(
+            "posts/my-article/fail.png".to_string(),
+            format!("{}{}", parent_permalink, "fail.png"),
+        );
+        expected_assets_permalinks.insert(
+            "posts/my-article/extensionless".to_string(),
+            format!("{}{}", parent_permalink, "extensionless"),
+        );
+        expected_assets_permalinks.insert(
+            "posts/my-article/subdir/example.js".to_string(),
+            format!("{}{}", parent_permalink, "subdir/example.js"),
+        );
+        expected_assets_permalinks.insert(
+            "posts/my-article/FFF.txt".to_string(),
+            format!("{}{}", parent_permalink, "FFF.txt"),
+        );
+        expected_assets_permalinks.insert(
+            "posts/my-article/GRAPH.txt".to_string(),
+            format!("{}{}", parent_permalink, "GRAPH.txt"),
+        );
+        expected_assets_permalinks.insert(
+            "posts/my-article/subdir/GGG.txt".to_string(),
+            format!("{}{}", parent_permalink, "subdir/GGG.txt"),
+        );
+
+        let assets_permalinks =
+            get_assets_permalinks(&serialized_assets, &parent_permalink, Some(&colocated_path));
+
+        assert_eq!(
+            assets_permalinks, expected_assets_permalinks,
+            "Assets permalinks (left) are different from expected (right)",
+        );
+    }
+
+    #[test]
+    fn can_get_empty_assets_permalinks() {
+        let serialized_assets: Vec<String> = vec![];
+        let parent_permalink = "https://remplace-par-ton-url.fr/posts/my-super-article/";
+
+        let assets_permalinks = get_assets_permalinks(&serialized_assets, &parent_permalink, None);
+
+        assert!(assets_permalinks.is_empty());
+    }
+
     #[test]
     fn can_find_anchor_at_root() {
         let input = vec![

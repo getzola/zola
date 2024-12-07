@@ -19,7 +19,7 @@ use crate::front_matter::{split_page_content, PageFrontMatter};
 use crate::library::Library;
 use crate::ser::SerializingPage;
 use crate::utils::get_reading_analytics;
-use crate::utils::{find_related_assets, has_anchor};
+use crate::utils::{find_related_assets, get_assets_permalinks, has_anchor, serialize_assets};
 use utils::anchors::has_anchor_id;
 use utils::fs::read_file;
 
@@ -45,6 +45,8 @@ pub struct Page {
     pub assets: Vec<PathBuf>,
     /// All the non-md files we found next to the .md file
     pub serialized_assets: Vec<String>,
+    /// The permalinks of all the non-md files we found next to the .md file
+    pub assets_permalinks: HashMap<String, String>,
     /// The HTML rendered of the page
     pub content: String,
     /// The slug of that page.
@@ -195,7 +197,16 @@ impl Page {
         if page.file.name == "index" {
             let parent_dir = path.parent().unwrap();
             page.assets = find_related_assets(parent_dir, config, true);
-            page.serialized_assets = page.serialize_assets(base_path);
+            page.serialized_assets = serialize_assets(
+                &page.assets,
+                page.file.path.parent(),
+                page.file.colocated_path.as_ref(),
+            );
+            page.assets_permalinks = get_assets_permalinks(
+                &page.serialized_assets,
+                &page.permalink,
+                page.file.colocated_path.as_ref(),
+            );
         } else {
             page.assets = vec![];
         }
@@ -253,28 +264,6 @@ impl Page {
 
         render_template(tpl_name, tera, context, &config.theme)
             .with_context(|| format!("Failed to render page '{}'", self.file.path.display()))
-    }
-
-    /// Creates a vectors of asset URLs.
-    fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
-        self.assets
-            .iter()
-            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
-            .filter_map(|filename| filename.to_str())
-            .map(|filename| {
-                let mut path = self.file.path.clone();
-                // Popping the index.md from the path since file.parent would be one level too high
-                // for our need here
-                path.pop();
-                path.push(filename);
-                path = path
-                    .strip_prefix(&base_path.join("content"))
-                    .expect("Should be able to stripe prefix")
-                    .to_path_buf();
-                path
-            })
-            .map(|path| format!("/{}", path.display()))
-            .collect()
     }
 
     pub fn has_anchor(&self, anchor: &str) -> bool {
@@ -589,8 +578,19 @@ And here's another. [^3]
         assert_eq!(page.file.parent, path.join("content").join("posts"));
         assert_eq!(page.slug, "with-assets");
         assert_eq!(page.assets.len(), 3);
+        assert_eq!(page.serialized_assets.len(), 3);
         assert!(page.serialized_assets[0].starts_with('/'));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+        assert_eq!(page.assets_permalinks.len(), 3);
+        let random_assets_permalinks_key =
+            page.assets_permalinks.keys().next().expect("assets permalinks key should be present");
+        assert!(!random_assets_permalinks_key.starts_with('/'));
+        let random_assets_permalinks_value = page
+            .assets_permalinks
+            .values()
+            .next()
+            .expect("assets permalinks value should be present");
+        assert!(random_assets_permalinks_value.starts_with(&page.permalink));
     }
 
     #[test]
@@ -614,6 +614,13 @@ And here's another. [^3]
         assert_eq!(page.slug, "hey");
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.permalink, "http://a-website.com/posts/hey/");
+        assert_eq!(page.assets_permalinks.len(), 3);
+        let random_assets_permalinks_value = page
+            .assets_permalinks
+            .values()
+            .next()
+            .expect("assets permalinks value should be present");
+        assert!(random_assets_permalinks_value.starts_with(&page.permalink));
     }
 
     // https://github.com/getzola/zola/issues/674
@@ -640,6 +647,17 @@ And here's another. [^3]
         // We should not get with-assets since that's the slugified version
         assert!(page.serialized_assets[0].contains("with_assets"));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+        assert_eq!(page.assets_permalinks.len(), 3);
+        let random_assets_permalinks_key =
+            page.assets_permalinks.keys().next().expect("assets permalinks key should be present");
+        // We should not get with-assets since that's the slugified version
+        assert!(random_assets_permalinks_key.contains("with_assets"));
+        let random_assets_permalinks_value = page
+            .assets_permalinks
+            .values()
+            .next()
+            .expect("assets permalinks value should be present");
+        assert!(random_assets_permalinks_value.starts_with(&page.permalink));
     }
 
     // https://github.com/getzola/zola/issues/607
@@ -664,7 +682,21 @@ And here's another. [^3]
         assert_eq!(page.slug, "with-assets");
         assert_eq!(page.meta.date, Some("2013-06-02".to_string()));
         assert_eq!(page.assets.len(), 3);
+        assert_eq!(page.serialized_assets.len(), 3);
+        // We should not get with-assets since that's the slugified version
+        assert!(page.serialized_assets[0].contains("2013-06-02"));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+        assert_eq!(page.assets_permalinks.len(), 3);
+        let random_assets_permalinks_key =
+            page.assets_permalinks.keys().next().expect("assets permalinks key should be present");
+        // We should not get with-assets since that's the slugified version
+        assert!(random_assets_permalinks_key.contains("2013-06-02"));
+        let random_assets_permalinks_value = page
+            .assets_permalinks
+            .values()
+            .next()
+            .expect("assets permalinks value should be present");
+        assert!(random_assets_permalinks_value.starts_with(&page.permalink));
     }
 
     #[test]
@@ -692,6 +724,8 @@ And here's another. [^3]
         let page = res.unwrap();
         assert_eq!(page.assets.len(), 1);
         assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+        assert_eq!(page.serialized_assets.len(), 1);
+        assert_eq!(page.assets_permalinks.len(), 1);
     }
 
     // https://github.com/getzola/zola/issues/1566
