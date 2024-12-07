@@ -128,6 +128,9 @@ highlight_theme = "base16-ocean-dark"
 # Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
 render_emoji = false
 
+# CSS class to add to external links (e.g. "external-link")
+external_links_class = 
+
 # Whether external links are to be opened in a new tab
 # If this is true, a `rel="noopener"` will always automatically be added for security reasons
 external_links_target_blank = false

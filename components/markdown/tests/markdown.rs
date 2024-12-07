@@ -134,36 +134,62 @@ fn can_use_smart_punctuation() {
 }
 
 #[test]
+fn can_use_external_links_class() {
+    let mut config = Config::default_for_test();
+
+    // external link class only
+    config.markdown.external_links_class = Some("external".to_string());
+    let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
+    insta::assert_snapshot!("external_link_class", body);
+
+    // internal link (should not add class)
+    let body =
+        common::render_with_config("[about](@/pages/about.md)", config.clone()).unwrap().body;
+    insta::assert_snapshot!("internal_link_no_class", body);
+
+    // reset class, set target blank only
+    config.markdown.external_links_class = None;
+    config.markdown.external_links_target_blank = true;
+    let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
+    insta::assert_snapshot!("external_link_target_blank", body);
+
+    // both class and target blank
+    config.markdown.external_links_class = Some("external".to_string());
+    let body = common::render_with_config("<https://google.com>", config).unwrap().body;
+    insta::assert_snapshot!("external_link_class_and_target_blank", body);
+}
+
+#[test]
 fn can_use_external_links_options() {
     let mut config = Config::default_for_test();
 
     // no options
     let body = common::render("<https://google.com>").unwrap().body;
-    insta::assert_snapshot!(body);
+    insta::assert_snapshot!("external_link_no_options", body);
 
     // target blank
     config.markdown.external_links_target_blank = true;
     let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
-    insta::assert_snapshot!(body);
+    insta::assert_snapshot!("external_link_target_blank", body);
 
     // no follow
     config.markdown.external_links_target_blank = false;
     config.markdown.external_links_no_follow = true;
     let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
-    insta::assert_snapshot!(body);
+    insta::assert_snapshot!("external_link_no_follow", body);
 
     // no referrer
     config.markdown.external_links_no_follow = false;
     config.markdown.external_links_no_referrer = true;
     let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
-    insta::assert_snapshot!(body);
+    insta::assert_snapshot!("external_link_no_referrer", body);
 
     // all of them
     config.markdown.external_links_no_follow = true;
     config.markdown.external_links_target_blank = true;
     config.markdown.external_links_no_referrer = true;
     let body = common::render_with_config("<https://google.com>", config).unwrap().body;
-    insta::assert_snapshot!(body);
+    insta::assert_snapshot!("external_link_all_options", body);
 }
 
 #[test]
