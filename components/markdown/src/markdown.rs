@@ -277,7 +277,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
                 // nr is a number of references to this footnote
                 let (n, nr) = footnote_numbers.entry(name.clone()).or_insert((n, 0usize));
                 *nr += 1;
-                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">[{n}]</a></sup>"##).into());
+                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">{n}</a></sup>"##).into());
 
                 if footnote_bodies_stack.is_empty() {
                     // we are in the main text, just output the reference
@@ -304,7 +304,8 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
         return;
     }
 
-    old_events.push(Event::Html("<hr><ol class=\"footnotes-list\">\n".into()));
+    old_events
+        .push(Event::Html("<footer class=\"footnotes\">\n<ol class=\"footnotes-list\">\n".into()));
 
     // Step 2: retain only footnotes which was actually referenced
     footnotes.retain(|f| match f.first() {
@@ -341,7 +342,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
         //
         // HTML:
         //
-        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">[1]</a></sup>.</p>
+        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">1</a></sup>.</p>
         //
         //     <ol class="footnotes-list">
         //     <li id="fn-feet">
@@ -394,7 +395,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     });
 
     old_events.extend(footnotes);
-    old_events.push(Event::Html("</ol>\n".into()));
+    old_events.push(Event::Html("</ol>\n</footer>\n".into()));
 }
 
 pub fn markdown_to_html(
@@ -559,7 +560,13 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = CodeBlock::new(fence, context.config, path);
+                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
+                        Ok(cb) => cb,
+                        Err(e) => {
+                            error = Some(e);
+                            break;
+                        }
+                    };
                     code_block = Some(block);
                     events.push(Event::Html(begin.into()));
                 }

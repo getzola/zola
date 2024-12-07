@@ -67,6 +67,9 @@ ignored_static = []
 # When set to "true", a feed is automatically generated.
 generate_feeds = false
 
+# When set to "all", paginated pages are not a part of the sitemap, default is "none"
+exclude_paginated_pages_in_sitemap = "none"
+
 # The filenames to use for the feeds. Used as the template filenames, too.
 # Defaults to ["atom.xml"], which has a built-in template that renders an Atom 1.0 feed.
 # There is also a built-in template "rss.xml" that renders an RSS 2.0 feed.
@@ -111,6 +114,9 @@ generate_robots_txt = true
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
 
+# When set to "true", missing highlight languages are treated as errors. Defaults to false.
+error_on_missing_highlight = false
+
 # A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
 extra_syntaxes_and_themes = []
 
@@ -121,6 +127,9 @@ highlight_theme = "base16-ocean-dark"
 # When set to "true", emoji aliases translated to their corresponding
 # Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
 render_emoji = false
+
+# CSS class to add to external links (e.g. "external-link")
+external_links_class = 
 
 # Whether external links are to be opened in a new tab
 # If this is true, a `rel="noopener"` will always automatically be added for security reasons
