@@ -18,7 +18,7 @@ use utils::fs::{get_file_time, read_file};
 
 use crate::global_fns::helpers::search_for_file;
 
-static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
+const GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path`, `url`, or `literal` argument";
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash)]

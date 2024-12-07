@@ -4,7 +4,7 @@ use libs::tera::{Context, Tera};
 
 use errors::{bail, Result};
 
-static DEFAULT_TPL: &str = include_str!("default_tpl.html");
+const DEFAULT_TPL: &str = include_str!("default_tpl.html");
 
 macro_rules! render_default_tpl {
     ($filename: expr, $url: expr) => {{

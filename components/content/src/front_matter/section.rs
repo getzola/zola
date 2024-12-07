@@ -8,7 +8,7 @@ use utils::types::InsertAnchor;
 use crate::front_matter::split::RawFrontMatter;
 use crate::SortBy;
 
-static DEFAULT_PAGINATE_PATH: &str = "page";
+const DEFAULT_PAGINATE_PATH: &str = "page";
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

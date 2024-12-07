@@ -26,8 +26,8 @@ impl ResizeImage {
     }
 }
 
-static DEFAULT_OP: &str = "fill";
-static DEFAULT_FMT: &str = "auto";
+const DEFAULT_OP: &str = "fill";
+const DEFAULT_FMT: &str = "auto";
 
 impl TeraFn for ResizeImage {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
