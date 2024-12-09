@@ -3,11 +3,14 @@
 title = "re137"
 description = "A Chinese friendly zola theme. Inspired by lightspeed."
 template = "theme.html"
-date = 2024-12-02T05:58:20Z
+date = 2024-11-11T18:40:55+09:00
+
+[taxonomies]
+theme-tags = []
 
 [extra]
-created = 2024-12-02T05:58:20Z
-updated = 2024-12-02T05:58:20Z
+created = 2024-11-11T18:40:55+09:00
+updated = 2024-11-11T18:40:55+09:00
 repository = "https://github.com/tinikov/re137.git"
 homepage = "https://github.com/tinikov/re137"
 minimum_version = "0.4.0"

@@ -3,11 +3,14 @@
 title = "Andromeda"
 description = "Photography journal blog theme"
 template = "theme.html"
-date = 2024-12-02T05:58:20Z
+date = 2024-11-02T09:34:09-07:00
+
+[taxonomies]
+theme-tags = []
 
 [extra]
-created = 2024-12-02T05:58:20Z
-updated = 2024-12-02T05:58:20Z
+created = 2024-11-02T09:34:09-07:00
+updated = 2024-11-02T09:34:09-07:00
 repository = "https://github.com/Pixadus/andromeda-theme.git"
 homepage = "https://github.com/Pixadus/andromeda-theme"
 minimum_version = "0.16.0"
