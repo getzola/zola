@@ -3,11 +3,14 @@
 title = "Project Portfolio"
 description = "Theme for a project portfolio (based on Tailwind CSS)."
 template = "theme.html"
-date = 2024-12-02T05:58:20Z
+date = 2024-12-04T13:08:57+01:00
+
+[taxonomies]
+theme-tags = []
 
 [extra]
-created = 2024-12-02T05:58:20Z
-updated = 2024-12-02T05:58:20Z
+created = 2024-12-04T13:08:57+01:00
+updated = 2024-12-04T13:08:57+01:00
 repository = "https://github.com/awinterstein/zola-theme-project-portfolio.git"
 homepage = "https://github.com/awinterstein/zola-theme-project-portfolio"
 minimum_version = "0.9.0"
@@ -30,17 +33,16 @@ Check out the [live demo of the example project](https://awinterstein.github.io/
 ## Features
 
 - Project types and skills taxonomies
-- Dark / light modes (with syntax highlighting depending on selected theme)
-- Customizable navbar links
+- Automatically selected dark / light modes (with syntax highlighting depending the mode)
 - Search functionality supporting `Meta` + `K` shortcut
 - Social links (github, gitlab, twitter, linkedin, email)
 - Pagination
-- Sidemenu menu with sections links
-- Table of content (2 levels and currently viewed part highlighted)
-- Multilingue
+- Multilingual
 - Error 404 page
 - Mobile responsive
 - Favicon
+- Customizable navbar links
+- Customizable footer
 
 ## Quick Start
 
@@ -82,7 +84,7 @@ lead. Whatever makes most sense for your project portfolio.
 
 It would be shown with the configured title and content like this above the terms:
 
-![Screenshot of the projects taxonomy page](screenshot-projects-taxonomy.png)
+![Screenshot of the projects taxonomy page](https://raw.githubusercontent.com/awinterstein/zola-theme-project-portfolio/main/screenshot-projects-taxonomy.png)
 
 The `skills.md` file can be created the same way. The corresponding page will just show the terms of the skills taxonomy instead of the terms of the projects taxonomy then.
 
@@ -90,6 +92,9 @@ Finally, create the first project page in the `content` directory:
 
 ```markdown
 +++
+```
+
+```toml
 title = "Project Title"
 description = "Here is a short description of the project."
 date = 2022-05-31 # The date when the project finished
@@ -97,10 +102,14 @@ date = 2022-05-31 # The date when the project finished
 [extra]
 date_start = 2021-01-01 # Optional date when the project was started
 image = "water.jpg" # Optional filename to an image in the `static/images` directory
+top_project = true # Optional parameter to show the project on the projects overview page as well
 
 [taxonomies]
 projects=["Consumer"] # The category of the project (could be industry, type etc.)
 skills=["Thinking", "Hype Technology"] # The skills & technologies used for the project
+```
+
+```markdown
 +++
 
 The content of the project description page follows here.
@@ -108,7 +117,7 @@ The content of the project description page follows here.
 
 The generated project site would then look like this:
 
-![Screenshot of the project example page](screenshot-project-example.png)
+![Screenshot of the project example page](https://raw.githubusercontent.com/awinterstein/zola-theme-project-portfolio/main/screenshot-project-example.png)
 
 ## Configuration
 
@@ -123,6 +132,16 @@ taxonomies = [
     {name = "projects", paginate_by = 5, feed = true},
     {name = "skills", paginate_by = 5, feed = true},
 ]
+
+[translations]
+language_symbol = "🇬🇧"
+home = "Home"
+projects = "Projects"
+skills = "Skills"
+read_more = "Read More"
+skills_technologies = "Skills & Technologies"
+main_skills = "Main Skills"
+other_skills = "Additional Skills"
 ```
 
 This would, however, lead to an empty index page. The `config.toml` can be extended by the following configuration parameters for the index page:
@@ -153,8 +172,8 @@ It supports setting a different color scheme depending on the user selected them
 In order to use it you should select the color scheme you want to use for light and dark themes in the list provided [here](https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting) and edit your `config.toml` file like this example:
 
 ```toml
+highlight_code = true
 highlight_theme = "css"
-
 highlight_themes_css = [
   { theme = "ayu-dark", filename = "syntax-dark.css" },
   { theme = "ayu-light", filename = "syntax-light.css" },
@@ -173,4 +192,33 @@ Here is my own footer with a <a href="http://example.com">link</a>.
 {%/* endblock */%}
 ```
 
+## Multiple Languages
+
+To enable multilingual support, add the following to the `config.toml` file (adapted to the additional language that you want to support):
+
+```toml
+[languages.de]
+title = "Projekt-Portfolio"
+taxonomies = [
+    {name = "projects", paginate_by = 5, feed = true},
+    {name = "skills", paginate_by = 5, feed = true},
+]
+
+[languages.de.translations]
+language_symbol = "🇩🇪"
+home = "Home"
+projects = "Projekte"
+skills = "Qualifikationen"
+read_more = "Weiterlesen"
+skills_technologies = "Qualifikationen & Technologien"
+main_skills = "Top-Fähigkeiten"
+other_skills = "Weitere Fähigkeiten"
+
+[extra]
+enable_multilingual = true
+```
+
+For the language switching of the theme to work best, it is recommended not to change the names of the taxonomies and to also keep the filenames for all pages of the site the same in all languages. Right now, the theme only supports websites with up to two languages. The default language and one additional language.
+
+Proceed to add translated markdown files.
         
