@@ -5,7 +5,7 @@ pub fn html(html: String) -> Result<String> {
     let mut cfg = Cfg::spec_compliant();
     cfg.keep_html_and_head_opening_tags = true;
     cfg.minify_css = true;
-    cfg.minify_js = true;
+    cfg.minify_js = false;
 
     let minified = minify(html.as_bytes(), &cfg);
     match std::str::from_utf8(&minified) {
