@@ -3,11 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2024-12-02T05:58:20Z
+date = 2024-12-07T01:27:32+02:00
+
+[taxonomies]
+theme-tags = ['Blog', 'SEO-friendly', 'Multilingual', 'Responsive']
 
 [extra]
-created = 2024-12-02T05:58:20Z
-updated = 2024-12-02T05:58:20Z
+created = 2024-12-07T01:27:32+02:00
+updated = 2024-12-07T01:27:32+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -732,6 +735,7 @@ Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/l
 ## Blogs using this theme
 
 - [salif.eu](https://salif.eu): Personal website
+- [Zola Themes Collection](https://salif.github.io/zola-themes-collection/)
 
 If you use Linkita, feel free to create a pull request to add your site to this list.
 
