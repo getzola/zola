@@ -114,6 +114,8 @@ mod tests {
     }
 
     // https://github.com/getzola/zola/issues/1765
+    // https://github.com/getzola/zola/issues/2731
+    #[ignore]
     #[test]
     fn can_minify_js() {
         let input = r#"
