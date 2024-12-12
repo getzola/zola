@@ -22,7 +22,7 @@ Hello world!
 <!-- more -->
 
 And some content after
-    "#,
+        "#,
     );
     insta::assert_snapshot!(body);
 }
@@ -48,8 +48,8 @@ And some content after
 }
 
 #[test]
-fn no_truncated_summary() {
-    let rendered = get_rendered(
+fn truncated_summary() {
+    let body = get_summary(
         r#"
 Things to do:
 * Program <!-- more --> something
@@ -57,8 +57,7 @@ Things to do:
 * Sleep
     "#,
     );
-    assert!(rendered.summary.is_none());
-    insta::assert_snapshot!(rendered.body);
+    insta::assert_snapshot!(body);
 }
 
 #[test]
