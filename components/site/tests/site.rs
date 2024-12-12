@@ -21,7 +21,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages.len(), 36);
+    assert_eq!(library.pages.len(), 37);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -44,7 +44,7 @@ fn can_parse_site() {
 
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
-    assert_eq!(posts_section.pages.len(), 10); // 11 with 1 draft == 10
+    assert_eq!(posts_section.pages.len(), 12); // 13 with 1 draft == 12
     assert_eq!(posts_section.ancestors, vec![index_section.file.relative.clone()]);
 
     // Make sure we remove all the pwd + content from the sections
@@ -155,6 +155,33 @@ fn can_build_site_without_live_reload() {
         "posts/tutorials/devops/nix.md"
     ));
 
+    assert!(file_exists!(public, "posts/access-render/index.html"));
+
+    // render = false pages can still be accessed directly
+    assert!(file_contains!(
+        public,
+        "posts/access-render/index.html",
+        "Path of unrendered page: /posts/render/"
+    ));
+    // render = false pages can still be accessed through sections
+    assert!(file_contains_regex!(
+        public,
+        "posts/access-render/index.html",
+        r#"Pages in section with unrendered page: <ul>(<li>[^>]+</li>)*<li>/posts/render/</li>"#
+    ));
+    // render = false sections can still be accessed directly
+    assert!(file_contains!(
+        public,
+        "posts/access-render/index.html",
+        "Pages in unrendered section: <ul><li>"
+    ));
+    // render = false pages don't show up in taxonomies
+    assert!(!file_contains!(public, "podcast-authors/some-person/atom.xml", "/posts/render/"));
+    assert!(!file_contains!(public, "categories/a-category/atom.xml", "/posts/render/"));
+    // render = false pages don't even add terms to taxonomies
+    assert!(!file_exists!(public, "podcast-authors/other-person/atom.xml"));
+    assert!(!file_exists!(public, "categories/b-category/atom.xml"));
+
     // aliases work
     assert!(file_exists!(public, "an-old-url/old-page/index.html"));
     assert!(file_contains!(public, "an-old-url/old-page/index.html", "something-else"));
@@ -216,6 +243,8 @@ fn can_build_site_without_live_reload() {
     assert!(!file_contains!(public, "sitemap.xml", "draft"));
     // render: false sections are not in the sitemap either
     assert!(!file_contains!(public, "sitemap.xml", "posts/2018/</loc>"));
+    // render: false pages are not in the sitemap either
+    assert!(!file_contains!(public, "sitemap.xml", "posts/render/</loc>"));
 
     // robots.txt has been rendered from the template
     assert!(file_contains!(public, "robots.txt", "User-agent: zola"));
@@ -299,15 +328,19 @@ fn can_build_site_with_taxonomies() {
             let mut pages = vec![];
 
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
-            for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
-                page.meta.taxonomies = {
-                    let mut taxonomies = HashMap::new();
-                    taxonomies.insert(
-                        "categories".to_string(),
-                        vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
-                    );
-                    taxonomies
-                };
+            let mut i = 0;
+            for (_, mut page) in pages_data.into_iter() {
+                if page.meta.render {
+                    page.meta.taxonomies = {
+                        let mut taxonomies = HashMap::new();
+                        taxonomies.insert(
+                            "categories".to_string(),
+                            vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+                        );
+                        taxonomies
+                    };
+                    i += 1;
+                }
                 pages.push(page);
             }
             for p in pages {
@@ -417,7 +450,7 @@ fn can_build_site_with_pagination_for_section() {
         "posts/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/posts/\""
     ));
-    assert!(file_contains!(public, "posts/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "posts/index.html", "has_prev"));
@@ -430,12 +463,12 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
     assert!(!file_contains!(public, "posts/index.html", "has_prev"));
 
     assert!(file_exists!(public, "posts/page/2/index.html"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
@@ -448,11 +481,11 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/2/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
 
     assert!(file_exists!(public, "posts/page/3/index.html"));
-    assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/page/3/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/3/index.html", "Current index: 3"));
     assert!(file_contains!(public, "posts/page/3/index.html", "has_prev"));
@@ -465,11 +498,11 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/3/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
 
     assert!(file_exists!(public, "posts/page/4/index.html"));
-    assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/page/4/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/4/index.html", "Current index: 4"));
     assert!(file_contains!(public, "posts/page/4/index.html", "has_prev"));
@@ -482,7 +515,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/4/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
 
     // sitemap contains the pager pages
@@ -589,15 +622,19 @@ fn can_build_site_with_pagination_for_taxonomy() {
             let mut pages = vec![];
 
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
-            for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
-                page.meta.taxonomies = {
-                    let mut taxonomies = HashMap::new();
-                    taxonomies.insert(
-                        "tags".to_string(),
-                        vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
-                    );
-                    taxonomies
-                };
+            let mut i = 0;
+            for (_, mut page) in pages_data.into_iter() {
+                if page.meta.render {
+                    page.meta.taxonomies = {
+                        let mut taxonomies = HashMap::new();
+                        taxonomies.insert(
+                            "tags".to_string(),
+                            vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
+                        );
+                        taxonomies
+                    };
+                    i += 1;
+                }
                 pages.push(page);
             }
             for p in pages {
