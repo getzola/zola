@@ -1,7 +1,6 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard};
 
 use config::Config;
 
@@ -12,17 +11,30 @@ use libs::tera::{
     Value,
 };
 use markdown::{render_content, RenderContext};
+use utils::templates::ShortcodeInvocationCounter;
+use utils::types::InsertAnchor;
 
 #[derive(Debug)]
 pub struct MarkdownFilter {
     config: Config,
     permalinks: HashMap<String, String>,
-    tera: Tera,
+    tera: Arc<RwLock<Tera>>,
+    shortcode_invoke_counter: ShortcodeInvocationCounter,
 }
 
 impl MarkdownFilter {
-    pub fn new(config: Config, permalinks: HashMap<String, String>, tera: Tera) -> Self {
-        Self { config, permalinks, tera }
+    pub fn new(
+        config: Config,
+        permalinks: HashMap<String, String>,
+        tera: Arc<RwLock<Tera>>,
+        shortcode_invoke_counter: ShortcodeInvocationCounter,
+    ) -> Self {
+        Self { config, permalinks, tera, shortcode_invoke_counter }
+    }
+    pub fn tera(&self) -> TeraResult<RwLockReadGuard<'_, Tera>> {
+        self.tera.read().map_err(|_| {
+            TeraError::msg("templates::filters::MarkdownFilter::tera(): self.tera has been poisoned due to a panicked thread")
+        })
     }
 }
 
@@ -32,10 +44,20 @@ impl TeraFilter for MarkdownFilter {
         // However, it should not be a problem because the surrounding tera
         // template has language context, and will most likely call a piece of
         // markdown respecting language preferences.
-        let mut context = RenderContext::from_config(&self.config);
-        context.permalinks = Cow::Borrowed(&self.permalinks);
-        context.tera = Cow::Borrowed(&self.tera);
-        let def = utils::templates::get_shortcodes(&self.tera);
+
+        // Aritz: We could feasibly make the MarkdownFilter i18n aware by extending the shortcode_invoke_counter to
+        // contain other values.
+        let tera = self.tera()?;
+        let mut context = RenderContext::new(
+            &tera,
+            &self.config,
+            None,
+            "",
+            &self.permalinks,
+            InsertAnchor::None,
+            &self.shortcode_invoke_counter,
+        );
+        let def = utils::templates::get_shortcodes(&tera);
         context.set_shortcode_definitions(&def);
 
         let s = try_get_value!("markdown", "value", String, value);
@@ -160,19 +182,28 @@ impl TeraFilter for NumFormatFilter {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::{
+        collections::HashMap,
+        sync::{Arc, RwLock},
+    };
 
     use libs::tera::{to_value, Filter, Tera};
 
     use super::{
         base64_decode, base64_encode, MarkdownFilter, NumFormatFilter, RegexReplaceFilter,
+        ShortcodeInvocationCounter,
     };
     use config::Config;
 
     #[test]
     fn markdown_filter() {
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
-            .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+            ShortcodeInvocationCounter::new(),
+        )
+        .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
     }
@@ -187,7 +218,12 @@ mod tests {
         let permalinks = HashMap::new();
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
-        let filter = MarkdownFilter { config, permalinks, tera };
+        let filter = MarkdownFilter::new(
+            config,
+            permalinks,
+            Arc::new(RwLock::new(tera)),
+            ShortcodeInvocationCounter::new(),
+        );
         let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);
         println!("{:?}", result);
         assert!(result.is_ok());
@@ -198,11 +234,13 @@ mod tests {
     fn markdown_filter_inline() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
-            .filter(
-                &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
-                &args,
-            );
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+            ShortcodeInvocationCounter::new(),
+        )
+        .filter(&to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(), &args);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
     }
@@ -212,19 +250,24 @@ mod tests {
     fn markdown_filter_inline_tables() {
         let mut args = HashMap::new();
         args.insert("inline".to_string(), to_value(true).unwrap());
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
-            .filter(
-                &to_value(
-                    &r#"
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+            ShortcodeInvocationCounter::new(),
+        )
+        .filter(
+            &to_value(
+                &r#"
 |id|author_id|       timestamp_created|title                 |content           |
 |-:|--------:|-----------------------:|:---------------------|:-----------------|
 | 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
 | 2|        1|2018-08-22 13:11:50.050Z|How to bake a nice pie|Badly written blog|
         "#,
-                )
-                .unwrap(),
-                &args,
-            );
+            )
+            .unwrap(),
+            &args,
+        );
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("<table>"));
     }
@@ -238,14 +281,24 @@ mod tests {
         config.markdown.external_links_target_blank = true;
 
         let md = "Hello <https://google.com> :smile: ...";
-        let result = MarkdownFilter::new(config.clone(), HashMap::new(), Tera::default())
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(
+            config.clone(),
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+            ShortcodeInvocationCounter::new(),
+        )
+        .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
-        let result = MarkdownFilter::new(config, HashMap::new(), Tera::default())
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(
+            config,
+            HashMap::new(),
+            Arc::new(RwLock::new(Tera::default())),
+            ShortcodeInvocationCounter::new(),
+        )
+        .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("style"));
     }
@@ -255,8 +308,13 @@ mod tests {
         let mut permalinks = HashMap::new();
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
-        let result = MarkdownFilter::new(Config::default(), permalinks, Tera::default())
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+        let result = MarkdownFilter::new(
+            Config::default(),
+            permalinks,
+            Arc::new(RwLock::new(Tera::default())),
+            ShortcodeInvocationCounter::new(),
+        )
+        .filter(&to_value(&md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),

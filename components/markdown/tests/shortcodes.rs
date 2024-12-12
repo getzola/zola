@@ -323,3 +323,77 @@ Here is <span>{{ ex1(page="") }}</span> example.
     .body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn can_render_markdown_in_nested_shortcodes_with_bodies() {
+    let config = Config::default_for_test();
+    let body = common::render_with_config(
+        r#"
+# Begin level 0  
+
+{% render_md() %}
+
+## Begin level 1
+
+{% render_md() %}
+
+### Begin level 2
+
+{% quote() %} Also a quote in the nested divs {% end %}
+
+### End level 2
+
+{% end %}
+
+## End level 1
+
+{% end %}
+
+# End level 0
+    "#,
+        config,
+    )
+    .unwrap()
+    .body;
+    insta::assert_snapshot!(body);
+}
+
+#[test]
+fn can_render_nested_shortcodes_with_bodies_with_nth() {
+    let config = Config::default_for_test();
+    let body = common::render_with_config(
+        r#"
+{{ a() }}
+
+{{ a() }}
+
+{% render_md() %}
+
+{{ a() }}
+
+{{ a() }}
+
+{% render_md() %}
+
+{{ a() }}
+
+{{ a() }}
+
+{% end %}
+
+{{ a() }}
+
+{{ a() }}
+
+{% end %}
+
+{{ a() }}
+
+{{ a() }}
+    "#,
+        config,
+    )
+    .unwrap()
+    .body;
+    insta::assert_snapshot!(body);
+}
