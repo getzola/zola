@@ -43,3 +43,4 @@
 | [failsafe.monster](https://failsafe.monster/)                      |                                                          |
 | [Joshua Gawley](https://www.joshuagawley.com/)                     | https://github.com/joshuagawley/joshuagawley.github.io   |
 | [dmarcoux.com](https://dmarcoux.com)                               | https://github.com/dmarcoux/dmarcoux.com                 |
+| [Herman Schaaf's Blog](https://hermanschaaf.com)                       | https://github.com/hermanschaaf/zola-blog                |
