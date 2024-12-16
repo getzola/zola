@@ -3,13 +3,15 @@ use std::{path::Path, sync::Arc};
 use libs::syntect::{
     highlighting::{Theme, ThemeSet},
     html::css_for_theme_with_class_style,
-    parsing::{SyntaxSet, SyntaxSetBuilder},
+    parsing::SyntaxSet,
 };
 use serde::{Deserialize, Serialize};
 
 use errors::{bail, Result};
 
-use crate::highlighting::{CLASS_STYLE, THEME_SET};
+use crate::highlighting::CLASS_STYLE;
+use crate::highlighting::SYNTAX_SET;
+use crate::highlighting::THEME_SET;
 
 pub const DEFAULT_HIGHLIGHT_THEME: &str = "base16-ocean-dark";
 
@@ -99,7 +101,7 @@ impl Markdown {
             return Ok((None, None));
         }
 
-        let mut ss = SyntaxSetBuilder::new();
+        let mut ss = SYNTAX_SET.clone().into_builder();
         let mut ts = ThemeSet::new();
         for dir in &self.extra_syntaxes_and_themes {
             ss.add_from_folder(base_path.join(dir), true)?;

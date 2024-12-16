@@ -41,8 +41,13 @@ pub fn resolve_syntax_and_theme<'config>(
     let theme = config.markdown.get_highlight_theme();
 
     if let Some(ref lang) = language {
-        if let Some(ref extra_syntaxes) = config.markdown.extra_syntax_set {
-            if let Some(syntax) = extra_syntaxes.find_syntax_by_token(lang) {
+        // The JS syntax hangs a lot... the TS syntax is probably better anyway.
+        // https://github.com/getzola/zola/issues/1241
+        // https://github.com/getzola/zola/issues/1211
+        // https://github.com/getzola/zola/issues/1174
+        let hacked_lang = if *lang == "js" || *lang == "javascript" { "ts" } else { lang };
+        if let Some(extra_syntaxes) = &config.markdown.extra_syntax_set {
+            if let Some(syntax) = extra_syntaxes.find_syntax_by_token(hacked_lang) {
                 return SyntaxAndTheme {
                     syntax,
                     syntax_set: extra_syntaxes,
@@ -51,11 +56,7 @@ pub fn resolve_syntax_and_theme<'config>(
                 };
             }
         }
-        // The JS syntax hangs a lot... the TS syntax is probably better anyway.
-        // https://github.com/getzola/zola/issues/1241
-        // https://github.com/getzola/zola/issues/1211
-        // https://github.com/getzola/zola/issues/1174
-        let hacked_lang = if *lang == "js" || *lang == "javascript" { "ts" } else { lang };
+
         if let Some(syntax) = SYNTAX_SET.find_syntax_by_token(hacked_lang) {
             SyntaxAndTheme {
                 syntax,
