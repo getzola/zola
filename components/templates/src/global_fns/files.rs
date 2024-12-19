@@ -30,6 +30,7 @@ pub struct GetUrl {
     base_path: PathBuf,
     config: Config,
     permalinks: HashMap<String, String>,
+    assets_permalinks: HashMap<String, HashMap<String, String>>,
     output_path: PathBuf,
 }
 
@@ -38,15 +39,21 @@ impl GetUrl {
         base_path: PathBuf,
         config: Config,
         permalinks: HashMap<String, String>,
+        assets_permalinks: HashMap<String, HashMap<String, String>>,
         output_path: PathBuf,
     ) -> Self {
-        Self { base_path, config, permalinks, output_path }
+        Self { base_path, config, permalinks, assets_permalinks, output_path }
     }
 }
 
-fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<String> {
+fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<(String, bool)> {
+    let mut split_path: Vec<String> = path.split('.').map(String::from).collect();
+    let ilast = split_path.len() - 1;
+
+    let is_markdown = split_path[ilast].starts_with("md");
+
     if lang == config.default_language {
-        return Ok(path);
+        return Ok((path, is_markdown));
     }
 
     if !config.other_languages().contains_key(lang) {
@@ -55,10 +62,12 @@ fn make_path_with_lang(path: String, lang: &str, config: &Config) -> Result<Stri
         );
     }
 
-    let mut split_path: Vec<String> = path.split('.').map(String::from).collect();
-    let ilast = split_path.len() - 1;
-    split_path[ilast] = format!("{}.{}", lang, split_path[ilast]);
-    Ok(split_path.join("."))
+    if is_markdown {
+        split_path[ilast] = format!("{}.{}", lang, split_path[ilast]);
+        Ok((split_path.join("."), is_markdown))
+    } else {
+        Ok((path, is_markdown))
+    }
 }
 
 impl TeraFn for GetUrl {
@@ -85,12 +94,22 @@ impl TeraFn for GetUrl {
 
         // if it starts with @/, resolve it as an internal link
         if path.starts_with("@/") {
-            let path_with_lang = match make_path_with_lang(path, &lang, &self.config) {
+            let (path_with_lang, is_markdown) = match make_path_with_lang(path, &lang, &self.config)
+            {
                 Ok(x) => x,
                 Err(e) => return Err(e),
             };
 
-            match resolve_internal_link(&path_with_lang, &self.permalinks) {
+            let permalinks = if is_markdown {
+                &self.permalinks
+            } else {
+                match self.assets_permalinks.get(&lang) {
+                    Some(permalink) => permalink,
+                    None => &HashMap::new(),
+                }
+            };
+
+            match resolve_internal_link(&path_with_lang, permalinks) {
                 Ok(resolved) => Ok(to_value(resolved.permalink).unwrap()),
                 Err(_) => Err(format!(
                     "`get_url`: could not resolve URL for link `{}` not found.",
@@ -282,6 +301,7 @@ title = "A title"
             dir.path().to_path_buf(),
             Config::default(),
             HashMap::new(),
+            HashMap::new(),
             PathBuf::new(),
         );
         let mut args = HashMap::new();
@@ -310,6 +330,7 @@ title = "A title"
             dir.path().to_path_buf(),
             Config::default(),
             HashMap::new(),
+            HashMap::new(),
             PathBuf::new(),
         );
         let mut args = HashMap::new();
@@ -324,6 +345,7 @@ title = "A title"
         let static_fn = GetUrl::new(
             dir.path().to_path_buf(),
             Config::default(),
+            HashMap::new(),
             HashMap::new(),
             PathBuf::new(),
         );
@@ -344,6 +366,7 @@ title = "A title"
             dir.path().to_path_buf(),
             Config::default(),
             HashMap::new(),
+            HashMap::new(),
             PathBuf::new(),
         );
         let mut args = HashMap::new();
@@ -363,8 +386,13 @@ title = "A title"
         create_file(&public.join("style.css"), "// Hello world")
             .expect("Failed to create file in output directory");
 
-        let static_fn =
-            GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), public);
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            Config::default(),
+            HashMap::new(),
+            HashMap::new(),
+            public,
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("style.css").unwrap());
         assert_eq!(static_fn.call(&args).unwrap(), "http://a-website.com/style.css");
@@ -374,8 +402,13 @@ title = "A title"
     fn error_when_language_not_available() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn =
-            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            HashMap::new(),
+            HashMap::new(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("it").unwrap());
@@ -403,6 +436,7 @@ title = "A title"
             dir.path().to_path_buf(),
             config.clone(),
             permalinks.clone(),
+            HashMap::new(),
             PathBuf::new(),
         );
         let mut args = HashMap::new();
@@ -427,13 +461,148 @@ title = "A title"
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            permalinks,
+            HashMap::new(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/"
+        );
+    }
+
+    #[test]
+    fn can_get_asset_url_with_default_language() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let asset_path = "a_section/an_asset.jpg";
+        let mut assets_permalinks = HashMap::new();
+        let mut fr_assets_permalinks = HashMap::new();
+        fr_assets_permalinks.insert(
+            asset_path.to_string(),
+            "https://remplace-par-ton-url.fr/a_section/an_asset.jpg".to_string(),
+        );
+        assets_permalinks.insert("fr".to_string(), fr_assets_permalinks);
+        let mut en_assets_permalinks = HashMap::new();
+        en_assets_permalinks.insert(
+            asset_path.to_string(),
+            "https://remplace-par-ton-url.fr/en/a_section/an_asset.jpg".to_string(),
+        );
+        assets_permalinks.insert("en".to_string(), en_assets_permalinks);
+        let dir = create_temp_dir();
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            HashMap::new(),
+            assets_permalinks.clone(),
+            PathBuf::new(),
+        );
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/a_section/an_asset.jpg").unwrap());
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/a_section/an_asset.jpg"
+        );
+    }
+
+    #[test]
+    fn can_get_asset_url_with_other_language() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let asset_path = "a_section/an_asset.jpg";
+        let mut assets_permalinks = HashMap::new();
+        let mut fr_assets_permalinks = HashMap::new();
+        fr_assets_permalinks.insert(
+            asset_path.to_string(),
+            "https://remplace-par-ton-url.fr/a_section/an_asset.jpg".to_string(),
+        );
+        assets_permalinks.insert("fr".to_string(), fr_assets_permalinks);
+        let mut en_assets_permalinks = HashMap::new();
+        en_assets_permalinks.insert(
+            asset_path.to_string(),
+            "https://remplace-par-ton-url.fr/en/a_section/an_asset.jpg".to_string(),
+        );
+        assets_permalinks.insert("en".to_string(), en_assets_permalinks);
+        let dir = create_temp_dir();
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            HashMap::new(),
+            assets_permalinks.clone(),
+            PathBuf::new(),
+        );
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/a_section/an_asset.jpg").unwrap());
+        args.insert("lang".to_string(), to_value("en").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/en/a_section/an_asset.jpg"
+        );
+    }
+
+    #[test]
+    fn look_for_markdown_in_permalinks() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let non_asset_path = "a_section/a_page.md";
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            non_asset_path.to_string(),
+            "https://remplace-par-ton-url.fr/a_section/a_page".to_string(),
+        );
+        let mut assets_permalinks = HashMap::new();
+        let mut fr_assets_permalinks = HashMap::new();
+        fr_assets_permalinks
+            .insert(non_asset_path.to_string(), "only assets should be there".to_string());
+        assets_permalinks.insert("fr".to_string(), fr_assets_permalinks);
+        let dir = create_temp_dir();
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            permalinks.clone(),
+            assets_permalinks.clone(),
+            PathBuf::new(),
+        );
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/a_section/a_page.md").unwrap());
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/a_section/a_page"
+        );
+    }
+
+    #[test]
+    fn look_for_asset_in_assets_permalinks() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let asset_path = "a_section/an_asset.jpg";
+        let mut permalinks = HashMap::new();
+        permalinks.insert(asset_path.to_string(), "only markdown should be there".to_string());
+        let mut assets_permalinks = HashMap::new();
+        let mut fr_assets_permalinks = HashMap::new();
+        fr_assets_permalinks.insert(
+            asset_path.to_string(),
+            "https://remplace-par-ton-url.fr/a_section/an_asset.jpg".to_string(),
+        );
+        assets_permalinks.insert("fr".to_string(), fr_assets_permalinks);
+        let dir = create_temp_dir();
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            permalinks.clone(),
+            assets_permalinks.clone(),
+            PathBuf::new(),
+        );
+        let mut args = HashMap::new();
+        args.insert("path".to_string(), to_value("@/a_section/an_asset.jpg").unwrap());
+        args.insert("lang".to_string(), to_value("fr").unwrap());
+        assert_eq!(
+            static_fn.call(&args).unwrap(),
+            "https://remplace-par-ton-url.fr/a_section/an_asset.jpg"
         );
     }
 
@@ -450,7 +619,13 @@ title = "A title"
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
         let dir = create_temp_dir();
-        let static_fn = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            permalinks,
+            HashMap::new(),
+            PathBuf::new(),
+        );
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("/en/a_section/a_page/").unwrap());
         args.insert("lang".to_string(), to_value("en").unwrap());
@@ -464,8 +639,13 @@ title = "A title"
     fn can_get_feed_urls_with_default_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn =
-            GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            HashMap::new(),
+            HashMap::new(),
+            PathBuf::new(),
+        );
         for feed_filename in &config.feed_filenames {
             let mut args = HashMap::new();
             args.insert("path".to_string(), to_value(feed_filename).unwrap());
@@ -478,8 +658,13 @@ title = "A title"
     fn can_get_feed_urls_with_other_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let static_fn =
-            GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
+        let static_fn = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            HashMap::new(),
+            HashMap::new(),
+            PathBuf::new(),
+        );
         for feed_filename in &config.feed_filenames {
             let mut args = HashMap::new();
             args.insert("path".to_string(), to_value(feed_filename).unwrap());

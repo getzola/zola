@@ -15,7 +15,9 @@ use crate::file_info::FileInfo;
 use crate::front_matter::{split_section_content, SectionFrontMatter};
 use crate::library::Library;
 use crate::ser::{SectionSerMode, SerializingSection};
-use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
+use crate::utils::{
+    find_related_assets, get_assets_permalinks, get_reading_analytics, has_anchor, serialize_assets,
+};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -38,6 +40,8 @@ pub struct Section {
     pub assets: Vec<PathBuf>,
     /// All the non-md files we found next to the .md file as string
     pub serialized_assets: Vec<String>,
+    /// The permalinks of all the non-md files we found next to the .md file
+    pub assets_permalinks: HashMap<String, String>,
     /// All direct pages of that section
     pub pages: Vec<PathBuf>,
     /// All pages that cannot be sorted in this section
@@ -125,7 +129,16 @@ impl Section {
 
         let parent_dir = path.parent().unwrap();
         section.assets = find_related_assets(parent_dir, config, false);
-        section.serialized_assets = section.serialize_assets();
+        section.serialized_assets = serialize_assets(
+            &section.assets,
+            section.file.path.parent(),
+            section.file.colocated_path.as_ref(),
+        );
+        section.assets_permalinks = get_assets_permalinks(
+            &section.serialized_assets,
+            &section.permalink,
+            section.file.colocated_path.as_ref(),
+        );
 
         Ok(section)
     }
@@ -202,16 +215,6 @@ impl Section {
         self.file.components.is_empty()
     }
 
-    /// Creates a vectors of asset URLs.
-    fn serialize_assets(&self) -> Vec<String> {
-        self.assets
-            .iter()
-            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
-            .filter_map(|filename| filename.to_str())
-            .map(|filename| format!("{}{}", self.path, filename))
-            .collect()
-    }
-
     pub fn has_anchor(&self, anchor: &str) -> bool {
         has_anchor(&self.toc, anchor)
     }
@@ -269,8 +272,22 @@ mod tests {
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.assets.len(), 3);
+        assert_eq!(section.serialized_assets.len(), 3);
         assert!(section.serialized_assets[0].starts_with('/'));
         assert_eq!(section.permalink, "http://a-website.com/posts/with-assets/");
+        assert_eq!(section.assets_permalinks.len(), 3);
+        let random_assets_permalinks_key = section
+            .assets_permalinks
+            .keys()
+            .next()
+            .expect("assets permalinks key should be present");
+        assert!(!random_assets_permalinks_key.starts_with('/'));
+        let random_assets_permalinks_value = section
+            .assets_permalinks
+            .values()
+            .next()
+            .expect("assets permalinks value should be present");
+        assert!(random_assets_permalinks_value.starts_with(&section.permalink));
     }
 
     #[test]
@@ -300,9 +317,11 @@ mod tests {
             Section::from_file(article_path.join("_index.md").as_path(), &config, &PathBuf::new());
 
         assert!(res.is_ok());
-        let page = res.unwrap();
-        assert_eq!(page.assets.len(), 1);
-        assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+        let section = res.unwrap();
+        assert_eq!(section.assets.len(), 1);
+        assert_eq!(section.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+        assert_eq!(section.serialized_assets.len(), 1);
+        assert_eq!(section.assets_permalinks.len(), 1);
     }
 
     #[test]

@@ -153,7 +153,7 @@ picture gallery with the following shortcode named `gallery.html`:
 {% for asset in page.assets -%}
   {%- if asset is matching("[.](jpg|png)$") -%}
     {% set image = resize_image(path=asset, width=240, height=180) %}
-    <a href="{{ get_url(path=asset) }}" target="_blank">
+    <a href="{{ get_url(path='@' ~ asset, lang=lang) }}" target="_blank">
       <img src="{{ image.url }}" />
     </a>
   {%- endif %}
