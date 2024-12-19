@@ -61,8 +61,8 @@ enum WatchMode {
     Condition(bool),
 }
 
-static METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
-static NOT_FOUND_TEXT: &[u8] = b"Not Found";
+const METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
+const NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");

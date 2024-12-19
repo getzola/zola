@@ -112,7 +112,15 @@ backlinks: Array<{permalink: String, title: String?}>;
 generate_feeds: bool;
 // Whether this section is transparent. Taken from the front-matter if set
 transparent: bool;
+// How many items per pager (if defined)
+paginate_by: Number?;
+// If items order is reversed in the pagination (defaults to false)
+paginate_reversed: bool;
 ```
+
+Information about pagination is useful when using the `get_section` Tera function for which the `paginator` is not available.
+
+See [pagination template documentation](@/documentation/templates/pagination.md) for more information on the `paginator` variable.
 
 ## Table of contents
 

@@ -35,6 +35,10 @@ pub type MeaningfulEvent = (PathBuf, PathBuf, SimpleFileSystemEventKind);
 /// return `None`.
 fn get_relevant_event_kind(event_kind: &EventKind) -> Option<SimpleFileSystemEventKind> {
     match event_kind {
+        // Nova on macOS reports this as it's final event on change
+        EventKind::Modify(ModifyKind::Name(RenameMode::Any)) => {
+            Some(SimpleFileSystemEventKind::Modify)
+        }
         EventKind::Create(CreateKind::File) | EventKind::Create(CreateKind::Folder) => {
             Some(SimpleFileSystemEventKind::Create)
         }
