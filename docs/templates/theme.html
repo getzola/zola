@@ -7,7 +7,16 @@
         <div class="metadata">
             <h1>{{ page.title }}</h1>
             <p>{{ page.description }}</p>
-            <p><b>Author:</b> {{page.extra.author.name}}</p>
+            <p><b>Author:</b>
+            {% if page.extra.author.homepage %}
+              <a href="{{ page.extra.author.homepage }}">{{ page.extra.author.name }}</a>
+            {% else %}
+              {{ page.extra.author.name }}
+              {% endif %}
+            </p>
+            {% if page.extra.minimum_version %}
+              <p>This theme requires Zola version {{ page.extra.minimum_version }} and above</p>
+            {% endif %}
             <p><b>License:</b> {{page.extra.license}}</p>
             <p><b>Homepage:</b> <a href="{{page.extra.homepage}}">{{page.extra.homepage}}</a></p>
             {% if page.extra.demo %}
@@ -17,10 +26,12 @@
               <div>
               <p>Tags:</p>
               <ul style="list-style-type: none;">
-              {% for t in page.taxonomies["theme-tags"] %}
-                {% set term = get_taxonomy_term(kind="theme-tags", term = t) %}
-                <li><a href="{{ term.permalink }}">{{ term.name }}</a></li>
-                {% endfor %}
+              {% for termname in page.taxonomies["theme-tags"] %}
+                {% set termurl = get_taxonomy_url(kind="theme-tags", name=termname, required=false) %}
+                {% if termurl %}
+                  <li><a href="{{ termurl }}">{{ termname }}</a></li>
+                {% endif %}
+              {% endfor %}
               </div>
             {% endif %}
             <p><b>Last updated:</b> {{page.extra.updated }}</p>

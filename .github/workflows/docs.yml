@@ -16,7 +16,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - name: build
-        uses: shalzz/zola-deploy-action@v0.18.0
+        uses: shalzz/zola-deploy-action@v0.19.2
         env:
           BUILD_DIR: docs/
           BUILD_ONLY: true
@@ -28,7 +28,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - name: build_and_deploy
-        uses: shalzz/zola-deploy-action@v0.18.0
+        uses: shalzz/zola-deploy-action@v0.19.2
         env:
           PAGES_BRANCH: gh-pages
           BUILD_DIR: docs/
