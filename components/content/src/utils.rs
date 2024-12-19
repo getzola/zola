@@ -258,39 +258,37 @@ mod tests {
         ];
         let parent_permalink = "https://remplace-par-ton-url.fr/posts/my-super-article/";
         let colocated_path = "posts/my-article/".to_string();
-        let mut expected_assets_permalinks = HashMap::<String, String>::new();
-        expected_assets_permalinks.insert(
-            "posts/my-article/example.js".to_string(),
-            format!("{}{}", parent_permalink, "example.js"),
-        );
-        expected_assets_permalinks.insert(
-            "posts/my-article/graph.jpg".to_string(),
-            format!("{}{}", parent_permalink, "graph.jpg"),
-        );
-        expected_assets_permalinks.insert(
-            "posts/my-article/fail.png".to_string(),
-            format!("{}{}", parent_permalink, "fail.png"),
-        );
-        expected_assets_permalinks.insert(
-            "posts/my-article/extensionless".to_string(),
-            format!("{}{}", parent_permalink, "extensionless"),
-        );
-        expected_assets_permalinks.insert(
-            "posts/my-article/subdir/example.js".to_string(),
-            format!("{}{}", parent_permalink, "subdir/example.js"),
-        );
-        expected_assets_permalinks.insert(
-            "posts/my-article/FFF.txt".to_string(),
-            format!("{}{}", parent_permalink, "FFF.txt"),
-        );
-        expected_assets_permalinks.insert(
-            "posts/my-article/GRAPH.txt".to_string(),
-            format!("{}{}", parent_permalink, "GRAPH.txt"),
-        );
-        expected_assets_permalinks.insert(
-            "posts/my-article/subdir/GGG.txt".to_string(),
-            format!("{}{}", parent_permalink, "subdir/GGG.txt"),
-        );
+        let expected_assets_permalinks: HashMap<_, _> = HashMap::from_iter([
+            (
+                "posts/my-article/example.js".to_string(),
+                format!("{}{}", parent_permalink, "example.js"),
+            ),
+            (
+                "posts/my-article/graph.jpg".to_string(),
+                format!("{}{}", parent_permalink, "graph.jpg"),
+            ),
+            (
+                "posts/my-article/fail.png".to_string(),
+                format!("{}{}", parent_permalink, "fail.png"),
+            ),
+            (
+                "posts/my-article/extensionless".to_string(),
+                format!("{}{}", parent_permalink, "extensionless"),
+            ),
+            (
+                "posts/my-article/subdir/example.js".to_string(),
+                format!("{}{}", parent_permalink, "subdir/example.js"),
+            ),
+            ("posts/my-article/FFF.txt".to_string(), format!("{}{}", parent_permalink, "FFF.txt")),
+            (
+                "posts/my-article/GRAPH.txt".to_string(),
+                format!("{}{}", parent_permalink, "GRAPH.txt"),
+            ),
+            (
+                "posts/my-article/subdir/GGG.txt".to_string(),
+                format!("{}{}", parent_permalink, "subdir/GGG.txt"),
+            ),
+        ]);
 
         let assets_permalinks =
             get_assets_permalinks(&serialized_assets, &parent_permalink, Some(&colocated_path));
