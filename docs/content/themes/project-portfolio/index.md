@@ -3,14 +3,14 @@
 title = "Project Portfolio"
 description = "Theme for a project portfolio (based on Tailwind CSS)."
 template = "theme.html"
-date = 2024-12-04T13:08:57+01:00
+date = 2024-12-09T20:02:25+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-04T13:08:57+01:00
-updated = 2024-12-04T13:08:57+01:00
+created = 2024-12-09T20:02:25+01:00
+updated = 2024-12-09T20:02:25+01:00
 repository = "https://github.com/awinterstein/zola-theme-project-portfolio.git"
 homepage = "https://github.com/awinterstein/zola-theme-project-portfolio"
 minimum_version = "0.9.0"
