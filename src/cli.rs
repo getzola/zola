@@ -89,6 +89,10 @@ pub enum Command {
         /// Default append port to the base url.
         #[clap(long)]
         no_port_append: bool,
+
+        /// Extra path to watch for changes, relative to the project root.
+        #[clap(long)]
+        extra_watch_path: Vec<String>,
     },
 
     /// Try to build the project without rendering it. Checks links
