@@ -3,14 +3,14 @@
 title = "zallery"
 description = "Gallery theme for zola"
 template = "theme.html"
-date = 2024-09-25T18:41:17-05:00
+date = 2024-12-13T19:35:13-06:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-09-25T18:41:17-05:00
-updated = 2024-09-25T18:41:17-05:00
+created = 2024-12-13T19:35:13-06:00
+updated = 2024-12-13T19:35:13-06:00
 repository = "https://github.com/gamingrobot/zallery.git"
 homepage = "https://github.com/gamingrobot/zallery"
 minimum_version = "0.19.0"
