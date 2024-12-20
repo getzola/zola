@@ -665,6 +665,10 @@ And here's another. [^3]
         assert_eq!(page.meta.date, Some("2013-06-02".to_string()));
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+        // Expected: The path for assets should not contain the date
+        // assert_eq!(page.assets[0], path.join("content/posts/with-assets/fail.png"));
+        // Implemented: The date is included which should not be the case
+        assert_eq!(page.assets[0], path.join("content/posts/2013-06-02_with-assets/fail.png"));
     }
 
     #[test]
