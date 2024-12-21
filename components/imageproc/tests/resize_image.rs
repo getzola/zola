@@ -128,6 +128,11 @@ fn resize_image_png_webp() {
 }
 
 #[test]
+fn resize_image_png_avif() {
+    image_op_test("png.png", "scale", Some(150), Some(150), "avif", "avif", 150, 150, 300, 380);
+}
+
+#[test]
 fn resize_image_webp_jpg() {
     image_op_test("webp.webp", "scale", Some(150), Some(150), "auto", "jpg", 150, 150, 300, 380);
 }
