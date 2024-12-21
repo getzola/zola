@@ -2,6 +2,7 @@
 
 [![Build Status](https://dev.azure.com/getzola/zola/_apis/build/status/getzola.zola?branchName=master)](https://dev.azure.com/getzola/zola/_build/latest?definitionId=1&branchName=master)
 ![GitHub all releases](https://img.shields.io/github/downloads/getzola/zola/total)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20zola%20Guru-006BFF)](https://gurubase.io/g/zola)
 
 A fast static site generator in a single binary with everything built-in.
 
