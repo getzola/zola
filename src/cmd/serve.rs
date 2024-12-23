@@ -816,8 +816,19 @@ pub fn serve(
                                 site = s;
                             }
                         }
-                        ChangeKind::Unknown => {
-                            // Probably a user-provided watch location. We can't know exactly what to update.
+                        ChangeKind::ExtraPath => {
+                            let full_paths: Vec<&PathBuf> =
+                                change_group.iter().map(|(_, p, _)| p).collect();
+                            let combined_paths = full_paths
+                                .iter()
+                                .map(|p| p.display().to_string())
+                                .collect::<Vec<String>>()
+                                .join(", ");
+                            console::info(&format!(
+                                "-> {combined_paths} changed. Recreating whole site."
+                            ));
+
+                            // We can't know exactly what to update when a user provides the path.
                             if let Some(s) = recreate_site() {
                                 site = s;
                             }

@@ -17,7 +17,8 @@ pub enum ChangeKind {
     StaticFiles,
     Sass,
     Config,
-    Unknown,
+    /// A change in one of the extra paths to watch provided by the user.
+    ExtraPath,
 }
 
 /// This enum abstracts over the fine-grained group of enums in `notify`.
@@ -161,7 +162,7 @@ fn detect_change_kind(pwd: &Path, path: &Path, config_path: &Path) -> (ChangeKin
     } else if path == config_path {
         ChangeKind::Config
     } else {
-        ChangeKind::Unknown
+        ChangeKind::ExtraPath
     };
 
     (change_kind, partial_path)
