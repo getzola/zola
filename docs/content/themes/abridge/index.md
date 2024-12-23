@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2024-12-01T01:28:27-08:00
+date = 2024-12-20T21:11:50Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-01T01:28:27-08:00
-updated = 2024-12-01T01:28:27-08:00
+created = 2024-12-20T21:11:50Z
+updated = 2024-12-20T21:11:50Z
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.19.1"
@@ -33,7 +33,7 @@ A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing [abr
 
 Maintenance of this project is made possible by all the <a href="https://github.com/Jieiku/abridge/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/Jieiku">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/Jieiku">click here</a>. 💖
 
-<!-- sponsors --><a href="https://github.com/yugfletcher"><img src="https:&#x2F;&#x2F;avatars.githubusercontent.com&#x2F;u&#x2F;50535827?u&#x3D;05a40a74732285f9a126fd7fd118a259a6fab6ca&amp;v&#x3D;4" width="60px" alt="" /></a><a href="https://github.com/samueloph"><img src="https:&#x2F;&#x2F;avatars.githubusercontent.com&#x2F;u&#x2F;2778482?u&#x3D;389037b5d44d9f53ee61280f02b9fd5a94fc624e&amp;v&#x3D;4" width="60px" alt="Samuel Henrique" /></a><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/yugfletcher"><img src="https:&#x2F;&#x2F;github.com&#x2F;yugfletcher.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/samueloph"><img src="https:&#x2F;&#x2F;github.com&#x2F;samueloph.png" width="60px" alt="User avatar: Samuel Henrique" /></a><!-- sponsors -->
 
 ---
 
@@ -52,7 +52,7 @@ The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml]
 - Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)
 - Code [syntax highlighting](https://abridge.pages.dev/overview-code-blocks/). (colors can be customized, css variables)
 - Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
-- Entirely Offline Site by using the PWA **or** by setting `offline = true` in `config.toml` (full search support).
+- Entirely Offline Site by using the PWA **or** by setting `search_library = "offline"` in `config.toml` (full search support).
 - Multi-language support.
 - Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/))
 - Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.

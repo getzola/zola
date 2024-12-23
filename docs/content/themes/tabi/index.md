@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2024-12-04T22:56:53+01:00
+date = 2024-12-20T19:06:52+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-04T22:56:53+01:00
-updated = 2024-12-04T22:56:53+01:00
+created = 2024-12-20T19:06:52+08:00
+updated = 2024-12-20T19:06:52+08:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -236,6 +236,7 @@ git pull
 | [www.richtman.au](https://www.richtman.au) | [Ariel Richtman](https://github.com/arichtman) | Personal tech blog | [Source](https://github.com/arichtman/www.richtman.au) |
 | [Ponderosa Games](https://ponderosagames.com/) | John Burak ([JVimes](https://github.com/jvimes)) | A friendly indie game company | &mdash; |
 | [jmbhughes.com](https://jmbhughes.com/) | Marcus Hughes ([jmbhughes](https://github.com/jmbhughes)) | Personal blog | [Source](https://github.com/jmbhughes/jmbhughes.github.io) |
+| [szabolcs.me](https://szabolcs.me) | Szabolcs Fazekas ([szabolcsf](https://github.com/szabolcsf)) | Personal blog | [Source](https://github.com/szabolcsf/szabolcs.me) |
 
 
 Using tabi? Feel free to create a PR and add your site to this list.

@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2024-12-07T01:27:32+02:00
+date = 2024-12-16T13:54:28+02:00
 
 [taxonomies]
-theme-tags = ['Blog', 'SEO-friendly', 'Multilingual', 'Responsive']
+theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2024-12-07T01:27:32+02:00
-updated = 2024-12-07T01:27:32+02:00
+created = 2024-12-16T13:54:28+02:00
+updated = 2024-12-16T13:54:28+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -26,7 +26,10 @@ homepage = "https://salif.eu"
 
 A clean and elegant blog theme for [Zola](https://www.getzola.org/). Linkita is based on [Kita](https://github.com/st1020/kita) and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual and SEO friendly.
 
-The source code is available on [Codeberg](https://codeberg.org/salif/linkita) and mirrored on [GitHub](https://github.com/salif/linkita). A live preview can be viewed in [English](https://salif.github.io/linkita/en/), [Bulgarian](https://salif.github.io/linkita/), and [Esperanto](https://salif.github.io/linkita/eo/). Screenshots are provided for both [Light mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.png) and [Dark mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.dark.png). For discussion, you can join the [Matrix chat room](https://matrix.to/#/#linkita:mozilla.org).
+- The source code is available on [Codeberg](https://codeberg.org/salif/linkita) and mirrored on [GitHub](https://github.com/salif/linkita).
+- Live preview in [English](https://salif.github.io/linkita/en/), [Bulgarian](https://salif.github.io/linkita/), [Esperanto](https://salif.github.io/linkita/eo/). See [demo source code](https://codeberg.org/salif/linkita-demo).
+- Screenshots for [light mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.png), [dark mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.dark.png).
+- For discussion, join the [Matrix chat room](https://matrix.to/#/#linkita:mozilla.org).
 
 ## Features
 
@@ -597,7 +600,7 @@ gender = "female" # or "male"
 # Your Fediverse account URL
 # url = ""
 
-# [extra.profiles.your_username.open_graph.languages.fr.image_alt]
+# [extra.profiles.your_username.open_graph.languages.fr]
 # A description in French of what is in the social image
 # image_alt = ""
 ```
@@ -734,8 +737,8 @@ Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/l
 
 ## Blogs using this theme
 
-- [salif.eu](https://salif.eu): Personal website
 - [Zola Themes Collection](https://salif.github.io/zola-themes-collection/)
+- [salif.eu](https://salif.eu): Personal website
 
 If you use Linkita, feel free to create a pull request to add your site to this list.
 
