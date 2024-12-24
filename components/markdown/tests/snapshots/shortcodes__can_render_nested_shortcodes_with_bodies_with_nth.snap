@@ -1,0 +1,17 @@
+---
+source: components/markdown/tests/shortcodes.rs
+assertion_line: 398
+expression: body
+---
+<p><strong>a: 1</strong></p>
+<p><strong>a: 2</strong></p>
+<div><p><strong>a: 3</strong></p>
+<p><strong>a: 4</strong></p>
+<div><p><strong>a: 5</strong></p>
+<p><strong>a: 6</strong></p>
+</div>
+<p><strong>a: 7</strong></p>
+<p><strong>a: 8</strong></p>
+</div>
+<p><strong>a: 9</strong></p>
+<p><strong>a: 10</strong></p>

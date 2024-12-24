@@ -1,11 +1,11 @@
-use std::ops::Range;
+use std::{collections::HashMap, ops::Range};
 
 use errors::{bail, Context as ErrorContext, Result};
 use libs::tera::{to_value, Context, Map, Tera, Value};
 use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::Parser;
-use utils::templates::{ShortcodeFileType, ShortcodeInvocationCounter};
+use utils::templates::{ShortcodeDefinition, ShortcodeFileType, ShortcodeInvocationCounter};
 
 pub const SHORTCODE_PLACEHOLDER: &str = "@@ZOLA_SC_PLACEHOLDER@@";
 
@@ -13,14 +13,34 @@ pub const SHORTCODE_PLACEHOLDER: &str = "@@ZOLA_SC_PLACEHOLDER@@";
 pub struct Shortcode {
     pub(crate) name: String,
     pub(crate) args: Value,
+    // In practice, span.len() is always equal to SHORTCODE_PLACEHOLDER.len()
     pub(crate) span: Range<usize>,
     pub(crate) body: Option<String>,
     pub(crate) nth: usize,
+    pub(crate) inner: Vec<Shortcode>,
     // set later down the line, for quick access without needing the definitions
     pub(crate) tera_name: String,
 }
 
 impl Shortcode {
+    /// Attempts to fill the `tera_name` field from the provided definitions for self and all of self.inner.
+    ///
+    /// This returns an error if the definitions do not have this shortcode.
+    pub fn fill_tera_name(
+        &mut self,
+        definitions: &HashMap<String, ShortcodeDefinition>,
+    ) -> Result<()> {
+        if let Some(def) = definitions.get(&self.name) {
+            self.tera_name = def.tera_name.clone();
+        } else {
+            return Err(errors::anyhow!("Found usage of a shortcode named `{}` but we do not know about. Make sure it's not a typo and that a field name `{}.{{html,md}}` exists in the `templates/shortcodes` directory.", self.name, self.name));
+        }
+        for inner_sc in self.inner.iter_mut() {
+            inner_sc.fill_tera_name(definitions)?;
+        }
+        Ok(())
+    }
+
     pub fn file_type(&self) -> ShortcodeFileType {
         if self.tera_name.ends_with("md") {
             ShortcodeFileType::Markdown
@@ -29,7 +49,34 @@ impl Shortcode {
         }
     }
 
-    pub fn render(self, tera: &Tera, context: &Context) -> Result<String> {
+    /// Expands all inner-shortcodes and leaves self.inner empty.
+    ///
+    /// This function has no effect with shortcodes without bodies.
+    pub fn flatten(&mut self, tera: &Tera, context: &Context) -> Result<()> {
+        let Some(body) = &mut self.body else {
+            return Ok(());
+        };
+        for inner_sc in std::mem::take(&mut self.inner).into_iter().rev() {
+            // We're not considering the file_type of the inner shortcodes.
+            // - HTML SC invokes HTML SC: works as expected.
+            // - MD SC invokes HTML SC: MD can do inline-html, it is assumed that this is intentional.
+            // - MD SC invokes MD SC: works as expected.
+            // - HTML SC invokes MD SC: HTML SC's with MD bodies usually use the "markdown" filter.
+            let inner_sc_span = inner_sc.span.clone();
+            let inner_sc_result = inner_sc.render(tera, context)?;
+            body.replace_range(inner_sc_span, &inner_sc_result);
+        }
+        Ok(())
+    }
+
+    pub fn render(mut self, tera: &Tera, context: &Context) -> Result<String> {
+        // This function gets called under the following circumstances
+        // 1. as an .md shortcode, the resulting body is inserted into the document _before_ MD -> HTML conversion
+        // 2. as an .html shortcode, the result is inserted into the document _during_ MD -> HTML conversion. (The HTML
+        //    is injected into cmark's AST)
+        // 3. As an inner-part of a shortcode which is being flattened. The file_type is not considered.
+        self.flatten(tera, context)?;
+
         let name = self.name;
         let tpl_name = self.tera_name;
         let mut new_context = Context::from_value(self.args)?;
@@ -48,6 +95,7 @@ impl Shortcode {
         Ok(res)
     }
 
+    /// Shifts `self.span` by `(rendered_length - sc_span.len())`
     pub fn update_range(&mut self, sc_span: &Range<usize>, rendered_length: usize) {
         if self.span.start < sc_span.start {
             return;
@@ -210,6 +258,7 @@ pub fn parse_for_shortcodes(
                     span: start..(start + SHORTCODE_PLACEHOLDER.len()),
                     body: None,
                     nth,
+                    inner: Vec::new(),
                     tera_name: String::new(),
                 });
                 output.push_str(SHORTCODE_PLACEHOLDER);
@@ -220,14 +269,18 @@ pub fn parse_for_shortcodes(
                 // 3 items in inner: call, body, end
                 // we don't care about the closing tag
                 let (name, args) = parse_shortcode_call(inner.next().unwrap());
-                let body = inner.next().unwrap().as_span().as_str().trim();
                 let nth = invocation_counter.get(&name);
+                let (body, inner) = parse_for_shortcodes(
+                    inner.next().unwrap().as_span().as_str().trim(),
+                    invocation_counter,
+                )?;
                 shortcodes.push(Shortcode {
                     name,
                     args,
                     span: start..(start + SHORTCODE_PLACEHOLDER.len()),
-                    body: Some(body.to_string()),
+                    body: Some(body),
                     nth,
+                    inner,
                     tera_name: String::new(),
                 });
                 output.push_str(SHORTCODE_PLACEHOLDER)
@@ -370,6 +423,7 @@ mod tests {
             span: 10..20,
             body: None,
             nth: 0,
+            inner: Vec::new(),
             tera_name: String::new(),
         };
         // 6 -> 10 in length so +4 on both sides of the range
@@ -389,6 +443,7 @@ mod tests {
             span: 42..65,
             body: None,
             nth: 0,
+            inner: Vec::new(),
             tera_name: String::new(),
         };
         sc.update_range(&(9..32), 3);
@@ -479,6 +534,21 @@ mod tests {
         assert_eq!(shortcodes[0].nth, 1);
         assert_eq!(shortcodes[1].nth, 1);
         assert_eq!(shortcodes[2].nth, 2);
+    }
+
+    #[test]
+    fn can_extract_nested_shortcode_bodies_and_increment_nth() {
+        let (out, shortcodes) = parse_for_shortcodes(
+            "Hello World {% i_am_gonna_nest() %} Somebody {% i_am_gonna_nest() %} Somebody {% end %} {% end %}!!",
+            &ShortcodeInvocationCounter::new(),
+        )
+        .unwrap();
+        assert_eq!(out, format!("Hello World {}!!", SHORTCODE_PLACEHOLDER,));
+        assert_eq!(shortcodes.len(), 1);
+        assert_eq!(shortcodes[0].inner.len(), 1);
+        assert_eq!(shortcodes[0].nth, 1);
+        assert_eq!(shortcodes[0].inner[0].nth, 2);
+        assert_eq!(shortcodes[0].body, Some(format!("Somebody {SHORTCODE_PLACEHOLDER}")));
     }
 
     #[test]
