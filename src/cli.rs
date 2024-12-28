@@ -100,6 +100,9 @@ pub enum Command {
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,
+        /// Skip external links
+        #[clap(long)]
+        skip_external_links: bool,
     },
 
     /// Generate shell completion
