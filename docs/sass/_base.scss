@@ -86,6 +86,14 @@ a {
       color: white;
     }
   }
+
+  &[rel~="noreferrer"] {
+    padding-right: 1em;
+    background-size: 14px;
+    background-image: $external-link-icon;
+    background-repeat: no-repeat;
+    background-position: center right;
+  }
 }
 
 pre {
