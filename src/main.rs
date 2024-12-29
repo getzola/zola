@@ -86,6 +86,7 @@ fn main() {
             open,
             fast,
             no_port_append,
+            extra_watch_path,
         } => {
             if port != 1111 && !port_is_available(port) {
                 console::error("The requested port is not available");
@@ -114,6 +115,7 @@ fn main() {
                 fast,
                 no_port_append,
                 UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
+                extra_watch_path,
             ) {
                 messages::unravel_errors("Failed to serve the site", &e);
                 std::process::exit(1);

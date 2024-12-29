@@ -31,10 +31,6 @@ static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     ).unwrap()
 });
 
-static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
-});
-
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Page {
     /// All info about the actual file
@@ -232,10 +228,7 @@ impl Page {
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
 
-        self.summary = res
-            .summary_len
-            .map(|l| &res.body[0..l])
-            .map(|s| FOOTNOTES_RE.replace_all(s, "").into_owned());
+        self.summary = res.summary;
         self.content = res.body;
         self.toc = res.toc;
         self.external_links = res.external_links;

@@ -19,7 +19,7 @@ use utils::globs::build_ignore_glob_set;
 use utils::slugs::slugify_paths;
 
 // We want a default base url for tests
-static DEFAULT_BASE_URL: &str = "http://a-website.com";
+const DEFAULT_BASE_URL: &str = "http://a-website.com";
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -27,6 +27,13 @@ pub enum Mode {
     Build,
     Serve,
     Check,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ExcludePaginatedPagesInSitemap {
+    None,
+    All,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -98,6 +105,12 @@ pub struct Config {
     pub markdown: markup::Markdown,
     /// All user params set in `[extra]` in the config
     pub extra: HashMap<String, Toml>,
+    /// Enables the generation of Sitemap.xml
+    pub generate_sitemap: bool,
+    /// Enables the generation of robots.txt
+    pub generate_robots_txt: bool,
+    /// Whether to exclude paginated pages in sitemap; can take values "none", "all"
+    pub exclude_paginated_pages_in_sitemap: ExcludePaginatedPagesInSitemap,
 }
 
 #[derive(Serialize)]
@@ -117,6 +130,9 @@ pub struct SerializedConfig<'a> {
     extra: &'a HashMap<String, Toml>,
     markdown: &'a markup::Markdown,
     search: search::SerializedSearch<'a>,
+    generate_sitemap: bool,
+    generate_robots_txt: bool,
+    exclude_paginated_pages_in_sitemap: ExcludePaginatedPagesInSitemap,
 }
 
 impl Config {
@@ -170,6 +186,7 @@ impl Config {
 
         // this is the step at which missing extra syntax and highlighting themes are raised as errors
         config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
+        config.markdown.validate_external_links_class()?;
 
         Ok(config)
     }
@@ -281,6 +298,10 @@ impl Config {
         self.mode == Mode::Check
     }
 
+    pub fn should_exclude_paginated_pages_in_sitemap(&self) -> bool {
+        self.exclude_paginated_pages_in_sitemap == ExcludePaginatedPagesInSitemap::All
+    }
+
     pub fn enable_serve_mode(&mut self) {
         self.mode = Mode::Serve;
     }
@@ -332,6 +353,9 @@ impl Config {
             extra: &self.extra,
             markdown: &self.markdown,
             search: self.search.serialize(),
+            generate_sitemap: self.generate_sitemap,
+            generate_robots_txt: self.generate_robots_txt,
+            exclude_paginated_pages_in_sitemap: self.exclude_paginated_pages_in_sitemap,
         }
     }
 }
@@ -395,6 +419,9 @@ impl Default for Config {
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
             extra: HashMap::new(),
+            generate_sitemap: true,
+            generate_robots_txt: true,
+            exclude_paginated_pages_in_sitemap: ExcludePaginatedPagesInSitemap::None,
         }
     }
 }
@@ -992,4 +1019,70 @@ feed_filename = "test.xml"
 
         Config::parse(config).unwrap();
     }
+
+    #[test]
+    fn parse_generate_sitemap_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_sitemap = true
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_sitemap);
+    }
+
+    #[test]
+    fn parse_generate_sitemap_false() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_sitemap = false
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(!config.generate_sitemap);
+    }
+
+    #[test]
+    fn default_no_sitemap_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_sitemap);
+    }
+
+    #[test]
+    fn parse_generate_robots_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_robots_txt = true
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_robots_txt);
+    }
+
+    #[test]
+    fn parse_generate_robots_false() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+generate_robots_txt = false
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(!config.generate_robots_txt);
+    }
+
+    #[test]
+    fn default_no_robots_true() {
+        let config = r#"
+title = "My Site"
+base_url = "example.com"
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.generate_robots_txt);
+    }
+
+    // TODO: add a test for excluding paginated pages
 }

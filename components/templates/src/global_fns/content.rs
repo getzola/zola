@@ -313,12 +313,9 @@ impl TeraFn for GetTaxonomyTerm {
         )
         .unwrap_or(true);
 
-        let lang = optional_arg!(
-            String,
-            args.get("lang"),
-            "`get_taxonomy_term_by_name`: `lang` must be a string"
-        )
-        .unwrap_or_else(|| self.default_lang.clone());
+        let lang =
+            optional_arg!(String, args.get("lang"), "`get_taxonomy_term`: `lang` must be a string")
+                .unwrap_or_else(|| self.default_lang.clone());
 
         let tax: &Taxonomy = match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
             (Some(t), _) => t,
@@ -327,7 +324,7 @@ impl TeraFn for GetTaxonomyTerm {
             }
             (None, true) => {
                 return Err(format!(
-                    "`get_taxonomy_term_by_name` received an unknown taxonomy as kind: {}",
+                    "`get_taxonomy_term` received an unknown taxonomy as kind: {}",
                     kind
                 )
                 .into());
@@ -340,11 +337,9 @@ impl TeraFn for GetTaxonomyTerm {
                 return Ok(Value::Null);
             }
             (None, true) => {
-                return Err(format!(
-                    "`get_taxonomy_term_by_name` received an unknown taxonomy as kind: {}",
-                    kind
-                )
-                .into());
+                return Err(
+                    format!("`get_taxonomy_term` received an unknown term: {}", term).into()
+                );
             }
         };
 

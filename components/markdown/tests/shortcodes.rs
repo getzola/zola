@@ -311,3 +311,15 @@ fn can_use_shortcodes_in_quotes() {
     .body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn can_render_with_inline_html() {
+    let body = common::render(
+        r#"
+Here is <span>{{ ex1(page="") }}</span> example.
+    "#,
+    )
+    .unwrap()
+    .body;
+    insta::assert_snapshot!(body);
+}

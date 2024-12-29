@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.20.0 (unreleased)
+
+- Add `name` annotation for codeblock
+- Add argument to `zola serve` to watch additional directories
+- Disable JS minification when minifying HTML, it can result in broken JS
+- Add external links class option to Markdown configuration
+- Improve accessibility by nesting bottom footnotes inside footer element
+- Add pagination info to sections
+- Exclude paginated pages in sitemap by default
+- Allow treating a missing highlight language as error
+- Handle more editors with change detection in `zola serve`
+
+
+## 0.19.2 (2024-08-15)
+
+- Fix some of YAML date parsing
+- Fix feed generation for languages not working in some cases (it was taking the value from the root of the config for
+feed_filenames)
+- Ignore `.bck` files in `zola serve`
+- Fix change monitoring on Windows
+- Allow disabling sitemap.xml and robots.txt generation
+- Fix shortcodes in inline HTML
+- Ignore code blocks in word count
+
 ## 0.19.1 (2024-06-24)
 
 - Fix `config.generate_feeds` being still serialized as `config.generate_feed`. Both are available for now

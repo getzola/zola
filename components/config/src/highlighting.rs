@@ -9,10 +9,10 @@ use crate::config::Config;
 pub const CLASS_STYLE: ClassStyle = ClassStyle::SpacedPrefixed { prefix: "z-" };
 
 pub static SYNTAX_SET: Lazy<SyntaxSet> =
-    Lazy::new(|| from_binary(include_bytes!("../../../sublime/syntaxes/newlines.packdump")));
+    Lazy::new(|| from_binary(include_bytes!("../sublime/syntaxes/newlines.packdump")));
 
 pub static THEME_SET: Lazy<ThemeSet> =
-    Lazy::new(|| from_binary(include_bytes!("../../../sublime/themes/all.themedump")));
+    Lazy::new(|| from_binary(include_bytes!("../sublime/themes/all.themedump")));
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum HighlightSource {

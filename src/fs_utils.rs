@@ -17,6 +17,8 @@ pub enum ChangeKind {
     StaticFiles,
     Sass,
     Config,
+    /// A change in one of the extra paths to watch provided by the user.
+    ExtraPath,
 }
 
 /// This enum abstracts over the fine-grained group of enums in `notify`.
@@ -35,10 +37,16 @@ pub type MeaningfulEvent = (PathBuf, PathBuf, SimpleFileSystemEventKind);
 /// return `None`.
 fn get_relevant_event_kind(event_kind: &EventKind) -> Option<SimpleFileSystemEventKind> {
     match event_kind {
+        // Nova on macOS reports this as it's final event on change
+        EventKind::Modify(ModifyKind::Name(RenameMode::Any)) => {
+            Some(SimpleFileSystemEventKind::Modify)
+        }
         EventKind::Create(CreateKind::File) | EventKind::Create(CreateKind::Folder) => {
             Some(SimpleFileSystemEventKind::Create)
         }
         EventKind::Modify(ModifyKind::Data(_))
+        // Windows 10 only reports modify events at the `Any` granularity.
+        | EventKind::Modify(ModifyKind::Any)
         // Intellij modifies file metadata on edit.
         // https://github.com/passcod/notify/issues/150#issuecomment-494912080
         | EventKind::Modify(ModifyKind::Metadata(MetadataKind::WriteTime))
@@ -81,6 +89,12 @@ pub fn filter_events(
             continue;
         }
         let path = event.event.paths[0].clone();
+
+        // Since we debounce things, some files might already not exist anymore by the
+        // time we get to them
+        if !path.exists() {
+            continue;
+        }
 
         if is_ignored_file(ignored_content_globset, &path) {
             continue;
@@ -148,7 +162,7 @@ fn detect_change_kind(pwd: &Path, path: &Path, config_path: &Path) -> (ChangeKin
     } else if path == config_path {
         ChangeKind::Config
     } else {
-        unreachable!("Got a change in an unexpected path: {}", partial_path.display());
+        ChangeKind::ExtraPath
     };
 
     (change_kind, partial_path)
@@ -172,6 +186,7 @@ mod tests {
         let cases = vec![
             (EventKind::Create(CreateKind::File), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Create(CreateKind::Folder), Some(SimpleFileSystemEventKind::Create)),
+            (EventKind::Modify(ModifyKind::Any), Some(SimpleFileSystemEventKind::Modify)),
             (
                 EventKind::Modify(ModifyKind::Data(DataChange::Size)),
                 Some(SimpleFileSystemEventKind::Modify),
@@ -226,6 +241,7 @@ mod tests {
             Path::new("hello.html~"),
             Path::new("#hello.html"),
             Path::new(".index.md.kate-swp"),
+            Path::new("smtp.md0HlVyu.bck"),
         ];
 
         for t in test_cases {

@@ -36,6 +36,10 @@ static MORE_DIVIDER_RE: Lazy<Regex> = Lazy::new(|| {
         .unwrap()
 });
 
+static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
+});
+
 /// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
 /// private schemes. This regex checks if the given string starts with something that just looks
 /// like a scheme, i.e., a case-insensitive identifier followed by a colon.
@@ -78,7 +82,7 @@ fn is_colocated_asset_link(link: &str) -> bool {
 #[derive(Debug)]
 pub struct Rendered {
     pub body: String,
-    pub summary_len: Option<usize>,
+    pub summary: Option<String>,
     pub toc: Vec<Heading>,
     /// Links to site-local pages: relative path plus optional anchor target.
     pub internal_links: Vec<(String, Option<String>)>,
@@ -273,7 +277,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
                 // nr is a number of references to this footnote
                 let (n, nr) = footnote_numbers.entry(name.clone()).or_insert((n, 0usize));
                 *nr += 1;
-                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">[{n}]</a></sup>"##).into());
+                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">{n}</a></sup>"##).into());
 
                 if footnote_bodies_stack.is_empty() {
                     // we are in the main text, just output the reference
@@ -300,7 +304,8 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
         return;
     }
 
-    old_events.push(Event::Html("<hr><ol class=\"footnotes-list\">\n".into()));
+    old_events
+        .push(Event::Html("<footer class=\"footnotes\">\n<ol class=\"footnotes-list\">\n".into()));
 
     // Step 2: retain only footnotes which was actually referenced
     footnotes.retain(|f| match f.first() {
@@ -337,7 +342,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
         //
         // HTML:
         //
-        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">[1]</a></sup>.</p>
+        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">1</a></sup>.</p>
         //
         //     <ol class="footnotes-list">
         //     <li id="fn-feet">
@@ -390,7 +395,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     });
 
     old_events.extend(footnotes);
-    old_events.push(Event::Html("</ol>\n".into()));
+    old_events.push(Event::Html("</ol>\n</footer>\n".into()));
 }
 
 pub fn markdown_to_html(
@@ -405,6 +410,7 @@ pub fn markdown_to_html(
         .map(|x| x.as_object().unwrap().get("relative_path").unwrap().as_str().unwrap());
     // the rendered html
     let mut html = String::with_capacity(content.len());
+    let mut summary = None;
     // Set while parsing
     let mut error = None;
 
@@ -554,7 +560,13 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = CodeBlock::new(fence, context.config, path);
+                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
+                        Ok(cb) => cb,
+                        Err(e) => {
+                            error = Some(e);
+                            break;
+                        }
+                    };
                     code_block = Some(block);
                     events.push(Event::Html(begin.into()));
                 }
@@ -679,17 +691,13 @@ pub fn markdown_to_html(
                         event
                     });
                 }
-                Event::Html(text) => {
-                    if !has_summary && MORE_DIVIDER_RE.is_match(&text) {
-                        has_summary = true;
-                        events.push(Event::Html(CONTINUE_READING.into()));
-                        continue;
-                    }
-                    if !contains_shortcode(text.as_ref()) {
-                        events.push(Event::Html(text));
-                        continue;
-                    }
-
+                Event::Html(text) if !has_summary && MORE_DIVIDER_RE.is_match(text.as_ref()) => {
+                    has_summary = true;
+                    events.push(Event::Html(CONTINUE_READING.into()));
+                }
+                Event::Html(text) | Event::InlineHtml(text)
+                    if contains_shortcode(text.as_ref()) =>
+                {
                     render_shortcodes!(false, text, range);
                 }
                 _ => events.push(event),
@@ -781,14 +789,31 @@ pub fn markdown_to_html(
             convert_footnotes_to_github_style(&mut events);
         }
 
-        cmark::html::push_html(&mut html, events.into_iter());
+        let continue_reading = events
+            .iter()
+            .position(|e| matches!(e, Event::Html(CowStr::Borrowed(CONTINUE_READING))))
+            .unwrap_or(events.len());
+
+        let mut events = events.into_iter();
+
+        // emit everything up to summary
+        cmark::html::push_html(&mut html, events.by_ref().take(continue_reading));
+
+        if has_summary {
+            // remove footnotes
+            let summary_html = FOOTNOTES_RE.replace_all(&html, "").into_owned();
+            summary = Some(summary_html)
+        }
+
+        // emit everything after summary
+        cmark::html::push_html(&mut html, events);
     }
 
     if let Some(e) = error {
         Err(e)
     } else {
         Ok(Rendered {
-            summary_len: if has_summary { html.find(CONTINUE_READING) } else { None },
+            summary,
             body: html,
             toc: make_table_of_contents(headings),
             internal_links,
@@ -861,10 +886,10 @@ mod tests {
         for more in mores {
             let content = format!("{top}\n\n{more}\n\n{bottom}");
             let rendered = markdown_to_html(&content, &context, vec![]).unwrap();
-            assert!(rendered.summary_len.is_some(), "no summary when splitting on {more}");
-            let summary_len = rendered.summary_len.unwrap();
-            let summary = &rendered.body[..summary_len].trim();
-            let body = &rendered.body[summary_len..].trim();
+            assert!(rendered.summary.is_some(), "no summary when splitting on {more}");
+            let summary = rendered.summary.unwrap();
+            let summary = summary.trim();
+            let body = rendered.body[summary.len()..].trim();
             let continue_reading = &body[..CONTINUE_READING.len()];
             let body = &body[CONTINUE_READING.len()..].trim();
             assert_eq!(summary, &top_rendered);

@@ -60,7 +60,10 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
 
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
-    let word_count: usize = content.unicode_words().count();
+    // code fences "toggle" the state from non-code to code and back, so anything inbetween the
+    // first fence and the next can be ignored
+    let split = content.split("```");
+    let word_count = split.step_by(2).map(|section| section.unicode_words().count()).sum();
 
     // https://help.medium.com/hc/en-us/articles/214991667-Read-time
     // 275 seems a bit too high though
@@ -240,5 +243,19 @@ mod tests {
         let (word_count, reading_time) = get_reading_analytics(&content);
         assert_eq!(word_count, 2000);
         assert_eq!(reading_time, 10);
+    }
+
+    #[test]
+    fn reading_analytics_no_code() {
+        let (word_count, reading_time) =
+            get_reading_analytics("hello world ``` code goes here ``` goodbye world");
+        assert_eq!(word_count, 4);
+        assert_eq!(reading_time, 1);
+
+        let (word_count, reading_time) = get_reading_analytics(
+            "hello world ``` code goes here ``` goodbye world ``` dangling fence",
+        );
+        assert_eq!(word_count, 4);
+        assert_eq!(reading_time, 1);
     }
 }
