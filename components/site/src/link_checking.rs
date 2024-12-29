@@ -282,7 +282,7 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
 
             for (page_path, link, check_res) in errors {
                 messages.push(format!(
-                    "Broken link in {} to {}: {}",
+                    "Broken link in {} to {} : {}",
                     page_path.to_string_lossy(),
                     link,
                     link_checker::message(&check_res)
