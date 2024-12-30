@@ -201,7 +201,7 @@ fn parse_shortcode_call(pair: Pair<Rule>) -> (String, Value) {
 
 pub fn parse_for_shortcodes(
     content: &str,
-    invocation_counter: &ShortcodeInvocationCounter,
+    invocation_counter: &mut ShortcodeInvocationCounter,
 ) -> Result<(String, Vec<Shortcode>)> {
     let mut shortcodes = Vec::new();
     let mut output = String::with_capacity(content.len());
@@ -454,7 +454,7 @@ mod tests {
     fn can_extract_basic_inline_shortcode_with_args() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Inline shortcode: {{ hello(string='hey', int=1, float=2.1, bool=true, array=[true, false]) }} hey",
-            &ShortcodeInvocationCounter::new(),
+            &mut ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(out, format!("Inline shortcode: {} hey", SHORTCODE_PLACEHOLDER));
@@ -477,7 +477,7 @@ mod tests {
     fn can_unignore_ignored_inline_shortcode() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Hello World {{/* youtube() */}} hey",
-            &ShortcodeInvocationCounter::new(),
+            &mut ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(out, "Hello World {{ youtube() }} hey");
@@ -488,7 +488,7 @@ mod tests {
     fn can_extract_shortcode_with_body() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Body shortcode\n {% quote(author='Bobby', array=[[true]]) %}DROP TABLES;{% end %} \n hey",
-            &ShortcodeInvocationCounter::new()
+            &mut ShortcodeInvocationCounter::new()
         )
         .unwrap();
         assert_eq!(out, format!("Body shortcode\n {} \n hey", SHORTCODE_PLACEHOLDER));
@@ -509,7 +509,7 @@ mod tests {
     fn can_unignore_ignored_shortcode_with_body() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Hello World {%/* youtube() */%} Somebody {%/* end */%} hey",
-            &ShortcodeInvocationCounter::new(),
+            &mut ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(out, "Hello World {% youtube() %} Somebody {% end %} hey");
@@ -520,7 +520,7 @@ mod tests {
     fn can_extract_multiple_shortcodes_and_increment_nth() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Hello World {% youtube() %} Somebody {% end %} {{ hello() }}\n {{hello()}}",
-            &ShortcodeInvocationCounter::new(),
+            &mut ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(
@@ -540,7 +540,7 @@ mod tests {
     fn can_extract_nested_shortcode_bodies_and_increment_nth() {
         let (out, shortcodes) = parse_for_shortcodes(
             "Hello World {% i_am_gonna_nest() %} Somebody {% i_am_gonna_nest() %} Somebody {% end %} {% end %}!!",
-            &ShortcodeInvocationCounter::new(),
+            &mut ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(out, format!("Hello World {}!!", SHORTCODE_PLACEHOLDER,));
@@ -560,7 +560,7 @@ mod tests {
         {{ vimeo(id="210073083#hello", n_a_me="hello") }}
         {{ streamable(id="c0ic", n1=true) }}
         {{ gist(url="https://gist.github.com/Keats/32d26f699dcc13ebd41b") }}"#,
-            &ShortcodeInvocationCounter::new(),
+            &mut ShortcodeInvocationCounter::new(),
         )
         .unwrap();
         assert_eq!(shortcodes.len(), 5);

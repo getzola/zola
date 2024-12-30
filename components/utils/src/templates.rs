@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, PoisonError, RwLock},
-};
+use std::collections::HashMap;
 
 use libs::tera::{Context, Tera};
 
@@ -39,21 +36,19 @@ impl ShortcodeDefinition {
 
 #[derive(Debug, Default, Clone)]
 pub struct ShortcodeInvocationCounter {
-    amounts: Arc<RwLock<HashMap<String, usize>>>,
+    amounts: HashMap<String, usize>,
 }
 impl ShortcodeInvocationCounter {
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn get(&self, str: &str) -> usize {
-        let mut amounts = self.amounts.write().unwrap_or_else(PoisonError::into_inner);
-        let nth = amounts.entry(str.into()).or_insert(0);
+    pub fn get(&mut self, str: &str) -> usize {
+        let nth = self.amounts.entry(str.into()).or_insert(0);
         *nth += 1;
         return *nth;
     }
-    pub fn reset(&self) {
-        let mut amounts = self.amounts.write().unwrap_or_else(PoisonError::into_inner);
-        amounts.clear();
+    pub fn reset(&mut self) {
+        self.amounts.clear();
     }
 }
 

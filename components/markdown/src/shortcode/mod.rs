@@ -13,7 +13,8 @@ pub fn extract_shortcodes(
     source: &str,
     definitions: &HashMap<String, ShortcodeDefinition>,
 ) -> Result<(String, Vec<Shortcode>)> {
-    let (out, mut shortcodes) = parse_for_shortcodes(source, &ShortcodeInvocationCounter::new())?;
+    let (out, mut shortcodes) =
+        parse_for_shortcodes(source, &mut ShortcodeInvocationCounter::new())?;
 
     for sc in &mut shortcodes {
         sc.fill_tera_name(definitions)?;
