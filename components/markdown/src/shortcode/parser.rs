@@ -52,7 +52,7 @@ impl Shortcode {
     /// Expands all inner-shortcodes and leaves self.inner empty.
     ///
     /// This function has no effect with shortcodes without bodies.
-    pub fn flatten(&mut self, tera: &Tera, context: &Context) -> Result<()> {
+    pub fn render_inner_shortcodes(&mut self, tera: &Tera, context: &Context) -> Result<()> {
         let Some(body) = &mut self.body else {
             return Ok(());
         };
@@ -75,7 +75,7 @@ impl Shortcode {
         // 2. as an .html shortcode, the result is inserted into the document _during_ MD -> HTML conversion. (The HTML
         //    is injected into cmark's AST)
         // 3. As an inner-part of a shortcode which is being flattened. The file_type is not considered.
-        self.flatten(tera, context)?;
+        self.render_inner_shortcodes(tera, context)?;
 
         let name = self.name;
         let tpl_name = self.tera_name;
