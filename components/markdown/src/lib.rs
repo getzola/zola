@@ -19,8 +19,7 @@ pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown
 
     let definitions = context.shortcode_definitions.as_ref();
     // Extract all the defined shortcodes
-    let (content, shortcodes) =
-        extract_shortcodes(content, definitions, &context.shortcode_invoke_counter)?;
+    let (content, shortcodes) = extract_shortcodes(content, definitions)?;
 
     // Step 1: we render the MD shortcodes before rendering the markdown so they can get processed
     let (content, html_shortcodes) =

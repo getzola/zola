@@ -6,7 +6,6 @@ use config::Config;
 use markdown::{render_content, RenderContext};
 use templates::ZOLA_TERA;
 use utils::slugs::SlugifyStrategy;
-use utils::templates::ShortcodeInvocationCounter;
 use utils::types::InsertAnchor;
 
 mod common;
@@ -114,7 +113,6 @@ fn can_customise_anchor_template() {
     tera.add_raw_template("anchor-link.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let invoke_counter = ShortcodeInvocationCounter::default();
     let context = RenderContext::new(
         &tera,
         &config,
@@ -122,7 +120,6 @@ fn can_customise_anchor_template() {
         "",
         &permalinks_ctx,
         InsertAnchor::Right,
-        &invoke_counter,
     );
     let body = render_content("# Hello", &context).unwrap().body;
     insta::assert_snapshot!(body);

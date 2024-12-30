@@ -8,7 +8,7 @@ use config::Config;
 use errors::Result;
 use markdown::{render_content, RenderContext, Rendered};
 use templates::ZOLA_TERA;
-use utils::{templates::ShortcodeInvocationCounter, types::InsertAnchor};
+use utils::types::InsertAnchor;
 
 fn configurable_render(
     content: &str,
@@ -16,7 +16,6 @@ fn configurable_render(
     insert_anchor: InsertAnchor,
 ) -> Result<Rendered> {
     let mut tera = Tera::default();
-    let invoke_counter = ShortcodeInvocationCounter::new();
     tera.extend(&ZOLA_TERA).unwrap();
 
     // out_put_id looks like a markdown string
@@ -70,7 +69,6 @@ fn configurable_render(
         "https://www.getzola.org/test/",
         &permalinks,
         insert_anchor,
-        &invoke_counter,
     );
     let shortcode_def = utils::templates::get_shortcodes(&tera);
     context.set_shortcode_definitions(&shortcode_def);

@@ -25,7 +25,7 @@ use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
 use utils::net::{get_available_port, is_external_link};
-use utils::templates::{render_template, ShortcodeDefinition, ShortcodeInvocationCounter};
+use utils::templates::{render_template, ShortcodeDefinition};
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -65,7 +65,6 @@ pub struct Site {
     include_drafts: bool,
     build_mode: BuildMode,
     shortcode_definitions: HashMap<String, ShortcodeDefinition>,
-    shortcode_invoke_counter: ShortcodeInvocationCounter,
 }
 
 impl Site {
@@ -109,7 +108,6 @@ impl Site {
             library: Arc::new(RwLock::new(Library::default())),
             build_mode: BuildMode::Disk,
             shortcode_definitions,
-            shortcode_invoke_counter: ShortcodeInvocationCounter::new(),
         };
 
         Ok(site)
@@ -448,7 +446,6 @@ impl Site {
                     config,
                     insert_anchor,
                     &self.shortcode_definitions,
-                    &self.shortcode_invoke_counter,
                 )
             })
             .collect::<Result<()>>()?;
@@ -459,13 +456,7 @@ impl Site {
             .collect::<Vec<_>>()
             .par_iter_mut()
             .map(|section| {
-                section.render_markdown(
-                    permalinks,
-                    tera,
-                    config,
-                    &self.shortcode_definitions,
-                    &self.shortcode_invoke_counter,
-                )
+                section.render_markdown(permalinks, tera, config, &self.shortcode_definitions)
             })
             .collect::<Result<()>>()?;
 
@@ -495,7 +486,6 @@ impl Site {
                 &self.config,
                 insert_anchor,
                 &self.shortcode_definitions,
-                &self.shortcode_invoke_counter,
             )?;
         }
 
@@ -528,7 +518,6 @@ impl Site {
                 &self.tera,
                 &self.config,
                 &self.shortcode_definitions,
-                &self.shortcode_invoke_counter,
             )?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");

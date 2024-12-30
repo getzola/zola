@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use config::Config;
 use libs::tera::{Context, Tera};
-use utils::templates::{ShortcodeDefinition, ShortcodeInvocationCounter};
+use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 
 /// All the information from the zola site that is needed to render HTML from markdown
@@ -18,7 +18,6 @@ pub struct RenderContext<'a> {
     pub insert_anchor: InsertAnchor,
     pub lang: &'a str,
     pub shortcode_definitions: Cow<'a, HashMap<String, ShortcodeDefinition>>,
-    pub shortcode_invoke_counter: Cow<'a, ShortcodeInvocationCounter>,
 }
 
 impl<'a> RenderContext<'a> {
@@ -29,7 +28,6 @@ impl<'a> RenderContext<'a> {
         current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
-        shortcode_invoke_counter: &'a ShortcodeInvocationCounter,
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
         tera_context.insert("config", &config.serialize(lang));
@@ -45,7 +43,6 @@ impl<'a> RenderContext<'a> {
             config,
             lang,
             shortcode_definitions: Cow::Owned(HashMap::new()),
-            shortcode_invoke_counter: Cow::Borrowed(shortcode_invoke_counter),
         }
     }
 
@@ -74,7 +71,6 @@ impl<'a> RenderContext<'a> {
             config,
             lang: &config.default_language,
             shortcode_definitions: Cow::Owned(HashMap::new()),
-            shortcode_invoke_counter: Cow::Owned(ShortcodeInvocationCounter::new()),
         }
     }
 }

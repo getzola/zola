@@ -11,7 +11,7 @@ use errors::{Context, Result};
 use markdown::{render_content, RenderContext};
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
-use utils::templates::{render_template, ShortcodeDefinition, ShortcodeInvocationCounter};
+use utils::templates::{render_template, ShortcodeDefinition};
 use utils::types::InsertAnchor;
 
 use crate::file_info::FileInfo;
@@ -212,9 +212,7 @@ impl Page {
         config: &Config,
         anchor_insert: InsertAnchor,
         shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
-        shortcode_invoke_counter: &ShortcodeInvocationCounter,
     ) -> Result<()> {
-        shortcode_invoke_counter.reset();
         let mut context = RenderContext::new(
             tera,
             config,
@@ -222,7 +220,6 @@ impl Page {
             &self.permalink,
             permalinks,
             anchor_insert,
-            shortcode_invoke_counter,
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
@@ -307,7 +304,6 @@ mod tests {
     use libs::globset::{Glob, GlobSetBuilder};
     use libs::tera::Tera;
     use tempfile::tempdir;
-    use utils::templates::ShortcodeInvocationCounter;
 
     use crate::Page;
     use config::{Config, LanguageOptions};
@@ -333,7 +329,6 @@ Hello world"#;
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            &ShortcodeInvocationCounter::default(),
         )
         .unwrap();
 
@@ -362,7 +357,6 @@ Hello world"#;
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            &ShortcodeInvocationCounter::default(),
         )
         .unwrap();
 
@@ -533,7 +527,6 @@ Hello world
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            &ShortcodeInvocationCounter::default(),
         )
         .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>\n".to_string()));
@@ -568,7 +561,6 @@ And here's another. [^3]
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            &ShortcodeInvocationCounter::default(),
         )
         .unwrap();
         assert_eq!(
