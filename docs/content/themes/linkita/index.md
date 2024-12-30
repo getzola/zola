@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2024-12-16T13:54:28+02:00
+date = 2024-12-29T21:26:44+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2024-12-16T13:54:28+02:00
-updated = 2024-12-16T13:54:28+02:00
+created = 2024-12-29T21:26:44+02:00
+updated = 2024-12-29T21:26:44+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -53,10 +53,11 @@ A clean and elegant blog theme for [Zola](https://www.getzola.org/). Linkita is 
 
 ### Linkita features
 
-- i18n
-- Improved SEO
+- Multilingual support
+- Improved search engine optimization
+- Search support (elasticlunr_javascript)
+- More configurability
 - Author profiles
-- Search (elasticlunr_javascript)
 - Keyboard shortcuts
 
 ## Installing
@@ -75,7 +76,7 @@ Alternatively, clone the repository: `git clone https://codeberg.org/salif/linki
 theme = "linkita"
 ```
 
-3. Optionally, you can switch from the `linkita` branch to the latest release:
+3. Optionally, you can switch from the `linkita` branch to the latest stable version:
 
 ```sh
 cd themes/linkita
@@ -85,9 +86,9 @@ npm run switch-to-latest
 ## Updating
 
 ```sh
-git submodule update --merge --remote themes/linkita
-# cd themes/linkita
-# npm run switch-to-latest
+git submodule update --remote themes/linkita
+# Optionally, you can switch to the latest stable version:
+# cd themes/linkita && npm run switch-to-latest
 ```
 
 ## Usage
@@ -155,8 +156,6 @@ content_tier = ""
 locations = []
 # A high-level section name. e.g. `Technology`
 section = ""
-# Tag words associated with this article
-tags = [""]
 # Indicates whether the article is an opinion piece or not. e.g. `true` or `false`
 opinion =
 # The URL for the audio
@@ -650,7 +649,7 @@ copyright = "&copy; $YEAR Your Name &vert; [CC BY-SA 4.0]($LICENSE_URL)"
 # search_page_url = "$BASE_URL/search/"
 ```
 
-### Locale and Date format
+### Language specific options
 
 | key                                       | type   | default value |
 | ----------------------------------------- | ------ | ------------- |
@@ -660,6 +659,8 @@ copyright = "&copy; $YEAR Your Name &vert; [CC BY-SA 4.0]($LICENSE_URL)"
 | extra.languages[lang].header_menu_name    | string |               |
 | extra.languages[lang].header_buttons      | array of strings |     |
 | extra.languages[lang].art_x_lang          | string |               |
+| extra.languages[lang].taxonomy_list_description   | string |       |
+| extra.languages[lang].taxonomy_single_description | string |       |
 
 For date format, see [chrono docs](https://docs.rs/chrono/0.4/chrono/format/strftime/index.html).
 
@@ -675,20 +676,56 @@ date_format = "%x"
 date_format_archive = "%m-%d"
 ```
 
+#### Taxonomy/term description
+
+Taxonomy pages do not have a description by default.
+Optionally you can set a generic description.
+`$NAME` will be automatically replaced.
+
+```toml
+[extra.languages.en]
+taxonomy_list_description = "A map of all $NAME on this site. Start exploring!"
+taxonomy_single_description = "Browse articles related to $NAME. Start exploring!"
+```
+
 ### Web analytics
 
-| key                        | type   |
-| -------------------------- | ------ |
-| extra.goatcounter.endpoint | string |
-| extra.goatcounter.src      | string |
+#### GoatCounter
+
+| key                               | type   |
+| --------------------------------- | ------ |
+| extra.goatcounter.endpoint        | string |
+| extra.goatcounter.src             | string |
+| extra.goatcounter.noscript_prefix | string |
 
 Set only if you use [GoatCounter](https://www.goatcounter.com/).
+
+To enable [pixel](https://www.goatcounter.com/help/pixel), set `noscript_prefix` to an empty string.
+If your `base_url` includes a subpath, set `noscript_prefix` to the subpath without a trailing slash.
 
 ```toml
 [extra.goatcounter]
 endpoint = "https://MYCODE.goatcounter.com/count"
 src = "//gc.zgo.at/count.js"
 ```
+
+#### Vercel Analytics
+
+| key                        | type   |
+| -------------------------- | ------ |
+| extra.vercel_analytics.src | string |
+
+Set only if you use [Vercel Web Analytics](https://vercel.com/docs/analytics).
+
+```toml
+[extra.vercel_analytics]
+src = "/_vercel/insights/script.js"
+```
+
+#### Prevent tracking own pageviews
+
+Open a page of your site, adding `#disable-analytics` to the page address. Do this once for each browser and device.
+For example, open <http://127.0.0.1:1111/#disable-analytics>.
 
 ### Comments
 
@@ -735,14 +772,11 @@ See the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICE
 Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
 Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
 
-## Blogs using this theme
+## Sites using Linkita
 
 - [Zola Themes Collection](https://salif.github.io/zola-themes-collection/)
 - [salif.eu](https://salif.eu): Personal website
 
 If you use Linkita, feel free to create a pull request to add your site to this list.
-
-See also [Google results](https://www.google.com/search?q=%22Powered+by+Zola+and+Linkita%22+-site%3Ahttps%3A%2F%2Fsalif.github.io%2Flinkita%2F)
-and [Bing results](https://www.bing.com/search?q=%22Powered+by+Zola+and+Linkita%22+-site%3Ahttps%3A%2F%2Fsalif.github.io%2Flinkita%2F).
 
         
