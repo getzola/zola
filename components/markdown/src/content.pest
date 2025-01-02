@@ -55,9 +55,9 @@ ignored_sc_body_end   = !{ "{%/*" ~ "end" ~ "*/%}" }
 shortcode_with_body         = !{ sc_body_start ~ text_in_body_sc ~ sc_body_end }
 ignored_shortcode_with_body = { ignored_sc_body_start ~ text_in_ignored_body_sc ~ ignored_sc_body_end }
 
-text_in_body_sc         = ${ (!(sc_body_end) ~ ANY)+ }
-text_in_ignored_body_sc = ${ (!(ignored_sc_body_end) ~ ANY)+ }
-text                    = ${ (!(inline_shortcode | ignored_inline_shortcode | shortcode_with_body | ignored_shortcode_with_body) ~ ANY)+ }
+text_in_body_sc         = ${ (!(sc_body_end) ~ content)+ }
+text_in_ignored_body_sc = ${ (!(ignored_sc_body_end) ~ content)+ }
+text                    = ${ (!(inline_shortcode | ignored_inline_shortcode | sc_body_start | ignored_sc_body_start | sc_body_end | ignored_sc_body_end) ~ ANY)+ }
 
 content = _{
     ignored_inline_shortcode |

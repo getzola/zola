@@ -323,3 +323,77 @@ Here is <span>{{ ex1(page="") }}</span> example.
     .body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn can_render_markdown_in_nested_shortcodes_with_bodies() {
+    let config = Config::default_for_test();
+    let body = common::render_with_config(
+        r#"
+# Begin level 0  
+
+{% render_md() %}
+
+## Begin level 1
+
+{% render_md() %}
+
+### Begin level 2
+
+{{ a_md() }}, {{ a_md() }}, {{ b_md() }}, {{ b_md() }}
+
+### End level 2
+
+{% end %}
+
+## End level 1
+
+{% end %}
+
+# End level 0
+    "#,
+        config,
+    )
+    .unwrap()
+    .body;
+    insta::assert_snapshot!(body);
+}
+
+#[test]
+fn can_render_nested_shortcodes_with_bodies_with_nth() {
+    let config = Config::default_for_test();
+    let body = common::render_with_config(
+        r#"
+{{ a_md() }}
+
+{{ a_md() }}
+
+{% render_md() %}
+
+{{ a_md() }}
+
+{{ a_md() }}
+
+{% render_md() %}
+
+{{ a_md() }}
+
+{{ a_md() }}
+
+{% end %}
+
+{{ a_md() }}
+
+{{ a_md() }}
+
+{% end %}
+
+{{ a_md() }}
+
+{{ a_md() }}
+    "#,
+        config,
+    )
+    .unwrap()
+    .body;
+    insta::assert_snapshot!(body);
+}

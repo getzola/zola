@@ -34,6 +34,24 @@ impl ShortcodeDefinition {
     }
 }
 
+#[derive(Debug, Default, Clone)]
+pub struct ShortcodeInvocationCounter {
+    amounts: HashMap<String, usize>,
+}
+impl ShortcodeInvocationCounter {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn get(&mut self, str: &str) -> usize {
+        let nth = self.amounts.entry(str.into()).or_insert(0);
+        *nth += 1;
+        return *nth;
+    }
+    pub fn reset(&mut self) {
+        self.amounts.clear();
+    }
+}
+
 /// Fetches all the shortcodes from the Tera instances
 pub fn get_shortcodes(tera: &Tera) -> HashMap<String, ShortcodeDefinition> {
     let mut shortcode_definitions = HashMap::new();
