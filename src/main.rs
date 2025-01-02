@@ -121,11 +121,11 @@ fn main() {
                 std::process::exit(1);
             }
         }
-        Command::Check { drafts } => {
+        Command::Check { drafts, skip_external_links } => {
             console::info("Checking site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
-            match cmd::check(&root_dir, &config_file, None, None, drafts) {
+            match cmd::check(&root_dir, &config_file, None, None, drafts, skip_external_links) {
                 Ok(()) => messages::report_elapsed_time(start),
                 Err(e) => {
                     messages::unravel_errors("Failed to check the site", &e);

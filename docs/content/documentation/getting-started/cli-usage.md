@@ -114,6 +114,8 @@ The check subcommand will try to build all pages just like the build command wou
 results to disk. Additionally, it will also check all external links in Markdown files by trying to fetch
 them (links in the template files are not checked).
 
+You can skip link checking for all the external links by `--skip-external-links` flag.
+
 By default, drafts are not loaded. If you wish to include them, pass the `--drafts` flag.
 
 ## Colored output
