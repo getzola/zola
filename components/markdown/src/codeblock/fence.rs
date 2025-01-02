@@ -24,6 +24,7 @@ pub struct FenceSettings<'a> {
     pub line_number_start: usize,
     pub highlight_lines: Vec<RangeInclusive<usize>>,
     pub hide_lines: Vec<RangeInclusive<usize>>,
+    pub name: Option<&'a str>,
 }
 
 impl<'a> FenceSettings<'a> {
@@ -34,6 +35,7 @@ impl<'a> FenceSettings<'a> {
             line_number_start: 1,
             highlight_lines: Vec::new(),
             hide_lines: Vec::new(),
+            name: None,
         };
 
         for token in FenceIter::new(fence_info) {
@@ -43,6 +45,7 @@ impl<'a> FenceSettings<'a> {
                 FenceToken::InitialLineNumber(l) => me.line_number_start = l,
                 FenceToken::HighlightLines(lines) => me.highlight_lines.extend(lines),
                 FenceToken::HideLines(lines) => me.hide_lines.extend(lines),
+                FenceToken::Name(n) => me.name = Some(n),
             }
         }
 
@@ -57,6 +60,7 @@ enum FenceToken<'a> {
     InitialLineNumber(usize),
     HighlightLines(Vec<RangeInclusive<usize>>),
     HideLines(Vec<RangeInclusive<usize>>),
+    Name(&'a str),
 }
 
 struct FenceIter<'a> {
@@ -103,7 +107,16 @@ impl<'a> Iterator for FenceIter<'a> {
                     let ranges = Self::parse_ranges(tok_split.next());
                     return Some(FenceToken::HideLines(ranges));
                 }
+                "name" => {
+                    if let Some(n) = tok_split.next() {
+                        return Some(FenceToken::Name(n));
+                    }
+                }
                 lang => {
+                    if tok_split.next().is_some() {
+                        eprintln!("Warning: Unknown annotation {}", lang);
+                        continue;
+                    }
                     return Some(FenceToken::Language(lang));
                 }
             }

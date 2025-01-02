@@ -302,9 +302,19 @@ highlight(code);
 
 - `hide_lines` to hide lines. You must specify a list of inclusive ranges of lines to hide,
 separated by ` ` (whitespace). Ranges are 1-indexed.
-  
+
 ````
 ```rust,hide_lines=1-2
+use highlighter::highlight;
+let code = "...";
+highlight(code);
+```
+````
+
+- `name` to specify a name the code block is associated with.
+  
+````
+```rust,name=mod.rs
 use highlighter::highlight;
 let code = "...";
 highlight(code);

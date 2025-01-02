@@ -852,6 +852,32 @@ fn panics_on_invalid_external_domain() {
 }
 
 #[test]
+fn external_links_ignored_on_check() {
+    let (mut site, _tmp_dir, _public) = build_site("test_site");
+
+    // remove the invalid domain skip prefix
+    let i = site
+        .config
+        .link_checker
+        .skip_prefixes
+        .iter()
+        .position(|prefix| prefix == "http://invaliddomain")
+        .unwrap();
+    site.config.link_checker.skip_prefixes.remove(i);
+
+    // confirm the invalid domain skip prefix was removed
+    assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
+
+    // set a flag to skip external links check
+    site.skip_external_links_check();
+
+    // check the test site with all external links (including invalid domain) skipped, which should
+    // not cause a panic
+    site.config.enable_check_mode();
+    site.load().expect("link check test_site");
+}
+
+#[test]
 fn can_find_site_and_page_authors() {
     let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
     path.push("test_site");

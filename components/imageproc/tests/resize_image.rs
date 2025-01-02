@@ -16,7 +16,7 @@ fn assert_processed_path_matches(path: &str, prefix: &str, extension: &str) {
     assert!(filename.ends_with(&suffix), "Path `{}` doesn't end with `{}`", path, suffix);
 }
 
-static CONFIG: &str = r#"
+const CONFIG: &str = r#"
 title = "imageproc integration tests"
 base_url = "https://example.com"
 compile_sass = false

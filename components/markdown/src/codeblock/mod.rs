@@ -3,6 +3,7 @@ mod highlight;
 
 use std::ops::RangeInclusive;
 
+use errors::{bail, Result};
 use libs::syntect::util::LinesWithEndings;
 
 use crate::codeblock::highlight::SyntaxHighlighter;
@@ -12,6 +13,7 @@ pub(crate) use fence::FenceSettings;
 
 fn opening_html(
     language: Option<&str>,
+    name: Option<&str>,
     pre_style: Option<String>,
     pre_class: Option<String>,
     line_numbers: bool,
@@ -29,6 +31,12 @@ fn opening_html(
 
         html.push_str(" data-lang=\"");
         html.push_str(lang);
+        html.push('"');
+    }
+
+    if let Some(name) = name {
+        html.push_str(" data-name=\"");
+        html.push_str(name);
         html.push('"');
     }
 
@@ -56,6 +64,12 @@ fn opening_html(
         html.push_str(lang);
         html.push('"');
     }
+
+    if let Some(name) = name {
+        html.push_str(" data-name=\"");
+        html.push_str(name);
+        html.push('"');
+    }
     html.push('>');
     html
 }
@@ -75,25 +89,31 @@ impl<'config> CodeBlock<'config> {
         config: &'config Config,
         // path to the current file if there is one, to point where the error is
         path: Option<&'config str>,
-    ) -> (Self, String) {
+    ) -> Result<(Self, String)> {
         let syntax_and_theme = resolve_syntax_and_theme(fence.language, config);
         if syntax_and_theme.source == HighlightSource::NotFound && config.markdown.highlight_code {
             let lang = fence.language.unwrap();
-            if let Some(p) = path {
-                eprintln!("Warning: Highlight language {} not found in {}", lang, p);
+            let msg = if let Some(p) = path {
+                format!("Highlight language {} not found in {}", lang, p)
             } else {
-                eprintln!("Warning: Highlight language {} not found", lang);
+                format!("Highlight language {} not found", lang)
+            };
+            if config.markdown.error_on_missing_highlight {
+                bail!(msg);
+            } else {
+                eprintln!("Warning: {}", msg);
             }
         }
         let highlighter = SyntaxHighlighter::new(config.markdown.highlight_code, syntax_and_theme);
 
         let html_start = opening_html(
             fence.language,
+            fence.name,
             highlighter.pre_style(),
             highlighter.pre_class(),
             fence.line_numbers,
         );
-        (
+        Ok((
             Self {
                 highlighter,
                 line_numbers: fence.line_numbers,
@@ -102,7 +122,7 @@ impl<'config> CodeBlock<'config> {
                 hide_lines: fence.hide_lines,
             },
             html_start,
-        )
+        ))
     }
 
     pub fn highlight(&mut self, content: &str) -> String {

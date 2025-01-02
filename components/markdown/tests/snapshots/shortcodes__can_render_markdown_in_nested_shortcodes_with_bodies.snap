@@ -1,0 +1,13 @@
+---
+source: components/markdown/tests/shortcodes.rs
+assertion_line: 358
+expression: body
+---
+<h1 id="begin-level-0">Begin level 0</h1>
+<div><h2 id="begin-level-1">Begin level 1</h2>
+<div><h3 id="begin-level-2">Begin level 2</h3>
+<p><strong>a: 1</strong>, <strong>a: 2</strong>, <strong>b: 1</strong>, <strong>b: 2</strong></p>
+<h3 id="end-level-2">End level 2</h3>
+</div>
+<h2 id="end-level-1">End level 1</h2>
+</div><h1 id="end-level-0">End level 0</h1>

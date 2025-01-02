@@ -11,6 +11,7 @@ pub fn check(
     base_path: Option<&str>,
     base_url: Option<&str>,
     include_drafts: bool,
+    skip_external_links: bool,
 ) -> Result<()> {
     let bp = base_path.map(PathBuf::from).unwrap_or_else(|| PathBuf::from(root_dir));
     let mut site = Site::new(bp, config_file)?;
@@ -21,6 +22,9 @@ pub fn check(
     }
     if include_drafts {
         site.include_drafts();
+    }
+    if skip_external_links {
+        site.skip_external_links_check();
     }
     site.load()?;
     messages::check_site_summary(&site);
