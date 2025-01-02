@@ -18,3 +18,4 @@ markdown = { path = "../markdown" }
 [dev-dependencies]
 test-case = "3"  # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
 tempfile = "3.3.0"
+templates = { path = "../templates" }

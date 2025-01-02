@@ -693,6 +693,7 @@ dependencies = [
  "markdown",
  "serde",
  "tempfile",
+ "templates",
  "test-case",
  "time",
  "utils",

@@ -1,0 +1,5 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: summary
+---
+<p>Hello (in en)</p>
