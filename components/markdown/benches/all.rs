@@ -147,6 +147,7 @@ fn bench_render_content_with_emoji(b: &mut test::Bencher) {
     let tera = Tera::default();
     let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
     let mut config = Config::default_for_test();
+
     config.markdown.highlight_code = false;
     config.markdown.render_emoji = true;
     let permalinks_ctx = HashMap::new();

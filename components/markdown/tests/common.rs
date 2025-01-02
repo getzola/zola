@@ -41,6 +41,8 @@ fn configurable_render(
         .unwrap();
     tera.add_raw_template("shortcodes/a.html", "<p>a: {{ nth }}</p>").unwrap();
     tera.add_raw_template("shortcodes/b.html", "<p>b: {{ nth }}</p>").unwrap();
+    tera.add_raw_template("shortcodes/a_md.md", "**a: {{ nth }}**").unwrap();
+    tera.add_raw_template("shortcodes/b_md.md", "**b: {{ nth }}**").unwrap();
     tera.add_raw_template("shortcodes/quote.html", "<quote>{{body}}</quote>").unwrap();
     tera.add_raw_template("shortcodes/pre.html", "<pre>{{body}}</pre>").unwrap();
     tera.add_raw_template("shortcodes/four_spaces.html", "    no highlight\n    or there").unwrap();
@@ -51,6 +53,7 @@ fn configurable_render(
     )
     .unwrap();
     tera.add_raw_template("shortcodes/md_passthrough.md", "{{body}}").unwrap();
+    tera.add_raw_template("shortcodes/nth.html", "{{ nth }}").unwrap();
 
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_owned(), "https://getzola.org/about/".to_owned());
