@@ -65,6 +65,8 @@ pub struct Site {
     include_drafts: bool,
     build_mode: BuildMode,
     shortcode_definitions: HashMap<String, ShortcodeDefinition>,
+    /// Whether to check external links
+    check_external_links: bool,
 }
 
 impl Site {
@@ -108,6 +110,7 @@ impl Site {
             library: Arc::new(RwLock::new(Library::default())),
             build_mode: BuildMode::Disk,
             shortcode_definitions,
+            check_external_links: true,
         };
 
         Ok(site)
@@ -124,6 +127,11 @@ impl Site {
     /// Needs to be called before loading it
     pub fn include_drafts(&mut self) {
         self.include_drafts = true;
+    }
+
+    /// Set the site checker to skip external links check.
+    pub fn skip_external_links_check(&mut self) {
+        self.check_external_links = false;
     }
 
     /// The index sections are ALWAYS at those paths
@@ -344,7 +352,7 @@ impl Site {
         }
 
         // check external links, log the results, and error out if needed
-        if self.config.is_in_check_mode() {
+        if self.config.is_in_check_mode() && self.check_external_links {
             let external_link_messages = link_checking::check_external_links(self);
             if !external_link_messages.is_empty() {
                 let messages: Vec<String> = external_link_messages
