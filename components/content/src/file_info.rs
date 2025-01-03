@@ -304,23 +304,38 @@ mod tests {
 
     #[test]
     fn correct_colocated_path() {
-        let files = vec![
-            FileInfo::new_page(
-                Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
-                &PathBuf::new(),
-            ),
-            FileInfo::new_section(
-                Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
-                &PathBuf::new(),
-            ),
+        struct Test<'a> {
+            file_info: FileInfo,
+            expected_colocated_path: &'a str,
+        }
+
+        // A colocated path:
+        // - MUST NOT start with a '/'
+        // - MUST end with a '/'
+        // Breaking those assumptions may have uncontrolled side effects in some other code, including but not limited to assets permalinks generation.
+        let tests = vec![
+            Test {
+                file_info: FileInfo::new_page(
+                    Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+                    &PathBuf::new(),
+                ),
+                expected_colocated_path: "posts/tutorials/python/",
+            },
+            Test {
+                file_info: FileInfo::new_section(
+                    Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
+                    &PathBuf::new(),
+                ),
+                expected_colocated_path: "posts/tutorials/",
+            },
         ];
 
-        for file in files {
-            assert!(file.colocated_path.is_some());
-            if let Some(colocated_path) = file.colocated_path {
-                assert!(!colocated_path.starts_with('/'));
-                assert!(colocated_path.ends_with('/'));
-            }
+        for test in tests {
+            assert!(test.file_info.colocated_path.is_some());
+            assert_eq!(
+                test.file_info.colocated_path.as_ref().unwrap(),
+                test.expected_colocated_path
+            )
         }
     }
 }
