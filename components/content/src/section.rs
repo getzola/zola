@@ -129,16 +129,28 @@ impl Section {
 
         let parent_dir = path.parent().unwrap();
         section.assets = find_related_assets(parent_dir, config, false);
-        section.serialized_assets = serialize_assets(
-            &section.assets,
-            section.file.path.parent(),
-            section.file.colocated_path.as_ref(),
-        );
-        section.assets_permalinks = get_assets_permalinks(
-            &section.serialized_assets,
-            &section.permalink,
-            section.file.colocated_path.as_ref(),
-        );
+        if !section.assets.is_empty() {
+            section.serialized_assets = serialize_assets(
+                &section.assets,
+                section.file.path.parent().unwrap(),
+                section
+                    .file
+                    .colocated_path
+                    .as_ref()
+                    .expect("Should have colocated path for assets"),
+            );
+        }
+        if !section.serialized_assets.is_empty() {
+            section.assets_permalinks = get_assets_permalinks(
+                &section.serialized_assets,
+                &section.permalink,
+                section
+                    .file
+                    .colocated_path
+                    .as_ref()
+                    .expect("Should have colocated path for assets"),
+            );
+        }
 
         Ok(section)
     }

@@ -197,16 +197,26 @@ impl Page {
         if page.file.name == "index" {
             let parent_dir = path.parent().unwrap();
             page.assets = find_related_assets(parent_dir, config, true);
-            page.serialized_assets = serialize_assets(
-                &page.assets,
-                page.file.path.parent(),
-                page.file.colocated_path.as_ref(),
-            );
-            page.assets_permalinks = get_assets_permalinks(
-                &page.serialized_assets,
-                &page.permalink,
-                page.file.colocated_path.as_ref(),
-            );
+            if !page.assets.is_empty() {
+                page.serialized_assets = serialize_assets(
+                    &page.assets,
+                    page.file.path.parent().unwrap(),
+                    page.file
+                        .colocated_path
+                        .as_ref()
+                        .expect("Should have colocated path for assets"),
+                );
+            }
+            if !page.serialized_assets.is_empty() {
+                page.assets_permalinks = get_assets_permalinks(
+                    &page.serialized_assets,
+                    &page.permalink,
+                    page.file
+                        .colocated_path
+                        .as_ref()
+                        .expect("Should have colocated path for assets"),
+                );
+            }
         } else {
             page.assets = vec![];
         }
