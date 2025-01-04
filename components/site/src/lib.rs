@@ -116,10 +116,10 @@ impl Site {
     }
 
     /// Enable some `zola serve` related options
-    pub fn enable_serve_mode(&mut self, both: bool) {
+    pub fn enable_serve_mode(&mut self, build_mode: BuildMode) {
         SITE_CONTENT.write().unwrap().clear();
         self.config.enable_serve_mode();
-        self.build_mode = if both { BuildMode::Both } else { BuildMode::Memory };
+        self.build_mode = build_mode;
     }
 
     /// Set the site to load the drafts.

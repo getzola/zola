@@ -83,7 +83,7 @@ pub enum Command {
         open: bool,
 
         /// Also store HTML in the public/ folder (by default HTML is only stored in-memory)
-        #[clap(short = 'H', long)]
+        #[clap(long)]
         store_html: bool,
 
         /// Only rebuild the minimum on change - useful when working on a specific page/section

@@ -47,7 +47,7 @@ use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Error, Result};
 use site::sass::compile_sass;
-use site::{Site, SITE_CONTENT};
+use site::{BuildMode, Site, SITE_CONTENT};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
 use crate::fs_utils::{filter_events, ChangeKind, SimpleFileSystemEventKind};
@@ -391,7 +391,7 @@ fn create_new_site(
         constructed_base_url.truncate(constructed_base_url.len() - 1);
     }
 
-    site.enable_serve_mode(store_html);
+    site.enable_serve_mode(if store_html { BuildMode::Both } else { BuildMode::Memory });
     site.set_base_url(constructed_base_url.clone());
     if let Some(output_dir) = output_dir {
         if !force && output_dir.exists() {
