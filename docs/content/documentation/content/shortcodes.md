@@ -73,7 +73,7 @@ In both cases, the arguments must be named and they will all be passed to the te
 Parentheses are mandatory even if there are no arguments.
 
 Note that while shortcodes look like normal Tera expressions, they are not Tera at all -- they can
-pretty much just shuttle arguments to their template. Several limitions of note are:
+pretty much just shuttle arguments to their template. Several limitations of note are:
 
 - All arguments are required
 - The shortcode cannot reference Tera variables
@@ -208,7 +208,7 @@ This is useful for presenting/filtering information in a shortcode depending in 
 ```
 
 ### `page` or `section`
-You can access a slighty stripped down version of the equivalent variables in the normal templates.
+You can access a slightly stripped down version of the equivalent variables in the normal templates.
 The following attributes will be empty:
 
 - translations

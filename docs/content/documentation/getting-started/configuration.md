@@ -188,7 +188,7 @@ include_content = true
 # become too big to load on the site. Defaults to not being set.
 # truncate_content_length = 100
 
-# Wether to produce the search index as a javascript file or as a JSON file
+# Whether to produce the search index as a javascript file or as a JSON file
 # Accepted values:
 # - "elasticlunr_javascript", "elasticlunr_json"
 # - "fuse_javascript", "fuse_json"

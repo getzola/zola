@@ -548,7 +548,7 @@ And here's another. [^3]
 
 [^1]: This is the first footnote.
 
-[^2]: This is the secund footnote.
+[^2]: This is the second footnote.
 
 [^3]: This is the third footnote."#
             .to_string();

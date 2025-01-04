@@ -8,7 +8,7 @@ However, if you notice an error or typo in the documentation, feel free to direc
 If you want a feature added or modified, please open a thread on the [forum](https://zola.discourse.group/) to discuss it before doing a PR.
 
 Requested features will not be all added: an ever-increasing features set makes for a hard to use and explain softwares.
-Having something simple and easy to use for 90% of the usecases is more interesting than covering 100% usecases after sacrificing simplicity.
+Having something simple and easy to use for 90% of the use cases is more interesting than covering 100% use cases after sacrificing simplicity.
 
 ## Issues tagging
 
