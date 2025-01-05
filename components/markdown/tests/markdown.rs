@@ -153,6 +153,18 @@ fn can_use_smart_punctuation() {
 }
 
 #[test]
+fn can_use_definition_list() {
+    let mut config = Config::default_for_test();
+    config.markdown.definition_list = true;
+    let content = r#"
+term
+: definition
+    "#;
+    let body = common::render_with_config(content, config).unwrap().body;
+    insta::assert_snapshot!(body);
+}
+
+#[test]
 fn can_use_external_links_class() {
     let mut config = Config::default_for_test();
 
