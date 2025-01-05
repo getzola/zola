@@ -11,6 +11,7 @@
 - Exclude paginated pages in sitemap by default
 - Allow treating a missing highlight language as error
 - Handle more editors with change detection in `zola serve`
+- Add optional parsing of Markdown definition lists
 
 
 ## 0.19.2 (2024-08-15)
