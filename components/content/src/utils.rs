@@ -87,18 +87,17 @@ pub fn get_assets_permalinks(
     parent_permalink: &str,
     colocated_path: &str,
 ) -> HashMap<String, String> {
-    let mut permalinks = HashMap::new();
-    if !serialized_assets.is_empty() {
-        for asset in serialized_assets {
-            let asset_file_path = asset.strip_prefix("/").unwrap_or(asset);
+    serialized_assets
+        .iter()
+        .map(|asset| asset.strip_prefix("/").unwrap_or(asset))
+        .map(|asset_file_path| {
             let page_relative_asset_path = asset_file_path
                 .strip_prefix(colocated_path)
                 .expect("Should be able to stripe colocated path from asset path");
             let asset_permalink = format!("{}{}", parent_permalink, page_relative_asset_path);
-            permalinks.insert(asset_file_path.to_string(), asset_permalink.to_string());
-        }
-    }
-    permalinks
+            (asset_file_path.to_string(), asset_permalink.to_string())
+        })
+        .collect()
 }
 
 /// Get word count and estimated reading time
