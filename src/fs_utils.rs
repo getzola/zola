@@ -46,6 +46,8 @@ fn get_relevant_event_kind(event_kind: &EventKind) -> Option<SimpleFileSystemEve
         | EventKind::Modify(ModifyKind::Metadata(MetadataKind::WriteTime))
         | EventKind::Modify(ModifyKind::Metadata(MetadataKind::Permissions))
         | EventKind::Modify(ModifyKind::Metadata(MetadataKind::Ownership))
+        | EventKind::Modify(ModifyKind::Metadata(MetadataKind::Extended))
+        | EventKind::Modify(ModifyKind::Name(RenameMode::Any))
         | EventKind::Modify(ModifyKind::Name(RenameMode::To)) => Some(SimpleFileSystemEventKind::Modify),
         EventKind::Remove(RemoveKind::File) | EventKind::Remove(RemoveKind::Folder) => {
             Some(SimpleFileSystemEventKind::Remove)
@@ -207,6 +209,14 @@ mod tests {
             ),
             (
                 EventKind::Modify(ModifyKind::Metadata(MetadataKind::Ownership)),
+                Some(SimpleFileSystemEventKind::Modify),
+            ),
+            (
+                EventKind::Modify(ModifyKind::Metadata(MetadataKind::Extended)),
+                Some(SimpleFileSystemEventKind::Modify),
+            ),
+            (
+                EventKind::Modify(ModifyKind::Name(RenameMode::Any)),
                 Some(SimpleFileSystemEventKind::Modify),
             ),
             (
