@@ -3,14 +3,14 @@
 title = "zallery"
 description = "Gallery theme for zola"
 template = "theme.html"
-date = 2024-12-13T19:35:13-06:00
+date = 2025-01-04T23:57:40-06:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-13T19:35:13-06:00
-updated = 2024-12-13T19:35:13-06:00
+created = 2025-01-04T23:57:40-06:00
+updated = 2025-01-04T23:57:40-06:00
 repository = "https://github.com/gamingrobot/zallery.git"
 homepage = "https://github.com/gamingrobot/zallery"
 minimum_version = "0.19.0"
@@ -42,6 +42,7 @@ Personal Portfolio: [gamingrobot.art](https://gamingrobot.art/)
 - Auto creation of thumbnails
 - Auto conversion of images
 - Maximize button on images
+- Next and Previous artwork buttons
 - [medium-zoom](https://github.com/francoischalifour/medium-zoom) support
 - [ModelViewer](https://modelviewer.dev/) and [Sketchfab](https://sketchfab.com/) support
 - Video embed support
@@ -56,7 +57,7 @@ Clone the theme into the themes folder:
 git clone https://github.com/gamingrobot/zallery.git themes/zallery
 ```
 
-Note: It is recomended that you copy the `config.toml` from the `themes/zallery` folder to the root folder of your site.
+Note: It is recommended that you copy the `config.toml` from the `themes/zallery` folder to the root folder of your site.
 
 Then set your theme setting in `config.toml` to `zallery`:
 
@@ -206,7 +207,7 @@ goatcounter = ""
 - `mobile_src` (optional) - Mobile friendly version
 - `alt` (optional) - Alt text
 - `text` (optional) - Text to put under the image (if `alt` is not specified, text will be use for alt text)
-- `fit` (optioanl) - Defaults to `fit-view`, can be set to `max-width` to make the image fill the width of the page
+- `fit` (optional) - Defaults to `fit-view`, can be set to `max-width` to make the image fill the width of the page
 
 ### `video`
 
